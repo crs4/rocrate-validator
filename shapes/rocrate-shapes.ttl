@@ -1,5 +1,4 @@
 @prefix : <./> .
-@prefix ex: <file:///home/kikkomep/Projects/%40Crs4/EOSC-Life/Repositories/ro-crate-validator-py/> .
 @prefix dct: <http://purl.org/dc/terms/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix schema_org: <http://schema.org/> .
@@ -16,14 +15,14 @@ schema_org:CreativeWork a sh:NodeShape ;
         sh:minCount 1 ;
         sh:nodeKind sh:IRI ;
         sh:path dct:conformsTo ;
-        sh:in (<https://w3id.org/ro/crate/1.1x> <https://w3id.org/workflowhub/workflow-ro-crate/1.0x>)
+        sh:in (<https://w3id.org/ro/crate/1.1> <https://w3id.org/workflowhub/workflow-ro-crate/1.0>)
     ] ;
     sh:property [ 
         a sh:PropertyShape ;
         sh:name "about" ;
         sh:description "The main entity described in the RO-Crate" ;
-        sh:maxCount 2;
-        sh:minCount 2 ;
+        sh:maxCount 1;
+        sh:minCount 1 ;
         sh:nodeKind sh:IRI ;
         sh:path schema_org:about ;
         sh:hasValue <./>
