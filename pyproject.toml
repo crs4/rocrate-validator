@@ -8,6 +8,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.11"
 rdflib = "^7.0.0"
+pyshacl = "^0.25.0"
 
 
 [build-system]
