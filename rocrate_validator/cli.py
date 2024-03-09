@@ -28,16 +28,16 @@ console = Console()
     default="./shapes",
     help="Path containing the shapes files",
 )
-@click.option(
-    "-o",
-    "--ontologies-path",
-    type=click.Path(exists=True),
-    default="./ontologies",
-    help="Path containing the ontology files",
-)
+# @click.option(
+#     "-o",
+#     "--ontologies-path",
+#     type=click.Path(exists=True),
+#     default="./ontologies",
+#     help="Path containing the ontology files",
+# )
 @click.argument("rocrate-path", type=click.Path(exists=True), default=".")
 @click.pass_context
-def cli(ctx, debug, shapes_path, ontologies_path, rocrate_path):
+def cli(ctx, debug, shapes_path, ontologies_path=None, rocrate_path="."):
     # Set the log level
     if debug:
         logging.basicConfig(level=logging.DEBUG)
