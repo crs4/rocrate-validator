@@ -1,5 +1,6 @@
 import logging
 import os
+from pathlib import Path
 from typing import List
 
 from rdflib import Graph
@@ -12,6 +13,16 @@ CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 
 # set up logging
 logger = logging.getLogger(__name__)
+
+
+def get_file_descriptor_path(rocrate_path: Path) -> Path:
+    """
+    Get the path to the metadata file in the RO-Crate
+
+    :param rocrate_path: The path to the RO-Crate
+    :return: The path to the metadata file
+    """
+    return Path(rocrate_path) / constants.ROCRATE_METADATA_FILE
 
 
 def get_format_extension(format: constants.RDF_SERIALIZATION_FORMATS_TYPES) -> str:
