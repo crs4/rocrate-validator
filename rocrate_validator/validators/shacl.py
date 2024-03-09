@@ -5,7 +5,7 @@ import pyshacl
 from pyshacl.pytypes import GraphLike
 from rdflib import Graph
 
-from ..constants import RDF_SERIALIZATION_FORMATS, VALID_INFERENCE_OPTIONS
+from ..constants import RDF_SERIALIZATION_FORMATS, RDF_SERIALIZATION_FORMATS_TYPES, VALID_INFERENCE_OPTIONS, VALID_INFERENCE_OPTIONS_TYPES
 from ..models import ValidationResult
 
 # set up logging
@@ -45,13 +45,14 @@ class Validator:
         self,
         data_graph: Union[GraphLike, str, bytes],
         advanced: Optional[bool] = False,
-        inference: Optional[Literal["owl", "rdfs"]] = False,
+        inference: Optional[VALID_INFERENCE_OPTIONS_TYPES] = None,
         inplace: Optional[bool] = False,
         abort_on_first: Optional[bool] = False,
         allow_infos: Optional[bool] = False,
         allow_warnings: Optional[bool] = False,
         serialization_output_path: Optional[str] = None,
-        serialization_output_format: Optional[str] = "turtle",
+        serialization_output_format:
+            Optional[RDF_SERIALIZATION_FORMATS_TYPES] = "turtle",
         **kwargs,
     ) -> ValidationResult:
         f"""
@@ -62,7 +63,7 @@ class Validator:
         :type data_graph: rdflib.Graph | str | bytes
         :param advanced: Enable advanced SHACL features, default=False
         :type advanced: bool | None
-        :param inference: One of "rdfs", "owlrl", "both", "none", or None
+        :param inference: One of {VALID_INFERENCE_OPTIONS}
         :type inference: str | None
         :param inplace: If this is enabled, do not clone the datagraph,
                 manipulate it inplace
