@@ -53,7 +53,11 @@ def cli(ctx, debug, shapes_path, ontologies_path=None, rocrate_path="."):
 
 @cli.command("validate")
 def validate(shapes_path: str, ontologies_path: str,  rocrate_path: str):
-    """Validate a RO-Crate using SHACL shapes as constraints."""
+    """
+    Validate a RO-Crate using SHACL shapes as constraints.
+    * this command might be the only one needed for the CLI.
+    ??? merge this command with the main command ?
+    """
 
     # Print the input parameters
     logger.debug("shapes_path: %s", os.path.abspath(shapes_path))
