@@ -16,15 +16,30 @@ logger = logging.getLogger(__name__)
 
 def get_format_extension(format: constants.RDF_SERIALIZATION_FORMATS_TYPES) -> str:
     """
+    Get the file extension for the RDF serialization format
+
+    :param format: The RDF serialization format
+    :return: The file extension
+
+    :raises InvalidSerializationFormat: If the format is not valid
+    """
     try:
         return constants.RDF_SERIALIZATION_FILE_FORMAT_MAP[format]
     except KeyError:
         logger.error("Invalid RDF serialization format: %s", format)
         raise errors.InvalidSerializationFormat(format)
 
+
 def get_all_files(
         directory: str = '.',
         format: constants.RDF_SERIALIZATION_FORMATS_TYPES = "turtle") -> List[str]:
+    """
+    Get all the files in the directory matching the format.
+
+    :param directory: The directory to search
+    :param format: The RDF serialization format
+    :return: A list of file paths
+    """
     # initialize an empty list to store the file paths
     file_paths = []
 
@@ -46,9 +61,13 @@ def get_all_files(
 def get_graphs_paths(
         graphs_dir: str = CURRENT_DIR, format="turtle") -> List[str]:
     """
-    Get all the SHACL shapes files in the shapes directory
+    Get the paths to all the graphs in the directory
+
+    :param graphs_dir: The directory containing the graphs
+    :param format: The RDF serialization format
+    :return: A list of graph paths
     """
-    return get_all_files(directory=graphs_dir, extension='.ttl')
+    return get_all_files(directory=graphs_dir, format=format)
 
 
 def get_full_graph(
@@ -56,7 +75,12 @@ def get_full_graph(
         format: constants.RDF_SERIALIZATION_FORMATS_TYPES = "turtle",
         publicID: str = ".") -> Graph:
     """
-    Get the SHACL shapes graph
+    Get the full graph from the directory
+
+    :param graphs_dir: The directory containing the graphs
+    :param format: The RDF serialization format
+    :param publicID: The public ID
+    :return: The full graph
     """
     full_graph = Graph()
     graphs_paths = get_graphs_paths(graphs_dir, format=format)
