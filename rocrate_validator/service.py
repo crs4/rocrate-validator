@@ -1,117 +1,81 @@
 import logging
-from typing import Optional, Union
+from typing import Literal, Optional, Union
 
+from pyshacl.pytypes import GraphLike
 from rdflib import Graph
 
-import pyshacl
-from pyshacl.pytypes import GraphLike
-
-from .models import ROCRATE_METADATA_FILE, ValidationResult
-from .shapes import get_shapes_paths, get_shapes_graph
+from .errors import CheckValidationError, SHACLValidationError
+from .models import ROCRATE_METADATA_FILE
+from .utils import get_full_graph
+from .validators.shacl import Validator
 
 # set up logging
 logger = logging.getLogger(__name__)
 
 
-class SHACLValidator:
-
-    def __init__(
-        self,
-        shapes_graph: Optional[Union[GraphLike, str, bytes]],
-        ont_graph: Optional[Union[GraphLike, str, bytes]] = None,
-    ) -> None:
-        self._shapes_graph = shapes_graph
-        self._ont_graph = ont_graph
-
-    @property
-    def shapes_graph(self) -> Optional[Union[GraphLike, str, bytes]]:
-        return self._shapes_graph
-
-    @property
-    def ont_graph(self) -> Optional[Union[GraphLike, str, bytes]]:
-        return self._ont_graph
-
-    def validate(
-        self,
-        data_graph: Union[GraphLike, str, bytes],
-        advanced: Optional[bool] = False,
-        inference: Optional[str] = None,
-        inplace: Optional[bool] = False,
-        abort_on_first: Optional[bool] = False,
-        allow_infos: Optional[bool] = False,
-        allow_warnings: Optional[bool] = False,
-        serialisation_output_path: str = None,
-        serialisation_output_format: str = "turtle",
-        **kwargs,
-    ) -> ValidationResult:
-
-        # validate the data graph using pyshacl.validate
-        conforms, results_graph, results_text = pyshacl.validate(
-            data_graph,
-            shacl_graph=self.shapes_graph,
-            ont_graph=self.ont_graph,
-            inference=inference,
-            inplace=inplace,
-            abort_on_first=abort_on_first,
-            allow_infos=allow_infos,
-            allow_warnings=allow_warnings,
-            meta_shacl=False,
-            advanced=advanced,
-            js=False,
-            debug=False,
-            **kwargs,
-        )
-        # log the validation results
-        logger.debug("Conforms: %r", conforms)
-        logger.debug("Results Graph: %r", results_graph)
-        logger.debug("Results Text: %r", results_text)
-
-        # serialize the results graph
-        if serialisation_output_path:
-            assert serialisation_output_format in [
-                "turtle",
-                "n3",
-                "nt",
-                "xml",
-                "rdf",
-                "json-ld",
-            ], "Invalid serialisation output format"
-            results_graph.serialize(
-                serialisation_output_path, format=serialisation_output_format
-            )
-        # return the validation result
-        return ValidationResult(results_graph, conforms, results_text)
-
-
 def validate(
     rocrate_path: Union[GraphLike, str, bytes],
     shapes_path: Union[GraphLike, str, bytes],
+    ontologies_path: Union[GraphLike, str, bytes] = None,
     advanced: Optional[bool] = False,
-    inference: Optional[str] = None,
+    inference: Optional[Literal["owl", "rdfs"]] = False,
     inplace: Optional[bool] = False,
     abort_on_first: Optional[bool] = False,
     allow_infos: Optional[bool] = False,
     allow_warnings: Optional[bool] = False,
-    serialisation_output_path: str = None,
-    serialisation_output_format: str = "turtle",
+    serialization_output_path: str = None,
+    serialization_output_format: str = "turtle",
     **kwargs,
-) -> ValidationResult:
+) -> bool:
     """
     Validate a data graph using SHACL shapes as constraints
+
+    :param rocrate_path: The path to the RO-Crate metadata file
+    :param shapes_path: The path to the SHACL shapes file
+
+    :return: True if the data graph conforms to the SHACL shapes
+    :raises SHACLValidationError: If the data graph does not conform to the SHACL shapes
+    :raises CheckValidationError: If a check fails
     """
-    # TODO: handle multiple shapes files and allow user to select one
-    shacl_graph = shapes_path
-    logger.debug("shacl_graph: %s", shacl_graph)
+
+    # set the RO-Crate metadata file
+    rocrate_metadata_path = f"{rocrate_path}/{ROCRATE_METADATA_FILE}"
+    logger.debug("rocrate_metadata_path: %s", rocrate_metadata_path)
+
+    from .checks import get_checks
+
+    # get the checks
+    for check_instance in get_checks():
+        logger.debug("Loaded check: %s", check_instance)
+        result = check_instance.check(rocrate_path)
+        if result[0] == 0:
+            logger.debug("Check passed: %s", check_instance.name)
+        else:
+            logger.debug(
+                f"Check {check_instance.name} failed: "
+                f"{result[1]}", check_instance.name
+            )
+            raise CheckValidationError(
+                check_instance, result[1], rocrate_path, result[0]
+            )
 
     # load the data graph
     data_graph = Graph()
-    data_graph.parse(f"{rocrate_path}/{ROCRATE_METADATA_FILE}",
+    data_graph.parse(rocrate_metadata_path,
                      format="json-ld", publicID=rocrate_path)
 
     # load the shapes graph
-    shacl_graph = get_shapes_graph(shapes_path, publicID=rocrate_path)
+    shacl_graph = None
+    if shapes_path:
+        shacl_graph = get_full_graph(shapes_path, publicID=rocrate_path)
 
-    validator = SHACLValidator(shapes_graph=shacl_graph)
+    # load the ontology graph
+    ontology_graph = None
+    if ontologies_path:
+        ontology_graph = get_full_graph(ontologies_path)
+
+    validator = Validator(
+        shapes_graph=shacl_graph, ont_graph=ontology_graph)
     result = validator.validate(
         data_graph=data_graph,
         advanced=advanced,
@@ -120,10 +84,12 @@ def validate(
         abort_on_first=abort_on_first,
         allow_infos=allow_infos,
         allow_warnings=allow_warnings,
-        serialisation_output_path=serialisation_output_path,
-        serialisation_output_format=serialisation_output_format,
+        serialization_output_path=serialization_output_path,
+        serialization_output_format=serialization_output_format,
         publicID=rocrate_path,
         **kwargs,
     )
     logger.debug("Validation conforms: %s", result.conforms)
-    return result
+    if not result.conforms:
+        raise SHACLValidationError(result, rocrate_path)
+    return True
