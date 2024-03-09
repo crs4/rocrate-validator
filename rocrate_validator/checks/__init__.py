@@ -1,8 +1,7 @@
-from importlib import import_module
 import inspect
-import os
-import re
 import logging
+import os
+from importlib import import_module
 from typing import List
 
 # set up logging
