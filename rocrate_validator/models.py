@@ -1,18 +1,14 @@
 import json
 import logging
 import os
+
 from rdflib import Graph, URIRef
 from rdflib.term import Node
 
+from .constants import SHACL_NS
+
 # set up logging
 logger = logging.getLogger(__name__)
-
-
-# Define SHACL namespace
-SHACL_NS = "http://www.w3.org/ns/shacl#"
-
-# Define the rocrate-metadata.json file name
-ROCRATE_METADATA_FILE = "ro-crate-metadata.json"
 
 
 class Shape:

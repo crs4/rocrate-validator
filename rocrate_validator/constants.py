@@ -1,6 +1,11 @@
 # Define allowed RDF extensions and serialization formats as map
 import typing
 
+# Define SHACL namespace
+SHACL_NS = "http://www.w3.org/ns/shacl#"
+# Define the rocrate-metadata.json file name
+ROCRATE_METADATA_FILE = "ro-crate-metadata.json"
+
 
 # Define allowed RDF extensions and serialization formats as map
 RDF_SERIALIZATION_FILE_FORMAT_MAP = {
