@@ -27,3 +27,6 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 rocrate-validator = "rocrate_validator.cli:cli"
+
+[tool.rocrate_validator]
+skip_dirs = [".git", ".github", ".vscode"]

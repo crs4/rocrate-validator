@@ -213,17 +213,28 @@ class CheckResult:
         return not any(issue.severity.value >= severity.value for issue in self.issues)
 
 
+def get_checks(directory: str = __CURRENT_DIR__,
+               rocrate_path: Path = ".",
+               instances: bool = True,
+               skip_dirs: List[str] = None) -> List[Type[Check]]:
     """
     Load all the classes from the directory
     """
     logger.debug("Loading checks from %s", directory)
     # create an empty list to store the classes
     classes = {}
+    # skip directories that start with a dot
+    skip_dirs = skip_dirs or []
+    skip_dirs.extend(get_config(property="skip_dirs"))
+
     # loop through the files in the directory
     for root, dirs, files in os.walk(directory):
+        # skip directories that start with a dot
+        dirs[:] = [d for d in dirs if not d.startswith('.')]
+        # loop through the files
         for file in files:
             # check if the file is a python file
-            logger.debug("Checking file %s", file)
+            logger.debug("Checking file %s %s %s", root, dirs, file)
             if file.endswith(".py") and not file.startswith("__init__"):
                 # get the file path
                 file_path = os.path.join(root, file)
@@ -239,10 +250,11 @@ class CheckResult:
                     logger.debug("Checking object %s", obj)
                     if inspect.isclass(obj) \
                             and inspect.getmodule(obj) == mod \
+                            and issubclass(obj, Check) \
                             and obj.__name__.endswith('Check'):
                         classes[obj.__name__] = obj
                         logger.debug("Loaded class %s", obj.__name__)
-                return [v() if instances else v for v in classes.values()]
+                return [v(rocrate_path) if instances else v for v in classes.values()]
 
     # return the list of classes
     return classes
