@@ -52,25 +52,29 @@ def cli(ctx, debug, shapes_path, ontologies_path=None, rocrate_path="."):
 
 
 @cli.command("validate")
-def validate(shapes_path: str, ontologies_path: str,  rocrate_path: str):
+def validate(shapes_path: str, ontologies_path: str = None,  rocrate_path: str = "."):
     """
     Validate a RO-Crate using SHACL shapes as constraints.
     * this command might be the only one needed for the CLI.
     ??? merge this command with the main command ?
     """
 
-    # Print the input parameters
-    logger.debug("shapes_path: %s", os.path.abspath(shapes_path))
-    logger.debug("rocrate-path: %s", os.path.abspath(rocrate_path))
-    logger.debug("ontologies_path: %s", os.path.abspath(ontologies_path))
+    # Log the input parameters for debugging
+    if shapes_path:
+        logger.debug("shapes_path: %s", os.path.abspath(shapes_path))
+    if ontologies_path:
+        logger.debug("ontologies_path: %s", os.path.abspath(ontologies_path))
+    if rocrate_path:
+        logger.debug("ontologies_path: %s", os.path.abspath(rocrate_path))
 
     try:
 
         # Validate the RO-Crate
         result = validate_rocrate(
             rocrate_path=os.path.abspath(rocrate_path),
-            shapes_path=os.path.abspath(shapes_path),
-            # ontologies_path=os.path.abspath(ontologies_path),
+            shapes_path=os.path.abspath(shapes_path) if shapes_path else None,
+            ontologies_path=os.path.abspath(
+                ontologies_path) if ontologies_path else None,
         )
 
         # Print the validation result
