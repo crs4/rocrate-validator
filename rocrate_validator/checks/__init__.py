@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 __CURRENT_DIR__ = os.path.dirname(os.path.realpath(__file__))
 
 
-def get_checks(directory: str = __CURRENT_DIR__, instaces: bool = True) -> List[str]:
+def get_checks(directory: str = __CURRENT_DIR__, instances: bool = True) -> List[str]:
     """
     Load all the classes from the directory
     """
@@ -42,7 +42,7 @@ def get_checks(directory: str = __CURRENT_DIR__, instaces: bool = True) -> List[
                             and obj.__name__.endswith('Check'):
                         classes[obj.__name__] = obj
                         logger.debug("Loaded class %s", obj.__name__)
-                return [v() if instaces else v for v in classes.values()]
+                return [v() if instances else v for v in classes.values()]
 
     # return the list of classes
     return classes
