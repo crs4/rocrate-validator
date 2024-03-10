@@ -1,4 +1,8 @@
 from dataclasses import dataclass
+import inspect
+import os
+from pathlib import Path
+from typing import Dict, List, Set
 
 
 @dataclass
@@ -48,4 +52,10 @@ class RequirementLevels:
     SHALL = RequirementType('SHALL', 3)
     SHALL_NOT = RequirementType('SHALL_NOT', 3)
     RECOMMENDED = RequirementType('RECOMMENDED', 3)
+
+    def all() -> Dict[str, RequirementType]:
+        return {name: member for name, member in inspect.getmembers(RequirementLevels)
+                if not inspect.isroutine(member)
+                and not inspect.isdatadescriptor(member) and not name.startswith('__')}
+
 
