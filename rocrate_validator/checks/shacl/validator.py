@@ -5,10 +5,10 @@ import pyshacl
 from pyshacl.pytypes import GraphLike
 from rdflib import Graph
 
-from ..constants import (RDF_SERIALIZATION_FORMATS,
-                         RDF_SERIALIZATION_FORMATS_TYPES,
-                         VALID_INFERENCE_OPTIONS,
-                         VALID_INFERENCE_OPTIONS_TYPES)
+from ...constants import (RDF_SERIALIZATION_FORMATS,
+                          RDF_SERIALIZATION_FORMATS_TYPES,
+                          VALID_INFERENCE_OPTIONS,
+                          VALID_INFERENCE_OPTIONS_TYPES)
 from .models import ValidationResult
 
 # set up logging

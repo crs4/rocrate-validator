@@ -1,7 +1,7 @@
-from ..checks import Check
+from ...checks import Check as BaseCheck
 
 
-class SHACLCheck(Check):
+class Check(BaseCheck):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.name = "SHACL"

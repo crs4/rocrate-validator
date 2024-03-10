@@ -4,11 +4,11 @@ from typing import Literal, Optional, Union
 from pyshacl.pytypes import GraphLike
 from rdflib import Graph
 
+from .checks.shacl import Validator
+from .checks.shacl.errors import SHACLValidationError
 from .constants import ROCRATE_METADATA_FILE
-from .errors import CheckValidationError, SHACLValidationError
-from .utils import get_full_graph
-from .validators.shacl import Validator
 from .models import ValidationResult
+from .utils import get_full_graph
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -118,5 +118,7 @@ def validate(
     if not result.conforms:
         logger.error("Validation failed")
         # TODO: wrap the validation error as issue
+    if not result.conforms:
+        raise SHACLValidationError(result, rocrate_path)
 
     return validation_result

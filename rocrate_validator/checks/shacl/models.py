@@ -5,8 +5,8 @@ import os
 from rdflib import Graph, URIRef
 from rdflib.term import Node
 
-from ..constants import SHACL_NS
-from ..checks import CheckIssue
+from ...constants import SHACL_NS
+from ...checks import CheckIssue
 
 # set up logging
 logger = logging.getLogger(__name__)

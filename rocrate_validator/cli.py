@@ -4,10 +4,11 @@ import os
 import click
 from rich.console import Console
 
-from rocrate_validator.errors import CheckValidationError, SHACLValidationError
+from rocrate_validator.errors import CheckValidationError
 from rocrate_validator.service import validate as validate_rocrate
 
 from .checks import Severity
+from .checks.shacl.errors import SHACLValidationError
 from .colors import get_severity_color
 from .models import ValidationResult
 

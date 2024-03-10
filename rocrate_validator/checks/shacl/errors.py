@@ -1,4 +1,4 @@
-from ..errors import ValidationError
+from ...errors import ValidationError
 from .models import ValidationResult
 
 
