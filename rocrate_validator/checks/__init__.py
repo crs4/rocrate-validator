@@ -4,10 +4,11 @@ import inspect
 import logging
 import os
 from abc import ABC, abstractmethod
-from enum import Enum, auto
 from importlib import import_module
 from pathlib import Path
 from typing import List, Optional, Type
+
+from ..profiles import RequirementLevels, RequirementType
 
 from ..utils import get_config, get_file_descriptor_path
 
@@ -25,26 +26,11 @@ def issue_types(issues: List[Type[CheckIssue]]) -> Type[Check]:
     return class_decorator
 
 
-class Severity(Enum):
-    """
-    * The key words MUST, MUST NOT, REQUIRED,
-    * SHALL, SHALL NOT, SHOULD, SHOULD NOT,
-    * RECOMMENDED, MAY, and OPTIONAL in this document
-    * are to be interpreted as described in RFC 2119.
-    """
-    INFO = 0
-    MAY = 1
-    OPTIONAL = 1
-    SHOULD = 2
-    SHOULD_NOT = 2
-    WARNING = 2
-    REQUIRED = 3
-    MUST = 3
-    MUST_NOT = 3
-    SHALL = 3
-    SHALL_NOT = 3
-    RECOMMENDED = 3
-    ERROR = 4
+class Severity(RequirementLevels):
+    """Extends the RequirementLevels enum with additional values"""
+    INFO = RequirementType('INFO', 0)
+    WARNING = RequirementType('WARNING', 2)
+    ERROR = RequirementType('ERROR', 4)
 
 
 class CheckIssue:
