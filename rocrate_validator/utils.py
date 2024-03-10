@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 from pathlib import Path
 from typing import List
 
@@ -124,3 +125,24 @@ def get_full_graph(
         full_graph.parse(graph_path, format="turtle", publicID=publicID)
         logger.debug("Loaded triples from %s", graph_path)
     return full_graph
+
+
+def get_requirement_name_from_file(file: Path) -> str:
+    """
+    Get the requirement name from the file
+
+    :param file: The file
+    :return: The requirement name
+    """
+    return to_camel_case(file.stem).capitalize()
+
+
+def to_camel_case(snake_str: str) -> str:
+    """
+    Convert a snake case string to camel case
+
+    :param snake_str: The snake case string
+    :return: The camel case string
+    """
+    components = re.split('_|-', snake_str)
+    return components[0] + ''.join(x.title() for x in components[1:])
