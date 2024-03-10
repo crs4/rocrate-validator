@@ -7,7 +7,7 @@ from rich.console import Console
 from rocrate_validator.errors import CheckValidationError, SHACLValidationError
 from rocrate_validator.service import validate as validate_rocrate
 
-from .checks import IssueSeverity
+from .checks import Severity
 from .colors import get_severity_color
 from .models import ValidationResult
 
@@ -115,7 +115,7 @@ def validate(shapes_path: str, ontologies_path: str = None,
 
 def __print_validation_result__(
         result: ValidationResult,
-        severity: IssueSeverity = IssueSeverity.WARNING):
+        severity: Severity = Severity.WARNING):
     """
     Print the validation result
     """

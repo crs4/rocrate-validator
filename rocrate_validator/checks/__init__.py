@@ -25,7 +25,7 @@ def issue_types(issues: List[Type[CheckIssue]]) -> Type[Check]:
     return class_decorator
 
 
-class IssueSeverity(Enum):
+class Severity(Enum):
     INFO = auto()
     MAY = auto()
     SHOULD = auto()
@@ -46,7 +46,7 @@ class CheckIssue:
         code (int): The code
     """
 
-    def __init__(self, severity: IssueSeverity,
+    def __init__(self, severity: Severity,
                  message: Optional[str] = None,
                  code: int = None,
                  check: Check = None):
@@ -145,10 +145,10 @@ class Check(ABC):
     def passed(self) -> bool:
         return self.result.passed()
 
-    def get_issues(self, severity: IssueSeverity = IssueSeverity.WARNING) -> List[CheckIssue]:
+    def get_issues(self, severity: Severity = Severity.WARNING) -> List[CheckIssue]:
         return self.result.get_issues(severity)
 
-    def get_issues_by_severity(self, severity: IssueSeverity) -> List[CheckIssue]:
+    def get_issues_by_severity(self, severity: Severity) -> List[CheckIssue]:
         return self.result.get_issues_by_severity(severity)
 
     def __str__(self) -> str:
@@ -189,39 +189,39 @@ class CheckResult:
         self._issues.append(issue)
 
     def add_error(self, message: str, code: int = None):
-        self._issues.append(CheckIssue(IssueSeverity.ERROR, message, code, self.check))
+        self._issues.append(CheckIssue(Severity.ERROR, message, code, self.check))
 
     def add_warning(self, message: str, code: int = None):
-        self._issues.append(CheckIssue(IssueSeverity.WARNING, message, code, self.check))
+        self._issues.append(CheckIssue(Severity.WARNING, message, code, self.check))
 
     def add_info(self, message: str, code: int = None):
-        self._issues.append(CheckIssue(IssueSeverity.INFO, message, code, self.check))
+        self._issues.append(CheckIssue(Severity.INFO, message, code, self.check))
 
     def add_optional(self, message: str, code: int = None):
-        self._issues.append(CheckIssue(IssueSeverity.OPTIONAL, message, code, self.check))
+        self._issues.append(CheckIssue(Severity.OPTIONAL, message, code, self.check))
 
     def add_may(self, message: str, code: int = None):
-        self._issues.append(CheckIssue(IssueSeverity.MAY, message, code, self.check))
+        self._issues.append(CheckIssue(Severity.MAY, message, code, self.check))
 
     def add_should(self, message: str, code: int = None):
-        self._issues.append(CheckIssue(IssueSeverity.SHOULD, message, code, self.check))
+        self._issues.append(CheckIssue(Severity.SHOULD, message, code, self.check))
 
     def add_should_not(self, message: str, code: int = None):
-        self._issues.append(CheckIssue(IssueSeverity.SHOULD_NOT, message, code, self.check))
+        self._issues.append(CheckIssue(Severity.SHOULD_NOT, message, code, self.check))
 
     def add_must(self, message: str, code: int = None):
-        self._issues.append(CheckIssue(IssueSeverity.MUST, message, code, self.check))
+        self._issues.append(CheckIssue(Severity.MUST, message, code, self.check))
 
     def add_must_not(self, message: str, code: int = None):
-        self._issues.append(CheckIssue(IssueSeverity.MUST_NOT, message, code, self.check))
+        self._issues.append(CheckIssue(Severity.MUST_NOT, message, code, self.check))
 
-    def get_issues(self, severity: IssueSeverity = IssueSeverity.WARNING) -> List[CheckIssue]:
+    def get_issues(self, severity: Severity = Severity.WARNING) -> List[CheckIssue]:
         return [issue for issue in self.issues if issue.severity.value >= severity.value]
 
-    def get_issues_by_severity(self, severity: IssueSeverity) -> List[CheckIssue]:
+    def get_issues_by_severity(self, severity: Severity) -> List[CheckIssue]:
         return [issue for issue in self.issues if issue.severity == severity]
 
-    def passed(self, severity: IssueSeverity = IssueSeverity.WARNING) -> bool:
+    def passed(self, severity: Severity = Severity.WARNING) -> bool:
         return not any(issue.severity.value >= severity.value for issue in self.issues)
 
 

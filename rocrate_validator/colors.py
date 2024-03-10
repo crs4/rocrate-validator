@@ -1,28 +1,28 @@
-from .checks import IssueSeverity
+from .checks import Severity
 
 
-def get_severity_color(severity: IssueSeverity) -> str:
+def get_severity_color(severity: Severity) -> str:
     """
     Get the color for the severity
 
     :param severity: The severity
     :return: The color
     """
-    if severity == IssueSeverity.ERROR:
+    if severity == Severity.ERROR:
         return "red"
-    elif severity == IssueSeverity.MUST:
+    elif severity == Severity.MUST:
         return "red"
-    elif severity == IssueSeverity.MUST_NOT:
+    elif severity == Severity.MUST_NOT:
         return "purple"
-    elif severity == IssueSeverity.SHOULD:
+    elif severity == Severity.SHOULD:
         return "yellow"
-    elif severity == IssueSeverity.SHOULD_NOT:
+    elif severity == Severity.SHOULD_NOT:
         return "lightyellow"
-    elif severity == IssueSeverity.MAY:
+    elif severity == Severity.MAY:
         return "orange"
-    elif severity == IssueSeverity.INFO:
+    elif severity == Severity.INFO:
         return "lightblue"
-    elif severity == IssueSeverity.WARNING:
+    elif severity == Severity.WARNING:
         return "yellow green"
     else:
         return "white"
