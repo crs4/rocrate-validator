@@ -1,12 +1,15 @@
 import logging
-from typing import Literal, Optional, Union
+from typing import Optional, Union
 
 import pyshacl
 from pyshacl.pytypes import GraphLike
 from rdflib import Graph
 
-from ..constants import RDF_SERIALIZATION_FORMATS, RDF_SERIALIZATION_FORMATS_TYPES, VALID_INFERENCE_OPTIONS, VALID_INFERENCE_OPTIONS_TYPES
-from ..models import ValidationResult
+from ..constants import (RDF_SERIALIZATION_FORMATS,
+                         RDF_SERIALIZATION_FORMATS_TYPES,
+                         VALID_INFERENCE_OPTIONS,
+                         VALID_INFERENCE_OPTIONS_TYPES)
+from .models import ValidationResult
 
 # set up logging
 logger = logging.getLogger(__name__)
