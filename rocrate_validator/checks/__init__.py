@@ -26,14 +26,25 @@ def issue_types(issues: List[Type[CheckIssue]]) -> Type[Check]:
 
 
 class Severity(Enum):
+    """
+    * The key words MUST, MUST NOT, REQUIRED,
+    * SHALL, SHALL NOT, SHOULD, SHOULD NOT,
+    * RECOMMENDED, MAY, and OPTIONAL in this document
+    * are to be interpreted as described in RFC 2119.
+    """
     INFO = auto()
     MAY = auto()
+    OPTIONAL = auto()
     SHOULD = auto()
     SHOULD_NOT = auto()
     WARNING = auto()
+    ERROR = auto()
+    REQUIRED = auto()
     MUST = auto()
     MUST_NOT = auto()
-    ERROR = auto()
+    SHALL = auto()
+    SHALL_NOT = auto()
+    RECOMMENDED = auto()
 
 
 class CheckIssue:
