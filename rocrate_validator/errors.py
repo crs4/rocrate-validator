@@ -1,4 +1,3 @@
-from .models import ValidationResult
 
 
 class InvalidSerializationFormat(Exception):
@@ -52,25 +51,3 @@ class CheckValidationError(ValidationError):
 
     def __repr__(self):
         return f"CheckValidationError({self._check!r}, {self._message!r}, {self._path!r})"
-
-
-class SHACLValidationError(ValidationError):
-
-    def __init__(
-        self,
-        result: ValidationResult = None,
-        message: str = "Document does not conform to SHACL shapes.",
-        path: str = ".",
-        code: int = 500,
-    ):
-        super().__init__(message, path, code)
-        self._result = result
-
-    @property
-    def result(self) -> ValidationResult:
-        return self._result
-
-    def __repr__(self):
-        return (
-            f"SHACLValidationError({self._message!r}, {self._path!r}, {self.result!r})"
-        )
