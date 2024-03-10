@@ -32,19 +32,19 @@ class Severity(Enum):
     * RECOMMENDED, MAY, and OPTIONAL in this document
     * are to be interpreted as described in RFC 2119.
     """
-    INFO = auto()
-    MAY = auto()
-    OPTIONAL = auto()
-    SHOULD = auto()
-    SHOULD_NOT = auto()
-    WARNING = auto()
-    ERROR = auto()
-    REQUIRED = auto()
-    MUST = auto()
-    MUST_NOT = auto()
-    SHALL = auto()
-    SHALL_NOT = auto()
-    RECOMMENDED = auto()
+    INFO = 0
+    MAY = 1
+    OPTIONAL = 1
+    SHOULD = 2
+    SHOULD_NOT = 2
+    WARNING = 2
+    REQUIRED = 3
+    MUST = 3
+    MUST_NOT = 3
+    SHALL = 3
+    SHALL_NOT = 3
+    RECOMMENDED = 3
+    ERROR = 4
 
 
 class CheckIssue:
