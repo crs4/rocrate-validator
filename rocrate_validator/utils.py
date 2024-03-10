@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 from typing import List
 
+import toml
 from rdflib import Graph
 
 from . import constants, errors
@@ -13,6 +14,30 @@ CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 
 # set up logging
 logger = logging.getLogger(__name__)
+
+# Read the pyproject.toml file
+config = toml.load("pyproject.toml")
+
+
+def get_version() -> str:
+    """
+    Get the version of the package
+
+    :return: The version
+    """
+    return config["tool"]["poetry"]["version"]
+
+
+def get_config(property: str = None) -> dict:
+    """
+    Get the configuration for the package or a specific property
+
+    :param property_name: The property name
+    :return: The configuration
+    """
+    if property:
+        return config["tool"]["rocrate_validator"][property]
+    return config["tool"]["rocrate_validator"]
 
 
 def get_file_descriptor_path(rocrate_path: Path) -> Path:
