@@ -314,6 +314,26 @@ class Requirement:
     def __hash__(self):
         return hash((self.name, self.type, self.description, self.path))
 
+    def __lt__(self, other) -> bool:
+        if not isinstance(other, Requirement):
+            raise ValueError(f"Cannot compare Requirement with {type(other)}")
+        return self.type < other.type or self.name < other.name
+
+    def __le__(self, other) -> bool:
+        if not isinstance(other, Requirement):
+            raise ValueError(f"Cannot compare Requirement with {type(other)}")
+        return self.type <= other.type or self.name <= other.name
+
+    def __gt__(self, other) -> bool:
+        if not isinstance(other, Requirement):
+            raise ValueError(f"Cannot compare Requirement with {type(other)}")
+        return self.type > other.type or self.name > other.name
+
+    def __ge__(self, other) -> bool:
+        if not isinstance(other, Requirement):
+            raise ValueError(f"Cannot compare Requirement with {type(other)}")
+        return self.type >= other.type or self.name >= other.name
+
     def __repr__(self):
         return (
             f'ProfileRequirement('
@@ -530,10 +550,35 @@ class Check(ABC):
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Check):
             return False
-        return self.name == other.name
+        return self.name == other.name and self.requirement == other.requirement
 
     def __hash__(self) -> int:
-        return hash(self.name)
+        return hash((self.name, self.requirement))
+
+    def __lt__(self, other: object) -> bool:
+        if not isinstance(other, Check):
+            raise ValueError(f"Cannot compare Check with {type(other)}")
+        return self.requirement < other.requirement or self.name < other.name
+
+    def __le__(self, other: object) -> bool:
+        if not isinstance(other, Check):
+            raise ValueError(f"Cannot compare Check with {type(other)}")
+        return self.requirement <= other.requirement or self.name <= other.name
+
+    def __gt__(self, other: object) -> bool:
+        if not isinstance(other, Check):
+            raise ValueError(f"Cannot compare Check with {type(other)}")
+        return self.requirement > other.requirement or self.name > other.name
+
+    def __ge__(self, other: object) -> bool:
+        if not isinstance(other, Check):
+            raise ValueError(f"Cannot compare Check with {type(other)}")
+        return self.requirement >= other.requirement or self.name >= other.name
+
+    def __ne__(self, other: object) -> bool:
+        if not isinstance(other, Check):
+            return True
+        return self.name != other.name or self.requirement != other.requirement
 
 
 class CheckIssue:
