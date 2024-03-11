@@ -34,4 +34,11 @@ def cli(ctx, debug: bool = False):
 
 
 if __name__ == "__main__":
-    cli()
+    try:
+        cli()
+    except Exception as e:
+        console.print(f"\n\n[bold]\[[red]FAILED[/red]] Unexpected error: {e} !!![/bold]\n", style="white")
+        if logger.isEnabledFor(logging.DEBUG):
+            console.print_exception()
+        else:
+            exit(1)
