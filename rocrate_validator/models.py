@@ -611,8 +611,10 @@ class Validator:
 
     def load_data_graph(self):
         data_graph = Graph()
+        logger.debug("Loading RO-Crate metadata: %s", self.rocrate_metadata_path)
         data_graph.parse(self.rocrate_metadata_path,
                          format="json-ld", publicID=self.rocrate_path)
+        logger.debug("RO-Crate metadata loaded: %s", data_graph)
         return data_graph
 
     def get_data_graph(self, refresh: bool = False):
