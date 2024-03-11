@@ -1,9 +1,9 @@
 import logging
-from typing import Literal, Optional, Union
+from typing import Dict, Literal, Optional, Union
 
 from pyshacl.pytypes import GraphLike
 
-from .models import ValidationResult, Validator
+from .models import Profile, ValidationResult, Validator
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -46,3 +46,10 @@ def validate(
     result = validator.validate()
     logger.debug("Validation completed: %s", result)
     return result
+
+
+def get_profiles(profiles_path: str = "./profiles") -> Dict[str, Profile]:
+
+    profiles = Profile.load_profiles(profiles_path)
+    logger.debug("Profiles loaded: %s", profiles)
+    return profiles
