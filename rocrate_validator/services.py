@@ -49,7 +49,18 @@ def validate(
 
 
 def get_profiles(profiles_path: str = "./profiles") -> Dict[str, Profile]:
-
+    """
+    Load the profiles from the given path
+    """
     profiles = Profile.load_profiles(profiles_path)
     logger.debug("Profiles loaded: %s", profiles)
     return profiles
+
+
+def get_profile(profiles_path: str = "./profiles", profile_name: str = "ro-crate") -> Profile:
+    """
+    Load the profiles from the given path
+    """
+    profile = Profile.load(f"{profiles_path}/{profile_name}")
+    logger.debug("Profile loaded: %s", profile)
+    return profile
