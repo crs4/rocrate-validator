@@ -92,6 +92,16 @@ class Violation(CheckIssue):
             return None
         return value[0]['@id']
 
+    def make_uris_relative(self, text: str):
+        # globally replace the string "file://" with "./
+        return text.replace(f'file://{self.check.ro_crate_path}', '.')
+
+    @property
+    def resultMessage(self):
+        return self.make_uris_relative(
+            self.violation_json[f'{SHACL_NS}resultMessage'][0]['@value']
+        )
+
     @property
     def sourceConstraintComponent(self):
         return self.violation_json[f'{SHACL_NS}sourceConstraintComponent'][0]['@id']
