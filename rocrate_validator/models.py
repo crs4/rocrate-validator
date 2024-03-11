@@ -182,6 +182,15 @@ class Profile:
     def __ne__(self, other) -> bool:
         return self.name != other.name or self.path != other.path or self.requirements != other.requirements
 
+    def __lt__(self, other) -> bool:
+        return self.name < other.name
+
+    def __le__(self, other) -> bool:
+        return self.name <= other.name
+
+    def __gt__(self, other) -> bool:
+        return self.name > other.name
+
     def __hash__(self) -> int:
         return hash((self.name, self.path, self.requirements))
 
