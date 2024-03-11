@@ -102,6 +102,32 @@ class Profile:
                 return requirement
         return None
 
+    def load_requirements(self) -> List[Requirement]:
+        """
+        Load the requirements from the profile directory
+        """
+        self._requirements = []
+        for root, dirs, files in os.walk(self.path):
+            dirs[:] = [d for d in dirs
+                       if not d.startswith('.') and not d.startswith('_')]
+            requirement_root = Path(root)
+            requirement_level = requirement_root.name
+            # Filter out files that start with a dot or underscore
+            files = [_ for _ in files if not _.startswith('.')
+                     and not _.startswith('_')
+                     and Path(_).suffix in PROFILE_FILE_EXTENSIONS]
+            for file in sorted(files, key=lambda x: (not x.endswith('.py'), x)):
+                requirement_path = requirement_root / file
+                for requirement in Requirement.load(
+                        self, RequirementLevels.get(requirement_level), requirement_path):
+                    self.add_requirement(requirement)
+        return self._requirements
+
+    @property
+    def requirements(self) -> List[Requirement]:
+        if not self._requirements:
+            self.load_requirements()
+        return self._requirements
     def has_requirement(self, name: str) -> bool:
         return self.get_requirement(name) is not None
 
@@ -109,10 +135,10 @@ class Profile:
         return [requirement for requirement in self.requirements if requirement.type == type]
 
     def add_requirement(self, requirement: Requirement):
-        self.requirements.append(requirement)
+        self._requirements.append(requirement)
 
     def remove_requirement(self, requirement: Requirement):
-        self.requirements.remove(requirement)
+        self._requirements.remove(requirement)
 
     def validate(self, rocrate_path: Path) -> ValidationResult:
         pass
@@ -145,26 +171,8 @@ class Profile:
         assert path.is_dir(), f"Invalid profile path: {path}"
         # create a new profile
         profile = Profile(name=path.name, path=path)
-        levels = [_.upper() for _ in RequirementLevels.all().keys()]
-        for root, dirs, files in os.walk(path):
-            logger.debug("Root: %s", root)
-            logger.debug("Dirs: %s", dirs)
-            logger.debug("Files: %s", files)
-            dirs[:] = [d for d in dirs
-                       if not d.startswith('.') and not d.startswith('_')
-                       and d.upper() in levels]
-            requirement_root = Path(root)
-            requirement_level = requirement_root.name
-            files = [_ for _ in files if not _.startswith('.') and
-                     not _.startswith('_') and Path(_).stem in PROFILE_FILE_EXTENSIONS]
-            logger.debug("Sorted files: %s", sorted(files, key=lambda x: (not x.endswith('.py'), x)))
-            for file in sorted(files, key=lambda x: (not x.endswith('.py'), x)):
-                requirement_path = requirement_root / file
-                logger.debug("File: %s (root: %s)", requirement_path, requirement_root.name)
-                for requirement in Requirement.load(
-                        profile, RequirementLevels.get(requirement_level), requirement_path):
-                    profile.add_requirement(requirement)
-                    logger.debug("Added requirement: %s", requirement)
+        logger.debug("Loaded profile: %s", profile)
+        return profile
 
         return profile
 
