@@ -40,7 +40,7 @@ def cli(ctx, debug: bool = False):
 @cli.command("validate")
 @click.argument("rocrate-path", type=click.Path(exists=True), default=".")
 @click.option(
-    '-no-ff',
+    '-nff',
     '--no-fail-fast',
     is_flag=True,
     help="Disable fail fast validation mode",
