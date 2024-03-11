@@ -1,16 +1,13 @@
 import logging
 import os
 
-import click
+import rich_click as click
 from rich.console import Console
 
-from rocrate_validator.errors import CheckValidationError
 from rocrate_validator.service import validate as validate_rocrate
 
-from .checks import Severity
-from .checks.shacl.errors import SHACLValidationError
 from .colors import get_severity_color
-from .models import ValidationResult
+from .models import Severity, ValidationResult
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -21,29 +18,15 @@ console = Console()
 
 
 @click.group(invoke_without_command=True)
+@click.rich_config(help_config=click.RichHelpConfiguration(use_rich_markup=True))
 @click.option(
     '--debug',
     is_flag=True,
     help="Enable debug logging",
     default=False
 )
-@click.option(
-    "-s",
-    "--shapes-path",
-    type=click.Path(exists=True),
-    default="./shapes",
-    help="Path containing the shapes files",
-)
-# @click.option(
-#     "-o",
-#     "--ontologies-path",
-#     type=click.Path(exists=True),
-#     default="./ontologies",
-#     help="Path containing the ontology files",
-# )
-@click.argument("rocrate-path", type=click.Path(exists=True), default=".")
 @click.pass_context
-def cli(ctx, debug, shapes_path, ontologies_path=None, rocrate_path="."):
+def cli(ctx, debug: bool = False):
     # Set the log level
     if debug:
         logging.basicConfig(level=logging.DEBUG)
@@ -52,44 +35,107 @@ def cli(ctx, debug, shapes_path, ontologies_path=None, rocrate_path="."):
     # If no subcommand is provided, invoke the default command
     if ctx.invoked_subcommand is None:
         # If no subcommand is provided, invoke the default command
-        ctx.invoke(validate, shapes_path=shapes_path,
-                   ontologies_path=ontologies_path,
-                   rocrate_path=rocrate_path)
+        ctx.invoke(validate)
 
 
 @cli.command("validate")
-# ??? is it relevant ?
+@click.argument("rocrate-path", type=click.Path(exists=True), default=".")
 @click.option(
-    '-x',
-    '--fail-fast',
+    '-no-ff',
+    '--no-fail-fast',
     is_flag=True,
-    help="Fail fast",
-    default=True
+    help="Disable fail fast validation mode",
+    default=False,
+    show_default=True
 )
-def validate(shapes_path: str, ontologies_path: str = None,
-             rocrate_path: str = ".", fail_fast: bool = True):
+@click.option(
+    "--profiles-path",
+    type=click.Path(exists=True),
+    default="./profiles",
+    show_default=True,
+    help="Path containing the profiles files",
+)
+@click.option(
+    "-p",
+    "--profile-name",
+    type=click.STRING,
+    default="ro-crate",
+    show_default=True,
+    help="Name of the profile to use for validation",
+)
+@click.option(
+    '-nh',
+    '--disable-profile-inheritance',
+    is_flag=True,
+    help="Disable inheritance of profiles",
+    default=False,
+    show_default=True
+)
+@click.option(
+    "-l",
+    "--requirement-level",
+    type=click.Choice(["MUST", "SHOULD", "MAY"], case_sensitive=False),
+    default="MUST",
+    show_default=True,
+    help="Level of the requirements to validate",
+)
+@click.option(
+    '-lo',
+    '--requirement-level-only',
+    is_flag=True,
+    help="Validate only the requirements of the specified level (no levels with lower severity)",
+    default=False,
+    show_default=True
+)
+# @click.option(
+#     "-o",
+#     "--ontologies-path",
+#     type=click.Path(exists=True),
+#     default="./ontologies",
+#     help="Path containing the ontology files",
+# )
+@click.pass_context
+def validate(ctx,
+             profiles_path: str = "./profiles",
+             profile_name: str = "ro-crate",
+             disable_profile_inheritance: bool = False,
+             requirement_level: str = "MUST",
+             requirement_level_only: bool = False,
+             rocrate_path: str = ".",
+             no_fail_fast: bool = False,
+             ontologies_path: str = None):
     """
-    Validate a RO-Crate using SHACL shapes as constraints.
-    * this command might be the only one needed for the CLI.
-    ??? merge this command with the main command ?
+    [magenta]rocrate-validator:[/magenta] Validate a RO-Crate against a profile
     """
-
     # Log the input parameters for debugging
-    if shapes_path:
-        logger.debug("shapes_path: %s", os.path.abspath(shapes_path))
+    logger.debug("profiles_path: %s", os.path.abspath(profiles_path))
+    logger.debug("profile_name: %s", profile_name)
+    logger.debug("requirement_level: %s", requirement_level)
+    logger.debug("requirement_level_only: %s", requirement_level_only)
+
+    logger.debug("disable_inheritance: %s", disable_profile_inheritance)
+    logger.debug("rocrate_path: %s", os.path.abspath(rocrate_path))
+    logger.debug("no_fail_fast: %s", no_fail_fast)
+    logger.debug("fail fast: %s", not no_fail_fast)
+
     if ontologies_path:
         logger.debug("ontologies_path: %s", os.path.abspath(ontologies_path))
     if rocrate_path:
-        logger.debug("ontologies_path: %s", os.path.abspath(rocrate_path))
+        logger.debug("rocrate_path: %s", os.path.abspath(rocrate_path))
 
     try:
 
         # Validate the RO-Crate
         result: ValidationResult = validate_rocrate(
+            profiles_path=profiles_path,
+            profile_name=profile_name,
+            requirement_level=requirement_level,
+            requirement_level_only=requirement_level_only,
+            disable_profile_inheritance=disable_profile_inheritance,
             rocrate_path=os.path.abspath(rocrate_path),
-            shapes_path=os.path.abspath(shapes_path) if shapes_path else None,
             ontologies_path=os.path.abspath(
                 ontologies_path) if ontologies_path else None,
+            abort_on_first=not no_fail_fast
         )
 
         # Print the validation result
@@ -97,21 +143,11 @@ def validate(shapes_path: str, ontologies_path: str = None,
 
     except Exception as e:
         console.print(
-            "\n\n[bold]\[[red]FAILED[/red]] Unexpected error !!![/bold]\n",
+            f"\n\n[bold]\[[red]FAILED[/red]] Unexpected error: {e} !!![/bold]\n",
             style="white",
         )
         if logger.isEnabledFor(logging.DEBUG):
-            console.print_exception(e)
-        # if isinstance(e, CheckValidationError):
-        #     console.print(
-        #         f"Check [bold][red]{e.check.name}[/red][/bold] failed: ")
-        #     console.print(f" -> {str(e)}\n\n", style="white")
-        # elif isinstance(e, SHACLValidationError):
-        #     _log_validation_result_(e.result)
-        # else:
-        #     console.print("Error: ", style="red", end="")
-        #     console.print(f" -> {str(e)}\n\n", style="white")
-        # console.print("\n\n", style="white")
+            console.print_exception()
 
 
 def __print_validation_result__(
@@ -131,53 +167,21 @@ def __print_validation_result__(
             style="white",
         )
 
-        for issue in result.get_issues(severity=severity):
-            issue_color = get_severity_color(issue.severity)
+        for check in result.get_failed_checks():
+            # TODO: Add color related to the requirement level associated with the check
+            issue_color = get_severity_color(Severity.MUST)
             console.print(
-                f" -> [bold][magenta]{issue.check.name}[/magenta] check [red]failed[/red][/bold]",
+                f" -> [bold][magenta]{check.name}[/magenta] check [red]failed[/red][/bold]",
                 style="white",
             )
-            console.print(f"{' '*4}{issue.check.description}\n", style="white italic")
+            console.print(f"{' '*4}{check.description}\n", style="white italic")
             console.print(f"{' '*4}Detected issues:", style="white bold")
-            console.print(
-                f"{' '*4}- [[{issue_color}]{issue.severity.name}[/{issue_color}] "
-                f"[magenta]{issue.code}[/magenta]]: {issue.message}\n\n",
-                style="white")
-
-
-def _log_validation_result_(result: bool):
-    # Print the number of violations
-    logger.debug("* Number of violations: %s" % len(result.violations))
-
-    console.print("\n[bold]** %s validation errors: [/bold]" %
-                  len(result.violations))
-
-    # Print the violations
-    count = 0
-    for v in result.violations:
-        count += 1
-        console.print(
-            "\n -> [red][bold]Violation "
-            f"{count}[/bold][/red]: {v.resultMessage}",
-            style="white",
-        )
-        print(" - resultSeverity: %s" % v.resultSeverity)
-        print(" - focusNode: %s" % v.focusNode)
-        print(" - resultPath: %s" % v.resultPath)
-        print(" - value: %s" % v.value)
-        print(" - resultMessage: %s" % v.resultMessage)
-        print(" - sourceConstraintComponent: %s" % v.sourceConstraintComponent)
-        try:
-            if v.sourceShape:
-                print(" - sourceShape: %s" % v.sourceShape)
-                print(" - sourceShape.name: %s" % v.sourceShape.name)
-                print(" - sourceShape.description: %s" %
-                      v.sourceShape.description)
-                print(" - sourceShape.path: %s" % v.sourceShape.path)
-                print(" - sourceShape.nodeKind: %s" % v.sourceShape.nodeKind)
-        except Exception as e:
-            print(f"Error getting source shape: {e}")
-        print("\n")
+            for issue in check.get_issues():
+                console.print(
+                    f"{' '*4}- [[{issue_color}]{issue.severity.name}[/{issue_color}] "
+                    f"[magenta]{issue.code}[/magenta]]: {issue.message}",
+                    style="white")
+            console.print("\n", style="white")
 
 
 if __name__ == "__main__":
