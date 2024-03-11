@@ -1,12 +1,13 @@
 import json
 import logging
 import os
+from typing import List
 
 from rdflib import Graph, URIRef
 from rdflib.term import Node
 
 from ...constants import SHACL_NS
-from ...checks import CheckIssue
+from ...models import CheckIssue, Severity
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -143,6 +144,19 @@ class Violation(CheckIssue):
                 logger.exception(e)
             return None
 
+    @property
+    def message(self):
+        return self.resultMessage
+
+    @property
+    def description(self):
+        return self.sourceShape.description
+
+    @property
+    def severity(self):
+        # TODO: map the severity to the CheckIssue severity
+        return Severity.ERROR
+
 
 class ValidationResult:
 
@@ -191,7 +205,7 @@ class ValidationResult:
         return self._conforms
 
     @property
-    def violations(self) -> list:
+    def violations(self) -> List:
         return self._violations
 
     @property
