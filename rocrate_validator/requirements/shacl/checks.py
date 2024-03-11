@@ -70,7 +70,7 @@ class SHACLCheck(BaseCheck):
         data_graph = self.validator.data_graph
 
         shacl_validator = SHACLValidator(
-            shapes_graph=shapes_graph, ont_graph=ontology_graph)
+            self, shapes_graph=shapes_graph, ont_graph=ontology_graph)
         result = shacl_validator.validate(
             data_graph=data_graph,
             **self.validator.validation_settings

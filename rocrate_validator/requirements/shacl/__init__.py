@@ -1,5 +1,5 @@
 from .checks import SHACLCheck
-from .models import ValidationResult
+from .validator import ValidationResult
 from .validator import Validator
 from .errors import SHACLValidationError
 

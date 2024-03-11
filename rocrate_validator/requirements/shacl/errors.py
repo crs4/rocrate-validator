@@ -1,5 +1,5 @@
 from ...errors import ValidationError
-from .models import ValidationResult
+from .validator import ValidationResult
 
 
 class SHACLValidationError(ValidationError):
