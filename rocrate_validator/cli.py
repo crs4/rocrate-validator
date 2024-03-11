@@ -4,10 +4,9 @@ import os
 import rich_click as click
 from rich.console import Console
 
-from rocrate_validator.service import validate as validate_rocrate
-
 from .colors import get_severity_color
 from .models import Severity, ValidationResult
+from .services import validate as validate_rocrate
 
 # set up logging
 logger = logging.getLogger(__name__)
