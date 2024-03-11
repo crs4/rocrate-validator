@@ -2,10 +2,10 @@ import logging
 import os
 
 import rich_click as click
+from rich.align import Align
 from rich.console import Console
-from rich.table import Table
-from rich.text import Text
 from rich.markdown import Markdown
+from rich.table import Table
 
 from . import services
 from .colors import get_severity_color
@@ -233,8 +233,11 @@ def __print_validation_result__(
             # TODO: Add color related to the requirement level associated with the check
             issue_color = get_severity_color(check.severity)
             console.print(
-                f" -> [bold][magenta]{check.name}[/magenta] check [red]failed[/red][/bold]"
-                f" (severity: [{issue_color}]{check.severity.name}[/{issue_color}])",
+                Align(f" [severity: [{issue_color}]{check.severity.name}[/{issue_color}], "
+                      f"profile: [magenta]{check.requirement.profile.name }[/magenta]]", align="right")
+            )
+            console.print(
+                f" -> [bold][magenta]{check.name}[/magenta] check [red]failed[/red][/bold]",
                 style="white",
             )
             console.print(f"{' '*4}{check.description}\n", style="white italic")
