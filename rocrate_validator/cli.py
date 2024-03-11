@@ -169,9 +169,10 @@ def __print_validation_result__(
 
         for check in result.get_failed_checks():
             # TODO: Add color related to the requirement level associated with the check
-            issue_color = get_severity_color(Severity.MUST)
+            issue_color = get_severity_color(check.severity)
             console.print(
-                f" -> [bold][magenta]{check.name}[/magenta] check [red]failed[/red][/bold]",
+                f" -> [bold][magenta]{check.name}[/magenta] check [red]failed[/red][/bold]"
+                f" (severity: [{issue_color}]{check.severity.name}[/{issue_color}])",
                 style="white",
             )
             console.print(f"{' '*4}{check.description}\n", style="white italic")
