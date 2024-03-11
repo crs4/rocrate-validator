@@ -43,9 +43,14 @@ class SHACLCheck(BaseCheck):
     def description(self):
         if not self._description and self.shapes_graph is None:
             return "SHACL Check"
-
+        # If the description is not set, query the shapes graph
         if not self._description:
-            # Query to get the description of the shape
+            self._description = self.query_description(self.shapes_graph)
+        return self._description
+
+    @staticmethod
+    def query_description(shapes_graph) -> str:
+        try:
             query = """
                 SELECT ?description
                 WHERE {
@@ -54,11 +59,18 @@ class SHACLCheck(BaseCheck):
                 }
             """
             # Execute the query
-            results = [_ for _ in self.shapes_graph.query(query, initNs={"sh": SHACL_NS})]
+            results = [_ for _ in shapes_graph.query(query, initNs={"sh": SHACL_NS})]
             if results:
-                self._description = results[0][0]
+                return results[0][0]
+        except Exception as e:
+            logger.debug("Error getting description: %s", e)
+            return None
 
-        return self._description
+    @classmethod
+    def get_description(cls, requirement: Requirement):
+        from ...models import Validator
+        graph_of_shapes = Validator.load_graph_of_shapes(requirement)
+        return cls.query_description(graph_of_shapes)
 
     @property
     def shapes_graph(self):

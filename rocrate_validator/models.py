@@ -266,6 +266,12 @@ class Requirement:
 
     @property
     def description(self) -> str:
+        if not self._description:
+            docs = None
+            if self._check_class:
+                docs = self._check_class.get_description(self)
+            self._description = docs.strip() if docs else f"Profile Requirement {self.name}"
+
         return self._description
 
     @property
@@ -444,8 +450,12 @@ class Check(ABC):
     @property
     def description(self) -> str:
         if not self._description:
-            return self.__doc__.strip()
+            return self.get_description()
         return self._description
+
+    @classmethod
+    def get_description(cls, requirement) -> str:
+        return cls.__doc__.strip()
 
     @property
     def ro_crate_path(self) -> Path:
@@ -715,6 +725,12 @@ class Validator:
         if not self.rocrate_path.endswith("/"):
             return f"{self.rocrate_path}/"
         return self.rocrate_path
+
+    @classmethod
+    def load_graph_of_shapes(cls, requirement: Requirement, publicID: str = None) -> Graph:
+        shapes_graph = Graph()
+        shapes_graph.parse(str(requirement.path), format="ttl", publicID=publicID)
+        return shapes_graph
 
     def load_graphs_of_shapes(self):
         # load the graph of shapes
