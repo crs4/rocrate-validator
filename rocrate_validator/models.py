@@ -539,7 +539,6 @@ class Check(ABC):
             return self.check()
         except Exception as e:
             self.result.add_error(str(e))
-            logger.error("Unexpected error during check: %s", e)
             if logger.isEnabledFor(logging.DEBUG):
                 logger.exception(e)
             return False
