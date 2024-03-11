@@ -256,6 +256,11 @@ class Requirement:
         return self._type
 
     @property
+    def color(self) -> str:
+        from .colors import get_severity_color
+        return get_severity_color(self.type)
+
+    @property
     def profile(self) -> Profile:
         return self._profile
 
@@ -425,6 +430,10 @@ class Check(ABC):
     @property
     def severity(self) -> Severity:
         return self._requirement.type
+
+    @property
+    def color(self) -> str:
+        return self.requirement.color
 
     @property
     def name(self) -> str:
