@@ -159,7 +159,8 @@ class Profile:
             for file in sorted(files, key=lambda x: (not x.endswith('.py'), x)):
                 requirement_path = requirement_root / file
                 logger.debug("File: %s (root: %s)", requirement_path, requirement_root.name)
-                for requirement in Requirement.load(profile, RequirementLevels.get(requirement_level), requirement_path):
+                for requirement in Requirement.load(
+                        profile, RequirementLevels.get(requirement_level), requirement_path):
                     profile.add_requirement(requirement)
                     logger.debug("Added requirement: %s", requirement)
 
