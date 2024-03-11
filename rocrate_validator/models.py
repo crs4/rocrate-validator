@@ -271,15 +271,6 @@ class Requirement:
     def check_class(self) -> Type[Check]:
         return self._check_class
 
-    # def validate(self, rocrate_path: Path) -> CheckResult:
-    #     assert self.check_class, "Check class not associated with requirement"
-    #     # instantiate the check class
-    #     check = self.check_class(self, rocrate_path)
-    #     # run the check
-    #     check.__do_check__()
-    #     # return the result
-    #     return check.result
-
     def __eq__(self, other):
         return self.name == other.name \
             and self.type == other.type and self.description == other.description \
