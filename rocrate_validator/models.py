@@ -666,9 +666,9 @@ class ValidationResult:
     def get_validation_settings(self):
         return self._validation_settings
 
-    def get_failed_checks(self) -> Set[Check]:
-        # return the set of checks that failed
-        return set([issue.check for issue in self._issues])
+    def get_failed_checks(self) -> List[Check]:
+        # return the list of checks that failed
+        return [issue.check for issue in self._issues]
 
     def add_issue(self, issue: CheckIssue):
         self._issues.append(issue)
