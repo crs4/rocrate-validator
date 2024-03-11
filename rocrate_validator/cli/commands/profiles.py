@@ -42,13 +42,13 @@ def list_profiles(ctx, profiles_path: str = "./profiles"):
                   title="Available profiles",
                   header_style="bold cyan",
                   border_style="bright_black",
-                  show_footer=True,
+                  show_footer=False,
                   caption="(*) Number of requirements by severity")
 
     # Define columns
-    table.add_column("Name", style="magenta bold")
+    table.add_column("Name", style="magenta bold", justify="right")
     table.add_column("Description", style="white italic")
-    table.add_column("Requirements (*)", style="white")
+    table.add_column("Requirements (*)", style="white", justify="center")
 
     # Add data to the table
     for profile_name, profile in profiles.items():
