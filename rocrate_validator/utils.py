@@ -145,4 +145,4 @@ def to_camel_case(snake_str: str) -> str:
     :return: The camel case string
     """
     components = re.split('_|-', snake_str)
-    return components[0] + ''.join(x.title() for x in components[1:])
+    return components[0].capitalize() + ''.join(x.title() for x in components[1:])
