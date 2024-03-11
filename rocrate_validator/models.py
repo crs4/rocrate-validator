@@ -155,6 +155,8 @@ class Profile:
                        and d.upper() in levels]
             requirement_root = Path(root)
             requirement_level = requirement_root.name
+            files = [_ for _ in files if not _.startswith('.') and
+                     not _.startswith('_') and Path(_).stem in PROFILE_FILE_EXTENSIONS]
             logger.debug("Sorted files: %s", sorted(files, key=lambda x: (not x.endswith('.py'), x)))
             for file in sorted(files, key=lambda x: (not x.endswith('.py'), x)):
                 requirement_path = requirement_root / file

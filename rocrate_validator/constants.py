@@ -7,6 +7,12 @@ SHACL_NS = "http://www.w3.org/ns/shacl#"
 ROCRATE_METADATA_FILE = "ro-crate-metadata.json"
 
 
+# Define the list of directories to ignore when loading profiles
+IGNORED_PROFILE_DIRECTORIES = ["__pycache__", ".", "README.md", "LICENSE"]
+
+# Define the list of enabled profile file extensions
+PROFILE_FILE_EXTENSIONS = [".ttl", ".py"]
+
 # Define allowed RDF extensions and serialization formats as map
 RDF_SERIALIZATION_FILE_FORMAT_MAP = {
     "xml": "xml",
