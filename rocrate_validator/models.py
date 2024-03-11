@@ -64,6 +64,15 @@ class RequirementType:
     def __repr__(self):
         return f'RequirementType(name={self.name}, severity={self.value})'
 
+    def __str__(self):
+        return self.name
+
+    def __int__(self):
+        return self.value
+
+    def __index__(self):
+        return self.value
+
 
 class RequirementLevels:
     """
@@ -155,6 +164,13 @@ class Profile:
         if not self._requirements:
             self.load_requirements()
         return self._requirements
+
+    def get_requirements(
+            self, severity: RequirementType = RequirementLevels.MUST,
+            exact_match: bool = False) -> List[Requirement]:
+        return [requirement for requirement in self.requirements
+                if not exact_match and requirement.type >= severity or
+                exact_match and requirement.type == severity]
 
     @property
     def requirements_by_severity_map(self) -> Dict[RequirementType, List[Requirement]]:
@@ -686,7 +702,7 @@ class Validator:
                  profiles_path: str = "./profiles",
                  profile_name: str = "ro-crate",
                  disable_profile_inheritance: bool = False,
-                 requirement_level="MUST",
+                 requirement_level: Union[str, RequirementType] = RequirementLevels.MUST,
                  requirement_level_only: bool = False,
                  ontologies_path: Optional[Path] = None,
                  advanced: Optional[bool] = False,
@@ -702,9 +718,13 @@ class Validator:
         self.profiles_path = profiles_path
         self.profile_name = profile_name
         self.disable_profile_inheritance = disable_profile_inheritance
-        self.requirement_level = requirement_level
+        self.requirement_level = \
+            RequirementLevels.get(requirement_level) if isinstance(requirement_level, str) else \
+            requirement_level
         self.requirement_level_only = requirement_level_only
         self.ontologies_path = ontologies_path
+        self.requirement_level = requirement_level
+        self.requirement_level_only = requirement_level_only
 
         self._validation_settings = {
             'advanced': advanced,
@@ -866,7 +886,9 @@ class Validator:
 
         for profile in profiles:
             # perform the requirements validation
-            for requirement in profile.requirements:
+            requirements = profile.get_requirements(
+                self.requirement_level, exact_match=self.requirement_level_only)
+            for requirement in requirements:
                 logger.debug("Validating Requirement: %s", requirement)
                 result = self.validate_requirement(requirement)
                 logger.debug("Issues: %r", result.get_issues())

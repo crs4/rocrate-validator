@@ -4,7 +4,7 @@ from typing import Dict, Literal, Optional, Union
 
 from pyshacl.pytypes import GraphLike
 
-from .models import Profile, ValidationResult, Validator
+from .models import Profile, RequirementLevels, RequirementType, ValidationResult, Validator
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -22,11 +22,15 @@ def validate(
     abort_on_first: Optional[bool] = False,
     allow_infos: Optional[bool] = False,
     allow_warnings: Optional[bool] = False,
+    requirement_level: Union[str, RequirementType] = RequirementLevels.MUST,
+    requirement_level_only: bool = False,
     serialization_output_path: str = None,
     serialization_output_format: str = "turtle",
     **kwargs,
 ) -> ValidationResult:
-
+    """
+    Validate a RO-Crate against a profile
+    """
     validator = Validator(
         rocrate_path=rocrate_path,
         profiles_path=profiles_path,
@@ -39,6 +43,8 @@ def validate(
         abort_on_first=abort_on_first,
         allow_infos=allow_infos,
         allow_warnings=allow_warnings,
+        requirement_level=RequirementLevels.get(requirement_level),
+        requirement_level_only=requirement_level_only,
         serialization_output_path=serialization_output_path,
         serialization_output_format=serialization_output_format,
         **kwargs,
