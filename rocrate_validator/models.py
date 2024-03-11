@@ -812,18 +812,26 @@ class Validator:
         validation_result = ValidationResult(
             rocrate_path=self.rocrate_path, validation_settings=self.validation_settings)
 
-        # perform the requirements validation
-        for requirement in self.profile.requirements:
-            logger.debug("Validating Requirement: %s", requirement)
-            result = self.validate_requirement(requirement)
-            logger.debug("Issues: %r", result.get_issues())
-            if result and result.passed():
-                logger.debug("Validation Requirement passed: %s", requirement)
-            else:
-                logger.debug(f"Validation Requirement {requirement} failed ")
-                validation_result.add_issues(result.get_issues())
-                if self.validation_settings.get("abort_on_first"):
-                    logger.debug("Aborting on first failure")
-                    return validation_result
+        # list of profiles to validate
+        profiles = [self.profile]
+        logger.debug("Disable profile inheritance: %s", self.disable_profile_inheritance)
+        if not self.disable_profile_inheritance:
+            profiles.extend(self.profile.inherited_profiles)
+        logger.debug("Profiles to validate: %s", profiles)
+
+        for profile in profiles:
+            # perform the requirements validation
+            for requirement in profile.requirements:
+                logger.debug("Validating Requirement: %s", requirement)
+                result = self.validate_requirement(requirement)
+                logger.debug("Issues: %r", result.get_issues())
+                if result and result.passed():
+                    logger.debug("Validation Requirement passed: %s", requirement)
+                else:
+                    logger.debug(f"Validation Requirement {requirement} failed ")
+                    validation_result.add_issues(result.get_issues())
+                    if self.validation_settings.get("abort_on_first"):
+                        logger.debug("Aborting on first failure")
+                        return validation_result
 
         return validation_result
