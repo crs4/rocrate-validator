@@ -1,8 +1,11 @@
+import inspect
 import logging
 import os
 import re
+import sys
+from importlib import import_module
 from pathlib import Path
-from typing import List
+from typing import List, Optional, Type
 
 import toml
 from rdflib import Graph
@@ -127,14 +130,60 @@ def get_full_graph(
     return full_graph
 
 
-def get_requirement_name_from_file(file: Path) -> str:
+def get_classes_from_file(file_path: Path, filter_class: Optional[Type] = None):
+    # ensure the file path is a Path object
+    assert file_path, "The file path is required"
+    if not isinstance(file_path, Path):
+        file_path = Path(file_path)
+
+    # Check if the file is a Python file
+    if not file_path.exists():
+        raise ValueError("The file does not exist")
+
+    # Check if the file is a Python file
+    if file_path.suffix != ".py":
+        raise ValueError("The file is not a Python file")
+
+    # Get the module name from the file path
+    module_name = os.path.basename(file_path)[:-3]
+    logger.debug("Module: %r", module_name)
+
+    # Add the directory containing the file to the system path
+    sys.path.insert(0, os.path.dirname(file_path))
+
+    # Import the module
+    module = import_module(module_name)
+    logger.debug("Module: %r", module)
+    logger.debug("Members: %r", inspect.getmembers(module))
+
+    for name, cls in inspect.getmembers(module, inspect.isclass):
+        logger.debug("Checking object %s", cls)
+        logger.debug("Module %s", inspect.getmodule(cls))
+        logger.debug("Subclass %s", issubclass(cls, filter_class))
+        logger.debug("Name %s", cls.__name__.endswith('Check'))
+
+    # Get all classes in the module that are subclasses of Check
+    classes = {name: cls for name, cls in inspect.getmembers(module, inspect.isclass)
+               if cls.__module__ == module_name and cls.__name__.endswith('Check')}
+    # if not filter_class or (issubclass(cls, filter_class) and cls != filter_class)}
+
+    return classes
+
+
+def get_requirement_name_from_file(file: Path, check_name: Optional[str] = None) -> str:
     """
     Get the requirement name from the file
 
     :param file: The file
     :return: The requirement name
     """
-    return to_camel_case(file.stem).capitalize()
+    assert file, "The file is required"
+    if not isinstance(file, Path):
+        file = Path(file)
+    base_name = to_camel_case(file.stem)
+    if check_name:
+        return f"{base_name}.{check_name.replace('Check', '')}"
+    return base_name
 
 
 def to_camel_case(snake_str: str) -> str:
