@@ -137,7 +137,7 @@ class Profile:
         return self.name
 
     @staticmethod
-    def load(path: Union[str, Path]):
+    def load(path: Union[str, Path]) -> Profile:
         # if the path is a string, convert it to a Path
         if isinstance(path, str):
             path = Path(path)
