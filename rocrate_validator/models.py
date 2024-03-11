@@ -450,11 +450,11 @@ class Check(ABC):
     @property
     def description(self) -> str:
         if not self._description:
-            return self.get_description()
+            return self.get_description(self.requirement)
         return self._description
 
     @classmethod
-    def get_description(cls, requirement) -> str:
+    def get_description(cls, requirement: Requirement) -> str:
         return cls.__doc__.strip()
 
     @property
