@@ -10,7 +10,11 @@ from typing import Dict, List, Optional, Set, Type, Union
 
 from rdflib import Graph
 
-from rocrate_validator.constants import (RDF_SERIALIZATION_FORMATS_TYPES, ROCRATE_METADATA_FILE,
+from rocrate_validator.constants import (DEFAULT_PROFILE_README_FILE,
+                                         IGNORED_PROFILE_DIRECTORIES,
+                                         PROFILE_FILE_EXTENSIONS,
+                                         RDF_SERIALIZATION_FORMATS_TYPES,
+                                         ROCRATE_METADATA_FILE,
                                          VALID_INFERENCE_OPTIONS_TYPES)
 from rocrate_validator.utils import (get_classes_from_file,
                                      get_file_descriptor_path,
@@ -25,21 +29,33 @@ class RequirementType:
     value: int
 
     def __eq__(self, other):
+        if not isinstance(other, RequirementType):
+            return False
         return self.name == other.name and self.value == other.value
 
     def __ne__(self, other):
+        if not isinstance(other, RequirementType):
+            return True
         return self.name != other.name or self.value != other.value
 
     def __lt__(self, other):
+        if not isinstance(other, RequirementType):
+            raise ValueError(f"Cannot compare RequirementType with {type(other)}")
         return self.value < other.value
 
     def __le__(self, other):
+        if not isinstance(other, RequirementType):
+            raise ValueError(f"Cannot compare RequirementType with {type(other)}")
         return self.value <= other.value
 
     def __gt__(self, other):
+        if not isinstance(other, RequirementType):
+            raise ValueError(f"Cannot compare RequirementType with {type(other)}")
         return self.value > other.value
 
     def __ge__(self, other):
+        if not isinstance(other, RequirementType):
+            raise ValueError(f"Cannot compare RequirementType with {type(other)}")
         return self.value >= other.value
 
     def __hash__(self):
@@ -139,6 +155,12 @@ class Profile:
         if not self._requirements:
             self.load_requirements()
         return self._requirements
+
+    @property
+    def requirements_by_severity_map(self) -> Dict[RequirementType, List[Requirement]]:
+        return {severity: self.get_requirements_by_type(severity)
+                for severity in RequirementLevels.all().values()}
+
     def has_requirement(self, name: str) -> bool:
         return self.get_requirement(name) is not None
 
