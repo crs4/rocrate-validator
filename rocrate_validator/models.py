@@ -373,6 +373,10 @@ class Check(ABC):
         return self._requirement
 
     @property
+    def severity(self) -> Severity:
+        return self._requirement.type
+
+    @property
     def name(self) -> str:
         if not self._name:
             return self.__class__.__name__.replace("Check", "")
