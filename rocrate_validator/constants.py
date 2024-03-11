@@ -3,9 +3,12 @@ import typing
 
 # Define SHACL namespace
 SHACL_NS = "http://www.w3.org/ns/shacl#"
+
 # Define the rocrate-metadata.json file name
 ROCRATE_METADATA_FILE = "ro-crate-metadata.json"
 
+# Define the default README file name for the RO-Crate profile
+DEFAULT_PROFILE_README_FILE = "README.md"
 
 # Define the list of directories to ignore when loading profiles
 IGNORED_PROFILE_DIRECTORIES = ["__pycache__", ".", "README.md", "LICENSE"]

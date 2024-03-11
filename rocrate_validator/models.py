@@ -82,6 +82,7 @@ class Profile:
                  requirements: Set[Requirement] = None):
         self._path = path
         self._name = name
+        self._description = None
         self._requirements = requirements if requirements else []
 
     @property
@@ -93,8 +94,18 @@ class Profile:
         return self._name
 
     @property
-    def requirements(self) -> List[Requirement]:
-        return self._requirements
+    def readme_file_path(self) -> Path:
+        return self.path / DEFAULT_PROFILE_README_FILE
+
+    @property
+    def description(self) -> str:
+        if not self._description:
+            if self.path and self.readme_file_path.exists():
+                with open(self.readme_file_path, "r") as f:
+                    self._description = f.read()
+            else:
+                self._description = "RO-Crate profile"
+        return self._description
 
     def get_requirement(self, name: str) -> Requirement:
         for requirement in self.requirements:
