@@ -61,6 +61,9 @@ def get_profile(profiles_path: str = "./profiles", profile_name: str = "ro-crate
     """
     Load the profiles from the given path
     """
+    profile_path = f"{profiles_path}/{profile_name}"
+    if not Path(profiles_path).exists():
+        raise FileNotFoundError(f"Profile not found: {profile_path}")
     profile = Profile.load(f"{profiles_path}/{profile_name}")
     logger.debug("Profile loaded: %s", profile)
     return profile
