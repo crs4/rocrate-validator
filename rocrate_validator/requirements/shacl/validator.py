@@ -148,7 +148,7 @@ class ValidationResult:
         # parse the results graph
         self._violations = self.parse_results_graph(results_graph)
         # initialize the conforms property
-        logger.warning("Validation report: %s" % self._text)
+        logger.debug("Validation report: %s" % self._text)
         if conforms is not None:
             self._conforms = len(self._violations) == 0
         else:
