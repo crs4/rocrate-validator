@@ -514,6 +514,10 @@ class ValidationResult:
     def get_validation_settings(self):
         return self._validation_settings
 
+    def get_failed_checks(self) -> Set[Check]:
+        # return the set of checks that failed
+        return set([issue.check for issue in self._issues])
+
     def add_issue(self, issue: CheckIssue):
         self._issues.append(issue)
 
@@ -613,7 +617,7 @@ class Validator:
         data_graph = Graph()
         logger.debug("Loading RO-Crate metadata: %s", self.rocrate_metadata_path)
         data_graph.parse(self.rocrate_metadata_path,
-                         format="json-ld", publicID=self.rocrate_path)
+                         format="json-ld", publicID=self.publicID)
         logger.debug("RO-Crate metadata loaded: %s", data_graph)
         return data_graph
 
@@ -643,13 +647,20 @@ class Validator:
     def profile(self) -> Profile:
         return self.get_profile()
 
+    @property
+    def publicID(self) -> str:
+        if not self.rocrate_path.endswith("/"):
+            return f"{self.rocrate_path}/"
+        return self.rocrate_path
+
     def load_graphs_of_shapes(self):
         # load the graph of shapes
         shapes_graphs = {}
         for requirement in self._profile.requirements:
             if requirement.path.suffix == ".ttl":
                 shapes_graph = Graph()
-                shapes_graph.parse(str(requirement.path), format="ttl")
+                shapes_graph.parse(str(requirement.path), format="ttl",
+                                   publicID=self.publicID)
                 shapes_graphs[requirement.name] = shapes_graph
         return shapes_graphs
 
