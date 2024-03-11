@@ -1,4 +1,4 @@
-from .checks import Severity
+from .models import Severity
 
 
 def get_severity_color(severity: Severity) -> str:
