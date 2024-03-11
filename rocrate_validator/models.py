@@ -161,6 +161,15 @@ class Profile:
         return {severity: self.get_requirements_by_type(severity)
                 for severity in RequirementLevels.all().values()}
 
+    @property
+    def inherited_profiles(self) -> List[Profile]:
+        profiles = [
+            _ for _ in sorted(
+                Profile.load_profiles(self.path.parent).values(), key=lambda x: x, reverse=True)
+            if _ < self]
+        logger.debug("Inherited profiles: %s", profiles)
+        return profiles
+
     def has_requirement(self, name: str) -> bool:
         return self.get_requirement(name) is not None
 
