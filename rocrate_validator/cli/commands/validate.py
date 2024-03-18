@@ -169,6 +169,6 @@ def __print_validation_result__(
                 console.print(f"\n{' '*6}Detected issues:", style="white bold")
                 for issue in check.get_issues():
                     console.print(
-                        f"{' '*6}- [[{issue_color}]{issue.severity.name}[/{issue_color}] "
-                        f"[magenta]{issue.code}[/magenta]]: {issue.message}")
+                        f"{' '*6}- [[{issue_color}]Violation[/{issue_color}] of "
+                        f"[magenta]{issue.check.identifier}[/magenta]]: {issue.message}")
                 console.print("\n", style="white")
