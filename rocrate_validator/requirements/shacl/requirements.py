@@ -32,7 +32,7 @@ class SHACLRequirement(Requirement):
             logger.debug("Property check %s: %s", property_check.name, property_check.description)
             checks.append(property_check)
         # assign check IDs
-        self.__assign_check_numbers__()
+        self.__reorder_checks__()
         # return checks
         return checks
 

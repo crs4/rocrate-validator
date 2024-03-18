@@ -166,7 +166,7 @@ class Profile:
                 for requirement in Requirement.load(
                         self, RequirementLevels.get(requirement_level), requirement_path):
                     req_id += 1
-                    requirement._number = req_id
+                    requirement._order_number = req_id
                     self.add_requirement(requirement)
         return self._requirements
 
@@ -287,7 +287,7 @@ class RequirementCheck(ABC):
                  check: Callable,
                  description: str = None):
         self._requirement: Requirement = requirement
-        self._id = None
+        self._order_number = None
         self._name = name
         self._description = description
         self._check = check
@@ -299,8 +299,8 @@ class RequirementCheck(ABC):
         self._result: ValidationResult = None
 
     @property
-    def id(self) -> int:
-        return self._id
+    def order_number(self) -> int:
+        return self._order_number
 
     @property
     def name(self) -> str:
@@ -376,7 +376,7 @@ class Requirement:
                  name: str = None,
                  description: str = None,
                  path: Path = None):
-        self._number = None
+        self._order_number = None
         self._name = name
         self._severity = severity
         self._profile = profile
@@ -391,8 +391,8 @@ class Requirement:
             self._name = get_requirement_name_from_file(self._path)
 
     @property
-    def number(self) -> int:
-        return self._number
+    def order_number(self) -> int:
+        return self._order_number
 
     @property
     def name(self) -> str:
@@ -434,7 +434,7 @@ class Requirement:
                 check_name = member.name if hasattr(member, "name") else name
                 self._checks.append(RequirementCheck(self, check_name, member, member.__doc__))
         # assign the check ids
-        self.__assign_check_numbers__()
+        self.__reorder_checks__()
         # return the checks
         return checks
 
@@ -447,9 +447,9 @@ class Requirement:
                 return check
         return None
 
-    def __assign_check_numbers__(self):
+    def __reorder_checks__(self):
         for i, check in enumerate(self._checks):
-            check._id = i + 1
+            check._order_number = i + 1
 
     def __do_validate__(self, context: ValidationContext) -> bool:
         """
