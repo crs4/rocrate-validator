@@ -56,9 +56,9 @@ def list_profiles(ctx, profiles_path: str = "./profiles"):
         requirements = {}
         logger.debug("Requirements: %s", requirements)
         for req in profile.requirements:
-            if not requirements.get(req.type.name, None):
-                requirements[req.type.name] = 0
-            requirements[req.type.name] += 1
+            if not requirements.get(req.severity.name, None):
+                requirements[req.severity.name] = 0
+            requirements[req.severity.name] += 1
         requirements = ", ".join(
             [f"[bold][{get_severity_color(severity)}]{severity}: "
              f"{count}[/{get_severity_color(severity)}][/bold]"
@@ -94,7 +94,7 @@ def describe_profile(ctx,
         table_rows = []
         levels_list = set()
         for requirement in profile.requirements:
-            level_info = f"[{requirement.color}]{requirement.type.name}[/{requirement.color}]"
+            level_info = f"[{requirement.color}]{requirement.severity.name}[/{requirement.color}]"
             levels_list.add(level_info)
             table_rows.append((requirement.name, Markdown(requirement.description.strip()), level_info))
 

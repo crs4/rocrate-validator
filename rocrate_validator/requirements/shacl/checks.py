@@ -30,7 +30,7 @@ class SHACLCheck(RequirementCheck):
 
     @property
     def severity(self):
-        return self.requirement.type
+        return self.requirement.severity
 
     @classmethod
     def get_description(cls, requirement: Requirement):

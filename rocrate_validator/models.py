@@ -363,13 +363,13 @@ class RequirementCheck(ABC):
 class Requirement:
 
     def __init__(self,
-                 type: RequirementType,
+                 severity: RequirementType,
                  profile: Profile,
                  name: str = None,
                  description: str = None,
                  path: Path = None):
         self._name = name
-        self._type = type
+        self._severity = severity
         self._profile = profile
         self._description = description
         self._path = path
@@ -388,13 +388,13 @@ class Requirement:
         return self._name
 
     @property
-    def type(self) -> RequirementType:
-        return self._type
+    def severity(self) -> RequirementType:
+        return self._severity
 
     @property
     def color(self) -> str:
         from .colors import get_severity_color
-        return get_severity_color(self.type)
+        return get_severity_color(self.severity)
 
     @property
     def profile(self) -> Profile:
@@ -477,45 +477,49 @@ class Requirement:
             raise OutOfValidationContext("Validation context has not been initialized")
         return self._validation_context.settings
 
-    def __eq__(self, other):
+    def __eq__(self, other: Requirement):
+        if not isinstance(other, Requirement):
+            raise ValueError(f"Cannot compare Requirement with {type(other)}")
         return self.name == other.name \
-            and self.type == other.type and self.description == other.description \
+            and self.severity == other.severity and self.description == other.description \
             and self.path == other.path
 
-    def __ne__(self, other):
+    def __ne__(self, other: Requirement):
+        if not isinstance(other, Requirement):
+            raise ValueError(f"Cannot compare Requirement with {type(other)}")
         return self.name != other.name \
-            or self.type != other.type \
+            or self.severity != other.type \
             or self.description != other.description \
             or self.path != other.path
 
     def __hash__(self):
-        return hash((self.name, self.type, self.description, self.path))
+        return hash((self.name, self.severity, self.description, self.path))
 
-    def __lt__(self, other) -> bool:
+    def __lt__(self, other: Requirement) -> bool:
         if not isinstance(other, Requirement):
             raise ValueError(f"Cannot compare Requirement with {type(other)}")
-        return self.type < other.type or self.name < other.name
+        return self.severity < other.severity or self.name < other.name
 
-    def __le__(self, other) -> bool:
+    def __le__(self, other: Requirement) -> bool:
         if not isinstance(other, Requirement):
             raise ValueError(f"Cannot compare Requirement with {type(other)}")
-        return self.type <= other.type or self.name <= other.name
+        return self.severity <= other.severity or self.name <= other.name
 
-    def __gt__(self, other) -> bool:
+    def __gt__(self, other: Requirement) -> bool:
         if not isinstance(other, Requirement):
             raise ValueError(f"Cannot compare Requirement with {type(other)}")
-        return self.type > other.type or self.name > other.name
+        return self.severity > other.severity or self.name > other.name
 
-    def __ge__(self, other) -> bool:
+    def __ge__(self, other: Requirement) -> bool:
         if not isinstance(other, Requirement):
             raise ValueError(f"Cannot compare Requirement with {type(other)}")
-        return self.type >= other.type or self.name >= other.name
+        return self.severity >= other.severity or self.name >= other.name
 
     def __repr__(self):
         return (
             f'ProfileRequirement('
             f'name={self.name}, '
-            f'type={self.type}, '
+            f'severity={self.severity}, '
             f'description={self.description}'
             f', path={self.path}, ' if self.path else ''
             ')'
