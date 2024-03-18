@@ -1,70 +1,36 @@
 
 import logging
-from typing import Optional
 
-from ...constants import SHACL_NS
-from ...models import Check as BaseCheck
-from ...models import Requirement, Validator
+from ...models import RequirementCheck
+from ...models import Requirement
+from .models import ShapeProperty
 from .validator import Validator as SHACLValidator
 
 logger = logging.getLogger(__name__)
 
 
-class SHACLCheck(BaseCheck):
+class SHACLCheck(RequirementCheck):
     def __init__(self,
                  requirement: Requirement,
-                 validator: Validator,
-                 name: Optional[str] = None,
-                 description: Optional[str] = None,
-                 ) -> None:
-        super().__init__(requirement, validator, name, description)
+                 shapeProperty: ShapeProperty) -> None:
+        self._shapeProperty = shapeProperty
+        super().__init__(requirement, shapeProperty.name, shapeProperty.description)
 
     @property
     def name(self):
-        if not self._name and self.shapes_graph is None:
-            return "SHACL Check"
-
-        if not self._name:
-            query = """
-                SELECT ?name
-                WHERE {
-                    ?shape a sh:NodeShape ;
-                        sh:name ?name .
-                }
-            """
-            # Execute the query
-            results = [_ for _ in self.shapes_graph.query(query, initNs={"sh": SHACL_NS})]
-            if results:
-                self._name = results[0][0]
-
-        return self._name
+        return self._shapeProperty.name
 
     @property
     def description(self):
-        if not self._description and self.shapes_graph is None:
-            return "SHACL Check"
-        # If the description is not set, query the shapes graph
-        if not self._description:
-            self._description = self.query_description(self.shapes_graph)
-        return self._description
+        return self._shapeProperty.description
 
-    @staticmethod
-    def query_description(shapes_graph) -> str:
-        try:
-            query = """
-                SELECT ?description
-                WHERE {
-                    ?shape a sh:NodeShape ;
-                        sh:description ?description .
-                }
-            """
-            # Execute the query
-            results = [_ for _ in shapes_graph.query(query, initNs={"sh": SHACL_NS})]
-            if results:
-                return results[0][0]
-        except Exception as e:
-            logger.debug("Error getting description: %s", e)
-            return None
+    @property
+    def shapeProperty(self) -> ShapeProperty:
+        return self._shapeProperty
+
+    @property
+    def severity(self):
+        return self.requirement.type
 
     @classmethod
     def get_description(cls, requirement: Requirement):
