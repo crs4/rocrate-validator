@@ -22,9 +22,19 @@ class SHACLRequirement(Requirement):
         super().__init__(type, profile,
                          shape.name, shape.description, path)
         # init checks
-        self._checks = []
-        for prop in shape.get_properties():
-            self._checks.append(SHACLCheck(self, prop))
+        self._checks = self.__init_checks__()
+
+    def __init_checks__(self):
+        # assign a check to each property of the shape
+        checks = []
+        for prop in self._shape.get_properties():
+            property_check = SHACLCheck(self, prop)
+            logger.debug("Property check %s: %s", property_check.name, property_check.description)
+            checks.append(property_check)
+        # assign check IDs
+        self.__assign_check_numbers__()
+        # return checks
+        return checks
 
     @staticmethod
     def load(profile: Profile, requirement_type: RequirementType, file_path: Path) -> List[Requirement]:
