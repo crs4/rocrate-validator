@@ -544,7 +544,7 @@ class Requirement:
         # TODO: implement a better way to identify the requirement and check classes
         # check if the file is a python file
         if file_path.suffix == ".py":
-            classes = get_classes_from_file(file_path, filter_class=Check)
+            classes = get_classes_from_file(file_path, filter_class=RequirementCheck)
             logger.debug("Classes: %r" % classes)
 
             # instantiate a requirement for each class
