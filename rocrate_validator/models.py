@@ -303,6 +303,10 @@ class RequirementCheck(ABC):
         return self._order_number
 
     @property
+    def identifier(self) -> str:
+        return f"{self.requirement.identifier}.{self.order_number}"
+
+    @property
     def name(self) -> str:
         if not self._name:
             return self.__class__.__name__.replace("Check", "")
@@ -393,6 +397,10 @@ class Requirement:
     @property
     def order_number(self) -> int:
         return self._order_number
+
+    @property
+    def identifier(self) -> str:
+        return f"{self.severity}.{self.order_number}"
 
     @property
     def name(self) -> str:
