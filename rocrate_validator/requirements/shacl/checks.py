@@ -63,3 +63,15 @@ class SHACLCheck(RequirementCheck):
 
             return False
         return True
+
+    def __str__(self) -> str:
+        return super().__str__() + f" - {self._shapeProperty}"
+
+    def __repr__(self) -> str:
+        return super().__repr__() + f" - {self._shapeProperty}"
+
+    def __eq__(self, __value: object) -> bool:
+        return super().__eq__(__value) and self._shapeProperty == __value._shapeProperty
+
+    def __hash__(self) -> int:
+        return super().__hash__() + hash(self._shapeProperty)
