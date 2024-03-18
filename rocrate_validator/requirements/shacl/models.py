@@ -114,9 +114,9 @@ class Shape:
         # query the graph for the shapes and shape properties
         query = """
         PREFIX sh: <http://www.w3.org/ns/shacl#>
-        SELECT  ?shape ?shapeName ?shapeDescription
-                ?property ?propertyName ?propertyDescription ?propertyGroup
-                ?propertyNode ?defaultValue ?order
+        SELECT  ?shape ?shapeName ?shapeDescription 
+                ?propertyName ?propertyDescription
+                ?propertyPath ?propertyGroup ?propertyOrder
         WHERE {
             ?shape a sh:NodeShape ;
                     sh:name ?shapeName ;
@@ -124,34 +124,33 @@ class Shape:
                     sh:property ?property .
             OPTIONAL {
                 ?property sh:name ?propertyName ;
-                            sh:description ?propertyDescription ;
-                            sh:group ?propertyGroup ;
-                            sh:node ?propertyNode ;
-                            sh:defaultValue ?defaultValue ;
-                            sh:order ?order .
+                        sh:description ?propertyDescription ;
+                        sh:group ?propertyGroup ;
+                        sh:order ?propertyOrder ;
+                        sh:path ?propertyPath .
             }
         }
         """
+
         logger.debug("Performing query: %s" % query)
         results = shapes_graph.query(query)
         logger.debug("Query results: %s" % results)
 
         shapes: Dict[str, Shape] = {}
         for row in results:
-
-            shape = shapes.get(row['shapeName'], None)
+            shape = shapes.get(row.shapeName, None)
             if shape is None:
-                shape = Shape(row['shapeName'], row['shapeDescription'])
-                shapes[row['shapeName']] = shape
+                shape = Shape(row.shapeName, row.shapeDescription)
+                shapes[row.shapeName] = shape
 
-            print("propertyName", row.get('propertyName'), row['shapeName'])
+            # print("propertyName vs shapeName", row.propertyName, row.shapeName)
             shape.add_property(
-                row.get('propertyName') or row['shapeName'],
-                row.get('propertyDescription') or row['shapeDescription'],
-                row.get('propertyGroup') or None,
-                row.get('propertyNode') or None,
-                row.get('defaultValue') or None,
-                row.get('order') or 0
+                row.propertyName or row.shapeName,
+                row.propertyDescription or row.shapeDescription,
+                group=row.propertyGroup or None,
+                # node=row.propertyNode or None,
+                default=None,
+                order=row.propertyOrder or 0
             )
         return shapes
 
