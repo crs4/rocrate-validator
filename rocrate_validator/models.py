@@ -150,6 +150,7 @@ class Profile:
         """
         Load the requirements from the profile directory
         """
+        req_id = 0
         self._requirements = []
         for root, dirs, files in os.walk(self.path):
             dirs[:] = [d for d in dirs
@@ -164,6 +165,8 @@ class Profile:
                 requirement_path = requirement_root / file
                 for requirement in Requirement.load(
                         self, RequirementLevels.get(requirement_level), requirement_path):
+                    req_id += 1
+                    requirement._id = req_id
                     self.add_requirement(requirement)
         return self._requirements
 
@@ -177,8 +180,8 @@ class Profile:
             self, severity: RequirementType = RequirementLevels.MUST,
             exact_match: bool = False) -> List[Requirement]:
         return [requirement for requirement in self.requirements
-                if not exact_match and requirement.type >= severity or
-                exact_match and requirement.type == severity]
+                if not exact_match and requirement.severity >= severity or
+                exact_match and requirement.severity == severity]
 
     @property
     def requirements_by_severity_map(self) -> Dict[RequirementType, List[Requirement]]:
@@ -198,7 +201,7 @@ class Profile:
         return self.get_requirement(name) is not None
 
     def get_requirements_by_type(self, type: RequirementType) -> List[Requirement]:
-        return [requirement for requirement in self.requirements if requirement.type == type]
+        return [requirement for requirement in self.requirements if requirement.severity == type]
 
     def add_requirement(self, requirement: Requirement):
         self._requirements.append(requirement)
@@ -368,6 +371,7 @@ class Requirement:
                  name: str = None,
                  description: str = None,
                  path: Path = None):
+        self._id = None
         self._name = name
         self._severity = severity
         self._profile = profile
@@ -380,6 +384,10 @@ class Requirement:
 
         if not self._name and self._path:
             self._name = get_requirement_name_from_file(self._path)
+
+    @property
+    def id(self) -> int:
+        return self._id
 
     @property
     def name(self) -> str:
@@ -422,7 +430,7 @@ class Requirement:
         return checks
 
     def get_checks(self) -> List[RequirementCheck]:
-        return self._checks
+        return self._checks.copy()
 
     def get_check(self, name: str) -> RequirementCheck:
         for check in self._checks:
@@ -635,9 +643,16 @@ class CheckIssue:
 class ValidationResult:
 
     def __init__(self, rocrate_path: Path, validation_settings: Dict = None):
-        self._issues: List[CheckIssue] = []
+        # reference to the ro-crate path
         self._rocrate_path = rocrate_path
+        # reference to the validation settings
         self._validation_settings = validation_settings
+        # keep track of the requirements that have been checked
+        self._validated_requirements: Set[Requirement] = set()
+        # keep track of the checks that have been performed
+        self._checks: Set[RequirementCheck] = set()
+        # keep track of the issues found during the validation
+        self._issues: List[CheckIssue] = []
 
     def get_rocrate_path(self):
         return self._rocrate_path
@@ -646,12 +661,40 @@ class ValidationResult:
         return self._validation_settings
 
     @property
-    def checks(self) -> List[RequirementCheck]:
-        return [issue.check for issue in self._issues]
+    def validated_requirements(self) -> Set[Requirement]:
+        return self._validated_requirements.copy()
 
-    def get_failed_checks(self) -> Set[RequirementCheck]:
-        # return the list of checks that failed
+    @property
+    def failed_requirements(self) -> Set[Requirement]:
+        return set([issue.check.requirement for issue in self._issues])
+
+    @property
+    def passed_requirements(self) -> Set[Requirement]:
+        return self._validated_requirements - self.failed_requirements
+
+    @property
+    def checks(self) -> Set[RequirementCheck]:
+        return set(self._checks)
+
+    @property
+    def failed_checks(self) -> Set[RequirementCheck]:
         return set([issue.check for issue in self._issues])
+
+    @property
+    def passed_checks(self) -> Set[RequirementCheck]:
+        return self._checks - self.failed_checks
+
+    def get_passed_checks_by_requirement(self, requirement: Requirement) -> Set[RequirementCheck]:
+        return set([check for check in self.passed_checks if check.requirement == requirement])
+
+    def get_failed_checks_by_requirement(self, requirement: Requirement) -> Set[RequirementCheck]:
+        return set([check for check in self.failed_checks if check.requirement == requirement])
+
+    def get_failed_checks_by_requirement_and_severity(
+            self, requirement: Requirement, severity: Severity) -> Set[RequirementCheck]:
+        return set([check for check in self.failed_checks
+                    if check.requirement == requirement
+                    and check.severity == severity])
 
     def add_issue(self, issue: CheckIssue):
         # TODO: check if the issue belongs to the current validation context
