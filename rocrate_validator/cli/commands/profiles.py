@@ -96,7 +96,10 @@ def describe_profile(ctx,
         for requirement in profile.requirements:
             level_info = f"[{requirement.color}]{requirement.severity.name}[/{requirement.color}]"
             levels_list.add(level_info)
-            table_rows.append((requirement.name, Markdown(requirement.description.strip()), level_info))
+            table_rows.append((str(requirement.order_number), requirement.name,
+                              Markdown(requirement.description.strip()),
+                              str(len(requirement.get_checks())),
+                              level_info))
 
         table = Table(show_header=True,
                       title="Profile Requirements Checks",
@@ -106,8 +109,10 @@ def describe_profile(ctx,
                       caption=f"(*) Requirement level: {', '.join(levels_list)}")
 
         # Define columns
-        table.add_column("Name", style="magenta bold", justify="right")
+        table.add_column("#", style="yellow bold", justify="right")
+        table.add_column("Name", style="magenta bold", justify="center")
         table.add_column("Description", style="white italic")
+        table.add_column("# Checks", style="white", justify="center")
         table.add_column("Requirement Level (*)", style="white", justify="center")
         # Add data to the table
         for row in table_rows:
