@@ -23,6 +23,8 @@ class SHACLRequirement(Requirement):
                          shape.name, shape.description, path)
         # init checks
         self._checks = self.__init_checks__()
+        # assign check IDs
+        self.__reorder_checks__()
 
     def __init_checks__(self):
         # assign a check to each property of the shape
@@ -31,8 +33,6 @@ class SHACLRequirement(Requirement):
             property_check = SHACLCheck(self, prop)
             logger.debug("Property check %s: %s", property_check.name, property_check.description)
             checks.append(property_check)
-        # assign check IDs
-        self.__reorder_checks__()
         # return checks
         return checks
 
