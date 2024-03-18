@@ -1,3 +1,16 @@
+class OutOfValidationContext(Exception):
+    def __init__(self, message: str = None):
+        self._message = message
+
+    @property
+    def message(self) -> str:
+        return self._message
+
+    def __str__(self):
+        return self._message
+
+    def __repr__(self):
+        return f"OutOfValidationContext({self._message!r})"
 
 
 class InvalidSerializationFormat(Exception):

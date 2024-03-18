@@ -14,8 +14,8 @@ from ...constants import (RDF_SERIALIZATION_FORMATS,
                           RDF_SERIALIZATION_FORMATS_TYPES, SHACL_NS,
                           VALID_INFERENCE_OPTIONS,
                           VALID_INFERENCE_OPTIONS_TYPES)
-from ...models import Check, CheckIssue, Severity
-from ...requirements.shacl.models import Shape
+from ...models import CheckIssue, RequirementCheck, Severity
+from ...requirements.shacl.models import ViolationShape
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -107,9 +107,9 @@ class Violation(CheckIssue):
         return self.violation_json[f'{SHACL_NS}sourceConstraintComponent'][0]['@id']
 
     @property
-    def sourceShape(self) -> Shape:
+    def sourceShape(self) -> ViolationShape:
         try:
-            return Shape(self.source_shape_node, self._graph)
+            return ViolationShape(self.source_shape_node, self._graph)
         except Exception as e:
             logger.error("Error getting source shape: %s" % e)
             if logger.isEnabledFor(logging.DEBUG):
@@ -211,7 +211,7 @@ class Validator:
 
     def __init__(
         self,
-        check: Check,
+        check: RequirementCheck,
         shapes_graph: Optional[Union[GraphLike, str, bytes]],
         ont_graph: Optional[Union[GraphLike, str, bytes]] = None,
     ) -> None:
@@ -239,7 +239,7 @@ class Validator:
         return self._ont_graph
 
     @property
-    def check(self) -> Check:
+    def check(self) -> RequirementCheck:
         return self._check
 
     def validate(

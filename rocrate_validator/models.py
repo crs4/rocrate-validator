@@ -6,7 +6,7 @@ import os
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Type, Union
+from typing import Callable, Dict, List, Optional, Set, Type, Union
 
 from rdflib import Graph
 
@@ -17,8 +17,9 @@ from rocrate_validator.constants import (DEFAULT_PROFILE_README_FILE,
                                          ROCRATE_METADATA_FILE,
                                          VALID_INFERENCE_OPTIONS_TYPES)
 from rocrate_validator.utils import (get_classes_from_file,
-                                     get_file_descriptor_path,
                                      get_requirement_name_from_file)
+
+from .errors import OutOfValidationContext
 
 logger = logging.getLogger(__name__)
 
@@ -100,6 +101,13 @@ class RequirementLevels:
     @staticmethod
     def get(name: str) -> RequirementType:
         return RequirementLevels.all()[name.upper()]
+
+
+class Severity(RequirementLevels):
+    """Extends the RequirementLevels enum with additional values"""
+    INFO = RequirementType('INFO', 0)
+    WARNING = RequirementType('WARNING', 2)
+    ERROR = RequirementType('ERROR', 4)
 
 
 class Profile:
@@ -260,10 +268,101 @@ class Profile:
         return profiles
 
 
+def check(name=None):
+    def decorator(func):
+        func.check = True
+        func.name = name if name else func.__name__
+        return func
+    return decorator
+
+
+class RequirementCheck(ABC):
+
+    def __init__(self,
+                 requirement: Requirement,
+                 name: str,
+                 check: Callable,
+                 description: str = None):
+        self._requirement: Requirement = requirement
+        self._name = name
+        self._description = description
+        self._check = check
+        # declare the reference to the validation context
+        self._validation_context: ValidationContext = None
+        # declare the reference to the validator
+        self._validator: Validator = None
+        # declare the result of the check
+        self._result: ValidationResult = None
+
+    @property
+    def name(self) -> str:
+        if not self._name:
+            return self.__class__.__name__.replace("Check", "")
+        return self._name
+
+    @property
+    def description(self) -> str:
+        if not self._description:
+            return self.__class__.__doc__.strip() if self.__class__.__doc__ else f"Check {self.name}"
+        return self._description
+
+    @property
+    def requirement(self) -> Requirement:
+        return self._requirement
+
+    @property
+    def validation_context(self) -> ValidationContext:
+        assert self._validation_context, "Validation context not set before the check"
+        return self._validation_context
+
+    @property
+    def validator(self) -> Validator:
+        assert self._validator, "Validator not set before the check"
+        return self._validator
+
+    @property
+    def result(self) -> ValidationResult:
+        assert self._result, "Result not set before the check"
+        return self._result
+
+    @property
+    def ro_crate_path(self) -> Path:
+        assert self.validator, "ro-crate path not set before the check"
+        return self.validator.rocrate_path
+
+    @property
+    def issues(self) -> List[CheckIssue]:
+        """Return the issues found during the check"""
+        assert self._result, "Issues not set before the check"
+        return self._result.get_issues_by_check(self, Severity.INFO)
+
+    def get_issues(self, severity: Severity = Severity.WARNING) -> List[CheckIssue]:
+        return self._result.get_issues_by_check(self, severity)
+
+    def get_issues_by_severity(self, severity: Severity = Severity.WARNING) -> List[CheckIssue]:
+        return self._result.get_issues_by_check_and_severity(self, severity)
+
+    @abstractmethod
+    def check(self) -> bool:
+        raise NotImplementedError("Check not implemented")
+
+    def __do_check__(self, context: ValidationContext) -> bool:
+        """
+        Internal method to perform the check
+        """
+        # Set the validation context
+        self._validation_context = context
+        # Set the validator
+        self._validator = context.validator
+        # Set the result
+        self._result = context.result
+        # Perform the check
+        return self.check()
+
+
 class Requirement:
 
     def __init__(self,
-                 check_class: Type[Check],
                  type: RequirementType,
                  profile: Profile,
                  name: str = None,
@@ -274,7 +373,10 @@ class Requirement:
         self._profile = profile
         self._description = description
         self._path = path
-        self._check_class = check_class
+        self._checks: List[RequirementCheck] = []
+
+        # reference to the current validation context
+        self._validation_context: ValidationContext = None
 
         if not self._name and self._path:
             self._name = get_requirement_name_from_file(self._path)
@@ -301,20 +403,79 @@ class Requirement:
     @property
     def description(self) -> str:
         if not self._description:
-            docs = None
-            if self._check_class:
-                docs = self._check_class.get_description(self)
+            # set docs equal to docstring
+            docs = self.__class__.__doc__
             self._description = docs.strip() if docs else f"Profile Requirement {self.name}"
-
         return self._description
 
     @property
     def path(self) -> Path:
         return self._path
 
+    # write a method to collect the list of decorated check methods
+    def __init_checks__(self):
+        checks = []
+        for name, member in inspect.getmembers(self._check_class, inspect.isfunction):
+            if hasattr(member, "check"):
+                check_name = member.name if hasattr(member, "name") else name
+                self._checks.append(RequirementCheck(self, check_name, member, member.__doc__))
+        return checks
+
+    def get_checks(self) -> List[RequirementCheck]:
+        return self._checks
+
+    def get_check(self, name: str) -> RequirementCheck:
+        for check in self._checks:
+            if check.name == name:
+                return check
+        return None
+
+    def __do_validate__(self, context: ValidationContext) -> bool:
+        """
+        Internal method to perform the validation
+        """
+        # Set the validation context
+        self._validation_context = context
+        logger.debug("Validation context initialized: %r", context)
+        # Perform the validation
+        try:
+            for check in self._checks:
+                try:
+                    check.__do_check__(context)
+                except Exception as e:
+                    self.validation_result.add_error("Unexpected error during check: %s" % e, check=check)
+                    if logger.isEnabledFor(logging.DEBUG):
+                        logger.exception(e)
+            # Return the result
+            return self.validation_result.passed()
+        finally:
+            # Clear the validation context
+            self._validation_context = None
+            logger.debug("Clearing validation context")
+
     @property
-    def check_class(self) -> Type[Check]:
-        return self._check_class
+    def validator(self):
+        if self._validation_context is None:
+            raise OutOfValidationContext("Validation context has not been initialized")
+        return self._validation_context.validator
+
+    @property
+    def validation_result(self):
+        if self._validation_context is None:
+            raise OutOfValidationContext("Validation context has not been initialized")
+        return self._validation_context.result
+
+    @property
+    def validation_context(self):
+        if self._validation_context is None:
+            raise OutOfValidationContext("Validation context has not been initialized")
+        return self._validation_context
+
+    @property
+    def validation_settings(self):
+        if self._validation_context is None:
+            raise OutOfValidationContext("Validation context has not been initialized")
+        return self._validation_context.settings
 
     def __eq__(self, other):
         return self.name == other.name \
@@ -368,6 +529,7 @@ class Requirement:
         # initialize the set of requirements
         requirements = []
 
+        # TODO: implement a better way to identify the requirement and check classes
         # check if the file is a python file
         if file_path.suffix == ".py":
             classes = get_classes_from_file(file_path, filter_class=Check)
@@ -376,24 +538,26 @@ class Requirement:
             # instantiate a requirement for each class
             for check_name, check_class in classes.items():
                 r = Requirement(
-                    check_class, requirement_type, profile, path=file_path,
+                    requirement_type, profile, path=file_path,
                     name=get_requirement_name_from_file(file_path, check_name=check_name)
                 )
                 logger.debug("Added Requirement: %r" % r)
                 requirements.append(r)
         elif file_path.suffix == ".ttl":
-            from rocrate_validator.requirements.shacl.checks import SHACLCheck
-            r = Requirement(SHACLCheck, requirement_type,
-                            profile, path=file_path)
-            requirements.append(r)
-            logger.debug("Added Requirement: %r" % r)
+            # from rocrate_validator.requirements.shacl.checks import SHACLCheck
+            from rocrate_validator.requirements.shacl.requirements import \
+                SHACLRequirement
+            shapes_requirements = SHACLRequirement.load(profile, requirement_type, file_path)
+            logger.debug("Loaded SHACL requirements: %r" % shapes_requirements)
+            requirements.extend(shapes_requirements)
+            logger.debug("Added Requirement: %r" % shapes_requirements)
         else:
             logger.warning("Requirement type not supported: %s", file_path.suffix)
 
         return requirements
 
 
-def issue_types(issues: List[Type[CheckIssue]]) -> Type[Check]:
+def issue_types(issues: List[Type[CheckIssue]]) -> Type[RequirementCheck]:
     def class_decorator(cls):
         cls.issue_types = issues
         return cls
@@ -407,195 +571,6 @@ class Severity(RequirementLevels):
     ERROR = RequirementType('ERROR', 4)
 
 
-class CheckResult:
-    """
-    Class to store the result of a check
-
-    Attributes:
-        check (Check): The check that was performed
-        code (int): The result code
-        message (str): The message
-    """
-
-    def __init__(self, check: Check):
-        self.check = check
-        self._issues: List[CheckIssue] = []
-
-    @property
-    def issues(self) -> List[CheckIssue]:
-        return self._issues
-
-    def add_issue(self, issue: CheckIssue):
-        issue._check = self.check
-        self._issues.append(issue)
-
-    def add_error(self, message: str, code: int = None):
-        self._issues.append(CheckIssue(Severity.ERROR, message, code, self.check))
-
-    def add_warning(self, message: str, code: int = None):
-        self._issues.append(CheckIssue(Severity.WARNING, message, code, self.check))
-
-    def add_info(self, message: str, code: int = None):
-        self._issues.append(CheckIssue(Severity.INFO, message, code, self.check))
-
-    def add_optional(self, message: str, code: int = None):
-        self._issues.append(CheckIssue(Severity.OPTIONAL, message, code, self.check))
-
-    def add_may(self, message: str, code: int = None):
-        self._issues.append(CheckIssue(Severity.MAY, message, code, self.check))
-
-    def add_should(self, message: str, code: int = None):
-        self._issues.append(CheckIssue(Severity.SHOULD, message, code, self.check))
-
-    def add_should_not(self, message: str, code: int = None):
-        self._issues.append(CheckIssue(Severity.SHOULD_NOT, message, code, self.check))
-
-    def add_must(self, message: str, code: int = None):
-        self._issues.append(CheckIssue(Severity.MUST, message, code, self.check))
-
-    def add_must_not(self, message: str, code: int = None):
-        self._issues.append(CheckIssue(Severity.MUST_NOT, message, code, self.check))
-
-    def get_issues(self, severity: Severity = Severity.WARNING) -> List[CheckIssue]:
-        return [issue for issue in self.issues if issue.severity.value >= severity.value]
-
-    def get_issues_by_severity(self, severity: Severity) -> List[CheckIssue]:
-        return [issue for issue in self.issues if issue.severity == severity]
-
-    def passed(self, severity: Severity = Severity.WARNING) -> bool:
-        return not any(issue.severity.value >= severity.value for issue in self.issues)
-
-
-class Check(ABC):
-    """
-    Base class for checks
-    """
-
-    def __init__(self,
-                 requirement: Requirement,
-                 validator: Validator,
-                 name: Optional[str] = None,
-                 description: Optional[str] = None) -> None:
-        self._requirement = requirement
-        self._validator = validator
-        self._name = name
-        self._description = description
-        # create a result object for the check
-        self._result: CheckResult = CheckResult(self)
-
-    @property
-    def requirement(self) -> Requirement:
-        return self._requirement
-
-    @property
-    def severity(self) -> Severity:
-        return self._requirement.type
-
-    @property
-    def color(self) -> str:
-        return self.requirement.color
-
-    @property
-    def name(self) -> str:
-        if not self._name:
-            return self.__class__.__name__.replace("Check", "")
-        return self._name
-
-    @property
-    def description(self) -> str:
-        if not self._description:
-            return self.get_description(self.requirement)
-        return self._description
-
-    @classmethod
-    def get_description(cls, requirement: Requirement) -> str:
-        return cls.__doc__.strip()
-
-    @property
-    def ro_crate_path(self) -> Path:
-        return self._validator.rocrate_path
-
-    @property
-    def file_descriptor_path(self) -> Path:
-        return get_file_descriptor_path(self.ro_crate_path)
-
-    @property
-    def result(self) -> CheckResult:
-        return self._result
-
-    @property
-    def validator(self) -> Validator:
-        return self._validator
-
-    def __do_check__(self) -> bool:
-        """
-        Internal method to perform the check
-        """
-        # Check if the check has issue types defined
-        # TODO: check if this is necessary
-        # assert self.issue_types, "Check must have issue types defined in the decorator"
-        # Perform the check
-        try:
-            return self.check()
-        except Exception as e:
-            self.result.add_error(str(e))
-            if logger.isEnabledFor(logging.DEBUG):
-                logger.exception(e)
-            return False
-
-    @abstractmethod
-    def check(self) -> bool:
-        raise NotImplementedError("Check not implemented")
-
-    def passed(self, severity: Severity = Severity.WARNING) -> bool:
-        return self.result.passed(severity)
-
-    def get_issues(self, severity: Severity = Severity.WARNING) -> List[CheckIssue]:
-        return self.result.get_issues(severity)
-
-    def get_issues_by_severity(self, severity: Severity) -> List[CheckIssue]:
-        return self.result.get_issues_by_severity(severity)
-
-    def __str__(self) -> str:
-        return self.name
-
-    def __repr__(self) -> str:
-        return f"{self.name}Check()"
-
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, Check):
-            return False
-        return self.name == other.name and self.requirement == other.requirement
-
-    def __hash__(self) -> int:
-        return hash((self.name, self.requirement))
-
-    def __lt__(self, other: object) -> bool:
-        if not isinstance(other, Check):
-            raise ValueError(f"Cannot compare Check with {type(other)}")
-        return self.requirement < other.requirement or self.name < other.name
-
-    def __le__(self, other: object) -> bool:
-        if not isinstance(other, Check):
-            raise ValueError(f"Cannot compare Check with {type(other)}")
-        return self.requirement <= other.requirement or self.name <= other.name
-
-    def __gt__(self, other: object) -> bool:
-        if not isinstance(other, Check):
-            raise ValueError(f"Cannot compare Check with {type(other)}")
-        return self.requirement > other.requirement or self.name > other.name
-
-    def __ge__(self, other: object) -> bool:
-        if not isinstance(other, Check):
-            raise ValueError(f"Cannot compare Check with {type(other)}")
-        return self.requirement >= other.requirement or self.name >= other.name
-
-    def __ne__(self, other: object) -> bool:
-        if not isinstance(other, Check):
-            return True
-        return self.name != other.name or self.requirement != other.requirement
-
-
 class CheckIssue:
     """
     Class to store an issue found during a check
@@ -604,12 +579,13 @@ class CheckIssue:
         severity (IssueSeverity): The severity of the issue
         message (str): The message
         code (int): The code
+        check (RequirementCheck): The check that generated the issue
     """
 
     def __init__(self, severity: Severity,
                  message: Optional[str] = None,
                  code: int = None,
-                 check: Check = None):
+                 check: RequirementCheck = None):
         self._severity = severity
         self._message = message
         self._code = code
@@ -626,7 +602,7 @@ class CheckIssue:
         return self._severity
 
     @property
-    def check(self) -> Check:
+    def check(self) -> RequirementCheck:
         """The check that generated the issue"""
         return self._check
 
@@ -665,21 +641,64 @@ class ValidationResult:
     def get_validation_settings(self):
         return self._validation_settings
 
-    def get_failed_checks(self) -> List[Check]:
-        # return the list of checks that failed
+    @property
+    def checks(self) -> List[RequirementCheck]:
         return [issue.check for issue in self._issues]
 
+    def get_failed_checks(self) -> Set[RequirementCheck]:
+        # return the list of checks that failed
+        return set([issue.check for issue in self._issues])
+
     def add_issue(self, issue: CheckIssue):
+        # TODO: check if the issue belongs to the current validation context
         self._issues.append(issue)
 
     def add_issues(self, issues: List[CheckIssue]):
+        # TODO: check if the issues belong to the current validation context
         self._issues.extend(issues)
+
+    def add_error(self, message: str, check: RequirementCheck, code: int = None):
+        self._issues.append(CheckIssue(Severity.ERROR, message, code, check=check))
+
+    def add_warning(self, message: str, check: RequirementCheck,  code: int = None):
+        self._issues.append(CheckIssue(Severity.WARNING, message, code, check=check))
+
+    def add_info(self, message: str, check: RequirementCheck, code: int = None):
+        self._issues.append(CheckIssue(Severity.INFO, message, code, check=check))
+
+    def add_optional(self, message: str, check: RequirementCheck, code: int = None):
+        self._issues.append(CheckIssue(Severity.OPTIONAL, message, code, check=check))
+
+    def add_may(self, message: str, check: RequirementCheck, code: int = None):
+        self._issues.append(CheckIssue(Severity.MAY, message, code, check=check))
+
+    def add_should(self, message: str, check: RequirementCheck, code: int = None):
+        self._issues.append(CheckIssue(Severity.SHOULD, message, code, check=check))
+
+    def add_should_not(self, message: str, check: RequirementCheck,  code: int = None):
+        self._issues.append(CheckIssue(Severity.SHOULD_NOT, message, code, check=check))
+
+    def add_must(self, message: str, check: RequirementCheck,  code: int = None):
+        self._issues.append(CheckIssue(Severity.MUST, message, code, check=check))
+
+    def add_must_not(self, message: str, check: RequirementCheck,  code: int = None):
+        self._issues.append(CheckIssue(Severity.MUST_NOT, message, code, check=check))
+
+    @property
+    def issues(self) -> List[CheckIssue]:
+        return self._issues
 
     def get_issues(self, severity: Severity = Severity.WARNING) -> List[CheckIssue]:
         return [issue for issue in self._issues if issue.severity.value >= severity.value]
 
     def get_issues_by_severity(self, severity: Severity) -> List[CheckIssue]:
         return [issue for issue in self._issues if issue.severity == severity]
+
+    def get_issues_by_check(self, check: RequirementCheck, severity: Severity.WARNING) -> List[CheckIssue]:
+        return [issue for issue in self.issues if issue.check == check and issue.severity.value >= severity.value]
+
+    def get_issues_by_check_and_severity(self, check: RequirementCheck, severity: Severity) -> List[CheckIssue]:
+        return [issue for issue in self.issues if issue.check == check and issue.severity.value == severity.value]
 
     def has_issues(self, severity: Severity = Severity.WARNING) -> bool:
         return any(issue.severity.value >= severity.value for issue in self._issues)
@@ -858,19 +877,17 @@ class Validator:
     def ontologies_graph(self) -> Graph:
         return self.get_ontologies_graph()
 
-    def validate_requirement(self, requirement: Requirement) -> CheckResult:
+    def validate_requirements(self, requirements: List[Requirement]) -> ValidationResult:
         # check if requirement is an instance of Requirement
-        assert isinstance(requirement, Requirement), "Invalid requirement"
-        # check if the requirement has a check class
-        assert requirement.check_class, "Check class not associated with requirement"
-        # instantiate the check class
-        check = requirement.check_class(requirement, self)
-        # run the check
-        check.__do_check__()
-        # return the result
-        return check.result
+        assert all(isinstance(requirement, Requirement) for requirement in requirements), \
+            "Invalid requirement type"
+        # perform the requirements validation
+        return self.__do_validate__(requirements)
 
     def validate(self) -> ValidationResult:
+        return self.__do_validate__()
+
+    def __do_validate__(self, requirements: List[Requirement] = None) -> ValidationResult:
 
         # initialize the validation result
         validation_result = ValidationResult(
@@ -883,21 +900,45 @@ class Validator:
             profiles.extend(self.profile.inherited_profiles)
         logger.debug("Profiles to validate: %s", profiles)
 
+        # initialize the validation context
+        context = ValidationContext(self, validation_result)
+
+        #
         for profile in profiles:
             # perform the requirements validation
-            requirements = profile.get_requirements(
-                self.requirement_level, exact_match=self.requirement_level_only)
+            if not requirements:
+                requirements = profile.get_requirements(
+                    self.requirement_level, exact_match=self.requirement_level_only)
             for requirement in requirements:
                 logger.debug("Validating Requirement: %s", requirement)
-                result = self.validate_requirement(requirement)
-                logger.debug("Issues: %r", result.get_issues())
-                if result and result.passed():
+                result = requirement.__do_validate__(context)
+                logger.debug("Validation Requirement result: %s", result)
+                if result:
                     logger.debug("Validation Requirement passed: %s", requirement)
                 else:
                     logger.debug(f"Validation Requirement {requirement} failed ")
-                    validation_result.add_issues(result.get_issues())
                     if self.validation_settings.get("abort_on_first"):
                         logger.debug("Aborting on first failure")
                         return validation_result
 
         return validation_result
+
+
+class ValidationContext:
+
+    def __init__(self, validator: Validator, result: ValidationResult):
+        self._validator = validator
+        self._result = result
+        self._settings = validator.validation_settings
+
+    @property
+    def validator(self) -> Validator:
+        return self._validator
+
+    @property
+    def result(self) -> ValidationResult:
+        return self._result
+
+    @property
+    def settings(self) -> Dict:
+        return self._settings
