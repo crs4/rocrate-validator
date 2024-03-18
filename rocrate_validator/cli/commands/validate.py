@@ -134,6 +134,7 @@ def __print_validation_result__(
     """
     Print the validation result
     """
+
     if result.passed(severity=severity):
         console.print(
             "\n\n[bold]\[[green]OK[/green]] RO-Crate is [green]valid[/green] !!![/bold]\n\n",
@@ -145,22 +146,27 @@ def __print_validation_result__(
             style="white",
         )
 
-        for check in result.get_failed_checks():
-            # TODO: Add color related to the requirement level associated with the check
-            issue_color = get_severity_color(check.severity)
+        for requirement in result.failed_requirements:
+            issue_color = get_severity_color(requirement.severity)
             console.print(
-                Align(f" [severity: [{issue_color}]{check.severity.name}[/{issue_color}], "
-                      f"profile: [magenta]{check.requirement.profile.name }[/magenta]]", align="right")
+                Align(f" [severity: [{issue_color}]{requirement.severity.name}[/{issue_color}], "
+                      f"profile: [magenta]{requirement.profile.name }[/magenta]]", align="right")
             )
             console.print(
-                f" -> [bold][magenta]{check.name}[/magenta] check [red]failed[/red][/bold]",
+                f"  * [u bold]Requirement \"[magenta]{requirement.name}[/magenta]\" has [red]not meet[/red][/u bold]",
                 style="white",
             )
-            console.print(f"{' '*4}{check.description}\n", style="white italic")
-            console.print(f"{' '*4}Detected issues:", style="white bold")
-            for issue in check.get_issues():
+            console.print(f"\n{' '*4}{requirement.description}\n", style="white italic")
+
+            console.print(f"{' '*4}Failed checks:\n", style="white bold")
+            for check in result.get_failed_checks_by_requirement(requirement):
+                issue_color = get_severity_color(check.severity)
                 console.print(
-                    f"{' '*4}- [[{issue_color}]{issue.severity.name}[/{issue_color}] "
-                    f"[magenta]{issue.code}[/magenta]]: {issue.message}",
-                    style="white")
-            console.print("\n", style="white")
+                    f"{' '*4}- "
+                    f"[[magenta]{check.name}[/magenta]]: {check.description}")
+                console.print(f"\n{' '*6}Detected issues:", style="white bold")
+                for issue in check.get_issues():
+                    console.print(
+                        f"{' '*6}- [[{issue_color}]{issue.severity.name}[/{issue_color}] "
+                        f"[magenta]{issue.code}[/magenta]]: {issue.message}")
+                console.print("\n", style="white")
