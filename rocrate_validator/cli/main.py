@@ -3,6 +3,7 @@ import logging
 import rich_click as click
 from rich.console import Console
 from rocrate_validator.utils import get_version
+from rocrate_validator.config import configure_logging
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -35,9 +36,9 @@ def cli(ctx, debug: bool = False, version: bool = False):
         exit(0)
     # Set the log level
     if debug:
-        logging.basicConfig(level=logging.DEBUG)
+        configure_logging(level=logging.DEBUG)
     else:
-        logging.basicConfig(level=logging.WARNING)
+        configure_logging(level=logging.WARNING)
     # If no subcommand is provided, invoke the default command
     if ctx.invoked_subcommand is None:
         # If no subcommand is provided, invoke the default command
