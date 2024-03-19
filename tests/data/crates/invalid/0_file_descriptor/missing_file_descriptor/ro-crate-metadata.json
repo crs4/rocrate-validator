@@ -1,0 +1,317 @@
+{
+    "@context": "https://w3id.org/ro/crate/1.1/context",
+    "@graph": [
+        {
+            "@id": "./",
+            "@type": "Dataset",
+            "creator": [
+                {
+                    "@id": "#macklin"
+                },
+                {
+                    "@id": "#getz"
+                },
+                {
+                    "@id": "#saglam"
+                },
+                {
+                    "@id": "#wang"
+                },
+                {
+                    "@id": "#heiland"
+                }
+            ],
+            "datePublished": "2021-11-09T00:51:55.837325",
+            "description": "This model simulates replication dynamics of SARS-CoV-2 (coronavirus / COVID19) in a layer of epithelium and several submodels (such as single-cell response, pyroptosis death model, tissue-damage model, lymph node model and immune response). It is being iteratively prototyped and refined with community support",
+            "hasPart": [
+                {
+                    "@id": "changes.md"
+                },
+                {
+                    "@id": "design/"
+                },
+                {
+                    "@id": "LICENSE"
+                },
+                {
+                    "@id": "math/"
+                },
+                {
+                    "@id": "PhysiCell/"
+                },
+                {
+                    "@id": "PhysiCell_V.1.6.1.zip"
+                },
+                {
+                    "@id": "PhysiCell_V.1.7.0.zip"
+                },
+                {
+                    "@id": "PhysiCell_V.1.7.1.zip"
+                },
+                {
+                    "@id": "PhysiCell_V.1.9.0.zip"
+                },
+                {
+                    "@id": "workflow/retropath.knime"
+                },
+                {
+                    "@id": "lots_of_little_files/"
+                },
+                {
+                    "@id": "README.md"
+                }
+            ],
+            "isBasedOn": "https://zenodo.org/record/5595136#.YYlJ9BB_phF",
+            "name": "pc4covid19/COVID19: Version 0.5.0: draft v5 prototype"
+        },
+        {
+            "@id": "changes.md",
+            "@type": "File"
+        },
+        {
+            "@id": "design/",
+            "@type": "Dataset"
+        },
+        {
+            "@id": "lots_of_little_files/",
+            "@type": "Dataset",
+            "name": "Too many files",
+            "description": "This directory contains many small files, that we're not going to describe in detail.",
+            "distribution": {
+                "@id": "http://example.com/downloads/2020/lots_of_little_files.zip"
+            }
+        },
+        {
+            "@id": "http://example.com/downloads/2020/lots_of_little_files.zip",
+            "@type": "DataDownload",
+            "encodingFormat": "application/zip",
+            "contentSize": "82818928"
+        },
+        {
+            "@id": "LICENSE",
+            "@type": "File"
+        },
+        {
+            "@id": "math/",
+            "@type": "Dataset",
+            "author": { "@id": "https://orcid.org/0000-0001-6121-5409" },
+            "contentLocation": {
+                "@id": "http://sws.geonames.org/8152662/"
+            },
+            "temporalCoverage": "1950/1975"
+        },
+        {
+            "@id": "http://sws.geonames.org/8152662/",
+            "name": "Catalina Park"
+        },
+        {
+            "@id": "https://orcid.org/0000-0001-6121-5409",
+            "@type": "Person",
+            "contactPoint": {
+                "@id": "mailto:tim.luckett@uts.edu.au"
+            },
+            "familyName": "Luckett",
+            "givenName": "Tim",
+            "identifier": "https://orcid.org/0000-0001-6121-5409",
+            "name": "Tim Luckett"
+        },
+        {
+            "@id": "mailto:tim.luckett@uts.edu.au",
+            "@type": "ContactPoint",
+            "contactType": "customer service",
+            "email": "tim.luckett@uts.edu.au",
+            "identifier": "tim.luckett@uts.edu.au",
+            "url": "https://orcid.org/0000-0001-6121-5409"
+        },
+        {
+            "@id": "PhysiCell/",
+            "@type": "Dataset",
+            "publisher": { "@id": "https://ror.org/03f0f6041" },
+            "author": { "@id": "https://orcid.org/0000-0002-3545-944X" },
+            "citation": { "@id": "https://doi.org/10.1109/TCYB.2014.2386282" },
+            "funder": {
+                "@id": "https://eresearch.uts.edu.au/projects/provisioner"
+            }
+        },
+        {
+            "@id": "https://eresearch.uts.edu.au/projects/provisioner",
+            "@type": "Organization",
+            "description": "The University of Technology Sydney Provisioner project is ...",
+            "funder": [
+                {
+                    "@id": "https://ror.org/03f0f6041"
+                },
+                {
+                    "@id": "https://ands.org.au"
+                }
+            ],
+            "identifier": "https://eresearch.uts.edu.au/projects/provisioner",
+            "name": "Provisioner"
+        },
+        {
+            "@id": "https://ror.org/03f0f6041",
+            "@type": "Organization",
+            "identifier": "https://ror.org/03f0f6041",
+            "name": "University of Technology Sydney"
+        },
+        {
+            "@id": "https://ands.org.au",
+            "@type": "Organization",
+            "description": "The core purpose of the Australian National Data Service (ANDS) is ...",
+            "identifier": "https://ands.org.au",
+            "name": "Australian National Data Service"
+        },
+        {
+            "@id": "https://doi.org/10.1109/TCYB.2014.2386282",
+            "@type": "ScholarlyArticle",
+            "identifier": "https://doi.org/10.1109/TCYB.2014.2386282",
+            "issn": "2168-2267",
+            "name": "Topic Model for Graph Mining",
+            "journal": "IEEE Transactions on Cybernetics",
+            "datePublished": "2015"
+        },
+        {
+            "@id": "https://ror.org/03f0f6041",
+            "@type": "Organization",
+            "name": "University of Technology Sydney"
+        },
+        {
+            "@id": "https://orcid.org/0000-0002-3545-944X",
+            "@type": "Person",
+            "affiliation": { "@id": "https://ror.org/03f0f6041" },
+            "email": "peter.sefton@uts.edu.au",
+            "name": "Peter Sefton"
+        },
+        {
+            "@id": "PhysiCell_V.1.6.1.zip",
+            "@type": "File",
+            "license": {
+                "@id": "https://creativecommons.org/licenses/by/4.0/"
+            }
+        },
+        {
+            "@id": "https://creativecommons.org/licenses/by/4.0/",
+            "@type": "CreativeWork",
+            "name": "CC BY 4.0",
+            "description": "Creative Commons Attribution 4.0 International License"
+        },
+        {
+            "@id": "PhysiCell_V.1.7.0.zip",
+            "@type": "File"
+        },
+        {
+            "@id": "PhysiCell_V.1.7.1.zip",
+            "@type": "File"
+        },
+        {
+            "@id": "PhysiCell_V.1.9.0.zip",
+            "@type": "File",
+            "encodingFormat": ["text/plain", { "@id": "some_extension.md" }]
+        },
+        {
+            "@id": "some_extension.md",
+            "@type": "File",
+            "name": "Common Workflow Language (CWL) Workflow Description, v1.0.2"
+        },
+        {
+            "@id": "README.md",
+            "@type": "File",
+            "contentSize": null,
+            "encodingFormat": ["text/plain", { "@id": "some_extension/" }],
+            "url": "https://github.com/pc4covid19/COVID19/tree/0.5.0/README.md"
+        },
+        {
+            "@id": "some_extension/",
+            "@type": "Dataset",
+            "name": "Common Workflow Language (CWL) Workflow Description, v1.0.2"
+        },
+        {
+            "@id": "workflow/retropath.knime",
+            "@type": ["File", "SoftwareSourceCode", "ComputationalWorkflow"],
+            "author": { "@id": "#thomas" },
+            "name": "RetroPath Knime workflow",
+            "description": "Retrosynthesis workflow calculating chemical reactions",
+            "license": { "@id": "https://spdx.org/licenses/CC-BY-NC-SA-4.0" },
+            "programmingLanguage": { "@id": "#knime" }
+        },
+        {
+            "@id": "https://spdx.org/licenses/CC-BY-NC-SA-4.0",
+            "@type": "CreativeWork",
+            "name": "CC BY 4.0",
+            "description": "Creative Commons Attribution 4.0 International License"
+        },
+        {
+            "@id": "https://omeka.uws.edu.au/farmstofreeways/api/items/383",
+            "@type": ["RepositoryObject", "ImageObject"],
+            "identifier": ["ftf_photo_stapleton1"],
+            "interviewee": [
+                {
+                    "@id": "https://omeka.uws.edu.au/farmstofreeways/api/items/595"
+                }
+            ],
+            "description": ["Photo of Eugenie Stapleton inside her home"],
+            "hasFile": [
+                {
+                    "@id": "files/383/original_c0f1189ec13ca936e8f556161663d4ba.jpg"
+                },
+                {
+                    "@id": "files/383/fullsize_c0f1189ec13ca936e8f556161663d4ba.jpg"
+                },
+                {
+                    "@id": "files/383/thumbnail_c0f1189ec13ca936e8f556161663d4ba.jpg"
+                },
+                {
+                    "@id": "files/383/square_thumbnail_c0f1189ec13ca936e8f556161663d4ba.jpg"
+                }
+            ],
+            "thumbnail": [
+                {
+                    "@id": "files/383/thumbnail_cddd0f1189ec13ca936e8f556161663d4ba.jpg"
+                }
+            ],
+            "name": ["Photo of Eugenie Stapleton 1"],
+            "copyright": ["Copyright University of Western Sydney 2015"]
+        },
+        {
+            "@type": "File",
+            "@id": "files/384/original_2ebbe681aa6ec138776343974ce8a3dd.jpg"
+        },
+        {
+            "@type": "File",
+            "@id": "files/384/fullsize_2ebbe681aa6ec138776343974ce8a3dd.jpg"
+        },
+        {
+            "@type": "File",
+            "@id": "files/384/thumbnail_2ebbe681aa6ec138776343974ce8a3dd.jpg"
+        },
+        {
+            "@type": "File",
+            "@id": "files/384/square_thumbnail_2ebbe681aa6ec138776343974ce8a3dd.jpg"
+        },
+        {
+            "@id": "#macklin",
+            "@type": "Person",
+            "name": "Paul Macklin"
+        },
+        {
+            "@id": "#getz",
+            "@type": "Person",
+            "name": "Michael-Getz"
+        },
+        {
+            "@id": "#saglam",
+            "@type": "Person",
+            "name": "Ali Sinan Saglam"
+        },
+        {
+            "@id": "#wang",
+            "@type": "Person",
+            "name": "Yafei Wang"
+        },
+        {
+            "@id": "#heiland",
+            "@type": "Person",
+            "name": "Randy Heiland"
+        }
+    ]
+}
