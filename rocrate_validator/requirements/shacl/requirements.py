@@ -20,7 +20,9 @@ class SHACLRequirement(Requirement):
                  ):
         self._shape = shape
         super().__init__(type, profile,
-                         shape.name, shape.description, path)
+                         shape.name.value if shape.name else "",
+                         shape.description.value if shape.description else "",
+                         path)
         # init checks
         self._checks = self.__init_checks__()
         # assign check IDs

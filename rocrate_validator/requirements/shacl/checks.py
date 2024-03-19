@@ -14,7 +14,9 @@ class SHACLCheck(RequirementCheck):
                  requirement: Requirement,
                  shapeProperty: ShapeProperty) -> None:
         self._shapeProperty = shapeProperty
-        super().__init__(requirement, shapeProperty.name, shapeProperty.description)
+        super().__init__(requirement,
+                         shapeProperty.name.value if shapeProperty.name else None,
+                         shapeProperty.description if shapeProperty.description else None)
 
     @property
     def name(self):
