@@ -562,6 +562,10 @@ class Requirement:
         # initialize the set of requirements
         requirements = []
 
+        # if the path is a string, convert it to a Path
+        if isinstance(file_path, str):
+            file_path = Path(file_path)
+
         # TODO: implement a better way to identify the requirement and check classes
         # check if the file is a python file
         if file_path.suffix == ".py":
