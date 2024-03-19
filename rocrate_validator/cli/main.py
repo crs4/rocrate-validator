@@ -2,6 +2,7 @@ import logging
 
 import rich_click as click
 from rich.console import Console
+from rocrate_validator.utils import get_version
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -19,8 +20,19 @@ console = Console()
     help="Enable debug logging",
     default=False
 )
+@click.option(
+    '-v',
+    '--version',
+    is_flag=True,
+    help="Show the version of the rocrate-validator package",
+    default=False
+)
 @click.pass_context
-def cli(ctx, debug: bool = False):
+def cli(ctx, debug: bool = False, version: bool = False):
+    # If the version flag is set, print the version and exit
+    if version:
+        console.print(f"[bold]rocrate-validator [cyan]{get_version()}[/cyan][/bold]")
+        exit(0)
     # Set the log level
     if debug:
         logging.basicConfig(level=logging.DEBUG)
