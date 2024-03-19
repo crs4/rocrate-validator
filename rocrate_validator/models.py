@@ -687,35 +687,44 @@ class ValidationResult:
 
     @property
     def failed_requirements(self) -> Set[Requirement]:
-        return set([issue.check.requirement for issue in self._issues])
+        return sorted(set([issue.check.requirement for issue in self._issues]), key=lambda x: x.order_number)
 
     @property
     def passed_requirements(self) -> Set[Requirement]:
-        return self._validated_requirements - self.failed_requirements
+        return sorted(self._validated_requirements - self.failed_requirements, key=lambda req: req.number_order)
 
     @property
     def checks(self) -> Set[RequirementCheck]:
-        return set(self._checks)
+        return sorted(set(self._checks), key=lambda x: x.order_number)
 
     @property
     def failed_checks(self) -> Set[RequirementCheck]:
-        return set([issue.check for issue in self._issues])
+        return sorted(set([issue.check for issue in self._issues]), key=lambda x: x.order_number)
 
     @property
     def passed_checks(self) -> Set[RequirementCheck]:
-        return self._checks - self.failed_checks
+        return sorted(self._checks - self.failed_checks, key=lambda x: x.order_number)
 
     def get_passed_checks_by_requirement(self, requirement: Requirement) -> Set[RequirementCheck]:
-        return set([check for check in self.passed_checks if check.requirement == requirement])
+        return sorted(
+            set([check for check in self.passed_checks if check.requirement == requirement]),
+            key=lambda x: x.order_number
+        )
 
     def get_failed_checks_by_requirement(self, requirement: Requirement) -> Set[RequirementCheck]:
-        return set([check for check in self.failed_checks if check.requirement == requirement])
+        return sorted(
+            set([check for check in self.failed_checks if check.requirement == requirement]),
+            key=lambda x: x.order_number
+        )
 
     def get_failed_checks_by_requirement_and_severity(
             self, requirement: Requirement, severity: Severity) -> Set[RequirementCheck]:
-        return set([check for check in self.failed_checks
-                    if check.requirement == requirement
-                    and check.severity == severity])
+        return sorted(
+            set([check for check in self.failed_checks
+                 if check.requirement == requirement
+                 and check.severity == severity]),
+            key=lambda x: x.order_number
+        )
 
     def add_issue(self, issue: CheckIssue):
         # TODO: check if the issue belongs to the current validation context
