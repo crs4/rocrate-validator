@@ -322,6 +322,23 @@ class RequirementCheck:
         return self._requirement
 
     @property
+    def severity(self) -> RequirementType:
+        return self.requirement.severity
+
+    @property
+    def check_function(self) -> Callable:
+        return self._check_function
+
+    @property
+    def rocrate_path(self) -> Path:
+        assert self.validator, "ro-crate path not set before the check"
+        return self.validation_context.rocrate_path
+
+    @property
+    def file_descriptor_path(self) -> Path:
+        return self.rocrate_path / ROCRATE_METADATA_FILE
+
+    @property
     def validation_context(self) -> ValidationContext:
         assert self._validation_context, "Validation context not set before the check"
         return self._validation_context
@@ -484,25 +501,25 @@ class Requirement(ABC):
 
     @property
     def validator(self):
-        if self._validation_context is None:
+        if self._validation_context is None and self._checks_initialized:
             raise OutOfValidationContext("Validation context has not been initialized")
         return self._validation_context.validator
 
     @property
     def validation_result(self):
-        if self._validation_context is None:
+        if self._validation_context is None and self._checks_initialized:
             raise OutOfValidationContext("Validation context has not been initialized")
         return self._validation_context.result
 
     @property
     def validation_context(self):
-        if self._validation_context is None:
+        if self._validation_context is None and self._checks_initialized:
             raise OutOfValidationContext("Validation context has not been initialized")
         return self._validation_context
 
     @property
     def validation_settings(self):
-        if self._validation_context is None:
+        if self._validation_context is None and self._checks_initialized:
             raise OutOfValidationContext("Validation context has not been initialized")
         return self._validation_context.settings
 
