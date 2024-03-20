@@ -1034,3 +1034,9 @@ class ValidationContext:
     @property
     def settings(self) -> Dict:
         return self._settings
+
+    @property
+    def rocrate_path(self) -> Path:
+        if isinstance(self.validator.rocrate_path, str):
+            return Path(self.validator.rocrate_path)
+        return self.validator.rocrate_path
