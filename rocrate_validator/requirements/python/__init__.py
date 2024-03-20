@@ -27,11 +27,15 @@ class PyRequirement(Requirement):
         checks = []
         for name, member in inspect.getmembers(self.requirement_check_class, inspect.isfunction):
             if hasattr(member, "check"):
-                check_name = member.name if hasattr(member, "name") else name
+                check_name = None
+                try:
+                    check_name = member.name
+                except Exception:
+                    check_name = name
                 check_description = member.__doc__ if member.__doc__ else ""
                 check = RequirementCheck(self, check_name, member, check_description)
                 self._checks.append(check)
-                logger.debug("Added check: %s", check_name, check)
+                logger.debug("Added check: %s %r", check_name, check)
         # return the checks
         return checks
 
