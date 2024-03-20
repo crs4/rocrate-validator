@@ -16,8 +16,7 @@ from rocrate_validator.constants import (DEFAULT_PROFILE_README_FILE,
                                          RDF_SERIALIZATION_FORMATS_TYPES,
                                          ROCRATE_METADATA_FILE,
                                          VALID_INFERENCE_OPTIONS_TYPES)
-from rocrate_validator.utils import (get_classes_from_file,
-                                     get_requirement_name_from_file)
+from rocrate_validator.utils import get_requirement_name_from_file
 
 from .errors import OutOfValidationContext
 
