@@ -137,12 +137,12 @@ def __print_validation_result__(
 
     if result.passed(severity=severity):
         console.print(
-            "\n\n[bold]\[[green]OK[/green]] RO-Crate is [green]valid[/green] !!![/bold]\n\n",
+            "\n\n[bold][[green]OK[/green]] RO-Crate is [green]valid[/green] !!![/bold]\n\n",
             style="white",
         )
     else:
         console.print(
-            "\n\n[bold]\[[red]FAILED[/red]] RO-Crate is [red]not valid[/red] !!![/bold]\n",
+            "\n\n[bold][[red]FAILED[/red]] RO-Crate is [red]not valid[/red] !!![/bold]\n",
             style="white",
         )
 
