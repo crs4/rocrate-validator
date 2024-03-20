@@ -102,7 +102,7 @@ def describe_profile(ctx,
                               level_info))
 
         table = Table(show_header=True,
-                      title="Profile Requirements Checks",
+                      title="Profile Requirements",
                       header_style="bold cyan",
                       border_style="bright_black",
                       show_footer=False,
