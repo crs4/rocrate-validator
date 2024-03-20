@@ -155,7 +155,7 @@ def __print_validation_result__(
                       f"profile: [magenta]{requirement.profile.name }[/magenta]]", align="right")
             )
             console.print(
-                f"  [u bold][magenta][{requirement.order_number}] {requirement.name}[/magenta][/u bold]",
+                f"  [bold][magenta][{requirement.order_number}] [u]{requirement.name}[/u][/magenta][/bold]",
                 style="white",
             )
             console.print(f"\n{' '*4}{requirement.description}\n", style="white italic")
