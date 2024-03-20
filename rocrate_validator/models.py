@@ -372,14 +372,15 @@ class RequirementCheck(ABC):
         return self.check()
 
 
-class Requirement:
+class Requirement(ABC):
 
     def __init__(self,
                  severity: RequirementType,
                  profile: Profile,
                  name: str = None,
                  description: str = None,
-                 path: Path = None):
+                 path: Path = None,
+                 initialize_checks: bool = True):
         self._order_number = None
         self._name = name
         self._severity = severity
@@ -393,6 +394,16 @@ class Requirement:
 
         if not self._name and self._path:
             self._name = get_requirement_name_from_file(self._path)
+
+        # set flag to indicate if the checks have been initialized
+        self._checks_initialized = False
+        # initialize the checks if the flag is set
+        if initialize_checks:
+            self.__init_checks__()
+            # assign order numbers to checks
+            self.__reorder_checks__()
+            # update the checks initialized flag
+            self._checks_initialized = True
 
     @property
     def order_number(self) -> int:
@@ -433,18 +444,9 @@ class Requirement:
     def path(self) -> Path:
         return self._path
 
-    # write a method to collect the list of decorated check methods
+    @abstractmethod
     def __init_checks__(self):
-        # initialize the list of checks
-        checks = []
-        for name, member in inspect.getmembers(self._check_class, inspect.isfunction):
-            if hasattr(member, "check"):
-                check_name = member.name if hasattr(member, "name") else name
-                self._checks.append(RequirementCheck(self, check_name, member, member.__doc__))
-        # assign the check ids
-        self.__reorder_checks__()
-        # return the checks
-        return checks
+        pass
 
     def get_checks(self) -> List[RequirementCheck]:
         return self._checks.copy()
