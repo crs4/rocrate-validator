@@ -130,7 +130,9 @@ def get_full_graph(
     return full_graph
 
 
-def get_classes_from_file(file_path: Path, filter_class: Optional[Type] = None):
+def get_classes_from_file(file_path: Path,
+                          filter_class: Optional[Type] = None,
+                          class_name_suffix: str = None) -> dict:
     # ensure the file path is a Path object
     assert file_path, "The file path is required"
     if not isinstance(file_path, Path):
@@ -154,18 +156,12 @@ def get_classes_from_file(file_path: Path, filter_class: Optional[Type] = None):
     # Import the module
     module = import_module(module_name)
     logger.debug("Module: %r", module)
-    logger.debug("Members: %r", inspect.getmembers(module))
-
-    for name, cls in inspect.getmembers(module, inspect.isclass):
-        logger.debug("Checking object %s", cls)
-        logger.debug("Module %s", inspect.getmodule(cls))
-        logger.debug("Subclass %s", issubclass(cls, filter_class))
-        logger.debug("Name %s", cls.__name__.endswith('Check'))
 
     # Get all classes in the module that are subclasses of Check
     classes = {name: cls for name, cls in inspect.getmembers(module, inspect.isclass)
-               if cls.__module__ == module_name and cls.__name__.endswith('Check')}
-    # if not filter_class or (issubclass(cls, filter_class) and cls != filter_class)}
+               if cls.__module__ == module_name
+               and (not class_name_suffix or cls.__name__.endswith(class_name_suffix))
+               and (not filter_class or (issubclass(cls, filter_class) and cls != filter_class))}
 
     return classes
 
