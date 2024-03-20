@@ -583,20 +583,14 @@ class Requirement(ABC):
         if isinstance(file_path, str):
             file_path = Path(file_path)
 
-        # TODO: implement a better way to identify the requirement and check classes
+        # TODO: implement a better way to identify the requirement type and class
         # check if the file is a python file
         if file_path.suffix == ".py":
-            classes = get_classes_from_file(file_path, filter_class=RequirementCheck)
-            logger.debug("Classes: %r" % classes)
-
-            # instantiate a requirement for each class
-            for check_name, check_class in classes.items():
-                r = Requirement(
-                    requirement_type, profile, path=file_path,
-                    name=get_requirement_name_from_file(file_path, check_name=check_name)
-                )
-                logger.debug("Added Requirement: %r" % r)
-                requirements.append(r)
+            from rocrate_validator.requirements.python import PyRequirement
+            py_requirements = PyRequirement.load(profile, requirement_type, file_path)
+            logger.debug("Loaded Python requirements: %r" % py_requirements)
+            requirements.extend(py_requirements)
+            logger.debug("Added Requirement: %r" % py_requirements)
         elif file_path.suffix == ".ttl":
             # from rocrate_validator.requirements.shacl.checks import SHACLCheck
             from rocrate_validator.requirements.shacl.requirements import \
