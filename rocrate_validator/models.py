@@ -818,7 +818,7 @@ class Validator:
                  advanced: Optional[bool] = False,
                  inference: Optional[VALID_INFERENCE_OPTIONS_TYPES] = None,
                  inplace: Optional[bool] = False,
-                 abort_on_first: Optional[bool] = False,
+                 abort_on_first: Optional[bool] = True,
                  allow_infos: Optional[bool] = False,
                  allow_warnings: Optional[bool] = False,
                  serialization_output_path: str = None,

@@ -19,7 +19,7 @@ def validate(
     advanced: Optional[bool] = False,
     inference: Optional[Literal["owl", "rdfs"]] = False,
     inplace: Optional[bool] = False,
-    abort_on_first: Optional[bool] = False,
+    abort_on_first: Optional[bool] = True,
     allow_infos: Optional[bool] = False,
     allow_warnings: Optional[bool] = False,
     requirement_level: Union[str, RequirementType] = RequirementLevels.MUST,
