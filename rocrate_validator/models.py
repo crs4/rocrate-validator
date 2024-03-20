@@ -450,9 +450,8 @@ class Requirement(ABC):
     @property
     def description(self) -> str:
         if not self._description:
-            # set docs equal to docstring
-            docs = self.__class__.__doc__
-            self._description = docs.strip() if docs else f"Profile Requirement {self.name}"
+            self._description = self.__class__.__doc__.strip(
+            ) if self.__class__.__doc__ else f"Profile Requirement {self.name}"
         return self._description
 
     @property

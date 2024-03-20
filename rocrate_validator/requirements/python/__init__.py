@@ -29,10 +29,10 @@ class PyRequirement(Requirement):
             if hasattr(member, "check"):
                 check_name = None
                 try:
-                    check_name = member.name
+                    check_name = member.name.strip()
                 except Exception:
-                    check_name = name
-                check_description = member.__doc__ if member.__doc__ else ""
+                    check_name = name.strip()
+                check_description = member.__doc__.strip() if member.__doc__ else ""
                 check = RequirementCheck(self, check_name, member, check_description)
                 self._checks.append(check)
                 logger.debug("Added check: %s %r", check_name, check)
@@ -53,8 +53,8 @@ class PyRequirement(Requirement):
             logger.debug("Processing requirement: %r" % requirement_name)
             r = PyRequirement(
                 requirement_type, profile,
-                name=requirement_name,
-                description=requirement_class.__doc__,
+                name=requirement_name.strip() if requirement_name else "",
+                description=requirement_class.__doc__.strip() if requirement_class.__doc__ else "",
                 path=file_path,
                 requirement_check_class=requirement_class
             )
