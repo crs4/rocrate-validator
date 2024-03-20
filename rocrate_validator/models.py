@@ -278,18 +278,18 @@ def check(name=None):
     return decorator
 
 
-class RequirementCheck(ABC):
+class RequirementCheck:
 
     def __init__(self,
                  requirement: Requirement,
                  name: str,
-                 check: Callable,
+                 check_function: Callable,
                  description: str = None):
         self._requirement: Requirement = requirement
         self._order_number = None
         self._name = name
         self._description = description
-        self._check = check
+        self._check_function = check_function
         # declare the reference to the validation context
         self._validation_context: ValidationContext = None
         # declare the reference to the validator
@@ -353,9 +353,8 @@ class RequirementCheck(ABC):
     def get_issues_by_severity(self, severity: Severity = Severity.WARNING) -> List[CheckIssue]:
         return self._result.get_issues_by_check_and_severity(self, severity)
 
-    @abstractmethod
     def check(self) -> bool:
-        raise NotImplementedError("Check not implemented")
+        return self.check_function(self)
 
     def __do_check__(self, context: ValidationContext) -> bool:
         """
