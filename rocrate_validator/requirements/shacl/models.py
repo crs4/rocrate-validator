@@ -84,6 +84,15 @@ class ShapeProperty:
     def compare_name(self, other_model):
         return self.name == other_model.name
 
+    def __eq__(self, __value: object) -> bool:
+        if not isinstance(__value, type(self)):
+            raise ValueError("Invalid comparison")
+        return self._shape == getattr(__value, '_shape', None)\
+            and self._node == getattr(__value, '_node', None)
+
+    def __hash__(self):
+        return hash(self._node)
+
 
 class Shape:
 
@@ -160,10 +169,10 @@ class Shape:
     def __eq__(self, other):
         if not isinstance(other, Shape):
             return False
-        return self.name == other.name
+        return self._node == other._node
 
     def __hash__(self):
-        return hash(self.name)
+        return hash(self._node)
 
     @classmethod
     def load(cls, shapes_path: Union[str, Path], publicID: str = None) -> Dict[str, Shape]:
@@ -183,7 +192,8 @@ class Shape:
         for shape_node, _, _ in shapes_nodes:
             logger.debug(f"Processing Shape Node: {shape_node}")
             shape = Shape(shape_node, shapes_graph)
-            shapes[str(shape)] = shape
+            if str(shape):
+                shapes[str(shape)] = shape
 
         return shapes
 

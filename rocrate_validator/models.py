@@ -393,6 +393,19 @@ class RequirementCheck:
         # Perform the check
         return self.check()
 
+    def __eq__(self, other: RequirementCheck):
+        if not isinstance(other, RequirementCheck):
+            raise ValueError(f"Cannot compare RequirementCheck with {type(other)}")
+        return self.requirement == other.requirement and self.name == other.name
+
+    def __ne__(self, other: RequirementCheck):
+        if not isinstance(other, RequirementCheck):
+            raise ValueError(f"Cannot compare RequirementCheck with {type(other)}")
+        return self.requirement != other.requirement or self.name != other.name
+
+    def __hash__(self):
+        return hash((self.requirement, self.name or ""))
+
 
 class Requirement(ABC):
 
