@@ -97,7 +97,7 @@ class Shape:
         self._shapes_graph = shapes_graph
 
         # create a graph for the shape
-        logger.warning("SHAPE NODE: %s" % node)
+        logger.debug("Initializing graph for the shape: %s" % node)
         shape_graph = Graph()
         shape_graph += shapes_graph.triples((node, None, None))
 
