@@ -211,7 +211,7 @@ class Validator:
 
     def __init__(
         self,
-        check: RequirementCheck,
+        check: SHACLCheck,
         shapes_graph: Optional[Union[GraphLike, str, bytes]],
         ont_graph: Optional[Union[GraphLike, str, bytes]] = None,
     ) -> None:
@@ -239,7 +239,7 @@ class Validator:
         return self._ont_graph
 
     @property
-    def check(self) -> RequirementCheck:
+    def check(self) -> SHACLCheck:
         return self._check
 
     def validate(
