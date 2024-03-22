@@ -30,7 +30,7 @@ def build_node_subgraph(graph: Graph, node: Node) -> Graph:
     return shape_graph
 
 
-def inject_attributes(node_graph: Graph,  obj: object) -> object:
+def inject_attributes(node_graph: Graph, obj: object) -> object:
     # inject attributes of the shape property
     for node, p, o in node_graph:
         predicate_as_string = p.toPython()
@@ -38,6 +38,7 @@ def inject_attributes(node_graph: Graph,  obj: object) -> object:
         if predicate_as_string.startswith("http://www.w3.org/ns/shacl#"):
             property_name = predicate_as_string.split("#")[-1]
             setattr(obj, property_name, o.toPython())
+            logger.debug("Injecting attribute %s: %s", property_name, o.toPython())
 
     # return the object
     return obj
