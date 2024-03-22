@@ -183,7 +183,7 @@ class Shape:
         for shape_node, _, _ in shapes_nodes:
             logger.debug(f"Processing Shape Node: {shape_node}")
             shape = Shape(shape_node, shapes_graph)
-            shapes[str(shape).replace(publicID, "")] = shape
+            shapes[str(shape)] = shape
 
         return shapes
 
