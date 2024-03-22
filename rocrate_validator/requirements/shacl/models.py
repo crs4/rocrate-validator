@@ -33,8 +33,6 @@ class ShapeProperty:
         # store the node
         self._node = shape_property_node
 
-        # TODO: refactor moving URIRef to constants
-
         # create a graph for the shape property
         shapes_graph = shape.shapes_graph
         shape_property_graph = Graph()
