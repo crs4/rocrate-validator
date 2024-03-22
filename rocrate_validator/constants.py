@@ -4,6 +4,9 @@ import typing
 # Define SHACL namespace
 SHACL_NS = "http://www.w3.org/ns/shacl#"
 
+# Define RDF syntax namespace
+RDF_SYNTAX_NS = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+
 # Define the rocrate-metadata.json file name
 ROCRATE_METADATA_FILE = "ro-crate-metadata.json"
 
@@ -36,3 +39,9 @@ RDF_SERIALIZATION_FORMATS = typing.get_args(RDF_SERIALIZATION_FORMATS_TYPES)
 # Define allowed inference options
 VALID_INFERENCE_OPTIONS_TYPES = typing.Literal["owl", "rdfs", "both", None]
 VALID_INFERENCE_OPTIONS = typing.get_args(VALID_INFERENCE_OPTIONS_TYPES)
+
+# Define allowed requirement levels
+VALID_REQUIREMENT_LEVELS_TYPES = typing.Literal[
+    'MAY', 'OPTIONAL', 'SHOULD', 'SHOULD_NOT',
+    'REQUIRED', 'MUST', 'MUST_NOT', 'SHALL', 'SHALL_NOT', 'RECOMMENDED'
+]

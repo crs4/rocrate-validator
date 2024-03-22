@@ -5,10 +5,11 @@ import logging
 from pathlib import Path
 from typing import Dict, List, Union
 
-from rdflib import Graph, Namespace, URIRef
+from rdflib import RDF, Graph, Namespace, URIRef
 from rdflib.term import Node
 
 from ...constants import SHACL_NS
+from .utils import inject_attributes
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -60,13 +61,8 @@ class ShapeProperty:
         # store the graph
         self._shape_property_graph = shape_property_graph
 
-        # inject attributes of the shape property
-        for _, p, o in shape_property_graph:
-            predicate_as_string = str(p)
-            logger.debug(f"Processing {predicate_as_string} of property graph {shape_property_node}")
-            if predicate_as_string.startswith("http://www.w3.org/ns/shacl#"):
-                property_name = predicate_as_string.split("#")[-1]
-                setattr(self, property_name, o.toPython())
+        # inject attributes of the shape property to the object
+        inject_attributes(shape_property_graph, self)
 
     @property
     def shape(self):
@@ -88,18 +84,27 @@ class ShapeProperty:
 
 
 class Shape:
-    def __init__(self, name, description, node: Node, shapes_graph: Graph):
 
-        self.name = name
-        self.description = description
-        self._properties = []
+    # define default values
+    name: str = None
+    description: str = None
+
+    def __init__(self, node: Node, shapes_graph: Graph):
+
+        # store the shape node
         self._node = node
+        # store the shapes graph
         self._shapes_graph = shapes_graph
+        # initialize the properties
+        self._properties = []
 
         # create a graph for the shape
         logger.debug("Initializing graph for the shape: %s" % node)
         shape_graph = Graph()
         shape_graph += shapes_graph.triples((node, None, None))
+
+        # inject attributes of the shape to the object
+        inject_attributes(shape_graph, self)
 
         # Define the property predicate
         predicate = URIRef(SHACL_NS + "property")
@@ -163,32 +168,17 @@ class Shape:
         shapes_graph.parse(shapes_path, format="turtle", publicID=publicID)
         logger.debug("Shapes graph: %s" % shapes_graph)
 
-        # query the graph for the shapes
-        query = """
-        PREFIX sh: <http://www.w3.org/ns/shacl#>
-        SELECT  ?shape ?shapeName ?shapeDescription
-                ?propertyName ?propertyDescription
-                ?propertyPath ?propertyGroup ?propertyOrder
-        WHERE {
-            ?shape a sh:NodeShape ;
-                    sh:name ?shapeName ;
-                    sh:description ?shapeDescription .
-        }
-        """
-
-        logger.debug("Performing query: %s" % query)
-        results = shapes_graph.query(query)
-        logger.debug("Query results: %s" % results)
-
+        # extract shapeNode triples from the shapes_graph
+        shapeNode = URIRef(SHACL_NS + "NodeShape")
+        shapes_nodes = shapes_graph.triples((None, RDF.type, shapeNode))
+        logger.debug("Shapes nodes: %s" % shapes_nodes)
+        # create a shape object for each shape node
         shapes: Dict[str, Shape] = {}
-        for row in results:
-            shape = shapes.get(row.shapeName, None)
-            if shape is None:
-                shape = Shape(row.shapeName, row.shapeDescription,
-                              row.shape, shapes_graph)
-                shapes[row.shapeName] = shape
+        for shape_node, _, _ in shapes_nodes:
+            logger.debug(f"Processing Shape Node: {shape_node}")
+            shape = Shape(shape_node, shapes_graph)
+            shapes[str(shape).replace(publicID, "")] = shape
 
-        logger.debug("Loaded shapes: %s" % shapes)
         return shapes
 
 
