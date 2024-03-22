@@ -111,11 +111,13 @@ class Severity(RequirementLevels):
 
 class Profile:
     def __init__(self, name: str, path: Path = None,
-                 requirements: Set[Requirement] = None):
+                 requirements: Set[Requirement] = None,
+                 publicID: str = None):
         self._path = path
         self._name = name
         self._description = None
         self._requirements = requirements if requirements else []
+        self._publicID = publicID
 
     @property
     def path(self):
@@ -128,6 +130,10 @@ class Profile:
     @property
     def readme_file_path(self) -> Path:
         return self.path / DEFAULT_PROFILE_README_FILE
+
+    @property
+    def publicID(self) -> str:
+        return self._publicID
 
     @property
     def description(self) -> str:
@@ -163,7 +169,8 @@ class Profile:
             for file in sorted(files, key=lambda x: (not x.endswith('.py'), x)):
                 requirement_path = requirement_root / file
                 for requirement in Requirement.load(
-                        self, RequirementLevels.get(requirement_level), requirement_path):
+                        self, RequirementLevels.get(requirement_level),
+                        requirement_path, publicID=self.publicID):
                     req_id += 1
                     requirement._order_number = req_id
                     self.add_requirement(requirement)
@@ -250,7 +257,6 @@ class Profile:
         profile = Profile(name=path.name, path=path, publicID=publicID)
         logger.debug("Loaded profile: %s", profile)
         return profile
-
     @staticmethod
     def load_profiles(profiles_path: Union[str, Path], publicID: str = None) -> Dict[str, Profile]:
         # if the path is a string, convert it to a Path
@@ -574,7 +580,10 @@ class Requirement(ABC):
         return self.name
 
     @staticmethod
-    def load(profile: Profile, requirement_type: RequirementType, file_path: Path) -> List[Requirement]:
+    def load(profile: Profile,
+             requirement_type: RequirementType,
+             file_path: Path,
+             publicID: str = None) -> List[Requirement]:
         # initialize the set of requirements
         requirements = []
 
@@ -594,7 +603,8 @@ class Requirement(ABC):
             # from rocrate_validator.requirements.shacl.checks import SHACLCheck
             from rocrate_validator.requirements.shacl.requirements import \
                 SHACLRequirement
-            shapes_requirements = SHACLRequirement.load(profile, requirement_type, file_path)
+            shapes_requirements = SHACLRequirement.load(profile, requirement_type,
+                                                        file_path, publicID=publicID)
             logger.debug("Loaded SHACL requirements: %r" % shapes_requirements)
             requirements.extend(shapes_requirements)
             logger.debug("Added Requirement: %r" % shapes_requirements)
