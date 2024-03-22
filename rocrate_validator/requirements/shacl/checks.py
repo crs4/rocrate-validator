@@ -19,10 +19,11 @@ class SHACLCheck(RequirementCheck):
                  requirement: Requirement,
                  shapeProperty: ShapeProperty = None) -> None:
         self._shapeProperty = shapeProperty
-
+        logger.debug(f"ShapeProperty: {shapeProperty.name} - {shapeProperty.description}")
         super().__init__(requirement,
                          shapeProperty.name
                          if shapeProperty and shapeProperty.name else None,
+                         self.check,
                          shapeProperty.description
                          if shapeProperty and shapeProperty.description else None)
 
