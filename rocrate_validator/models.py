@@ -898,7 +898,7 @@ class Validator:
 
     def load_profile(self):
         # load profile
-        profile = Profile.load(self.profile_path)
+        profile = Profile.load(self.profile_path, publicID=self.publicID)
         logger.debug("Profile: %s", profile)
         return profile
 

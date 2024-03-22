@@ -43,8 +43,9 @@ class SHACLRequirement(Requirement):
         return checks
 
     @staticmethod
-    def load(profile: Profile, requirement_type: RequirementType, file_path: Path) -> List[Requirement]:
-        shapes: Dict[str, Shape] = Shape.load(file_path)
+    def load(profile: Profile, requirement_type: RequirementType,
+             file_path: Path, publicID: str = None) -> List[Requirement]:
+        shapes: Dict[str, Shape] = Shape.load(file_path, publicID=publicID)
         logger.debug("Loaded shapes: %s" % shapes)
         requirements = []
         for shape in shapes.values():
