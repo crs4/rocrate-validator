@@ -112,30 +112,8 @@ class Shape:
             shape_graph += shapes_graph.triples((object, None, None))
             self._properties.append(ShapeProperty(self, object))
 
-        # print triples of the shape graph
-        for s, p, o in shape_graph:
-            logger.warning(f"SHAPE GRAPH: {s} {p} {o}")
-
         # store the graph
         self._shape_graph = shape_graph
-
-        shape_graph.serialize(f"/tmp/shapes/{name}.ttl", format="turtle")
-
-    def __process_shape_property(self, shape_node: Node, property_node: Node) -> ShapeProperty:
-
-        # create a graph for the shape
-        shape_property_graph = Graph()
-        shape_property_graph += self._shapes_graph.triples((shape_node, None, None))
-        shape_property_graph += self._shapes_graph.triples((property_node, None, None))
-
-        # print triples of the shape graph
-        for s, p, o in shape_property_graph:
-            logger.warning(f"SHAPE PROPERTY GRAPH: {s} {p} {o}")
-
-        # store the graph
-        shape_property_graph.serialize(f"/tmp/shapes/{self.name}_{property_node}.ttl", format="turtle")
-
-        return ShapeProperty(self, "name", "description")
 
     @property
     def node(self):
