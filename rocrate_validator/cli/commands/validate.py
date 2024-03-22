@@ -165,7 +165,7 @@ def __print_validation_result__(
                 issue_color = get_severity_color(check.severity)
                 console.print(
                     f"{' '*4}- "
-                    f"[[magenta]{check.name}[/magenta]]: {check.description}")
+                    f"[magenta]{check.name}[/magenta]: {check.description}")
                 console.print(f"\n{' '*6}Detected issues:", style="white bold")
                 for issue in check.get_issues():
                     console.print(
