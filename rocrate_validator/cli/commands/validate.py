@@ -121,7 +121,7 @@ def validate(ctx,
 
     except Exception as e:
         console.print(
-            f"\n\n[bold]\[[red]FAILED[/red]] Unexpected error: {e} !!![/bold]\n",
+            f"\n\n[bold][[red]FAILED[/red]] Unexpected error: {e} !!![/bold]\n",
             style="white",
         )
         if logger.isEnabledFor(logging.DEBUG):
