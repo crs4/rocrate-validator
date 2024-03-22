@@ -10,21 +10,21 @@ logger = logging.getLogger(__name__)
 
 
 class SHACLCheck(RequirementCheck):
+
+    """
+    A SHACL check for a specific shape property
+    """
+
     def __init__(self,
                  requirement: Requirement,
-                 shapeProperty: ShapeProperty) -> None:
+                 shapeProperty: ShapeProperty = None) -> None:
         self._shapeProperty = shapeProperty
+
         super().__init__(requirement,
-                         shapeProperty.name.value if shapeProperty.name else None,
-                         shapeProperty.description if shapeProperty.description else None)
-
-    @property
-    def name(self):
-        return self._shapeProperty.name
-
-    @property
-    def description(self):
-        return self._shapeProperty.description
+                         shapeProperty.name
+                         if shapeProperty and shapeProperty.name else None,
+                         shapeProperty.description
+                         if shapeProperty and shapeProperty.description else None)
 
     @property
     def shapeProperty(self) -> ShapeProperty:
@@ -67,13 +67,15 @@ class SHACLCheck(RequirementCheck):
         return True
 
     def __str__(self) -> str:
-        return super().__str__() + f" - {self._shapeProperty}"
+        return super().__str__() + (f" - {self._shapeProperty}" if self._shapeProperty else "")
 
     def __repr__(self) -> str:
-        return super().__repr__() + f" - {self._shapeProperty}"
+        return super().__repr__() + (f" - {self._shapeProperty}" if self._shapeProperty else "")
 
     def __eq__(self, __value: object) -> bool:
-        return super().__eq__(__value) and self._shapeProperty == __value._shapeProperty
+        if not isinstance(__value, type(self)):
+            return NotImplemented
+        return super().__eq__(__value) and self._shapeProperty == getattr(__value, '_shapeProperty', None)
 
     def __hash__(self) -> int:
-        return super().__hash__() + hash(self._shapeProperty)
+        return super().__hash__() + (hash(self._shapeProperty) if self._shapeProperty else 0)

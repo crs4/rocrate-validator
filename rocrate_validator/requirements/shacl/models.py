@@ -3,9 +3,9 @@ from __future__ import annotations
 import json
 import logging
 from pathlib import Path
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Union
 
-from rdflib import Graph
+from rdflib import Graph, Namespace, URIRef
 from rdflib.term import Node
 
 from ...constants import SHACL_NS
@@ -15,49 +15,70 @@ logger = logging.getLogger(__name__)
 
 
 class ShapeProperty:
+
+    # define default values
+    name: str = None
+    description: str = None
+    group: str = None
+    defaultValue: str = None
+    order: int = 0
+
     def __init__(self,
                  shape: Shape,
-                 name: str,
-                 description: Optional[str] = None,
-                 group: Optional[str] = None,
-                 node: Optional[str] = None,
-                 default: Optional[str] = None,
-                 order: int = 0):
-        self._name = name
-        self._description = description
+                 shape_property_node: Node):
+
+        # store the shape
         self._shape = shape
-        self._group = group
-        self._node = node
-        self._default = default
-        self._order = order
+        # store the node
+        self._node = shape_property_node
 
-    @property
-    def name(self):
-        return self._name
+        # TODO: refactor moving URIRef to constants
 
-    @property
-    def description(self):
-        return self._description
+        # create a graph for the shape property
+        shapes_graph = shape.shapes_graph
+        shape_property_graph = Graph()
+        shape_property_graph += shapes_graph.triples((shape.node, None, None))
+        shape_property_graph += shapes_graph.triples((shape_property_node, None, None))
+        # remove dangling properties
+        for s, p, o in shape_property_graph:
+            logger.debug(f"Processing {p} of property graph {shape_property_node}")
+            if p == URIRef("http://www.w3.org/ns/shacl#property") and o != shape_property_node:
+                shape_property_graph.remove((s, p, o))
+        # add BNodes
+        for s, p, o in shape_property_graph:
+            shape_property_graph += shapes_graph.triples((o, None, None))
+
+        # Use the triples method to get all triples that are part of a list
+        RDF = Namespace("http://www.w3.org/1999/02/22-rdf-syntax-ns#")
+        first_predicate = RDF.first
+        rest_predicate = RDF.rest
+        shape_property_graph += shapes_graph.triples((None, first_predicate, None))
+        shape_property_graph += shapes_graph.triples((None, rest_predicate, None))
+        for _, _, object in shape_property_graph:
+            shape_property_graph += shapes_graph.triples((object, None, None))
+
+        # store the graph
+        self._shape_property_graph = shape_property_graph
+
+        # inject attributes of the shape property
+        for _, p, o in shape_property_graph:
+            predicate_as_string = str(p)
+            logger.debug(f"Processing {predicate_as_string} of property graph {shape_property_node}")
+            if predicate_as_string.startswith("http://www.w3.org/ns/shacl#"):
+                property_name = predicate_as_string.split("#")[-1]
+                setattr(self, property_name, o.toPython())
 
     @property
     def shape(self):
         return self._shape
 
     @property
-    def group(self):
-        return self._group
-
-    @property
     def node(self):
         return self._node
 
     @property
-    def default(self):
-        return self._default
-
-    @property
-    def order(self):
-        return self._order
+    def shape_property_graph(self):
+        return self._shape_property_graph
 
     def compare_shape(self, other_model):
         return self.shape == other_model.shape
@@ -67,23 +88,76 @@ class ShapeProperty:
 
 
 class Shape:
-    def __init__(self, name, description):
+    def __init__(self, name, description, node: Node, shapes_graph: Graph):
+
         self.name = name
         self.description = description
-        self.properties = []
+        self._properties = []
+        self._node = node
+        self._shapes_graph = shapes_graph
 
-    def add_property(self, name: str, description: str = None,
-                     group: str = None, node: str = None, default: str = None, order: int = 0):
-        self.properties.append(
-            ShapeProperty(self,
-                          name, description,
-                          group, node, default, order))
+        # create a graph for the shape
+        logger.warning("SHAPE NODE: %s" % node)
+        shape_graph = Graph()
+        shape_graph += shapes_graph.triples((node, None, None))
+
+        # Define the property predicate
+        predicate = URIRef("http://www.w3.org/ns/shacl#property")
+
+        # Use the triples method to get all triples with the particular predicate
+        first_triples = shape_graph.triples((None, predicate, None))
+
+        # For each triple from the first call, get all triples whose subject is the object of the first triple
+        for _, _, object in first_triples:
+            shape_graph += shapes_graph.triples((object, None, None))
+            self._properties.append(ShapeProperty(self, object))
+
+        # print triples of the shape graph
+        for s, p, o in shape_graph:
+            logger.warning(f"SHAPE GRAPH: {s} {p} {o}")
+
+        # store the graph
+        self._shape_graph = shape_graph
+
+        shape_graph.serialize(f"/tmp/shapes/{name}.ttl", format="turtle")
+
+    def __process_shape_property(self, shape_node: Node, property_node: Node) -> ShapeProperty:
+
+        # create a graph for the shape
+        shape_property_graph = Graph()
+        shape_property_graph += self._shapes_graph.triples((shape_node, None, None))
+        shape_property_graph += self._shapes_graph.triples((property_node, None, None))
+
+        # print triples of the shape graph
+        for s, p, o in shape_property_graph:
+            logger.warning(f"SHAPE PROPERTY GRAPH: {s} {p} {o}")
+
+        # store the graph
+        shape_property_graph.serialize(f"/tmp/shapes/{self.name}_{property_node}.ttl", format="turtle")
+
+        return ShapeProperty(self, "name", "description")
+
+    @property
+    def node(self):
+        return self._node
+
+    @property
+    def shape_graph(self):
+        return self._shape_graph
+
+    @property
+    def shapes_graph(self):
+        return self._shapes_graph
+
+    @property
+    def properties(self):
+        return self._properties.copy()
 
     def get_properties(self) -> List[ShapeProperty]:
-        return self.properties
+        return self._properties.copy()
 
     def get_property(self, name) -> ShapeProperty:
-        for prop in self.properties:
+        for prop in self._properties:
             if prop.name == name:
                 return prop
         return None
@@ -103,32 +177,24 @@ class Shape:
         return hash(self.name)
 
     @classmethod
-    def load(cls, shapes_path: Union[str, Path]) -> Dict[str, Shape]:
+    def load(cls, shapes_path: Union[str, Path], publicID: str = None) -> Dict[str, Shape]:
         """
         Load the shapes from the graph
         """
         shapes_graph = Graph()
-        shapes_graph.parse(shapes_path, format="turtle")
+        shapes_graph.parse(shapes_path, format="turtle", publicID=publicID)
         logger.debug("Shapes graph: %s" % shapes_graph)
 
-        # query the graph for the shapes and shape properties
+        # query the graph for the shapes
         query = """
         PREFIX sh: <http://www.w3.org/ns/shacl#>
-        SELECT  ?shape ?shapeName ?shapeDescription 
+        SELECT  ?shape ?shapeName ?shapeDescription
                 ?propertyName ?propertyDescription
                 ?propertyPath ?propertyGroup ?propertyOrder
         WHERE {
             ?shape a sh:NodeShape ;
                     sh:name ?shapeName ;
-                    sh:description ?shapeDescription ;
-                    sh:property ?property .
-            OPTIONAL {
-                ?property sh:name ?propertyName ;
-                        sh:description ?propertyDescription ;
-                        sh:group ?propertyGroup ;
-                        sh:order ?propertyOrder ;
-                        sh:path ?propertyPath .
-            }
+                    sh:description ?shapeDescription .
         }
         """
 
@@ -140,18 +206,11 @@ class Shape:
         for row in results:
             shape = shapes.get(row.shapeName, None)
             if shape is None:
-                shape = Shape(row.shapeName, row.shapeDescription)
+                shape = Shape(row.shapeName, row.shapeDescription,
+                              row.shape, shapes_graph)
                 shapes[row.shapeName] = shape
 
-            # print("propertyName vs shapeName", row.propertyName, row.shapeName)
-            shape.add_property(
-                row.propertyName or row.shapeName,
-                row.propertyDescription or row.shapeDescription,
-                group=row.propertyGroup or None,
-                # node=row.propertyNode or None,
-                default=None,
-                order=row.propertyOrder or 0
-            )
+        logger.debug("Loaded shapes: %s" % shapes)
         return shapes
 
 
