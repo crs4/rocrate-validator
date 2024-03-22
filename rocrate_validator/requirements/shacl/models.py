@@ -35,16 +35,20 @@ class ShapeProperty:
 
         # create a graph for the shape property
         shapes_graph = shape.shapes_graph
-        shape_property_graph = Graph()
-        shape_property_graph += shapes_graph.triples((shape.node, None, None))
-        shape_property_graph += shapes_graph.triples((shape_property_node, None, None))
+        shape_graph = Graph()
+        shape_graph += shapes_graph.triples((shape.node, None, None))
+        shape_property_attributes_graph = Graph()
+        shape_property_attributes_graph += shapes_graph.triples((shape_property_node, None, None))
+        # global shape property graph
+        shape_property_graph = shape_graph + shape_property_attributes_graph
+
         # remove dangling properties
         for s, p, o in shape_property_graph:
             logger.debug(f"Processing {p} of property graph {shape_property_node}")
             if p == URIRef("http://www.w3.org/ns/shacl#property") and o != shape_property_node:
                 shape_property_graph.remove((s, p, o))
         # add BNodes
-        for s, p, o in shape_property_graph:
+        for s, p, o in shape_property_attributes_graph:
             shape_property_graph += shapes_graph.triples((o, None, None))
 
         # Use the triples method to get all triples that are part of a list
@@ -60,7 +64,7 @@ class ShapeProperty:
         self._shape_property_graph = shape_property_graph
 
         # inject attributes of the shape property to the object
-        inject_attributes(shape_property_graph, self)
+        inject_attributes(shape_property_attributes_graph, self)
 
     @property
     def shape(self):
@@ -100,19 +104,17 @@ class Shape:
         logger.debug("Initializing graph for the shape: %s" % node)
         shape_graph = Graph()
         shape_graph += shapes_graph.triples((node, None, None))
+        # store the graph
+        self._shape_graph = shape_graph
 
         # inject attributes of the shape to the object
         inject_attributes(shape_graph, self)
 
+        # Initialize the properties
         # Define the property predicate
         predicate = URIRef(SHACL_NS + "property")
-
         # Use the triples method to get all triples with the particular predicate
         first_triples = shape_graph.triples((None, predicate, None))
-
-        # store the graph
-        self._shape_graph = shape_graph
-
         # For each triple from the first call, get all triples whose subject is the object of the first triple
         for _, _, object in first_triples:
             shape_graph += shapes_graph.triples((object, None, None))
