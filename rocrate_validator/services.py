@@ -55,22 +55,23 @@ def validate(
     return result
 
 
-def get_profiles(profiles_path: str = "./profiles") -> Dict[str, Profile]:
+def get_profiles(profiles_path: str = "./profiles", publicID: str = None) -> Dict[str, Profile]:
     """
     Load the profiles from the given path
     """
-    profiles = Profile.load_profiles(profiles_path)
+    profiles = Profile.load_profiles(profiles_path, publicID=publicID)
     logger.debug("Profiles loaded: %s", profiles)
     return profiles
 
 
-def get_profile(profiles_path: str = "./profiles", profile_name: str = "ro-crate") -> Profile:
+def get_profile(profiles_path: str = "./profiles",
+                profile_name: str = "ro-crate", publicID: str = None) -> Profile:
     """
     Load the profiles from the given path
     """
     profile_path = f"{profiles_path}/{profile_name}"
     if not Path(profiles_path).exists():
         raise FileNotFoundError(f"Profile not found: {profile_path}")
-    profile = Profile.load(f"{profiles_path}/{profile_name}")
+    profile = Profile.load(f"{profiles_path}/{profile_name}", publicID=publicID)
     logger.debug("Profile loaded: %s", profile)
     return profile

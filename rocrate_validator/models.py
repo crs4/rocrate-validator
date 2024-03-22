@@ -240,19 +240,19 @@ class Profile:
         return self.name
 
     @staticmethod
-    def load(path: Union[str, Path]) -> Profile:
+    def load(path: Union[str, Path], publicID: str = None) -> Profile:
         # if the path is a string, convert it to a Path
         if isinstance(path, str):
             path = Path(path)
         # check if the path is a directory
         assert path.is_dir(), f"Invalid profile path: {path}"
         # create a new profile
-        profile = Profile(name=path.name, path=path)
+        profile = Profile(name=path.name, path=path, publicID=publicID)
         logger.debug("Loaded profile: %s", profile)
         return profile
 
     @staticmethod
-    def load_profiles(profiles_path: Union[str, Path]) -> Dict[str, Profile]:
+    def load_profiles(profiles_path: Union[str, Path], publicID: str = None) -> Dict[str, Profile]:
         # if the path is a string, convert it to a Path
         if isinstance(profiles_path, str):
             profiles_path = Path(profiles_path)
@@ -265,7 +265,7 @@ class Profile:
             logger.debug("Checking profile path: %s %s %r", profile_path,
                          profile_path.is_dir(), IGNORED_PROFILE_DIRECTORIES)
             if profile_path.is_dir() and profile_path not in IGNORED_PROFILE_DIRECTORIES:
-                profile = Profile.load(profile_path)
+                profile = Profile.load(profile_path, publicID=publicID)
                 profiles[profile.name] = profile
         return profiles
 
