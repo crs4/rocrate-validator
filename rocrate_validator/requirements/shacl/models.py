@@ -102,7 +102,7 @@ class Shape:
         shape_graph += shapes_graph.triples((node, None, None))
 
         # Define the property predicate
-        predicate = URIRef("http://www.w3.org/ns/shacl#property")
+        predicate = URIRef(SHACL_NS + "property")
 
         # Use the triples method to get all triples with the particular predicate
         first_triples = shape_graph.triples((None, predicate, None))
