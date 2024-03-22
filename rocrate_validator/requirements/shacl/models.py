@@ -122,24 +122,30 @@ class Shape:
 
     @property
     def node(self):
+        """Return the node of the shape"""
         return self._node
 
     @property
     def shape_graph(self):
+        """Return the subgraph of the shape"""
         return self._shape_graph
 
     @property
     def shapes_graph(self):
+        """Return the graph of the shapes which contains the shape"""
         return self._shapes_graph
 
     @property
     def properties(self):
+        """Return the properties of the shape"""
         return self._properties.copy()
 
     def get_properties(self) -> List[ShapeProperty]:
+        """Return the properties of the shape"""
         return self._properties.copy()
 
     def get_property(self, name) -> ShapeProperty:
+        """Return the property of the shape with the given name"""
         for prop in self._properties:
             if prop.name == name:
                 return prop
