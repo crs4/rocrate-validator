@@ -4,7 +4,7 @@ import logging
 from ...models import RequirementCheck
 from ...models import Requirement
 from .models import ShapeProperty
-from .validator import Validator as SHACLValidator
+
 
 logger = logging.getLogger(__name__)
 
@@ -45,10 +45,13 @@ class SHACLCheck(RequirementCheck):
         return self.validator.get_graph_of_shapes(self.requirement.name)
 
     def check(self):
-        shapes_graph = self.shapes_graph
         ontology_graph = self.validator.ontologies_graph
         data_graph = self.validator.data_graph
 
+        # constraint the shapes graph to the current property shape
+        shapes_graph = self.shapeProperty.shape_property_graph
+
+        from .validator import Validator as SHACLValidator
         shacl_validator = SHACLValidator(
             self, shapes_graph=shapes_graph, ont_graph=ontology_graph)
         result = shacl_validator.validate(
