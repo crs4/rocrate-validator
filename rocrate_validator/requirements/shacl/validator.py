@@ -14,8 +14,9 @@ from ...constants import (RDF_SERIALIZATION_FORMATS,
                           RDF_SERIALIZATION_FORMATS_TYPES, SHACL_NS,
                           VALID_INFERENCE_OPTIONS,
                           VALID_INFERENCE_OPTIONS_TYPES)
-from ...models import CheckIssue, RequirementCheck, Severity
+from ...models import CheckIssue, Severity
 from ...requirements.shacl.models import ViolationShape
+from .checks import SHACLCheck
 
 # set up logging
 logger = logging.getLogger(__name__)
