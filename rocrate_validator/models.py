@@ -257,6 +257,7 @@ class Profile:
         profile = Profile(name=path.name, path=path, publicID=publicID)
         logger.debug("Loaded profile: %s", profile)
         return profile
+
     @staticmethod
     def load_profiles(profiles_path: Union[str, Path], publicID: str = None) -> Dict[str, Profile]:
         # if the path is a string, convert it to a Path
@@ -857,15 +858,6 @@ class Validator:
             'publicID': rocrate_path,
             **kwargs,
         }
-        # self.advanced = advanced
-        # self.inference = inference
-        # self.inplace = inplace
-        # self.abort_on_first = abort_on_first
-        # self.allow_infos = allow_infos
-        # self.allow_warnings = allow_warnings
-        # self.serialization_output_path = serialization_output_path
-        # self.serialization_output_format = serialization_output_format
-        # self.kwargs = kwargs
 
         # reference to the data graph
         self._data_graph = None
