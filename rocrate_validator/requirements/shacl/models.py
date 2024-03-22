@@ -112,13 +112,13 @@ class Shape:
         # Use the triples method to get all triples with the particular predicate
         first_triples = shape_graph.triples((None, predicate, None))
 
+        # store the graph
+        self._shape_graph = shape_graph
+
         # For each triple from the first call, get all triples whose subject is the object of the first triple
         for _, _, object in first_triples:
             shape_graph += shapes_graph.triples((object, None, None))
             self._properties.append(ShapeProperty(self, object))
-
-        # store the graph
-        self._shape_graph = shape_graph
 
     @property
     def node(self):
