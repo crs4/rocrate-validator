@@ -14,11 +14,13 @@
     sh:targetNode :ro-crate-metadata.json ;
     sh:property [
         a sh:PropertyShape ;
+        sh:name "Check metadata file existence" ;
         sh:description "Check if the RO-Crate metadata file exists" ;
         sh:path rdf:type ;
         sh:minCount 1 ;
-        # sh:order 1 ;
+        sh:message "The RO-Crate metadata file descriptor MUST exist" ;
     ] .
+
 
     ] .
 
