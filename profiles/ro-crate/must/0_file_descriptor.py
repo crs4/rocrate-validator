@@ -89,3 +89,14 @@ class FileDescriptorJsonLdFormat(RequirementCheck):
                 "file descriptor does not contain a context", self)
             return False
         return True
+
+    @check(name="Check if descriptor entities have the @id property")
+    def check_identifiers(self) -> Tuple[int, Optional[str]]:
+        json_dict = self.json_dict
+        for entity in json_dict["@graph"]:
+            if "@id" not in entity:
+                self.result.add_error(
+                    f"Entity \"{entity.get('name', None) or entity}\" "
+                    f"of RO-Crate \"{self.file_descriptor_path}\" "
+                    "file descriptor does not contain the @id attribute", self)
+                return False
