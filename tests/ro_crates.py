@@ -49,7 +49,10 @@ class InvalidRootDataEntity:
     def invalid_root_type(self) -> Path:
         return Path(f"{self.base_path}/invalid_root_type")
 
-
     @property
     def invalid_root_date(self) -> Path:
         return Path(f"{self.base_path}/invalid_root_date")
+
+    @property
+    def missing_root_name(self) -> Path:
+        return Path(f"{self.base_path}/missing_root_name")

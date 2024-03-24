@@ -108,3 +108,34 @@ def test_invalid_root_date(paths):
     assert issue.message == "The datePublished of the Root Data Entity MUST be a valid ISO 8601 date", \
         "Unexpected issue message"
 
+
+def test_missing_root_name(paths):
+
+    rocrate_path = paths.missing_root_name
+    logger.debug(f"rocrate path: {rocrate_path}")
+
+    result: models.ValidationResult = services.validate(rocrate_path,
+                                                        requirement_level="SHOULD",
+                                                        abort_on_first=True)
+    assert not result.passed(), "ro-crate should be invalid"
+
+    # check requirement
+    failed_requirements = result.failed_requirements
+    for failed_requirement in failed_requirements:
+        logger.debug(f"Failed requirement: {failed_requirement}")
+    assert len(failed_requirements) == 1, "ro-crate should have 1 failed requirement"
+
+    # set reference to failed requirement
+    failed_requirement = failed_requirements[0]
+    logger.debug(f"Failed requirement name: {failed_requirement.name}")
+
+    # check if the failed requirement is the expected one
+    assert failed_requirement.name == "RO-Crate Data Entity definition: RECOMMENDED properties", \
+        "Unexpected failed requirement"
+
+    assert len(result.get_issues()) == 1, "ro-crate should have 1 issue"
+
+    #  extract issue
+    issue = result.get_issues()[0]
+    assert issue.message == "The Root Data Entity SHOULD have a schema_org:name", \
+        "Unexpected issue message"
