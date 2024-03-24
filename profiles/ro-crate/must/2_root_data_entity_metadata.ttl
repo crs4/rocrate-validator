@@ -22,7 +22,7 @@
         sh:message "The file descriptor MUST have a Root Data Entity" ;
     ] .
 
-:RootDataEntityDirectProperties a sh:NodeShape ;
+:RootDataEntityRequiredDirectProperties a sh:NodeShape ;
     sh:name "RO-Crate Data Entity definition" ;
     sh:description """The Root Data Entity MUST have the properties defined in 
     <https://www.researchobject.org/ro-crate/1.1/root-data-entity.html>""";
@@ -32,9 +32,9 @@
         sh:name "Type of the Root Data Entity" ;
         sh:description "The type of the Root Data Entity MUST be schema_org:Dataset" ;
         sh:minCount 1 ;
-        sh:maxCount 1 ;
         sh:nodeKind sh:IRI ;
         sh:path rdf:type ;
-        sh:hasValue schema_org:Dataset;
+        sh:hasValue schema_org:Dataset ;
         sh:message "The Root Data Entity MUST be of type schema_org:Dataset" ;
+    ] ;
     ] .
