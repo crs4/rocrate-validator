@@ -929,9 +929,10 @@ class Validator:
 
     @property
     def publicID(self) -> str:
-        if not self.rocrate_path.endswith("/"):
-            return f"{self.rocrate_path}/"
-        return self.rocrate_path
+        path = str(self.rocrate_path)
+        if not path.endswith("/"):
+            return f"{path}/"
+        return path
 
     @classmethod
     def load_graph_of_shapes(cls, requirement: Requirement, publicID: str = None) -> Graph:
