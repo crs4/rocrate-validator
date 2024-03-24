@@ -33,7 +33,7 @@ class PyRequirement(Requirement):
                 except Exception:
                     check_name = name.strip()
                 check_description = member.__doc__.strip() if member.__doc__ else ""
-                check = RequirementCheck(self, check_name, member, check_description)
+                check = self.requirement_check_class(self, check_name, member, check_description)
                 self._checks.append(check)
                 logger.debug("Added check: %s %r", check_name, check)
         # return the checks
