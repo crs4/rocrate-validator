@@ -35,3 +35,16 @@ class InvalidFileDescriptor:
     @property
     def invalid_jsonld_format(self) -> Path:
         return Path(f"{self.base_path}/invalid_jsonld_format")
+
+
+class InvalidRootDataEntity:
+
+    base_path = f"{INVALID_CRATES_DATA_PATH}/1_root_data_entity"
+
+    @property
+    def missing_root(self) -> Path:
+        return Path(f"{self.base_path}/missing_root")
+
+    @property
+    def invalid_root_type(self) -> Path:
+        return Path(f"{self.base_path}/invalid_root_type")
