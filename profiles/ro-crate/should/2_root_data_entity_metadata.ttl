@@ -34,4 +34,16 @@
         sh:nodeKind sh:Literal ;
         sh:path schema_org:description;
         sh:message "The Root Data Entity SHOULD have a schema_org:description" ;
+    ] ;
+    sh:property [ 
+        a sh:PropertyShape ;
+        sh:name "License of the Root Data Entity" ;
+        sh:description """The Root Data Entity SHOULD 
+        link to a Contextual Entity in the RO-Crate Metadata File 
+        with a name and description.""" ;
+        sh:nodeKind sh:IRI ;
+        sh:path schema_org:license;
+        sh:minCount 1 ;
+        sh:message """The Root Data Entity SHOULD have a link 
+        to a Contextual Entity representing a schema_org:license""" ;
     ] .
