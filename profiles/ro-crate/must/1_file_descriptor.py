@@ -100,3 +100,14 @@ class FileDescriptorJsonLdFormat(RequirementCheck):
                     f"of RO-Crate \"{self.file_descriptor_path}\" "
                     "file descriptor does not contain the @id attribute", self)
                 return False
+
+    @check(name="Check if descriptor entities have the @type property")
+    def check_types(self) -> Tuple[int, Optional[str]]:
+        json_dict = self.json_dict
+        for entity in json_dict["@graph"]:
+            if "@type" not in entity:
+                self.result.add_error(
+                    f"Entity \"{entity.get('name', None) or entity}\" "
+                    f"of RO-Crate \"{self.file_descriptor_path}\" "
+                    "file descriptor does not contain the @type attribute", self)
+                return False
