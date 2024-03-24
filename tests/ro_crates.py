@@ -1,6 +1,8 @@
 import os
+from pathlib import Path
 
 from pytest import fixture
+from tempfile import TemporaryDirectory
 
 import logging
 
@@ -20,8 +22,16 @@ def ro_crates_path():
 
 class InvalidFileDescriptor:
 
-    base_path = f"{INVALID_CRATES_DATA_PATH}/0_file_descriptor"
+    base_path = f"{INVALID_CRATES_DATA_PATH}/0_file_descriptor_format"
 
     @property
-    def missing_file_descriptor(self):
-        return f"{self.base_path}/missing_file_descriptor"
+    def missing_file_descriptor(self) -> Path:
+        return TemporaryDirectory()
+
+    @property
+    def invalid_json_format(self) -> Path:
+        return Path(f"{self.base_path}/invalid_json_format")
+
+    @property
+    def invalid_jsonld_format(self) -> Path:
+        return Path(f"{self.base_path}/invalid_jsonld_format")
