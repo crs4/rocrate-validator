@@ -1,0 +1,23 @@
+@prefix : <./> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema_org: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xml1: <http://www.w3.org/2001/XMLSchema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+
+:FileDescriptorExistence
+    a sh:NodeShape ;
+    sh:name "RO-Crate Metadata File Descriptor MUST exist" ;
+    sh:description "The root of the document MUST have a node with ID ro-crate-metadata.json" ;
+    sh:targetNode :ro-crate-metadata.json ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Check metadata file existence" ;
+        sh:description "Check if the RO-Crate metadata file exists" ;
+        sh:path rdf:type ;
+        sh:minCount 1 ;
+        sh:message "The RO-Crate metadata file descriptor MUST exist" ;
+    ] .
+
