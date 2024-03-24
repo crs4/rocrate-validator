@@ -1,0 +1,24 @@
+@prefix : <./> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema_org: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xml1: <http://www.w3.org/2001/XMLSchema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+
+
+:RootDataEntityExistence
+    a sh:NodeShape ;
+    sh:name "RO-Crate Root Data Entity MUST exist" ;
+    sh:description "The root of the document MUST have a node with ID ./" ;
+    sh:targetNode : ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Check existence of the Root Rata Entity" ;
+        sh:description "Check if the Root Data Entity exists in the file descriptor" ;
+        sh:path rdf:type ;
+        sh:minCount 1 ;
+        sh:message "The file descriptor MUST have a Root Data Entity" ;
+    ] .
+
