@@ -37,4 +37,13 @@
         sh:hasValue schema_org:Dataset ;
         sh:message "The Root Data Entity MUST be of type schema_org:Dataset" ;
     ] ;
+    sh:property [ 
+        a sh:PropertyShape ;
+        sh:name "Date Published of the Root Data Entity" ;
+        sh:description "The datePublished of the Root Data Entity MUST be a valid ISO 8601 date" ;
+        sh:minCount 1 ;
+        sh:nodeKind sh:Literal ;
+        sh:path schema_org:datePublished ;
+        sh:pattern "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\+\\d{2}:\\d{2}$" ;
+        sh:message "The datePublished of the Root Data Entity MUST be a valid ISO 8601 date" ;
     ] .
