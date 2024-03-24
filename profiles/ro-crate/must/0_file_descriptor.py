@@ -82,8 +82,6 @@ class FileDescriptorJsonLdFormat(RequirementCheck):
 
     @check(name="Check if the @context property is present in the file descriptor")
     def check_context(self) -> Tuple[int, Optional[str]]:
-        # check if the file descriptor is in the correct format
-
         json_dict = self.json_dict
         if "@context" not in json_dict:
             self.result.add_error(
