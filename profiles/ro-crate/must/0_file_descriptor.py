@@ -74,8 +74,8 @@ class FileDescriptorJsonLdFormat(RequirementCheck):
                 return json.load(file)
         except Exception as e:
             self.result.add_error(
-                f'RO-Crate "{self.file_descriptor_path}" "\
-                    "file descriptor is not in the correct format', self)
+                f"RO-Crate \"{self.file_descriptor_path}\" "
+                "file descriptor is not in the correct format", self)
             if logger.isEnabledFor(logging.DEBUG):
                 logger.exception(e)
             return {}
@@ -87,7 +87,7 @@ class FileDescriptorJsonLdFormat(RequirementCheck):
         json_dict = self.json_dict
         if "@context" not in json_dict:
             self.result.add_error(
-                f'RO-Crate "{self.file_descriptor_path}" "\
-                        "file descriptor does not contain a context', self)
+                f"RO-Crate \"{self.file_descriptor_path}\" "
+                "file descriptor does not contain a context", self)
             return False
         return True
