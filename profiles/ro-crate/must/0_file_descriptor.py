@@ -39,7 +39,7 @@ class FileDescriptorJsonFormat(RequirementCheck):
     """
     The file descriptor MUST be a valid JSON file
     """
-    @check(name="File Descriptor Format")
+    @check(name="Check JSON Format of the file descriptor")
     def check(self) -> Tuple[int, Optional[str]]:
         # check if the file descriptor is in the correct format
         try:
