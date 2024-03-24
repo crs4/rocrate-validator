@@ -80,7 +80,7 @@ class FileDescriptorJsonLdFormat(RequirementCheck):
                 logger.exception(e)
             return {}
 
-    @check(name="Check JSON-LD Format of the file descriptor")
+    @check(name="Check if the @context property is present in the file descriptor")
     def check_context(self) -> Tuple[int, Optional[str]]:
         # check if the file descriptor is in the correct format
 
