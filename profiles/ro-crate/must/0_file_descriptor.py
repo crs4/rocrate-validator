@@ -54,3 +54,40 @@ class FileDescriptorJsonFormat(RequirementCheck):
                 logger.exception(e)
             return False
 
+
+class FileDescriptorJsonLdFormat(RequirementCheck):
+    """
+    The file descriptor MUST be a valid JSON-LD file
+    """
+
+    _json_dict: Optional[dict] = None
+
+    @property
+    def json_dict(self):
+        if self._json_dict is None:
+            self._json_dict = self.get_json_dict()
+        return self._json_dict
+
+    def get_json_dict(self):
+        try:
+            with open(self.file_descriptor_path, "r") as file:
+                return json.load(file)
+        except Exception as e:
+            self.result.add_error(
+                f'RO-Crate "{self.file_descriptor_path}" "\
+                    "file descriptor is not in the correct format', self)
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.exception(e)
+            return {}
+
+    @check(name="Check JSON-LD Format of the file descriptor")
+    def check_context(self) -> Tuple[int, Optional[str]]:
+        # check if the file descriptor is in the correct format
+
+        json_dict = self.json_dict
+        if "@context" not in json_dict:
+            self.result.add_error(
+                f'RO-Crate "{self.file_descriptor_path}" "\
+                        "file descriptor does not contain a context', self)
+            return False
+        return True
