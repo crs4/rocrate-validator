@@ -36,8 +36,11 @@
                     "@id": "README.md"
                 }
             ],
+            "description": "RO-Crate for MyWorkflow",
             "isBasedOn": "https://github.com/kikkomep/myworkflow",
-            "license": "MIT",
+            "license": {
+                "@id": "https://creativecommons.org/licenses/by-nc-sa/3.0/au/"
+            },
             "mainEntity": {
                 "@id": "my-workflow.ga"
             },
