@@ -61,3 +61,6 @@ class InvalidRootDataEntity:
     def missing_root_description(self) -> Path:
         return Path(f"{self.base_path}/missing_root_description")
 
+    @property
+    def missing_root_license(self) -> Path:
+        return Path(f"{self.base_path}/missing_root_license")
