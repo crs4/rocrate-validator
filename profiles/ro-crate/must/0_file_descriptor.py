@@ -34,3 +34,23 @@ class FileDescriptorExistence(RequirementCheck):
             return False
         return True
 
+
+class FileDescriptorJsonFormat(RequirementCheck):
+    """
+    The file descriptor MUST be a valid JSON file
+    """
+    @check(name="File Descriptor Format")
+    def check(self) -> Tuple[int, Optional[str]]:
+        # check if the file descriptor is in the correct format
+        try:
+            with open(self.file_descriptor_path, "r") as file:
+                json.load(file)
+            return True
+        except Exception as e:
+            self.result.add_error(
+                f'RO-Crate "{self.file_descriptor_path}" "\
+                    "file descriptor is not in the correct format', self)
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.exception(e)
+            return False
+
