@@ -971,7 +971,8 @@ class Validator:
         # load the graph of ontologies
         ontologies_graph = Graph()
         if self.ontologies_path:
-            ontologies_graph.parse(self.ontologies_path, format="ttl")
+            ontologies_graph.parse(self.ontologies_path, format="ttl",
+                                   publicID=self.publicID)
         return ontologies_graph
 
     def get_ontologies_graph(self, refresh: bool = False):
