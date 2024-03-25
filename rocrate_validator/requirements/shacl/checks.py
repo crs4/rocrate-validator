@@ -49,7 +49,8 @@ class SHACLCheck(RequirementCheck):
         data_graph = self.validator.data_graph
 
         # constraint the shapes graph to the current property shape
-        shapes_graph = self.shapeProperty.shape_property_graph
+        shapes_graph = self.shapeProperty.shape_property_graph \
+            if self.shapeProperty else self.requirement.shape.shape_graph
 
         from .validator import Validator as SHACLValidator
         shacl_validator = SHACLValidator(
