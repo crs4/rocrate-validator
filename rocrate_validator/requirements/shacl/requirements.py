@@ -42,6 +42,10 @@ class SHACLRequirement(Requirement):
         # return checks
         return checks
 
+    @property
+    def shape(self) -> Shape:
+        return self._shape
+
     @staticmethod
     def load(profile: Profile, requirement_type: RequirementType,
              file_path: Path, publicID: str = None) -> List[Requirement]:
