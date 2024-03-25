@@ -41,9 +41,9 @@
         sh:description """The Root Data Entity SHOULD 
         link to a Contextual Entity in the RO-Crate Metadata File 
         with a name and description.""" ;
-        sh:nodeKind sh:IRI ;
+        sh:nodeKind sh:BlankNodeOrIRI ;
+        sh:class schema_org:license ;
         sh:path schema_org:license;
         sh:minCount 1 ;
-        sh:message """The Root Data Entity SHOULD have a link 
-        to a Contextual Entity representing a schema_org:license""" ;
+        sh:message """The Root Data Entity SHOULD have a link to a Contextual Entity representing the schema_org:license type""" ;
     ] .
