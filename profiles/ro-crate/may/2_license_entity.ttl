@@ -6,11 +6,10 @@
 @prefix xml1: <http://www.w3.org/2001/XMLSchema#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-:LisenseDefinition a sh:NodeShape ;
+:LicenseDefinition a sh:NodeShape ;
     sh:name "License definition" ;
-    sh:description """Contextual Entity 
-    for representing a License with a name and description""";
-    sh:targetNode :ro-crate-metadata.json ;
+    sh:description """Contextual entity representing a license with a name and description.""";
+    sh:targetClass schema_org:license ;
     sh:property [ 
         a sh:PropertyShape ;
         sh:name "License name" ;
