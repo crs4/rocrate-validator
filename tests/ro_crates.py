@@ -39,7 +39,7 @@ class InvalidFileDescriptor:
 
 class InvalidRootDataEntity:
 
-    base_path = f"{INVALID_CRATES_DATA_PATH}/1_root_data_entity"
+    base_path = f"{INVALID_CRATES_DATA_PATH}/2_root_data_entity_metadata"
 
     @property
     def missing_root(self) -> Path:
