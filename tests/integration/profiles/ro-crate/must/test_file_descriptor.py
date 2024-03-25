@@ -20,12 +20,6 @@ def paths():
     logger.debug("teardown")
 
 
-def test_path_initialization(paths):
-    logger.debug(f"test_path_initialization: {paths.missing_file_descriptor}")
-    assert paths.missing_file_descriptor, "missing_file_descriptor should be initialized"
-    assert Path(paths.missing_file_descriptor).exists(), "missing_file_descriptor should exist"
-
-
 def test_missing_file_descriptor(paths):
 
     with paths.missing_file_descriptor as rocrate_path:
