@@ -144,6 +144,10 @@
             "@id": "README.md",
             "@type": "File",
             "description": "Workflow documentation"
+        },
+        {
+            "@id": "https://creativecommons.org/licenses/by-nc-sa/3.0/au/",
+            "@type": "license"
         }
     ]
 }
