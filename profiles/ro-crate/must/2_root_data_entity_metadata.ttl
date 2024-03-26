@@ -7,19 +7,19 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 
-
-:RootDataEntityExistence
+:RootDataEntityExistenceAndType
     a sh:NodeShape ;
     sh:name "RO-Crate Root Data Entity MUST exist" ;
-    sh:description "The root of the document MUST have a node with ID ./" ;
+    sh:description "The root of the document MUST be a `Dataset` and must end with /" ;
     sh:targetNode : ;
     sh:property [
         a sh:PropertyShape ;
         sh:name "Check existence of the Root Rata Entity" ;
         sh:description "Check if the Root Data Entity exists in the file descriptor" ;
         sh:path rdf:type ;
+        sh:hasValue schema_org:Dataset ;
         sh:minCount 1 ;
-        sh:message "The file descriptor MUST have a Root Data Entity" ;
+        sh:message """The file descriptor MUST have a root data entity of type schema_org:Dataset and ending with /""" ;
     ] .
 
 :RootDataEntityRequiredDirectProperties a sh:NodeShape ;
@@ -27,16 +27,6 @@
     sh:description """The Root Data Entity MUST have the properties defined in 
     <https://www.researchobject.org/ro-crate/1.1/root-data-entity.html>""";
     sh:targetNode : ;
-    sh:property [ 
-        a sh:PropertyShape ;
-        sh:name "Type of the Root Data Entity" ;
-        sh:description "The type of the Root Data Entity MUST be schema_org:Dataset" ;
-        sh:minCount 1 ;
-        sh:nodeKind sh:IRI ;
-        sh:path rdf:type ;
-        sh:hasValue schema_org:Dataset ;
-        sh:message "The Root Data Entity MUST be of type schema_org:Dataset" ;
-    ] ;
     sh:property [ 
         a sh:PropertyShape ;
         sh:name "Date Published of the Root Data Entity" ;
