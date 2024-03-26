@@ -35,3 +35,6 @@ rocrate-validator = "rocrate_validator.cli:cli"
 
 [tool.rocrate_validator]
 skip_dirs = [".git", ".github", ".vscode"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
