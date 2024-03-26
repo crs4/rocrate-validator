@@ -37,3 +37,25 @@ def test_invalid_entity_type(paths):
         "RO-Crate Metadata File Descriptor: recommended properties",
         ["The RO-Crate metadata file MUST be a CreativeWork, as per schema.org"]
     )
+
+
+def test_missing_entity_about(paths):
+    """Test a RO-Crate with an invalid file descriptor entity type."""
+    do_entity_test(
+        paths.missing_entity_about,
+        models.RequirementLevels.MUST,
+        False,
+        "RO-Crate Metadata File Descriptor: recommended properties",
+        ["The RO-Crate metadata file descriptor MUST have an `about` property"]
+    )
+
+
+def test_invalid_entity_about_type(paths):
+    """Test a RO-Crate with an invalid file descriptor entity type."""
+    do_entity_test(
+        paths.invalid_entity_about_type,
+        models.RequirementLevels.MUST,
+        False,
+        "RO-Crate Metadata File Descriptor: recommended properties",
+        ["The RO-Crate metadata file descriptor MUST have an `about` property"]
+    )
