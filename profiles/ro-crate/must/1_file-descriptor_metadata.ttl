@@ -36,6 +36,17 @@
         sh:path rdf:type ;
         sh:hasValue schema_org:CreativeWork ;
         sh:message "The RO-Crate metadata file MUST be a CreativeWork, as per schema.org" ;
+    ] ;
+    sh:property [ 
+        a sh:PropertyShape ;
+        sh:name "about property MUST exist" ;
+        sh:description """The URL of the RO-Crate metadata file itself, which is the root of the RO-Crate. 
+            This is used to identify the RO-Crate, and is the only property that is required to be present in the metadata file.""" ;
+        sh:maxCount 1;
+        sh:minCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:path schema_org:about ;
+        sh:message "The RO-Crate metadata file descriptor MUST have an `about` property" ;
     ] .
         sh:minCount 1 ;
         sh:message "The RO-Crate metadata file descriptor MUST exist" ;
