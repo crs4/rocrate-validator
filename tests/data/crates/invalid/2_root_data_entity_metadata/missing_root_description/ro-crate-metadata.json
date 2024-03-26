@@ -38,7 +38,9 @@
                 }
             ],
             "isBasedOn": "https://github.com/kikkomep/myworkflow",
-            "license": "MIT",
+            "license": {
+                "@id": "https://creativecommons.org/licenses/by-nc-sa/3.0/au/"
+            },
             "mainEntity": {
                 "@id": "my-workflow.ga"
             },
@@ -65,11 +67,7 @@
         },
         {
             "@id": "my-workflow.ga",
-            "@type": [
-                "File",
-                "SoftwareSourceCode",
-                "ComputationalWorkflow"
-            ],
+            "@type": ["File", "SoftwareSourceCode", "ComputationalWorkflow"],
             "name": "MyWorkflow",
             "programmingLanguage": {
                 "@id": "https://w3id.org/workflowhub/workflow-ro-crate#galaxy"
@@ -124,10 +122,7 @@
         },
         {
             "@id": "my-workflow-test.yml",
-            "@type": [
-                "File",
-                "TestDefinition"
-            ],
+            "@type": ["File", "TestDefinition"],
             "conformsTo": {
                 "@id": "https://w3id.org/ro/terms/test#PlanemoEngine"
             }

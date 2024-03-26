@@ -66,14 +66,15 @@ def test_invalid_root_type(paths):
     logger.debug(f"Failed requirement name: {failed_requirement.name}")
 
     # check if the failed requirement is the expected one
-    assert failed_requirement.name == "RO-Crate Data Entity definition", \
+    assert failed_requirement.name == "RO-Crate Root Data Entity MUST exist", \
         "Unexpected failed requirement"
 
     assert len(result.get_issues()) == 1, "ro-crate should have 1 issue"
 
     #  extract issue
     issue = result.get_issues()[0]
-    assert issue.message == "The Root Data Entity MUST be of type schema_org:Dataset", \
+    assert issue.message == "The file descriptor MUST have a root data entity "\
+        "of type schema_org:Dataset and ending with /", \
         "Unexpected issue message"
 
 
