@@ -2,8 +2,9 @@ import logging
 
 from pytest import fixture
 
-from rocrate_validator import models, services
+from rocrate_validator import models
 from tests.ro_crates import InvalidFileDescriptor, InvalidRootDataEntity
+from tests.shared import do_entity_test
 
 logger = logging.getLogger(__name__)
 
@@ -20,250 +21,89 @@ def paths():
 
 
 def test_missing_root_data_entity(paths):
+    """Test a RO-Crate without a root data entity."""
 
-    rocrate_path = paths.missing_root
-    logger.debug(f"test_missing_file_descriptor: {rocrate_path}")
-
-    result: models.ValidationResult = services.validate(rocrate_path,
-                                                        requirement_level="MUST", abort_on_first=True)
-    assert not result.passed(), "ro-crate should be invalid"
-
-    # check requirement
-    failed_requirements = result.failed_requirements
-    for failed_requirement in failed_requirements:
-        logger.debug(f"Failed requirement: {failed_requirement}")
-    assert len(failed_requirements) == 1, "ro-crate should have 1 failed requirement"
-
-    # set reference to failed requirement
-    failed_requirement = failed_requirements[0]
-    logger.debug(f"Failed requirement name: {failed_requirement.name}")
-
-    # check if the failed requirement is the expected one
-    assert failed_requirement.name == "RO-Crate Root Data Entity MUST exist", \
-        "Unexpected failed requirement"
-
-    for issue in result.get_issues():
-        logger.debug(f"Detected issue {type(issue)}: {issue.message}")
+    do_entity_test(
+        paths.missing_root,
+        models.RequirementLevels.MUST,
+        False,
+        "RO-Crate Root Data Entity MUST exist",
+        ["RO-Crate Root Data Entity MUST exist"]
+    )
 
 
 def test_invalid_root_type(paths):
-
-    rocrate_path = paths.invalid_root_type
-    logger.debug(f"rocrate path: {rocrate_path}")
-
-    result: models.ValidationResult = services.validate(rocrate_path,
-                                                        requirement_level="MUST", abort_on_first=True)
-    assert not result.passed(), "ro-crate should be invalid"
-
-    # check requirement
-    failed_requirements = result.failed_requirements
-    for failed_requirement in failed_requirements:
-        logger.debug(f"Failed requirement: {failed_requirement}")
-    assert len(failed_requirements) == 1, "ro-crate should have 1 failed requirement"
-
-    # set reference to failed requirement
-    failed_requirement = failed_requirements[0]
-    logger.debug(f"Failed requirement name: {failed_requirement.name}")
-
-    # check if the failed requirement is the expected one
-    assert failed_requirement.name == "RO-Crate Root Data Entity MUST exist", \
-        "Unexpected failed requirement"
-
-    assert len(result.get_issues()) == 1, "ro-crate should have 1 issue"
-
-    #  extract issue
-    issue = result.get_issues()[0]
-    assert issue.message == "The file descriptor MUST have a root data entity "\
-        "of type schema_org:Dataset and ending with /", \
-        "Unexpected issue message"
+    """Test a RO-Crate with an invalid root data entity type."""
+    do_entity_test(
+        paths.invalid_root_type,
+        models.RequirementLevels.MUST,
+        False,
+        "RO-Crate Root Data Entity MUST exist",
+        ["The file descriptor MUST have a root data entity of type schema_org:Dataset and ending with /"]
+    )
 
 
 def test_invalid_root_date(paths):
-
-    rocrate_path = paths.invalid_root_date
-    logger.debug(f"rocrate path: {rocrate_path}")
-
-    result: models.ValidationResult = services.validate(rocrate_path,
-                                                        requirement_level="MUST", abort_on_first=True)
-    assert not result.passed(), "ro-crate should be invalid"
-
-    # check requirement
-    failed_requirements = result.failed_requirements
-    for failed_requirement in failed_requirements:
-        logger.debug(f"Failed requirement: {failed_requirement}")
-    assert len(failed_requirements) == 1, "ro-crate should have 1 failed requirement"
-
-    # set reference to failed requirement
-    failed_requirement = failed_requirements[0]
-    logger.debug(f"Failed requirement name: {failed_requirement.name}")
-
-    # check if the failed requirement is the expected one
-    assert failed_requirement.name == "RO-Crate Data Entity definition", \
-        "Unexpected failed requirement"
-
-    assert len(result.get_issues()) == 1, "ro-crate should have 1 issue"
-
-    #  extract issue
-    issue = result.get_issues()[0]
-    assert issue.message == "The datePublished of the Root Data Entity MUST be a valid ISO 8601 date", \
-        "Unexpected issue message"
+    """Test a RO-Crate with an invalid root data entity date."""
+    do_entity_test(
+        paths.invalid_root_date,
+        models.RequirementLevels.MUST,
+        False,
+        "RO-Crate Data Entity definition",
+        ["The datePublished of the Root Data Entity MUST be a valid ISO 8601 date"]
+    )
 
 
 def test_missing_root_name(paths):
-
-    rocrate_path = paths.missing_root_name
-    logger.debug(f"rocrate path: {rocrate_path}")
-
-    result: models.ValidationResult = services.validate(rocrate_path,
-                                                        requirement_level="SHOULD",
-                                                        abort_on_first=True)
-    assert not result.passed(), "ro-crate should be invalid"
-
-    # check requirement
-    failed_requirements = result.failed_requirements
-    for failed_requirement in failed_requirements:
-        logger.debug(f"Failed requirement: {failed_requirement}")
-    assert len(failed_requirements) == 1, "ro-crate should have 1 failed requirement"
-
-    # set reference to failed requirement
-    failed_requirement = failed_requirements[0]
-    logger.debug(f"Failed requirement name: {failed_requirement.name}")
-
-    # check if the failed requirement is the expected one
-    assert failed_requirement.name == "RO-Crate Data Entity definition: RECOMMENDED properties", \
-        "Unexpected failed requirement"
-
-    assert len(result.get_issues()) == 1, "ro-crate should have 1 issue"
-
-    #  extract issue
-    issue = result.get_issues()[0]
-    assert issue.message == "The Root Data Entity SHOULD have a schema_org:name", \
-        "Unexpected issue message"
+    """Test a RO-Crate without a root data entity name."""
+    do_entity_test(
+        paths.missing_root_name,
+        models.RequirementLevels.SHOULD,
+        False,
+        "RO-Crate Data Entity definition: RECOMMENDED properties",
+        ["The Root Data Entity SHOULD have a schema_org:name"]
+    )
 
 
 def test_missing_root_description(paths):
-
-    rocrate_path = paths.missing_root_description
-    logger.debug(f"rocrate path: {rocrate_path}")
-
-    result: models.ValidationResult = services.validate(rocrate_path,
-                                                        requirement_level="SHOULD",
-                                                        abort_on_first=True)
-    assert not result.passed(), "ro-crate should be invalid"
-
-    # check requirement
-    failed_requirements = result.failed_requirements
-    for failed_requirement in failed_requirements:
-        logger.debug(f"Failed requirement: {failed_requirement}")
-    assert len(failed_requirements) == 1, "ro-crate should have 1 failed requirement"
-
-    # set reference to failed requirement
-    failed_requirement = failed_requirements[0]
-    logger.debug(f"Failed requirement name: {failed_requirement.name}")
-
-    # check if the failed requirement is the expected one
-    assert failed_requirement.name == "RO-Crate Data Entity definition: RECOMMENDED properties", \
-        "Unexpected failed requirement"
-
-    assert len(result.get_issues()) == 1, "ro-crate should have 1 issue"
-
-    #  extract issue
-    issue = result.get_issues()[0]
-    assert issue.message == "The Root Data Entity SHOULD have a schema_org:description", \
-        "Unexpected issue message"
+    """Test a RO-Crate without a root data entity description."""
+    do_entity_test(
+        paths.missing_root_description,
+        models.RequirementLevels.SHOULD,
+        False,
+        "RO-Crate Data Entity definition: RECOMMENDED properties",
+        ["The Root Data Entity SHOULD have a schema_org:description"]
+    )
 
 
 def test_missing_root_license(paths):
-
-    rocrate_path = paths.missing_root_license
-    logger.debug(f"rocrate path: {rocrate_path}")
-
-    result: models.ValidationResult = services.validate(rocrate_path,
-                                                        requirement_level="SHOULD",
-                                                        abort_on_first=True)
-    assert not result.passed(), "ro-crate should be invalid"
-
-    # check requirement
-    failed_requirements = result.failed_requirements
-    for failed_requirement in failed_requirements:
-        logger.debug(f"Failed requirement: {failed_requirement}")
-    assert len(failed_requirements) == 1, "ro-crate should have 1 failed requirement"
-
-    # set reference to failed requirement
-    failed_requirement = failed_requirements[0]
-    logger.debug(f"Failed requirement name: {failed_requirement.name}")
-
-    # check if the failed requirement is the expected one
-    assert failed_requirement.name == "RO-Crate Data Entity definition: RECOMMENDED properties", \
-        "Unexpected failed requirement"
-
-    assert len(result.get_issues()) == 1, "ro-crate should have 1 issue"
-
-    #  extract issue
-    issue = result.get_issues()[0]
-    assert "The Root Data Entity SHOULD have a link" in issue.message, \
-        "Unexpected issue message"
+    """Test a RO-Crate without a root data entity license."""
+    do_entity_test(
+        paths.missing_root_license,
+        models.RequirementLevels.SHOULD,
+        False,
+        "RO-Crate Data Entity definition: RECOMMENDED properties",
+        ["The Root Data Entity SHOULD have a link"]
+    )
 
 
 def test_missing_root_license_name(paths):
-
-    rocrate_path = paths.missing_root_license_name
-    logger.debug(f"rocrate path: {rocrate_path}")
-
-    result: models.ValidationResult = services.validate(rocrate_path,
-                                                        requirement_level="MAY",
-                                                        abort_on_first=True)
-    assert not result.passed(), "ro-crate should be invalid"
-
-    # check requirement
-    failed_requirements = result.failed_requirements
-    for failed_requirement in failed_requirements:
-        logger.debug(f"Failed requirement: {failed_requirement}")
-    assert len(failed_requirements) == 1, "ro-crate should have 1 failed requirement"
-
-    # set reference to failed requirement
-    failed_requirement = failed_requirements[0]
-    logger.debug(f"Failed requirement name: {failed_requirement.name}")
-
-    # check if the failed requirement is the expected one
-    assert failed_requirement.name == "License definition", \
-        "Unexpected failed requirement"
-
-    assert len(result.get_issues()) == 1, "ro-crate should have 1 issue"
-
-    #  extract issue
-    issue = result.get_issues()[0]
-    assert "Missing license name" in issue.message, \
-        "Unexpected issue message"
+    """Test a RO-Crate without a root data entity license name."""
+    do_entity_test(
+        paths.missing_root_license_name,
+        models.RequirementLevels.MAY,
+        False,
+        "License definition",
+        ["Missing license name"]
+    )
 
 
 def test_missing_root_license_description(paths):
-
-    rocrate_path = paths.missing_root_license_description
-    logger.debug(f"rocrate path: {rocrate_path}")
-
-    result: models.ValidationResult = services.validate(rocrate_path,
-                                                        requirement_level="MAY",
-                                                        abort_on_first=True)
-    assert not result.passed(), "ro-crate should be invalid"
-
-    # check requirement
-    failed_requirements = result.failed_requirements
-    for failed_requirement in failed_requirements:
-        logger.debug(f"Failed requirement: {failed_requirement}")
-    assert len(failed_requirements) == 1, "ro-crate should have 1 failed requirement"
-
-    # set reference to failed requirement
-    failed_requirement = failed_requirements[0]
-    logger.debug(f"Failed requirement name: {failed_requirement.name}")
-
-    # check if the failed requirement is the expected one
-    assert failed_requirement.name == "License definition", \
-        "Unexpected failed requirement"
-
-    assert len(result.get_issues()) == 1, "ro-crate should have 1 issue"
-
-    #  extract issue
-    issue = result.get_issues()[0]
-    assert "Missing license description" in issue.message, \
-        "Unexpected issue message"
+    """Test a RO-Crate without a root data entity license description."""
+    do_entity_test(
+        paths.missing_root_license_description,
+        models.RequirementLevels.MAY,
+        False,
+        "License definition",
+        ["Missing license description"]
+    )

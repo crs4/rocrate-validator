@@ -2,8 +2,9 @@ import logging
 
 from pytest import fixture
 
-from rocrate_validator import models, services
+from rocrate_validator import models
 from tests.ro_crates import InvalidFileDescriptor
+from tests.shared import do_entity_test
 
 logger = logging.getLogger(__name__)
 
@@ -20,135 +21,62 @@ def paths():
 
 
 def test_missing_file_descriptor(paths):
-
+    """Test a RO-Crate without a file descriptor."""
     with paths.missing_file_descriptor as rocrate_path:
-        logger.debug(f"test_missing_file_descriptor: {rocrate_path}")
-
-        result: models.ValidationResult = services.validate(rocrate_path,
-                                                            requirement_level="MUST", abort_on_first=True)
-        assert not result.passed(), "ro-crate should be invalid"
-
-        # check requirement
-        failed_requirements = result.failed_requirements
-        for failed_requirement in failed_requirements:
-            logger.debug(f"Failed requirement: {failed_requirement}")
-        assert len(failed_requirements) == 1, "ro-crate should have 1 failed requirement"
-
-        # set reference to failed requirement
-        failed_requirement = failed_requirements[0]
-        logger.debug(f"Failed requirement name: {failed_requirement.name}")
-
-        # check if the failed requirement is the expected one
-        assert failed_requirement.name == "FileDescriptorExistence", \
-            "Unexpected failed requirement"
-
-        for issue in result.get_issues():
-            logger.debug(f"Detected issue {type(issue)}: {issue.message}")
+        do_entity_test(
+            rocrate_path,
+            models.RequirementLevels.MUST,
+            False,
+            "FileDescriptorExistence",
+            []
+        )
 
 
 def test_not_valid_json_format(paths):
-
-    rocrate_path = paths.invalid_json_format
-    logger.debug(f"test_missing_file_descriptor: {rocrate_path}")
-
-    result: models.ValidationResult = services.validate(rocrate_path,
-                                                        requirement_level="MUST", abort_on_first=True)
-    assert not result.passed(), "ro-crate should be invalid"
-
-    # check requirement
-    failed_requirements = result.failed_requirements
-    for failed_requirement in failed_requirements:
-        logger.debug(f"Failed requirement: {failed_requirement}")
-    assert len(failed_requirements) == 1, "ro-crate should have 1 failed requirement"
-
-    # set reference to failed requirement
-    failed_requirement = failed_requirements[0]
-    logger.debug(f"Failed requirement name: {failed_requirement.name}")
-
-    # check if the failed requirement is the expected one
-    assert failed_requirement.name == "FileDescriptorJsonFormat", \
-        "Unexpected failed requirement"
-
-    for issue in result.get_issues():
-        logger.debug(f"Detected issue {type(issue)}: {issue.message}")
+    """Test a RO-Crate with an invalid JSON file descriptor format."""
+    do_entity_test(
+        paths.invalid_json_format,
+        models.RequirementLevels.MUST,
+        False,
+        "FileDescriptorJsonFormat",
+        []
+    )
 
 
 def test_not_valid_jsonld_format_missing_context(paths):
-
-    rocrate_path = f"{paths.invalid_jsonld_format}/missing_context"
-    logger.debug(f"test_missing_file_descriptor: {rocrate_path}")
-
-    result: models.ValidationResult = services.validate(rocrate_path,
-                                                        requirement_level="MUST", abort_on_first=True)
-    assert not result.passed(), "ro-crate should be invalid"
-
-    # check requirement
-    failed_requirements = result.failed_requirements
-    for failed_requirement in failed_requirements:
-        logger.debug(f"Failed requirement: {failed_requirement}")
-    assert len(failed_requirements) == 1, "ro-crate should have 1 failed requirement"
-
-    # set reference to failed requirement
-    failed_requirement = failed_requirements[0]
-    logger.debug(f"Failed requirement name: {failed_requirement.name}")
-
-    # check if the failed requirement is the expected one
-    assert failed_requirement.name == "FileDescriptorJsonLdFormat", \
-        "Unexpected failed requirement"
-
-    for issue in result.get_issues():
-        logger.debug(f"Detected issue {type(issue)}: {issue.message}")
+    """Test a RO-Crate with an invalid JSON-LD file descriptor format."""
+    do_entity_test(
+        f"{paths.invalid_jsonld_format}/missing_context",
+        models.RequirementLevels.MUST,
+        False,
+        "FileDescriptorJsonLdFormat",
+        []
+    )
 
 
 def test_not_valid_jsonld_format_missing_ids(paths):
-
-    rocrate_path = f"{paths.invalid_jsonld_format}/missing_id"
-    logger.debug(f"test_missing_file_descriptor: {rocrate_path}")
-
-    result: models.ValidationResult = services.validate(rocrate_path,
-                                                        requirement_level="MUST", abort_on_first=True)
-    assert not result.passed(), "ro-crate should be invalid"
-
-    # check requirement
-    failed_requirements = result.failed_requirements
-    for failed_requirement in failed_requirements:
-        logger.debug(f"Failed requirement: {failed_requirement}")
-    assert len(failed_requirements) == 1, "ro-crate should have 1 failed requirement"
-
-    # set reference to failed requirement
-    failed_requirement = failed_requirements[0]
-    logger.debug(f"Failed requirement name: {failed_requirement.name}")
-
-    # check if the failed requirement is the expected one
-    assert failed_requirement.name == "FileDescriptorJsonLdFormat", \
-        "Unexpected failed requirement"
-
-    for issue in result.get_issues():
-        logger.debug(f"Detected issue {type(issue)}: {issue.message}")
+    """
+    Test a RO-Crate with an invalid JSON-LD file descriptor format.
+    One or more entities in the file descriptor do not contain the @id attribute.
+    """
+    do_entity_test(
+        f"{paths.invalid_jsonld_format}/missing_id",
+        models.RequirementLevels.MUST,
+        False,
+        "FileDescriptorJsonLdFormat",
+        ["file descriptor does not contain the @id attribute"]
+    )
 
 
 def test_not_valid_jsonld_format_missing_types(paths):
-
-    rocrate_path = f"{paths.invalid_jsonld_format}/missing_type"
-    logger.debug(f"test_missing_file_descriptor: {rocrate_path}")
-
-    result: models.ValidationResult = services.validate(rocrate_path,
-                                                        requirement_level="MUST", abort_on_first=True)
-    assert not result.passed(), "ro-crate should be invalid"
-
-    # check requirement
-    failed_requirements = result.failed_requirements
-    for failed_requirement in failed_requirements:
-        logger.debug(f"Failed requirement: {failed_requirement}")
-    assert len(failed_requirements) == 1, "ro-crate should have 1 failed requirement"
-
-    # set reference to failed requirement
-    failed_requirement = failed_requirements[0]
-    logger.debug(f"Failed requirement name: {failed_requirement.name}")
-
-    # check if the failed requirement is the expected one
-    assert failed_requirement.name == "FileDescriptorJsonLdFormat", \
-        "Unexpected failed requirement"
-
-    for issue in result.get_issues():
-        logger.debug(f"Detected issue {type(issue)}: {issue.message}")
+    """
+    Test a RO-Crate with an invalid JSON-LD file descriptor format.
+    One or more entities in the file descriptor do not contain the @type attribute.
+    """
+    do_entity_test(
+        f"{paths.invalid_jsonld_format}/missing_type",
+        models.RequirementLevels.MUST,
+        False,
+        "FileDescriptorJsonLdFormat",
+        ["file descriptor does not contain the @type attribute"]
+    )
