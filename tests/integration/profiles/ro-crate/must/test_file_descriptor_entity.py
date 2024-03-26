@@ -18,6 +18,7 @@ def paths():
 
 
 def test_missing_entity(paths):
+    """Test a RO-Crate without a file descriptor entity."""
     do_entity_test(
         paths.missing_entity,
         models.RequirementLevels.MUST,
