@@ -81,3 +81,7 @@ class InvalidFileDescriptorEntity:
     @property
     def missing_entity(self) -> Path:
         return Path(f"{self.base_path}/missing_entity")
+
+    @property
+    def invalid_entity_type(self) -> Path:
+        return Path(f"{self.base_path}/invalid_entity_type")
