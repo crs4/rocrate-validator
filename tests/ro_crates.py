@@ -72,3 +72,12 @@ class InvalidRootDataEntity:
     @property
     def missing_root_license_description(self) -> Path:
         return Path(f"{self.base_path}/missing_root_license_description")
+
+
+class InvalidFileDescriptorEntity:
+
+    base_path = f"{INVALID_CRATES_DATA_PATH}/1_file_descriptor_metadata"
+
+    @property
+    def missing_entity(self) -> Path:
+        return Path(f"{self.base_path}/missing_entity")
