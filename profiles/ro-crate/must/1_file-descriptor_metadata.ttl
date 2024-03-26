@@ -21,7 +21,22 @@
         sh:message "The root of the document MUST have an entity with @id `ro-crate-metadata.json`" ;
     ] .
 
+:MetadataFileDescriptorDefinition a sh:NodeShape ;
+    sh:name "RO-Crate Metadata File Descriptor: recommended properties" ;
+    sh:description """RO-Crate Metadata Descriptor MUST be defined
+    according with the requirements details defined in
+    <https://www.researchobject.org/ro-crate/1.1/root-data-entity.html>""";
+    sh:targetNode :ro-crate-metadata.json ;
+    sh:property [ 
+        a sh:PropertyShape ;
+        sh:name "Check if the Metadata File Descriptor is a CreativeWork" ;
+        sh:description "The RO-Crate metadata file MUST be a CreativeWork, as per schema.org" ;
+        sh:minCount 1 ;
+        sh:nodeKind sh:IRI ;
         sh:path rdf:type ;
+        sh:hasValue schema_org:CreativeWork ;
+        sh:message "The RO-Crate metadata file MUST be a CreativeWork, as per schema.org" ;
+    ] .
         sh:minCount 1 ;
         sh:message "The RO-Crate metadata file descriptor MUST exist" ;
     ] .
