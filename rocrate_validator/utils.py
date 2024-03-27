@@ -183,6 +183,27 @@ def get_requirement_name_from_file(file: Path, check_name: Optional[str] = None)
     return base_name
 
 
+def get_requirement_class_by_name(requirement_name: str) -> Type:
+    """
+    Dynamically load the module of the class and return the class"""
+
+    # Split the requirement name into module and class
+    module_name, class_name = requirement_name.rsplit(".", 1)
+    logger.debug("Module: %r", module_name)
+    logger.debug("Class: %r", class_name)
+
+    # convert the module name to a path
+    module_path = module_name.replace(".", "/")
+    # add the path to the system path
+    sys.path.insert(0, os.path.dirname(module_path))
+
+    # Import the module
+    module = import_module(module_name)
+
+    # Get the class from the module
+    return getattr(module, class_name)
+
+
 def to_camel_case(snake_str: str) -> str:
     """
     Convert a snake case string to camel case
