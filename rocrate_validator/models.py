@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-import inspect
+import enum
 import logging
 import os
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from functools import total_ordering
 from pathlib import Path
 from typing import Callable, Dict, List, Optional, Set, Type, Union
 
@@ -23,100 +24,98 @@ from .errors import OutOfValidationContext
 logger = logging.getLogger(__name__)
 
 
+@enum.unique
+@total_ordering
+class Severity(enum.Enum):
+    """Enum ordering "strength" of conditions to be verified"""
+    OPTIONAL = 0
+    RECOMMENDED = 2
+    REQUIRED = 4
+
+    def __lt__(self, other) -> bool:
+        if isinstance(other, Severity):
+            return self.value < other.value
+        else:
+            raise TypeError(f"Comparison not supported between instances of {type(self)} and {type(other)}")
+
+
+@total_ordering
 @dataclass
 class RequirementType:
     name: str
-    value: int
+    value: Severity
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         if not isinstance(other, RequirementType):
             return False
         return self.name == other.name and self.value == other.value
 
-    def __ne__(self, other):
+    def __lt__(self, other) -> bool:
+        # TODO: this ordering is not totally coherent, since for two objects a and b
+        # with equal Severity but different names you would have
+        #       not a < b, which implies a >= b
+        #       and also a != b and not a > b, which is incoherent with a >= b
         if not isinstance(other, RequirementType):
-            return True
-        return self.name != other.name or self.value != other.value
-
-    def __lt__(self, other):
-        if not isinstance(other, RequirementType):
-            raise ValueError(f"Cannot compare RequirementType with {type(other)}")
+            raise TypeError(f"Cannot compare RequirementType with {type(other)}")
         return self.value < other.value
 
-    def __le__(self, other):
-        if not isinstance(other, RequirementType):
-            raise ValueError(f"Cannot compare RequirementType with {type(other)}")
-        return self.value <= other.value
-
-    def __gt__(self, other):
-        if not isinstance(other, RequirementType):
-            raise ValueError(f"Cannot compare RequirementType with {type(other)}")
-        return self.value > other.value
-
-    def __ge__(self, other):
-        if not isinstance(other, RequirementType):
-            raise ValueError(f"Cannot compare RequirementType with {type(other)}")
-        return self.value >= other.value
-
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((self.name, self.value))
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'RequirementType(name={self.name}, severity={self.value})'
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
-    def __int__(self):
-        return self.value
+    def __int__(self) -> int:
+        return self.value.value
 
-    def __index__(self):
-        return self.value
+    def __index__(self) -> int:
+        return self.value.value
 
 
-class RequirementLevels:
+@total_ordering
+class RequirementLevel(enum.Enum):
     """
     * The keywords MUST, MUST NOT, REQUIRED,
     * SHALL, SHALL NOT, SHOULD, SHOULD NOT,
     * RECOMMENDED, MAY, and OPTIONAL in this document
     * are to be interpreted as described in RFC 2119.
     """
-    MAY = RequirementType('MAY', 1)
-    OPTIONAL = RequirementType('OPTIONAL', 1)
-    SHOULD = RequirementType('SHOULD', 2)
-    SHOULD_NOT = RequirementType('SHOULD_NOT', 2)
-    REQUIRED = RequirementType('REQUIRED', 3)
-    MUST = RequirementType('MUST', 3)
-    MUST_NOT = RequirementType('MUST_NOT', 3)
-    SHALL = RequirementType('SHALL', 3)
-    SHALL_NOT = RequirementType('SHALL_NOT', 3)
-    RECOMMENDED = RequirementType('RECOMMENDED', 3)
+    MAY = RequirementType('MAY', Severity.OPTIONAL)
+    OPTIONAL = RequirementType('OPTIONAL', Severity.OPTIONAL)
+    SHOULD = RequirementType('SHOULD', Severity.RECOMMENDED)
+    SHOULD_NOT = RequirementType('SHOULD_NOT', Severity.RECOMMENDED)
+    RECOMMENDED = RequirementType('RECOMMENDED', Severity.RECOMMENDED)
+    REQUIRED = RequirementType('REQUIRED', Severity.REQUIRED)
+    MUST = RequirementType('MUST', Severity.REQUIRED)
+    MUST_NOT = RequirementType('MUST_NOT', Severity.REQUIRED)
+    SHALL = RequirementType('SHALL', Severity.REQUIRED)
+    SHALL_NOT = RequirementType('SHALL_NOT', Severity.REQUIRED)
 
-    def all() -> Dict[str, RequirementType]:
-        return {name: member for name, member in inspect.getmembers(RequirementLevels)
-                if not inspect.isroutine(member)
-                and not inspect.isdatadescriptor(member) and not name.startswith('__')}
+    def __lt__(self, other) -> bool:
+        if not isinstance(other, RequirementLevel):
+            raise TypeError(f"Cannot compare {type(self)} with {type(other)}")
+        return self.value < other.value
 
     @staticmethod
-    def get(name: str) -> RequirementType:
-        return RequirementLevels.all()[name.upper()]
+    def all() -> Dict[str, RequirementType]:
+        return {level.name: level.value for level in RequirementLevel}
 
-
-class Severity(RequirementLevels):
-    """Extends the RequirementLevels enum with additional values"""
-    INFO = RequirementType('INFO', 0)
-    WARNING = RequirementType('WARNING', 2)
-    ERROR = RequirementType('ERROR', 4)
+    @classmethod
+    def get(cls, name: str) -> RequirementType:
+        return cls[name.upper()].value
 
 
 class Profile:
     def __init__(self, name: str, path: Path = None,
-                 requirements: Set[Requirement] = None,
+                 requirements: Optional[List[Requirement]] = None,
                  publicID: str = None):
         self._path = path
         self._name = name
         self._description = None
-        self._requirements = requirements if requirements else []
+        self._requirements = requirements if requirements is not None else []
         self._publicID = publicID
 
     @property
@@ -169,7 +168,7 @@ class Profile:
             for file in sorted(files, key=lambda x: (not x.endswith('.py'), x)):
                 requirement_path = requirement_root / file
                 for requirement in Requirement.load(
-                        self, RequirementLevels.get(requirement_level),
+                        self, RequirementLevel.get(requirement_level),
                         requirement_path, publicID=self.publicID):
                     req_id += 1
                     requirement._order_number = req_id
@@ -183,7 +182,7 @@ class Profile:
         return self._requirements
 
     def get_requirements(
-            self, severity: RequirementType = RequirementLevels.MUST,
+            self, severity: RequirementType = RequirementLevel.MUST,
             exact_match: bool = False) -> List[Requirement]:
         return [requirement for requirement in self.requirements
                 if not exact_match and requirement.severity >= severity or
@@ -192,7 +191,7 @@ class Profile:
     @property
     def requirements_by_severity_map(self) -> Dict[RequirementType, List[Requirement]]:
         return {severity: self.get_requirements_by_type(severity)
-                for severity in RequirementLevels.all().values()}
+                for severity in RequirementLevel.all().values()}
 
     @property
     def inherited_profiles(self) -> List[Profile]:
@@ -216,7 +215,7 @@ class Profile:
         self._requirements.remove(requirement)
 
     def validate(self, rocrate_path: Path) -> ValidationResult:
-        pass
+        raise NotImplementedError()
 
     def __eq__(self, other) -> bool:
         return self.name == other.name and self.path == other.path and self.requirements == other.requirements
@@ -369,12 +368,12 @@ class RequirementCheck:
     def issues(self) -> List[CheckIssue]:
         """Return the issues found during the check"""
         assert self._result, "Issues not set before the check"
-        return self._result.get_issues_by_check(self, Severity.INFO)
+        return self._result.get_issues_by_check(self, Severity.OPTIONAL)
 
-    def get_issues(self, severity: Severity = Severity.WARNING) -> List[CheckIssue]:
+    def get_issues(self, severity: Severity = Severity.RECOMMENDED) -> List[CheckIssue]:
         return self._result.get_issues_by_check(self, severity)
 
-    def get_issues_by_severity(self, severity: Severity = Severity.WARNING) -> List[CheckIssue]:
+    def get_issues_by_severity(self, severity: Severity = Severity.RECOMMENDED) -> List[CheckIssue]:
         return self._result.get_issues_by_check_and_severity(self, severity)
 
     def check(self) -> bool:
@@ -410,7 +409,7 @@ class RequirementCheck:
 class Requirement(ABC):
 
     def __init__(self,
-                 severity: RequirementType,
+                 severity: RequirementLevel,
                  profile: Profile,
                  name: str = None,
                  description: str = None,
@@ -421,7 +420,7 @@ class Requirement(ABC):
         self._severity = severity
         self._profile = profile
         self._description = description
-        self._path = path
+        self._path = path  # path of code implementing the requirement
         self._checks: List[RequirementCheck] = []
 
         # reference to the current validation context
@@ -479,7 +478,7 @@ class Requirement(ABC):
         return self._path
 
     @abstractmethod
-    def __init_checks__(self):
+    def __init_checks__(self) -> List[RequirementCheck]:
         pass
 
     def get_checks(self) -> List[RequirementCheck]:
@@ -595,7 +594,7 @@ class Requirement(ABC):
 
     @staticmethod
     def load(profile: Profile,
-             requirement_type: RequirementType,
+             requirement_level: RequirementLevel,
              file_path: Path,
              publicID: str = None) -> List[Requirement]:
         # initialize the set of requirements
@@ -605,23 +604,23 @@ class Requirement(ABC):
         if isinstance(file_path, str):
             file_path = Path(file_path)
 
-        # TODO: implement a better way to identify the requirement type and class
+        # TODO: implement a better way to identify the requirement level and class
         # check if the file is a python file
         if file_path.suffix == ".py":
             from rocrate_validator.requirements.python import PyRequirement
-            py_requirements = PyRequirement.load(profile, requirement_type, file_path)
-            logger.debug("Loaded Python requirements: %r" % py_requirements)
+            py_requirements = PyRequirement.load(profile, requirement_level, file_path)
+            logger.debug("Loaded Python requirements: %r", py_requirements)
             requirements.extend(py_requirements)
-            logger.debug("Added Requirement: %r" % py_requirements)
+            logger.debug("Added Requirement: %r", py_requirements)
         elif file_path.suffix == ".ttl":
             # from rocrate_validator.requirements.shacl.checks import SHACLCheck
             from rocrate_validator.requirements.shacl.requirements import \
                 SHACLRequirement
-            shapes_requirements = SHACLRequirement.load(profile, requirement_type,
+            shapes_requirements = SHACLRequirement.load(profile, requirement_level,
                                                         file_path, publicID=publicID)
-            logger.debug("Loaded SHACL requirements: %r" % shapes_requirements)
+            logger.debug("Loaded SHACL requirements: %r", shapes_requirements)
             requirements.extend(shapes_requirements)
-            logger.debug("Added Requirement: %r" % shapes_requirements)
+            logger.debug("Added Requirement: %r", shapes_requirements)
         else:
             logger.warning("Requirement type not supported: %s", file_path.suffix)
 
@@ -635,13 +634,6 @@ def issue_types(issues: List[Type[CheckIssue]]) -> Type[RequirementCheck]:
     return class_decorator
 
 
-class Severity(RequirementLevels):
-    """Extends the RequirementLevels enum with additional values"""
-    INFO = RequirementType('INFO', 0)
-    WARNING = RequirementType('WARNING', 2)
-    ERROR = RequirementType('ERROR', 4)
-
-
 class CheckIssue:
     """
     Class to store an issue found during a check
@@ -653,11 +645,18 @@ class CheckIssue:
         check (RequirementCheck): The check that generated the issue
     """
 
-    def __init__(self, severity: Severity,
+    # TODO:
+    # 1. CheckIssue should keep track of the RequirementLevel that was broken,
+    #    instead of the Severity (the Severity can later be retrieved from the level;
+    # 2. CheckIssue has the check, to it is able to determine the level and the Severity
+    #    without having it provided through an argument.
+    def __init__(self, requirement_type: RequirementType,
                  message: Optional[str] = None,
                  code: int = None,
                  check: RequirementCheck = None):
-        self._severity = severity
+        if not isinstance(requirement_type, RequirementType):
+            raise TypeError(f"CheckIssue constructed with a requirement_type of type {type(requirement_type)}")
+        self._level = RequirementLevel(requirement_type)
         self._message = message
         self._code = code
         self._check = check
@@ -668,9 +667,18 @@ class CheckIssue:
         return self._message
 
     @property
-    def severity(self) -> str:
-        """The severity of the issue"""
-        return self._severity
+    def level(self) -> RequirementLevel:
+        """The level of the issue"""
+        return self._level
+
+    @property
+    def severity(self) -> Severity:
+        """Severity of the RequirementLevel associated with this check."""
+        return self._level.value.value
+
+    @property
+    def level_name(self) -> str:
+        return self._level.name
 
     @property
     def check(self) -> RequirementCheck:
@@ -689,8 +697,8 @@ class CheckIssue:
             - All issues with the same severity should start with the same number.
             - All codes should be positive numbers.
             """
-            # Concatenate the severity, class name and message into a single string
-            issue_string = str(self.severity.value) + self.__class__.__name__ + str(self.message)
+            # Concatenate the level, class name and message into a single string
+            issue_string = str(self.level.value) + self.__class__.__name__ + str(self.message)
 
             # Use the built-in hash function to generate a unique code for this string
             # The modulo operation ensures that the code is a positive number
@@ -772,54 +780,60 @@ class ValidationResult:
         # TODO: check if the issues belong to the current validation context
         self._issues.extend(issues)
 
+    def add_check_issue(self, message: str, check: RequirementCheck, code: int = None):
+        self._issues.append(CheckIssue(check.requirement.severity, message, code, check=check))
+
     def add_error(self, message: str, check: RequirementCheck, code: int = None):
-        self._issues.append(CheckIssue(Severity.ERROR, message, code, check=check))
+        self.add_check_issue(message, check, code)
 
     def add_warning(self, message: str, check: RequirementCheck,  code: int = None):
-        self._issues.append(CheckIssue(Severity.WARNING, message, code, check=check))
-
-    def add_info(self, message: str, check: RequirementCheck, code: int = None):
-        self._issues.append(CheckIssue(Severity.INFO, message, code, check=check))
+        self.add_check_issue(message, check, code)
 
     def add_optional(self, message: str, check: RequirementCheck, code: int = None):
-        self._issues.append(CheckIssue(Severity.OPTIONAL, message, code, check=check))
+        self.add_check_issue(message, check, code)
+
+    def add_info(self, message: str, check: RequirementCheck, code: int = None):
+        self.add_check_issue(message, check, code)
 
     def add_may(self, message: str, check: RequirementCheck, code: int = None):
-        self._issues.append(CheckIssue(Severity.MAY, message, code, check=check))
+        self.add_check_issue(message, check, code)
+
+    def add_recommended(self, message: str, check: RequirementCheck, code: int = None):
+        self.add_check_issue(message, check, code)
 
     def add_should(self, message: str, check: RequirementCheck, code: int = None):
-        self._issues.append(CheckIssue(Severity.SHOULD, message, code, check=check))
+        self.add_check_issue(message, check, code)
 
     def add_should_not(self, message: str, check: RequirementCheck,  code: int = None):
-        self._issues.append(CheckIssue(Severity.SHOULD_NOT, message, code, check=check))
+        self.add_check_issue(message, check, code)
 
     def add_must(self, message: str, check: RequirementCheck,  code: int = None):
-        self._issues.append(CheckIssue(Severity.MUST, message, code, check=check))
+        self.add_check_issue(message, check, code)
 
     def add_must_not(self, message: str, check: RequirementCheck,  code: int = None):
-        self._issues.append(CheckIssue(Severity.MUST_NOT, message, code, check=check))
+        self.add_check_issue(message, check, code)
 
     @property
     def issues(self) -> List[CheckIssue]:
         return self._issues
 
-    def get_issues(self, severity: Severity = Severity.WARNING) -> List[CheckIssue]:
-        return [issue for issue in self._issues if issue.severity.value >= severity.value]
+    def get_issues(self, severity: Severity = Severity.RECOMMENDED) -> List[CheckIssue]:
+        return [issue for issue in self._issues if issue.severity >= severity]
 
     def get_issues_by_severity(self, severity: Severity) -> List[CheckIssue]:
         return [issue for issue in self._issues if issue.severity == severity]
 
-    def get_issues_by_check(self, check: RequirementCheck, severity: Severity.WARNING) -> List[CheckIssue]:
+    def get_issues_by_check(self, check: RequirementCheck, severity: Severity.RECOMMENDED) -> List[CheckIssue]:
         return [issue for issue in self.issues if issue.check == check and issue.severity.value >= severity.value]
 
     def get_issues_by_check_and_severity(self, check: RequirementCheck, severity: Severity) -> List[CheckIssue]:
-        return [issue for issue in self.issues if issue.check == check and issue.severity.value == severity.value]
+        return [issue for issue in self.issues if issue.check == check and issue.severity == severity]
 
-    def has_issues(self, severity: Severity = Severity.WARNING) -> bool:
-        return any(issue.severity.value >= severity.value for issue in self._issues)
+    def has_issues(self, severity: Severity = Severity.RECOMMENDED) -> bool:
+        return any(issue.severity >= severity for issue in self._issues)
 
-    def passed(self, severity: Severity = Severity.WARNING) -> bool:
-        return not any(issue.severity.value >= severity.value for issue in self._issues)
+    def passed(self, severity: Severity = Severity.RECOMMENDED) -> bool:
+        return not any(issue.severity >= severity for issue in self._issues)
 
     def __str__(self):
         return f"Validation result: {len(self._issues)} issues"
@@ -835,7 +849,7 @@ class Validator:
                  profiles_path: str = "./profiles",
                  profile_name: str = "ro-crate",
                  disable_profile_inheritance: bool = False,
-                 requirement_level: Union[str, RequirementType] = RequirementLevels.MUST,
+                 requirement_level: Union[str, RequirementType] = RequirementLevel.MUST,
                  requirement_level_only: bool = False,
                  ontologies_path: Optional[Path] = None,
                  advanced: Optional[bool] = False,
@@ -852,7 +866,7 @@ class Validator:
         self.profile_name = profile_name
         self.disable_profile_inheritance = disable_profile_inheritance
         self.requirement_level = \
-            RequirementLevels.get(requirement_level) if isinstance(requirement_level, str) else \
+            RequirementLevel.get(requirement_level) if isinstance(requirement_level, str) else \
             requirement_level
         self.requirement_level_only = requirement_level_only
         self.ontologies_path = ontologies_path

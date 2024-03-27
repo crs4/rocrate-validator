@@ -3,7 +3,7 @@ import logging
 from pathlib import Path
 from typing import List
 
-from ...models import Profile, Requirement, RequirementCheck, RequirementType
+from ...models import Profile, Requirement, RequirementCheck, RequirementLevel
 from ...utils import get_classes_from_file
 
 # set up logging
@@ -13,14 +13,14 @@ logger = logging.getLogger(__name__)
 class PyRequirement(Requirement):
 
     def __init__(self,
-                 type: RequirementType,
+                 severity: RequirementLevel,
                  profile: Profile,
                  name: str = None,
                  description: str = None,
                  path: Path = None,
                  requirement_check_class=None):
         self.requirement_check_class = requirement_check_class
-        super().__init__(type, profile, name, description, path, initialize_checks=True)
+        super().__init__(severity, profile, name, description, path, initialize_checks=True)
 
     def __init_checks__(self):
         # initialize the list of checks
@@ -40,7 +40,7 @@ class PyRequirement(Requirement):
         return checks
 
     @classmethod
-    def load(cls, profile: Profile, requirement_type: RequirementType, file_path: Path):
+    def load(cls, profile: Profile, requirement_level: RequirementLevel, file_path: Path):
         # instantiate a list to store the requirements
         requirements: List[Requirement] = []
 
@@ -52,7 +52,7 @@ class PyRequirement(Requirement):
         for requirement_name, requirement_class in classes.items():
             logger.debug("Processing requirement: %r" % requirement_name)
             r = PyRequirement(
-                requirement_type, profile,
+                requirement_level, profile,
                 name=requirement_name.strip() if requirement_name else "",
                 description=requirement_class.__doc__.strip() if requirement_class.__doc__ else "",
                 path=file_path,

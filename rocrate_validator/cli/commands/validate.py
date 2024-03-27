@@ -130,7 +130,7 @@ def validate(ctx,
 
 def __print_validation_result__(
         result: ValidationResult,
-        severity: Severity = Severity.WARNING):
+        severity: Severity = Severity.RECOMMENDED):
     """
     Print the validation result
     """

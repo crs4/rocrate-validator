@@ -1,10 +1,14 @@
 
 from typing import Optional
 
-from .models import RequirementCheck
+# from .models import RequirementCheck
 
 
-class OutOfValidationContext(Exception):
+class ROCValidatorError(Exception):
+    pass
+
+
+class OutOfValidationContext(ROCValidatorError):
     """Raised when a validation check is called outside of a validation context."""
 
     def __init__(self, message: Optional[str] = None):
@@ -22,7 +26,7 @@ class OutOfValidationContext(Exception):
         return f"OutOfValidationContext({self._message!r})"
 
 
-class InvalidSerializationFormat(Exception):
+class InvalidSerializationFormat(ROCValidatorError):
     """Raised when an invalid serialization format is provided."""
 
     def __init__(self, format: Optional[str] = None):
@@ -40,7 +44,7 @@ class InvalidSerializationFormat(Exception):
         return f"InvalidSerializationFormat({self._format!r})"
 
 
-class ValidationError(Exception):
+class ValidationError(ROCValidatorError):
     """Raised when a validation error occurs."""
 
     def __init__(self, message, path: str = ".", code: int = -1):
@@ -74,7 +78,7 @@ class CheckValidationError(ValidationError):
     """Raised when a validation check fails."""
 
     def __init__(self,
-                 check: RequirementCheck,
+                 check,
                  message,
                  path: str = ".",
                  code: int = -1):
@@ -82,7 +86,7 @@ class CheckValidationError(ValidationError):
         self._check = check
 
     @property
-    def check(self) -> RequirementCheck:
+    def check(self):
         """The check that failed."""
         return self._check
 
