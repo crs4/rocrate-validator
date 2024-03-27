@@ -128,7 +128,7 @@ class Violation(CheckIssue):
     @property
     def severity(self):
         # TODO: map the severity to the CheckIssue severity
-        return Severity.ERROR
+        return Severity.REQUIRED
 
 
 class ValidationResult:

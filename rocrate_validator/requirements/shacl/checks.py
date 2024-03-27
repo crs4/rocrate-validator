@@ -1,10 +1,8 @@
 
 import logging
 
-from ...models import RequirementCheck
-from ...models import Requirement
+from ...models import Requirement, RequirementCheck
 from .models import ShapeProperty
-
 
 logger = logging.getLogger(__name__)
 
@@ -30,9 +28,9 @@ class SHACLCheck(RequirementCheck):
     def shapeProperty(self) -> ShapeProperty:
         return self._shapeProperty
 
-    @property
-    def severity(self):
-        return self.requirement.severity
+    # @property
+    # def severity(self):
+    #     return self.requirement.severity
 
     @classmethod
     def get_description(cls, requirement: Requirement):

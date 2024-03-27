@@ -13,14 +13,14 @@ logger = logging.getLogger(__name__)
 class PyRequirement(Requirement):
 
     def __init__(self,
-                 severity: RequirementLevel,
+                 level: RequirementLevel,
                  profile: Profile,
                  name: str = None,
                  description: str = None,
                  path: Path = None,
                  requirement_check_class=None):
         self.requirement_check_class = requirement_check_class
-        super().__init__(severity, profile, name, description, path, initialize_checks=True)
+        super().__init__(level, profile, name, description, path, initialize_checks=True)
 
     def __init_checks__(self):
         # initialize the list of checks
@@ -50,7 +50,7 @@ class PyRequirement(Requirement):
 
         # instantiate a requirement for each class
         for requirement_name, requirement_class in classes.items():
-            logger.debug("Processing requirement: %r" % requirement_name)
+            logger.debug("Processing requirement: %r", requirement_name)
             r = PyRequirement(
                 requirement_level, profile,
                 name=requirement_name.strip() if requirement_name else "",
@@ -58,7 +58,7 @@ class PyRequirement(Requirement):
                 path=file_path,
                 requirement_check_class=requirement_class
             )
-            logger.debug("Created requirement: %r" % r)
+            logger.debug("Created requirement: %r", r)
             requirements.append(r)
 
         return requirements
