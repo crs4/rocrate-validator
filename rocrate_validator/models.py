@@ -541,40 +541,20 @@ class Requirement(ABC):
             raise OutOfValidationContext("Validation context has not been initialized")
         return self._validation_context.settings
 
-    def __eq__(self, other: Requirement):
+    def __eq__(self, other) -> bool:
         if not isinstance(other, Requirement):
-            raise ValueError(f"Cannot compare Requirement with {type(other)}")
+            raise TypeError(f"Cannot compare {type(self)} with {type(other)}")
         return self.name == other.name \
             and self.severity == other.severity and self.description == other.description \
             and self.path == other.path
 
-    def __ne__(self, other: Requirement):
-        if not isinstance(other, Requirement):
-            raise ValueError(f"Cannot compare Requirement with {type(other)}")
-        return self.name != other.name \
-            or self.severity != other.type \
-            or self.description != other.description \
-            or self.path != other.path
+    def __ne__(self, other) -> bool:
+        return not self.__eq__(other)
 
     def __hash__(self):
         return hash((self.name, self.severity, self.description, self.path))
 
-    def __lt__(self, other: Requirement) -> bool:
-        if not isinstance(other, Requirement):
-            raise ValueError(f"Cannot compare Requirement with {type(other)}")
-        return self.severity < other.severity or self.name < other.name
-
-    def __le__(self, other: Requirement) -> bool:
-        if not isinstance(other, Requirement):
-            raise ValueError(f"Cannot compare Requirement with {type(other)}")
-        return self.severity <= other.severity or self.name <= other.name
-
-    def __gt__(self, other: Requirement) -> bool:
-        if not isinstance(other, Requirement):
-            raise ValueError(f"Cannot compare Requirement with {type(other)}")
-        return self.severity > other.severity or self.name > other.name
-
-    def __ge__(self, other: Requirement) -> bool:
+    def __lt__(self, other) -> bool:
         if not isinstance(other, Requirement):
             raise ValueError(f"Cannot compare Requirement with {type(other)}")
         return self.severity >= other.severity or self.name >= other.name
