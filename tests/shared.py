@@ -1,3 +1,7 @@
+"""
+Library of shared functions for testing RO-Crate profiles
+"""
+
 import logging
 from pathlib import Path
 from typing import List
@@ -11,35 +15,56 @@ def do_entity_test(
         rocrate_path: Path,
         requirement_level: models.RequirementType,
         expected_validation_result: bool,
-        expected_triggered_requirement_name: str,
+        expected_triggered_requirements: List[str],
         expected_triggered_issues: List[str]
 ):
-    logger.debug(f"Testing RO-Crate @ path: {rocrate_path}")
-    logger.debug(f"Requirement level: {requirement_level}")
+    """
+    Shared function to test a RO-Crate entity
+    """
+    # declare variables
+    failed_requirements = None
+    detected_issues = None
 
-    result: models.ValidationResult = \
-        services.validate(rocrate_path,
-                          requirement_level=requirement_level, abort_on_first=True)
-    logger.debug(f"Expected validation result: {expected_validation_result}")
-    assert result.passed() == expected_validation_result, \
-        f"RO-Crate should be {'valid' if expected_validation_result else 'invalid'}"
+    try:
+        logger.debug("Testing RO-Crate @ path: %s", rocrate_path)
+        logger.debug("Requirement level: %s", requirement_level)
 
-    # check requirement
-    failed_requirements = result.failed_requirements
-    for failed_requirement in failed_requirements:
-        logger.debug(f"Failed requirement: {failed_requirement}")
-    assert len(failed_requirements) == 1, "ro-crate should have 1 failed requirement"
+        result: models.ValidationResult = \
+            services.validate(rocrate_path,
+                              requirement_level=requirement_level,
+                              abort_on_first=len(expected_triggered_requirements) == 1
+                              or len(expected_triggered_issues) == 1)
+        logger.debug("Expected validation result: %s", expected_validation_result)
+        assert result.passed() == expected_validation_result, \
+            f"RO-Crate should be {'valid' if expected_validation_result else 'invalid'}"
 
-    # set reference to failed requirement
-    failed_requirement = failed_requirements[0]
-    logger.debug(f"Failed requirement name: {failed_requirement.name}")
+        # check requirement
+        failed_requirements = [_.name for _ in result.failed_requirements]
+        assert len(failed_requirements) == len(expected_triggered_requirements), \
+            f"Expected {len(expected_triggered_requirements)} requirements to be "\
+            f"triggered, but got {len(failed_requirements)}"
 
-    # check if the failed requirement is the expected one
-    logger.debug(f"Expected requirement name: {expected_triggered_requirement_name}")
-    assert failed_requirement.name == expected_triggered_requirement_name, \
-        f"Unexpected failed requirement: it MUST be {expected_triggered_requirement_name}"
+        # check that the expected requirements are triggered
+        for expected_triggered_requirement in expected_triggered_requirements:
+            if expected_triggered_requirement not in failed_requirements:
+                assert False, f"The expected requirement " \
+                    f"\"{expected_triggered_requirement}\" was not found in the failed requirements"
 
-    # check requirement issues
-    logger.debug(f"Expected issues: {expected_triggered_issues}")
-    for issue in result.get_issues():
-        logger.debug(f"Detected issue {type(issue)}: {issue.message}")
+        # check requirement issues
+        detected_issues = [issue.message for issue in result.get_issues()]
+        logger.debug("Detected issues: %s", detected_issues)
+        logger.debug("Expected issues: %s", expected_triggered_issues)
+        for expected_issue in expected_triggered_issues:
+            if not any(expected_issue in issue for issue in detected_issues):  # support partial match
+                assert False, f"The expected issue \"{expected_issue}\" was not found in the detected issues"
+    except Exception as e:
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.exception(e)
+            logger.debug("Failed to validate RO-Crate @ path: %s", rocrate_path)
+            logger.debug("Requirement level: %s", requirement_level)
+            logger.debug("Expected validation result: %s", expected_validation_result)
+            logger.debug("Expected triggered requirements: %s", expected_triggered_requirements)
+            logger.debug("Expected triggered issues: %s", expected_triggered_issues)
+            logger.debug("Failed requirements: %s", failed_requirements)
+            logger.debug("Detected issues: %s", detected_issues)
+        raise e

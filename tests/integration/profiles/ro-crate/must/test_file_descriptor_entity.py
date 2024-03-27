@@ -24,7 +24,7 @@ def test_missing_entity(paths):
         models.RequirementLevels.MUST,
         False,
         "RO-Crate Metadata File Descriptor entity MUST exist",
-        ["RO-Crate Metadata File Descriptor entity MUST exist"]
+        ["The root of the document MUST have an entity with @id `ro-crate-metadata.json`"]
     )
 
 
