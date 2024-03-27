@@ -93,3 +93,11 @@ class InvalidFileDescriptorEntity:
     @property
     def invalid_entity_about_type(self) -> Path:
         return Path(f"{self.base_path}/invalid_entity_about_type")
+
+    @property
+    def missing_conforms_to(self) -> Path:
+        return Path(f"{self.base_path}/missing_conforms_to")
+
+    @property
+    def invalid_conforms_to(self) -> Path:
+        return Path(f"{self.base_path}/invalid_conforms_to")
