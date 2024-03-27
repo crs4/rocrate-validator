@@ -54,7 +54,7 @@ def get_file_descriptor_path(rocrate_path: Path) -> Path:
     return Path(rocrate_path) / constants.ROCRATE_METADATA_FILE
 
 
-def get_format_extension(format: constants.RDF_SERIALIZATION_FORMATS_TYPES) -> str:
+def get_format_extension(serialization_format: constants.RDF_SERIALIZATION_FORMATS_TYPES) -> str:
     """
     Get the file extension for the RDF serialization format
 
@@ -64,15 +64,15 @@ def get_format_extension(format: constants.RDF_SERIALIZATION_FORMATS_TYPES) -> s
     :raises InvalidSerializationFormat: If the format is not valid
     """
     try:
-        return constants.RDF_SERIALIZATION_FILE_FORMAT_MAP[format]
-    except KeyError:
-        logger.error("Invalid RDF serialization format: %s", format)
-        raise errors.InvalidSerializationFormat(format)
+        return constants.RDF_SERIALIZATION_FILE_FORMAT_MAP[serialization_format]
+    except KeyError as exc:
+        logger.error("Invalid RDF serialization format: %s", serialization_format)
+        raise errors.InvalidSerializationFormat(serialization_format) from exc
 
 
 def get_all_files(
         directory: str = '.',
-        format: constants.RDF_SERIALIZATION_FORMATS_TYPES = "turtle") -> List[str]:
+        serialization_format: constants.RDF_SERIALIZATION_FORMATS_TYPES = "turtle") -> List[str]:
     """
     Get all the files in the directory matching the format.
 
@@ -84,10 +84,10 @@ def get_all_files(
     file_paths = []
 
     # extension
-    extension = get_format_extension(format)
+    extension = get_format_extension(serialization_format)
 
     # iterate through the directory and subdirectories
-    for root, dirs, files in os.walk(directory):
+    for root, _, files in os.walk(directory):
         # iterate through the files
         for file in files:
             # check if the file has a .ttl extension
@@ -99,7 +99,7 @@ def get_all_files(
 
 
 def get_graphs_paths(
-        graphs_dir: str = CURRENT_DIR, format="turtle") -> List[str]:
+        graphs_dir: str = CURRENT_DIR, serialization_format="turtle") -> List[str]:
     """
     Get the paths to all the graphs in the directory
 
@@ -107,12 +107,12 @@ def get_graphs_paths(
     :param format: The RDF serialization format
     :return: A list of graph paths
     """
-    return get_all_files(directory=graphs_dir, format=format)
+    return get_all_files(directory=graphs_dir, serialization_format=serialization_format)
 
 
 def get_full_graph(
         graphs_dir: str,
-        format: constants.RDF_SERIALIZATION_FORMATS_TYPES = "turtle",
+        serialization_format: constants.RDF_SERIALIZATION_FORMATS_TYPES = "turtle",
         publicID: str = ".") -> Graph:
     """
     Get the full graph from the directory
@@ -123,7 +123,7 @@ def get_full_graph(
     :return: The full graph
     """
     full_graph = Graph()
-    graphs_paths = get_graphs_paths(graphs_dir, format=format)
+    graphs_paths = get_graphs_paths(graphs_dir, serialization_format=serialization_format)
     for graph_path in graphs_paths:
         full_graph.parse(graph_path, format="turtle", publicID=publicID)
         logger.debug("Loaded triples from %s", graph_path)
@@ -133,6 +133,7 @@ def get_full_graph(
 def get_classes_from_file(file_path: Path,
                           filter_class: Optional[Type] = None,
                           class_name_suffix: str = None) -> dict:
+    """Get all classes in a Python file """
     # ensure the file path is a Path object
     assert file_path, "The file path is required"
     if not isinstance(file_path, Path):
@@ -180,6 +181,27 @@ def get_requirement_name_from_file(file: Path, check_name: Optional[str] = None)
     if check_name:
         return f"{base_name}.{check_name.replace('Check', '')}"
     return base_name
+
+
+def get_requirement_class_by_name(requirement_name: str) -> Type:
+    """
+    Dynamically load the module of the class and return the class"""
+
+    # Split the requirement name into module and class
+    module_name, class_name = requirement_name.rsplit(".", 1)
+    logger.debug("Module: %r", module_name)
+    logger.debug("Class: %r", class_name)
+
+    # convert the module name to a path
+    module_path = module_name.replace(".", "/")
+    # add the path to the system path
+    sys.path.insert(0, os.path.dirname(module_path))
+
+    # Import the module
+    module = import_module(module_name)
+
+    # Get the class from the module
+    return getattr(module, class_name)
 
 
 def to_camel_case(snake_str: str) -> str:
