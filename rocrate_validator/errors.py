@@ -1,9 +1,12 @@
 class OutOfValidationContext(Exception):
+    """Raised when a validation check is called outside of a validation context."""
+
     def __init__(self, message: str = None):
         self._message = message
 
     @property
     def message(self) -> str:
+        """The error message."""
         return self._message
 
     def __str__(self):
@@ -14,11 +17,14 @@ class OutOfValidationContext(Exception):
 
 
 class InvalidSerializationFormat(Exception):
-    def __init__(self, format: str = None):
-        self._format = format
+    """Raised when an invalid serialization format is provided."""
+
+    def __init__(self, serialization_format: str = None):
+        self._format = serialization_format
 
     @property
-    def format(self):
+    def serialization_format(self):
+        """The invalid serialization format."""
         return self._format
 
     def __str__(self):
@@ -29,6 +35,8 @@ class InvalidSerializationFormat(Exception):
 
 
 class ValidationError(Exception):
+    """Raised when a validation error occurs."""
+
     def __init__(self, message, path: str = ".", code: int = -1):
         self._message = message
         self._path = path
@@ -36,14 +44,17 @@ class ValidationError(Exception):
 
     @property
     def message(self) -> str:
+        """The error message."""
         return self._message
 
     @property
     def path(self) -> str:
+        """The path where the error occurred."""
         return self._path
 
     @property
     def code(self) -> int:
+        """The error code."""
         return self._code
 
     def __str__(self):
@@ -54,12 +65,15 @@ class ValidationError(Exception):
 
 
 class CheckValidationError(ValidationError):
+    """Raised when a validation check fails."""
+
     def __init__(self, check, message, path: str = ".", code: int = -1):
         super().__init__(message, path, code)
         self._check = check
 
     @property
     def check(self):
+        """The check that failed."""
         return self._check
 
     def __repr__(self):
