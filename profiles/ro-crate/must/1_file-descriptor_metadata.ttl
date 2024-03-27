@@ -48,9 +48,15 @@
         sh:path schema_org:about ;
         sh:class schema_org:Dataset ;
         sh:message "The RO-Crate metadata file descriptor MUST have an `about` property referencing the Root Data Entity" ;
-        sh:message "The RO-Crate metadata file descriptor MUST have an `about` property" ;
-    ] .
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "conformsTo property" ;
+        sh:description "The RO-Crate specification version that this crate conforms to" ;
         sh:minCount 1 ;
-        sh:message "The RO-Crate metadata file descriptor MUST exist" ;
+        sh:nodeKind sh:IRI ;
+        sh:path dct:conformsTo ;
+        sh:in ( <https://w3id.org/ro/crate/1.0> <https://w3id.org/ro/crate/1.1> ) ;
+        sh:message "The RO-Crate metadata file descriptor MUST have a `conformsTo` property with the RO-Crate specification version" ;
     ] .
-
+    
