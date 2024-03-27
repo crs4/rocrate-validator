@@ -39,13 +39,15 @@
     ] ;
     sh:property [ 
         a sh:PropertyShape ;
-        sh:name "about property MUST exist" ;
+        sh:name "Check if the `Metadata File Descriptor` has the `about` property" ;
         sh:description """The URL of the RO-Crate metadata file itself, which is the root of the RO-Crate. 
             This is used to identify the RO-Crate, and is the only property that is required to be present in the metadata file.""" ;
         sh:maxCount 1;
         sh:minCount 1 ;
-        sh:nodeKind sh:IRI ;
+        sh:nodeKind sh:NodeIRI ;
         sh:path schema_org:about ;
+        sh:class schema_org:Dataset ;
+        sh:message "The RO-Crate metadata file descriptor MUST have an `about` property referencing the Root Data Entity" ;
         sh:message "The RO-Crate metadata file descriptor MUST have an `about` property" ;
     ] .
         sh:minCount 1 ;
