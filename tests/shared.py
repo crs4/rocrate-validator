@@ -16,7 +16,8 @@ def do_entity_test(
         requirement_level: models.RequirementType,
         expected_validation_result: bool,
         expected_triggered_requirements: List[str],
-        expected_triggered_issues: List[str]
+        expected_triggered_issues: List[str],
+        abort_on_first: bool = True
 ):
     """
     Shared function to test a RO-Crate entity
@@ -29,11 +30,16 @@ def do_entity_test(
         logger.debug("Testing RO-Crate @ path: %s", rocrate_path)
         logger.debug("Requirement level: %s", requirement_level)
 
+        # set abort_on_first to False if there are multiple expected requirements or issues
+        if len(expected_triggered_requirements) > 1 \
+                or len(expected_triggered_issues) > 1:
+            abort_on_first = False
+
+        # validate RO-Crate
         result: models.ValidationResult = \
             services.validate(rocrate_path,
                               requirement_level=requirement_level,
-                              abort_on_first=len(expected_triggered_requirements) == 1
-                              or len(expected_triggered_issues) == 1)
+                              abort_on_first=abort_on_first)
         logger.debug("Expected validation result: %s", expected_validation_result)
         assert result.passed() == expected_validation_result, \
             f"RO-Crate should be {'valid' if expected_validation_result else 'invalid'}"
