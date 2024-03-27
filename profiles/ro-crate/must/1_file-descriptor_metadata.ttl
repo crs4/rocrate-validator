@@ -44,7 +44,7 @@
             This is used to identify the RO-Crate, and is the only property that is required to be present in the metadata file.""" ;
         sh:maxCount 1;
         sh:minCount 1 ;
-        sh:nodeKind sh:NodeIRI ;
+        sh:nodeKind sh:IRI ;
         sh:path schema_org:about ;
         sh:class schema_org:Dataset ;
         sh:message "The RO-Crate metadata file descriptor MUST have an `about` property referencing the Root Data Entity" ;
