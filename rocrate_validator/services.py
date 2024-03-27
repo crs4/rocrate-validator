@@ -4,7 +4,9 @@ from typing import Dict, Literal, Optional, Union
 
 from pyshacl.pytypes import GraphLike
 
-from .models import Profile, RequirementLevels, RequirementType, ValidationResult, Validator
+from rocrate_validator.models import (Profile, RequirementLevels,
+                                      RequirementType, ValidationResult,
+                                      Validator)
 
 # set up logging
 logger = logging.getLogger(__name__)
