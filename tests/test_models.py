@@ -1,7 +1,7 @@
 
 import pytest
 
-from rocrate_validator.models import (RequirementLevel, RequirementType,
+from rocrate_validator.models import (LevelCollection, RequirementLevel,
                                       Severity)
 
 
@@ -15,38 +15,39 @@ def test_severity_ordering():
     assert Severity.RECOMMENDED >= Severity.OPTIONAL
 
 
-def test_requirement_type_ordering():
-    may = RequirementType('MAY', Severity.OPTIONAL)
-    should = RequirementType('SHOULD', Severity.RECOMMENDED)
+def test_level_ordering():
+    may = RequirementLevel('MAY', Severity.OPTIONAL)
+    should = RequirementLevel('SHOULD', Severity.RECOMMENDED)
     assert may < should
     assert should > may
     assert should != may
     assert may == may
     assert may != 1
+    assert may != RequirementLevel('OPTIONAL', Severity.OPTIONAL)
     with pytest.raises(TypeError):
         _ = may > 1
 
 
-def test_requirement_type_basics():
-    may = RequirementType('MAY', Severity.OPTIONAL)
+def test_level_basics():
+    may = RequirementLevel('MAY', Severity.OPTIONAL)
     assert str(may) == "MAY"
     assert int(may) == Severity.OPTIONAL.value
 
 
-def test_requirement_levels():
-    assert RequirementLevel.get('may') == RequirementLevel.MAY.value
+def test_level_collection():
+    assert LevelCollection.get('may') == LevelCollection.MAY
 
     # Test ordering
-    assert RequirementLevel.MAY < RequirementLevel.SHOULD
-    assert RequirementLevel.SHOULD > RequirementLevel.MAY
-    assert RequirementLevel.SHOULD != RequirementLevel.MAY
-    assert RequirementLevel.MAY == RequirementLevel.MAY
+    assert LevelCollection.MAY < LevelCollection.SHOULD
+    assert LevelCollection.SHOULD > LevelCollection.MAY
+    assert LevelCollection.SHOULD != LevelCollection.MAY
+    assert LevelCollection.MAY == LevelCollection.MAY
 
-    all_levels = RequirementLevel.all()
-    assert isinstance(all_levels, dict)
+    all_levels = LevelCollection.all()
     assert 10 == len(all_levels)
+    level_names = [level.name for level in all_levels]
     # Test a few of the keys
-    assert 'MAY' in all_levels
-    assert 'SHOULD_NOT' in all_levels
-    assert 'RECOMMENDED' in all_levels
-    assert 'REQUIRED' in all_levels
+    assert 'MAY' in level_names
+    assert 'SHOULD_NOT' in level_names
+    assert 'RECOMMENDED' in level_names
+    assert 'REQUIRED' in level_names

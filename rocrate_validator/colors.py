@@ -1,6 +1,6 @@
 from typing import Union
 
-from .models import RequirementLevel, Severity
+from .models import LevelCollection, Severity
 
 
 def get_severity_color(severity: Union[str, Severity]) -> str:
@@ -20,21 +20,21 @@ def get_severity_color(severity: Union[str, Severity]) -> str:
         return "white"
 
 
-def get_req_level_color(level: RequirementLevel) -> str:
+def get_req_level_color(level: LevelCollection) -> str:
     """
-    Get the color for a RequirementLevel
+    Get the color for a LevelCollection
 
     :return: The color
     """
-    if level in (RequirementLevel.MUST, RequirementLevel.SHALL, RequirementLevel.REQUIRED):
+    if level in (LevelCollection.MUST, LevelCollection.SHALL, LevelCollection.REQUIRED):
         return "red"
-    elif level in (RequirementLevel.MUST_NOT, RequirementLevel.SHALL_NOT):
+    elif level in (LevelCollection.MUST_NOT, LevelCollection.SHALL_NOT):
         return "purple"
-    elif level in (RequirementLevel.SHOULD, RequirementLevel.RECOMMENDED):
+    elif level in (LevelCollection.SHOULD, LevelCollection.RECOMMENDED):
         return "yellow"
-    elif level == RequirementLevel.SHOULD_NOT:
+    elif level == LevelCollection.SHOULD_NOT:
         return "lightyellow"
-    elif level in (RequirementLevel.MAY, RequirementLevel.OPTIONAL):
+    elif level in (LevelCollection.MAY, LevelCollection.OPTIONAL):
         return "orange"
     else:
         return "white"

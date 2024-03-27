@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import enum
+import inspect
 import logging
 import os
 from abc import ABC, abstractmethod
@@ -41,71 +42,72 @@ class Severity(enum.Enum):
 
 @total_ordering
 @dataclass
-class RequirementType:
+class RequirementLevel:
     name: str
-    value: Severity
+    severity: Severity
 
     def __eq__(self, other) -> bool:
-        if not isinstance(other, RequirementType):
+        if not isinstance(other, RequirementLevel):
             return False
-        return self.name == other.name and self.value == other.value
+        return self.name == other.name and self.severity == other.severity
 
     def __lt__(self, other) -> bool:
         # TODO: this ordering is not totally coherent, since for two objects a and b
         # with equal Severity but different names you would have
         #       not a < b, which implies a >= b
         #       and also a != b and not a > b, which is incoherent with a >= b
-        if not isinstance(other, RequirementType):
-            raise TypeError(f"Cannot compare RequirementType with {type(other)}")
-        return self.value < other.value
+        if not isinstance(other, RequirementLevel):
+            raise TypeError(f"Cannot compare {type(self)} with {type(other)}")
+        return self.severity < other.severity
 
     def __hash__(self) -> int:
-        return hash((self.name, self.value))
+        return hash((self.name, self.severity))
 
     def __repr__(self) -> str:
-        return f'RequirementType(name={self.name}, severity={self.value})'
+        return f'RequirementLevel(name={self.name}, severity={self.severity})'
 
     def __str__(self) -> str:
         return self.name
 
     def __int__(self) -> int:
-        return self.value.value
+        return self.severity.value
 
     def __index__(self) -> int:
-        return self.value.value
+        return self.severity.value
 
 
-@total_ordering
-class RequirementLevel(enum.Enum):
+class LevelCollection:
     """
     * The keywords MUST, MUST NOT, REQUIRED,
     * SHALL, SHALL NOT, SHOULD, SHOULD NOT,
     * RECOMMENDED, MAY, and OPTIONAL in this document
     * are to be interpreted as described in RFC 2119.
     """
-    MAY = RequirementType('MAY', Severity.OPTIONAL)
-    OPTIONAL = RequirementType('OPTIONAL', Severity.OPTIONAL)
-    SHOULD = RequirementType('SHOULD', Severity.RECOMMENDED)
-    SHOULD_NOT = RequirementType('SHOULD_NOT', Severity.RECOMMENDED)
-    RECOMMENDED = RequirementType('RECOMMENDED', Severity.RECOMMENDED)
-    REQUIRED = RequirementType('REQUIRED', Severity.REQUIRED)
-    MUST = RequirementType('MUST', Severity.REQUIRED)
-    MUST_NOT = RequirementType('MUST_NOT', Severity.REQUIRED)
-    SHALL = RequirementType('SHALL', Severity.REQUIRED)
-    SHALL_NOT = RequirementType('SHALL_NOT', Severity.REQUIRED)
+    OPTIONAL = RequirementLevel('OPTIONAL', Severity.OPTIONAL)
+    MAY = RequirementLevel('MAY', Severity.OPTIONAL)
 
-    def __lt__(self, other) -> bool:
-        if not isinstance(other, RequirementLevel):
-            raise TypeError(f"Cannot compare {type(self)} with {type(other)}")
-        return self.value < other.value
+    REQUIRED = RequirementLevel('REQUIRED', Severity.REQUIRED)
+    SHOULD = RequirementLevel('SHOULD', Severity.RECOMMENDED)
+    SHOULD_NOT = RequirementLevel('SHOULD_NOT', Severity.RECOMMENDED)
+    RECOMMENDED = RequirementLevel('RECOMMENDED', Severity.RECOMMENDED)
+
+    MUST = RequirementLevel('MUST', Severity.REQUIRED)
+    MUST_NOT = RequirementLevel('MUST_NOT', Severity.REQUIRED)
+    SHALL = RequirementLevel('SHALL', Severity.REQUIRED)
+    SHALL_NOT = RequirementLevel('SHALL_NOT', Severity.REQUIRED)
+
+    def __init__(self):
+        raise NotImplementedError(f"{type(self)} can't be instantianted")
 
     @staticmethod
-    def all() -> Dict[str, RequirementType]:
-        return {level.name: level.value for level in RequirementLevel}
+    def all() -> List[RequirementLevel]:
+        return [level for name, level in inspect.getmembers(LevelCollection)
+                if not inspect.isroutine(level)
+                and not inspect.isdatadescriptor(level) and not name.startswith('__')]
 
-    @classmethod
-    def get(cls, name: str) -> RequirementType:
-        return cls[name.upper()].value
+    @staticmethod
+    def get(name: str) -> RequirementLevel:
+        return getattr(LevelCollection, name.upper())
 
 
 class Profile:
@@ -168,7 +170,7 @@ class Profile:
             for file in sorted(files, key=lambda x: (not x.endswith('.py'), x)):
                 requirement_path = requirement_root / file
                 for requirement in Requirement.load(
-                        self, RequirementLevel.get(requirement_level),
+                        self, LevelCollection.get(requirement_level),
                         requirement_path, publicID=self.publicID):
                     req_id += 1
                     requirement._order_number = req_id
@@ -182,16 +184,16 @@ class Profile:
         return self._requirements
 
     def get_requirements(
-            self, severity: RequirementType = RequirementLevel.MUST,
+            self, severity: Severity = Severity.REQUIRED,
             exact_match: bool = False) -> List[Requirement]:
         return [requirement for requirement in self.requirements
                 if not exact_match and requirement.severity >= severity or
                 exact_match and requirement.severity == severity]
 
-    @property
-    def requirements_by_severity_map(self) -> Dict[RequirementType, List[Requirement]]:
-        return {severity: self.get_requirements_by_type(severity)
-                for severity in RequirementLevel.all().values()}
+    # @property
+    # def requirements_by_severity_map(self) -> Dict[Severity, List[Requirement]]:
+    #     return {level.severity: self.get_requirements_by_type(level.severity)
+    #             for level in LevelCollection.all()}
 
     @property
     def inherited_profiles(self) -> List[Profile]:
@@ -205,8 +207,8 @@ class Profile:
     def has_requirement(self, name: str) -> bool:
         return self.get_requirement(name) is not None
 
-    def get_requirements_by_type(self, type: RequirementType) -> List[Requirement]:
-        return [requirement for requirement in self.requirements if requirement.severity == type]
+    # def get_requirements_by_type(self, type: RequirementLevel) -> List[Requirement]:
+    #     return [requirement for requirement in self.requirements if requirement.severity == type]
 
     def add_requirement(self, requirement: Requirement):
         self._requirements.append(requirement)
@@ -218,10 +220,13 @@ class Profile:
         raise NotImplementedError()
 
     def __eq__(self, other) -> bool:
-        return self.name == other.name and self.path == other.path and self.requirements == other.requirements
+        return isinstance(other, Profile) \
+            and self.name == other.name \
+            and self.path == other.path \
+            and self.requirements == other.requirements
 
     def __ne__(self, other) -> bool:
-        return self.name != other.name or self.path != other.path or self.requirements != other.requirements
+        return not self.__eq__(other)
 
     def __lt__(self, other) -> bool:
         return self.name < other.name
@@ -284,6 +289,212 @@ def check(name=None):
     return decorator
 
 
+class Requirement(ABC):
+
+    def __init__(self,
+                 level: RequirementLevel,
+                 profile: Profile,
+                 name: str = None,
+                 description: str = None,
+                 path: Path = None,
+                 initialize_checks: bool = True):
+        self._order_number: int = None
+        self._name = name
+        self._level = level
+        self._profile = profile
+        self._description = description
+        self._path = path  # path of code implementing the requirement
+        self._checks: List[RequirementCheck] = []
+
+        # reference to the current validation context
+        self._validation_context: ValidationContext = None
+
+        if not self._name and self._path:
+            self._name = get_requirement_name_from_file(self._path)
+
+        # set flag to indicate if the checks have been initialized
+        self._checks_initialized = False
+        # initialize the checks if the flag is set
+        if initialize_checks:
+            self.__init_checks__()
+            # assign order numbers to checks
+            self.__reorder_checks__()
+            # update the checks initialized flag
+            self._checks_initialized = True
+
+    @property
+    def order_number(self) -> int:
+        return self._order_number
+
+    @property
+    def identifier(self) -> str:
+        return f"{self.level.name}.{self.order_number}"
+
+    @property
+    def name(self) -> str:
+        if not self._name and self._path:
+            return get_requirement_name_from_file(self._path)
+        return self._name
+
+    @property
+    def level(self) -> RequirementLevel:
+        return self._level
+
+    @property
+    def severity(self) -> Severity:
+        return self.level.severity
+
+    @property
+    def color(self) -> str:
+        from .colors import get_severity_color
+        return get_severity_color(self.severity)
+
+    @property
+    def profile(self) -> Profile:
+        return self._profile
+
+    @property
+    def description(self) -> str:
+        if not self._description:
+            self._description = self.__class__.__doc__.strip(
+            ) if self.__class__.__doc__ else f"Profile Requirement {self.name}"
+        return self._description
+
+    @property
+    def path(self) -> Path:
+        return self._path
+
+    @abstractmethod
+    def __init_checks__(self) -> List[RequirementCheck]:
+        pass
+
+    def get_checks(self) -> List[RequirementCheck]:
+        return self._checks.copy()
+
+    def get_check(self, name: str) -> RequirementCheck:
+        for check in self._checks:
+            if check.name == name:
+                return check
+        return None
+
+    def __reorder_checks__(self) -> None:
+        for i, check in enumerate(self._checks):
+            check._order_number = i + 1
+
+    def __do_validate__(self, context: ValidationContext) -> bool:
+        """
+        Internal method to perform the validation
+        """
+        # Set the validation context
+        self._validation_context = context
+        logger.debug("Validation context initialized: %r", context)
+        # Perform the validation
+        try:
+            for check in self._checks:
+                try:
+                    check.__do_check__(context)
+                except Exception as e:
+                    self.validation_result.add_error("Unexpected error during check: %s" % e, check=check)
+                    if logger.isEnabledFor(logging.DEBUG):
+                        logger.exception(e)
+            # Return the result
+            return self.validation_result.passed()
+        finally:
+            # Clear the validation context
+            self._validation_context = None
+            logger.debug("Clearing validation context")
+
+    @property
+    def validator(self):
+        if self._validation_context is None and self._checks_initialized:
+            raise OutOfValidationContext("Validation context has not been initialized")
+        return self._validation_context.validator
+
+    @property
+    def validation_result(self):
+        if self._validation_context is None and self._checks_initialized:
+            raise OutOfValidationContext("Validation context has not been initialized")
+        return self._validation_context.result
+
+    @property
+    def validation_context(self):
+        if self._validation_context is None and self._checks_initialized:
+            raise OutOfValidationContext("Validation context has not been initialized")
+        return self._validation_context
+
+    @property
+    def validation_settings(self):
+        if self._validation_context is None and self._checks_initialized:
+            raise OutOfValidationContext("Validation context has not been initialized")
+        return self._validation_context.settings
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, Requirement):
+            raise TypeError(f"Cannot compare {type(self)} with {type(other)}")
+        return self.name == other.name \
+            and self.severity == other.severity and self.description == other.description \
+            and self.path == other.path
+
+    def __ne__(self, other) -> bool:
+        return not self.__eq__(other)
+
+    def __hash__(self):
+        return hash((self.name, self.severity, self.description, self.path))
+
+    def __lt__(self, other) -> bool:
+        if not isinstance(other, Requirement):
+            raise ValueError(f"Cannot compare Requirement with {type(other)}")
+        return self.severity >= other.severity or self.name >= other.name
+
+    def __repr__(self):
+        return (
+            f'ProfileRequirement('
+            f'_order_number={self._order_number}, '
+            f'name={self.name}, '
+            f'level={self.level}, '
+            f'description={self.description}'
+            f', path={self.path}, ' if self.path else ''
+            ')'
+        )
+
+    def __str__(self):
+        return self.name
+
+    @staticmethod
+    def load(profile: Profile,
+             requirement_level: RequirementLevel,
+             file_path: Path,
+             publicID: str = None) -> List[Requirement]:
+        # initialize the set of requirements
+        requirements = []
+
+        # if the path is a string, convert it to a Path
+        if isinstance(file_path, str):
+            file_path = Path(file_path)
+
+        # TODO: implement a better way to identify the requirement level and class
+        # check if the file is a python file
+        if file_path.suffix == ".py":
+            from rocrate_validator.requirements.python import PyRequirement
+            py_requirements = PyRequirement.load(profile, requirement_level, file_path)
+            logger.debug("Loaded Python requirements: %r", py_requirements)
+            requirements.extend(py_requirements)
+            logger.debug("Added Requirement: %r", py_requirements)
+        elif file_path.suffix == ".ttl":
+            # from rocrate_validator.requirements.shacl.checks import SHACLCheck
+            from rocrate_validator.requirements.shacl.requirements import \
+                SHACLRequirement
+            shapes_requirements = SHACLRequirement.load(profile, requirement_level,
+                                                        file_path, publicID=publicID)
+            logger.debug("Loaded SHACL requirements: %r", shapes_requirements)
+            requirements.extend(shapes_requirements)
+            logger.debug("Added Requirement: %r", shapes_requirements)
+        else:
+            logger.warning("Requirement type not supported: %s", file_path.suffix)
+
+        return requirements
+
+
 class RequirementCheck:
 
     def __init__(self,
@@ -292,7 +503,7 @@ class RequirementCheck:
                  check_function: Callable,
                  description: str = None):
         self._requirement: Requirement = requirement
-        self._order_number = None
+        self._order_number: int = None
         self._name = name
         self._description = description
         self._check_function = check_function
@@ -328,8 +539,8 @@ class RequirementCheck:
         return self._requirement
 
     @property
-    def severity(self) -> RequirementType:
-        return self.requirement.severity
+    def level(self) -> RequirementLevel:
+        return self.requirement.level
 
     @property
     def check_function(self) -> Callable:
@@ -406,207 +617,6 @@ class RequirementCheck:
         return hash((self.requirement, self.name or ""))
 
 
-class Requirement(ABC):
-
-    def __init__(self,
-                 severity: RequirementLevel,
-                 profile: Profile,
-                 name: str = None,
-                 description: str = None,
-                 path: Path = None,
-                 initialize_checks: bool = True):
-        self._order_number = None
-        self._name = name
-        self._severity = severity
-        self._profile = profile
-        self._description = description
-        self._path = path  # path of code implementing the requirement
-        self._checks: List[RequirementCheck] = []
-
-        # reference to the current validation context
-        self._validation_context: ValidationContext = None
-
-        if not self._name and self._path:
-            self._name = get_requirement_name_from_file(self._path)
-
-        # set flag to indicate if the checks have been initialized
-        self._checks_initialized = False
-        # initialize the checks if the flag is set
-        if initialize_checks:
-            self.__init_checks__()
-            # assign order numbers to checks
-            self.__reorder_checks__()
-            # update the checks initialized flag
-            self._checks_initialized = True
-
-    @property
-    def order_number(self) -> int:
-        return self._order_number
-
-    @property
-    def identifier(self) -> str:
-        return f"{self.severity}.{self.order_number}"
-
-    @property
-    def name(self) -> str:
-        if not self._name and self._path:
-            return get_requirement_name_from_file(self._path)
-        return self._name
-
-    @property
-    def severity(self) -> RequirementType:
-        return self._severity
-
-    @property
-    def color(self) -> str:
-        from .colors import get_severity_color
-        return get_severity_color(self.severity)
-
-    @property
-    def profile(self) -> Profile:
-        return self._profile
-
-    @property
-    def description(self) -> str:
-        if not self._description:
-            self._description = self.__class__.__doc__.strip(
-            ) if self.__class__.__doc__ else f"Profile Requirement {self.name}"
-        return self._description
-
-    @property
-    def path(self) -> Path:
-        return self._path
-
-    @abstractmethod
-    def __init_checks__(self) -> List[RequirementCheck]:
-        pass
-
-    def get_checks(self) -> List[RequirementCheck]:
-        return self._checks.copy()
-
-    def get_check(self, name: str) -> RequirementCheck:
-        for check in self._checks:
-            if check.name == name:
-                return check
-        return None
-
-    def __reorder_checks__(self):
-        for i, check in enumerate(self._checks):
-            check._order_number = i + 1
-
-    def __do_validate__(self, context: ValidationContext) -> bool:
-        """
-        Internal method to perform the validation
-        """
-        # Set the validation context
-        self._validation_context = context
-        logger.debug("Validation context initialized: %r", context)
-        # Perform the validation
-        try:
-            for check in self._checks:
-                try:
-                    check.__do_check__(context)
-                except Exception as e:
-                    self.validation_result.add_error("Unexpected error during check: %s" % e, check=check)
-                    if logger.isEnabledFor(logging.DEBUG):
-                        logger.exception(e)
-            # Return the result
-            return self.validation_result.passed()
-        finally:
-            # Clear the validation context
-            self._validation_context = None
-            logger.debug("Clearing validation context")
-
-    @property
-    def validator(self):
-        if self._validation_context is None and self._checks_initialized:
-            raise OutOfValidationContext("Validation context has not been initialized")
-        return self._validation_context.validator
-
-    @property
-    def validation_result(self):
-        if self._validation_context is None and self._checks_initialized:
-            raise OutOfValidationContext("Validation context has not been initialized")
-        return self._validation_context.result
-
-    @property
-    def validation_context(self):
-        if self._validation_context is None and self._checks_initialized:
-            raise OutOfValidationContext("Validation context has not been initialized")
-        return self._validation_context
-
-    @property
-    def validation_settings(self):
-        if self._validation_context is None and self._checks_initialized:
-            raise OutOfValidationContext("Validation context has not been initialized")
-        return self._validation_context.settings
-
-    def __eq__(self, other) -> bool:
-        if not isinstance(other, Requirement):
-            raise TypeError(f"Cannot compare {type(self)} with {type(other)}")
-        return self.name == other.name \
-            and self.severity == other.severity and self.description == other.description \
-            and self.path == other.path
-
-    def __ne__(self, other) -> bool:
-        return not self.__eq__(other)
-
-    def __hash__(self):
-        return hash((self.name, self.severity, self.description, self.path))
-
-    def __lt__(self, other) -> bool:
-        if not isinstance(other, Requirement):
-            raise ValueError(f"Cannot compare Requirement with {type(other)}")
-        return self.severity >= other.severity or self.name >= other.name
-
-    def __repr__(self):
-        return (
-            f'ProfileRequirement('
-            f'name={self.name}, '
-            f'severity={self.severity}, '
-            f'description={self.description}'
-            f', path={self.path}, ' if self.path else ''
-            ')'
-        )
-
-    def __str__(self):
-        return self.name
-
-    @staticmethod
-    def load(profile: Profile,
-             requirement_level: RequirementLevel,
-             file_path: Path,
-             publicID: str = None) -> List[Requirement]:
-        # initialize the set of requirements
-        requirements = []
-
-        # if the path is a string, convert it to a Path
-        if isinstance(file_path, str):
-            file_path = Path(file_path)
-
-        # TODO: implement a better way to identify the requirement level and class
-        # check if the file is a python file
-        if file_path.suffix == ".py":
-            from rocrate_validator.requirements.python import PyRequirement
-            py_requirements = PyRequirement.load(profile, requirement_level, file_path)
-            logger.debug("Loaded Python requirements: %r", py_requirements)
-            requirements.extend(py_requirements)
-            logger.debug("Added Requirement: %r", py_requirements)
-        elif file_path.suffix == ".ttl":
-            # from rocrate_validator.requirements.shacl.checks import SHACLCheck
-            from rocrate_validator.requirements.shacl.requirements import \
-                SHACLRequirement
-            shapes_requirements = SHACLRequirement.load(profile, requirement_level,
-                                                        file_path, publicID=publicID)
-            logger.debug("Loaded SHACL requirements: %r", shapes_requirements)
-            requirements.extend(shapes_requirements)
-            logger.debug("Added Requirement: %r", shapes_requirements)
-        else:
-            logger.warning("Requirement type not supported: %s", file_path.suffix)
-
-        return requirements
-
-
 def issue_types(issues: List[Type[CheckIssue]]) -> Type[RequirementCheck]:
     def class_decorator(cls):
         cls.issue_types = issues
@@ -626,20 +636,20 @@ class CheckIssue:
     """
 
     # TODO:
-    # 1. CheckIssue should keep track of the RequirementLevel that was broken,
-    #    instead of the Severity (the Severity can later be retrieved from the level;
+    # 1. CheckIssue should keep track of the RequirementCheck that was broken,
+    #    instead of the RequirementLevel;
     # 2. CheckIssue has the check, to it is able to determine the level and the Severity
-    #    without having it provided through an argument.
-    def __init__(self, requirement_type: RequirementType,
+    #    without having it provided through an additional argument.
+    def __init__(self, severity: Severity,
                  message: Optional[str] = None,
                  code: int = None,
                  check: RequirementCheck = None):
-        if not isinstance(requirement_type, RequirementType):
-            raise TypeError(f"CheckIssue constructed with a requirement_type of type {type(requirement_type)}")
-        self._level = RequirementLevel(requirement_type)
+        if not isinstance(severity, Severity):
+            raise TypeError(f"CheckIssue constructed with a severity of type {type(severity)}")
+        self._severity = severity
         self._message = message
         self._code = code
-        self._check = check
+        self._check: RequirementCheck = check
 
     @property
     def message(self) -> str:
@@ -649,16 +659,16 @@ class CheckIssue:
     @property
     def level(self) -> RequirementLevel:
         """The level of the issue"""
-        return self._level
+        return self._check.level
 
     @property
     def severity(self) -> Severity:
         """Severity of the RequirementLevel associated with this check."""
-        return self._level.value.value
+        return self._severity
 
     @property
     def level_name(self) -> str:
-        return self._level.name
+        return self.level.name
 
     @property
     def check(self) -> RequirementCheck:
@@ -678,7 +688,7 @@ class CheckIssue:
             - All codes should be positive numbers.
             """
             # Concatenate the level, class name and message into a single string
-            issue_string = str(self.level.value) + self.__class__.__name__ + str(self.message)
+            issue_string = self.level.name + self.__class__.__name__ + str(self.message)
 
             # Use the built-in hash function to generate a unique code for this string
             # The modulo operation ensures that the code is a positive number
@@ -717,7 +727,7 @@ class ValidationResult:
 
     @property
     def passed_requirements(self) -> Set[Requirement]:
-        return sorted(self._validated_requirements - self.failed_requirements, key=lambda req: req.number_order)
+        return sorted(self._validated_requirements - self.failed_requirements, key=lambda req: req.order_number)
 
     @property
     def checks(self) -> Set[RequirementCheck]:
@@ -826,11 +836,11 @@ class Validator:
 
     def __init__(self,
                  rocrate_path: Path,
-                 profiles_path: str = "./profiles",
+                 profiles_path: Path = Path("./profiles"),
                  profile_name: str = "ro-crate",
                  disable_profile_inheritance: bool = False,
-                 requirement_level: Union[str, RequirementType] = RequirementLevel.MUST,
-                 requirement_level_only: bool = False,
+                 requirement_severity: Severity = Severity.REQUIRED,
+                 requirement_severity_only: bool = False,
                  ontologies_path: Optional[Path] = None,
                  advanced: Optional[bool] = False,
                  inference: Optional[VALID_INFERENCE_OPTIONS_TYPES] = None,
@@ -838,20 +848,16 @@ class Validator:
                  abort_on_first: Optional[bool] = True,
                  allow_infos: Optional[bool] = False,
                  allow_warnings: Optional[bool] = False,
-                 serialization_output_path: str = None,
+                 serialization_output_path: Optional[Path] = None,
                  serialization_output_format: Optional[RDF_SERIALIZATION_FORMATS_TYPES] = "turtle",
                  **kwargs):
         self.rocrate_path = rocrate_path
         self.profiles_path = profiles_path
         self.profile_name = profile_name
+        self.requirement_severity = requirement_severity
+        self.requirement_severity_only = requirement_severity_only
         self.disable_profile_inheritance = disable_profile_inheritance
-        self.requirement_level = \
-            RequirementLevel.get(requirement_level) if isinstance(requirement_level, str) else \
-            requirement_level
-        self.requirement_level_only = requirement_level_only
         self.ontologies_path = ontologies_path
-        self.requirement_level = requirement_level
-        self.requirement_level_only = requirement_level_only
 
         self._validation_settings = {
             'advanced': advanced,
@@ -1010,7 +1016,7 @@ class Validator:
             # perform the requirements validation
             if not requirements:
                 requirements = profile.get_requirements(
-                    self.requirement_level, exact_match=self.requirement_level_only)
+                    self.requirement_severity, exact_match=self.requirement_severity_only)
             for requirement in requirements:
                 logger.debug("Validating Requirement: %s", requirement)
                 result = requirement.__do_validate__(context)

@@ -1,5 +1,7 @@
 import logging
 import os
+from pathlib import Path
+from typing import Optional
 
 from rich.align import Align
 
@@ -10,7 +12,6 @@ from .. import cli, click, console
 
 # from rich.markdown import Markdown
 # from rich.table import Table
-
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -51,17 +52,17 @@ logger = logging.getLogger(__name__)
 )
 @click.option(
     "-l",
-    "--requirement-level",
-    type=click.Choice(["MUST", "SHOULD", "MAY"], case_sensitive=False),
-    default="MUST",
+    "--requirement-severity",
+    type=click.Choice([s.name for s in Severity], case_sensitive=False),
+    default=Severity.REQUIRED.name,
     show_default=True,
-    help="Level of the requirements to validate",
+    help="Severity of the requirements to validate",
 )
 @click.option(
     '-lo',
-    '--requirement-level-only',
+    '--requirement-severity-only',
     is_flag=True,
-    help="Validate only the requirements of the specified level (no levels with lower severity)",
+    help="Validate only the requirements of the specified severity (no requirements with lower severity)",
     default=False,
     show_default=True
 )
@@ -74,22 +75,22 @@ logger = logging.getLogger(__name__)
 # )
 @click.pass_context
 def validate(ctx,
-             profiles_path: str = "./profiles",
+             profiles_path: Path = Path("./profiles"),
              profile_name: str = "ro-crate",
              disable_profile_inheritance: bool = False,
-             requirement_level: str = "MUST",
-             requirement_level_only: bool = False,
-             rocrate_path: str = ".",
+             requirement_severity: str = Severity.REQUIRED.name,
+             requirement_severity_only: bool = False,
+             rocrate_path: Path = Path("."),
              no_fail_fast: bool = False,
-             ontologies_path: str = None):
+             ontologies_path: Optional[Path] = None):
     """
     [magenta]rocrate-validator:[/magenta] Validate a RO-Crate against a profile
     """
     # Log the input parameters for debugging
     logger.debug("profiles_path: %s", os.path.abspath(profiles_path))
     logger.debug("profile_name: %s", profile_name)
-    logger.debug("requirement_level: %s", requirement_level)
-    logger.debug("requirement_level_only: %s", requirement_level_only)
+    logger.debug("requirement_severity: %s", requirement_severity)
+    logger.debug("requirement_severity_only: %s", requirement_severity_only)
 
     logger.debug("disable_inheritance: %s", disable_profile_inheritance)
     logger.debug("rocrate_path: %s", os.path.abspath(rocrate_path))
@@ -102,17 +103,15 @@ def validate(ctx,
         logger.debug("rocrate_path: %s", os.path.abspath(rocrate_path))
 
     try:
-
         # Validate the RO-Crate
         result: ValidationResult = services.validate(
             profiles_path=profiles_path,
             profile_name=profile_name,
-            requirement_level=requirement_level,
-            requirement_level_only=requirement_level_only,
+            requirement_severity=requirement_severity,
+            requirement_severity_only=requirement_severity_only,
             disable_profile_inheritance=disable_profile_inheritance,
-            rocrate_path=os.path.abspath(rocrate_path),
-            ontologies_path=os.path.abspath(
-                ontologies_path) if ontologies_path else None,
+            rocrate_path=Path(rocrate_path).absolute(),
+            ontologies_path=Path(ontologies_path).absolute() if ontologies_path else None,
             abort_on_first=not no_fail_fast
         )
 
@@ -162,7 +161,7 @@ def __print_validation_result__(
 
             console.print(f"{' '*4}Failed checks:\n", style="white bold")
             for check in result.get_failed_checks_by_requirement(requirement):
-                issue_color = get_severity_color(check.severity)
+                issue_color = get_severity_color(check.level.severity)
                 console.print(
                     f"{' '*4}- "
                     f"[magenta]{check.name}[/magenta]: {check.description}")
