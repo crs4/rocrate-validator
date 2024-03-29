@@ -37,7 +37,7 @@ RDF_SERIALIZATION_FORMATS_TYPES = typing.Literal[
 RDF_SERIALIZATION_FORMATS = typing.get_args(RDF_SERIALIZATION_FORMATS_TYPES)
 
 # Define allowed inference options
-VALID_INFERENCE_OPTIONS_TYPES = typing.Literal["owl", "rdfs", "both", None]
+VALID_INFERENCE_OPTIONS_TYPES = typing.Literal["owlrl", "rdfs", "both", None]
 VALID_INFERENCE_OPTIONS = typing.get_args(VALID_INFERENCE_OPTIONS_TYPES)
 
 # Define allowed requirement levels
