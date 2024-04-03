@@ -9,25 +9,25 @@
 
 :RootDataEntityDirectRecommendedProperties a sh:NodeShape ;
     sh:name "RO-Crate Data Entity definition: RECOMMENDED properties" ;
-    sh:description """The Root Data Entity SHOULD have the properties 
-    `name`, `description` and `license` defined in 
+    sh:description """The Root Data Entity SHOULD have the properties
+    `name`, `description` and `license` defined in
     <https://www.researchobject.org/ro-crate/1.1/root-data-entity.html>""";
     sh:targetNode : ;
-    sh:property [ 
+    sh:property [
         a sh:PropertyShape ;
         sh:name "Name of the Root Data Entity" ;
-        sh:description """The Root Data Entity SHOULD have 
-        a schema_org:name to identify the dataset to human well enough 
+        sh:description """The Root Data Entity SHOULD have
+        a schema_org:name to identify the dataset to human well enough
         to disanbiguate it from other datasets""" ;
         sh:minCount 1 ;
         sh:nodeKind sh:Literal ;
         sh:path schema_org:name;
         sh:message "The Root Data Entity SHOULD have a schema_org:name" ;
     ] ;
-    sh:property [ 
+    sh:property [
         a sh:PropertyShape ;
         sh:name "Description of the Root Data Entity" ;
-        sh:description """The Root Data Entity SHOULD have 
+        sh:description """The Root Data Entity SHOULD have
         a schema_org:description to further elaborate on the name
         of the dataset and provide a summary in which the dataset is important""" ;
         sh:minCount 1 ;
@@ -35,11 +35,11 @@
         sh:path schema_org:description;
         sh:message "The Root Data Entity SHOULD have a schema_org:description" ;
     ] ;
-    sh:property [ 
+    sh:property [
         a sh:PropertyShape ;
         sh:name "License of the Root Data Entity" ;
-        sh:description """The Root Data Entity SHOULD 
-        link to a Contextual Entity in the RO-Crate Metadata File 
+        sh:description """The Root Data Entity SHOULD
+        link to a Contextual Entity in the RO-Crate Metadata File
         with a name and description.""" ;
         sh:nodeKind sh:BlankNodeOrIRI ;
         sh:class schema_org:license ;
