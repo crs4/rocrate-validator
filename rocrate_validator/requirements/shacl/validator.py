@@ -150,21 +150,25 @@ class ValidationResult:
         assert (None, URIRef(f"{SHACL_NS}conforms"),
                 None) in results_graph, "Invalid ValidationReport"
         # store the input properties
-        self._conforms = conforms
         self.results_graph = results_graph
         self._text = results_text
         self._validator = validator
         # parse the results graph
-        self._violations = self.parse_results_graph(results_graph)
+        self._violations = self._parse_results_graph(results_graph)
         # initialize the conforms property
-        logger.debug("Validation report: %s" % self._text)
-        if conforms is not None:
+        if conforms is None:
             self._conforms = len(self._violations) == 0
         else:
-            assert self._conforms == len(
-                self._violations) == 0, "Invalid validation result"
+            self._conforms = conforms
 
-    def parse_results_graph(self, results_graph: Graph):
+        logger.debug("Validation report. N. violations: %s, Conforms: %s; Text: %s",
+                     len(self._violations), self._conforms, self._text)
+
+        # TODO: why allow setting conforms through an argument if the value is to be
+        # computed based on the presence of Violations?
+        assert self._conforms == (len(self._violations) == 0), "Invalid validation result"
+
+    def _parse_results_graph(self, results_graph: Graph):
         # Query for validation results
         query = """
         SELECT ?subject
@@ -213,6 +217,7 @@ class ValidationResult:
         logger.debug("Graph loaded from file: %s" % file_path)
 
         # return the validation result
+        assert False, "missing Validator argument to constructor call"
         return ValidationResult(g)
 
 
