@@ -1,10 +1,9 @@
+import logging
 import os
 from pathlib import Path
-
-from pytest import fixture
 from tempfile import TemporaryDirectory
 
-import logging
+from pytest import fixture
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -18,6 +17,12 @@ INVALID_CRATES_DATA_PATH = f"{CRATES_DATA_PATH}/invalid"
 @fixture
 def ro_crates_path():
     return CRATES_DATA_PATH
+
+
+class ValidROC:
+    @property
+    def wrroc_paper(self) -> Path:
+        return Path(f"{VALID_CRATES_DATA_PATH}/wrroc-paper")
 
 
 class InvalidFileDescriptor:

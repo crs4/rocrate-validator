@@ -1,0 +1,46 @@
+# curie_map:
+#   bioschema: https://bioschemas.org/
+#   orcid: https://orcid.org/
+#   owl: http://www.w3.org/2002/07/owl#
+#   prov: http://www.w3.org/ns/prov#
+#   rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns#
+#   rdfs: http://www.w3.org/2000/01/rdf-schema#
+#   schema: http://schema.org/
+#   semapv: https://w3id.org/semapv/vocab/
+#   skos: http://www.w3.org/2004/02/skos/core#
+#   sssom: https://w3id.org/sssom/
+# license: https://creativecommons.org/publicdomain/zero/1.0/
+# mapping_set_group: researchobject.org
+# mapping_set_id: prov_wfrun
+# mapping_set_title: Mapping PROV to Workflow Run RO-Crate
+# object_source: https://w3id.org/ro/wfrun/provenance/0.3
+# object_source_version: 0.3
+# subject_source: http://www.w3.org/ns/prov-o#
+# subject_source_version: 20130430
+subject_id	subject_label	predicate_id	object_id	object_label	mapping_justification	creator_id	author_id	mapping_date	confidence	comment
+prov:Activity	Activity	skos:narrowMatch	schema:CreateAction	Create action	semapv:ManualMappingCuration	orcid:0000-0001-9842-9718	orcid:0000-0003-0454-7145	2023-10-22	0.95	Assuming activity is workflow/process execution
+prov:Activity	Activity	skos:narrowMatch	schema:OrganizeAction	Organize action	semapv:ManualMappingCuration	orcid:0000-0001-9842-9718	orcid:0000-0003-0454-7145	2023-10-22	0.95	Assuming activity is workflow/process execution
+prov:Agent	Agent	skos:narrowMatch	schema:Organization	Organization	semapv:ManualMappingCuration	orcid:0000-0001-9842-9718	orcid:0000-0001-9842-9718	2023-10-22	1.0	
+prov:Agent	Agent	skos:narrowMatch	schema:Person	Person	semapv:ManualMappingCuration	orcid:0000-0001-9842-9718	orcid:0000-0001-9842-9718	2023-10-22	1.0	
+prov:Agent	Agent	skos:relatedMatch	schema:SoftwareApplication	Software application	semapv:ManualMappingCuration	orcid:0000-0001-9842-9718	orcid:0000-0001-9842-9718	2023-10-22	0.75	
+prov:Entity	Entity	skos:narrowMatch	schema:Dataset	Dataset	semapv:ManualMappingCuration	orcid:0000-0001-9842-9718	orcid:0000-0003-0454-7145	2023-10-22	0.95	Assuming non-Plan entity
+prov:Entity	Entity	skos:narrowMatch	schema:MediaObject	File (Media object)	semapv:ManualMappingCuration	orcid:0000-0001-9842-9718	orcid:0000-0003-0454-7145	2023-10-22	0.95	Assuming non-Plan entity
+prov:Entity	Entity	skos:narrowMatch	schema:PropertyValue	Property value	semapv:ManualMappingCuration	orcid:0000-0001-9842-9718	orcid:0000-0003-0454-7145	2023-10-22	0.95	Assuming non-Plan entity
+prov:Organization	Organization	skos:exactMatch	schema:Organization	Organization	semapv:ManualMappingCuration	orcid:0000-0001-9842-9718	orcid:0000-0003-0454-7145	2023-10-22	0.95	
+prov:Person	Person	skos:exactMatch	schema:Person	Person	semapv:ManualMappingCuration	orcid:0000-0001-9842-9718	orcid:0000-0003-0454-7145	2023-10-22	0.95	
+prov:Plan	Plan	skos:narrowMatch	bioschema:ComputationalWorkflow	Computational workflow	semapv:ManualMappingCuration	orcid:0000-0001-9842-9718	orcid:0000-0003-0454-7145	2023-10-22	0.95	
+prov:Plan	Plan	skos:narrowMatch	schema:HowTo	How-to	semapv:ManualMappingCuration	orcid:0000-0001-9842-9718	orcid:0000-0003-0454-7145	2023-10-22	0.95	
+prov:Plan	Plan	skos:narrowMatch	schema:SoftwareApplication	Software application	semapv:ManualMappingCuration	orcid:0000-0001-9842-9718	orcid:0000-0003-0454-7145	2023-10-22	0.95	
+prov:SoftwareAgent	Software agent	skos:relatedMatch	schema:SoftwareApplication	Software application	semapv:ManualMappingCuration	orcid:0000-0001-9842-9718	orcid:0000-0003-0454-7145	2023-10-22	0.95	
+prov:agent	agent	skos:narrowMatch	schema:instrument	instrument	semapv:ManualMappingCuration	orcid:0000-0001-9842-9718	orcid:0000-0003-0454-7145	2023-10-22	0.95	Assuming agent is a workflow management system
+prov:agent	agent	skos:relatedMatch	schema:agent	agent	semapv:ManualMappingCuration	orcid:0000-0001-9842-9718	orcid:0000-0003-0454-7145	2023-10-22	0.95	Complex mapping: an agent implies the existence of a qualified association (prov:Association) linked to a prov:Agent through prov:agent
+prov:endedAtTime	ended at time	skos:closeMatch	schema:endTime	end time	semapv:ManualMappingCuration	orcid:0000-0001-9842-9718	orcid:0000-0001-9842-9718	2023-10-22	0.95	
+prov:hadPlan	hadPlan	skos:relatedMatch	schema:instrument	instrument	semapv:ManualMappingCuration	orcid:0000-0001-9842-9718	orcid:0000-0003-0454-7145	2023-10-22	0.95	Complex mapping: an instrument implies the existence of a qualified association (prov:Association) linked to a prov:Plan through prov:hadPlan
+prov:startedAtTime	started at time	skos:closeMatch	schema:startTime	start time	semapv:ManualMappingCuration	orcid:0000-0001-9842-9718	orcid:0000-0001-9842-9718	2023-10-22	0.95	
+prov:used	used	skos:exactMatch	schema:object	object	semapv:ManualMappingCuration	orcid:0000-0001-9842-9718	orcid:0000-0003-0454-7145	2023-10-22	0.95	
+prov:wasAssociatedWith	was associated with	skos:narrowMatch	schema:agent	agent	semapv:ManualMappingCuration	orcid:0000-0001-9842-9718	orcid:0000-0003-0454-7145	2023-10-22	0.95	
+prov:wasAssociatedWith	was associated with	skos:narrowMatch	schema:instrument	instrument	semapv:ManualMappingCuration	orcid:0000-0001-9842-9718	orcid:0000-0003-0454-7145	2023-10-22	0.95	
+prov:wasEndedBy	was ended by	skos:relatedMatch	schema:agent	agent	semapv:ManualMappingCuration	orcid:0000-0001-9842-9718	orcid:0000-0003-0454-7145|orcid:0000-0001-9842-9718	2023-10-22	0.95	
+prov:wasGeneratedBy	was generated by	skos:closeMatch	schema:result	object_label	semapv:ManualMappingCuration	orcid:0000-0001-9842-9718	orcid:0000-0003-0454-7145	2023-10-22	0.95	Note inverse properties:   :ent prov:wasGeneratedBy :act   vs   :act schema:result :ent
+prov:wasStartedBy	was started by	skos:relatedMatch	schema:agent	agent	semapv:ManualMappingCuration	orcid:0000-0001-9842-9718	orcid:0000-0003-0454-7145|orcid:0000-0001-9842-9718	2023-10-22	0.95	
+

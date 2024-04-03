@@ -1,0 +1,610 @@
+{
+  "mapping_set_id": "prov_wfrun",
+  "license": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "mappings": [
+    {
+      "subject_id": "prov:Activity",
+      "predicate_id": "skos:narrowMatch",
+      "object_id": "schema:CreateAction",
+      "mapping_justification": "semapv:ManualMappingCuration",
+      "subject_label": "Activity",
+      "object_label": "Create action",
+      "author_id": [
+        "orcid:0000-0003-0454-7145"
+      ],
+      "creator_id": [
+        "orcid:0000-0001-9842-9718"
+      ],
+      "mapping_date": "2023-10-22",
+      "confidence": 0.95,
+      "comment": "Assuming activity is workflow/process execution"
+    },
+    {
+      "subject_id": "prov:Activity",
+      "predicate_id": "skos:narrowMatch",
+      "object_id": "schema:OrganizeAction",
+      "mapping_justification": "semapv:ManualMappingCuration",
+      "subject_label": "Activity",
+      "object_label": "Organize action",
+      "author_id": [
+        "orcid:0000-0003-0454-7145"
+      ],
+      "creator_id": [
+        "orcid:0000-0001-9842-9718"
+      ],
+      "mapping_date": "2023-10-22",
+      "confidence": 0.95,
+      "comment": "Assuming activity is workflow/process execution"
+    },
+    {
+      "subject_id": "prov:Agent",
+      "predicate_id": "skos:narrowMatch",
+      "object_id": "schema:Organization",
+      "mapping_justification": "semapv:ManualMappingCuration",
+      "subject_label": "Agent",
+      "object_label": "Organization",
+      "author_id": [
+        "orcid:0000-0001-9842-9718"
+      ],
+      "creator_id": [
+        "orcid:0000-0001-9842-9718"
+      ],
+      "mapping_date": "2023-10-22",
+      "confidence": 1.0
+    },
+    {
+      "subject_id": "prov:Agent",
+      "predicate_id": "skos:narrowMatch",
+      "object_id": "schema:Person",
+      "mapping_justification": "semapv:ManualMappingCuration",
+      "subject_label": "Agent",
+      "object_label": "Person",
+      "author_id": [
+        "orcid:0000-0001-9842-9718"
+      ],
+      "creator_id": [
+        "orcid:0000-0001-9842-9718"
+      ],
+      "mapping_date": "2023-10-22",
+      "confidence": 1.0
+    },
+    {
+      "subject_id": "prov:Agent",
+      "predicate_id": "skos:relatedMatch",
+      "object_id": "schema:SoftwareApplication",
+      "mapping_justification": "semapv:ManualMappingCuration",
+      "subject_label": "Agent",
+      "object_label": "Software application",
+      "author_id": [
+        "orcid:0000-0001-9842-9718"
+      ],
+      "creator_id": [
+        "orcid:0000-0001-9842-9718"
+      ],
+      "mapping_date": "2023-10-22",
+      "confidence": 0.75
+    },
+    {
+      "subject_id": "prov:Entity",
+      "predicate_id": "skos:narrowMatch",
+      "object_id": "schema:Dataset",
+      "mapping_justification": "semapv:ManualMappingCuration",
+      "subject_label": "Entity",
+      "object_label": "Dataset",
+      "author_id": [
+        "orcid:0000-0003-0454-7145"
+      ],
+      "creator_id": [
+        "orcid:0000-0001-9842-9718"
+      ],
+      "mapping_date": "2023-10-22",
+      "confidence": 0.95,
+      "comment": "Assuming non-Plan entity"
+    },
+    {
+      "subject_id": "prov:Entity",
+      "predicate_id": "skos:narrowMatch",
+      "object_id": "schema:MediaObject",
+      "mapping_justification": "semapv:ManualMappingCuration",
+      "subject_label": "Entity",
+      "object_label": "File (Media object)",
+      "author_id": [
+        "orcid:0000-0003-0454-7145"
+      ],
+      "creator_id": [
+        "orcid:0000-0001-9842-9718"
+      ],
+      "mapping_date": "2023-10-22",
+      "confidence": 0.95,
+      "comment": "Assuming non-Plan entity"
+    },
+    {
+      "subject_id": "prov:Entity",
+      "predicate_id": "skos:narrowMatch",
+      "object_id": "schema:PropertyValue",
+      "mapping_justification": "semapv:ManualMappingCuration",
+      "subject_label": "Entity",
+      "object_label": "Property value",
+      "author_id": [
+        "orcid:0000-0003-0454-7145"
+      ],
+      "creator_id": [
+        "orcid:0000-0001-9842-9718"
+      ],
+      "mapping_date": "2023-10-22",
+      "confidence": 0.95,
+      "comment": "Assuming non-Plan entity"
+    },
+    {
+      "subject_id": "prov:Organization",
+      "predicate_id": "skos:exactMatch",
+      "object_id": "schema:Organization",
+      "mapping_justification": "semapv:ManualMappingCuration",
+      "subject_label": "Organization",
+      "object_label": "Organization",
+      "author_id": [
+        "orcid:0000-0003-0454-7145"
+      ],
+      "creator_id": [
+        "orcid:0000-0001-9842-9718"
+      ],
+      "mapping_date": "2023-10-22",
+      "confidence": 0.95
+    },
+    {
+      "subject_id": "prov:Person",
+      "predicate_id": "skos:exactMatch",
+      "object_id": "schema:Person",
+      "mapping_justification": "semapv:ManualMappingCuration",
+      "subject_label": "Person",
+      "object_label": "Person",
+      "author_id": [
+        "orcid:0000-0003-0454-7145"
+      ],
+      "creator_id": [
+        "orcid:0000-0001-9842-9718"
+      ],
+      "mapping_date": "2023-10-22",
+      "confidence": 0.95
+    },
+    {
+      "subject_id": "prov:Plan",
+      "predicate_id": "skos:narrowMatch",
+      "object_id": "bioschema:ComputationalWorkflow",
+      "mapping_justification": "semapv:ManualMappingCuration",
+      "subject_label": "Plan",
+      "object_label": "Computational workflow",
+      "author_id": [
+        "orcid:0000-0003-0454-7145"
+      ],
+      "creator_id": [
+        "orcid:0000-0001-9842-9718"
+      ],
+      "mapping_date": "2023-10-22",
+      "confidence": 0.95
+    },
+    {
+      "subject_id": "prov:Plan",
+      "predicate_id": "skos:narrowMatch",
+      "object_id": "schema:HowTo",
+      "mapping_justification": "semapv:ManualMappingCuration",
+      "subject_label": "Plan",
+      "object_label": "How-to",
+      "author_id": [
+        "orcid:0000-0003-0454-7145"
+      ],
+      "creator_id": [
+        "orcid:0000-0001-9842-9718"
+      ],
+      "mapping_date": "2023-10-22",
+      "confidence": 0.95
+    },
+    {
+      "subject_id": "prov:Plan",
+      "predicate_id": "skos:narrowMatch",
+      "object_id": "schema:SoftwareApplication",
+      "mapping_justification": "semapv:ManualMappingCuration",
+      "subject_label": "Plan",
+      "object_label": "Software application",
+      "author_id": [
+        "orcid:0000-0003-0454-7145"
+      ],
+      "creator_id": [
+        "orcid:0000-0001-9842-9718"
+      ],
+      "mapping_date": "2023-10-22",
+      "confidence": 0.95
+    },
+    {
+      "subject_id": "prov:SoftwareAgent",
+      "predicate_id": "skos:relatedMatch",
+      "object_id": "schema:SoftwareApplication",
+      "mapping_justification": "semapv:ManualMappingCuration",
+      "subject_label": "Software agent",
+      "object_label": "Software application",
+      "author_id": [
+        "orcid:0000-0003-0454-7145"
+      ],
+      "creator_id": [
+        "orcid:0000-0001-9842-9718"
+      ],
+      "mapping_date": "2023-10-22",
+      "confidence": 0.95
+    },
+    {
+      "subject_id": "prov:agent",
+      "predicate_id": "skos:narrowMatch",
+      "object_id": "schema:instrument",
+      "mapping_justification": "semapv:ManualMappingCuration",
+      "subject_label": "agent",
+      "object_label": "instrument",
+      "author_id": [
+        "orcid:0000-0003-0454-7145"
+      ],
+      "creator_id": [
+        "orcid:0000-0001-9842-9718"
+      ],
+      "mapping_date": "2023-10-22",
+      "confidence": 0.95,
+      "comment": "Assuming agent is a workflow management system"
+    },
+    {
+      "subject_id": "prov:agent",
+      "predicate_id": "skos:relatedMatch",
+      "object_id": "schema:agent",
+      "mapping_justification": "semapv:ManualMappingCuration",
+      "subject_label": "agent",
+      "object_label": "agent",
+      "author_id": [
+        "orcid:0000-0003-0454-7145"
+      ],
+      "creator_id": [
+        "orcid:0000-0001-9842-9718"
+      ],
+      "mapping_date": "2023-10-22",
+      "confidence": 0.95,
+      "comment": "Complex mapping: an agent implies the existence of a qualified association (prov:Association) linked to a prov:Agent through prov:agent"
+    },
+    {
+      "subject_id": "prov:endedAtTime",
+      "predicate_id": "skos:closeMatch",
+      "object_id": "schema:endTime",
+      "mapping_justification": "semapv:ManualMappingCuration",
+      "subject_label": "ended at time",
+      "object_label": "end time",
+      "author_id": [
+        "orcid:0000-0001-9842-9718"
+      ],
+      "creator_id": [
+        "orcid:0000-0001-9842-9718"
+      ],
+      "mapping_date": "2023-10-22",
+      "confidence": 0.95
+    },
+    {
+      "subject_id": "prov:hadPlan",
+      "predicate_id": "skos:relatedMatch",
+      "object_id": "schema:instrument",
+      "mapping_justification": "semapv:ManualMappingCuration",
+      "subject_label": "hadPlan",
+      "object_label": "instrument",
+      "author_id": [
+        "orcid:0000-0003-0454-7145"
+      ],
+      "creator_id": [
+        "orcid:0000-0001-9842-9718"
+      ],
+      "mapping_date": "2023-10-22",
+      "confidence": 0.95,
+      "comment": "Complex mapping: an instrument implies the existence of a qualified association (prov:Association) linked to a prov:Plan through prov:hadPlan"
+    },
+    {
+      "subject_id": "prov:startedAtTime",
+      "predicate_id": "skos:closeMatch",
+      "object_id": "schema:startTime",
+      "mapping_justification": "semapv:ManualMappingCuration",
+      "subject_label": "started at time",
+      "object_label": "start time",
+      "author_id": [
+        "orcid:0000-0001-9842-9718"
+      ],
+      "creator_id": [
+        "orcid:0000-0001-9842-9718"
+      ],
+      "mapping_date": "2023-10-22",
+      "confidence": 0.95
+    },
+    {
+      "subject_id": "prov:used",
+      "predicate_id": "skos:exactMatch",
+      "object_id": "schema:object",
+      "mapping_justification": "semapv:ManualMappingCuration",
+      "subject_label": "used",
+      "object_label": "object",
+      "author_id": [
+        "orcid:0000-0003-0454-7145"
+      ],
+      "creator_id": [
+        "orcid:0000-0001-9842-9718"
+      ],
+      "mapping_date": "2023-10-22",
+      "confidence": 0.95
+    },
+    {
+      "subject_id": "prov:wasAssociatedWith",
+      "predicate_id": "skos:narrowMatch",
+      "object_id": "schema:agent",
+      "mapping_justification": "semapv:ManualMappingCuration",
+      "subject_label": "was associated with",
+      "object_label": "agent",
+      "author_id": [
+        "orcid:0000-0003-0454-7145"
+      ],
+      "creator_id": [
+        "orcid:0000-0001-9842-9718"
+      ],
+      "mapping_date": "2023-10-22",
+      "confidence": 0.95
+    },
+    {
+      "subject_id": "prov:wasAssociatedWith",
+      "predicate_id": "skos:narrowMatch",
+      "object_id": "schema:instrument",
+      "mapping_justification": "semapv:ManualMappingCuration",
+      "subject_label": "was associated with",
+      "object_label": "instrument",
+      "author_id": [
+        "orcid:0000-0003-0454-7145"
+      ],
+      "creator_id": [
+        "orcid:0000-0001-9842-9718"
+      ],
+      "mapping_date": "2023-10-22",
+      "confidence": 0.95
+    },
+    {
+      "subject_id": "prov:wasEndedBy",
+      "predicate_id": "skos:relatedMatch",
+      "object_id": "schema:agent",
+      "mapping_justification": "semapv:ManualMappingCuration",
+      "subject_label": "was ended by",
+      "object_label": "agent",
+      "author_id": [
+        "orcid:0000-0003-0454-7145",
+        "orcid:0000-0001-9842-9718"
+      ],
+      "creator_id": [
+        "orcid:0000-0001-9842-9718"
+      ],
+      "mapping_date": "2023-10-22",
+      "confidence": 0.95
+    },
+    {
+      "subject_id": "prov:wasGeneratedBy",
+      "predicate_id": "skos:closeMatch",
+      "object_id": "schema:result",
+      "mapping_justification": "semapv:ManualMappingCuration",
+      "subject_label": "was generated by",
+      "object_label": "object_label",
+      "author_id": [
+        "orcid:0000-0003-0454-7145"
+      ],
+      "creator_id": [
+        "orcid:0000-0001-9842-9718"
+      ],
+      "mapping_date": "2023-10-22",
+      "confidence": 0.95,
+      "comment": "Note inverse properties:   :ent prov:wasGeneratedBy :act   vs   :act schema:result :ent"
+    },
+    {
+      "subject_id": "prov:wasStartedBy",
+      "predicate_id": "skos:relatedMatch",
+      "object_id": "schema:agent",
+      "mapping_justification": "semapv:ManualMappingCuration",
+      "subject_label": "was started by",
+      "object_label": "agent",
+      "author_id": [
+        "orcid:0000-0003-0454-7145",
+        "orcid:0000-0001-9842-9718"
+      ],
+      "creator_id": [
+        "orcid:0000-0001-9842-9718"
+      ],
+      "mapping_date": "2023-10-22",
+      "confidence": 0.95
+    }
+  ],
+  "mapping_set_title": "Mapping PROV to Workflow Run RO-Crate",
+  "subject_source": "http://www.w3.org/ns/prov-o#",
+  "subject_source_version": 20130430,
+  "object_source": "https://w3id.org/ro/wfrun/provenance/0.3",
+  "object_source_version": 0.3,
+  "mapping_set_group": "researchobject.org",
+  "@type": "MappingSet",
+  "@context": {
+    "dcterms": "http://purl.org/dc/terms/",
+    "linkml": "https://w3id.org/linkml/",
+    "oboInOwl": "http://www.geneontology.org/formats/oboInOwl#",
+    "owl": "http://www.w3.org/2002/07/owl#",
+    "pav": "http://purl.org/pav/",
+    "prov": "http://www.w3.org/ns/prov#",
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "semapv": "https://w3id.org/semapv/vocab/",
+    "skos": "http://www.w3.org/2004/02/skos/core#",
+    "sssom": "https://w3id.org/sssom/",
+    "@vocab": "https://w3id.org/sssom/",
+    "author_id": {
+      "@type": "rdfs:Resource",
+      "@id": "pav:authoredBy"
+    },
+    "comment": {
+      "@id": "rdfs:comment"
+    },
+    "confidence": {
+      "@type": "xsd:double"
+    },
+    "creator_id": {
+      "@type": "rdfs:Resource",
+      "@id": "dcterms:creator"
+    },
+    "curation_rule": {
+      "@type": "rdfs:Resource"
+    },
+    "documentation": {
+      "@type": "@id"
+    },
+    "homepage": {
+      "@type": "@id"
+    },
+    "imports": {
+      "@type": "@id"
+    },
+    "issue_tracker": {
+      "@type": "@id"
+    },
+    "issue_tracker_item": {
+      "@type": "rdfs:Resource"
+    },
+    "last_updated": {
+      "@type": "xsd:date"
+    },
+    "license": {
+      "@type": "@id",
+      "@id": "dcterms:license"
+    },
+    "mapping_cardinality": {
+      "@context": {
+        "@vocab": "@null",
+        "text": "skos:notation",
+        "description": "skos:prefLabel",
+        "meaning": "@id"
+      }
+    },
+    "mapping_date": {
+      "@type": "xsd:date",
+      "@id": "pav:authoredOn"
+    },
+    "mapping_justification": {
+      "@type": "rdfs:Resource"
+    },
+    "mapping_provider": {
+      "@type": "@id"
+    },
+    "mapping_registry_id": {
+      "@type": "rdfs:Resource"
+    },
+    "mapping_set_description": {
+      "@id": "dcterms:description"
+    },
+    "mapping_set_id": {
+      "@type": "@id"
+    },
+    "mapping_set_references": {
+      "@type": "@id"
+    },
+    "mapping_set_source": {
+      "@type": "@id",
+      "@id": "prov:wasDerivedFrom"
+    },
+    "mapping_set_title": {
+      "@id": "dcterms:title"
+    },
+    "mapping_set_version": {
+      "@id": "owl:versionInfo"
+    },
+    "mapping_source": {
+      "@type": "rdfs:Resource"
+    },
+    "mappings": {
+      "@type": "@id"
+    },
+    "mirror_from": {
+      "@type": "@id"
+    },
+    "object_id": {
+      "@type": "rdfs:Resource",
+      "@id": "owl:annotatedTarget"
+    },
+    "object_match_field": {
+      "@type": "rdfs:Resource"
+    },
+    "object_preprocessing": {
+      "@type": "rdfs:Resource"
+    },
+    "object_source": {
+      "@type": "rdfs:Resource"
+    },
+    "object_type": {
+      "@context": {
+        "@vocab": "@null",
+        "text": "skos:notation",
+        "description": "skos:prefLabel",
+        "meaning": "@id"
+      }
+    },
+    "predicate_id": {
+      "@type": "rdfs:Resource",
+      "@id": "owl:annotatedProperty"
+    },
+    "predicate_modifier": {
+      "@context": {
+        "@vocab": "@null",
+        "text": "skos:notation",
+        "description": "skos:prefLabel",
+        "meaning": "@id"
+      }
+    },
+    "predicate_type": {
+      "@context": {
+        "@vocab": "@null",
+        "text": "skos:notation",
+        "description": "skos:prefLabel",
+        "meaning": "@id"
+      }
+    },
+    "publication_date": {
+      "@type": "xsd:date",
+      "@id": "dcterms:created"
+    },
+    "registry_confidence": {
+      "@type": "xsd:double"
+    },
+    "reviewer_id": {
+      "@type": "rdfs:Resource"
+    },
+    "see_also": {
+      "@id": "rdfs:seeAlso"
+    },
+    "semantic_similarity_score": {
+      "@type": "xsd:double"
+    },
+    "subject_id": {
+      "@type": "rdfs:Resource",
+      "@id": "owl:annotatedSource"
+    },
+    "subject_match_field": {
+      "@type": "rdfs:Resource"
+    },
+    "subject_preprocessing": {
+      "@type": "rdfs:Resource"
+    },
+    "subject_source": {
+      "@type": "rdfs:Resource"
+    },
+    "subject_type": {
+      "@context": {
+        "@vocab": "@null",
+        "text": "skos:notation",
+        "description": "skos:prefLabel",
+        "meaning": "@id"
+      }
+    },
+    "Mapping": {
+      "@id": "owl:Axiom"
+    },
+    "bioschema": "https://bioschemas.org/",
+    "orcid": "https://orcid.org/",
+    "schema": "http://schema.org/"
+  }
+}
