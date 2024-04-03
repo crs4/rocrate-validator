@@ -1,0 +1,62 @@
+@prefix : <./> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema_org: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xml1: <http://www.w3.org/2001/XMLSchema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+
+:FileDescriptorExistence
+    a sh:NodeShape ;
+    sh:name "RO-Crate Metadata File Descriptor entity MUST exist" ;
+    sh:description "The root of the document MUST have an entity with @id `ro-crate-metadata.json`" ;
+    sh:targetNode :ro-crate-metadata.json ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Check Metadata File Descriptor entity existence" ;
+        sh:description "Check if the RO-Crate Metadata File Descriptor entity exists" ;
+        sh:path rdf:type ;
+        sh:minCount 1 ;
+        sh:message "The root of the document MUST have an entity with @id `ro-crate-metadata.json`" ;
+    ] .
+
+:MetadataFileDescriptorDefinition a sh:NodeShape ;
+    sh:name "RO-Crate Metadata File Descriptor: recommended properties" ;
+    sh:description """RO-Crate Metadata Descriptor MUST be defined
+    according with the requirements details defined in
+    <https://www.researchobject.org/ro-crate/1.1/root-data-entity.html>""";
+    sh:targetNode :ro-crate-metadata.json ;
+    sh:property [ 
+        a sh:PropertyShape ;
+        sh:name "Check if the Metadata File Descriptor is a CreativeWork" ;
+        sh:description "The RO-Crate metadata file MUST be a CreativeWork, as per schema.org" ;
+        sh:minCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:path rdf:type ;
+        sh:hasValue schema_org:CreativeWork ;
+        sh:message "The RO-Crate metadata file MUST be a CreativeWork, as per schema.org" ;
+    ] ;
+    sh:property [ 
+        a sh:PropertyShape ;
+        sh:name "Check if the `Metadata File Descriptor` has the `about` property" ;
+        sh:description """The URL of the RO-Crate metadata file itself, which is the root of the RO-Crate. 
+            This is used to identify the RO-Crate, and is the only property that is required to be present in the metadata file.""" ;
+        sh:maxCount 1;
+        sh:minCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:path schema_org:about ;
+        sh:class schema_org:Dataset ;
+        sh:message "The RO-Crate metadata file descriptor MUST have an `about` property referencing the Root Data Entity" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "conformsTo property" ;
+        sh:description "The RO-Crate specification version that this crate conforms to" ;
+        sh:minCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:path dct:conformsTo ;
+        sh:in ( <https://w3id.org/ro/crate/1.0> <https://w3id.org/ro/crate/1.1> ) ;
+        sh:message "The RO-Crate metadata file descriptor MUST have a `conformsTo` property with the RO-Crate specification version" ;
+    ] .
+    

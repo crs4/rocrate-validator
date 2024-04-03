@@ -18,10 +18,11 @@ colorlog = "^6.8"
 
 [tool.poetry.group.dev.dependencies]
 pyproject-flake8 = "^6.1.0"
-pytest = "^8.1.0"
-pytest-cov = "^4.1.0"
 pylint = "^3.1.0"
 ipykernel = "^6.29.3"
+
+[tool.poetry.group.test.dependencies]
+pytest-cov = "^5.0.0"
 
 [tool.flake8]
 max-line-length = 120
@@ -35,3 +36,6 @@ rocrate-validator = "rocrate_validator.cli:cli"
 
 [tool.rocrate_validator]
 skip_dirs = [".git", ".github", ".vscode"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
