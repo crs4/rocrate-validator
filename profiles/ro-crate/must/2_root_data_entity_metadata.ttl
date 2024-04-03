@@ -24,10 +24,10 @@
 
 :RootDataEntityRequiredDirectProperties a sh:NodeShape ;
     sh:name "RO-Crate Data Entity definition" ;
-    sh:description """The Root Data Entity MUST have the properties defined in 
+    sh:description """The Root Data Entity MUST have the properties defined in
     <https://www.researchobject.org/ro-crate/1.1/root-data-entity.html>""";
     sh:targetNode : ;
-    sh:property [ 
+    sh:property [
         a sh:PropertyShape ;
         sh:name "Date Published of the Root Data Entity" ;
         sh:description "The datePublished of the Root Data Entity MUST be a valid ISO 8601 date" ;
