@@ -75,8 +75,17 @@ class Violation(CheckIssue):
         return self._graph
 
     @property
-    def resultSeverity(self):
-        return self.violation_json[f'{SHACL_NS}resultSeverity'][0]['@id']
+    def resultSeverity(self) -> Severity:
+        shacl_severity = self.violation_json[f'{SHACL_NS}resultSeverity'][0]['@id']
+        # we need to map the SHACL severity term to our Severity enum values
+        if 'http://www.w3.org/ns/shacl#Violation' == shacl_severity:
+            return Severity.REQUIRED
+        elif 'http://www.w3.org/ns/shacl#Warning' == shacl_severity:
+            return Severity.RECOMMENDED
+        elif 'http://www.w3.org/ns/shacl#Info' == shacl_severity:
+            return Severity.OPTIONAL
+        else:
+            raise RuntimeError(f"Unrecognized SHACL severity term {shacl_severity}")
 
     @property
     def focusNode(self):
@@ -127,7 +136,6 @@ class Violation(CheckIssue):
 
     @property
     def severity(self):
-        # TODO: map the severity to the CheckIssue severity
         return Severity.REQUIRED
 
 
