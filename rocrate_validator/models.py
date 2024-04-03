@@ -146,11 +146,11 @@ class Profile:
                 self._description = "RO-Crate profile"
         return self._description
 
-    def get_requirement(self, name: str) -> Requirement:
-        for requirement in self.requirements:
-            if requirement.name == name:
-                return requirement
-        return None
+    # def get_requirement(self, name: str) -> Requirement:
+    #     for requirement in self.requirements:
+    #         if requirement.name == name:
+    #             return requirement
+    #     return None
 
     def load_requirements(self) -> List[Requirement]:
         """
@@ -175,6 +175,8 @@ class Profile:
                     req_id += 1
                     requirement._order_number = req_id
                     self.add_requirement(requirement)
+        logger.debug("Profile %s loaded %s requiremens: %s",
+                     self.name, len(self._requirements), self._requirements)
         return self._requirements
 
     @property
@@ -187,8 +189,8 @@ class Profile:
             self, severity: Severity = Severity.REQUIRED,
             exact_match: bool = False) -> List[Requirement]:
         return [requirement for requirement in self.requirements
-                if not exact_match and requirement.severity >= severity or
-                exact_match and requirement.severity == severity]
+                if (not exact_match and requirement.severity >= severity) or
+                (exact_match and requirement.severity == severity)]
 
     # @property
     # def requirements_by_severity_map(self) -> Dict[Severity, List[Requirement]]:
@@ -385,18 +387,27 @@ class Requirement(ABC):
         """
         Internal method to perform the validation
         """
-        # Set the validation context
+        logger.debug("Validating Requirement %s (level=%s) with %s checks",
+                     self.name, self.level, len(self._checks))
+
+        # TODO: consider refactoring checks to exclusively use the context they receive as an
+        # argument. Fetching the context from Requirement seems akin to using a global variable
+        # and complicates encapsulation.
         self._validation_context = context
-        logger.debug("Validation context initialized: %r", context)
-        # Perform the validation
         try:
+            logger.debug("Running %s checks for Requirement '%s'", len(self._checks), self.name)
             for check in self._checks:
                 try:
-                    check.__do_check__(context)
+                    # TODO: if __do_check__ is internal, why are we calling it from here?
+                    logger.debug("Running check '%s' - Desc: %s", check.name, check.description)
+                    result = check.__do_check__(context)
+                    logger.debug("Ran check '%s'. Got result %s", check.name, result)
                 except Exception as e:
-                    self.validation_result.add_error("Unexpected error during check: %s" % e, check=check)
+                    self.validation_result.add_error(f"Unexpected error during check: {e}", check=check)
                     if logger.isEnabledFor(logging.DEBUG):
                         logger.exception(e)
+            logger.debug("Checks for Requirement '%s' completed. Checks passed? %s",
+                         self.name, self.validation_result.passed())
             # Return the result
             return self.validation_result.passed()
         finally:
@@ -645,7 +656,7 @@ class CheckIssue:
                  code: int = None,
                  check: RequirementCheck = None):
         if not isinstance(severity, Severity):
-            raise TypeError(f"CheckIssue constructed with a severity of type {type(severity)}")
+            raise TypeError(f"CheckIssue constructed with a severity '{severity}' of type {type(severity)}")
         self._severity = severity
         self._message = message
         self._code = code
@@ -771,7 +782,8 @@ class ValidationResult:
         self._issues.extend(issues)
 
     def add_check_issue(self, message: str, check: RequirementCheck, code: int = None):
-        self._issues.append(CheckIssue(check.requirement.severity, message, code, check=check))
+        c = CheckIssue(check.requirement.severity, message, code, check=check)
+        self._issues.append(c)
 
     def add_error(self, message: str, check: RequirementCheck, code: int = None):
         self.add_check_issue(message, check, code)
@@ -1013,12 +1025,14 @@ class Validator:
 
         #
         for profile in profiles:
+            logger.debug("Validating profile %s", profile.name)
             # perform the requirements validation
             if not requirements:
                 requirements = profile.get_requirements(
                     self.requirement_severity, exact_match=self.requirement_severity_only)
+            logger.debug("For profile %s, validating these %s requirements: %s",
+                         profile.name, len(requirements), requirements)
             for requirement in requirements:
-                logger.debug("Validating Requirement: %s", requirement)
                 result = requirement.__do_validate__(context)
                 logger.debug("Validation Requirement result: %s", result)
                 if result:
@@ -1037,7 +1051,6 @@ class ValidationContext:
     def __init__(self, validator: Validator, result: ValidationResult):
         self._validator = validator
         self._result = result
-        self._settings = validator.validation_settings
 
     @property
     def validator(self) -> Validator:
@@ -1049,7 +1062,7 @@ class ValidationContext:
 
     @property
     def settings(self) -> Dict:
-        return self._settings
+        return self.validator.validation_settings
 
     @property
     def rocrate_path(self) -> Path:

@@ -142,7 +142,7 @@ class Violation(CheckIssue):
 class ValidationResult:
 
     def __init__(self, validator: Validator, results_graph: Graph,
-                 conforms: bool = None, results_text: str = None) -> None:
+                 conforms: Optional[bool] = None, results_text: str = None) -> None:
         # validate the results graph input
         assert results_graph is not None, "Invalid graph"
         assert isinstance(results_graph, Graph), "Invalid graph type"
@@ -332,9 +332,9 @@ class Validator:
             **kwargs,
         )
         # log the validation results
-        logger.debug("Conforms: %r", conforms)
-        logger.debug("Results Graph: %r", results_graph)
-        logger.debug("Results Text: %r", results_text)
+        logger.debug("pyshacl.validate result: Conforms: %r", conforms)
+        logger.debug("pyshacl.validate result: Results Graph: %r", results_graph)
+        logger.debug("pyshacl.validate result: Results Text: %r", results_text)
 
         # serialize the results graph
         if serialization_output_path:

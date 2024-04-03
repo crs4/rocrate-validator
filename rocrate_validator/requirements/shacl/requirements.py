@@ -50,7 +50,7 @@ class SHACLRequirement(Requirement):
     def load(profile: Profile, requirement_level: RequirementLevel,
              file_path: Path, publicID: str = None) -> List[Requirement]:
         shapes: Dict[str, Shape] = Shape.load(file_path, publicID=publicID)
-        logger.debug("Loaded shapes: %s" % shapes)
+        logger.debug("Loaded %s shapes: %s", len(shapes), shapes)
         requirements = []
         for shape in shapes.values():
             requirements.append(SHACLRequirement(requirement_level, shape, profile, file_path))

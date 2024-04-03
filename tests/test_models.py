@@ -6,6 +6,7 @@ from rocrate_validator.models import (LevelCollection, RequirementLevel,
 
 
 def test_severity_ordering():
+    assert hash(Severity.OPTIONAL) != 0  # should be ok as long it hash runs
     assert Severity.OPTIONAL < Severity.RECOMMENDED
     assert Severity.RECOMMENDED > Severity.OPTIONAL
     assert Severity.RECOMMENDED < Severity.REQUIRED
@@ -32,6 +33,7 @@ def test_level_basics():
     may = RequirementLevel('MAY', Severity.OPTIONAL)
     assert str(may) == "MAY"
     assert int(may) == Severity.OPTIONAL.value
+    assert hash(may) != 0  # should be find as long as it runs
 
 
 def test_level_collection():
