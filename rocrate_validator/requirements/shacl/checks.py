@@ -1,10 +1,8 @@
 
 import logging
 
-from ...models import RequirementCheck
-from ...models import Requirement
+from ...models import Requirement, RequirementCheck
 from .models import ShapeProperty
-
 
 logger = logging.getLogger(__name__)
 
@@ -30,9 +28,9 @@ class SHACLCheck(RequirementCheck):
     def shapeProperty(self) -> ShapeProperty:
         return self._shapeProperty
 
-    @property
-    def severity(self):
-        return self.requirement.severity
+    # @property
+    # def severity(self):
+    #     return self.requirement.severity
 
     @classmethod
     def get_description(cls, requirement: Requirement):
@@ -53,13 +51,10 @@ class SHACLCheck(RequirementCheck):
             if self.shapeProperty else self.requirement.shape.shape_graph
 
         from .validator import Validator as SHACLValidator
-        shacl_validator = SHACLValidator(
-            self, shapes_graph=shapes_graph, ont_graph=ontology_graph)
-        result = shacl_validator.validate(
-            data_graph=data_graph,
-            **self.validator.validation_settings
-        )
-        logger.debug("Validation conforms: %s", result.conforms)
+        shacl_validator = SHACLValidator(self, shapes_graph=shapes_graph, ont_graph=ontology_graph)
+        result = shacl_validator.validate(data_graph=data_graph, **self.validator.validation_settings)
+
+        logger.debug("Validation '%s' conforms: %s", self.name, result.conforms)
         if not result.conforms:
             logger.debug("Validation failed")
             logger.debug("Validation result: %s", result)

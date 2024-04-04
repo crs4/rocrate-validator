@@ -4,40 +4,37 @@ from typing import Dict, Literal, Optional, Union
 
 from pyshacl.pytypes import GraphLike
 
-from rocrate_validator.models import (Profile, RequirementLevels,
-                                      RequirementType, ValidationResult,
-                                      Validator)
+from .models import (LevelCollection, Profile, RequirementLevel, Severity,
+                     ValidationResult, Validator)
 
 # set up logging
 logger = logging.getLogger(__name__)
 
 
 def validate(
-    rocrate_path: Union[GraphLike, str, bytes],
-    profiles_path: str = "./profiles",
+    rocrate_path: Path,
+    profiles_path: Path = Path("./profiles"),
     profile_name: str = "ro-crate",
     inherit_profiles: bool = True,
-    ontologies_path: Union[GraphLike, str, bytes] = None,
+    ontologies_path: Optional[Path] = None,
     advanced: Optional[bool] = False,
-    inference: Optional[Literal["owl", "rdfs"]] = False,
+    inference: Optional[Literal["owl", "rdfs"]] = None,
     inplace: Optional[bool] = False,
     abort_on_first: Optional[bool] = True,
     allow_infos: Optional[bool] = False,
     allow_warnings: Optional[bool] = False,
-    requirement_level: Union[str, RequirementType] = RequirementLevels.MUST,
-    requirement_level_only: bool = False,
-    serialization_output_path: str = None,
+    requirement_severity: Union[str, Severity] = Severity.REQUIRED,
+    requirement_severity_only: bool = False,
+    serialization_output_path: Optional[Path] = None,
     serialization_output_format: str = "turtle",
     **kwargs,
 ) -> ValidationResult:
     """
     Validate a RO-Crate against a profile
     """
-    # parse requirement level
-    requirement_level = \
-        RequirementLevels.get(requirement_level) \
-        if isinstance(requirement_level, str) \
-        else requirement_level
+    # if requirement_severity is a str, convert to Severity
+    if not isinstance(requirement_severity, Severity):
+        requirement_severity = Severity[requirement_severity]
 
     validator = Validator(
         rocrate_path=rocrate_path,
@@ -51,8 +48,8 @@ def validate(
         abort_on_first=abort_on_first,
         allow_infos=allow_infos,
         allow_warnings=allow_warnings,
-        requirement_level=requirement_level,
-        requirement_level_only=requirement_level_only,
+        requirement_severity=requirement_severity,
+        requirement_severity_only=requirement_severity_only,
         serialization_output_path=serialization_output_path,
         serialization_output_format=serialization_output_format,
         **kwargs,

@@ -2,7 +2,7 @@ import logging
 from pathlib import Path
 from typing import Dict, List
 
-from ...models import Profile, Requirement, RequirementType
+from ...models import Profile, Requirement, RequirementCheck, RequirementLevel
 from .checks import SHACLCheck
 from .models import Shape
 
@@ -13,12 +13,12 @@ logger = logging.getLogger(__name__)
 class SHACLRequirement(Requirement):
 
     def __init__(self,
-                 type: RequirementType,
+                 level: RequirementLevel,
                  shape: Shape,
                  profile: Profile,
                  path: Path):
         self._shape = shape
-        super().__init__(type, profile,
+        super().__init__(level, profile,
                          shape.name if shape.name else "",
                          shape.description if shape.description else "",
                          path)
@@ -27,7 +27,7 @@ class SHACLRequirement(Requirement):
         # assign check IDs
         self.__reorder_checks__()
 
-    def __init_checks__(self):
+    def __init_checks__(self) -> List[RequirementCheck]:
         # assign a check to each property of the shape
         checks = []
         for prop in self._shape.get_properties():
@@ -47,11 +47,11 @@ class SHACLRequirement(Requirement):
         return self._shape
 
     @staticmethod
-    def load(profile: Profile, requirement_type: RequirementType,
+    def load(profile: Profile, requirement_level: RequirementLevel,
              file_path: Path, publicID: str = None) -> List[Requirement]:
         shapes: Dict[str, Shape] = Shape.load(file_path, publicID=publicID)
-        logger.debug("Loaded shapes: %s" % shapes)
+        logger.debug("Loaded %s shapes: %s", len(shapes), shapes)
         requirements = []
         for shape in shapes.values():
-            requirements.append(SHACLRequirement(requirement_type, shape, profile, file_path))
+            requirements.append(SHACLRequirement(requirement_level, shape, profile, file_path))
         return requirements

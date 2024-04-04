@@ -2,8 +2,9 @@ import logging
 
 import rich_click as click
 from rich.console import Console
-from rocrate_validator.utils import get_version
+
 from rocrate_validator.config import configure_logging
+from rocrate_validator.utils import get_version
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -32,7 +33,8 @@ console = Console()
 def cli(ctx, debug: bool = False, version: bool = False):
     # If the version flag is set, print the version and exit
     if version:
-        console.print(f"[bold]rocrate-validator [cyan]{get_version()}[/cyan][/bold]")
+        console.print(
+            f"[bold]rocrate-validator [cyan]{get_version()}[/cyan][/bold]")
         exit(0)
     # Set the log level
     if debug:
@@ -50,7 +52,8 @@ if __name__ == "__main__":
     try:
         cli()
     except Exception as e:
-        console.print(f"\n\n[bold]\[[red]FAILED[/red]] Unexpected error: {e} !!![/bold]\n", style="white")
+        console.print(
+            f"\n\n[bold][[red]FAILED[/red]] Unexpected error: {e} !!![/bold]\n", style="white")
         if logger.isEnabledFor(logging.DEBUG):
             console.print_exception()
         else:

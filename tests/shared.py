@@ -4,7 +4,7 @@ Library of shared functions for testing RO-Crate profiles
 
 import logging
 from pathlib import Path
-from typing import List
+from typing import List, Optional, Union
 
 from rocrate_validator import models, services
 
@@ -12,11 +12,11 @@ logger = logging.getLogger(__name__)
 
 
 def do_entity_test(
-        rocrate_path: Path,
-        requirement_level: models.RequirementType,
+        rocrate_path: Union[Path, str],
+        requirement_severity: models.Severity,
         expected_validation_result: bool,
-        expected_triggered_requirements: List[str],
-        expected_triggered_issues: List[str],
+        expected_triggered_requirements: Optional[List[str]] = None,
+        expected_triggered_issues: Optional[List[str]] = None,
         abort_on_first: bool = True
 ):
     """
@@ -26,9 +26,17 @@ def do_entity_test(
     failed_requirements = None
     detected_issues = None
 
+    if not isinstance(rocrate_path, Path):
+        rocrate_path = Path(rocrate_path)
+
+    if expected_triggered_requirements is None:
+        expected_triggered_requirements = []
+    if expected_triggered_issues is None:
+        expected_triggered_issues = []
+
     try:
         logger.debug("Testing RO-Crate @ path: %s", rocrate_path)
-        logger.debug("Requirement level: %s", requirement_level)
+        logger.debug("Requirement severity: %s", requirement_severity)
 
         # set abort_on_first to False if there are multiple expected requirements or issues
         if len(expected_triggered_requirements) > 1 \
@@ -38,7 +46,7 @@ def do_entity_test(
         # validate RO-Crate
         result: models.ValidationResult = \
             services.validate(rocrate_path,
-                              requirement_level=requirement_level,
+                              requirement_severity=requirement_severity,
                               abort_on_first=abort_on_first)
         logger.debug("Expected validation result: %s", expected_validation_result)
         assert result.passed() == expected_validation_result, \
@@ -67,7 +75,7 @@ def do_entity_test(
         if logger.isEnabledFor(logging.DEBUG):
             logger.exception(e)
             logger.debug("Failed to validate RO-Crate @ path: %s", rocrate_path)
-            logger.debug("Requirement level: %s", requirement_level)
+            logger.debug("Requirement severity: %s", requirement_severity)
             logger.debug("Expected validation result: %s", expected_validation_result)
             logger.debug("Expected triggered requirements: %s", expected_triggered_requirements)
             logger.debug("Expected triggered issues: %s", expected_triggered_issues)

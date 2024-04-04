@@ -75,8 +75,17 @@ class Violation(CheckIssue):
         return self._graph
 
     @property
-    def resultSeverity(self):
-        return self.violation_json[f'{SHACL_NS}resultSeverity'][0]['@id']
+    def resultSeverity(self) -> Severity:
+        shacl_severity = self.violation_json[f'{SHACL_NS}resultSeverity'][0]['@id']
+        # we need to map the SHACL severity term to our Severity enum values
+        if 'http://www.w3.org/ns/shacl#Violation' == shacl_severity:
+            return Severity.REQUIRED
+        elif 'http://www.w3.org/ns/shacl#Warning' == shacl_severity:
+            return Severity.RECOMMENDED
+        elif 'http://www.w3.org/ns/shacl#Info' == shacl_severity:
+            return Severity.OPTIONAL
+        else:
+            raise RuntimeError(f"Unrecognized SHACL severity term {shacl_severity}")
 
     @property
     def focusNode(self):
@@ -127,14 +136,13 @@ class Violation(CheckIssue):
 
     @property
     def severity(self):
-        # TODO: map the severity to the CheckIssue severity
-        return Severity.ERROR
+        return Severity.REQUIRED
 
 
 class ValidationResult:
 
     def __init__(self, validator: Validator, results_graph: Graph,
-                 conforms: bool = None, results_text: str = None) -> None:
+                 conforms: Optional[bool] = None, results_text: str = None) -> None:
         # validate the results graph input
         assert results_graph is not None, "Invalid graph"
         assert isinstance(results_graph, Graph), "Invalid graph type"
@@ -142,21 +150,25 @@ class ValidationResult:
         assert (None, URIRef(f"{SHACL_NS}conforms"),
                 None) in results_graph, "Invalid ValidationReport"
         # store the input properties
-        self._conforms = conforms
         self.results_graph = results_graph
         self._text = results_text
         self._validator = validator
         # parse the results graph
-        self._violations = self.parse_results_graph(results_graph)
+        self._violations = self._parse_results_graph(results_graph)
         # initialize the conforms property
-        logger.debug("Validation report: %s" % self._text)
-        if conforms is not None:
+        if conforms is None:
             self._conforms = len(self._violations) == 0
         else:
-            assert self._conforms == len(
-                self._violations) == 0, "Invalid validation result"
+            self._conforms = conforms
 
-    def parse_results_graph(self, results_graph: Graph):
+        logger.debug("Validation report. N. violations: %s, Conforms: %s; Text: %s",
+                     len(self._violations), self._conforms, self._text)
+
+        # TODO: why allow setting conforms through an argument if the value is to be
+        # computed based on the presence of Violations?
+        assert self._conforms == (len(self._violations) == 0), "Invalid validation result"
+
+    def _parse_results_graph(self, results_graph: Graph):
         # Query for validation results
         query = """
         SELECT ?subject
@@ -205,6 +217,7 @@ class ValidationResult:
         logger.debug("Graph loaded from file: %s" % file_path)
 
         # return the validation result
+        assert False, "missing Validator argument to constructor call"
         return ValidationResult(g)
 
 
@@ -319,9 +332,9 @@ class Validator:
             **kwargs,
         )
         # log the validation results
-        logger.debug("Conforms: %r", conforms)
-        logger.debug("Results Graph: %r", results_graph)
-        logger.debug("Results Text: %r", results_text)
+        logger.debug("pyshacl.validate result: Conforms: %r", conforms)
+        logger.debug("pyshacl.validate result: Results Graph: %r", results_graph)
+        logger.debug("pyshacl.validate result: Results Text: %r", results_text)
 
         # serialize the results graph
         if serialization_output_path:
