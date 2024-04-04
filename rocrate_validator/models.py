@@ -112,6 +112,7 @@ class LevelCollection:
         return getattr(LevelCollection, name.upper())
 
 
+@total_ordering
 class Profile:
     def __init__(self, name: str, path: Path = None,
                  requirements: Optional[list[Requirement]] = None,
@@ -179,12 +180,11 @@ class Profile:
                     self.add_requirement(requirement)
         logger.debug("Profile %s loaded %s requiremens: %s",
                      self.name, len(self._requirements), self._requirements)
-        return self._requirements
 
     @property
     def requirements(self) -> list[Requirement]:
         if not self._requirements:
-            self.load_requirements()
+            self._load_requirements()
         return self._requirements
 
     def get_requirements(
@@ -208,8 +208,8 @@ class Profile:
         logger.debug("Inherited profiles: %s", profiles)
         return profiles
 
-    def has_requirement(self, name: str) -> bool:
-        return self.get_requirement(name) is not None
+    # def has_requirement(self, name: str) -> bool:
+    #     return self.get_requirement(name) is not None
 
     # def get_requirements_by_type(self, type: RequirementLevel) -> list[Requirement]:
     #     return [requirement for requirement in self.requirements if requirement.severity == type]
@@ -223,23 +223,14 @@ class Profile:
     def validate(self, rocrate_path: Path) -> ValidationResult:
         raise NotImplementedError()
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: object) -> bool:
         return isinstance(other, Profile) \
             and self.name == other.name \
             and self.path == other.path \
             and self.requirements == other.requirements
 
-    def __ne__(self, other) -> bool:
-        return not self.__eq__(other)
-
-    def __lt__(self, other) -> bool:
+    def __lt__(self, other: object) -> bool:
         return self.name < other.name
-
-    def __le__(self, other) -> bool:
-        return self.name <= other.name
-
-    def __gt__(self, other) -> bool:
-        return self.name > other.name
 
     def __hash__(self) -> int:
         return hash((self.name, self.path, self.requirements))
@@ -440,20 +431,20 @@ class Requirement(ABC):
             raise OutOfValidationContext("Validation context has not been initialized")
         return self._validation_context.settings
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, Requirement):
             raise TypeError(f"Cannot compare {type(self)} with {type(other)}")
         return self.name == other.name \
             and self.severity == other.severity and self.description == other.description \
             and self.path == other.path
 
-    def __ne__(self, other) -> bool:
+    def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
 
     def __hash__(self):
         return hash((self.name, self.severity, self.description, self.path))
 
-    def __lt__(self, other) -> bool:
+    def __lt__(self, other: object) -> bool:
         if not isinstance(other, Requirement):
             raise ValueError(f"Cannot compare Requirement with {type(other)}")
         return self.severity >= other.severity or self.name >= other.name
