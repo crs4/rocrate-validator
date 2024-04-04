@@ -28,3 +28,12 @@ def test_valid_roc_recommended():
         Severity.RECOMMENDED,
         True
     )
+
+
+def test_valid_roc_required_with_long_datetime():
+    """Test a valid RO-Crate."""
+    do_entity_test(
+        ValidROC().wrroc_paper_long_date,
+        Severity.REQUIRED,
+        True
+    )
