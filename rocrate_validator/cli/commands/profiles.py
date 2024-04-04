@@ -25,7 +25,6 @@ def profiles(ctx, profiles_path: str = "./profiles"):
     """
     [magenta]rocrate-validator:[/magenta] Manage profiles
     """
-    pass
 
 
 @profiles.command("list")
@@ -94,7 +93,8 @@ def describe_profile(ctx,
         table_rows = []
         levels_list = set()
         for requirement in profile.requirements:
-            level_info = f"[{requirement.color}]{requirement.severity.name}[/{requirement.color}]"
+            color = get_severity_color(requirement.severity)
+            level_info = f"[{color}]{requirement.severity.name}[/{color}]"
             levels_list.add(level_info)
             table_rows.append((str(requirement.order_number), requirement.name,
                               Markdown(requirement.description.strip()),

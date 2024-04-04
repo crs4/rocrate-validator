@@ -339,11 +339,6 @@ class Requirement(ABC):
         return self.level.severity
 
     @property
-    def color(self) -> str:
-        from .colors import get_severity_color
-        return get_severity_color(self.severity)
-
-    @property
     def profile(self) -> Profile:
         return self._profile
 
