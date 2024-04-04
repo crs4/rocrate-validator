@@ -1,5 +1,6 @@
 import logging
 from pathlib import Path
+from typing import Optional
 
 from ...models import Profile, Requirement, RequirementCheck, RequirementLevel
 from .checks import SHACLCheck
@@ -47,7 +48,7 @@ class SHACLRequirement(Requirement):
 
     @staticmethod
     def load(profile: Profile, requirement_level: RequirementLevel,
-             file_path: Path, publicID: str = None) -> list[Requirement]:
+             file_path: Path, publicID: Optional[str] = None) -> list[Requirement]:
         shapes: dict[str, Shape] = Shape.load(file_path, publicID=publicID)
         logger.debug("Loaded %s shapes: %s", len(shapes), shapes)
         requirements = []

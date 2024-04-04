@@ -8,7 +8,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from functools import total_ordering
 from pathlib import Path
-from typing import Callable, Optional, Set, Type, Union
+from typing import Callable, Optional, Set, Union
 
 from rdflib import Graph
 
@@ -24,6 +24,8 @@ from .errors import OutOfValidationContext
 
 logger = logging.getLogger(__name__)
 
+BaseTypes = Union[str, Path, bool, int, None]
+
 
 @enum.unique
 @total_ordering
@@ -33,7 +35,7 @@ class Severity(enum.Enum):
     RECOMMENDED = 2
     REQUIRED = 4
 
-    def __lt__(self, other) -> bool:
+    def __lt__(self, other: object) -> bool:
         if isinstance(other, Severity):
             return self.value < other.value
         else:
@@ -46,12 +48,12 @@ class RequirementLevel:
     name: str
     severity: Severity
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, RequirementLevel):
             return False
         return self.name == other.name and self.severity == other.severity
 
-    def __lt__(self, other) -> bool:
+    def __lt__(self, other: object) -> bool:
         # TODO: this ordering is not totally coherent, since for two objects a and b
         # with equal Severity but different names you would have
         #       not a < b, which implies a >= b
@@ -113,11 +115,11 @@ class LevelCollection:
 class Profile:
     def __init__(self, name: str, path: Path = None,
                  requirements: Optional[list[Requirement]] = None,
-                 publicID: str = None):
+                 publicID: Optional[str] = None):
         self._path = path
         self._name = name
-        self._description = None
-        self._requirements = requirements if requirements is not None else []
+        self._description: Optional[str] = None
+        self._requirements: list[Requirement] = requirements if requirements is not None else []
         self._publicID = publicID
 
     @property
@@ -133,7 +135,7 @@ class Profile:
         return self.path / DEFAULT_PROFILE_README_FILE
 
     @property
-    def publicID(self) -> str:
+    def publicID(self) -> Optional[str]:
         return self._publicID
 
     @property
@@ -152,7 +154,7 @@ class Profile:
     #             return requirement
     #     return None
 
-    def load_requirements(self) -> list[Requirement]:
+    def _load_requirements(self) -> None:
         """
         Load the requirements from the profile directory
         """
@@ -283,7 +285,7 @@ class Profile:
         return profiles
 
 
-def check(name=None):
+def check(name: Optional[str] = None):
     def decorator(func):
         func.check = True
         func.name = name if name else func.__name__
@@ -296,12 +298,11 @@ class Requirement(ABC):
     def __init__(self,
                  level: RequirementLevel,
                  profile: Profile,
-                 name: str = None,
-                 description: str = None,
-                 path: Path = None,
+                 name: str = "",
+                 description: Optional[str] = None,
+                 path: Optional[Path] = None,
                  initialize_checks: bool = True):
         self._order_number: int = None
-        self._name = name
         self._level = level
         self._profile = profile
         self._description = description
@@ -309,7 +310,7 @@ class Requirement(ABC):
         self._checks: list[RequirementCheck] = []
 
         # reference to the current validation context
-        self._validation_context: ValidationContext = None
+        self._validation_context: Optional[ValidationContext] = None
 
         if not self._name and self._path:
             self._name = get_requirement_name_from_file(self._path)
@@ -318,7 +319,7 @@ class Requirement(ABC):
         self._checks_initialized = False
         # initialize the checks if the flag is set
         if initialize_checks:
-            self.__init_checks__()
+            _ = self.__init_checks__()
             # assign order numbers to checks
             self.__reorder_checks__()
             # update the checks initialized flag
@@ -363,7 +364,7 @@ class Requirement(ABC):
         return self._description
 
     @property
-    def path(self) -> Path:
+    def path(self) -> Optional[Path]:
         return self._path
 
     @abstractmethod
@@ -373,7 +374,7 @@ class Requirement(ABC):
     def get_checks(self) -> list[RequirementCheck]:
         return self._checks.copy()
 
-    def get_check(self, name: str) -> RequirementCheck:
+    def get_check(self, name: str) -> Optional[RequirementCheck]:
         for check in self._checks:
             if check.name == name:
                 return check
@@ -468,16 +469,16 @@ class Requirement(ABC):
             ')'
         )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
     @staticmethod
     def load(profile: Profile,
              requirement_level: RequirementLevel,
              file_path: Path,
-             publicID: str = None) -> list[Requirement]:
+             publicID: Optional[str] = None) -> list[Requirement]:
         # initialize the set of requirements
-        requirements = []
+        requirements: list[Requirement] = []
 
         # if the path is a string, convert it to a Path
         if isinstance(file_path, str):
@@ -614,7 +615,7 @@ class RequirementCheck:
         # Perform the check
         return self.check()
 
-    def __eq__(self, other: RequirementCheck):
+    def __eq__(self, other: other) -> bool:
         if not isinstance(other, RequirementCheck):
             raise ValueError(f"Cannot compare RequirementCheck with {type(other)}")
         return self.requirement == other.requirement and self.name == other.name
@@ -624,7 +625,7 @@ class RequirementCheck:
             raise ValueError(f"Cannot compare RequirementCheck with {type(other)}")
         return self.requirement != other.requirement or self.name != other.name
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((self.requirement, self.name or ""))
 
 
@@ -647,14 +648,12 @@ class CheckIssue:
     """
 
     # TODO:
-    # 1. CheckIssue should keep track of the RequirementCheck that was broken,
-    #    instead of the RequirementLevel;
     # 2. CheckIssue has the check, to it is able to determine the level and the Severity
     #    without having it provided through an additional argument.
     def __init__(self, severity: Severity,
+                 check: RequirementCheck,
                  message: Optional[str] = None,
-                 code: int = None,
-                 check: RequirementCheck = None):
+                 code: int = None):
         if not isinstance(severity, Severity):
             raise TypeError(f"CheckIssue constructed with a severity '{severity}' of type {type(severity)}")
         self._severity = severity
@@ -663,7 +662,7 @@ class CheckIssue:
         self._check: RequirementCheck = check
 
     @property
-    def message(self) -> str:
+    def message(self) -> Optional[str]:
         """The message associated with the issue"""
         return self._message
 
@@ -710,11 +709,12 @@ class CheckIssue:
 
 class ValidationResult:
 
-    def __init__(self, rocrate_path: Path, validation_settings: dict = None):
+    def __init__(self, rocrate_path: Path, validation_settings: Optional[dict[str, BaseTypes]] = None):
         # reference to the ro-crate path
         self._rocrate_path = rocrate_path
         # reference to the validation settings
-        self._validation_settings = validation_settings
+        self._validation_settings: dict[str, BaseTypes] = \
+            validation_settings if validation_settings is not None else {}
         # keep track of the requirements that have been checked
         self._validated_requirements: Set[Requirement] = set()
         # keep track of the checks that have been performed
@@ -727,6 +727,8 @@ class ValidationResult:
 
     def get_validation_settings(self):
         return self._validation_settings
+
+    # TODO: see which of these accessors are really needed
 
     @property
     def validated_requirements(self) -> Set[Requirement]:
@@ -837,7 +839,7 @@ class ValidationResult:
     def passed(self, severity: Severity = Severity.RECOMMENDED) -> bool:
         return not any(issue.severity >= severity for issue in self._issues)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Validation result: {len(self._issues)} issues"
 
     def __repr__(self):
@@ -871,7 +873,7 @@ class Validator:
         self.disable_profile_inheritance = disable_profile_inheritance
         self.ontologies_path = ontologies_path
 
-        self._validation_settings = {
+        self._validation_settings: dict[str, BaseTypes] = {
             'advanced': advanced,
             'inference': inference,
             'inplace': inplace,
@@ -894,7 +896,7 @@ class Validator:
         self._ontologies_graph = None
 
     @property
-    def validation_settings(self) -> dict[str, Union[str, Path, bool, int]]:
+    def validation_settings(self) -> dict[str, BaseTypes]:
         return self._validation_settings
 
     @property
@@ -908,8 +910,8 @@ class Validator:
     def load_data_graph(self):
         data_graph = Graph()
         logger.debug("Loading RO-Crate metadata: %s", self.rocrate_metadata_path)
-        data_graph.parse(self.rocrate_metadata_path,
-                         format="json-ld", publicID=self.publicID)
+        _ = data_graph.parse(self.rocrate_metadata_path,
+                             format="json-ld", publicID=self.publicID)
         logger.debug("RO-Crate metadata loaded: %s", data_graph)
         return data_graph
 
@@ -947,9 +949,9 @@ class Validator:
         return path
 
     @classmethod
-    def load_graph_of_shapes(cls, requirement: Requirement, publicID: str = None) -> Graph:
+    def load_graph_of_shapes(cls, requirement: Requirement, publicID: Optional[str] = None) -> Graph:
         shapes_graph = Graph()
-        shapes_graph.parse(str(requirement.path), format="ttl", publicID=publicID)
+        _ = shapes_graph.parse(requirement.path, format="ttl", publicID=publicID)
         return shapes_graph
 
     def load_graphs_of_shapes(self):
@@ -958,7 +960,7 @@ class Validator:
         for requirement in self._profile.requirements:
             if requirement.path.suffix == ".ttl":
                 shapes_graph = Graph()
-                shapes_graph.parse(str(requirement.path), format="ttl",
+                shapes_graph.parse(requirement.path, format="ttl",
                                    publicID=self.publicID)
                 shapes_graphs[requirement.name] = shapes_graph
         return shapes_graphs

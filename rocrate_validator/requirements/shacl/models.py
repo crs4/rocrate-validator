@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import logging
 from pathlib import Path
-from typing import Union
+from typing import Optional, Union
 
 from rdflib import RDF, Graph, Namespace, URIRef
 from rdflib.term import Node
@@ -175,7 +175,7 @@ class Shape:
         return hash(self._node)
 
     @classmethod
-    def load(cls, shapes_path: Union[str, Path], publicID: str = None) -> dict[str, Shape]:
+    def load(cls, shapes_path: Union[str, Path], publicID: Optional[str] = None) -> dict[str, Shape]:
         """
         Load the shapes from the graph
         """
