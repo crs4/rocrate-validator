@@ -303,8 +303,10 @@ class Requirement(ABC):
         # reference to the current validation context
         self._validation_context: Optional[ValidationContext] = None
 
-        if not self._name and self._path:
-            self._name = get_requirement_name_from_file(self._path)
+        if not name and path:
+            self._name = get_requirement_name_from_file(path)
+        else:
+            self._name = name
 
         # set flag to indicate if the checks have been initialized
         self._checks_initialized = False
@@ -326,8 +328,6 @@ class Requirement(ABC):
 
     @property
     def name(self) -> str:
-        if not self._name and self._path:
-            return get_requirement_name_from_file(self._path)
         return self._name
 
     @property
