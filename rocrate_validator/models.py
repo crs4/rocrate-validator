@@ -373,7 +373,7 @@ class Requirement(ABC):
 
     def __reorder_checks__(self) -> None:
         for i, check in enumerate(self._checks):
-            check._order_number = i + 1
+            check.order_number = i + 1
 
     def __do_validate__(self, context: ValidationContext) -> bool:
         """
@@ -506,7 +506,7 @@ class RequirementCheck:
                  check_function: Callable,
                  description: str = None):
         self._requirement: Requirement = requirement
-        self._order_number: int = None
+        self._order_number = 0
         self._name = name
         self._description = description
         self._check_function = check_function
@@ -520,6 +520,12 @@ class RequirementCheck:
     @property
     def order_number(self) -> int:
         return self._order_number
+
+    @order_number.setter
+    def order_number(self, value: int) -> None:
+        if value < 0:
+            raise ValueError("order_number can't be < 0")
+        self._order_number = value
 
     @property
     def identifier(self) -> str:
