@@ -1,7 +1,6 @@
 import inspect
 import logging
 from pathlib import Path
-from typing import List
 
 from ...models import Profile, Requirement, RequirementCheck, RequirementLevel
 from ...utils import get_classes_from_file
@@ -42,7 +41,7 @@ class PyRequirement(Requirement):
     @classmethod
     def load(cls, profile: Profile, requirement_level: RequirementLevel, file_path: Path):
         # instantiate a list to store the requirements
-        requirements: List[Requirement] = []
+        requirements: list[Requirement] = []
 
         # get the classes from the file
         classes = get_classes_from_file(file_path, filter_class=RequirementCheck)

@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import logging
 import os
-from typing import List, Optional, Union
+from typing import Optional, Union
 
 import pyshacl
 from pyshacl.pytypes import GraphLike
@@ -196,7 +196,7 @@ class ValidationResult:
         return self._conforms
 
     @property
-    def violations(self) -> List:
+    def violations(self) -> list:
         return self._violations
 
     @property

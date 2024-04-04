@@ -4,7 +4,7 @@ Library of shared functions for testing RO-Crate profiles
 
 import logging
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import Optional, Union
 
 from rocrate_validator import models, services
 
@@ -15,8 +15,8 @@ def do_entity_test(
         rocrate_path: Union[Path, str],
         requirement_severity: models.Severity,
         expected_validation_result: bool,
-        expected_triggered_requirements: Optional[List[str]] = None,
-        expected_triggered_issues: Optional[List[str]] = None,
+        expected_triggered_requirements: Optional[list[str]] = None,
+        expected_triggered_issues: Optional[list[str]] = None,
         abort_on_first: bool = True
 ):
     """

@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from typing import Dict, Literal, Optional, Union
+from typing import Literal, Optional, Union
 
 from pyshacl.pytypes import GraphLike
 
@@ -60,7 +60,7 @@ def validate(
     return result
 
 
-def get_profiles(profiles_path: str = "./profiles", publicID: str = None) -> Dict[str, Profile]:
+def get_profiles(profiles_path: str = "./profiles", publicID: str = None) -> dict[str, Profile]:
     """
     Load the profiles from the given path
     """

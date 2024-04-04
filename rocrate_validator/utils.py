@@ -5,7 +5,7 @@ import re
 import sys
 from importlib import import_module
 from pathlib import Path
-from typing import List, Optional, Type
+from typing import Optional, Type
 
 import toml
 from rdflib import Graph
@@ -72,7 +72,7 @@ def get_format_extension(serialization_format: constants.RDF_SERIALIZATION_FORMA
 
 def get_all_files(
         directory: str = '.',
-        serialization_format: constants.RDF_SERIALIZATION_FORMATS_TYPES = "turtle") -> List[str]:
+        serialization_format: constants.RDF_SERIALIZATION_FORMATS_TYPES = "turtle") -> list[str]:
     """
     Get all the files in the directory matching the format.
 
@@ -99,7 +99,7 @@ def get_all_files(
 
 
 def get_graphs_paths(
-        graphs_dir: str = CURRENT_DIR, serialization_format="turtle") -> List[str]:
+        graphs_dir: str = CURRENT_DIR, serialization_format="turtle") -> list[str]:
     """
     Get the paths to all the graphs in the directory
 
