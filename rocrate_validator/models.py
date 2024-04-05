@@ -585,8 +585,8 @@ class RequirementCheck:
     #    assert self._result, "Issues not set before the check"
     #    return self._result.get_issues_by_check(self, Severity.OPTIONAL)
 
-    # def get_issues(self, severity: Severity = Severity.RECOMMENDED) -> list[CheckIssue]:
-    #    return self._result.get_issues_by_check(self, severity)
+    def get_issues(self, severity: Severity = Severity.RECOMMENDED) -> list[CheckIssue]:
+        return self._result.get_issues_by_check(self, severity)
 
     # def get_issues_by_severity(self, severity: Severity = Severity.RECOMMENDED) -> list[CheckIssue]:
     #    return self._result.get_issues_by_check_and_severity(self, severity)
@@ -793,8 +793,8 @@ class ValidationResult:
     def get_issues(self, min_severity: Severity) -> list[CheckIssue]:
         return [issue for issue in self._issues if issue.severity >= min_severity]
 
-    # def get_issues_by_check(self, check: RequirementCheck, severity: Severity) -> list[CheckIssue]:
-    #     return [issue for issue in self.issues if issue.check == check and issue.severity.value >= severity.value]
+    def get_issues_by_check(self, check: RequirementCheck, severity: Severity) -> list[CheckIssue]:
+        return [issue for issue in self.issues if issue.check == check and issue.severity.value >= severity.value]
 
     # def get_issues_by_check_and_severity(self, check: RequirementCheck, severity: Severity) -> list[CheckIssue]:
     #     return [issue for issue in self.issues if issue.check == check and issue.severity == severity]
