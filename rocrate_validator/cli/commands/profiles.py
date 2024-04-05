@@ -5,7 +5,7 @@ from rich.table import Table
 
 from ... import services
 from ...colors import get_severity_color
-from .. import cli, click, console
+from ..main import cli, click
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -33,6 +33,7 @@ def list_profiles(ctx, profiles_path: str = "./profiles"):
     """
     List available profiles
     """
+    console = ctx.obj['console']
     profiles = services.get_profiles(profiles_path=profiles_path)
     # console.print("\nAvailable profiles:", style="white bold")
     console.print("\n", style="white bold")
@@ -80,6 +81,7 @@ def describe_profile(ctx,
     """
     Show a profile
     """
+    console = ctx.obj['console']
     # Get the profile
     try:
         profile = services.get_profile(profiles_path=profiles_path, profile_name=profile_name)

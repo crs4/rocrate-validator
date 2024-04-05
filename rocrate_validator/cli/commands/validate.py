@@ -1,14 +1,16 @@
 import logging
 import os
+import sys
 from pathlib import Path
 from typing import Optional
 
 from rich.align import Align
+from rich.console import Console
 
 from ... import services
 from ...colors import get_severity_color
 from ...models import Severity, ValidationResult
-from .. import cli, click, console
+from ..main import cli, click
 
 # from rich.markdown import Markdown
 # from rich.table import Table
@@ -86,6 +88,7 @@ def validate(ctx,
     """
     [magenta]rocrate-validator:[/magenta] Validate a RO-Crate against a profile
     """
+    console = ctx.obj['console']
     # Log the input parameters for debugging
     logger.debug("profiles_path: %s", os.path.abspath(profiles_path))
     logger.debug("profile_name: %s", profile_name)
@@ -116,8 +119,11 @@ def validate(ctx,
         )
 
         # Print the validation result
-        __print_validation_result__(result)
+        __print_validation_result__(console, result)
 
+        # using ctx.exit seems to raise an Exception that gets caught below,
+        # so we use sys.exit instead.
+        sys.exit(0 if result.passed() else 1)
     except Exception as e:
         console.print(
             f"\n\n[bold][[red]FAILED[/red]] Unexpected error: {e} !!![/bold]\n",
@@ -125,9 +131,11 @@ def validate(ctx,
         )
         if logger.isEnabledFor(logging.DEBUG):
             console.print_exception()
+        sys.exit(2)
 
 
 def __print_validation_result__(
+        console: Console,
         result: ValidationResult,
         severity: Severity = Severity.RECOMMENDED):
     """
