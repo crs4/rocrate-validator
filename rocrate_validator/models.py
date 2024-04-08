@@ -545,6 +545,10 @@ class RequirementCheck:
         return self.requirement.level
 
     @property
+    def severity(self) -> Severity:
+        return self.requirement.level.severity
+
+    @property
     def check_function(self) -> Callable:
         return self._check_function
 
