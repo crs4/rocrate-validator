@@ -43,6 +43,7 @@ class FileDescriptorJsonFormat(RequirementCheck):
     def check(self) -> Tuple[int, Optional[str]]:
         # check if the file descriptor is in the correct format
         try:
+            logger.debug("Checking validity of JSON file at %s", self.file_descriptor_path)
             with open(self.file_descriptor_path, "r") as file:
                 json.load(file)
             return True

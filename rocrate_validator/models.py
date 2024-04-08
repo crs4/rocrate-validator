@@ -505,10 +505,6 @@ class RequirementCheck:
         self._check_function = check_function
         # declare the reference to the validation context
         self._validation_context: Optional[ValidationContext] = None
-        # declare the reference to the validator
-        self._validator: Optional[Validator] = None
-        # declare the result of the check
-        self._result: Optional[ValidationResult] = None
 
     @property
     def order_number(self) -> int:
@@ -549,10 +545,6 @@ class RequirementCheck:
         return self.requirement.level.severity
 
     @property
-    def check_function(self) -> Callable:
-        return self._check_function
-
-    @property
     def rocrate_path(self) -> Path:
         assert self.validator, "ro-crate path not set before the check"
         return self.validation_context.rocrate_path
@@ -568,13 +560,13 @@ class RequirementCheck:
 
     @property
     def validator(self) -> Validator:
-        assert self._validator, "Validator not set before the check"
-        return self._validator
+        assert self._validation_context.validator, "Validator not set before the check"
+        return self._validation_context.validator
 
     @property
     def result(self) -> ValidationResult:
-        assert self._result, "Result not set before the check"
-        return self._result
+        assert self._validation_context.result, "Result not set before the check"
+        return self._validation_context.result
 
     @property
     def ro_crate_path(self) -> Path:
@@ -586,17 +578,17 @@ class RequirementCheck:
     # @property
     # def issues(self) -> list[CheckIssue]:
     #    """Return the issues found during the check"""
-    #    assert self._result, "Issues not set before the check"
-    #    return self._result.get_issues_by_check(self, Severity.OPTIONAL)
+    #    assert self.result, "Issues not set before the check"
+    #    return self.result.get_issues_by_check(self, Severity.OPTIONAL)
 
     def get_issues(self, severity: Severity = Severity.RECOMMENDED) -> list[CheckIssue]:
-        return self._result.get_issues_by_check(self, severity)
+        return self.result.get_issues_by_check(self, severity)
 
     # def get_issues_by_severity(self, severity: Severity = Severity.RECOMMENDED) -> list[CheckIssue]:
-    #    return self._result.get_issues_by_check_and_severity(self, severity)
+    #    return self.result.get_issues_by_check_and_severity(self, severity)
 
     def check(self) -> bool:
-        return self.check_function(self)
+        return self._check_function(self)
 
     def __do_check__(self, context: ValidationContext) -> bool:
         """
@@ -604,14 +596,10 @@ class RequirementCheck:
         """
         # Set the validation context
         self._validation_context = context
-        # Set the validator
-        self._validator = context.validator
-        # Set the result
-        self._result = context.result
         # Perform the check
         return self.check()
 
-    def __eq__(self, other: other) -> bool:
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, RequirementCheck):
             raise ValueError(f"Cannot compare RequirementCheck with {type(other)}")
         return self.requirement == other.requirement and self.name == other.name
@@ -899,7 +887,7 @@ class Validator:
     def data_graph(self) -> Graph:
         return self.get_data_graph()
 
-    def get_profile(self, refresh: bool = False):
+    def _lazy_load_profile(self, refresh: bool = False):
         # load the profile
         if not self._profile or refresh:
             self._profile = Profile.load(self.profile_path, publicID=self.publicID)
@@ -908,7 +896,7 @@ class Validator:
 
     @property
     def profile(self) -> Profile:
-        return self.get_profile()
+        return self._lazy_load_profile()
 
     @property
     def publicID(self) -> str:
@@ -994,7 +982,6 @@ class Validator:
         # initialize the validation context
         context = ValidationContext(self, validation_result)
 
-        #
         for profile in profiles:
             logger.debug("Validating profile %s", profile.name)
             # perform the requirements validation
