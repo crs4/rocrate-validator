@@ -817,6 +817,10 @@ class ValidationResult:
 
 
 class Validator:
+    """
+    Can validate conformance to a single Profile (including any requirements
+    inherited by parent profiles).
+    """
 
     def __init__(self,
                  rocrate_path: Path,
@@ -895,16 +899,11 @@ class Validator:
     def data_graph(self) -> Graph:
         return self.get_data_graph()
 
-    def load_profile(self):
-        # load profile
-        profile = Profile.load(self.profile_path, publicID=self.publicID)
-        logger.debug("Profile: %s", profile)
-        return profile
-
     def get_profile(self, refresh: bool = False):
         # load the profile
         if not self._profile or refresh:
-            self._profile = self.load_profile()
+            self._profile = Profile.load(self.profile_path, publicID=self.publicID)
+            logger.debug("Loaded profile: %s", self._profile)
         return self._profile
 
     @property
