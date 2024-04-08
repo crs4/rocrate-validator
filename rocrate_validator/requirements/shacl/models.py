@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import logging
 from pathlib import Path
-from typing import Dict, List, Union
+from typing import Optional, Union
 
 from rdflib import RDF, Graph, Namespace, URIRef
 from rdflib.term import Node
@@ -149,7 +149,7 @@ class Shape:
         """Return the properties of the shape"""
         return self._properties.copy()
 
-    def get_properties(self) -> List[ShapeProperty]:
+    def get_properties(self) -> list[ShapeProperty]:
         """Return the properties of the shape"""
         return self._properties.copy()
 
@@ -175,7 +175,7 @@ class Shape:
         return hash(self._node)
 
     @classmethod
-    def load(cls, shapes_path: Union[str, Path], publicID: str = None) -> Dict[str, Shape]:
+    def load(cls, shapes_path: Union[str, Path], publicID: Optional[str] = None) -> dict[str, Shape]:
         """
         Load the shapes from the graph
         """
@@ -188,7 +188,7 @@ class Shape:
         shapes_nodes = shapes_graph.triples((None, RDF.type, shapeNode))
         logger.debug("Shapes nodes: %s" % shapes_nodes)
         # create a shape object for each shape node
-        shapes: Dict[str, Shape] = {}
+        shapes: dict[str, Shape] = {}
         for shape_node, _, _ in shapes_nodes:
             logger.debug(f"Processing Shape Node: {shape_node}")
             shape = Shape(shape_node, shapes_graph)
@@ -225,7 +225,6 @@ class ViolationShape:
             # if logger.isEnabledFor(logging.DEBUG):
             #     logger.exception(e)
             # raise e
-            pass
 
     @property
     def node(self) -> Node:

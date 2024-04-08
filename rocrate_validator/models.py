@@ -8,7 +8,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from functools import total_ordering
 from pathlib import Path
-from typing import Callable, Dict, List, Optional, Set, Type, Union
+from typing import Callable, Optional, Set, Union
 
 from rdflib import Graph
 
@@ -24,6 +24,8 @@ from .errors import OutOfValidationContext
 
 logger = logging.getLogger(__name__)
 
+BaseTypes = Union[str, Path, bool, int, None]
+
 
 @enum.unique
 @total_ordering
@@ -33,7 +35,7 @@ class Severity(enum.Enum):
     RECOMMENDED = 2
     REQUIRED = 4
 
-    def __lt__(self, other) -> bool:
+    def __lt__(self, other: object) -> bool:
         if isinstance(other, Severity):
             return self.value < other.value
         else:
@@ -46,12 +48,12 @@ class RequirementLevel:
     name: str
     severity: Severity
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, RequirementLevel):
             return False
         return self.name == other.name and self.severity == other.severity
 
-    def __lt__(self, other) -> bool:
+    def __lt__(self, other: object) -> bool:
         # TODO: this ordering is not totally coherent, since for two objects a and b
         # with equal Severity but different names you would have
         #       not a < b, which implies a >= b
@@ -100,7 +102,7 @@ class LevelCollection:
         raise NotImplementedError(f"{type(self)} can't be instantianted")
 
     @staticmethod
-    def all() -> List[RequirementLevel]:
+    def all() -> list[RequirementLevel]:
         return [level for name, level in inspect.getmembers(LevelCollection)
                 if not inspect.isroutine(level)
                 and not inspect.isdatadescriptor(level) and not name.startswith('__')]
@@ -110,14 +112,15 @@ class LevelCollection:
         return getattr(LevelCollection, name.upper())
 
 
+@total_ordering
 class Profile:
     def __init__(self, name: str, path: Path = None,
-                 requirements: Optional[List[Requirement]] = None,
-                 publicID: str = None):
+                 requirements: Optional[list[Requirement]] = None,
+                 publicID: Optional[str] = None):
         self._path = path
         self._name = name
-        self._description = None
-        self._requirements = requirements if requirements is not None else []
+        self._description: Optional[str] = None
+        self._requirements: list[Requirement] = requirements if requirements is not None else []
         self._publicID = publicID
 
     @property
@@ -133,7 +136,7 @@ class Profile:
         return self.path / DEFAULT_PROFILE_README_FILE
 
     @property
-    def publicID(self) -> str:
+    def publicID(self) -> Optional[str]:
         return self._publicID
 
     @property
@@ -152,7 +155,7 @@ class Profile:
     #             return requirement
     #     return None
 
-    def load_requirements(self) -> List[Requirement]:
+    def _load_requirements(self) -> None:
         """
         Load the requirements from the profile directory
         """
@@ -177,28 +180,27 @@ class Profile:
                     self.add_requirement(requirement)
         logger.debug("Profile %s loaded %s requiremens: %s",
                      self.name, len(self._requirements), self._requirements)
-        return self._requirements
 
     @property
-    def requirements(self) -> List[Requirement]:
+    def requirements(self) -> list[Requirement]:
         if not self._requirements:
-            self.load_requirements()
+            self._load_requirements()
         return self._requirements
 
     def get_requirements(
             self, severity: Severity = Severity.REQUIRED,
-            exact_match: bool = False) -> List[Requirement]:
+            exact_match: bool = False) -> list[Requirement]:
         return [requirement for requirement in self.requirements
                 if (not exact_match and requirement.severity >= severity) or
                 (exact_match and requirement.severity == severity)]
 
     # @property
-    # def requirements_by_severity_map(self) -> Dict[Severity, List[Requirement]]:
+    # def requirements_by_severity_map(self) -> dict[Severity, list[Requirement]]:
     #     return {level.severity: self.get_requirements_by_type(level.severity)
     #             for level in LevelCollection.all()}
 
     @property
-    def inherited_profiles(self) -> List[Profile]:
+    def inherited_profiles(self) -> list[Profile]:
         profiles = [
             _ for _ in sorted(
                 Profile.load_profiles(self.path.parent).values(), key=lambda x: x, reverse=True)
@@ -206,10 +208,10 @@ class Profile:
         logger.debug("Inherited profiles: %s", profiles)
         return profiles
 
-    def has_requirement(self, name: str) -> bool:
-        return self.get_requirement(name) is not None
+    # def has_requirement(self, name: str) -> bool:
+    #     return self.get_requirement(name) is not None
 
-    # def get_requirements_by_type(self, type: RequirementLevel) -> List[Requirement]:
+    # def get_requirements_by_type(self, type: RequirementLevel) -> list[Requirement]:
     #     return [requirement for requirement in self.requirements if requirement.severity == type]
 
     def add_requirement(self, requirement: Requirement):
@@ -221,23 +223,14 @@ class Profile:
     def validate(self, rocrate_path: Path) -> ValidationResult:
         raise NotImplementedError()
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: object) -> bool:
         return isinstance(other, Profile) \
             and self.name == other.name \
             and self.path == other.path \
             and self.requirements == other.requirements
 
-    def __ne__(self, other) -> bool:
-        return not self.__eq__(other)
-
-    def __lt__(self, other) -> bool:
+    def __lt__(self, other: object) -> bool:
         return self.name < other.name
-
-    def __le__(self, other) -> bool:
-        return self.name <= other.name
-
-    def __gt__(self, other) -> bool:
-        return self.name > other.name
 
     def __hash__(self) -> int:
         return hash((self.name, self.path, self.requirements))
@@ -265,7 +258,7 @@ class Profile:
         return profile
 
     @staticmethod
-    def load_profiles(profiles_path: Union[str, Path], publicID: str = None) -> Dict[str, Profile]:
+    def load_profiles(profiles_path: Union[str, Path], publicID: str = None) -> dict[str, Profile]:
         # if the path is a string, convert it to a Path
         if isinstance(profiles_path, str):
             profiles_path = Path(profiles_path)
@@ -283,7 +276,7 @@ class Profile:
         return profiles
 
 
-def check(name=None):
+def check(name: Optional[str] = None):
     def decorator(func):
         func.check = True
         func.name = name if name else func.__name__
@@ -296,29 +289,30 @@ class Requirement(ABC):
     def __init__(self,
                  level: RequirementLevel,
                  profile: Profile,
-                 name: str = None,
-                 description: str = None,
-                 path: Path = None,
+                 name: str = "",
+                 description: Optional[str] = None,
+                 path: Optional[Path] = None,
                  initialize_checks: bool = True):
         self._order_number: int = None
-        self._name = name
         self._level = level
         self._profile = profile
         self._description = description
         self._path = path  # path of code implementing the requirement
-        self._checks: List[RequirementCheck] = []
+        self._checks: list[RequirementCheck] = []
 
         # reference to the current validation context
-        self._validation_context: ValidationContext = None
+        self._validation_context: Optional[ValidationContext] = None
 
-        if not self._name and self._path:
-            self._name = get_requirement_name_from_file(self._path)
+        if not name and path:
+            self._name = get_requirement_name_from_file(path)
+        else:
+            self._name = name
 
         # set flag to indicate if the checks have been initialized
         self._checks_initialized = False
         # initialize the checks if the flag is set
         if initialize_checks:
-            self.__init_checks__()
+            _ = self.__init_checks__()
             # assign order numbers to checks
             self.__reorder_checks__()
             # update the checks initialized flag
@@ -334,8 +328,6 @@ class Requirement(ABC):
 
     @property
     def name(self) -> str:
-        if not self._name and self._path:
-            return get_requirement_name_from_file(self._path)
         return self._name
 
     @property
@@ -345,11 +337,6 @@ class Requirement(ABC):
     @property
     def severity(self) -> Severity:
         return self.level.severity
-
-    @property
-    def color(self) -> str:
-        from .colors import get_severity_color
-        return get_severity_color(self.severity)
 
     @property
     def profile(self) -> Profile:
@@ -363,17 +350,17 @@ class Requirement(ABC):
         return self._description
 
     @property
-    def path(self) -> Path:
+    def path(self) -> Optional[Path]:
         return self._path
 
     @abstractmethod
-    def __init_checks__(self) -> List[RequirementCheck]:
+    def __init_checks__(self) -> list[RequirementCheck]:
         pass
 
-    def get_checks(self) -> List[RequirementCheck]:
+    def get_checks(self) -> list[RequirementCheck]:
         return self._checks.copy()
 
-    def get_check(self, name: str) -> RequirementCheck:
+    def get_check(self, name: str) -> Optional[RequirementCheck]:
         for check in self._checks:
             if check.name == name:
                 return check
@@ -381,7 +368,7 @@ class Requirement(ABC):
 
     def __reorder_checks__(self) -> None:
         for i, check in enumerate(self._checks):
-            check._order_number = i + 1
+            check.order_number = i + 1
 
     def __do_validate__(self, context: ValidationContext) -> bool:
         """
@@ -417,42 +404,42 @@ class Requirement(ABC):
 
     @property
     def validator(self):
-        if self._validation_context is None and self._checks_initialized:
+        if self._validation_context is None or not self._checks_initialized:
             raise OutOfValidationContext("Validation context has not been initialized")
         return self._validation_context.validator
 
     @property
     def validation_result(self):
-        if self._validation_context is None and self._checks_initialized:
+        if self._validation_context is None or not self._checks_initialized:
             raise OutOfValidationContext("Validation context has not been initialized")
         return self._validation_context.result
 
     @property
     def validation_context(self):
-        if self._validation_context is None and self._checks_initialized:
+        if self._validation_context is None or not self._checks_initialized:
             raise OutOfValidationContext("Validation context has not been initialized")
         return self._validation_context
 
     @property
     def validation_settings(self):
-        if self._validation_context is None and self._checks_initialized:
+        if self._validation_context is None or not self._checks_initialized:
             raise OutOfValidationContext("Validation context has not been initialized")
         return self._validation_context.settings
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, Requirement):
             raise TypeError(f"Cannot compare {type(self)} with {type(other)}")
         return self.name == other.name \
             and self.severity == other.severity and self.description == other.description \
             and self.path == other.path
 
-    def __ne__(self, other) -> bool:
+    def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
 
     def __hash__(self):
         return hash((self.name, self.severity, self.description, self.path))
 
-    def __lt__(self, other) -> bool:
+    def __lt__(self, other: object) -> bool:
         if not isinstance(other, Requirement):
             raise ValueError(f"Cannot compare Requirement with {type(other)}")
         return self.severity >= other.severity or self.name >= other.name
@@ -468,16 +455,16 @@ class Requirement(ABC):
             ')'
         )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
     @staticmethod
     def load(profile: Profile,
              requirement_level: RequirementLevel,
              file_path: Path,
-             publicID: str = None) -> List[Requirement]:
+             publicID: Optional[str] = None) -> list[Requirement]:
         # initialize the set of requirements
-        requirements = []
+        requirements: list[Requirement] = []
 
         # if the path is a string, convert it to a Path
         if isinstance(file_path, str):
@@ -488,20 +475,18 @@ class Requirement(ABC):
         if file_path.suffix == ".py":
             from rocrate_validator.requirements.python import PyRequirement
             py_requirements = PyRequirement.load(profile, requirement_level, file_path)
-            logger.debug("Loaded Python requirements: %r", py_requirements)
             requirements.extend(py_requirements)
-            logger.debug("Added Requirement: %r", py_requirements)
+            logger.debug("Loaded Python requirements: %r", py_requirements)
         elif file_path.suffix == ".ttl":
             # from rocrate_validator.requirements.shacl.checks import SHACLCheck
             from rocrate_validator.requirements.shacl.requirements import \
                 SHACLRequirement
             shapes_requirements = SHACLRequirement.load(profile, requirement_level,
                                                         file_path, publicID=publicID)
-            logger.debug("Loaded SHACL requirements: %r", shapes_requirements)
             requirements.extend(shapes_requirements)
-            logger.debug("Added Requirement: %r", shapes_requirements)
+            logger.debug("Loaded SHACL requirements: %r", shapes_requirements)
         else:
-            logger.warning("Requirement type not supported: %s", file_path.suffix)
+            logger.warning("Requirement type not supported: %s. Ignoring file %s", file_path.suffix, file_path)
 
         return requirements
 
@@ -512,22 +497,28 @@ class RequirementCheck:
                  requirement: Requirement,
                  name: str,
                  check_function: Callable,
-                 description: str = None):
+                 description: Optional[str] = None):
         self._requirement: Requirement = requirement
-        self._order_number: int = None
+        self._order_number = 0
         self._name = name
         self._description = description
         self._check_function = check_function
         # declare the reference to the validation context
-        self._validation_context: ValidationContext = None
+        self._validation_context: Optional[ValidationContext] = None
         # declare the reference to the validator
-        self._validator: Validator = None
+        self._validator: Optional[Validator] = None
         # declare the result of the check
-        self._result: ValidationResult = None
+        self._result: Optional[ValidationResult] = None
 
     @property
     def order_number(self) -> int:
         return self._order_number
+
+    @order_number.setter
+    def order_number(self, value: int) -> None:
+        if value < 0:
+            raise ValueError("order_number can't be < 0")
+        self._order_number = value
 
     @property
     def identifier(self) -> str:
@@ -552,6 +543,10 @@ class RequirementCheck:
     @property
     def level(self) -> RequirementLevel:
         return self.requirement.level
+
+    @property
+    def severity(self) -> Severity:
+        return self.requirement.level.severity
 
     @property
     def check_function(self) -> Callable:
@@ -586,17 +581,19 @@ class RequirementCheck:
         assert self.validator, "ro-crate path not set before the check"
         return self.validator.rocrate_path
 
-    @property
-    def issues(self) -> List[CheckIssue]:
-        """Return the issues found during the check"""
-        assert self._result, "Issues not set before the check"
-        return self._result.get_issues_by_check(self, Severity.OPTIONAL)
+    # TODO: delete these?
+    #
+    # @property
+    # def issues(self) -> list[CheckIssue]:
+    #    """Return the issues found during the check"""
+    #    assert self._result, "Issues not set before the check"
+    #    return self._result.get_issues_by_check(self, Severity.OPTIONAL)
 
-    def get_issues(self, severity: Severity = Severity.RECOMMENDED) -> List[CheckIssue]:
+    def get_issues(self, severity: Severity = Severity.RECOMMENDED) -> list[CheckIssue]:
         return self._result.get_issues_by_check(self, severity)
 
-    def get_issues_by_severity(self, severity: Severity = Severity.RECOMMENDED) -> List[CheckIssue]:
-        return self._result.get_issues_by_check_and_severity(self, severity)
+    # def get_issues_by_severity(self, severity: Severity = Severity.RECOMMENDED) -> list[CheckIssue]:
+    #    return self._result.get_issues_by_check_and_severity(self, severity)
 
     def check(self) -> bool:
         return self.check_function(self)
@@ -614,25 +611,25 @@ class RequirementCheck:
         # Perform the check
         return self.check()
 
-    def __eq__(self, other: RequirementCheck):
+    def __eq__(self, other: other) -> bool:
         if not isinstance(other, RequirementCheck):
             raise ValueError(f"Cannot compare RequirementCheck with {type(other)}")
         return self.requirement == other.requirement and self.name == other.name
 
-    def __ne__(self, other: RequirementCheck):
-        if not isinstance(other, RequirementCheck):
-            raise ValueError(f"Cannot compare RequirementCheck with {type(other)}")
-        return self.requirement != other.requirement or self.name != other.name
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((self.requirement, self.name or ""))
 
 
-def issue_types(issues: List[Type[CheckIssue]]) -> Type[RequirementCheck]:
-    def class_decorator(cls):
-        cls.issue_types = issues
-        return cls
-    return class_decorator
+# TODO: delete this?
+
+# def issue_types(issues: list[Type[CheckIssue]]) -> Type[RequirementCheck]:
+#     def class_decorator(cls):
+#         cls.issue_types = issues
+#         return cls
+#     return class_decorator
 
 
 class CheckIssue:
@@ -647,14 +644,12 @@ class CheckIssue:
     """
 
     # TODO:
-    # 1. CheckIssue should keep track of the RequirementCheck that was broken,
-    #    instead of the RequirementLevel;
     # 2. CheckIssue has the check, to it is able to determine the level and the Severity
     #    without having it provided through an additional argument.
     def __init__(self, severity: Severity,
+                 check: RequirementCheck,
                  message: Optional[str] = None,
-                 code: int = None,
-                 check: RequirementCheck = None):
+                 code: int = None):
         if not isinstance(severity, Severity):
             raise TypeError(f"CheckIssue constructed with a severity '{severity}' of type {type(severity)}")
         self._severity = severity
@@ -663,7 +658,7 @@ class CheckIssue:
         self._check: RequirementCheck = check
 
     @property
-    def message(self) -> str:
+    def message(self) -> Optional[str]:
         """The message associated with the issue"""
         return self._message
 
@@ -710,23 +705,26 @@ class CheckIssue:
 
 class ValidationResult:
 
-    def __init__(self, rocrate_path: Path, validation_settings: Dict = None):
+    def __init__(self, rocrate_path: Path, validation_settings: Optional[dict[str, BaseTypes]] = None):
         # reference to the ro-crate path
         self._rocrate_path = rocrate_path
         # reference to the validation settings
-        self._validation_settings = validation_settings
+        self._validation_settings: dict[str, BaseTypes] = \
+            validation_settings if validation_settings is not None else {}
         # keep track of the requirements that have been checked
         self._validated_requirements: Set[Requirement] = set()
         # keep track of the checks that have been performed
         self._checks: Set[RequirementCheck] = set()
         # keep track of the issues found during the validation
-        self._issues: List[CheckIssue] = []
+        self._issues: list[CheckIssue] = []
 
     def get_rocrate_path(self):
         return self._rocrate_path
 
     def get_validation_settings(self):
         return self._validation_settings
+
+    # TODO: see which of these accessors are really needed
 
     @property
     def validated_requirements(self) -> Set[Requirement]:
@@ -777,59 +775,33 @@ class ValidationResult:
         # TODO: check if the issue belongs to the current validation context
         self._issues.append(issue)
 
-    def add_issues(self, issues: List[CheckIssue]):
-        # TODO: check if the issues belong to the current validation context
-        self._issues.extend(issues)
-
-    def add_check_issue(self, message: str, check: RequirementCheck, code: int = None):
-        c = CheckIssue(check.requirement.severity, message, code, check=check)
+    def add_check_issue(self, message: str, check: RequirementCheck, code: Optional[int] = None):
+        c = CheckIssue(check.requirement.severity, check, message, code)
         self._issues.append(c)
 
-    def add_error(self, message: str, check: RequirementCheck, code: int = None):
+    def add_error(self, message: str, check: RequirementCheck, code: Optional[int] = None):
         self.add_check_issue(message, check, code)
 
-    def add_warning(self, message: str, check: RequirementCheck,  code: int = None):
-        self.add_check_issue(message, check, code)
+    # TODO: delete these?
 
-    def add_optional(self, message: str, check: RequirementCheck, code: int = None):
-        self.add_check_issue(message, check, code)
+    # def add_warning(self, message: str, check: RequirementCheck,  code: Optional[int] = None):
+    #     self.add_check_issue(message, check, code)
 
-    def add_info(self, message: str, check: RequirementCheck, code: int = None):
-        self.add_check_issue(message, check, code)
-
-    def add_may(self, message: str, check: RequirementCheck, code: int = None):
-        self.add_check_issue(message, check, code)
-
-    def add_recommended(self, message: str, check: RequirementCheck, code: int = None):
-        self.add_check_issue(message, check, code)
-
-    def add_should(self, message: str, check: RequirementCheck, code: int = None):
-        self.add_check_issue(message, check, code)
-
-    def add_should_not(self, message: str, check: RequirementCheck,  code: int = None):
-        self.add_check_issue(message, check, code)
-
-    def add_must(self, message: str, check: RequirementCheck,  code: int = None):
-        self.add_check_issue(message, check, code)
-
-    def add_must_not(self, message: str, check: RequirementCheck,  code: int = None):
-        self.add_check_issue(message, check, code)
+    # def add_optional(self, message: str, check: RequirementCheck, code: Optional[int] = None):
+    #     self.add_check_issue(message, check, code)
 
     @property
-    def issues(self) -> List[CheckIssue]:
+    def issues(self) -> list[CheckIssue]:
         return self._issues
 
-    def get_issues(self, severity: Severity = Severity.RECOMMENDED) -> List[CheckIssue]:
-        return [issue for issue in self._issues if issue.severity >= severity]
+    def get_issues(self, min_severity: Severity) -> list[CheckIssue]:
+        return [issue for issue in self._issues if issue.severity >= min_severity]
 
-    def get_issues_by_severity(self, severity: Severity) -> List[CheckIssue]:
-        return [issue for issue in self._issues if issue.severity == severity]
-
-    def get_issues_by_check(self, check: RequirementCheck, severity: Severity.RECOMMENDED) -> List[CheckIssue]:
+    def get_issues_by_check(self, check: RequirementCheck, severity: Severity) -> list[CheckIssue]:
         return [issue for issue in self.issues if issue.check == check and issue.severity.value >= severity.value]
 
-    def get_issues_by_check_and_severity(self, check: RequirementCheck, severity: Severity) -> List[CheckIssue]:
-        return [issue for issue in self.issues if issue.check == check and issue.severity == severity]
+    # def get_issues_by_check_and_severity(self, check: RequirementCheck, severity: Severity) -> list[CheckIssue]:
+    #     return [issue for issue in self.issues if issue.check == check and issue.severity == severity]
 
     def has_issues(self, severity: Severity = Severity.RECOMMENDED) -> bool:
         return any(issue.severity >= severity for issue in self._issues)
@@ -837,7 +809,7 @@ class ValidationResult:
     def passed(self, severity: Severity = Severity.RECOMMENDED) -> bool:
         return not any(issue.severity >= severity for issue in self._issues)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Validation result: {len(self._issues)} issues"
 
     def __repr__(self):
@@ -871,7 +843,7 @@ class Validator:
         self.disable_profile_inheritance = disable_profile_inheritance
         self.ontologies_path = ontologies_path
 
-        self._validation_settings = {
+        self._validation_settings: dict[str, BaseTypes] = {
             'advanced': advanced,
             'inference': inference,
             'inplace': inplace,
@@ -894,7 +866,7 @@ class Validator:
         self._ontologies_graph = None
 
     @property
-    def validation_settings(self) -> Dict[str, Union[str, Path, bool, int]]:
+    def validation_settings(self) -> dict[str, BaseTypes]:
         return self._validation_settings
 
     @property
@@ -908,8 +880,8 @@ class Validator:
     def load_data_graph(self):
         data_graph = Graph()
         logger.debug("Loading RO-Crate metadata: %s", self.rocrate_metadata_path)
-        data_graph.parse(self.rocrate_metadata_path,
-                         format="json-ld", publicID=self.publicID)
+        _ = data_graph.parse(self.rocrate_metadata_path,
+                             format="json-ld", publicID=self.publicID)
         logger.debug("RO-Crate metadata loaded: %s", data_graph)
         return data_graph
 
@@ -947,9 +919,9 @@ class Validator:
         return path
 
     @classmethod
-    def load_graph_of_shapes(cls, requirement: Requirement, publicID: str = None) -> Graph:
+    def load_graph_of_shapes(cls, requirement: Requirement, publicID: Optional[str] = None) -> Graph:
         shapes_graph = Graph()
-        shapes_graph.parse(str(requirement.path), format="ttl", publicID=publicID)
+        _ = shapes_graph.parse(requirement.path, format="ttl", publicID=publicID)
         return shapes_graph
 
     def load_graphs_of_shapes(self):
@@ -958,7 +930,7 @@ class Validator:
         for requirement in self._profile.requirements:
             if requirement.path.suffix == ".ttl":
                 shapes_graph = Graph()
-                shapes_graph.parse(str(requirement.path), format="ttl",
+                shapes_graph.parse(requirement.path, format="ttl",
                                    publicID=self.publicID)
                 shapes_graphs[requirement.name] = shapes_graph
         return shapes_graphs
@@ -970,7 +942,7 @@ class Validator:
         return self._shapes_graphs
 
     @property
-    def shapes_graphs(self) -> Dict[str, Graph]:
+    def shapes_graphs(self) -> dict[str, Graph]:
         return self.get_graphs_of_shapes()
 
     def get_graph_of_shapes(self, requirement_name: str, refresh: bool = False):
@@ -997,7 +969,7 @@ class Validator:
     def ontologies_graph(self) -> Graph:
         return self.get_ontologies_graph()
 
-    def validate_requirements(self, requirements: List[Requirement]) -> ValidationResult:
+    def validate_requirements(self, requirements: list[Requirement]) -> ValidationResult:
         # check if requirement is an instance of Requirement
         assert all(isinstance(requirement, Requirement) for requirement in requirements), \
             "Invalid requirement type"
@@ -1007,7 +979,7 @@ class Validator:
     def validate(self) -> ValidationResult:
         return self.__do_validate__()
 
-    def __do_validate__(self, requirements: List[Requirement] = None) -> ValidationResult:
+    def __do_validate__(self, requirements: list[Requirement] = None) -> ValidationResult:
 
         # initialize the validation result
         validation_result = ValidationResult(
@@ -1061,7 +1033,7 @@ class ValidationContext:
         return self._result
 
     @property
-    def settings(self) -> Dict:
+    def settings(self) -> dict:
         return self.validator.validation_settings
 
     @property

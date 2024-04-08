@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import json
 import logging
-import os
-from typing import List, Optional, Union
+from pathlib import Path
+from typing import Optional, Union
 
 import pyshacl
 from pyshacl.pytypes import GraphLike
@@ -42,41 +42,26 @@ class Violation(CheckIssue):
         self.violation_graph = violation_graph
 
         # serialize the graph in json-ld
-        violation_json = violation_graph.serialize(format="json-ld")
-        violation_obj = json.loads(violation_json)
-        self.violation_json = violation_obj[0]
+        violation_obj = json.loads(violation_graph.serialize(format="json-ld"))
+        self._violation_json = violation_obj[0]
+
+        # initialize the parent class
+        super().__init__(severity=self._get_result_severity(),
+                         check=result.validator.check,
+                         message=self._get_result_message(result.validator.check.ro_crate_path))
 
         # get the source shape
         shapes = list(graph.triples(
             (violation_node, URIRef(f"{SHACL_NS}sourceShape"), None)))
         self.source_shape_node = shapes[0][2]
-        # initialize the parent class
-        super().__init__(severity=self.resultSeverity,
-                         message=self.resultMessage)
 
-    @property
-    def result(self):
-        return self._result
+    def _get_result_message(self, ro_crate_path: Union[Path, str]) -> str:
+        return self._make_uris_relative(
+            self._violation_json[f'{SHACL_NS}resultMessage'][0]['@value'],
+            ro_crate_path)
 
-    @property
-    def validator(self):
-        return self.result.validator
-
-    @property
-    def check(self):
-        return self.result.validator.check
-
-    @property
-    def node(self) -> Node:
-        return self._violation_node
-
-    @property
-    def graph(self) -> Graph:
-        return self._graph
-
-    @property
-    def resultSeverity(self) -> Severity:
-        shacl_severity = self.violation_json[f'{SHACL_NS}resultSeverity'][0]['@id']
+    def _get_result_severity(self) -> Severity:
+        shacl_severity = self._violation_json[f'{SHACL_NS}resultSeverity'][0]['@id']
         # we need to map the SHACL severity term to our Severity enum values
         if 'http://www.w3.org/ns/shacl#Violation' == shacl_severity:
             return Severity.REQUIRED
@@ -88,33 +73,31 @@ class Violation(CheckIssue):
             raise RuntimeError(f"Unrecognized SHACL severity term {shacl_severity}")
 
     @property
+    def node(self) -> Node:
+        return self._violation_node
+
+    @property
+    def graph(self) -> Graph:
+        return self._graph
+
+    @property
     def focusNode(self):
-        return self.violation_json[f'{SHACL_NS}focusNode'][0]['@id']
+        return self._violation_json[f'{SHACL_NS}focusNode'][0]['@id']
 
     @property
     def resultPath(self):
-        return self.violation_json[f'{SHACL_NS}resultPath'][0]['@id']
+        return self._violation_json[f'{SHACL_NS}resultPath'][0]['@id']
 
     @property
     def value(self):
-        value = self.violation_json.get(f'{SHACL_NS}value', None)
+        value = self._violation_json.get(f'{SHACL_NS}value', None)
         if not value:
             return None
         return value[0]['@id']
 
-    def make_uris_relative(self, text: str):
-        # globally replace the string "file://" with "./
-        return text.replace(f'file://{self.check.ro_crate_path}', '.')
-
-    @property
-    def resultMessage(self):
-        return self.make_uris_relative(
-            self.violation_json[f'{SHACL_NS}resultMessage'][0]['@value']
-        )
-
     @property
     def sourceConstraintComponent(self):
-        return self.violation_json[f'{SHACL_NS}sourceConstraintComponent'][0]['@id']
+        return self._violation_json[f'{SHACL_NS}sourceConstraintComponent'][0]['@id']
 
     @property
     def sourceShape(self) -> ViolationShape:
@@ -127,16 +110,13 @@ class Violation(CheckIssue):
             return None
 
     @property
-    def message(self):
-        return self.resultMessage
-
-    @property
     def description(self):
         return self.sourceShape.description
 
-    @property
-    def severity(self):
-        return Severity.REQUIRED
+    @staticmethod
+    def _make_uris_relative(text: str, ro_crate_path: Union[Path, str]) -> str:
+        # globally replace the string "file://" with "./
+        return text.replace(f'file://{ro_crate_path}', '.')
 
 
 class ValidationResult:
@@ -196,29 +176,29 @@ class ValidationResult:
         return self._conforms
 
     @property
-    def violations(self) -> List:
+    def violations(self) -> list:
         return self._violations
 
     @property
     def text(self) -> str:
         return self._text
 
-    @staticmethod
-    def from_serialized_results_graph(file_path: str, format: str = 'turtle'):
-        # check the input
-        assert format in ['turtle', 'n3', 'nt',
-                          'xml', 'rdf', 'json-ld'], "Invalid format"
-        assert file_path, "Invalid file path"
-        assert os.path.exists(file_path), "File does not exist"
-        # Load the graph
-        logger.debug("Loading graph from file: %s" % file_path)
-        g = Graph()
-        g.parse(file_path, format=format)
-        logger.debug("Graph loaded from file: %s" % file_path)
+    # @staticmethod
+    # def from_serialized_results_graph(file_path: str, format: str = 'turtle'):
+    #     # check the input
+    #     assert format in ['turtle', 'n3', 'nt',
+    #                       'xml', 'rdf', 'json-ld'], "Invalid format"
+    #     assert file_path, "Invalid file path"
+    #     assert os.path.exists(file_path), "File does not exist"
+    #     # Load the graph
+    #     logger.debug("Loading graph from file: %s" % file_path)
+    #     g = Graph()
+    #     _ = g.parse(file_path, format=format)
+    #     logger.debug("Graph loaded from file: %s" % file_path)
 
-        # return the validation result
-        assert False, "missing Validator argument to constructor call"
-        return ValidationResult(g)
+    #     # return the validation result
+    #     assert False, "missing Validator argument to constructor call"
+    #     return ValidationResult(g)
 
 
 class Validator:

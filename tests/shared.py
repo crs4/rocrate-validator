@@ -4,7 +4,7 @@ Library of shared functions for testing RO-Crate profiles
 
 import logging
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import Optional, Union
 
 from rocrate_validator import models, services
 
@@ -15,8 +15,8 @@ def do_entity_test(
         rocrate_path: Union[Path, str],
         requirement_severity: models.Severity,
         expected_validation_result: bool,
-        expected_triggered_requirements: Optional[List[str]] = None,
-        expected_triggered_issues: Optional[List[str]] = None,
+        expected_triggered_requirements: Optional[list[str]] = None,
+        expected_triggered_issues: Optional[list[str]] = None,
         abort_on_first: bool = True
 ):
     """
@@ -65,7 +65,7 @@ def do_entity_test(
                     f"\"{expected_triggered_requirement}\" was not found in the failed requirements"
 
         # check requirement issues
-        detected_issues = [issue.message for issue in result.get_issues()]
+        detected_issues = [issue.message for issue in result.get_issues(models.Severity.RECOMMENDED)]
         logger.debug("Detected issues: %s", detected_issues)
         logger.debug("Expected issues: %s", expected_triggered_issues)
         for expected_issue in expected_triggered_issues:

@@ -5,7 +5,7 @@ import re
 import sys
 from importlib import import_module
 from pathlib import Path
-from typing import List, Optional, Type
+from typing import Optional
 
 import toml
 from rdflib import Graph
@@ -72,7 +72,7 @@ def get_format_extension(serialization_format: constants.RDF_SERIALIZATION_FORMA
 
 def get_all_files(
         directory: str = '.',
-        serialization_format: constants.RDF_SERIALIZATION_FORMATS_TYPES = "turtle") -> List[str]:
+        serialization_format: constants.RDF_SERIALIZATION_FORMATS_TYPES = "turtle") -> list[str]:
     """
     Get all the files in the directory matching the format.
 
@@ -99,7 +99,7 @@ def get_all_files(
 
 
 def get_graphs_paths(
-        graphs_dir: str = CURRENT_DIR, serialization_format="turtle") -> List[str]:
+        graphs_dir: str = CURRENT_DIR, serialization_format="turtle") -> list[str]:
     """
     Get the paths to all the graphs in the directory
 
@@ -131,8 +131,8 @@ def get_full_graph(
 
 
 def get_classes_from_file(file_path: Path,
-                          filter_class: Optional[Type] = None,
-                          class_name_suffix: str = None) -> dict:
+                          filter_class: Optional[type] = None,
+                          class_name_suffix: Optional[str] = None) -> dict:
     """Get all classes in a Python file """
     # ensure the file path is a Path object
     assert file_path, "The file path is required"
@@ -148,7 +148,7 @@ def get_classes_from_file(file_path: Path,
         raise ValueError("The file is not a Python file")
 
     # Get the module name from the file path
-    module_name = os.path.basename(file_path)[:-3]
+    module_name = file_path.stem
     logger.debug("Module: %r", module_name)
 
     # Add the directory containing the file to the system path
@@ -183,7 +183,7 @@ def get_requirement_name_from_file(file: Path, check_name: Optional[str] = None)
     return base_name
 
 
-def get_requirement_class_by_name(requirement_name: str) -> Type:
+def get_requirement_class_by_name(requirement_name: str) -> type:
     """
     Dynamically load the module of the class and return the class"""
 

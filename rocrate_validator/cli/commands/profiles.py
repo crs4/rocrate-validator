@@ -5,7 +5,7 @@ from rich.table import Table
 
 from ... import services
 from ...colors import get_severity_color
-from .. import cli, click, console
+from ..main import cli, click
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -25,7 +25,6 @@ def profiles(ctx, profiles_path: str = "./profiles"):
     """
     [magenta]rocrate-validator:[/magenta] Manage profiles
     """
-    pass
 
 
 @profiles.command("list")
@@ -34,6 +33,7 @@ def list_profiles(ctx, profiles_path: str = "./profiles"):
     """
     List available profiles
     """
+    console = ctx.obj['console']
     profiles = services.get_profiles(profiles_path=profiles_path)
     # console.print("\nAvailable profiles:", style="white bold")
     console.print("\n", style="white bold")
@@ -81,6 +81,7 @@ def describe_profile(ctx,
     """
     Show a profile
     """
+    console = ctx.obj['console']
     # Get the profile
     try:
         profile = services.get_profile(profiles_path=profiles_path, profile_name=profile_name)
@@ -94,7 +95,8 @@ def describe_profile(ctx,
         table_rows = []
         levels_list = set()
         for requirement in profile.requirements:
-            level_info = f"[{requirement.color}]{requirement.severity.name}[/{requirement.color}]"
+            color = get_severity_color(requirement.severity)
+            level_info = f"[{color}]{requirement.severity.name}[/{color}]"
             levels_list.add(level_info)
             table_rows.append((str(requirement.order_number), requirement.name,
                               Markdown(requirement.description.strip()),
