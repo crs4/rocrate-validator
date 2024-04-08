@@ -94,4 +94,5 @@ Contributions are welcome! Please read our [contributing guidelines](CONTRIBUTIN
 
 ## License
 
-This project is licensed under the terms of the MIT license. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the terms of the Apache License 2.0. See the
+[LICENSE](LICENSE) file for details.
