@@ -149,12 +149,6 @@ class Profile:
                 self._description = "RO-Crate profile"
         return self._description
 
-    # def get_requirement(self, name: str) -> Requirement:
-    #     for requirement in self.requirements:
-    #         if requirement.name == name:
-    #             return requirement
-    #     return None
-
     def _load_requirements(self) -> None:
         """
         Load the requirements from the profile directory
@@ -194,11 +188,6 @@ class Profile:
                 if (not exact_match and requirement.severity >= severity) or
                 (exact_match and requirement.severity == severity)]
 
-    # @property
-    # def requirements_by_severity_map(self) -> dict[Severity, list[Requirement]]:
-    #     return {level.severity: self.get_requirements_by_type(level.severity)
-    #             for level in LevelCollection.all()}
-
     @property
     def inherited_profiles(self) -> list[Profile]:
         profiles = [
@@ -208,20 +197,11 @@ class Profile:
         logger.debug("Inherited profiles: %s", profiles)
         return profiles
 
-    # def has_requirement(self, name: str) -> bool:
-    #     return self.get_requirement(name) is not None
-
-    # def get_requirements_by_type(self, type: RequirementLevel) -> list[Requirement]:
-    #     return [requirement for requirement in self.requirements if requirement.severity == type]
-
     def add_requirement(self, requirement: Requirement):
         self._requirements.append(requirement)
 
     def remove_requirement(self, requirement: Requirement):
         self._requirements.remove(requirement)
-
-    def validate(self, rocrate_path: Path) -> ValidationResult:
-        raise NotImplementedError()
 
     def __eq__(self, other: object) -> bool:
         return isinstance(other, Profile) \
@@ -244,6 +224,23 @@ class Profile:
 
     def __str__(self) -> str:
         return self.name
+
+    # def get_requirement(self, name: str) -> Requirement:
+    #     for requirement in self.requirements:
+    #         if requirement.name == name:
+    #             return requirement
+    #     return None
+
+    # @property
+    # def requirements_by_severity_map(self) -> dict[Severity, list[Requirement]]:
+    #     return {level.severity: self.get_requirements_by_type(level.severity)
+    #             for level in LevelCollection.all()}
+
+    # def has_requirement(self, name: str) -> bool:
+    #     return self.get_requirement(name) is not None
+
+    # def get_requirements_by_type(self, type: RequirementLevel) -> list[Requirement]:
+    #     return [requirement for requirement in self.requirements if requirement.severity == type]
 
     @staticmethod
     def load(path: Union[str, Path], publicID: str = None) -> Profile:
@@ -274,14 +271,6 @@ class Profile:
                 profile = Profile.load(profile_path, publicID=publicID)
                 profiles[profile.name] = profile
         return profiles
-
-
-def check(name: Optional[str] = None):
-    def decorator(func):
-        func.check = True
-        func.name = name if name else func.__name__
-        return func
-    return decorator
 
 
 class Requirement(ABC):
@@ -573,19 +562,8 @@ class RequirementCheck:
         assert self.validator, "ro-crate path not set before the check"
         return self.validator.rocrate_path
 
-    # TODO: delete these?
-    #
-    # @property
-    # def issues(self) -> list[CheckIssue]:
-    #    """Return the issues found during the check"""
-    #    assert self.result, "Issues not set before the check"
-    #    return self.result.get_issues_by_check(self, Severity.OPTIONAL)
-
     def get_issues(self, severity: Severity = Severity.RECOMMENDED) -> list[CheckIssue]:
         return self.result.get_issues_by_check(self, severity)
-
-    # def get_issues_by_severity(self, severity: Severity = Severity.RECOMMENDED) -> list[CheckIssue]:
-    #    return self.result.get_issues_by_check_and_severity(self, severity)
 
     def check(self) -> bool:
         return self._check_function(self)
@@ -610,6 +588,17 @@ class RequirementCheck:
     def __hash__(self) -> int:
         return hash((self.requirement, self.name or ""))
 
+    # TODO: delete these?
+    #
+    # @property
+    # def issues(self) -> list[CheckIssue]:
+    #    """Return the issues found during the check"""
+    #    assert self.result, "Issues not set before the check"
+    #    return self.result.get_issues_by_check(self, Severity.OPTIONAL)
+
+    # def get_issues_by_severity(self, severity: Severity = Severity.RECOMMENDED) -> list[CheckIssue]:
+    #    return self.result.get_issues_by_check_and_severity(self, severity)
+
 
 # TODO: delete this?
 
@@ -618,6 +607,18 @@ class RequirementCheck:
 #         cls.issue_types = issues
 #         return cls
 #     return class_decorator
+
+
+def check(name: Optional[str] = None):
+    """
+    A decorator to mark functions as "checks" (by setting an attribute
+    `check=True`) and optionally annotating them with a human-legible name.
+    """
+    def decorator(func):
+        func.check = True
+        func.name = name if name else func.__name__
+        return func
+    return decorator
 
 
 class CheckIssue:
