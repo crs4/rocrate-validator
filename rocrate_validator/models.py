@@ -448,7 +448,7 @@ class RequirementCheck:
     def __init__(self,
                  requirement: Requirement,
                  name: str,
-                 check_function: Callable,
+                 check_function: Callable[[ValidationContext], bool],
                  description: Optional[str] = None):
         self._requirement: Requirement = requirement
         self._order_number = 0
