@@ -88,7 +88,7 @@ def validate(ctx,
     """
     [magenta]rocrate-validator:[/magenta] Validate a RO-Crate against a profile
     """
-    console = ctx.obj['console']
+    console: Console = ctx.obj['console']
     # Log the input parameters for debugging
     logger.debug("profiles_path: %s", os.path.abspath(profiles_path))
     logger.debug("profile_name: %s", profile_name)
@@ -129,8 +129,11 @@ def validate(ctx,
             f"\n\n[bold][[red]FAILED[/red]] Unexpected error: {e} !!![/bold]\n",
             style="white",
         )
-        if logger.isEnabledFor(logging.DEBUG):
-            console.print_exception()
+        console.print("""
+            This error may be due to a bug. Please report it to the issue tracker
+            along with the following stack trace:
+            """)
+        console.print_exception()
         sys.exit(2)
 
 
