@@ -20,8 +20,6 @@ from rocrate_validator.constants import (DEFAULT_PROFILE_README_FILE,
                                          VALID_INFERENCE_OPTIONS_TYPES)
 from rocrate_validator.utils import get_requirement_name_from_file
 
-from .errors import OutOfValidationContext
-
 logger = logging.getLogger(__name__)
 
 BaseTypes = Union[str, Path, bool, int, None]

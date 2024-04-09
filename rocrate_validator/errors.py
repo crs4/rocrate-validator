@@ -8,24 +8,6 @@ class ROCValidatorError(Exception):
     pass
 
 
-class OutOfValidationContext(ROCValidatorError):
-    """Raised when a validation check is called outside of a validation context."""
-
-    def __init__(self, message: Optional[str] = None):
-        self._message = message
-
-    @property
-    def message(self) -> Optional[str]:
-        """The error message."""
-        return self._message
-
-    def __str__(self) -> str:
-        return str(self._message)
-
-    def __repr__(self):
-        return f"OutOfValidationContext({self._message!r})"
-
-
 class InvalidSerializationFormat(ROCValidatorError):
     """Raised when an invalid serialization format is provided."""
 
