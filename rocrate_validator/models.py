@@ -289,9 +289,6 @@ class Requirement(ABC):
         self._path = path  # path of code implementing the requirement
         self._checks: list[RequirementCheck] = []
 
-        # reference to the current validation context
-        self._validation_context: Optional[ValidationContext] = None
-
         if not name and path:
             self._name = get_requirement_name_from_file(path)
         else:
@@ -366,54 +363,21 @@ class Requirement(ABC):
         logger.debug("Validating Requirement %s (level=%s) with %s checks",
                      self.name, self.level, len(self._checks))
 
-        # TODO: consider refactoring checks to exclusively use the context they receive as an
-        # argument. Fetching the context from Requirement seems akin to using a global variable
-        # and complicates encapsulation.
-        self._validation_context = context
-        try:
-            logger.debug("Running %s checks for Requirement '%s'", len(self._checks), self.name)
-            for check in self._checks:
-                try:
-                    # TODO: if __do_check__ is internal, why are we calling it from here?
-                    logger.debug("Running check '%s' - Desc: %s", check.name, check.description)
-                    result = check.__do_check__(context)
-                    logger.debug("Ran check '%s'. Got result %s", check.name, result)
-                except Exception as e:
-                    self.validation_result.add_error(f"Unexpected error during check: {e}", check=check)
-                    if logger.isEnabledFor(logging.DEBUG):
-                        logger.exception(e)
-            logger.debug("Checks for Requirement '%s' completed. Checks passed? %s",
-                         self.name, self.validation_result.passed())
-            # Return the result
-            return self.validation_result.passed()
-        finally:
-            # Clear the validation context
-            self._validation_context = None
-            logger.debug("Clearing validation context")
-
-    @property
-    def validator(self):
-        if self._validation_context is None or not self._checks_initialized:
-            raise OutOfValidationContext("Validation context has not been initialized")
-        return self._validation_context.validator
-
-    @property
-    def validation_result(self):
-        if self._validation_context is None or not self._checks_initialized:
-            raise OutOfValidationContext("Validation context has not been initialized")
-        return self._validation_context.result
-
-    @property
-    def validation_context(self):
-        if self._validation_context is None or not self._checks_initialized:
-            raise OutOfValidationContext("Validation context has not been initialized")
-        return self._validation_context
-
-    @property
-    def validation_settings(self):
-        if self._validation_context is None or not self._checks_initialized:
-            raise OutOfValidationContext("Validation context has not been initialized")
-        return self._validation_context.settings
+        logger.debug("Running %s checks for Requirement '%s'", len(self._checks), self.name)
+        for check in self._checks:
+            try:
+                # TODO: if __do_check__ is internal, why are we calling it from here?
+                logger.debug("Running check '%s' - Desc: %s", check.name, check.description)
+                result = check.__do_check__(context)
+                logger.debug("Ran check '%s'. Got result %s", check.name, result)
+            except Exception as e:
+                context.result.add_error(f"Unexpected error during check: {e}", check=check)
+                if logger.isEnabledFor(logging.DEBUG):
+                    logger.exception(e)
+        logger.debug("Checks for Requirement '%s' completed. Checks passed? %s",
+                     self.name, context.result.passed())
+        # Return the result
+        return context.result.passed()
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Requirement):
@@ -492,8 +456,6 @@ class RequirementCheck:
         self._name = name
         self._description = description
         self._check_function = check_function
-        # declare the reference to the validation context
-        self._validation_context: Optional[ValidationContext] = None
 
     @property
     def order_number(self) -> int:
@@ -533,49 +495,14 @@ class RequirementCheck:
     def severity(self) -> Severity:
         return self.requirement.level.severity
 
-    @property
-    def rocrate_path(self) -> Path:
-        assert self.validator, "ro-crate path not set before the check"
-        return self.validation_context.rocrate_path
-
-    @property
-    def file_descriptor_path(self) -> Path:
-        return self.rocrate_path / ROCRATE_METADATA_FILE
-
-    @property
-    def validation_context(self) -> ValidationContext:
-        assert self._validation_context, "Validation context not set before the check"
-        return self._validation_context
-
-    @property
-    def validator(self) -> Validator:
-        assert self._validation_context.validator, "Validator not set before the check"
-        return self._validation_context.validator
-
-    @property
-    def result(self) -> ValidationResult:
-        assert self._validation_context.result, "Result not set before the check"
-        return self._validation_context.result
-
-    @property
-    def ro_crate_path(self) -> Path:
-        assert self.validator, "ro-crate path not set before the check"
-        return self.validator.rocrate_path
-
-    def get_issues(self, severity: Severity = Severity.RECOMMENDED) -> list[CheckIssue]:
-        return self.result.get_issues_by_check(self, severity)
-
-    def check(self) -> bool:
-        return self._check_function(self)
+    def check(self, context: ValidationContext) -> bool:
+        return self._check_function(self, context)
 
     def __do_check__(self, context: ValidationContext) -> bool:
         """
         Internal method to perform the check
         """
-        # Set the validation context
-        self._validation_context = context
-        # Perform the check
-        return self.check()
+        return self.check(context)
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, RequirementCheck):
@@ -637,13 +564,11 @@ class CheckIssue:
     #    without having it provided through an additional argument.
     def __init__(self, severity: Severity,
                  check: RequirementCheck,
-                 message: Optional[str] = None,
-                 code: int = None):
+                 message: Optional[str] = None):
         if not isinstance(severity, Severity):
             raise TypeError(f"CheckIssue constructed with a severity '{severity}' of type {type(severity)}")
         self._severity = severity
         self._message = message
-        self._code = code
         self._check: RequirementCheck = check
 
     @property
@@ -670,26 +595,27 @@ class CheckIssue:
         """The check that generated the issue"""
         return self._check
 
-    @property
-    def code(self) -> int:
-        # If the code has not been set, calculate it
-        if not self._code:
-            """
-            Calculate the code based on the severity, the class name and the message.
-            - All issues with the same severity, class name and message will have the same code.
-            - All issues with the same severity and class name but different message will have different codes.
-            - All issues with the same severity but different class name and message will have different codes.
-            - All issues with the same severity should start with the same number.
-            - All codes should be positive numbers.
-            """
-            # Concatenate the level, class name and message into a single string
-            issue_string = self.level.name + self.__class__.__name__ + str(self.message)
-
-            # Use the built-in hash function to generate a unique code for this string
-            # The modulo operation ensures that the code is a positive number
-            self._code = hash(issue_string) % ((1 << 31) - 1)
-        # Return the code
-        return self._code
+    # @property
+    # def code(self) -> int:
+    #     breakpoint()
+    #     # If the code has not been set, calculate it
+    #     if not self._code:
+    #         """
+    #         Calculate the code based on the severity, the class name and the message.
+    #         - All issues with the same severity, class name and message will have the same code.
+    #         - All issues with the same severity and class name but different message will have different codes.
+    #         - All issues with the same severity but different class name and message will have different codes.
+    #         - All issues with the same severity should start with the same number.
+    #         - All codes should be positive numbers.
+    #         """
+    #         # Concatenate the level, class name and message into a single string
+    #         issue_string = self.level.name + self.__class__.__name__ + str(self.message)
+    #
+    #         # Use the built-in hash function to generate a unique code for this string
+    #         # The modulo operation ensures that the code is a positive number
+    #         self._code = hash(issue_string) % ((1 << 31) - 1)
+    #     # Return the code
+    #     return self._code
 
 
 class ValidationResult:
@@ -767,10 +693,9 @@ class ValidationResult:
     def add_check_issue(self,
                         message: str,
                         check: RequirementCheck,
-                        severity: Optional[Severity] = None,
-                        code: Optional[int] = None) -> CheckIssue:
+                        severity: Optional[Severity] = None) -> CheckIssue:
         sev_value = severity if severity is not None else check.requirement.severity
-        c = CheckIssue(sev_value, check, message, code)
+        c = CheckIssue(sev_value, check, message)
         self._issues.append(c)
         return c
 
@@ -792,8 +717,10 @@ class ValidationResult:
     def get_issues(self, min_severity: Severity) -> list[CheckIssue]:
         return [issue for issue in self._issues if issue.severity >= min_severity]
 
-    def get_issues_by_check(self, check: RequirementCheck, severity: Severity) -> list[CheckIssue]:
-        return [issue for issue in self.issues if issue.check == check and issue.severity.value >= severity.value]
+    def get_issues_by_check(self,
+                            check: RequirementCheck,
+                            min_severity: Severity = Severity.OPTIONAL) -> list[CheckIssue]:
+        return [issue for issue in self.issues if issue.check == check and issue.severity >= min_severity]
 
     # def get_issues_by_check_and_severity(self, check: RequirementCheck, severity: Severity) -> list[CheckIssue]:
     #     return [issue for issue in self.issues if issue.check == check and issue.severity == severity]
@@ -1030,6 +957,9 @@ class ValidationContext:
 
     @property
     def rocrate_path(self) -> Path:
-        if isinstance(self.validator.rocrate_path, str):
-            return Path(self.validator.rocrate_path)
+        assert isinstance(self.validator.rocrate_path, Path)
         return self.validator.rocrate_path
+
+    @property
+    def file_descriptor_path(self) -> Path:
+        return self.rocrate_path / ROCRATE_METADATA_FILE

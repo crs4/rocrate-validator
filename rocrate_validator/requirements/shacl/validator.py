@@ -116,7 +116,7 @@ class SHACLViolation:
 
 class SHACLValidationResult:
 
-    def __init__(self, validator: Validator, results_graph: Graph,
+    def __init__(self, results_graph: Graph,
                  conforms: Optional[bool] = None, results_text: str = None) -> None:
         # validate the results graph input
         assert results_graph is not None, "Invalid graph"
@@ -127,7 +127,6 @@ class SHACLValidationResult:
         # store the input properties
         self.results_graph = results_graph
         self._text = results_text
-        self._validator = validator
         # parse the results graph
         self._violations = self._parse_results_graph(results_graph)
         # initialize the conforms property
@@ -163,15 +162,11 @@ class SHACLValidationResult:
         return violations
 
     @property
-    def validator(self) -> Validator:
-        return self._validator
-
-    @property
     def conforms(self) -> bool:
         return self._conforms
 
     @property
-    def violations(self) -> list:
+    def violations(self) -> list[SHACLViolation]:
         return self._violations
 
     @property
@@ -320,7 +315,7 @@ class SHACLValidator:
                 serialization_output_path, format=serialization_output_format
             )
         # return the validation result
-        return SHACLValidationResult(self, results_graph, conforms, results_text)
+        return SHACLValidationResult(results_graph, conforms, results_text)
 
 
 __all__ = ["SHACLValidator", "SHACLValidationResult", "SHACLViolation"]

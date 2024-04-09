@@ -2,7 +2,8 @@
 import logging
 from typing import Optional
 
-from rocrate_validator.models import Requirement, RequirementCheck
+from rocrate_validator.models import (Requirement, RequirementCheck,
+                                      ValidationContext)
 from rocrate_validator.requirements.shacl.models import ShapeProperty
 
 from .validator import SHACLValidator
@@ -30,25 +31,25 @@ class SHACLCheck(RequirementCheck):
     def shapeProperty(self) -> ShapeProperty:
         return self._shapeProperty
 
-    def check(self):
-        ontology_graph = self.validator.ontologies_graph
-        data_graph = self.validator.data_graph
+    def check(self, context: ValidationContext):
+        ontology_graph = context.validator.ontologies_graph
+        data_graph = context.validator.data_graph
 
         # constraint the shapes graph to the current property shape
         shapes_graph = self.shapeProperty.shape_property_graph \
             if self.shapeProperty else self.requirement.shape.shape_graph
 
         shacl_validator = SHACLValidator(shapes_graph=shapes_graph, ont_graph=ontology_graph)
-        result = shacl_validator.validate(data_graph=data_graph, **self.validator.validation_settings)
+        result = shacl_validator.validate(data_graph=data_graph, **context.validator.validation_settings)
 
         logger.debug("Validation '%s' conforms: %s", self.name, result.conforms)
         if not result.conforms:
             logger.debug("Validation failed")
             logger.debug("Validation result: %s", result)
             for violation in result.violations:
-                c = self.result.add_check_issue(message=violation.get_result_message(self.ro_crate_path),
-                                                check=self,
-                                                severity=violation.get_result_severity())
+                c = context.result.add_check_issue(message=violation.get_result_message(context.rocrate_path),
+                                                   check=self,
+                                                   severity=violation.get_result_severity())
                 logger.debug("Validation issue: %s", c.message)
 
             return False
