@@ -763,12 +763,18 @@ class ValidationResult:
         # TODO: check if the issue belongs to the current validation context
         self._issues.append(issue)
 
-    def add_check_issue(self, message: str, check: RequirementCheck, code: Optional[int] = None):
-        c = CheckIssue(check.requirement.severity, check, message, code)
+    def add_check_issue(self,
+                        message: str,
+                        check: RequirementCheck,
+                        severity: Optional[Severity] = None,
+                        code: Optional[int] = None) -> CheckIssue:
+        sev_value = severity if severity is not None else check.requirement.severity
+        c = CheckIssue(sev_value, check, message, code)
         self._issues.append(c)
+        return c
 
-    def add_error(self, message: str, check: RequirementCheck, code: Optional[int] = None):
-        self.add_check_issue(message, check, code)
+    def add_error(self, message: str, check: RequirementCheck, code: Optional[int] = None) -> CheckIssue:
+        return self.add_check_issue(message, check, code)
 
     # TODO: delete these?
 
@@ -853,8 +859,6 @@ class Validator:
         # reference to the profile
         self._profile = None
         # reference to the graph of shapes
-        self._shapes_graphs = {}
-        # reference to the graph of ontologies
         self._ontologies_graph = None
 
     @property
@@ -904,39 +908,6 @@ class Validator:
         if not path.endswith("/"):
             return f"{path}/"
         return path
-
-    @classmethod
-    def load_graph_of_shapes(cls, requirement: Requirement, publicID: Optional[str] = None) -> Graph:
-        shapes_graph = Graph()
-        _ = shapes_graph.parse(requirement.path, format="ttl", publicID=publicID)
-        return shapes_graph
-
-    def load_graphs_of_shapes(self):
-        # load the graph of shapes
-        shapes_graphs = {}
-        for requirement in self._profile.requirements:
-            if requirement.path.suffix == ".ttl":
-                shapes_graph = Graph()
-                shapes_graph.parse(requirement.path, format="ttl",
-                                   publicID=self.publicID)
-                shapes_graphs[requirement.name] = shapes_graph
-        return shapes_graphs
-
-    def get_graphs_of_shapes(self, refresh: bool = False):
-        # load the graph of shapes
-        if not self._shapes_graphs or refresh:
-            self._shapes_graphs = self.load_graphs_of_shapes()
-        return self._shapes_graphs
-
-    @property
-    def shapes_graphs(self) -> dict[str, Graph]:
-        return self.get_graphs_of_shapes()
-
-    def get_graph_of_shapes(self, requirement_name: str, refresh: bool = False):
-        # load the graph of shapes
-        if not self._shapes_graphs or refresh:
-            self._shapes_graphs = self.load_graphs_of_shapes()
-        return self._shapes_graphs.get(requirement_name)
 
     def load_ontologies_graph(self):
         # load the graph of ontologies
@@ -1002,6 +973,40 @@ class Validator:
                         return validation_result
 
         return validation_result
+
+    #  ------------ Dead code? ------------
+    # @classmethod
+    # def load_graph_of_shapes(cls, requirement: Requirement, publicID: Optional[str] = None) -> Graph:
+    #     shapes_graph = Graph()
+    #     _ = shapes_graph.parse(requirement.path, format="ttl", publicID=publicID)
+    #     return shapes_graph
+
+    # def load_graphs_of_shapes(self):
+    #     # load the graph of shapes
+    #     shapes_graphs = {}
+    #     for requirement in self._profile.requirements:
+    #         if requirement.path.suffix == ".ttl":
+    #             shapes_graph = Graph()
+    #             shapes_graph.parse(requirement.path, format="ttl",
+    #                                publicID=self.publicID)
+    #             shapes_graphs[requirement.name] = shapes_graph
+    #     return shapes_graphs
+
+    # def get_graphs_of_shapes(self, refresh: bool = False):
+    #     # load the graph of shapes
+    #     if not self._shapes_graphs or refresh:
+    #         self._shapes_graphs = self.load_graphs_of_shapes()
+    #     return self._shapes_graphs
+
+    # @property
+    # def shapes_graphs(self) -> dict[str, Graph]:
+    #     return self.get_graphs_of_shapes()
+
+    # def get_graph_of_shapes(self, requirement_name: str, refresh: bool = False):
+    #     # load the graph of shapes
+    #     if not self._shapes_graphs or refresh:
+    #         self._shapes_graphs = self.load_graphs_of_shapes()
+    #     return self._shapes_graphs.get(requirement_name)
 
 
 class ValidationContext:

@@ -1,6 +1,5 @@
 from .checks import SHACLCheck
-from .validator import ValidationResult
-from .validator import Validator
 from .errors import SHACLValidationError
+from .validator import SHACLValidationResult, SHACLValidator
 
-__all__ = ["SHACLCheck", "Validator", "ValidationResult", "SHACLValidationError"]
+__all__ = ["SHACLCheck", "SHACLValidator", "SHACLValidationResult", "SHACLValidationError"]
