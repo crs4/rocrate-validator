@@ -321,3 +321,6 @@ class SHACLValidator:
             )
         # return the validation result
         return SHACLValidationResult(self, results_graph, conforms, results_text)
+
+
+__all__ = ["SHACLValidator", "SHACLValidationResult", "SHACLViolation"]

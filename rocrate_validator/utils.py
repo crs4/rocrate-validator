@@ -132,7 +132,7 @@ def get_full_graph(
 
 def get_classes_from_file(file_path: Path,
                           filter_class: Optional[type] = None,
-                          class_name_suffix: Optional[str] = None) -> dict:
+                          class_name_suffix: Optional[str] = None) -> dict[str, type]:
     """Get all classes in a Python file """
     # ensure the file path is a Path object
     assert file_path, "The file path is required"
