@@ -5,10 +5,11 @@ import inspect
 import logging
 import os
 from abc import ABC, abstractmethod
+from collections.abc import Iterable
 from dataclasses import dataclass
 from functools import total_ordering
 from pathlib import Path
-from typing import Callable, Optional, Set, Union
+from typing import Callable, Optional, Union
 
 from rdflib import Graph
 
@@ -624,10 +625,6 @@ class ValidationResult:
         # reference to the validation settings
         self._validation_settings: dict[str, BaseTypes] = \
             validation_settings if validation_settings is not None else {}
-        # keep track of the requirements that have been checked
-        self._validated_requirements: Set[Requirement] = set()
-        # keep track of the checks that have been performed
-        self._checks: Set[RequirementCheck] = set()
         # keep track of the issues found during the validation
         self._issues: list[CheckIssue] = []
 
@@ -637,55 +634,29 @@ class ValidationResult:
     def get_validation_settings(self):
         return self._validation_settings
 
-    # TODO: see which of these accessors are really needed
-
+    #  --- Issues ---
     @property
-    def validated_requirements(self) -> Set[Requirement]:
-        return self._validated_requirements.copy()
+    def issues(self) -> list[CheckIssue]:
+        return self._issues
 
-    @property
-    def failed_requirements(self) -> Set[Requirement]:
-        return sorted(set([issue.check.requirement for issue in self._issues]), key=lambda x: x.order_number)
+    def get_issues(self, min_severity: Severity) -> list[CheckIssue]:
+        return [issue for issue in self._issues if issue.severity >= min_severity]
 
-    @property
-    def passed_requirements(self) -> Set[Requirement]:
-        return sorted(self._validated_requirements - self.failed_requirements, key=lambda req: req.order_number)
+    def get_issues_by_check(self,
+                            check: RequirementCheck,
+                            min_severity: Severity = Severity.OPTIONAL) -> list[CheckIssue]:
+        return [issue for issue in self._issues if issue.check == check and issue.severity >= min_severity]
 
-    @property
-    def checks(self) -> Set[RequirementCheck]:
-        return sorted(set(self._checks), key=lambda x: x.order_number)
+    # def get_issues_by_check_and_severity(self, check: RequirementCheck, severity: Severity) -> list[CheckIssue]:
+    #     return [issue for issue in self.issues if issue.check == check and issue.severity == severity]
 
-    @property
-    def failed_checks(self) -> Set[RequirementCheck]:
-        return sorted(set([issue.check for issue in self._issues]), key=lambda x: x.order_number)
+    def has_issues(self, severity: Severity = Severity.OPTIONAL) -> bool:
+        return any(issue.severity >= severity for issue in self._issues)
 
-    @property
-    def passed_checks(self) -> Set[RequirementCheck]:
-        return sorted(self._checks - self.failed_checks, key=lambda x: x.order_number)
-
-    def get_passed_checks_by_requirement(self, requirement: Requirement) -> Set[RequirementCheck]:
-        return sorted(
-            set([check for check in self.passed_checks if check.requirement == requirement]),
-            key=lambda x: x.order_number
-        )
-
-    def get_failed_checks_by_requirement(self, requirement: Requirement) -> Set[RequirementCheck]:
-        return sorted(
-            set([check for check in self.failed_checks if check.requirement == requirement]),
-            key=lambda x: x.order_number
-        )
-
-    def get_failed_checks_by_requirement_and_severity(
-            self, requirement: Requirement, severity: Severity) -> Set[RequirementCheck]:
-        return sorted(
-            set([check for check in self.failed_checks
-                 if check.requirement == requirement
-                 and check.severity == severity]),
-            key=lambda x: x.order_number
-        )
+    def passed(self, severity: Severity = Severity.OPTIONAL) -> bool:
+        return not any(issue.severity >= severity for issue in self._issues)
 
     def add_issue(self, issue: CheckIssue):
-        # TODO: check if the issue belongs to the current validation context
         self._issues.append(issue)
 
     def add_check_issue(self,
@@ -697,37 +668,27 @@ class ValidationResult:
         self._issues.append(c)
         return c
 
-    def add_error(self, message: str, check: RequirementCheck, code: Optional[int] = None) -> CheckIssue:
-        return self.add_check_issue(message, check, code)
+    def add_error(self, message: str, check: RequirementCheck) -> CheckIssue:
+        return self.add_check_issue(message, check, Severity.REQUIRED)
 
-    # TODO: delete these?
-
-    # def add_warning(self, message: str, check: RequirementCheck,  code: Optional[int] = None):
-    #     self.add_check_issue(message, check, code)
-
-    # def add_optional(self, message: str, check: RequirementCheck, code: Optional[int] = None):
-    #     self.add_check_issue(message, check, code)
-
+    #  --- Requirements ---
     @property
-    def issues(self) -> list[CheckIssue]:
-        return self._issues
+    def failed_requirements(self) -> Iterable[Requirement]:
+        return set(issue.check.requirement for issue in self._issues)
 
-    def get_issues(self, min_severity: Severity) -> list[CheckIssue]:
-        return [issue for issue in self._issues if issue.severity >= min_severity]
+    #  --- Checks ---
+    @property
+    def failed_checks(self) -> Iterable[RequirementCheck]:
+        return set(issue.check for issue in self._issues)
 
-    def get_issues_by_check(self,
-                            check: RequirementCheck,
-                            min_severity: Severity = Severity.OPTIONAL) -> list[CheckIssue]:
-        return [issue for issue in self.issues if issue.check == check and issue.severity >= min_severity]
+    def get_failed_checks_by_requirement(self, requirement: Requirement) -> Iterable[RequirementCheck]:
+        return [check for check in self.failed_checks if check.requirement == requirement]
 
-    # def get_issues_by_check_and_severity(self, check: RequirementCheck, severity: Severity) -> list[CheckIssue]:
-    #     return [issue for issue in self.issues if issue.check == check and issue.severity == severity]
-
-    def has_issues(self, severity: Severity = Severity.RECOMMENDED) -> bool:
-        return any(issue.severity >= severity for issue in self._issues)
-
-    def passed(self, severity: Severity = Severity.RECOMMENDED) -> bool:
-        return not any(issue.severity >= severity for issue in self._issues)
+    def get_failed_checks_by_requirement_and_severity(
+            self, requirement: Requirement, severity: Severity) -> Iterable[RequirementCheck]:
+        return [check for check in self.failed_checks
+                if check.requirement == requirement
+                and check.severity == severity]
 
     def __str__(self) -> str:
         return f"Validation result: {len(self._issues)} issues"
