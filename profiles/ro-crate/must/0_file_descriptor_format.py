@@ -101,6 +101,7 @@ class FileDescriptorJsonLdFormat(RequirementCheck):
                     f"of RO-Crate \"{context.file_descriptor_path}\" "
                     "file descriptor does not contain the @id attribute", self)
                 return False
+        return True
 
     @check(name="Check if descriptor entities have the @type property")
     def check_types(self, context: ValidationContext) -> bool:
@@ -112,3 +113,4 @@ class FileDescriptorJsonLdFormat(RequirementCheck):
                     f"of RO-Crate \"{context.file_descriptor_path}\" "
                     "file descriptor does not contain the @type attribute", self)
                 return False
+        return True
