@@ -8,7 +8,7 @@ from collections.abc import Collection
 from dataclasses import dataclass
 from functools import total_ordering
 from pathlib import Path
-from typing import Callable, Optional, Union
+from typing import Optional, Union
 
 from rdflib import Graph
 
@@ -444,18 +444,16 @@ class Requirement(ABC):
 
 
 @total_ordering
-class RequirementCheck:
+class RequirementCheck(ABC):
 
     def __init__(self,
                  requirement: Requirement,
                  name: str,
-                 check_function: Callable[[ValidationContext], bool],
                  description: Optional[str] = None):
         self._requirement: Requirement = requirement
         self._order_number = 0
         self._name = name
         self._description = description
-        self._check_function = check_function
 
     @property
     def order_number(self) -> int:
@@ -495,14 +493,15 @@ class RequirementCheck:
     def severity(self) -> Severity:
         return self.requirement.level.severity
 
-    def check(self, context: ValidationContext) -> bool:
-        return self._check_function(self, context)
+    @abstractmethod
+    def execute_check(self, context: ValidationContext) -> bool:
+        raise NotImplementedError()
 
     def __do_check__(self, context: ValidationContext) -> bool:
         """
         Internal method to perform the check
         """
-        return self.check(context)
+        return self.execute_check(context)
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, RequirementCheck):
@@ -539,26 +538,6 @@ class RequirementCheck:
 #         cls.issue_types = issues
 #         return cls
 #     return class_decorator
-
-
-def check(name: Optional[str] = None):
-    """
-    A decorator to mark functions as "checks" (by setting an attribute
-    `check=True`) and optionally annotating them with a human-legible name.
-    """
-    def decorator(func):
-        check_name = name if name else func.__name__
-        sig = inspect.signature(func)
-        if len(sig.parameters) != 2:
-            raise RuntimeError(f"Invalid check {check_name}. Checks are expected to "
-                               "accept two arguments but this only takes {len(sig.parameters)}")
-        if sig.return_annotation not in (bool, inspect.Signature.empty):
-            raise RuntimeError(f"Invalid check {check_name}. Checks are expected to "
-                               "return bool but this only returns {sig.return_annotation}")
-        func.check = True
-        func.name = check_name
-        return func
-    return decorator
 
 
 @total_ordering

@@ -2,13 +2,14 @@ import json
 import logging
 from typing import Optional
 
-from rocrate_validator.models import RequirementCheck, ValidationContext, check
+from rocrate_validator.models import ValidationContext
+from rocrate_validator.requirements.python import PyFunctionCheck, check
 
 # set up logging
 logger = logging.getLogger(__name__)
 
 
-class FileDescriptorExistence(RequirementCheck):
+class FileDescriptorExistence(PyFunctionCheck):
     """The file descriptor MUST be present in the RO-Crate and MUST not be empty."""
     @check(name="File Description Existence")
     def test_existence(self, context: ValidationContext) -> bool:
@@ -27,7 +28,7 @@ class FileDescriptorExistence(RequirementCheck):
         """
         if not context.file_descriptor_path.exists():
             context.result.add_error(
-                f'RO-Crate "{self.file_descriptor_path}" is empty: file descriptor is not present', self)
+                f'RO-Crate "{context.file_descriptor_path}" is empty: file descriptor is not present', self)
             return False
         if context.file_descriptor_path.stat().st_size == 0:
             context.result.add_error(f'RO-Crate "{context.file_descriptor_path}" file descriptor is empty', self)
@@ -35,7 +36,7 @@ class FileDescriptorExistence(RequirementCheck):
         return True
 
 
-class FileDescriptorJsonFormat(RequirementCheck):
+class FileDescriptorJsonFormat(PyFunctionCheck):
     """
     The file descriptor MUST be a valid JSON file
     """
@@ -56,7 +57,7 @@ class FileDescriptorJsonFormat(RequirementCheck):
             return False
 
 
-class FileDescriptorJsonLdFormat(RequirementCheck):
+class FileDescriptorJsonLdFormat(PyFunctionCheck):
     """
     The file descriptor MUST be a valid JSON-LD file
     """

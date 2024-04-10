@@ -158,7 +158,7 @@ def get_classes_from_file(file_path: Path,
     module = import_module(module_name)
     logger.debug("Module: %r", module)
 
-    # Get all classes in the module that are subclasses of Check
+    # Get all classes in the module that are subclasses of filter_class
     classes = {name: cls for name, cls in inspect.getmembers(module, inspect.isclass)
                if cls.__module__ == module_name
                and (not class_name_suffix or cls.__name__.endswith(class_name_suffix))

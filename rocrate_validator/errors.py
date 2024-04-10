@@ -1,8 +1,6 @@
 
 from typing import Optional
 
-# from .models import RequirementCheck
-
 
 class ROCValidatorError(Exception):
     pass
