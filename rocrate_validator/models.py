@@ -358,25 +358,34 @@ class Requirement(ABC):
     def __do_validate__(self, context: ValidationContext) -> bool:
         """
         Internal method to perform the validation
+        Returns whether all checks in this requirement passed.
         """
         logger.debug("Validating Requirement %s (level=%s) with %s checks",
                      self.name, self.level, len(self._checks))
 
         logger.debug("Running %s checks for Requirement '%s'", len(self._checks), self.name)
+        all_passed = True
         for check in self._checks:
             try:
-                # TODO: if __do_check__ is internal, why are we calling it from here?
                 logger.debug("Running check '%s' - Desc: %s", check.name, check.description)
-                result = check.__do_check__(context)
-                logger.debug("Ran check '%s'. Got result %s", check.name, result)
+                check_result = check.execute_check(context)
+                logger.debug("Ran check '%s'. Got result %s", check.name, check_result)
+                if not isinstance(check_result, bool):
+                    logger.warning("Ignoring the check %s as it returned the value %r instead of a boolean", check.name)
+                    raise RuntimeError(f"Ignoring invalid result from check {check.name}")
+                all_passed = all_passed and check_result
             except Exception as e:
                 context.result.add_error(f"Unexpected error during check: {e}", check=check)
                 if logger.isEnabledFor(logging.DEBUG):
                     logger.exception(e)
-        logger.debug("Checks for Requirement '%s' completed. Checks passed? %s",
-                     self.name, context.result.passed())
-        # Return the result
-        return context.result.passed()
+                # It is probably better to ignore checks that fail with an exception, and ensure
+                # that all checks end by returning a boolean pass/fail value. This way,
+                # we can ignore failed checks as far as the final result go and RO-Crates
+                # would be "valid until proven invalid".
+                all_passed = False
+
+        logger.debug("Checks for Requirement '%s' completed. Checks passed? %s", self.name, all_passed)
+        return all_passed
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Requirement):
