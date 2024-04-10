@@ -1,6 +1,7 @@
 import inspect
 import logging
 from pathlib import Path
+from typing import Optional
 
 from ...models import Profile, Requirement, RequirementCheck, RequirementLevel
 from ...utils import get_classes_from_file
@@ -14,9 +15,9 @@ class PyRequirement(Requirement):
     def __init__(self,
                  level: RequirementLevel,
                  profile: Profile,
-                 name: str = None,
-                 description: str = None,
-                 path: Path = None,
+                 name: str = "",
+                 description: Optional[str] = None,
+                 path: Optional[Path] = None,
                  requirement_check_class=None):
         self.requirement_check_class = requirement_check_class
         super().__init__(level, profile, name, description, path, initialize_checks=True)
@@ -35,7 +36,7 @@ class PyRequirement(Requirement):
                 check = self.requirement_check_class(self, check_name, member, check_description)
                 self._checks.append(check)
                 logger.debug("Added check: %s %r", check_name, check)
-        # return the checks
+
         return checks
 
     @staticmethod
@@ -45,7 +46,7 @@ class PyRequirement(Requirement):
 
         # get the classes from the file
         classes = get_classes_from_file(file_path, filter_class=RequirementCheck)
-        logger.debug("Classes: %r" % classes)
+        logger.debug("Classes: %r", classes)
 
         # instantiate a requirement for each class
         for requirement_name, requirement_class in classes.items():

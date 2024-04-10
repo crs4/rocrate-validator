@@ -5,7 +5,7 @@ import inspect
 import logging
 import os
 from abc import ABC, abstractmethod
-from collections.abc import Iterable
+from collections.abc import Collection
 from dataclasses import dataclass
 from functools import total_ordering
 from pathlib import Path
@@ -673,19 +673,19 @@ class ValidationResult:
 
     #  --- Requirements ---
     @property
-    def failed_requirements(self) -> Iterable[Requirement]:
+    def failed_requirements(self) -> Collection[Requirement]:
         return set(issue.check.requirement for issue in self._issues)
 
     #  --- Checks ---
     @property
-    def failed_checks(self) -> Iterable[RequirementCheck]:
+    def failed_checks(self) -> Collection[RequirementCheck]:
         return set(issue.check for issue in self._issues)
 
-    def get_failed_checks_by_requirement(self, requirement: Requirement) -> Iterable[RequirementCheck]:
+    def get_failed_checks_by_requirement(self, requirement: Requirement) -> Collection[RequirementCheck]:
         return [check for check in self.failed_checks if check.requirement == requirement]
 
     def get_failed_checks_by_requirement_and_severity(
-            self, requirement: Requirement, severity: Severity) -> Iterable[RequirementCheck]:
+            self, requirement: Requirement, severity: Severity) -> Collection[RequirementCheck]:
         return [check for check in self.failed_checks
                 if check.requirement == requirement
                 and check.severity == severity]
