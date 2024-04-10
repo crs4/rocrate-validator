@@ -3,7 +3,6 @@ from __future__ import annotations
 import enum
 import inspect
 import logging
-import os
 from abc import ABC, abstractmethod
 from collections.abc import Collection
 from dataclasses import dataclass
@@ -152,25 +151,25 @@ class Profile:
         """
         Load the requirements from the profile directory
         """
+        def ok_file(p: Path) -> bool:
+            return p.is_file() \
+                and p.suffix in PROFILE_FILE_EXTENSIONS \
+                and not p.name.startswith('.') \
+                and not p.name.startswith('_')
+
+        files = sorted((p for p in self.path.rglob('*.*') if ok_file(p)),
+                       key=lambda x: (not x.suffix == '.py', x))
+
         req_id = 0
         self._requirements = []
-        for root, dirs, files in os.walk(self.path):
-            dirs[:] = [d for d in dirs
-                       if not d.startswith('.') and not d.startswith('_')]
-            requirement_root = Path(root)
-            requirement_level = requirement_root.name
-            # Filter out files that start with a dot or underscore
-            files = [_ for _ in files if not _.startswith('.')
-                     and not _.startswith('_')
-                     and Path(_).suffix in PROFILE_FILE_EXTENSIONS]
-            for file in sorted(files, key=lambda x: (not x.endswith('.py'), x)):
-                requirement_path = requirement_root / file
-                for requirement in Requirement.load(
-                        self, LevelCollection.get(requirement_level),
-                        requirement_path, publicID=self.publicID):
-                    req_id += 1
-                    requirement._order_number = req_id
-                    self.add_requirement(requirement)
+        for requirement_path in files:
+            requirement_level = requirement_path.parent.name
+            for requirement in Requirement.load(
+                    self, LevelCollection.get(requirement_level),
+                    requirement_path, publicID=self.publicID):
+                req_id += 1
+                requirement._order_number = req_id
+                self.add_requirement(requirement)
         logger.debug("Profile %s loaded %s requiremens: %s",
                      self.name, len(self._requirements), self._requirements)
 
