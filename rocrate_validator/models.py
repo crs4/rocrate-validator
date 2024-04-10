@@ -506,12 +506,6 @@ class RequirementCheck(ABC):
     def execute_check(self, context: ValidationContext) -> bool:
         raise NotImplementedError()
 
-    def __do_check__(self, context: ValidationContext) -> bool:
-        """
-        Internal method to perform the check
-        """
-        return self.execute_check(context)
-
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, RequirementCheck):
             raise ValueError(f"Cannot compare RequirementCheck with {type(other)}")
@@ -562,7 +556,7 @@ class CheckIssue:
     """
 
     # TODO:
-    # 2. CheckIssue has the check, to it is able to determine the level and the Severity
+    # 2. CheckIssue has the check, so it is able to determine the level and the Severity
     #    without having it provided through an additional argument.
     def __init__(self, severity: Severity,
                  check: RequirementCheck,
