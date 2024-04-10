@@ -548,8 +548,16 @@ def check(name: Optional[str] = None):
     `check=True`) and optionally annotating them with a human-legible name.
     """
     def decorator(func):
+        check_name = name if name else func.__name__
+        sig = inspect.signature(func)
+        if len(sig.parameters) != 2:
+            raise RuntimeError(f"Invalid check {check_name}. Checks are expected to "
+                               "accept two arguments but this only takes {len(sig.parameters)}")
+        if sig.return_annotation not in (bool, inspect.Signature.empty):
+            raise RuntimeError(f"Invalid check {check_name}. Checks are expected to "
+                               "return bool but this only returns {sig.return_annotation}")
         func.check = True
-        func.name = name if name else func.__name__
+        func.name = check_name
         return func
     return decorator
 

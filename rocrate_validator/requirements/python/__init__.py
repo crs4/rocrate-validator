@@ -26,7 +26,8 @@ class PyRequirement(Requirement):
         # initialize the list of checks
         checks = []
         for name, member in inspect.getmembers(self.requirement_check_class, inspect.isfunction):
-            if hasattr(member, "check"):
+            # verify that the attribute set by the check decorator is present
+            if hasattr(member, "check") and member.check is True:
                 check_name = None
                 try:
                     check_name = member.name.strip()
