@@ -17,7 +17,8 @@ class FileDescriptorExistence(PyFunctionCheck):
         Check if the file descriptor is present in the RO-Crate
         """
         if not context.file_descriptor_path.exists():
-            context.result.add_error(f'RO-Crate "{context.file_descriptor_path}" file descriptor is not present', self)
+            message = f'file descriptor "{context.rel_fd_path}" is not present'
+            context.result.add_error(message, self)
             return False
         return True
 
@@ -27,11 +28,11 @@ class FileDescriptorExistence(PyFunctionCheck):
         Check if the file descriptor is not empty
         """
         if not context.file_descriptor_path.exists():
-            context.result.add_error(
-                f'RO-Crate "{context.file_descriptor_path}" is empty: file descriptor is not present', self)
+            message = f'file descriptor {context.rel_fd_path} is empty'
+            context.result.add_error(message, self)
             return False
         if context.file_descriptor_path.stat().st_size == 0:
-            context.result.add_error(f'RO-Crate "{context.file_descriptor_path}" file descriptor is empty', self)
+            context.result.add_error(f'RO-Crate "{context.rel_fd_path}" file descriptor is empty', self)
             return False
         return True
 
@@ -50,8 +51,7 @@ class FileDescriptorJsonFormat(PyFunctionCheck):
             return True
         except Exception as e:
             context.result.add_error(
-                f'RO-Crate "{context.file_descriptor_path}" "\
-                    "file descriptor is not in the correct format', self)
+                f'RO-Crate file descriptor "{context.rel_fd_path}" is not in the correct format', self)
             if logger.isEnabledFor(logging.DEBUG):
                 logger.exception(e)
             return False
@@ -75,8 +75,7 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
                         file_descriptor_path=context.file_descriptor_path)
             except Exception as e:
                 context.result.add_error(
-                    f"RO-Crate \"{context.file_descriptor_path}\" "
-                    "file descriptor is not in the correct format", self)
+                    f'file descriptor "{context.rel_fd_path}" is not in the correct format', self)
                 if logger.isEnabledFor(logging.DEBUG):
                     logger.exception(e)
                 return {}
@@ -87,8 +86,8 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
         json_dict = self.get_json_dict(validation_context)
         if "@context" not in json_dict:
             validation_context.result.add_error(
-                f"RO-Crate \"{validation_context.file_descriptor_path}\" "
-                "file descriptor does not contain a context", self)
+                f'RO-Crate file descriptor "{validation_context.rel_fd_path}" '
+                "does not contain a context", self)
             return False
         return True
 
@@ -99,7 +98,7 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
             if "@id" not in entity:
                 context.result.add_error(
                     f"Entity \"{entity.get('name', None) or entity}\" "
-                    f"of RO-Crate \"{context.file_descriptor_path}\" "
+                    f"of RO-Crate \"{context.rel_fd_path}\" "
                     "file descriptor does not contain the @id attribute", self)
                 return False
         return True
@@ -111,7 +110,7 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
             if "@type" not in entity:
                 context.result.add_error(
                     f"Entity \"{entity.get('name', None) or entity}\" "
-                    f"of RO-Crate \"{context.file_descriptor_path}\" "
+                    f"of RO-Crate \"{context.rel_fd_path}\" "
                     "file descriptor does not contain the @type attribute", self)
                 return False
         return True

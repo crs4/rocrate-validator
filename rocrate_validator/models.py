@@ -642,10 +642,12 @@ class ValidationResult:
         # keep track of the issues found during the validation
         self._issues: list[CheckIssue] = []
 
-    def get_rocrate_path(self):
+    @property
+    def rocrate_path(self):
         return self._rocrate_path
 
-    def get_validation_settings(self):
+    @property
+    def validation_settings(self):
         return self._validation_settings
 
     #  --- Issues ---
@@ -933,3 +935,7 @@ class ValidationContext:
     @property
     def file_descriptor_path(self) -> Path:
         return self.rocrate_path / ROCRATE_METADATA_FILE
+
+    @property
+    def rel_fd_path(self) -> Path:
+        return Path(ROCRATE_METADATA_FILE)
