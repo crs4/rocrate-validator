@@ -113,7 +113,7 @@ class LevelCollection:
 
 @total_ordering
 class Profile:
-    def __init__(self, name: str, path: Path = None,
+    def __init__(self, name: str, path: Path,
                  requirements: Optional[list[Requirement]] = None,
                  publicID: Optional[str] = None):
         self._path = path
@@ -851,12 +851,7 @@ class Validator:
     def validate(self) -> ValidationResult:
         return self.__do_validate__()
 
-    def __do_validate__(self, requirements: list[Requirement] = None) -> ValidationResult:
-
-        # initialize the validation result
-        validation_result = ValidationResult(
-            rocrate_path=self.rocrate_path, validation_settings=self.validation_settings)
-
+    def __do_validate__(self, requirements: Optional[list[Requirement]] = None) -> ValidationResult:
         # list of profiles to validate
         profiles = [self.profile]
         logger.debug("Disable profile inheritance: %s", self.disable_profile_inheritance)
@@ -865,6 +860,8 @@ class Validator:
         logger.debug("Profiles to validate: %s", profiles)
 
         # initialize the validation context
+        validation_result = ValidationResult(
+            rocrate_path=self.rocrate_path, validation_settings=self.validation_settings)
         context = ValidationContext(self, validation_result)
 
         for profile in profiles:
@@ -876,17 +873,17 @@ class Validator:
             logger.debug("For profile %s, validating these %s requirements: %s",
                          profile.name, len(requirements), requirements)
             for requirement in requirements:
-                result = requirement.__do_validate__(context)
-                logger.debug("Validation Requirement result: %s", result)
-                if result:
-                    logger.debug("Validation Requirement passed: %s", requirement)
+                passed = requirement.__do_validate__(context)
+                logger.debug("Number of issues: %s", len(context.result.issues))
+                if passed:
+                    logger.debug("Validation Requirement passed")
                 else:
                     logger.debug(f"Validation Requirement {requirement} failed ")
-                    if self.validation_settings.get("abort_on_first"):
-                        logger.debug("Aborting on first failure")
+                    if self.validation_settings.get("abort_on_first") is True:
+                        logger.debug("Aborting on first requirement failure")
                         return validation_result
 
-        return validation_result
+        return context.result
 
     #  ------------ Dead code? ------------
     # @classmethod
