@@ -3,12 +3,20 @@ Library of shared functions for testing RO-Crate profiles
 """
 
 import logging
+from collections.abc import Collection
 from pathlib import Path
-from typing import Optional, Union
+from typing import Optional, TypeVar, Union
 
 from rocrate_validator import models, services
 
 logger = logging.getLogger(__name__)
+
+
+T = TypeVar("T")
+
+
+def first(c: Collection[T]) -> T:
+    return next(iter(c))
 
 
 def do_entity_test(

@@ -272,6 +272,7 @@ class Profile:
         return profiles
 
 
+@total_ordering
 class Requirement(ABC):
 
     def __init__(self,
@@ -394,7 +395,7 @@ class Requirement(ABC):
     def __lt__(self, other: object) -> bool:
         if not isinstance(other, Requirement):
             raise ValueError(f"Cannot compare Requirement with {type(other)}")
-        return self.severity >= other.severity or self.name >= other.name
+        return (self.level, self._order_number, self.name) < (other.level, other._order_number, other.name)
 
     def __repr__(self):
         return (
@@ -443,6 +444,7 @@ class Requirement(ABC):
         return requirements
 
 
+@total_ordering
 class RequirementCheck:
 
     def __init__(self,
@@ -508,6 +510,11 @@ class RequirementCheck:
             raise ValueError(f"Cannot compare RequirementCheck with {type(other)}")
         return self.requirement == other.requirement and self.name == other.name
 
+    def __lt__(self, other: object) -> bool:
+        if not isinstance(other, RequirementCheck):
+            raise ValueError(f"Cannot compare RequirementCheck with {type(other)}")
+        return (self.requirement, self.name) < (other.requirement, other.name)
+
     def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
 
@@ -547,6 +554,7 @@ def check(name: Optional[str] = None):
     return decorator
 
 
+@total_ordering
 class CheckIssue:
     """
     Class to store an issue found during a check
@@ -593,6 +601,17 @@ class CheckIssue:
     def check(self) -> RequirementCheck:
         """The check that generated the issue"""
         return self._check
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, CheckIssue) and \
+            self._check == other._check and \
+            self._severity == other._severity and \
+            self._message == other._message
+
+    def __lt__(self, other: object) -> bool:
+        if not isinstance(other, CheckIssue):
+            raise TypeError(f"Cannot compare {type(self)} with {type(other)}")
+        return (self._check, self._severity, self._message) < (other._check, other._severity, other._message)
 
     # @property
     # def code(self) -> int:
