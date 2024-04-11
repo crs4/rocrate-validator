@@ -208,6 +208,8 @@ class Profile:
             and self.requirements == other.requirements
 
     def __lt__(self, other: object) -> bool:
+        if not isinstance(other, Profile):
+            raise TypeError(f"Cannot compare {type(self)} with {type(other)}")
         return self.name < other.name
 
     def __hash__(self) -> int:
