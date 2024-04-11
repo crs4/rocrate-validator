@@ -73,7 +73,8 @@ def do_entity_test(
                     f"\"{expected_triggered_requirement}\" was not found in the failed requirements"
 
         # check requirement issues
-        detected_issues = [issue.message for issue in result.get_issues(models.Severity.RECOMMENDED)]
+        detected_issues = [issue.message for issue in result.get_issues(models.Severity.RECOMMENDED)
+                           if issue.message is not None]
         logger.debug("Detected issues: %s", detected_issues)
         logger.debug("Expected issues: %s", expected_triggered_issues)
         for expected_issue in expected_triggered_issues:

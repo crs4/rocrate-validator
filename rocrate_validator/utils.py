@@ -32,7 +32,7 @@ def get_version() -> str:
     return config["tool"]["poetry"]["version"]
 
 
-def get_config(property: str = None) -> dict:
+def get_config(property: Optional[str] = None) -> dict:
     """
     Get the configuration for the package or a specific property
 
@@ -98,8 +98,8 @@ def get_all_files(
     return file_paths
 
 
-def get_graphs_paths(
-        graphs_dir: str = CURRENT_DIR, serialization_format="turtle") -> list[str]:
+def get_graphs_paths(graphs_dir: str = CURRENT_DIR,
+                     serialization_format: constants.RDF_SERIALIZATION_FORMATS_TYPES = "turtle") -> list[str]:
     """
     Get the paths to all the graphs in the directory
 

@@ -5,7 +5,6 @@ from rocrate_validator import models, services
 from rocrate_validator.models import (LevelCollection, RequirementLevel,
                                       Severity)
 from tests.ro_crates import InvalidFileDescriptor, InvalidRootDataEntity
-from tests.shared import first
 
 
 def test_severity_ordering():
