@@ -377,14 +377,11 @@ class Requirement(ABC):
                     raise RuntimeError(f"Ignoring invalid result from check {check.name}")
                 all_passed = all_passed and check_result
             except Exception as e:
-                context.result.add_error(f"Unexpected error during check: {e}", check=check)
+                # Ignore the fact that the check failed as far as the validation result is concerned.
+                logger.warning("Unexpected error during check %s.  Exception: %s", check, e)
+                logger.warning("Consider reporting this as a bug.")
                 if logger.isEnabledFor(logging.DEBUG):
                     logger.exception(e)
-                # It is probably better to ignore checks that fail with an exception, and ensure
-                # that all checks end by returning a boolean pass/fail value. This way,
-                # we can ignore failed checks as far as the final result go and RO-Crates
-                # would be "valid until proven invalid".
-                all_passed = False
 
         logger.debug("Checks for Requirement '%s' completed. Checks passed? %s", self.name, all_passed)
         return all_passed
