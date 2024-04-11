@@ -159,7 +159,8 @@ def __print_validation_result__(
 
         console.print("\n[bold]The following requirements have not meet: [/bold]\n", style="white")
 
-        for requirement in sorted(result.failed_requirements):
+        for requirement in sorted(result.failed_requirements,
+                                  key=lambda x: (-x.severity.value, x)):
             issue_color = get_severity_color(requirement.severity)
             console.print(
                 Align(f" [severity: [{issue_color}]{requirement.severity.name}[/{issue_color}], "
@@ -172,13 +173,15 @@ def __print_validation_result__(
             console.print(f"\n{' '*4}{requirement.description}\n", style="white italic")
 
             console.print(f"{' '*4}Failed checks:\n", style="white bold")
-            for check in sorted(result.get_failed_checks_by_requirement(requirement)):
+            for check in sorted(result.get_failed_checks_by_requirement(requirement),
+                                key=lambda x: (-x.severity.value, x)):
                 issue_color = get_severity_color(check.level.severity)
                 console.print(
                     f"{' '*4}- "
                     f"[magenta]{check.name}[/magenta]: {check.description}")
                 console.print(f"\n{' '*6}Detected issues:", style="white bold")
-                for issue in sorted(result.get_issues_by_check(check)):
+                for issue in sorted(result.get_issues_by_check(check),
+                                    key=lambda x: (-x.severity.value, x)):
                     console.print(
                         f"{' '*6}- [[{issue_color}]Violation[/{issue_color}] of "
                         f"[magenta]{issue.check.identifier}[/magenta]]: {issue.message}")
