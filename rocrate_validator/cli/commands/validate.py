@@ -88,7 +88,7 @@ def validate(ctx,
     """
     [magenta]rocrate-validator:[/magenta] Validate a RO-Crate against a profile
     """
-    console = ctx.obj['console']
+    console: Console = ctx.obj['console']
     # Log the input parameters for debugging
     logger.debug("profiles_path: %s", os.path.abspath(profiles_path))
     logger.debug("profile_name: %s", profile_name)
@@ -123,14 +123,17 @@ def validate(ctx,
 
         # using ctx.exit seems to raise an Exception that gets caught below,
         # so we use sys.exit instead.
-        sys.exit(0 if result.passed() else 1)
+        sys.exit(0 if result.passed(Severity.RECOMMENDED) else 1)
     except Exception as e:
         console.print(
             f"\n\n[bold][[red]FAILED[/red]] Unexpected error: {e} !!![/bold]\n",
             style="white",
         )
-        if logger.isEnabledFor(logging.DEBUG):
-            console.print_exception()
+        console.print("""
+            This error may be due to a bug. Please report it to the issue tracker
+            along with the following stack trace:
+            """)
+        console.print_exception()
         sys.exit(2)
 
 
@@ -141,21 +144,23 @@ def __print_validation_result__(
     """
     Print the validation result
     """
+    rel_roc_path = Path(result.rocrate_path).relative_to(Path.cwd())
 
     if result.passed(severity=severity):
         console.print(
-            "\n\n[bold][[green]OK[/green]] RO-Crate is [green]valid[/green] !!![/bold]\n\n",
+            f"\n\n[bold][[green]OK[/green]] RO-Crate {rel_roc_path} is [green]valid[/green] !!![/bold]\n\n",
             style="white",
         )
     else:
         console.print(
-            "\n\n[bold][[red]FAILED[/red]] RO-Crate is [red]not valid[/red] !!![/bold]\n",
+            f"\n\n[bold][[red]FAILED[/red]] RO-Crate {rel_roc_path} is [red]not valid[/red] !!![/bold]\n",
             style="white",
         )
 
         console.print("\n[bold]The following requirements have not meet: [/bold]\n", style="white")
 
-        for requirement in result.failed_requirements:
+        for requirement in sorted(result.failed_requirements,
+                                  key=lambda x: (-x.severity.value, x)):
             issue_color = get_severity_color(requirement.severity)
             console.print(
                 Align(f" [severity: [{issue_color}]{requirement.severity.name}[/{issue_color}], "
@@ -168,13 +173,15 @@ def __print_validation_result__(
             console.print(f"\n{' '*4}{requirement.description}\n", style="white italic")
 
             console.print(f"{' '*4}Failed checks:\n", style="white bold")
-            for check in result.get_failed_checks_by_requirement(requirement):
+            for check in sorted(result.get_failed_checks_by_requirement(requirement),
+                                key=lambda x: (-x.severity.value, x)):
                 issue_color = get_severity_color(check.level.severity)
                 console.print(
                     f"{' '*4}- "
                     f"[magenta]{check.name}[/magenta]: {check.description}")
                 console.print(f"\n{' '*6}Detected issues:", style="white bold")
-                for issue in check.get_issues():
+                for issue in sorted(result.get_issues_by_check(check),
+                                    key=lambda x: (-x.severity.value, x)):
                     console.print(
                         f"{' '*6}- [[{issue_color}]Violation[/{issue_color}] of "
                         f"[magenta]{issue.check.identifier}[/magenta]]: {issue.message}")

@@ -132,7 +132,7 @@ def get_full_graph(
 
 def get_classes_from_file(file_path: Path,
                           filter_class: Optional[type] = None,
-                          class_name_suffix: Optional[str] = None) -> dict:
+                          class_name_suffix: Optional[str] = None) -> dict[str, type]:
     """Get all classes in a Python file """
     # ensure the file path is a Path object
     assert file_path, "The file path is required"
@@ -158,7 +158,7 @@ def get_classes_from_file(file_path: Path,
     module = import_module(module_name)
     logger.debug("Module: %r", module)
 
-    # Get all classes in the module that are subclasses of Check
+    # Get all classes in the module that are subclasses of filter_class
     classes = {name: cls for name, cls in inspect.getmembers(module, inspect.isclass)
                if cls.__module__ == module_name
                and (not class_name_suffix or cls.__name__.endswith(class_name_suffix))

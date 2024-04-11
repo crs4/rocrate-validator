@@ -1,4 +1,6 @@
 
+import re
+
 from click.testing import CliRunner
 from pytest import fixture
 
@@ -21,7 +23,7 @@ def test_version(cli_runner: CliRunner):
 def test_validate_subcmd_valid_rocrate(cli_runner: CliRunner):
     result = cli_runner.invoke(cli, ['validate', str(ValidROC().wrroc_paper_long_date)])
     assert result.exit_code == 0
-    assert 'RO-Crate is valid' in result.output
+    assert re.search(r'RO-Crate.*is valid', result.output)
 
 
 def test_validate_subcmd_invalid_rocrate1(cli_runner: CliRunner):

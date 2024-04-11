@@ -39,7 +39,6 @@ class SHACLRequirement(Requirement):
         # if no property checks, add a generic one
         if len(checks) == 0:
             checks.append(SHACLCheck(self))
-        # return checks
         return checks
 
     @property

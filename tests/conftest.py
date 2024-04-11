@@ -1,11 +1,11 @@
 # calculate the absolute path of the rocrate-validator package
 # and add it to the system path
+import logging
 import os
 
 from pytest import fixture
-from rocrate_validator.config import configure_logging
 
-import logging
+from rocrate_validator.config import configure_logging
 
 # set up logging
 configure_logging(level=logging.DEBUG)

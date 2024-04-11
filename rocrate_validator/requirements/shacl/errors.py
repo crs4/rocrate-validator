@@ -1,12 +1,12 @@
 from ...errors import ValidationError
-from .validator import ValidationResult
+from .validator import SHACLValidationResult
 
 
 class SHACLValidationError(ValidationError):
 
     def __init__(
         self,
-        result: ValidationResult = None,
+        result: SHACLValidationResult = None,
         message: str = "Document does not conform to SHACL shapes.",
         path: str = ".",
         code: int = 500,
@@ -15,7 +15,7 @@ class SHACLValidationError(ValidationError):
         self._result = result
 
     @property
-    def result(self) -> ValidationResult:
+    def result(self) -> SHACLValidationResult:
         return self._result
 
     def __repr__(self):

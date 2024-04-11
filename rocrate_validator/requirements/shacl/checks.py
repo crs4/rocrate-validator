@@ -1,26 +1,28 @@
 
 import logging
+from typing import Optional
 
-from ...models import Requirement, RequirementCheck
-from .models import ShapeProperty
+from rocrate_validator.models import (Requirement, RequirementCheck,
+                                      ValidationContext)
+from rocrate_validator.requirements.shacl.models import ShapeProperty
+
+from .validator import SHACLValidator
 
 logger = logging.getLogger(__name__)
 
 
 class SHACLCheck(RequirementCheck):
-
     """
     A SHACL check for a specific shape property
     """
 
     def __init__(self,
                  requirement: Requirement,
-                 shapeProperty: ShapeProperty = None) -> None:
+                 shapeProperty: Optional[ShapeProperty] = None) -> None:
         self._shapeProperty = shapeProperty
         super().__init__(requirement,
                          shapeProperty.name
                          if shapeProperty and shapeProperty.name else None,
-                         self.check,
                          shapeProperty.description
                          if shapeProperty and shapeProperty.description else None)
 
@@ -28,39 +30,26 @@ class SHACLCheck(RequirementCheck):
     def shapeProperty(self) -> ShapeProperty:
         return self._shapeProperty
 
-    # @property
-    # def severity(self):
-    #     return self.requirement.severity
-
-    @classmethod
-    def get_description(cls, requirement: Requirement):
-        from ...models import Validator
-        graph_of_shapes = Validator.load_graph_of_shapes(requirement)
-        return cls.query_description(graph_of_shapes)
-
-    @property
-    def shapes_graph(self):
-        return self.validator.get_graph_of_shapes(self.requirement.name)
-
-    def check(self):
-        ontology_graph = self.validator.ontologies_graph
-        data_graph = self.validator.data_graph
+    def execute_check(self, context: ValidationContext):
+        ontology_graph = context.validator.ontologies_graph
+        data_graph = context.validator.data_graph
 
         # constraint the shapes graph to the current property shape
         shapes_graph = self.shapeProperty.shape_property_graph \
             if self.shapeProperty else self.requirement.shape.shape_graph
 
-        from .validator import Validator as SHACLValidator
-        shacl_validator = SHACLValidator(self, shapes_graph=shapes_graph, ont_graph=ontology_graph)
-        result = shacl_validator.validate(data_graph=data_graph, **self.validator.validation_settings)
+        shacl_validator = SHACLValidator(shapes_graph=shapes_graph, ont_graph=ontology_graph)
+        result = shacl_validator.validate(data_graph=data_graph, **context.validator.validation_settings)
 
         logger.debug("Validation '%s' conforms: %s", self.name, result.conforms)
         if not result.conforms:
             logger.debug("Validation failed")
             logger.debug("Validation result: %s", result)
-            for issue in result.violations:
-                logger.debug("Validation issue: %s", issue.message)
-                self.result.add_issue(issue)
+            for violation in result.violations:
+                c = context.result.add_check_issue(message=violation.get_result_message(context.rocrate_path),
+                                                   check=self,
+                                                   severity=violation.get_result_severity())
+                logger.debug("Validation issue: %s", c.message)
 
             return False
         return True
@@ -78,3 +67,21 @@ class SHACLCheck(RequirementCheck):
 
     def __hash__(self) -> int:
         return super().__hash__() + (hash(self._shapeProperty) if self._shapeProperty else 0)
+
+    #  ------------ Dead code? ------------
+    # @property
+    # def severity(self):
+    #     return self.requirement.severity
+
+    # @classmethod
+    # def get_description(cls, requirement: Requirement):
+    #     from ...models import Validator
+    #     graph_of_shapes = Validator.load_graph_of_shapes(requirement)
+    #     return cls.query_description(graph_of_shapes)
+
+    # @property
+    # def shapes_graph(self):
+    #     return self.validator.get_graph_of_shapes(self.requirement.name)
+
+
+__all__ = ["SHACLCheck"]

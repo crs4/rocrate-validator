@@ -10,19 +10,19 @@ from pyshacl.pytypes import GraphLike
 from rdflib import Graph
 from rdflib.term import Node, URIRef
 
+from rocrate_validator.models import Severity
+
 from ...constants import (RDF_SERIALIZATION_FORMATS,
                           RDF_SERIALIZATION_FORMATS_TYPES, SHACL_NS,
                           VALID_INFERENCE_OPTIONS,
                           VALID_INFERENCE_OPTIONS_TYPES)
-from ...models import CheckIssue, Severity
-from ...requirements.shacl.models import ViolationShape
-from .checks import SHACLCheck
+from .models import ViolationShape
 
 # set up logging
 logger = logging.getLogger(__name__)
 
 
-class Violation(CheckIssue):
+class SHACLViolation:
 
     def __init__(self, result: ValidationResult, violation_node: Node, graph: Graph) -> None:
         # check the input
@@ -45,22 +45,17 @@ class Violation(CheckIssue):
         violation_obj = json.loads(violation_graph.serialize(format="json-ld"))
         self._violation_json = violation_obj[0]
 
-        # initialize the parent class
-        super().__init__(severity=self._get_result_severity(),
-                         check=result.validator.check,
-                         message=self._get_result_message(result.validator.check.ro_crate_path))
-
         # get the source shape
         shapes = list(graph.triples(
             (violation_node, URIRef(f"{SHACL_NS}sourceShape"), None)))
         self.source_shape_node = shapes[0][2]
 
-    def _get_result_message(self, ro_crate_path: Union[Path, str]) -> str:
+    def get_result_message(self, ro_crate_path: Union[Path, str]) -> str:
         return self._make_uris_relative(
             self._violation_json[f'{SHACL_NS}resultMessage'][0]['@value'],
             ro_crate_path)
 
-    def _get_result_severity(self) -> Severity:
+    def get_result_severity(self) -> Severity:
         shacl_severity = self._violation_json[f'{SHACL_NS}resultSeverity'][0]['@id']
         # we need to map the SHACL severity term to our Severity enum values
         if 'http://www.w3.org/ns/shacl#Violation' == shacl_severity:
@@ -119,9 +114,9 @@ class Violation(CheckIssue):
         return text.replace(f'file://{ro_crate_path}', '.')
 
 
-class ValidationResult:
+class SHACLValidationResult:
 
-    def __init__(self, validator: Validator, results_graph: Graph,
+    def __init__(self, results_graph: Graph,
                  conforms: Optional[bool] = None, results_text: str = None) -> None:
         # validate the results graph input
         assert results_graph is not None, "Invalid graph"
@@ -132,7 +127,6 @@ class ValidationResult:
         # store the input properties
         self.results_graph = results_graph
         self._text = results_text
-        self._validator = validator
         # parse the results graph
         self._violations = self._parse_results_graph(results_graph)
         # initialize the conforms property
@@ -162,27 +156,24 @@ class ValidationResult:
         violations = []
         for r in query_results:
             violation_node = r[0]
-            violation = Violation(self, violation_node, results_graph)
+            violation = SHACLViolation(self, violation_node, results_graph)
             violations.append(violation)
 
         return violations
-
-    @property
-    def validator(self) -> Validator:
-        return self._validator
 
     @property
     def conforms(self) -> bool:
         return self._conforms
 
     @property
-    def violations(self) -> list:
+    def violations(self) -> list[SHACLViolation]:
         return self._violations
 
     @property
     def text(self) -> str:
         return self._text
 
+    #  ------------ Dead code? ------------
     # @staticmethod
     # def from_serialized_results_graph(file_path: str, format: str = 'turtle'):
     #     # check the input
@@ -201,11 +192,10 @@ class ValidationResult:
     #     return ValidationResult(g)
 
 
-class Validator:
+class SHACLValidator:
 
     def __init__(
         self,
-        check: SHACLCheck,
         shapes_graph: Optional[Union[GraphLike, str, bytes]],
         ont_graph: Optional[Union[GraphLike, str, bytes]] = None,
     ) -> None:
@@ -222,7 +212,6 @@ class Validator:
         """
         self._shapes_graph = shapes_graph
         self._ont_graph = ont_graph
-        self._check = check
 
     @property
     def shapes_graph(self) -> Optional[Union[GraphLike, str, bytes]]:
@@ -231,10 +220,6 @@ class Validator:
     @property
     def ont_graph(self) -> Optional[Union[GraphLike, str, bytes]]:
         return self._ont_graph
-
-    @property
-    def check(self) -> SHACLCheck:
-        return self._check
 
     def validate(
         self,
@@ -249,7 +234,7 @@ class Validator:
         serialization_output_format:
             Optional[RDF_SERIALIZATION_FORMATS_TYPES] = "turtle",
         **kwargs,
-    ) -> ValidationResult:
+    ) -> SHACLValidationResult:
         f"""
         Validate a data graph using SHACL shapes as constraints
 
@@ -330,4 +315,7 @@ class Validator:
                 serialization_output_path, format=serialization_output_format
             )
         # return the validation result
-        return ValidationResult(self, results_graph, conforms, results_text)
+        return SHACLValidationResult(results_graph, conforms, results_text)
+
+
+__all__ = ["SHACLValidator", "SHACLValidationResult", "SHACLViolation"]
