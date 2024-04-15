@@ -144,16 +144,14 @@ def __print_validation_result__(
     """
     Print the validation result
     """
-    rel_roc_path = Path(result.rocrate_path).relative_to(Path.cwd())
-
     if result.passed(severity=severity):
         console.print(
-            f"\n\n[bold][[green]OK[/green]] RO-Crate {rel_roc_path} is [green]valid[/green] !!![/bold]\n\n",
+            f"\n\n[bold][[green]OK[/green]] RO-Crate is [green]valid[/green] !!![/bold]\n\n",
             style="white",
         )
     else:
         console.print(
-            f"\n\n[bold][[red]FAILED[/red]] RO-Crate {rel_roc_path} is [red]not valid[/red] !!![/bold]\n",
+            f"\n\n[bold][[red]FAILED[/red]] RO-Crate is [red]not valid[/red] !!![/bold]\n",
             style="white",
         )
 
