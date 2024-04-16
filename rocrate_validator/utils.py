@@ -54,6 +54,48 @@ def get_file_descriptor_path(rocrate_path: Path) -> Path:
     return Path(rocrate_path) / constants.ROCRATE_METADATA_FILE
 
 
+def get_default_profiles_paths() -> list[Path]:
+    """
+    Get the paths to the profiles directory
+
+    :return: The paths to the profiles directory
+    """
+    return [
+        Path("profiles"),
+        Path.home() / ".config/rocrate-validator/profiles",
+        Path(CURRENT_DIR).parent / "profiles"
+    ]
+
+
+def get_profiles_path(not_exist_ok: bool = True) -> Path:
+    """
+    Get the path to the profiles directory from the default paths
+
+    :param not_exist_ok: If True, return the path even if it does not exist
+
+    :return: The path to the profiles directory
+    """
+    profiles_path = None
+    # Get the default profiles paths
+    default_profiles_paths = get_default_profiles_paths()
+    logger.debug("Default profiles paths: %r", default_profiles_paths)
+    for path in default_profiles_paths:
+        if path.exists():
+            profiles_path = path
+            break
+    # Check if the profiles directory is found
+    if not profiles_path:
+        # If the profiles directory is not found, raise an error
+        if not not_exist_ok:
+            # Raise an error if the profiles directory provided with the package is not found
+            raise errors.ProfilesDirectoryNotFound(profiles_path=str(default_profiles_paths[-1]))
+        else:
+            # Use the last path as the profiles directory, i.e., the one provided with the package
+            profiles_path = default_profiles_paths[-1]
+    # Return the profiles directory
+    return profiles_path
+
+
 def get_format_extension(serialization_format: constants.RDF_SERIALIZATION_FORMATS_TYPES) -> str:
     """
     Get the file extension for the RDF serialization format
