@@ -18,7 +18,11 @@ from rocrate_validator.constants import (DEFAULT_PROFILE_README_FILE,
                                          RDF_SERIALIZATION_FORMATS_TYPES,
                                          ROCRATE_METADATA_FILE,
                                          VALID_INFERENCE_OPTIONS_TYPES)
-from rocrate_validator.utils import get_requirement_name_from_file
+from rocrate_validator.utils import (get_profiles_path,
+                                     get_requirement_name_from_file)
+
+# set the default profiles path
+DEFAULT_PROFILES_PATH = get_profiles_path()
 
 logger = logging.getLogger(__name__)
 
@@ -715,7 +719,7 @@ class Validator:
 
     def __init__(self,
                  rocrate_path: Path,
-                 profiles_path: Path = Path("./profiles"),
+                 profiles_path: Path = DEFAULT_PROFILES_PATH,
                  profile_name: str = "ro-crate",
                  disable_profile_inheritance: bool = False,
                  requirement_severity: Severity = Severity.REQUIRED,

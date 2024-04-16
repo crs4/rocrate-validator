@@ -10,10 +10,14 @@ from rich.console import Console
 from ... import services
 from ...colors import get_severity_color
 from ...models import Severity, ValidationResult
+from ...utils import get_profiles_path
 from ..main import cli, click
 
 # from rich.markdown import Markdown
 # from rich.table import Table
+
+# set the default profiles path
+DEFAULT_PROFILES_PATH = get_profiles_path()
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -32,7 +36,7 @@ logger = logging.getLogger(__name__)
 @click.option(
     "--profiles-path",
     type=click.Path(exists=True),
-    default="./profiles",
+    default=DEFAULT_PROFILES_PATH,
     show_default=True,
     help="Path containing the profiles files",
 )
@@ -77,7 +81,7 @@ logger = logging.getLogger(__name__)
 # )
 @click.pass_context
 def validate(ctx,
-             profiles_path: Path = Path("./profiles"),
+             profiles_path: Path = DEFAULT_PROFILES_PATH,
              profile_name: str = "ro-crate",
              disable_profile_inheritance: bool = False,
              requirement_severity: str = Severity.REQUIRED.name,

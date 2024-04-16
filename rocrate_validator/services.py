@@ -2,9 +2,16 @@ import logging
 from pathlib import Path
 from typing import Optional, Union
 
+from pyshacl.pytypes import GraphLike
+
 from .constants import (RDF_SERIALIZATION_FORMATS_TYPES,
                         VALID_INFERENCE_OPTIONS_TYPES)
-from .models import Profile, Severity, ValidationResult, Validator
+from .models import (LevelCollection, Profile, RequirementLevel, Severity,
+                     ValidationResult, Validator)
+from .utils import get_profiles_path
+
+# set the default profiles path
+DEFAULT_PROFILES_PATH = get_profiles_path()
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -12,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 def validate(
     rocrate_path: Path,
-    profiles_path: Path = Path("./profiles"),
+    profiles_path: Path = DEFAULT_PROFILES_PATH,
     profile_name: str = "ro-crate",
     inherit_profiles: bool = True,
     ontologies_path: Optional[Path] = None,
@@ -59,7 +66,7 @@ def validate(
     return result
 
 
-def get_profiles(profiles_path: str = "./profiles", publicID: Optional[str] = None) -> dict[str, Profile]:
+def get_profiles(profiles_path: Path = DEFAULT_PROFILES_PATH, publicID: str = None) -> dict[str, Profile]:
     """
     Load the profiles from the given path
     """
@@ -68,12 +75,12 @@ def get_profiles(profiles_path: str = "./profiles", publicID: Optional[str] = No
     return profiles
 
 
-def get_profile(profiles_path: str = "./profiles",
-                profile_name: str = "ro-crate", publicID: Optional[str] = None) -> Profile:
+def get_profile(profiles_path: Path = DEFAULT_PROFILES_PATH,
+                profile_name: str = "ro-crate", publicID: str = None) -> Profile:
     """
     Load the profiles from the given path
     """
-    profile_path = f"{profiles_path}/{profile_name}"
+    profile_path = profiles_path / profile_name
     if not Path(profiles_path).exists():
         raise FileNotFoundError(f"Profile not found: {profile_path}")
     profile = Profile.load(f"{profiles_path}/{profile_name}", publicID=publicID)

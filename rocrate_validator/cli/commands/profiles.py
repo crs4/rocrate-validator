@@ -1,11 +1,16 @@
 import logging
+from pathlib import Path
 
 from rich.markdown import Markdown
 from rich.table import Table
 
 from ... import services
 from ...colors import get_severity_color
+from ...utils import get_profiles_path
 from ..main import cli, click
+
+# set the default profiles path
+DEFAULT_PROFILES_PATH = get_profiles_path()
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -16,12 +21,12 @@ logger = logging.getLogger(__name__)
     "-p",
     "--profiles-path",
     type=click.Path(exists=True),
-    default="./profiles",
+    default=DEFAULT_PROFILES_PATH,
     show_default=True,
     help="Path containing the profiles files"
 )
 @click.pass_context
-def profiles(ctx, profiles_path: str = "./profiles"):
+def profiles(ctx, profiles_path: Path = DEFAULT_PROFILES_PATH):
     """
     [magenta]rocrate-validator:[/magenta] Manage profiles
     """
@@ -29,7 +34,7 @@ def profiles(ctx, profiles_path: str = "./profiles"):
 
 @profiles.command("list")
 @click.pass_context
-def list_profiles(ctx, profiles_path: str = "./profiles"):
+def list_profiles(ctx, profiles_path: Path = DEFAULT_PROFILES_PATH):
     """
     List available profiles
     """
@@ -77,7 +82,7 @@ def list_profiles(ctx, profiles_path: str = "./profiles"):
 @click.pass_context
 def describe_profile(ctx,
                      profile_name: str = "ro-crate",
-                     profiles_path: str = "./profiles"):
+                     profiles_path: Path = DEFAULT_PROFILES_PATH):
     """
     Show a profile
     """
