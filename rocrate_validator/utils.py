@@ -20,7 +20,7 @@ CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 logger = logging.getLogger(__name__)
 
 # Read the pyproject.toml file
-config = toml.load("pyproject.toml")
+config = toml.load(Path(CURRENT_DIR).parent / "pyproject.toml")
 
 
 def get_version() -> str:
