@@ -1,11 +1,10 @@
 import logging
 from pathlib import Path
-from typing import Literal, Optional, Union
+from typing import Optional, Union
 
-from pyshacl.pytypes import GraphLike
-
-from .models import (LevelCollection, Profile, RequirementLevel, Severity,
-                     ValidationResult, Validator)
+from .constants import (RDF_SERIALIZATION_FORMATS_TYPES,
+                        VALID_INFERENCE_OPTIONS_TYPES)
+from .models import Profile, Severity, ValidationResult, Validator
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -18,7 +17,7 @@ def validate(
     inherit_profiles: bool = True,
     ontologies_path: Optional[Path] = None,
     advanced: Optional[bool] = False,
-    inference: Optional[Literal["owl", "rdfs"]] = None,
+    inference: Optional[VALID_INFERENCE_OPTIONS_TYPES] = None,
     inplace: Optional[bool] = False,
     abort_on_first: Optional[bool] = True,
     allow_infos: Optional[bool] = False,
@@ -26,7 +25,7 @@ def validate(
     requirement_severity: Union[str, Severity] = Severity.REQUIRED,
     requirement_severity_only: bool = False,
     serialization_output_path: Optional[Path] = None,
-    serialization_output_format: str = "turtle",
+    serialization_output_format: RDF_SERIALIZATION_FORMATS_TYPES = "turtle",
     **kwargs,
 ) -> ValidationResult:
     """
@@ -60,7 +59,7 @@ def validate(
     return result
 
 
-def get_profiles(profiles_path: str = "./profiles", publicID: str = None) -> dict[str, Profile]:
+def get_profiles(profiles_path: str = "./profiles", publicID: Optional[str] = None) -> dict[str, Profile]:
     """
     Load the profiles from the given path
     """
@@ -70,7 +69,7 @@ def get_profiles(profiles_path: str = "./profiles", publicID: str = None) -> dic
 
 
 def get_profile(profiles_path: str = "./profiles",
-                profile_name: str = "ro-crate", publicID: str = None) -> Profile:
+                profile_name: str = "ro-crate", publicID: Optional[str] = None) -> Profile:
     """
     Load the profiles from the given path
     """

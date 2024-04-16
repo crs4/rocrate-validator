@@ -74,7 +74,10 @@ class PyRequirement(Requirement):
         return checks
 
     @staticmethod
-    def load(profile: Profile, requirement_level: RequirementLevel, file_path: Path) -> list[Requirement]:
+    def load(profile: Profile,
+             requirement_level: RequirementLevel,
+             file_path: Path,
+             publicID: Optional[str] = None) -> list[Requirement]:
         # instantiate a list to store the requirements
         requirements: list[Requirement] = []
 

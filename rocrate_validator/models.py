@@ -243,7 +243,7 @@ class Profile:
     #     return [requirement for requirement in self.requirements if requirement.severity == type]
 
     @staticmethod
-    def load(path: Union[str, Path], publicID: str = None) -> Profile:
+    def load(path: Union[str, Path], publicID: Optional[str] = None) -> Profile:
         # if the path is a string, convert it to a Path
         if isinstance(path, str):
             path = Path(path)
@@ -255,7 +255,7 @@ class Profile:
         return profile
 
     @staticmethod
-    def load_profiles(profiles_path: Union[str, Path], publicID: str = None) -> dict[str, Profile]:
+    def load_profiles(profiles_path: Union[str, Path], publicID: Optional[str] = None) -> dict[str, Profile]:
         # if the path is a string, convert it to a Path
         if isinstance(profiles_path, str):
             profiles_path = Path(profiles_path)
@@ -283,7 +283,7 @@ class Requirement(ABC):
                  description: Optional[str] = None,
                  path: Optional[Path] = None,
                  initialize_checks: bool = True):
-        self._order_number: int = None
+        self._order_number: Optional[int] = None
         self._level = level
         self._profile = profile
         self._description = description
@@ -307,6 +307,7 @@ class Requirement(ABC):
 
     @property
     def order_number(self) -> int:
+        assert self._order_number is not None
         return self._order_number
 
     @property
@@ -727,7 +728,7 @@ class Validator:
                  allow_infos: Optional[bool] = False,
                  allow_warnings: Optional[bool] = False,
                  serialization_output_path: Optional[Path] = None,
-                 serialization_output_format: Optional[RDF_SERIALIZATION_FORMATS_TYPES] = "turtle",
+                 serialization_output_format: RDF_SERIALIZATION_FORMATS_TYPES = "turtle",
                  **kwargs):
         self.rocrate_path = rocrate_path
         self.profiles_path = profiles_path
