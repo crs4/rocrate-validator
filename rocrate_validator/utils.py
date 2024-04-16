@@ -61,9 +61,9 @@ def get_default_profiles_paths() -> list[Path]:
     :return: The paths to the profiles directory
     """
     return [
-        Path("profiles"),
-        Path.home() / ".config/rocrate-validator/profiles",
-        Path(CURRENT_DIR).parent / "profiles"
+        Path("rocrate_profiles"),
+        Path.home() / ".config/rocrate-validator/rocrate_profiles",
+        Path(CURRENT_DIR).parent / "rocrate_profiles"
     ]
 
 

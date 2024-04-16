@@ -18,7 +18,7 @@ include = [
         "sdist",
         "wheel",
     ] },
-    { path = "profiles", format = [
+    { path = "rocrate_profiles", format = [
         "sdist",
         "wheel",
     ] },
