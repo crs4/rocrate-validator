@@ -2,12 +2,9 @@ import logging
 from pathlib import Path
 from typing import Optional, Union
 
-from pyshacl.pytypes import GraphLike
-
 from .constants import (RDF_SERIALIZATION_FORMATS_TYPES,
                         VALID_INFERENCE_OPTIONS_TYPES)
-from .models import (LevelCollection, Profile, RequirementLevel, Severity,
-                     ValidationResult, Validator)
+from .models import Profile, Severity, ValidationResult, Validator
 from .utils import get_profiles_path
 
 # set the default profiles path
