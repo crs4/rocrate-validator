@@ -37,3 +37,12 @@ def test_valid_roc_required_with_long_datetime():
         Severity.REQUIRED,
         True
     )
+
+
+def test_valid_workflow_roc_required():
+    """Test a valid RO-Crate."""
+    do_entity_test(
+        ValidROC().workflow_roc,
+        Severity.REQUIRED,
+        True
+    )

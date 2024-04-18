@@ -24,6 +24,10 @@ class ValidROC:
     def wrroc_paper_long_date(self) -> Path:
         return VALID_CRATES_DATA_PATH / "wrroc-paper-long-date"
 
+    @property
+    def workflow_roc(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "workflow-roc"
+
 
 class InvalidFileDescriptor:
 
