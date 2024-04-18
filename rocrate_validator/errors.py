@@ -6,6 +6,24 @@ class ROCValidatorError(Exception):
     pass
 
 
+class ProfilesDirectoryNotFound(ROCValidatorError):
+    """Raised when the profiles directory is not found."""
+
+    def __init__(self, profiles_path: Optional[str] = None):
+        self._profiles_path = profiles_path
+
+    @property
+    def profiles_path(self) -> Optional[str]:
+        """The path to the profiles directory."""
+        return self._profiles_path
+
+    def __str__(self) -> str:
+        return f"Profiles directory not found: {self._profiles_path!r}"
+
+    def __repr__(self):
+        return f"ProfilesDirectoryNotFound({self._profiles_path!r})"
+
+
 class InvalidSerializationFormat(ROCValidatorError):
     """Raised when an invalid serialization format is provided."""
 

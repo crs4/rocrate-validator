@@ -10,10 +10,14 @@ from rich.console import Console
 from ... import services
 from ...colors import get_severity_color
 from ...models import Severity, ValidationResult
+from ...utils import get_profiles_path
 from ..main import cli, click
 
 # from rich.markdown import Markdown
 # from rich.table import Table
+
+# set the default profiles path
+DEFAULT_PROFILES_PATH = get_profiles_path()
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -32,7 +36,7 @@ logger = logging.getLogger(__name__)
 @click.option(
     "--profiles-path",
     type=click.Path(exists=True),
-    default="./profiles",
+    default=DEFAULT_PROFILES_PATH,
     show_default=True,
     help="Path containing the profiles files",
 )
@@ -77,7 +81,7 @@ logger = logging.getLogger(__name__)
 # )
 @click.pass_context
 def validate(ctx,
-             profiles_path: Path = Path("./profiles"),
+             profiles_path: Path = DEFAULT_PROFILES_PATH,
              profile_name: str = "ro-crate",
              disable_profile_inheritance: bool = False,
              requirement_severity: str = Severity.REQUIRED.name,
@@ -105,36 +109,24 @@ def validate(ctx,
     if rocrate_path:
         logger.debug("rocrate_path: %s", os.path.abspath(rocrate_path))
 
-    try:
-        # Validate the RO-Crate
-        result: ValidationResult = services.validate(
-            profiles_path=profiles_path,
-            profile_name=profile_name,
-            requirement_severity=requirement_severity,
-            requirement_severity_only=requirement_severity_only,
-            disable_profile_inheritance=disable_profile_inheritance,
-            rocrate_path=Path(rocrate_path).absolute(),
-            ontologies_path=Path(ontologies_path).absolute() if ontologies_path else None,
-            abort_on_first=not no_fail_fast
-        )
+    # Validate the RO-Crate
+    result: ValidationResult = services.validate(
+        profiles_path=profiles_path,
+        profile_name=profile_name,
+        requirement_severity=requirement_severity,
+        requirement_severity_only=requirement_severity_only,
+        disable_profile_inheritance=disable_profile_inheritance,
+        rocrate_path=Path(rocrate_path).absolute(),
+        ontologies_path=Path(ontologies_path).absolute() if ontologies_path else None,
+        abort_on_first=not no_fail_fast
+    )
 
-        # Print the validation result
-        __print_validation_result__(console, result)
+    # Print the validation result
+    __print_validation_result__(console, result)
 
-        # using ctx.exit seems to raise an Exception that gets caught below,
-        # so we use sys.exit instead.
-        sys.exit(0 if result.passed(Severity.RECOMMENDED) else 1)
-    except Exception as e:
-        console.print(
-            f"\n\n[bold][[red]FAILED[/red]] Unexpected error: {e} !!![/bold]\n",
-            style="white",
-        )
-        console.print("""
-            This error may be due to a bug. Please report it to the issue tracker
-            along with the following stack trace:
-            """)
-        console.print_exception()
-        sys.exit(2)
+    # using ctx.exit seems to raise an Exception that gets caught below,
+    # so we use sys.exit instead.
+    sys.exit(0 if result.passed(Severity.RECOMMENDED) else 1)
 
 
 def __print_validation_result__(

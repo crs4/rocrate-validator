@@ -5,6 +5,20 @@ description = ""
 authors = ["Marco Enrico Piras <kikkomep@crs4.it>", "Luca Pireddu <luca.pireddu@crs4.it>"]
 readme = "README.md"
 packages = [{ include = "rocrate_validator", from = "." }]
+include = [
+    { path = "pyproject.toml", format = [
+        "sdist",
+        "wheel",
+    ] },
+    { path = "README.md", format = [
+        "sdist",
+        "wheel",
+    ] },
+    { path = "LICENSE", format = [
+        "sdist",
+        "wheel",
+    ] }
+]
 
 [tool.poetry.dependencies]
 python = "^3.8.1"

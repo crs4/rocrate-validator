@@ -20,7 +20,7 @@ CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 logger = logging.getLogger(__name__)
 
 # Read the pyproject.toml file
-config = toml.load("pyproject.toml")
+config = toml.load(Path(CURRENT_DIR).parent / "pyproject.toml")
 
 
 def get_version() -> str:
@@ -52,6 +52,17 @@ def get_file_descriptor_path(rocrate_path: Path) -> Path:
     :return: The path to the metadata file
     """
     return Path(rocrate_path) / constants.ROCRATE_METADATA_FILE
+
+
+def get_profiles_path() -> Path:
+    """
+    Get the path to the profiles directory from the default paths
+
+    :param not_exist_ok: If True, return the path even if it does not exist
+
+    :return: The path to the profiles directory
+    """
+    return Path(CURRENT_DIR) / "profiles"
 
 
 def get_format_extension(serialization_format: constants.RDF_SERIALIZATION_FORMATS_TYPES) -> str:
