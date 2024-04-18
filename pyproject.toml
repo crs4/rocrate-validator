@@ -17,11 +17,7 @@ include = [
     { path = "LICENSE", format = [
         "sdist",
         "wheel",
-    ] },
-    { path = "rocrate_profiles", format = [
-        "sdist",
-        "wheel",
-    ] },
+    ] }
 ]
 
 [tool.poetry.dependencies]
