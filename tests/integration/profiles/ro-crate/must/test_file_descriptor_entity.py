@@ -45,6 +45,17 @@ def test_missing_entity_about():
     )
 
 
+def test_invalid_entity_about():
+    """Test a RO-Crate with an invalid about property in the file descriptor."""
+    do_entity_test(
+        paths.invalid_entity_about,
+        models.Severity.REQUIRED,
+        False,
+        ["RO-Crate Metadata File Descriptor: recommended properties"],
+        ["The RO-Crate metadata file descriptor MUST have an `about` property referencing the Root Data Entity"]
+    )
+
+
 def test_invalid_entity_about_type():
     """Test a RO-Crate with an invalid file descriptor entity type."""
     do_entity_test(

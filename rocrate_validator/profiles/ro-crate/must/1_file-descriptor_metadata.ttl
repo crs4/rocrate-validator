@@ -46,6 +46,7 @@
         sh:minCount 1 ;
         sh:nodeKind sh:IRI ;
         sh:path schema_org:about ;
+        sh:hasValue : ;
         sh:class schema_org:Dataset ;
         sh:message "The RO-Crate metadata file descriptor MUST have an `about` property referencing the Root Data Entity" ;
     ] ;
