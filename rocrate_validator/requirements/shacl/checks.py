@@ -36,7 +36,8 @@ class SHACLCheck(RequirementCheck):
         shapes_graph = self.shape.graph
         # validate the data graph
         shacl_validator = SHACLValidator(shapes_graph=shapes_graph, ont_graph=ontology_graph)
-        result = shacl_validator.validate(data_graph=data_graph, **context.validator.validation_settings)
+        result = shacl_validator.validate(
+            data_graph=data_graph, ontology_graph=ontology_graph, **context.validator.validation_settings)
         # parse the validation result
         logger.debug("Validation '%s' conforms: %s", self.name, result.conforms)
         if not result.conforms:
