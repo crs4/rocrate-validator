@@ -100,6 +100,10 @@ class InvalidFileDescriptorEntity:
         return self.base_path / "missing_entity_about"
 
     @property
+    def invalid_entity_about(self) -> Path:
+        return self.base_path / "invalid_entity_about"
+
+    @property
     def invalid_entity_about_type(self) -> Path:
         return self.base_path / "invalid_entity_about_type"
 
