@@ -740,7 +740,6 @@ class Validator:
         self.requirement_severity = requirement_severity
         self.requirement_severity_only = requirement_severity_only
         self.disable_profile_inheritance = disable_profile_inheritance
-        self.ontologies_path = ontologies_path
 
         self._validation_settings: dict[str, BaseTypes] = {
             'advanced': advanced,
@@ -759,6 +758,8 @@ class Validator:
         self._data_graph = None
         # reference to the profile
         self._profile = None
+        # reference to the path of the ontologies
+        self._ontologies_path = None
         # reference to the graph of shapes
         self._ontologies_graph = None
 
@@ -813,8 +814,8 @@ class Validator:
     def load_ontologies_graph(self):
         # load the graph of ontologies
         ontologies_graph = Graph()
-        if self.ontologies_path:
-            ontologies_graph.parse(self.ontologies_path, format="ttl",
+        if self._ontologies_path:
+            ontologies_graph.parse(self._ontologies_path, format="ttl",
                                    publicID=self.publicID)
         return ontologies_graph
 
