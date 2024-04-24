@@ -1,10 +1,9 @@
-
 import logging
 from typing import Optional
 
 from rocrate_validator.models import (Requirement, RequirementCheck,
                                       ValidationContext)
-from rocrate_validator.requirements.shacl.models import ShapeProperty
+from rocrate_validator.requirements.shacl.models import Shape, PropertyShape
 
 from .validator import SHACLValidator
 
@@ -18,7 +17,7 @@ class SHACLCheck(RequirementCheck):
 
     def __init__(self,
                  requirement: Requirement,
-                 shapeProperty: Optional[ShapeProperty] = None) -> None:
+                 shapeProperty: Optional[Shape]) -> None:
         self._shapeProperty = shapeProperty
         super().__init__(requirement,
                          shapeProperty.name
@@ -27,7 +26,7 @@ class SHACLCheck(RequirementCheck):
                          if shapeProperty and shapeProperty.description else None)
 
     @property
-    def shapeProperty(self) -> ShapeProperty:
+    def shapeProperty(self) -> PropertyShape:
         return self._shapeProperty
 
     def execute_check(self, context: ValidationContext):
@@ -35,8 +34,7 @@ class SHACLCheck(RequirementCheck):
         data_graph = context.validator.data_graph
 
         # constraint the shapes graph to the current property shape
-        shapes_graph = self.shapeProperty.shape_property_graph \
-            if self.shapeProperty else self.requirement.shape.shape_graph
+        shapes_graph = self.shapeProperty.graph
 
         shacl_validator = SHACLValidator(shapes_graph=shapes_graph, ont_graph=ontology_graph)
         result = shacl_validator.validate(data_graph=data_graph, **context.validator.validation_settings)
