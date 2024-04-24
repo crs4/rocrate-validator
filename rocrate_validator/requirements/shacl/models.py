@@ -229,7 +229,7 @@ class ShapesRegistry:
             for property_shape in nested_properties:
                 property_graph = shapes_list.get_shape_property_graph(node_shape, property_shape)
                 p_shape = PropertyShape(
-                    property_shape, property_graph, node_shape)
+                    property_shape, property_graph, shape)
                 shape.add_property(p_shape)
                 self.add_shape(p_shape)
             # store the node shape
