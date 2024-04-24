@@ -1,10 +1,13 @@
-
 import logging
+import os
 from typing import Optional
 
+from rdflib import Literal, Namespace
+
+from rocrate_validator.constants import SHACL_NS
 from rocrate_validator.models import (Requirement, RequirementCheck,
                                       ValidationContext)
-from rocrate_validator.requirements.shacl.models import ShapeProperty
+from rocrate_validator.requirements.shacl.models import Shape
 
 from .validator import SHACLValidator
 
@@ -18,29 +21,39 @@ class SHACLCheck(RequirementCheck):
 
     def __init__(self,
                  requirement: Requirement,
-                 shapeProperty: Optional[ShapeProperty] = None) -> None:
-        self._shapeProperty = shapeProperty
+                 shape: Optional[Shape]) -> None:
+        self._shape = shape
         super().__init__(requirement,
-                         shapeProperty.name
-                         if shapeProperty and shapeProperty.name else None,
-                         shapeProperty.description
-                         if shapeProperty and shapeProperty.description else None)
+                         shape.name
+                         if shape and shape.name else None,
+                         shape.description
+                         if shape and shape.description else None)
 
     @property
-    def shapeProperty(self) -> ShapeProperty:
-        return self._shapeProperty
+    def shape(self) -> Shape:
+        return self._shape
 
     def execute_check(self, context: ValidationContext):
+        # set up the input data for the validator
         ontology_graph = context.validator.ontologies_graph
         data_graph = context.validator.data_graph
+        shapes_graph = self.shape.graph
 
-        # constraint the shapes graph to the current property shape
-        shapes_graph = self.shapeProperty.shape_property_graph \
-            if self.shapeProperty else self.requirement.shape.shape_graph
+        # temporary fix to replace the ex: prefix with the rocrate path
+        if os.path.isdir(context.validator.rocrate_path):
+            shacl_ns = Namespace(SHACL_NS)
+            selects = shapes_graph.triples((None, shacl_ns.select, None))
+            for s, p, o in selects:
+                shapes_graph.remove((s, p, o))
+                # FIXME: write a better regex ??
+                updated_node_value = str(o).replace("ex:", f"<file://{context.validator.rocrate_path}/>")
+                shapes_graph.add((s, p, Literal(updated_node_value)))
 
+        # validate the data graph
         shacl_validator = SHACLValidator(shapes_graph=shapes_graph, ont_graph=ontology_graph)
-        result = shacl_validator.validate(data_graph=data_graph, **context.validator.validation_settings)
-
+        result = shacl_validator.validate(
+            data_graph=data_graph, ontology_graph=ontology_graph, **context.validator.validation_settings)
+        # parse the validation result
         logger.debug("Validation '%s' conforms: %s", self.name, result.conforms)
         if not result.conforms:
             logger.debug("Validation failed")
@@ -55,18 +68,18 @@ class SHACLCheck(RequirementCheck):
         return True
 
     def __str__(self) -> str:
-        return super().__str__() + (f" - {self._shapeProperty}" if self._shapeProperty else "")
+        return super().__str__() + (f" - {self._shape}" if self._shape else "")
 
     def __repr__(self) -> str:
-        return super().__repr__() + (f" - {self._shapeProperty}" if self._shapeProperty else "")
+        return super().__repr__() + (f" - {self._shape}" if self._shape else "")
 
     def __eq__(self, __value: object) -> bool:
         if not isinstance(__value, type(self)):
             return NotImplemented
-        return super().__eq__(__value) and self._shapeProperty == getattr(__value, '_shapeProperty', None)
+        return super().__eq__(__value) and self._shape == getattr(__value, '_shape', None)
 
     def __hash__(self) -> int:
-        return super().__hash__() + (hash(self._shapeProperty) if self._shapeProperty else 0)
+        return super().__hash__() + (hash(self._shape) if self._shape else 0)
 
     #  ------------ Dead code? ------------
     # @property

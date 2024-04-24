@@ -4,7 +4,7 @@ from typing import Optional
 
 from ...models import Profile, Requirement, RequirementCheck, RequirementLevel
 from .checks import SHACLCheck
-from .models import Shape
+from .models import Shape, ShapesRegistry
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -30,15 +30,17 @@ class SHACLRequirement(Requirement):
     def __init_checks__(self) -> list[RequirementCheck]:
         # assign a check to each property of the shape
         checks = []
-        for prop in self._shape.get_properties():
-            logger.debug("Creating check for property %s %s", prop.name, prop.description)
-            property_check = SHACLCheck(self, prop)
-            logger.debug("Property check %s: %s", property_check.name, property_check.description)
-            checks.append(property_check)
+        # create a check for each property if the shape has nested properties
+        if hasattr(self.shape, "properties"):
+            for prop in self.shape.properties:
+                logger.debug("Creating check for property %s %s", prop.name, prop.description)
+                property_check = SHACLCheck(self, prop)
+                logger.debug("Property check %s: %s", property_check.name, property_check.description)
+                checks.append(property_check)
 
         # if no property checks, add a generic one
         if len(checks) == 0:
-            checks.append(SHACLCheck(self))
+            checks.append(SHACLCheck(self, self.shape))
         return checks
 
     @property
@@ -48,9 +50,10 @@ class SHACLRequirement(Requirement):
     @staticmethod
     def load(profile: Profile, requirement_level: RequirementLevel,
              file_path: Path, publicID: Optional[str] = None) -> list[Requirement]:
-        shapes: dict[str, Shape] = Shape.load(file_path, publicID=publicID)
+        assert file_path is not None, "The file path cannot be None"
+        shapes: list[Shape] = ShapesRegistry.get_instance().load_shapes(file_path, publicID)
         logger.debug("Loaded %s shapes: %s", len(shapes), shapes)
         requirements = []
-        for shape in shapes.values():
+        for shape in shapes:
             requirements.append(SHACLRequirement(requirement_level, shape, profile, file_path))
         return requirements

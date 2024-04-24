@@ -5,17 +5,17 @@ import logging
 from pathlib import Path
 from typing import Optional, Union
 
-from rdflib import RDF, Graph, Namespace, URIRef
+from rdflib import Graph, Namespace
 from rdflib.term import Node
 
 from ...constants import SHACL_NS
-from .utils import inject_attributes
+from .utils import ShapesList, inject_attributes
 
 # set up logging
 logger = logging.getLogger(__name__)
 
 
-class ShapeProperty:
+class PropertyShape:
 
     # define default values
     name: str = None
@@ -25,73 +25,33 @@ class ShapeProperty:
     order: int = 0
 
     def __init__(self,
-                 shape: Shape,
-                 shape_property_node: Node):
+                 node: Node,
+                 graph: Graph,
+                 parent: Optional[Shape] = None):
 
         # store the shape
-        self._shape = shape
-        # store the node
-        self._node = shape_property_node
-
-        # create a graph for the shape property
-        shapes_graph = shape.shapes_graph
-        shape_graph = Graph()
-        shape_graph += shapes_graph.triples((shape.node, None, None))
-        shape_property_attributes_graph = Graph()
-        shape_property_attributes_graph += shapes_graph.triples((shape_property_node, None, None))
-        # global shape property graph
-        shape_property_graph = shape_graph + shape_property_attributes_graph
-
-        # remove dangling properties
-        for s, p, o in shape_property_graph:
-            logger.debug(f"Processing {p} of property graph {shape_property_node}")
-            if p == URIRef("http://www.w3.org/ns/shacl#property") and o != shape_property_node:
-                shape_property_graph.remove((s, p, o))
-        # add BNodes
-        for s, p, o in shape_property_attributes_graph:
-            shape_property_graph += shapes_graph.triples((o, None, None))
-
-        # Use the triples method to get all triples that are part of a list
-        RDF = Namespace("http://www.w3.org/1999/02/22-rdf-syntax-ns#")
-        first_predicate = RDF.first
-        rest_predicate = RDF.rest
-        shape_property_graph += shapes_graph.triples((None, first_predicate, None))
-        shape_property_graph += shapes_graph.triples((None, rest_predicate, None))
-        for _, _, object in shape_property_graph:
-            shape_property_graph += shapes_graph.triples((object, None, None))
-
+        self._node = node
         # store the graph
-        self._shape_property_graph = shape_property_graph
-
+        self._graph = graph
+        # store the parent shape
+        self._parent = parent
         # inject attributes of the shape property to the object
-        inject_attributes(shape_property_attributes_graph, self)
+        inject_attributes(self, graph, node)
 
     @property
-    def shape(self):
-        return self._shape
-
-    @property
-    def node(self):
+    def node(self) -> Node:
+        """Return the node of the shape property"""
         return self._node
 
     @property
-    def shape_property_graph(self):
-        return self._shape_property_graph
+    def graph(self) -> Graph:
+        """Return the graph of the shape property"""
+        return self._graph
 
-    def compare_shape(self, other_model):
-        return self.shape == other_model.shape
-
-    def compare_name(self, other_model):
-        return self.name == other_model.name
-
-    def __eq__(self, __value: object) -> bool:
-        if not isinstance(__value, type(self)):
-            raise ValueError("Invalid comparison")
-        return self._shape == getattr(__value, '_shape', None)\
-            and self._node == getattr(__value, '_node', None)
-
-    def __hash__(self):
-        return hash(self._node)
+    @property
+    def parent(self) -> Optional[Shape]:
+        """Return the parent shape of the shape property"""
+        return self._parent
 
 
 class Shape:
@@ -100,34 +60,15 @@ class Shape:
     name: str = None
     description: str = None
 
-    def __init__(self, node: Node, shapes_graph: Graph):
+    def __init__(self, node: Node, graph: Graph):
 
         # store the shape node
         self._node = node
         # store the shapes graph
-        self._shapes_graph = shapes_graph
-        # initialize the properties
-        self._properties = []
-
-        # create a graph for the shape
-        logger.debug("Initializing graph for the shape: %s" % node)
-        shape_graph = Graph()
-        shape_graph += shapes_graph.triples((node, None, None))
-        # store the graph
-        self._shape_graph = shape_graph
+        self._graph = graph
 
         # inject attributes of the shape to the object
-        inject_attributes(shape_graph, self)
-
-        # Initialize the properties
-        # Define the property predicate
-        predicate = URIRef(SHACL_NS + "property")
-        # Use the triples method to get all triples with the particular predicate
-        first_triples = shape_graph.triples((None, predicate, None))
-        # For each triple from the first call, get all triples whose subject is the object of the first triple
-        for _, _, object in first_triples:
-            shape_graph += shapes_graph.triples((object, None, None))
-            self._properties.append(ShapeProperty(self, object))
+        inject_attributes(self, graph, node)
 
     @property
     def node(self):
@@ -135,30 +76,9 @@ class Shape:
         return self._node
 
     @property
-    def shape_graph(self):
+    def graph(self):
         """Return the subgraph of the shape"""
-        return self._shape_graph
-
-    @property
-    def shapes_graph(self):
-        """Return the graph of the shapes which contains the shape"""
-        return self._shapes_graph
-
-    @property
-    def properties(self):
-        """Return the properties of the shape"""
-        return self._properties.copy()
-
-    def get_properties(self) -> list[ShapeProperty]:
-        """Return the properties of the shape"""
-        return self._properties.copy()
-
-    def get_property(self, name) -> ShapeProperty:
-        """Return the property of the shape with the given name"""
-        for prop in self._properties:
-            if prop.name == name:
-                return prop
-        return None
+        return self._graph
 
     def __str__(self):
         return f"{self.name}: {self.description}"
@@ -174,28 +94,39 @@ class Shape:
     def __hash__(self):
         return hash(self._node)
 
-    @classmethod
-    def load(cls, shapes_path: Union[str, Path], publicID: Optional[str] = None) -> dict[str, Shape]:
-        """
-        Load the shapes from the graph
-        """
-        shapes_graph = Graph()
-        shapes_graph.parse(shapes_path, format="turtle", publicID=publicID)
-        logger.debug("Shapes graph: %s" % shapes_graph)
 
-        # extract shapeNode triples from the shapes_graph
-        shapeNode = URIRef(SHACL_NS + "NodeShape")
-        shapes_nodes = shapes_graph.triples((None, RDF.type, shapeNode))
-        logger.debug("Shapes nodes: %s" % shapes_nodes)
-        # create a shape object for each shape node
-        shapes: dict[str, Shape] = {}
-        for shape_node, _, _ in shapes_nodes:
-            logger.debug(f"Processing Shape Node: {shape_node}")
-            shape = Shape(shape_node, shapes_graph)
-            if str(shape):
-                shapes[str(shape)] = shape
+class NodeShape(Shape):
 
-        return shapes
+    def __init__(self, node: Node, graph: Graph, properties: list[PropertyShape] = None):
+        super().__init__(node, graph)
+        # store the properties
+        self._properties = properties if properties else []
+
+    @property
+    def properties(self) -> list[PropertyShape]:
+        """Return the properties of the shape"""
+        return self._properties.copy()
+
+    def get_property(self, name) -> PropertyShape:
+        """Return the property of the shape with the given name"""
+        for prop in self._properties:
+            if prop.name == name:
+                return prop
+        return None
+
+    def add_property(self, property: PropertyShape):
+        """Add a property to the shape"""
+        self._properties.append(property)
+
+    def remove_property(self, property: PropertyShape):
+        """Remove a property from the shape"""
+        self._properties.remove(property)
+
+    def __str__(self):
+        return f"NodeShape({self.name})"
+
+    def __repr__(self):
+        return f"NodeShape({self.name})"
 
 
 class ViolationShape:
@@ -252,3 +183,73 @@ class ViolationShape:
         if nodeKind:
             return nodeKind[0]['@id']
         return None
+
+
+class ShapesRegistry:
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
+    def __init__(self):
+        self._shapes = {}
+
+    def add_shape(self, shape: Shape):
+        self._shapes[str(shape)] = shape
+
+    def get_shape(self, name: str) -> Optional[Shape]:
+        return self._shapes.get(name, None)
+
+    def get_shapes(self) -> dict[str, Shape]:
+        return self._shapes.copy()
+
+    def load_shapes(self, shapes_path: Union[str, Path], publicID: Optional[str] = None) -> list[Shape]:
+        """
+        Load the shapes from the graph
+        """
+        logger.debug(f"Loading shapes from: {shapes_path}")
+        # load shapes (nodes and properties) from the shapes graph
+        shapes_list: ShapesList = ShapesList.load_from_file(shapes_path, publicID)
+        logger.debug(f"Shapes List: {shapes_list}")
+
+        # list of instantiated shapes
+        shapes = []
+
+        # register Node Shapes
+        for node_shape in shapes_list.node_shapes:
+            # get the shape graph
+            node_graph = shapes_list.get_shape_graph(node_shape)
+            # create a node shape object
+            shape = NodeShape(node_shape, node_graph)
+            # load the nested properties
+            shacl_ns = Namespace(SHACL_NS)
+            nested_properties = node_graph.objects(subject=node_shape, predicate=shacl_ns.property)
+            for property_shape in nested_properties:
+                property_graph = shapes_list.get_shape_property_graph(node_shape, property_shape)
+                p_shape = PropertyShape(
+                    property_shape, property_graph, shape)
+                shape.add_property(p_shape)
+                self.add_shape(p_shape)
+            # store the node shape
+            self.add_shape(shape)
+            shapes.append(shape)
+
+        # register Property Shapes
+        for property_shape in shapes_list.property_shapes:
+            shape = PropertyShape(property_shape, shapes_list.get_shape_graph(property_shape))
+            self.add_shape(shape)
+            shapes.append(shape)
+
+        return shapes
+
+    def __str__(self):
+        return f"ShapesRegistry: {self._shapes}"
+
+    def __repr__(self):
+        return f"ShapesRegistry({self._shapes})"
+
+    @classmethod
+    def get_instance(cls):
+        return cls()

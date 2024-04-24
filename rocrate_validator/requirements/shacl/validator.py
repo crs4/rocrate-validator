@@ -10,7 +10,7 @@ from pyshacl.pytypes import GraphLike
 from rdflib import Graph
 from rdflib.term import Node, URIRef
 
-from rocrate_validator.models import Severity
+from rocrate_validator.models import Severity, ValidationResult
 
 from ...constants import (RDF_SERIALIZATION_FORMATS,
                           RDF_SERIALIZATION_FORMATS_TYPES, SHACL_NS,
