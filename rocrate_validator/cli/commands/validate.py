@@ -117,7 +117,7 @@ def validate(ctx,
         requirement_severity_only=requirement_severity_only,
         disable_profile_inheritance=disable_profile_inheritance,
         rocrate_path=Path(rocrate_path).absolute(),
-        ontologies_path=Path(ontologies_path).absolute() if ontologies_path else None,
+        ontology_path=Path(ontologies_path).absolute() if ontologies_path else None,
         abort_on_first=not no_fail_fast
     )
 

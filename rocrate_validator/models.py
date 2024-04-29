@@ -3,6 +3,7 @@ from __future__ import annotations
 import enum
 import inspect
 import logging
+import os
 from abc import ABC, abstractmethod
 from collections.abc import Collection
 from dataclasses import dataclass
@@ -12,7 +13,8 @@ from typing import Optional, Union
 
 from rdflib import Graph
 
-from rocrate_validator.constants import (DEFAULT_PROFILE_README_FILE,
+from rocrate_validator.constants import (DEFAULT_ONTOLOGY_FILE,
+                                         DEFAULT_PROFILE_README_FILE,
                                          IGNORED_PROFILE_DIRECTORIES,
                                          PROFILE_FILE_EXTENSIONS,
                                          RDF_SERIALIZATION_FORMATS_TYPES,
@@ -158,6 +160,7 @@ class Profile:
         def ok_file(p: Path) -> bool:
             return p.is_file() \
                 and p.suffix in PROFILE_FILE_EXTENSIONS \
+                and not p.name == DEFAULT_ONTOLOGY_FILE \
                 and not p.name.startswith('.') \
                 and not p.name.startswith('_')
 
@@ -724,7 +727,7 @@ class Validator:
                  disable_profile_inheritance: bool = False,
                  requirement_severity: Severity = Severity.REQUIRED,
                  requirement_severity_only: bool = False,
-                 ontologies_path: Optional[Path] = None,
+                 ontology_path: Optional[Path] = None,
                  advanced: Optional[bool] = False,
                  inference: Optional[VALID_INFERENCE_OPTIONS_TYPES] = None,
                  inplace: Optional[bool] = False,
@@ -754,14 +757,24 @@ class Validator:
             **kwargs,
         }
 
+        # TODO: implement custom ontology file ???
+        supported_path = f"{self.profiles_path}/{self.profile_name}/{DEFAULT_ONTOLOGY_FILE}"
+        if ontology_path:
+            logger.warning("Detected an ontology path. Custom ontology file is not yet supported."
+                           f"Use {supported_path} to provide an ontology for your profile.")
+        # overwrite the ontology path if the custom ontology file is provided
+        ontology_path = supported_path
+
         # reference to the data graph
         self._data_graph = None
         # reference to the list of profiles to load
         self._profiles: list[Profile] = None
         # reference to the path of the ontologies
-        self._ontologies_path = ontologies_path
+        self._ontology_path = ontology_path
         # reference to the graph of shapes
         self._ontologies_graph = None
+        # flag to indicate if the ontologies graph has been initialized
+        self._ontology_graph_initialized = False
 
     @property
     def validation_settings(self) -> dict[str, BaseTypes]:
@@ -774,6 +787,10 @@ class Validator:
     @property
     def profile_path(self):
         return f"{self.profiles_path}/{self.profile_name}"
+
+    @property
+    def ontology_path(self):
+        return self._ontology_path
 
     def load_data_graph(self):
         data_graph = Graph()
@@ -811,23 +828,24 @@ class Validator:
             return f"{path}/"
         return path
 
-    def load_ontologies_graph(self):
+    def load_ontology_graph(self):
         # load the graph of ontologies
-        ontologies_graph = Graph()
-        if self._ontologies_path:
-            ontologies_graph.parse(self._ontologies_path, format="ttl",
-                                   publicID=self.publicID)
+        ontologies_graph = None
+        if self._ontology_path:
+            if os.path.exists(self.ontology_path):
+                logger.debug("Loading ontologies: %s", self.ontology_path)
+                ontologies_graph = Graph()
+                ontologies_graph.parse(self.ontology_path, format="ttl",
+                                       publicID=self.publicID)
         return ontologies_graph
 
-    def get_ontologies_graph(self, refresh: bool = False):
-        # load the graph of ontologies
-        if not self._ontologies_graph or refresh:
-            self._ontologies_graph = self.load_ontologies_graph()
-        return self._ontologies_graph
-
     @property
-    def ontologies_graph(self) -> Graph:
-        return self.get_ontologies_graph()
+    def ontology_graph(self) -> Graph:
+        if not self._ontology_graph_initialized:
+            # load the graph of ontologies
+            self._ontologies_graph = self.load_ontology_graph()
+            self._ontology_graph_initialized = True
+        return self._ontologies_graph
 
     def validate_requirements(self, requirements: list[Requirement]) -> ValidationResult:
         # check if requirement is an instance of Requirement

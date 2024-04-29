@@ -19,6 +19,9 @@ IGNORED_PROFILE_DIRECTORIES = ["__pycache__", ".", "README.md", "LICENSE"]
 # Define the list of enabled profile file extensions
 PROFILE_FILE_EXTENSIONS = [".ttl", ".py"]
 
+# Define the default ontology file name
+DEFAULT_ONTOLOGY_FILE = "ontology.ttl"
+
 # Define allowed RDF extensions and serialization formats as map
 RDF_SERIALIZATION_FILE_FORMAT_MAP = {
     "xml": "xml",

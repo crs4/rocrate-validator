@@ -40,7 +40,7 @@ class SHACLCheck(RequirementCheck):
         shapes_registry = ShapesRegistry.get_instance()
 
         # set up the input data for the validator
-        ontology_graph = context.validator.ontologies_graph
+        ontology_graph = context.validator.ontology_graph
         data_graph = context.validator.data_graph
         shapes_graph = shapes_registry.shapes_graph
 
