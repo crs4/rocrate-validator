@@ -163,24 +163,6 @@ class SHACLValidationResult:
     def text(self) -> str:
         return self._text
 
-    #  ------------ Dead code? ------------
-    # @staticmethod
-    # def from_serialized_results_graph(file_path: str, format: str = 'turtle'):
-    #     # check the input
-    #     assert format in ['turtle', 'n3', 'nt',
-    #                       'xml', 'rdf', 'json-ld'], "Invalid format"
-    #     assert file_path, "Invalid file path"
-    #     assert os.path.exists(file_path), "File does not exist"
-    #     # Load the graph
-    #     logger.debug("Loading graph from file: %s" % file_path)
-    #     g = Graph()
-    #     _ = g.parse(file_path, format=format)
-    #     logger.debug("Graph loaded from file: %s" % file_path)
-
-    #     # return the validation result
-    #     assert False, "missing Validator argument to constructor call"
-    #     return ValidationResult(g)
-
 
 class SHACLValidator:
 
