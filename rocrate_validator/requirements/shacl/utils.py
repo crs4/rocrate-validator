@@ -108,10 +108,12 @@ class ShapesList:
     def __init__(self,
                  node_shapes: list[Node],
                  property_shapes: list[Node],
-                 shapes_graphs: dict[Node, Graph]):
-        self._shapes_graphs = shapes_graphs
+                 shapes_graphs: dict[Node, Graph],
+                 shapes_graph: Graph):
         self._node_shapes = node_shapes
         self._property_shapes = property_shapes
+        self._shapes_graph = shapes_graph
+        self._shapes_graphs = shapes_graphs
 
     @property
     def node_shapes(self) -> list[Node]:
@@ -125,6 +127,9 @@ class ShapesList:
     def shapes(self) -> list[Node]:
         return self._node_shapes + self._property_shapes
 
+    @property
+    def shapes_graph(self) -> Graph:
+        return self._shapes_graph
     def get_shape_graph(self, shape_node: Node) -> Graph:
         return self._shapes_graphs[shape_node]
 
