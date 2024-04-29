@@ -245,12 +245,14 @@ class SHACLValidator:
                 "serialization_output_format must be one of "
                 f"{RDF_SERIALIZATION_FORMATS}")
 
+        assert inference in (None, "rdfs", "owlrl", "both"), "Invalid inference option"
+
         # validate the data graph using pyshacl.validate
         conforms, results_graph, results_text = pyshacl.validate(
             data_graph,
             shacl_graph=self.shapes_graph,
             ont_graph=self.ont_graph,
-            inference=inference,
+            inference="owlrl" if self.ont_graph else None,
             inplace=inplace,
             abort_on_first=abort_on_first,
             allow_infos=allow_infos,
