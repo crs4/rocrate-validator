@@ -256,6 +256,7 @@ class SHACLValidator:
             allow_infos=allow_infos,
             allow_warnings=allow_warnings,
             meta_shacl=False,
+            iterate_rules=True,
             advanced=advanced,
             js=False,
             debug=False,
