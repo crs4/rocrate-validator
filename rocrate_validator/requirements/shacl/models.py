@@ -202,10 +202,20 @@ class ShapesRegistry:
         self._shapes = {}
 
     def add_shape(self, shape: Shape):
-        self._shapes[str(shape)] = shape
+        assert isinstance(shape, Shape), "Invalid shape"
+        logger.debug("Adding shape: %s", shape)
+        self._shapes[f"{hash(shape)}"] = shape
+        logger.debug("Added shapes: %r", self._shapes.keys())
 
-    def get_shape(self, name: str) -> Optional[Shape]:
-        return self._shapes.get(name, None)
+    def get_shape(self, hash_value: int) -> Optional[Shape]:
+        logger.debug("Getting shape with hash: %s from %r", hash_value, list(self._shapes.keys()))
+        return self._shapes.get(f"{hash_value}", None)
+
+    def get_shape_by_name(self, name: str) -> Optional[Shape]:
+        for shape in self._shapes.values():
+            if shape.name == name:
+                return shape
+        return None
 
     def get_shapes(self) -> dict[str, Shape]:
         return self._shapes.copy()
