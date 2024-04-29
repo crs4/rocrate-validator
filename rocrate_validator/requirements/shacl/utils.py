@@ -59,7 +59,7 @@ def inject_attributes(obj: object, node_graph: Graph, node: Node) -> object:
         if predicate_as_string.startswith(SHACL_NS):
             property_name = predicate_as_string.split("#")[-1]
             setattr(obj, property_name, o.toPython())
-            logger.debug("Injecting attribute %s: %s", property_name, o.toPython())
+            logger.debug("Injected attribute %s: %s", property_name, o.toPython())
 
     # return the object
     return obj
