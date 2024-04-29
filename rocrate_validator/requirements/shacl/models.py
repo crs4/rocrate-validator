@@ -140,6 +140,7 @@ class ShapesRegistry:
 
     def __init__(self):
         self._shapes = {}
+        self._shapes_graph: Graph = Graph()
 
     def add_shape(self, shape: Shape):
         assert isinstance(shape, Shape), "Invalid shape"
@@ -160,6 +161,10 @@ class ShapesRegistry:
     def get_shapes(self) -> dict[str, Shape]:
         return self._shapes.copy()
 
+    @property
+    def shapes_graph(self) -> Graph:
+        return self._shapes_graph
+
     def load_shapes(self, shapes_path: Union[str, Path], publicID: Optional[str] = None) -> list[Shape]:
         """
         Load the shapes from the graph
@@ -168,6 +173,9 @@ class ShapesRegistry:
         # load shapes (nodes and properties) from the shapes graph
         shapes_list: ShapesList = ShapesList.load_from_file(shapes_path, publicID)
         logger.debug(f"Shapes List: {shapes_list}")
+
+        # append the partial shapes graph to the global shapes graph
+        self._shapes_graph += shapes_list.shapes_graph
 
         # list of instantiated shapes
         shapes = []
