@@ -46,6 +46,41 @@ def inject_attributes(obj: object, node_graph: Graph, node: Node) -> object:
     return obj
 
 
+def __compute_values__(g: Graph, s: Node) -> list[tuple]:
+    """
+    Compute the values of the triples in the graph (excluding BNodes)
+    starting from the given subject node `s`.
+    """
+
+    # Collect the values of the triples in the graph (excluding BNodes)
+    values = []
+    # Assuming the list of triples values is stored in a variable called 'triples_values'
+    triples_values = list([(_, x, _) for (_, x, _) in g.triples((s, None, None)) if x != RDF.type])
+
+    for (s, p, o) in triples_values:
+        if isinstance(o, BNode):
+            values.extend(__compute_values__(g, o))
+        else:
+            values.append((s, p, o) if not isinstance(s, BNode) else (p, o))
+    return values
+
+
+def compute_hash(g: Graph, s: Node):
+    """
+    Compute the hash of the triples in the graph (excluding BNodes)
+    starting from the given subject node `s`.
+    """
+
+    # Collect the values of the triples in the graph (excluding BNodes)
+    triples_values = sorted(__compute_values__(g, s))
+    # Convert the list of triples values to a string representation
+    triples_string = str(triples_values)
+    # Calculate the hash of the triples string
+    hash_value = hashlib.sha256(triples_string.encode()).hexdigest()
+    # Return the hash value
+    return hash_value
+
+
 class ShapesList:
     def __init__(self,
                  node_shapes: list[Node],
