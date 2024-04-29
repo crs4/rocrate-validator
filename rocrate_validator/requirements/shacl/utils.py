@@ -46,6 +46,11 @@ def map_severity(shacl_severity: str) -> Severity:
         raise RuntimeError(f"Unrecognized SHACL severity term {shacl_severity}")
 
 
+def make_uris_relative(text: str, ro_crate_path: Union[Path, str]) -> str:
+    # globally replace the string "file://" with "./
+    return text.replace(f'file://{ro_crate_path}', '.')
+
+
 def inject_attributes(obj: object, node_graph: Graph, node: Node) -> object:
     # inject attributes of the shape property
     for node, p, o in node_graph.triples((node, None, None)):

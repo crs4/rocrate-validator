@@ -92,15 +92,7 @@ class SHACLViolation:
     def sourceConstraintComponent(self):
         return self._violation_json[f'{SHACL_NS}sourceConstraintComponent'][0]['@id']
 
-    @property
-    def sourceShape(self) -> ViolationShape:
-        try:
-            return ViolationShape(self.source_shape_node, self._graph)
-        except Exception as e:
-            logger.error("Error getting source shape: %s" % e)
-            if logger.isEnabledFor(logging.DEBUG):
-                logger.exception(e)
-            return None
+            self._result_message = make_uris_relative(message.toPython(), ro_crate_path)
 
     @property
     def description(self):
