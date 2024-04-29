@@ -756,10 +756,10 @@ class Validator:
 
         # reference to the data graph
         self._data_graph = None
-        # reference to the profile
-        self._profile = None
+        # reference to the list of profiles to load
+        self._profiles: list[Profile] = None
         # reference to the path of the ontologies
-        self._ontologies_path = None
+        self._ontologies_path = ontologies_path
         # reference to the graph of shapes
         self._ontologies_graph = None
 
@@ -793,16 +793,16 @@ class Validator:
     def data_graph(self) -> Graph:
         return self.get_data_graph()
 
-    def _lazy_load_profile(self, refresh: bool = False):
-        # load the profile
-        if not self._profile or refresh:
-            self._profile = Profile.load(self.profile_path, publicID=self.publicID)
-            logger.debug("Loaded profile: %s", self._profile)
-        return self._profile
-
     @property
-    def profile(self) -> Profile:
-        return self._lazy_load_profile()
+    def profiles(self) -> list[Profile]:
+        if not self._profiles:
+            profile = Profile.load(self.profile_path, publicID=self.publicID)
+            self._profiles = [profile]
+            if not self.disable_profile_inheritance:
+                logger.debug("disabling profile inheritance not active. Loading inherited profiles.")
+                self._profiles.extend(profile.inherited_profiles)
+                logger.debug("Inherited profiles: %s", self._profiles)
+        return self._profiles
 
     @property
     def publicID(self) -> str:
@@ -840,11 +840,8 @@ class Validator:
         return self.__do_validate__()
 
     def __do_validate__(self, requirements: Optional[list[Requirement]] = None) -> ValidationResult:
-        # list of profiles to validate
-        profiles = [self.profile]
-        logger.debug("Disable profile inheritance: %s", self.disable_profile_inheritance)
-        if not self.disable_profile_inheritance:
-            profiles.extend(self.profile.inherited_profiles)
+        # set the profiles to validate against
+        profiles = self.profiles
         logger.debug("Profiles to validate: %s", profiles)
 
         # initialize the validation context
