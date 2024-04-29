@@ -117,23 +117,42 @@ class ShapesList:
 
     @property
     def node_shapes(self) -> list[Node]:
+        """
+        Get all the node shapes
+        """
         return self._node_shapes.copy()
 
     @property
     def property_shapes(self) -> list[Node]:
+        """
+        Get all the property shapes
+        """
         return self._property_shapes.copy()
 
     @property
     def shapes(self) -> list[Node]:
+        """
+        Get all the shapes
+        """
         return self._node_shapes + self._property_shapes
 
     @property
     def shapes_graph(self) -> Graph:
+        """
+        Get the graph containing all the shapes
+        """
         return self._shapes_graph
+
     def get_shape_graph(self, shape_node: Node) -> Graph:
+        """
+        Get the subgraph of the given shape node
+        """
         return self._shapes_graphs[shape_node]
 
     def get_shape_property_graph(self, shape_node: Node, shape_property: Node) -> Graph:
+        """
+        Get the subgraph of the given shape node excluding the given property
+        """
         node_graph = self.get_shape_graph(shape_node)
         assert node_graph is not None, "The shape graph cannot be None"
 
@@ -226,4 +245,4 @@ def load_shapes_from_graph(g: Graph) -> ShapesList:
             subgraph.add((s, p, o))
         subgraphs[shape] = subgraph
 
-    return ShapesList(node_shapes, property_shapes, subgraphs)
+    return ShapesList(node_shapes, property_shapes, subgraphs, g)
