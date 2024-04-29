@@ -19,15 +19,21 @@ class SHACLCheck(RequirementCheck):
     A SHACL check for a specific shape property
     """
 
+    # Map shape to requirement check instances
+    __instances__ = {}
+
     def __init__(self,
                  requirement: Requirement,
                  shape: Optional[Shape]) -> None:
         self._shape = shape
+        # init the check
         super().__init__(requirement,
                          shape.name
                          if shape and shape.name else None,
                          shape.description
                          if shape and shape.description else None)
+        # store the instance
+        SHACLCheck.__add_instance__(shape, self)
 
     @property
     def shape(self) -> Shape:
@@ -80,6 +86,14 @@ class SHACLCheck(RequirementCheck):
 
     def __hash__(self) -> int:
         return super().__hash__() + (hash(self._shape) if self._shape else 0)
+
+    @classmethod
+    def get_instance(cls, shape: Shape) -> Optional["SHACLCheck"]:
+        return cls.__instances__.get(hash(shape), None)
+
+    @classmethod
+    def __add_instance__(cls, shape: Shape, check: "SHACLCheck") -> None:
+        cls.__instances__[hash(shape)] = check
 
     #  ------------ Dead code? ------------
     # @property
