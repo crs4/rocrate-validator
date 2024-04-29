@@ -252,4 +252,6 @@ class ShapesRegistry:
 
     @classmethod
     def get_instance(cls):
-        return cls()
+        if not cls._instance:
+            cls._instance = cls()
+        return cls._instance
