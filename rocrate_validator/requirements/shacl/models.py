@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import logging
 from pathlib import Path
 from typing import Optional, Union
@@ -9,49 +8,10 @@ from rdflib import Graph, Namespace
 from rdflib.term import Node
 
 from ...constants import SHACL_NS
-from .utils import ShapesList, inject_attributes
+from .utils import ShapesList, compute_hash, inject_attributes
 
 # set up logging
 logger = logging.getLogger(__name__)
-
-
-class PropertyShape:
-
-    # define default values
-    name: str = None
-    description: str = None
-    group: str = None
-    defaultValue: str = None
-    order: int = 0
-
-    def __init__(self,
-                 node: Node,
-                 graph: Graph,
-                 parent: Optional[Shape] = None):
-
-        # store the shape
-        self._node = node
-        # store the graph
-        self._graph = graph
-        # store the parent shape
-        self._parent = parent
-        # inject attributes of the shape property to the object
-        inject_attributes(self, graph, node)
-
-    @property
-    def node(self) -> Node:
-        """Return the node of the shape property"""
-        return self._node
-
-    @property
-    def graph(self) -> Graph:
-        """Return the graph of the shape property"""
-        return self._graph
-
-    @property
-    def parent(self) -> Optional[Shape]:
-        """Return the parent shape of the shape property"""
-        return self._parent
 
 
 class Shape:
@@ -66,6 +26,8 @@ class Shape:
         self._node = node
         # store the shapes graph
         self._graph = graph
+        # cache the hash
+        self._hash = None
 
         # inject attributes of the shape to the object
         inject_attributes(self, graph, node)
@@ -81,10 +43,18 @@ class Shape:
         return self._graph
 
     def __str__(self):
-        return f"{self.name}: {self.description}"
+        class_name = self.__class__.__name__
+        if self.name and self.description:
+            return f"{class_name} - {self.name}: {self.description} ({hash(self)})"
+        elif self.name:
+            return f"{class_name} - {self.name} ({hash(self)})"
+        elif self.description:
+            return f"{class_name} - {self.description} ({hash(self)})"
+        else:
+            return f"{class_name} ({hash(self)})"
 
     def __repr__(self):
-        return f"Shape({self.name})"
+        return f"{ self.__class__.__name__}({hash(self)})"
 
     def __eq__(self, other):
         if not isinstance(other, Shape):
@@ -92,7 +62,44 @@ class Shape:
         return self._node == other._node
 
     def __hash__(self):
-        return hash(self._node)
+        if self._hash is None:
+            shape_hash = compute_hash(self.graph, self.node)
+            self._hash = hash(shape_hash)
+        return self._hash
+
+
+class PropertyShape(Shape):
+
+    # define default values
+    name: str = None
+    description: str = None
+    group: str = None
+    defaultValue: str = None
+    order: int = 0
+
+    def __init__(self,
+                 node: Node,
+                 graph: Graph,
+                 parent: Optional[Shape] = None):
+        # call the parent constructor
+        super().__init__(node, graph)
+        # store the parent shape
+        self._parent = parent
+
+    @property
+    def node(self) -> Node:
+        """Return the node of the shape property"""
+        return self._node
+
+    @property
+    def graph(self) -> Graph:
+        """Return the graph of the shape property"""
+        return self._graph
+
+    @property
+    def parent(self) -> Optional[Shape]:
+        """Return the parent shape of the shape property"""
+        return self._parent
 
 
 class NodeShape(Shape):
@@ -122,8 +129,6 @@ class NodeShape(Shape):
         """Remove a property from the shape"""
         self._properties.remove(property)
 
-    def __str__(self):
-        return f"NodeShape({self.name})"
 
     def __repr__(self):
         return f"NodeShape({self.name})"
