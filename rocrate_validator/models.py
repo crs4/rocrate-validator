@@ -101,7 +101,7 @@ class LevelCollection:
     SHALL_NOT = RequirementLevel('SHALL_NOT', Severity.REQUIRED)
 
     def __init__(self):
-        raise NotImplementedError(f"{type(self)} can't be instantianted")
+        raise NotImplementedError(f"{type(self)} can't be instantiated")
 
     @staticmethod
     def all() -> list[RequirementLevel]:
@@ -174,7 +174,7 @@ class Profile:
                 req_id += 1
                 requirement._order_number = req_id
                 self.add_requirement(requirement)
-        logger.debug("Profile %s loaded %s requiremens: %s",
+        logger.debug("Profile %s loaded %s requirements: %s",
                      self.name, len(self._requirements), self._requirements)
 
     @property
