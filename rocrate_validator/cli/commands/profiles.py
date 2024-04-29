@@ -4,6 +4,8 @@ from pathlib import Path
 from rich.markdown import Markdown
 from rich.table import Table
 
+from rocrate_validator.constants import DEFAULT_PROFILE_NAME
+
 from ... import services
 from ...colors import get_severity_color
 from ...utils import get_profiles_path
@@ -78,10 +80,10 @@ def list_profiles(ctx, profiles_path: Path = DEFAULT_PROFILES_PATH):
 
 
 @profiles.command("describe")
-@click.argument("profile-name", type=click.STRING, default="ro-crate", required=True)
+@click.argument("profile-name", type=click.STRING, default=DEFAULT_PROFILE_NAME, required=True)
 @click.pass_context
 def describe_profile(ctx,
-                     profile_name: str = "ro-crate",
+                     profile_name: str = DEFAULT_PROFILE_NAME,
                      profiles_path: Path = DEFAULT_PROFILES_PATH):
     """
     Show a profile

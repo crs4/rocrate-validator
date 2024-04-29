@@ -13,7 +13,7 @@ from typing import Optional, Union
 
 from rdflib import Graph
 
-from rocrate_validator.constants import (DEFAULT_ONTOLOGY_FILE,
+from rocrate_validator.constants import (DEFAULT_ONTOLOGY_FILE, DEFAULT_PROFILE_NAME,
                                          DEFAULT_PROFILE_README_FILE,
                                          IGNORED_PROFILE_DIRECTORIES,
                                          PROFILE_FILE_EXTENSIONS,
@@ -723,7 +723,7 @@ class Validator:
     def __init__(self,
                  rocrate_path: Path,
                  profiles_path: Path = DEFAULT_PROFILES_PATH,
-                 profile_name: str = "ro-crate",
+                 profile_name: str = DEFAULT_PROFILE_NAME,
                  disable_profile_inheritance: bool = False,
                  requirement_severity: Severity = Severity.REQUIRED,
                  requirement_severity_only: bool = False,

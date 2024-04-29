@@ -10,6 +10,12 @@ RDF_SYNTAX_NS = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
 # Define the rocrate-metadata.json file name
 ROCRATE_METADATA_FILE = "ro-crate-metadata.json"
 
+# Define the default profiles name
+DEFAULT_PROFILE_NAME = "ro-crate"
+
+# Define the default profiles path
+DEFAULT_PROFILES_PATH = "profiles"
+
 # Define the default README file name for the RO-Crate profile
 DEFAULT_PROFILE_README_FILE = "README.md"
 

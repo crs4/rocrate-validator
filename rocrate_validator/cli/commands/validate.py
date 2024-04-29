@@ -7,6 +7,8 @@ from typing import Optional
 from rich.align import Align
 from rich.console import Console
 
+from rocrate_validator.constants import DEFAULT_PROFILE_NAME
+
 from ... import services
 from ...colors import get_severity_color
 from ...models import Severity, ValidationResult
@@ -44,7 +46,7 @@ logger = logging.getLogger(__name__)
     "-p",
     "--profile-name",
     type=click.STRING,
-    default="ro-crate",
+    default=DEFAULT_PROFILE_NAME,
     show_default=True,
     help="Name of the profile to use for validation",
 )
