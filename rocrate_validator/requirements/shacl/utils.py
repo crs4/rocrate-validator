@@ -32,6 +32,20 @@ def build_node_subgraph(graph: Graph, node: Node) -> Graph:
     return shape_graph
 
 
+def map_severity(shacl_severity: str) -> Severity:
+    """
+    Map the SHACL severity term to our Severity enum values
+    """
+    if f"{SHACL_NS}Violation" == shacl_severity:
+        return Severity.REQUIRED
+    elif f"{SHACL_NS}Warning" == shacl_severity:
+        return Severity.RECOMMENDED
+    elif f"{SHACL_NS}Info" == shacl_severity:
+        return Severity.OPTIONAL
+    else:
+        raise RuntimeError(f"Unrecognized SHACL severity term {shacl_severity}")
+
+
 def inject_attributes(obj: object, node_graph: Graph, node: Node) -> object:
     # inject attributes of the shape property
     for node, p, o in node_graph.triples((node, None, None)):

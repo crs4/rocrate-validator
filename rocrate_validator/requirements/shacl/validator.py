@@ -85,10 +85,8 @@ class SHACLViolation:
 
     @property
     def value(self):
-        value = self._violation_json.get(f'{SHACL_NS}value', None)
-        if not value:
-            return None
-        return value[0]['@id']
+            # we need to map the SHACL severity term to our Severity enum values
+            self._severity = map_severity(severity.toPython())
 
     @property
     def sourceConstraintComponent(self):
