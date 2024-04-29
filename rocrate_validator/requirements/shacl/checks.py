@@ -45,32 +45,36 @@ class SHACLCheck(RequirementCheck):
         shapes_graph = shapes_registry.shapes_graph
 
         # temporary fix to replace the ex: prefix with the rocrate path
-        if os.path.isdir(context.validator.rocrate_path):
-            shacl_ns = Namespace(SHACL_NS)
-            selects = shapes_graph.triples((None, shacl_ns.select, None))
-            for s, p, o in selects:
-                shapes_graph.remove((s, p, o))
-                # FIXME: write a better regex ??
-                updated_node_value = str(o).replace("ex:", f"<file://{context.validator.rocrate_path}/>")
-                shapes_graph.add((s, p, Literal(updated_node_value)))
+
+        # if the SHACLvalidation has been done, skip the check
+        result = getattr(context, "shacl_validation", None)
+        if result is not None:
+            return result
 
         # validate the data graph
         shacl_validator = SHACLValidator(shapes_graph=shapes_graph, ont_graph=ontology_graph)
-        result = shacl_validator.validate(
+        shacl_result = shacl_validator.validate(
             data_graph=data_graph, ontology_graph=ontology_graph, **context.validator.validation_settings)
         # parse the validation result
-        logger.debug("Validation '%s' conforms: %s", self.name, result.conforms)
-        if not result.conforms:
+        logger.debug("Validation '%s' conforms: %s", self.name, shacl_result.conforms)
+        # store the validation result in the context
+        result = shacl_result.conforms
+        setattr(context, "shacl_validation", result)
+        # if the validation failed, add the issues to the context
+        if not shacl_result.conforms:
             logger.debug("Validation failed")
-            logger.debug("Validation result: %s", result)
-            for violation in result.violations:
+            logger.debug("Parsing Validation result: %s", result)
+            for violation in shacl_result.violations:
+                shape = shapes_registry.get_shape(hash(violation.sourceShape))
+                assert shape is not None, "Unable to map the violation to a shape"
+                requirementCheck = SHACLCheck.get_instance(shape)
+                assert requirementCheck is not None, "The requirement check cannot be None"
                 c = context.result.add_check_issue(message=violation.get_result_message(context.rocrate_path),
-                                                   check=self,
+                                                   check=requirementCheck,
                                                    severity=violation.get_result_severity())
-                logger.debug("Validation issue: %s", c.message)
+                logger.debug("Added validation issue to the context: %s", c)
 
-            return False
-        return True
+        return result
 
     def __str__(self) -> str:
         return super().__str__() + (f" - {self._shape}" if self._shape else "")
