@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import logging
 from pathlib import Path
 from typing import Optional, Union
@@ -11,12 +10,14 @@ from rdflib import Graph
 from rdflib.term import Node, URIRef
 
 from rocrate_validator.models import Severity, ValidationResult
+from rocrate_validator.requirements.shacl.utils import (make_uris_relative,
+                                                        map_severity)
 
 from ...constants import (RDF_SERIALIZATION_FORMATS,
                           RDF_SERIALIZATION_FORMATS_TYPES, SHACL_NS,
                           VALID_INFERENCE_OPTIONS,
                           VALID_INFERENCE_OPTIONS_TYPES)
-from .models import ViolationShape
+from .models import PropertyShape
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -26,46 +27,24 @@ class SHACLViolation:
 
     def __init__(self, result: ValidationResult, violation_node: Node, graph: Graph) -> None:
         # check the input
+        assert result is not None, "Invalid result"
         assert isinstance(violation_node, Node), "Invalid violation node"
         assert isinstance(graph, Graph), "Invalid graph"
 
         # store the input
+        self._result = result
         self._violation_node = violation_node
         self._graph = graph
 
-        # store the result object
-        self._result = result
-
-        # create a graph for the violation
-        violation_graph = Graph()
-        violation_graph += graph.triples((violation_node, None, None))
-        self.violation_graph = violation_graph
-
-        # serialize the graph in json-ld
-        violation_obj = json.loads(violation_graph.serialize(format="json-ld"))
-        self._violation_json = violation_obj[0]
-
-        # get the source shape
-        shapes = list(graph.triples(
-            (violation_node, URIRef(f"{SHACL_NS}sourceShape"), None)))
-        self.source_shape_node = shapes[0][2]
-
-    def get_result_message(self, ro_crate_path: Union[Path, str]) -> str:
-        return self._make_uris_relative(
-            self._violation_json[f'{SHACL_NS}resultMessage'][0]['@value'],
-            ro_crate_path)
-
-    def get_result_severity(self) -> Severity:
-        shacl_severity = self._violation_json[f'{SHACL_NS}resultSeverity'][0]['@id']
-        # we need to map the SHACL severity term to our Severity enum values
-        if 'http://www.w3.org/ns/shacl#Violation' == shacl_severity:
-            return Severity.REQUIRED
-        elif 'http://www.w3.org/ns/shacl#Warning' == shacl_severity:
-            return Severity.RECOMMENDED
-        elif 'http://www.w3.org/ns/shacl#Info' == shacl_severity:
-            return Severity.OPTIONAL
-        else:
-            raise RuntimeError(f"Unrecognized SHACL severity term {shacl_severity}")
+        # initialize the properties for lazy loading
+        self._focus_node = None
+        self._result_message = None
+        self._result_path = None
+        self._severity = None
+        self._source_constraint_component = None
+        self._source_shape = None
+        self._source_shape_node = None
+        self._value = None
 
     @property
     def node(self) -> Node:
@@ -76,32 +55,56 @@ class SHACLViolation:
         return self._graph
 
     @property
-    def focusNode(self):
-        return self._violation_json[f'{SHACL_NS}focusNode'][0]['@id']
+    def focusNode(self) -> Node:
+        if not self._focus_node:
+            self._focus_node = self.graph.value(self._violation_node, URIRef(f"{SHACL_NS}sourceShape"))
+            assert self._focus_node is not None, f"Unable to get focus node from violation node {self._violation_node}"
+        return self._focus_node
 
     @property
     def resultPath(self):
-        return self._violation_json[f'{SHACL_NS}resultPath'][0]['@id']
+        if not self._result_path:
+            self._result_path = self.graph.value(self._violation_node, URIRef(f"{SHACL_NS}resultPath"))
+            assert self._result_path is not None, f"Unable to get result path from violation node {self._violation_node}"
+        return self._result_path
 
     @property
     def value(self):
+        if not self._value:
+            self._value = self.graph.value(self._violation_node, URIRef(f"{SHACL_NS}value"))
+            assert self._value is not None, f"Unable to get value from violation node {self._violation_node}"
+        return self._value
+
+    def get_result_severity(self) -> Severity:
+        if not self._severity:
+            severity = self.graph.value(self._violation_node, URIRef(f"{SHACL_NS}resultSeverity"))
+            assert severity is not None, f"Unable to get severity from violation node {self._violation_node}"
             # we need to map the SHACL severity term to our Severity enum values
             self._severity = map_severity(severity.toPython())
+        return self._severity
 
     @property
     def sourceConstraintComponent(self):
-        return self._violation_json[f'{SHACL_NS}sourceConstraintComponent'][0]['@id']
+        if not self._source_constraint_component:
+            self._source_constraint_component = self.graph.value(
+                self._violation_node, URIRef(f"{SHACL_NS}sourceConstraintComponent"))
+            assert self._source_constraint_component is not None, f"Unable to get source constraint component from violation node {self._violation_node}"
+        return self._source_constraint_component
 
+    def get_result_message(self, ro_crate_path: Union[Path, str]) -> str:
+        if not self._result_message:
+            message = self.graph.value(self._violation_node, URIRef(f"{SHACL_NS}resultMessage"))
+            assert message is not None, f"Unable to get result message from violation node {self._violation_node}"
             self._result_message = make_uris_relative(message.toPython(), ro_crate_path)
+        return self._result_message
 
     @property
-    def description(self):
-        return self.sourceShape.description
-
-    @staticmethod
-    def _make_uris_relative(text: str, ro_crate_path: Union[Path, str]) -> str:
-        # globally replace the string "file://" with "./
-        return text.replace(f'file://{ro_crate_path}', '.')
+    def sourceShape(self) -> PropertyShape:
+        if not self._source_shape_node:
+            self._source_shape_node = self.graph.value(self._violation_node, URIRef(f"{SHACL_NS}sourceShape"))
+            assert self._source_shape_node is not None, f"Unable to get source shape node from violation node {self._violation_node}"
+            self._source_shape = PropertyShape(self._source_shape_node, self.graph)
+        return self._source_shape
 
 
 class SHACLValidationResult:
@@ -133,19 +136,9 @@ class SHACLValidationResult:
         assert self._conforms == (len(self._violations) == 0), "Invalid validation result"
 
     def _parse_results_graph(self, results_graph: Graph):
-        # Query for validation results
-        query = """
-        SELECT ?subject
-        WHERE {{
-            ?subject a <{0}ValidationResult> .
-        }}
-        """.format(SHACL_NS)
-
-        query_results = results_graph.query(query)
-
+        # parse the violations from the results graph
         violations = []
-        for r in query_results:
-            violation_node = r[0]
+        for violation_node in results_graph.subjects(predicate=URIRef(f"{SHACL_NS}resultMessage")):
             violation = SHACLViolation(self, violation_node, results_graph)
             violations.append(violation)
 
