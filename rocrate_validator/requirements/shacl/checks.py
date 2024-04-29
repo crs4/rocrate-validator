@@ -1,13 +1,9 @@
 import logging
-import os
 from typing import Optional
 
-from rdflib import Literal, Namespace
-
-from rocrate_validator.constants import SHACL_NS
 from rocrate_validator.models import (Requirement, RequirementCheck,
                                       ValidationContext)
-from rocrate_validator.requirements.shacl.models import Shape
+from rocrate_validator.requirements.shacl.models import Shape, ShapesRegistry
 
 from .validator import SHACLValidator
 
@@ -40,10 +36,13 @@ class SHACLCheck(RequirementCheck):
         return self._shape
 
     def execute_check(self, context: ValidationContext):
+        # get the shapes registry
+        shapes_registry = ShapesRegistry.get_instance()
+
         # set up the input data for the validator
         ontology_graph = context.validator.ontologies_graph
         data_graph = context.validator.data_graph
-        shapes_graph = self.shape.graph
+        shapes_graph = shapes_registry.shapes_graph
 
         # temporary fix to replace the ex: prefix with the rocrate path
         if os.path.isdir(context.validator.rocrate_path):
