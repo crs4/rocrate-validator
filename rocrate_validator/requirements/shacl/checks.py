@@ -47,7 +47,11 @@ class SHACLCheck(RequirementCheck):
         data_graph = context.data_graph
         shapes_graph = context.shapes_graph
 
-        # temporary fix to replace the ex: prefix with the rocrate path
+        # uncomment to save the graphs to the logs folder (for debugging purposes)
+        # data_graph.serialize("logs/data_graph.ttl", format="turtle")
+        # shapes_graph.serialize("logs/shapes_graph.ttl", format="turtle")
+        # if ontology_graph:
+        #     ontology_graph.serialize("logs/ontology_graph.ttl", format="turtle")
 
         # if the SHACLvalidation has been done, skip the check
         result = getattr(context.base_context, "shacl_validation", None)
@@ -104,21 +108,6 @@ class SHACLCheck(RequirementCheck):
     @classmethod
     def clear_instances(cls) -> None:
         cls.__instances__.clear()
-
-    #  ------------ Dead code? ------------
-    # @property
-    # def severity(self):
-    #     return self.requirement.severity
-
-    # @classmethod
-    # def get_description(cls, requirement: Requirement):
-    #     from ...models import Validator
-    #     graph_of_shapes = Validator.load_graph_of_shapes(requirement)
-    #     return cls.query_description(graph_of_shapes)
-
-    # @property
-    # def shapes_graph(self):
-    #     return self.validator.get_graph_of_shapes(self.requirement.name)
 
 
 __all__ = ["SHACLCheck"]
