@@ -36,6 +36,8 @@ class SHACLCheck(RequirementCheck):
         return self._shape
 
     def execute_check(self, context: ValidationContext):
+        # retrieve the SHACLValidationContext
+        context = SHACLValidationContext.get_instance(context)
         # get the shapes registry
         shapes_registry = ShapesRegistry.get_instance()
 

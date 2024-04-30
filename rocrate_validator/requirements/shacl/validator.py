@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from pathlib import Path
 from typing import Optional, Union
 
@@ -9,18 +10,83 @@ from pyshacl.pytypes import GraphLike
 from rdflib import Graph
 from rdflib.term import Node, URIRef
 
-from rocrate_validator.models import Severity, ValidationResult
+from rocrate_validator.models import (Severity, ValidationContext,
+                                      ValidationResult)
 from rocrate_validator.requirements.shacl.utils import (make_uris_relative,
                                                         map_severity)
 
-from ...constants import (RDF_SERIALIZATION_FORMATS,
+from ...constants import (DEFAULT_ONTOLOGY_FILE, RDF_SERIALIZATION_FORMATS,
                           RDF_SERIALIZATION_FORMATS_TYPES, SHACL_NS,
                           VALID_INFERENCE_OPTIONS,
                           VALID_INFERENCE_OPTIONS_TYPES)
-from .models import PropertyShape
+from .models import PropertyShape, ShapesRegistry
 
 # set up logging
 logger = logging.getLogger(__name__)
+
+
+class SHACLValidationContext(ValidationContext):
+
+    def __init__(self, context: ValidationContext):
+        super().__init__(context.validator, context.settings)
+        self._base_context: ValidationContext = context
+        # reference to the ontology path
+        self._ontology_path: Path = None
+        # reference to the graph of shapes
+        self._ontology_graph: Graph = None
+
+    @property
+    def base_context(self) -> ValidationContext:
+        return self._base_context
+
+    @property
+    def result(self) -> ValidationResult:
+        return self.base_context.result
+
+    @property
+    def shapes_registry(self) -> ShapesRegistry:
+        return ShapesRegistry.get_instance(self.base_context.profile)
+
+    @property
+    def shapes_graph(self) -> Graph:
+        return self.shapes_registry.shapes_graph
+
+    @property
+    def ontology_path(self) -> Path:
+        if not self._ontology_path:
+            # TODO: implement custom ontology file ???
+            supported_path = f"{self.profiles_path}/{self.profile_name}/{DEFAULT_ONTOLOGY_FILE}"
+            if self.settings.get("ontology_path", None):
+                logger.warning("Detected an ontology path. Custom ontology file is not yet supported."
+                               f"Use {supported_path} to provide an ontology for your profile.")
+            # overwrite the ontology path if the custom ontology file is provided
+            self._ontology_path = Path(supported_path)
+        return self._ontology_path
+
+    def __load_ontology_graph__(self):
+        # load the graph of ontologies
+        ontology_graph = None
+        if os.path.exists(self.ontology_path):
+            logger.debug("Loading ontologies: %s", self.ontology_path)
+            ontology_graph = Graph()
+            ontology_graph.parse(self.ontology_path, format="ttl",
+                                 publicID=self.publicID)
+        return ontology_graph
+
+    @property
+    def ontology_graph(self) -> Graph:
+        if self._ontology_graph is None:
+            # load the graph of ontologies
+            self._ontology_graph = self.__load_ontology_graph__()
+        return self._ontology_graph
+
+    @ classmethod
+    def get_instance(cls, context: ValidationContext) -> SHACLValidationContext:
+        instance = getattr(context, "_shacl_validation_context", None)
+        if not instance:
+            instance = SHACLValidationContext(context)
+            setattr(context, "_shacl_validation_context", instance)
+        return instance
 
 
 class SHACLViolation:
