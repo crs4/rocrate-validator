@@ -714,91 +714,70 @@ class ValidationResult:
         return f"ValidationResult(issues={self._issues})"
 
 
-class Validator:
-    """
-    Can validate conformance to a single Profile (including any requirements
-    inherited by parent profiles).
-    """
+@dataclass
+class ValidationSettings:
 
-    def __init__(self,
-                 rocrate_path: Path,
-                 profiles_path: Path = DEFAULT_PROFILES_PATH,
-                 profile_name: str = DEFAULT_PROFILE_NAME,
-                 disable_profile_inheritance: bool = False,
-                 requirement_severity: Severity = Severity.REQUIRED,
-                 requirement_severity_only: bool = False,
-                 ontology_path: Optional[Path] = None,
-                 advanced: Optional[bool] = False,
-                 inference: Optional[VALID_INFERENCE_OPTIONS_TYPES] = None,
-                 inplace: Optional[bool] = False,
-                 abort_on_first: Optional[bool] = True,
-                 allow_infos: Optional[bool] = False,
-                 allow_warnings: Optional[bool] = False,
-                 serialization_output_path: Optional[Path] = None,
-                 serialization_output_format: RDF_SERIALIZATION_FORMATS_TYPES = "turtle",
-                 **kwargs):
-        self.rocrate_path = rocrate_path
-        self.profiles_path = profiles_path
-        self.profile_name = profile_name
-        self.requirement_severity = requirement_severity
-        self.requirement_severity_only = requirement_severity_only
-        self.disable_profile_inheritance = disable_profile_inheritance
+    # Data settings
+    data_path: Path
+    # Profile settings
+    profiles_path: Path = DEFAULT_PROFILES_PATH
+    profile_name: str = "ro-crate"
+    inherit_profiles: bool = True
+    # Ontology and inference settings
+    ontology_path: Optional[Path] = None
+    inference: Optional[VALID_INFERENCE_OPTIONS_TYPES] = None
+    # Validation strategy settings
+    inplace: Optional[bool] = False
+    abort_on_first: Optional[bool] = True
+    # Requirement severity settings
+    requirement_severity: Union[str, Severity] = Severity.REQUIRED
+    requirement_severity_only: bool = False
+    allow_infos: Optional[bool] = False
+    allow_warnings: Optional[bool] = False
+    # Output serialization settings
+    serialization_output_path: Optional[Path] = None
+    serialization_output_format: RDF_SERIALIZATION_FORMATS_TYPES = "turtle"
 
-        self._validation_settings: dict[str, BaseTypes] = {
-            'advanced': advanced,
-            'inference': inference,
-            'inplace': inplace,
-            'abort_on_first': abort_on_first,
-            'allow_infos': allow_infos,
-            'allow_warnings': allow_warnings,
-            'serialization_output_path': serialization_output_path,
-            'serialization_output_format': serialization_output_format,
-            'publicID': rocrate_path,
-            **kwargs,
-        }
+    def __init__(self, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)
 
-        # TODO: implement custom ontology file ???
-        supported_path = f"{self.profiles_path}/{self.profile_name}/{DEFAULT_ONTOLOGY_FILE}"
-        if ontology_path:
-            logger.warning("Detected an ontology path. Custom ontology file is not yet supported."
-                           f"Use {supported_path} to provide an ontology for your profile.")
-        # overwrite the ontology path if the custom ontology file is provided
-        ontology_path = supported_path
+        # if requirement_severity is a str, convert to Severity
+        severity = getattr(self, "requirement_severity")
+        if isinstance(severity, str):
+            setattr(self, "requirement_severity", Severity[severity])
 
-        # reference to the data graph
-        self._data_graph = None
-        # reference to the list of profiles to load
-        self._profiles: list[Profile] = None
-        # reference to the path of the ontologies
-        self._ontology_path = ontology_path
-        # reference to the graph of shapes
-        self._ontologies_graph = None
-        # flag to indicate if the ontologies graph has been initialized
-        self._ontology_graph_initialized = False
+    def to_dict(self):
+        return asdict(self)
 
-    @property
-    def validation_settings(self) -> dict[str, BaseTypes]:
-        return self._validation_settings
+    @classmethod
+    def parse(cls, settings: Union[dict, ValidationSettings]) -> ValidationSettings:
+        """
+        Parse the settings into a ValidationSettings object
 
-    @property
-    def rocrate_metadata_path(self):
-        return f"{self.rocrate_path}/{ROCRATE_METADATA_FILE}"
+        Args:
+            settings (Union[dict, ValidationSettings]): The settings to parse
 
-    @property
-    def profile_path(self):
-        return f"{self.profiles_path}/{self.profile_name}"
+        Returns:
+            ValidationSettings: The parsed settings
+
+        Raises:
+            ValueError: If the settings type is invalid
+        """
+        if isinstance(settings, dict):
+            return cls(**settings)
+        elif isinstance(settings, ValidationSettings):
+            return settings
+        else:
+            raise ValueError(f"Invalid settings type: {type(settings)}")
+
 
     @property
     def ontology_path(self):
         return self._ontology_path
 
-    def load_data_graph(self):
-        data_graph = Graph()
-        logger.debug("Loading RO-Crate metadata: %s", self.rocrate_metadata_path)
-        _ = data_graph.parse(self.rocrate_metadata_path,
-                             format="json-ld", publicID=self.publicID)
-        logger.debug("RO-Crate metadata loaded: %s", data_graph)
-        return data_graph
+    def __init__(self, settings: Union[str, ValidationSettings]):
+        self._validation_settings = ValidationSettings.parse(settings)
 
     def get_data_graph(self, refresh: bool = False):
         # load the data graph
@@ -807,8 +786,8 @@ class Validator:
         return self._data_graph
 
     @property
-    def data_graph(self) -> Graph:
-        return self.get_data_graph()
+    def validation_settings(self) -> ValidationSettings:
+        return self._validation_settings
 
     @property
     def profiles(self) -> list[Profile]:
