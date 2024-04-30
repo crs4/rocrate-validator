@@ -3,17 +3,18 @@ from __future__ import annotations
 import enum
 import inspect
 import logging
-import os
 from abc import ABC, abstractmethod
+from collections import OrderedDict
 from collections.abc import Collection
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from functools import total_ordering
 from pathlib import Path
 from typing import Optional, Union
 
 from rdflib import Graph
 
-from rocrate_validator.constants import (DEFAULT_ONTOLOGY_FILE, DEFAULT_PROFILE_NAME,
+from rocrate_validator.constants import (DEFAULT_ONTOLOGY_FILE,
+                                         DEFAULT_PROFILE_NAME,
                                          DEFAULT_PROFILE_README_FILE,
                                          IGNORED_PROFILE_DIRECTORIES,
                                          PROFILE_FILE_EXTENSIONS,
@@ -153,37 +154,11 @@ class Profile:
                 self._description = "RO-Crate profile"
         return self._description
 
-    def _load_requirements(self) -> None:
-        """
-        Load the requirements from the profile directory
-        """
-        def ok_file(p: Path) -> bool:
-            return p.is_file() \
-                and p.suffix in PROFILE_FILE_EXTENSIONS \
-                and not p.name == DEFAULT_ONTOLOGY_FILE \
-                and not p.name.startswith('.') \
-                and not p.name.startswith('_')
-
-        files = sorted((p for p in self.path.rglob('*.*') if ok_file(p)),
-                       key=lambda x: (not x.suffix == '.py', x))
-
-        req_id = 0
-        self._requirements = []
-        for requirement_path in files:
-            requirement_level = requirement_path.parent.name
-            for requirement in Requirement.load(
-                    self, LevelCollection.get(requirement_level),
-                    requirement_path, publicID=self.publicID):
-                req_id += 1
-                requirement._order_number = req_id
-                self.add_requirement(requirement)
-        logger.debug("Profile %s loaded %s requirements: %s",
-                     self.name, len(self._requirements), self._requirements)
-
     @property
     def requirements(self) -> list[Requirement]:
         if not self._requirements:
-            self._load_requirements()
+            self._requirements = \
+                RequirementLoader.load_requirements(self, severity=self.severity)
         return self._requirements
 
     def get_requirements(
@@ -195,10 +170,7 @@ class Profile:
 
     @property
     def inherited_profiles(self) -> list[Profile]:
-        profiles = [
-            _ for _ in sorted(
-                Profile.load_profiles(self.path.parent).values(), key=lambda x: x, reverse=True)
-            if _ < self]
+        profiles = [_ for _ in Profile.load_profiles(self.path.parent).values() if _ < self]
         logger.debug("Inherited profiles: %s", profiles)
         return profiles
 
@@ -250,19 +222,24 @@ class Profile:
     #     return [requirement for requirement in self.requirements if requirement.severity == type]
 
     @staticmethod
-    def load(path: Union[str, Path], publicID: Optional[str] = None) -> Profile:
+    def load(path: Union[str, Path],
+             publicID: Optional[str] = None,
+             severity:  Severity = Severity.REQUIRED) -> Profile:
         # if the path is a string, convert it to a Path
         if isinstance(path, str):
             path = Path(path)
         # check if the path is a directory
         assert path.is_dir(), f"Invalid profile path: {path}"
         # create a new profile
-        profile = Profile(name=path.name, path=path, publicID=publicID)
+        profile = Profile(name=path.name, path=path, publicID=publicID, severity=severity)
         logger.debug("Loaded profile: %s", profile)
         return profile
 
     @staticmethod
-    def load_profiles(profiles_path: Union[str, Path], publicID: Optional[str] = None) -> dict[str, Profile]:
+    def load_profiles(profiles_path: Union[str, Path],
+                      publicID: Optional[str] = None,
+                      severity:  Severity = Severity.REQUIRED,
+                      reverse_order: bool = True) -> OrderedDict[str, Profile]:
         # if the path is a string, convert it to a Path
         if isinstance(profiles_path, str):
             profiles_path = Path(profiles_path)
@@ -275,9 +252,10 @@ class Profile:
             logger.debug("Checking profile path: %s %s %r", profile_path,
                          profile_path.is_dir(), IGNORED_PROFILE_DIRECTORIES)
             if profile_path.is_dir() and profile_path not in IGNORED_PROFILE_DIRECTORIES:
-                profile = Profile.load(profile_path, publicID=publicID)
+                profile = Profile.load(profile_path, publicID=publicID, severity=severity)
                 profiles[profile.name] = profile
-        return profiles
+
+        return OrderedDict(sorted(profiles.items(), key=lambda x: x, reverse=reverse_order))
 
 
 @total_ordering
@@ -426,36 +404,75 @@ class Requirement(ABC):
     def __str__(self) -> str:
         return self.name
 
+
+class RequirementLoader:
+
+    def __init__(self, profile: Profile):
+        self._profile = profile
+
+    @property
+    def profile(self) -> Profile:
+        return self._profile
+
     @staticmethod
-    def load(profile: Profile,
-             requirement_level: RequirementLevel,
-             file_path: Path,
-             publicID: Optional[str] = None) -> list[Requirement]:
-        # initialize the set of requirements
-        requirements: list[Requirement] = []
-
-        # if the path is a string, convert it to a Path
-        if isinstance(file_path, str):
-            file_path = Path(file_path)
-
-        # TODO: implement a better way to identify the requirement level and class
-        # check if the file is a python file
-        if file_path.suffix == ".py":
-            from rocrate_validator.requirements.python import PyRequirement
-            py_requirements = PyRequirement.load(profile, requirement_level, file_path)
-            requirements.extend(py_requirements)
-            logger.debug("Loaded Python requirements: %r", py_requirements)
-        elif file_path.suffix == ".ttl":
-            # from rocrate_validator.requirements.shacl.checks import SHACLCheck
-            from rocrate_validator.requirements.shacl.requirements import \
-                SHACLRequirement
-            shapes_requirements = SHACLRequirement.load(profile, requirement_level,
-                                                        file_path, publicID=publicID)
-            requirements.extend(shapes_requirements)
-            logger.debug("Loaded SHACL requirements: %r", shapes_requirements)
+    def __get_requirement_type__(requirement_path: Path) -> str:
+        if requirement_path.suffix == ".py":
+            return "python"
+        elif requirement_path.suffix == ".ttl":
+            return "shacl"
         else:
-            logger.warning("Requirement type not supported: %s. Ignoring file %s", file_path.suffix, file_path)
+            raise ValueError(f"Unsupported requirement type: {requirement_path.suffix}")
 
+    @classmethod
+    def __get_requirement_loader__(cls, profile: Profile, requirement_path: Path) -> RequirementLoader:
+        import importlib
+        requirement_type = cls.__get_requirement_type__(requirement_path)
+        loader_instance_name = f"_{requirement_type}_loader_instance"
+        loader_instance = getattr(profile, loader_instance_name, None)
+        if loader_instance is None:
+            module_name = f"rocrate_validator.requirements.{requirement_type}"
+            logger.debug("Loading module: %s", module_name)
+            module = importlib.import_module(module_name)
+            loader_class_name = f"{'Py' if requirement_type == 'python' else 'SHACL'}RequirementLoader"
+            loader_class = getattr(module, loader_class_name)
+            loader_instance = loader_class(profile)
+            setattr(profile, loader_instance_name, loader_instance)
+        return loader_instance
+
+    @staticmethod
+    def load_requirements(profile: Profile, severity: Severity = None) -> list[Requirement]:
+        """
+        Load the requirements related to the profile
+        """
+        def ok_file(p: Path) -> bool:
+            return p.is_file() \
+                and p.suffix in PROFILE_FILE_EXTENSIONS \
+                and not p.name == DEFAULT_ONTOLOGY_FILE \
+                and not p.name.startswith('.') \
+                and not p.name.startswith('_')
+
+        files = sorted((p for p in profile.path.rglob('*.*') if ok_file(p)),
+                       key=lambda x: (not x.suffix == '.py', x))
+
+        req_id = 0
+        requirements = []
+        for requirement_path in files:
+            requirement_level = LevelCollection.get(requirement_path.parent.name)
+            logger.error("Check severity: %s", requirement_level.severity)
+            logger.error("Profile severity: %s", severity)
+            logger.error(f"Severity: {requirement_level.severity < severity}")
+            if requirement_level.severity < severity:
+                continue
+            requirement_loader = RequirementLoader.__get_requirement_loader__(profile, requirement_path)
+            for requirement in requirement_loader.load(
+                    profile, requirement_level,
+                    requirement_path, publicID=profile.publicID):
+                req_id += 1
+                requirement._order_number = req_id
+                requirements.append(requirement)
+        # log and return the requirements
+        logger.debug("Profile %s loaded %s requirements: %s",
+                     profile.name, len(requirements), requirements)
         return requirements
 
 
