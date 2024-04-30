@@ -121,12 +121,14 @@ class LevelCollection:
 class Profile:
     def __init__(self, name: str, path: Path,
                  requirements: Optional[list[Requirement]] = None,
-                 publicID: Optional[str] = None):
+                 publicID: Optional[str] = None,
+                 severity: Severity = Severity.REQUIRED):
         self._path = path
         self._name = name
         self._description: Optional[str] = None
         self._requirements: list[Requirement] = requirements if requirements is not None else []
         self._publicID = publicID
+        self._severity = severity
 
     @property
     def path(self):
@@ -143,6 +145,10 @@ class Profile:
     @property
     def publicID(self) -> Optional[str]:
         return self._publicID
+
+    @property
+    def severity(self) -> Severity:
+        return self._severity
 
     @property
     def description(self) -> str:
