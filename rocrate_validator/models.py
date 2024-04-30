@@ -749,7 +749,7 @@ class ValidationSettings:
     data_path: Path
     # Profile settings
     profiles_path: Path = DEFAULT_PROFILES_PATH
-    profile_name: str = "ro-crate"
+    profile_name: str = DEFAULT_PROFILE_NAME
     inherit_profiles: bool = True
     # Ontology and inference settings
     ontology_path: Optional[Path] = None
