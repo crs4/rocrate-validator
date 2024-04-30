@@ -204,8 +204,14 @@ class ShapesRegistry:
     def __repr__(self):
         return f"ShapesRegistry({self._shapes})"
 
+    def clear(self):
+        self._shapes.clear()
+        self._shapes_graph = Graph()
+
     @classmethod
-    def get_instance(cls):
-        if not cls._instance:
-            cls._instance = cls()
-        return cls._instance
+    def get_instance(cls, ctx: object):
+        instance = getattr(ctx, "_shapes_registry_instance", None)
+        if not instance:
+            instance = cls()
+            setattr(ctx, "_shapes_registry_instance", instance)
+        return instance
