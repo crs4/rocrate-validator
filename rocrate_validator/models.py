@@ -464,9 +464,6 @@ class RequirementLoader:
         requirements = []
         for requirement_path in files:
             requirement_level = LevelCollection.get(requirement_path.parent.name)
-            logger.error("Check severity: %s", requirement_level.severity)
-            logger.error("Profile severity: %s", severity)
-            logger.error(f"Severity: {requirement_level.severity < severity}")
             if requirement_level.severity < severity:
                 continue
             requirement_loader = RequirementLoader.__get_requirement_loader__(profile, requirement_path)
