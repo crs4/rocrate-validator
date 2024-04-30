@@ -3,9 +3,9 @@ from typing import Optional
 
 from rocrate_validator.models import (Requirement, RequirementCheck,
                                       ValidationContext)
-from rocrate_validator.requirements.shacl.models import Shape, ShapesRegistry
+from rocrate_validator.requirements.shacl.models import Shape
 
-from .validator import SHACLValidator
+from .validator import SHACLValidationContext, SHACLValidator
 
 logger = logging.getLogger(__name__)
 
@@ -38,25 +38,26 @@ class SHACLCheck(RequirementCheck):
     def execute_check(self, context: ValidationContext):
         # retrieve the SHACLValidationContext
         context = SHACLValidationContext.get_instance(context)
+
         # get the shapes registry
-        shapes_registry = ShapesRegistry.get_instance()
+        shapes_registry = context.shapes_registry
 
         # set up the input data for the validator
-        ontology_graph = context.validator.ontology_graph
-        data_graph = context.validator.data_graph
-        shapes_graph = shapes_registry.shapes_graph
+        ontology_graph = context.ontology_graph
+        data_graph = context.data_graph
+        shapes_graph = context.shapes_graph
 
         # temporary fix to replace the ex: prefix with the rocrate path
 
         # if the SHACLvalidation has been done, skip the check
-        result = getattr(context, "shacl_validation", None)
+        result = getattr(context.base_context, "shacl_validation", None)
         if result is not None:
             return result
 
         # validate the data graph
         shacl_validator = SHACLValidator(shapes_graph=shapes_graph, ont_graph=ontology_graph)
         shacl_result = shacl_validator.validate(
-            data_graph=data_graph, ontology_graph=ontology_graph, **context.validator.validation_settings)
+            data_graph=data_graph, ontology_graph=ontology_graph, **context.settings)
         # parse the validation result
         logger.debug("Validation '%s' conforms: %s", self.name, shacl_result.conforms)
         # store the validation result in the context
@@ -99,6 +100,10 @@ class SHACLCheck(RequirementCheck):
     @classmethod
     def __add_instance__(cls, shape: Shape, check: "SHACLCheck") -> None:
         cls.__instances__[hash(shape)] = check
+
+    @classmethod
+    def clear_instances(cls) -> None:
+        cls.__instances__.clear()
 
     #  ------------ Dead code? ------------
     # @property
