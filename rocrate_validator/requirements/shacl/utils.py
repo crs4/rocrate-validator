@@ -59,11 +59,11 @@ def inject_attributes(obj: object, node_graph: Graph, node: Node) -> object:
     # inject attributes of the shape property
     for node, p, o in node_graph.triples((node, None, None)):
         predicate_as_string = p.toPython()
-        logger.debug(f"Processing {predicate_as_string} of property graph {node}")
+        # logger.debug(f"Processing {predicate_as_string} of property graph {node}")
         if predicate_as_string.startswith(SHACL_NS):
             property_name = predicate_as_string.split("#")[-1]
             setattr(obj, property_name, o.toPython())
-            logger.debug("Injected attribute %s: %s", property_name, o.toPython())
+            # logger.debug("Injected attribute %s: %s", property_name, o.toPython())
 
     # return the object
     return obj

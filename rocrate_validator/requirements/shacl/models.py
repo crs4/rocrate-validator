@@ -131,12 +131,6 @@ class NodeShape(Shape):
 
 
 class ShapesRegistry:
-    _instance = None
-
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-        return cls._instance
 
     def __init__(self):
         self._shapes = {}
@@ -144,12 +138,9 @@ class ShapesRegistry:
 
     def add_shape(self, shape: Shape):
         assert isinstance(shape, Shape), "Invalid shape"
-        logger.debug("Adding shape: %s", shape)
         self._shapes[f"{hash(shape)}"] = shape
-        logger.debug("Added shapes: %r", self._shapes.keys())
 
     def get_shape(self, hash_value: int) -> Optional[Shape]:
-        logger.debug("Getting shape with hash: %s from %r", hash_value, list(self._shapes.keys()))
         return self._shapes.get(f"{hash_value}", None)
 
     def get_shape_by_name(self, name: str) -> Optional[Shape]:
