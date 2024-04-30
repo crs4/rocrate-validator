@@ -634,14 +634,19 @@ class CheckIssue:
 
 class ValidationResult:
 
-    def __init__(self, rocrate_path: Path, validation_settings: Optional[dict[str, BaseTypes]] = None):
+    def __init__(self, context: ValidationContext):
+        # reference to the validation context
+        self._context = context
         # reference to the ro-crate path
-        self._rocrate_path = rocrate_path
+        self._rocrate_path = context.rocrate_path
         # reference to the validation settings
-        self._validation_settings: dict[str, BaseTypes] = \
-            validation_settings if validation_settings is not None else {}
+        self._validation_settings: dict[str, BaseTypes] = context.settings
         # keep track of the issues found during the validation
         self._issues: list[CheckIssue] = []
+
+    @property
+    def context(self) -> ValidationContext:
+        return self._context
 
     @property
     def rocrate_path(self):
@@ -772,59 +777,21 @@ class ValidationSettings:
             raise ValueError(f"Invalid settings type: {type(settings)}")
 
 
-    @property
-    def ontology_path(self):
-        return self._ontology_path
+class Validator:
+    """
+    Can validate conformance to a single Profile (including any requirements
+    inherited by parent profiles).
+    """
 
     def __init__(self, settings: Union[str, ValidationSettings]):
         self._validation_settings = ValidationSettings.parse(settings)
-
-    def get_data_graph(self, refresh: bool = False):
-        # load the data graph
-        if not self._data_graph or refresh:
-            self._data_graph = self.load_data_graph()
-        return self._data_graph
 
     @property
     def validation_settings(self) -> ValidationSettings:
         return self._validation_settings
 
-    @property
-    def profiles(self) -> list[Profile]:
-        if not self._profiles:
-            profile = Profile.load(self.profile_path, publicID=self.publicID)
-            self._profiles = [profile]
-            if not self.disable_profile_inheritance:
-                logger.debug("disabling profile inheritance not active. Loading inherited profiles.")
-                self._profiles.extend(profile.inherited_profiles)
-                logger.debug("Inherited profiles: %s", self._profiles)
-        return self._profiles
-
-    @property
-    def publicID(self) -> str:
-        path = str(self.rocrate_path)
-        if not path.endswith("/"):
-            return f"{path}/"
-        return path
-
-    def load_ontology_graph(self):
-        # load the graph of ontologies
-        ontologies_graph = None
-        if self._ontology_path:
-            if os.path.exists(self.ontology_path):
-                logger.debug("Loading ontologies: %s", self.ontology_path)
-                ontologies_graph = Graph()
-                ontologies_graph.parse(self.ontology_path, format="ttl",
-                                       publicID=self.publicID)
-        return ontologies_graph
-
-    @property
-    def ontology_graph(self) -> Graph:
-        if not self._ontology_graph_initialized:
-            # load the graph of ontologies
-            self._ontologies_graph = self.load_ontology_graph()
-            self._ontology_graph_initialized = True
-        return self._ontologies_graph
+    def validate(self) -> ValidationResult:
+        return self.__do_validate__()
 
     def validate_requirements(self, requirements: list[Requirement]) -> ValidationResult:
         # check if requirement is an instance of Requirement
@@ -833,25 +800,22 @@ class ValidationSettings:
         # perform the requirements validation
         return self.__do_validate__(requirements)
 
-    def validate(self) -> ValidationResult:
-        return self.__do_validate__()
-
-    def __do_validate__(self, requirements: Optional[list[Requirement]] = None) -> ValidationResult:
-        # set the profiles to validate against
-        profiles = self.profiles
-        logger.debug("Profiles to validate: %s", profiles)
+    def __do_validate__(self,
+                        requirements: Optional[list[Requirement]] = None) -> ValidationResult:
 
         # initialize the validation context
-        validation_result = ValidationResult(
-            rocrate_path=self.rocrate_path, validation_settings=self.validation_settings)
-        context = ValidationContext(self, validation_result)
+        context = ValidationContext(self, self.validation_settings.to_dict())
+
+        # set the profiles to validate against
+        profiles = context.profiles.values()
+        logger.debug("Profiles to validate: %r", profiles)
 
         for profile in profiles:
             logger.debug("Validating profile %s", profile.name)
             # perform the requirements validation
             if not requirements:
                 requirements = profile.get_requirements(
-                    self.requirement_severity, exact_match=self.requirement_severity_only)
+                    context.requirement_severity, exact_match=context.requirement_severity_only)
             logger.debug("For profile %s, validating these %s requirements: %s",
                          profile.name, len(requirements), requirements)
             for requirement in requirements:
@@ -861,52 +825,28 @@ class ValidationSettings:
                     logger.debug("Validation Requirement passed")
                 else:
                     logger.debug(f"Validation Requirement {requirement} failed ")
-                    if self.validation_settings.get("abort_on_first") is True:
+                    if context.settings.get("abort_on_first") is True:
                         logger.debug("Aborting on first requirement failure")
-                        return validation_result
+                        return context.result
 
         return context.result
-
-    #  ------------ Dead code? ------------
-    # @classmethod
-    # def load_graph_of_shapes(cls, requirement: Requirement, publicID: Optional[str] = None) -> Graph:
-    #     shapes_graph = Graph()
-    #     _ = shapes_graph.parse(requirement.path, format="ttl", publicID=publicID)
-    #     return shapes_graph
-
-    # def load_graphs_of_shapes(self):
-    #     # load the graph of shapes
-    #     shapes_graphs = {}
-    #     for requirement in self._profile.requirements:
-    #         if requirement.path.suffix == ".ttl":
-    #             shapes_graph = Graph()
-    #             shapes_graph.parse(requirement.path, format="ttl",
-    #                                publicID=self.publicID)
-    #             shapes_graphs[requirement.name] = shapes_graph
-    #     return shapes_graphs
-
-    # def get_graphs_of_shapes(self, refresh: bool = False):
-    #     # load the graph of shapes
-    #     if not self._shapes_graphs or refresh:
-    #         self._shapes_graphs = self.load_graphs_of_shapes()
-    #     return self._shapes_graphs
-
-    # @property
-    # def shapes_graphs(self) -> dict[str, Graph]:
-    #     return self.get_graphs_of_shapes()
-
-    # def get_graph_of_shapes(self, requirement_name: str, refresh: bool = False):
-    #     # load the graph of shapes
-    #     if not self._shapes_graphs or refresh:
-    #         self._shapes_graphs = self.load_graphs_of_shapes()
-    #     return self._shapes_graphs.get(requirement_name)
 
 
 class ValidationContext:
 
-    def __init__(self, validator: Validator, result: ValidationResult):
+    def __init__(self, validator: Validator, settings: dict[str, object]):
+        # reference to the validator
         self._validator = validator
-        self._result = result
+        # reference to the settings
+        self._settings = settings
+        # reference to the data graph
+        self._data_graph = None
+        # reference to the profiles
+        self._profiles = None
+        # reference to the validation result
+        self._result = None
+        # additional properties for the context
+        self._properties = {}
 
     @property
     def validator(self) -> Validator:
@@ -914,16 +854,32 @@ class ValidationContext:
 
     @property
     def result(self) -> ValidationResult:
+        if self._result is None:
+            self._result = ValidationResult(self)
         return self._result
 
     @property
-    def settings(self) -> dict:
-        return self.validator.validation_settings
+    def settings(self) -> dict[str, object]:
+        return self._settings
+
+    @property
+    def publicID(self) -> str:
+        path = str(self.rocrate_path)
+        if not path.endswith("/"):
+            return f"{path}/"
+        return path
+
+    @property
+    def requirement_severity(self) -> Severity:
+        return self.settings.get("requirement_severity", Severity.REQUIRED)
+
+    @property
+    def requirement_severity_only(self) -> bool:
+        return self.settings.get("requirement_severity_only", False)
 
     @property
     def rocrate_path(self) -> Path:
-        assert isinstance(self.validator.rocrate_path, Path)
-        return self.validator.rocrate_path
+        return self.settings.get("data_path")
 
     @property
     def file_descriptor_path(self) -> Path:
@@ -932,3 +888,56 @@ class ValidationContext:
     @property
     def rel_fd_path(self) -> Path:
         return Path(ROCRATE_METADATA_FILE)
+
+    def __load_data_graph__(self):
+        data_graph = Graph()
+        logger.debug("Loading RO-Crate metadata: %s", self.file_descriptor_path)
+        _ = data_graph.parse(self.file_descriptor_path,
+                             format="json-ld", publicID=self.publicID)
+        logger.debug("RO-Crate metadata loaded: %s", data_graph)
+        return data_graph
+
+    def get_data_graph(self, refresh: bool = False):
+        # load the data graph
+        if not self._data_graph or refresh:
+            self._data_graph = self.__load_data_graph__()
+        return self._data_graph
+
+    @property
+    def data_graph(self) -> Graph:
+        return self.get_data_graph()
+
+    @property
+    def inheritance_enabled(self) -> bool:
+        return not self.settings.get("disable_profile_inheritance", False)
+
+    @property
+    def profiles_path(self) -> Path:
+        return self.settings.get("profiles_path")
+
+    @property
+    def profile_name(self) -> str:
+        return self.settings.get("profile_name")
+
+    def __load_profiles__(self) -> OrderedDict[str, Profile]:
+        if not self.inheritance_enabled:
+            profile = Profile.load(
+                self.profile_name,
+                publicID=self.publicID,
+                severity=self.requirement_severity)
+            return {profile.name: profile}
+        return Profile.load_profiles(
+            self.profiles_path,
+            publicID=self.publicID,
+            severity=self.requirement_severity,
+            reverse_order=False)
+
+    @property
+    def profiles(self) -> OrderedDict[str, Profile]:
+        if not self._profiles:
+            self._profiles = self.__load_profiles__()
+        return self._profiles.copy()
+
+    @property
+    def profile(self) -> Profile:
+        return list(self.profiles.values())[-1]
