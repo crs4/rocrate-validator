@@ -37,15 +37,15 @@ class SHACLCheck(RequirementCheck):
 
     def execute_check(self, context: ValidationContext):
         # retrieve the SHACLValidationContext
-        context = SHACLValidationContext.get_instance(context)
+        shacl_context = SHACLValidationContext.get_instance(context)
 
         # get the shapes registry
-        shapes_registry = context.shapes_registry
+        shapes_registry = shacl_context.shapes_registry
 
         # set up the input data for the validator
-        ontology_graph = context.ontology_graph
-        data_graph = context.data_graph
-        shapes_graph = context.shapes_graph
+        ontology_graph = shacl_context.ontology_graph
+        data_graph = shacl_context.data_graph
+        shapes_graph = shacl_context.shapes_graph
 
         # uncomment to save the graphs to the logs folder (for debugging purposes)
         # data_graph.serialize("logs/data_graph.ttl", format="turtle")
@@ -54,14 +54,14 @@ class SHACLCheck(RequirementCheck):
         #     ontology_graph.serialize("logs/ontology_graph.ttl", format="turtle")
 
         # if the SHACLvalidation has been done, skip the check
-        result = getattr(context.base_context, "shacl_validation", None)
+        result = getattr(context, "shacl_validation", None)
         if result is not None:
             return result
 
         # validate the data graph
         shacl_validator = SHACLValidator(shapes_graph=shapes_graph, ont_graph=ontology_graph)
         shacl_result = shacl_validator.validate(
-            data_graph=data_graph, ontology_graph=ontology_graph, **context.settings)
+            data_graph=data_graph, ontology_graph=ontology_graph, **shacl_context.settings)
         # parse the validation result
         logger.debug("Validation '%s' conforms: %s", self.name, shacl_result.conforms)
         # store the validation result in the context
@@ -76,9 +76,9 @@ class SHACLCheck(RequirementCheck):
                 assert shape is not None, "Unable to map the violation to a shape"
                 requirementCheck = SHACLCheck.get_instance(shape)
                 assert requirementCheck is not None, "The requirement check cannot be None"
-                c = context.result.add_check_issue(message=violation.get_result_message(context.rocrate_path),
-                                                   check=requirementCheck,
-                                                   severity=violation.get_result_severity())
+                c = shacl_context.result.add_check_issue(message=violation.get_result_message(shacl_context.rocrate_path),
+                                                         check=requirementCheck,
+                                                         severity=violation.get_result_severity())
                 logger.debug("Added validation issue to the context: %s", c)
 
         return result
