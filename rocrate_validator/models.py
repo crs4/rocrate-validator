@@ -754,8 +754,12 @@ class ValidationSettings:
     ontology_path: Optional[Path] = None
     inference: Optional[VALID_INFERENCE_OPTIONS_TYPES] = None
     # Validation strategy settings
+    advanced: bool = True  # enable SHACL Advanced Validation
     inplace: Optional[bool] = False
     abort_on_first: Optional[bool] = True
+    inplace: Optional[bool] = False,
+    meta_shacl: bool = False,
+    iterate_rules: bool = True,
     # Requirement severity settings
     requirement_severity: Union[str, Severity] = Severity.REQUIRED
     requirement_severity_only: bool = False

@@ -254,13 +254,19 @@ class SHACLValidator:
 
     def validate(
         self,
+        # data to validate
         data_graph: Union[GraphLike, str, bytes],
-        advanced: Optional[bool] = False,
+        # validation settings
+        abort_on_first: Optional[bool] = True,
+        advanced: Optional[bool] = True,
         inference: Optional[VALID_INFERENCE_OPTIONS_TYPES] = None,
         inplace: Optional[bool] = False,
-        abort_on_first: Optional[bool] = False,
+        meta_shacl: bool = False,
+        iterate_rules: bool = True,
+        # SHACL validation severity
         allow_infos: Optional[bool] = False,
         allow_warnings: Optional[bool] = False,
+        # serialization settings
         serialization_output_path: Optional[str] = None,
         serialization_output_format:
             Optional[RDF_SERIALIZATION_FORMATS_TYPES] = "turtle",
@@ -318,13 +324,13 @@ class SHACLValidator:
             data_graph,
             shacl_graph=self.shapes_graph,
             ont_graph=self.ont_graph,
-            inference="owlrl" if self.ont_graph else None,
+            inference=inference if inference else "owlrl" if self.ont_graph else None,
             inplace=inplace,
             abort_on_first=abort_on_first,
             allow_infos=allow_infos,
             allow_warnings=allow_warnings,
-            meta_shacl=False,
-            iterate_rules=True,
+            meta_shacl=meta_shacl,
+            iterate_rules=iterate_rules,
             advanced=advanced,
             js=False,
             debug=False,
