@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import bisect
 import enum
 import inspect
 import logging
@@ -699,7 +700,7 @@ class ValidationResult:
         return not any(issue.severity >= severity for issue in self._issues)
 
     def add_issue(self, issue: CheckIssue):
-        self._issues.append(issue)
+        bisect.insort(self._issues, issue)
 
     def add_check_issue(self,
                         message: str,
@@ -707,7 +708,8 @@ class ValidationResult:
                         severity: Optional[Severity] = None) -> CheckIssue:
         sev_value = severity if severity is not None else check.requirement.severity
         c = CheckIssue(sev_value, check, message)
-        self._issues.append(c)
+        # self._issues.append(c)
+        bisect.insort(self._issues, c)
         return c
 
     def add_error(self, message: str, check: RequirementCheck) -> CheckIssue:
