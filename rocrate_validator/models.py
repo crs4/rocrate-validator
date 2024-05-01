@@ -906,6 +906,10 @@ class ValidationContext:
         return self.rocrate_path / ROCRATE_METADATA_FILE
 
     @property
+    def fail_fast(self) -> bool:
+        return self.settings.get("abort_on_first", True)
+
+    @property
     def rel_fd_path(self) -> Path:
         return Path(ROCRATE_METADATA_FILE)
 

@@ -80,6 +80,8 @@ class SHACLCheck(RequirementCheck):
                                                          check=requirementCheck,
                                                          severity=violation.get_result_severity())
                 logger.debug("Added validation issue to the context: %s", c)
+                if context.fail_fast:
+                    break
 
         return result
 
