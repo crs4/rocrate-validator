@@ -541,7 +541,7 @@ class RequirementCheck(ABC):
     def __lt__(self, other: object) -> bool:
         if not isinstance(other, RequirementCheck):
             raise ValueError(f"Cannot compare RequirementCheck with {type(other)}")
-        return (self.requirement, self.name) < (other.requirement, other.name)
+        return (self.requirement, self.identifier) < (other.requirement, other.identifier)
 
     def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
