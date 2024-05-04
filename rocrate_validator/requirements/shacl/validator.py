@@ -32,8 +32,6 @@ class SHACLValidationContext(ValidationContext):
         self._base_context: ValidationContext = context
         # reference to the ontology path
         self._ontology_path: Path = None
-        # reference to the graph of shapes
-        self._ontology_graph: Graph = None
 
     @property
     def base_context(self) -> ValidationContext:
@@ -75,10 +73,12 @@ class SHACLValidationContext(ValidationContext):
 
     @property
     def ontology_graph(self) -> Graph:
-        if self._ontology_graph is None:
-            # load the graph of ontologies
-            self._ontology_graph = self.__load_ontology_graph__()
-        return self._ontology_graph
+        ontology_key = "_shacl_ontology"
+        ontology = getattr(self.base_context, ontology_key, None)
+        if not ontology:
+            ontology = self.__load_ontology_graph__()
+            setattr(self.base_context, ontology_key, ontology)
+        return ontology
 
     @ classmethod
     def get_instance(cls, context: ValidationContext) -> SHACLValidationContext:
