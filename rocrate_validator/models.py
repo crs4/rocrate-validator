@@ -346,6 +346,9 @@ class Requirement(ABC):
                 return check
         return None
 
+    def get_checks_by_level(self, level: RequirementLevel) -> list[RequirementCheck]:
+        return [check for check in self._checks if check.level.severity == level.severity]
+
     def __reorder_checks__(self) -> None:
         for i, check in enumerate(self._checks):
             check.order_number = i + 1
