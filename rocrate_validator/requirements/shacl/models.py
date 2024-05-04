@@ -68,6 +68,34 @@ class SHACLNode:
         return self._hash
 
 
+class SHACLNodeCollection(SHACLNode):
+
+    def __init__(self, node: Node, graph: Graph, properties: list[PropertyShape] = None):
+        super().__init__(node, graph)
+        # store the properties
+        self._properties = properties if properties else []
+
+    @property
+    def properties(self) -> list[PropertyShape]:
+        """Return the properties of the shape"""
+        return self._properties.copy()
+
+    def get_property(self, name) -> PropertyShape:
+        """Return the property of the shape with the given name"""
+        for prop in self._properties:
+            if prop.name == name:
+                return prop
+        return None
+
+
+    def add_property(self, property: PropertyShape):
+        """Add a property to the shape"""
+        self._properties.append(property)
+
+    def remove_property(self, property: PropertyShape):
+        """Remove a property from the shape"""
+        self._properties.remove(property)
+
 
 class Shape(SHACLNode):
     pass
@@ -109,10 +137,7 @@ class PropertyShape(Shape):
 
 class NodeShape(Shape):
 
-    def __init__(self, node: Node, graph: Graph, properties: list[PropertyShape] = None):
-        super().__init__(node, graph)
-        # store the properties
-        self._properties = properties if properties else []
+class NodeShape(Shape, SHACLNodeCollection):
 
     @property
     def properties(self) -> list[PropertyShape]:
