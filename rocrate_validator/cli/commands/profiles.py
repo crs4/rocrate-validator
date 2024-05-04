@@ -4,12 +4,12 @@ from pathlib import Path
 from rich.markdown import Markdown
 from rich.table import Table
 
+from rocrate_validator import services
+from rocrate_validator.cli.main import cli, click
+from rocrate_validator.colors import get_severity_color
 from rocrate_validator.constants import DEFAULT_PROFILE_NAME
-
-from ... import services
-from ...colors import get_severity_color
-from ...utils import get_profiles_path
-from ..main import cli, click
+from rocrate_validator.models import LevelCollection, Requirement, RequirementLevel
+from rocrate_validator.utils import get_profiles_path
 
 # set the default profiles path
 DEFAULT_PROFILES_PATH = get_profiles_path()
@@ -98,6 +98,15 @@ def describe_profile(ctx,
     console.print(Markdown(profile.description.strip()))
     console.print("\n", style="white bold")
 
+
+def __requirement_level_style__(requirement: RequirementLevel):
+    """
+    Format the requirement level
+    """
+    color = get_severity_color(requirement.severity)
+    return f"{color} bold"
+
+
     table_rows = []
     levels_list = set()
     for requirement in profile.requirements:
@@ -106,8 +115,33 @@ def describe_profile(ctx,
         levels_list.add(level_info)
         table_rows.append((str(requirement.order_number), requirement.name,
                            Markdown(requirement.description.strip()),
-                           str(len(requirement.get_checks())),
-                           level_info))
+                           f"{len(requirement.get_checks_by_level(LevelCollection.REQUIRED))}",
+                           f"{len(requirement.get_checks_by_level(LevelCollection.RECOMMENDED))}",
+                           f"{len(requirement.get_checks_by_level(LevelCollection.OPTIONAL))}"))
+
+    table = Table(show_header=True,
+                  title="Profile Requirements",
+                  title_style="italic bold",
+                  header_style="bold cyan",
+                  border_style="bright_black",
+                  show_footer=False,
+                  show_lines=True,
+                  caption=f"(*) number of checks by severity level: {', '.join(levels_list)}",
+                  caption_style="italic bold")
+
+    # Define columns
+    table.add_column("#", style="cyan bold", justify="right")
+    table.add_column("Name", style="magenta bold", justify="left")
+    table.add_column("Description", style="white italic")
+    table.add_column("# REQUIRED", style=__requirement_level_style__(LevelCollection.REQUIRED), justify="center")
+    table.add_column("# RECOMMENDED", style=__requirement_level_style__(LevelCollection.RECOMMENDED), justify="center")
+    table.add_column("# OPTIONAL", style=__requirement_level_style__(LevelCollection.OPTIONAL), justify="center")
+    # Add data to the table
+    for row in table_rows:
+        table.add_row(*row)
+    # Print the table
+    console.print(table)
+
 
     table = Table(show_header=True,
                   title="Profile Requirements",
