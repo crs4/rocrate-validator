@@ -45,6 +45,19 @@ class SHACLNode:
         """Return the subgraph of the shape"""
         return self._graph
 
+    @property
+    def level(self) -> RequirementLevel:
+        """Return the requirement level of the shape"""
+        severity = getattr(self, "severity", None)
+        if not severity:
+            return LevelCollection.REQUIRED
+        if severity == f"{SHACL_NS}Violation":
+            return LevelCollection.REQUIRED
+        elif severity == f"{SHACL_NS}Warning":
+            return LevelCollection.RECOMMENDED
+        elif severity == f"{SHACL_NS}Info":
+            return LevelCollection.OPTIONAL
+
     def __str__(self):
         class_name = self.__class__.__name__
         if self.name and self.description:
