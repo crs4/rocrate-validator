@@ -42,6 +42,36 @@ class InvalidSerializationFormat(ROCValidatorError):
         return f"InvalidSerializationFormat({self._format!r})"
 
 
+class BadSyntaxError(ROCValidatorError):
+    """Raised when a syntax error occurs."""
+
+    def __init__(self, message, path: str = ".", code: int = -1):
+        self._message = message
+        self._path = path
+        self._code = code
+
+    @property
+    def message(self) -> str:
+        """The error message."""
+        return self._message
+
+    @property
+    def path(self) -> str:
+        """The path where the error occurred."""
+        return self._path
+
+    @property
+    def code(self) -> int:
+        """The error code."""
+        return self._code
+
+    def __str__(self) -> str:
+        return self._message
+
+    def __repr__(self):
+        return f"BadSyntaxError({self._message!r}, {self._path!r})"
+
+
 class ValidationError(ROCValidatorError):
     """Raised when a validation error occurs."""
 

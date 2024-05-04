@@ -9,6 +9,7 @@ from rdflib import RDF, BNode, Graph, Namespace
 from rdflib.term import Node
 
 from rocrate_validator.constants import RDF_SYNTAX_NS, SHACL_NS
+from rocrate_validator.errors import BadSyntaxError
 from rocrate_validator.models import Severity
 
 # set up logging
@@ -212,13 +213,16 @@ def __extract_related_triples__(graph, subject_node):
 
 
 def load_shapes_from_file(file_path: str, publicID: str = None) -> ShapesList:
-    # Check the file path is not None
-    assert file_path is not None, "The file path cannot be None"
-    # Load the graph from the file
-    g = Graph()
-    g.parse(file_path, format="turtle", publicID=publicID)
-    # Extract the shapes from the graph
-    return load_shapes_from_graph(g)
+    try:
+        # Check the file path is not None
+        assert file_path is not None, "The file path cannot be None"
+        # Load the graph from the file
+        g = Graph()
+        g.parse(file_path, format="turtle", publicID=publicID)
+        # Extract the shapes from the graph
+        return load_shapes_from_graph(g)
+    except Exception as e:
+        raise BadSyntaxError(str(e), file_path) from e
 
 
 def load_shapes_from_graph(g: Graph) -> ShapesList:
