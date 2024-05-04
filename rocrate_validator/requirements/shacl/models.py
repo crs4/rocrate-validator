@@ -306,11 +306,9 @@ class ShapesRegistry:
 def __process_property_group__(groups: dict[str, PropertyGroup], property_shape: PropertyShape) -> PropertyGroup:
     group_name = property_shape.group
     if group_name:
-        logger.warning("Type if property shape group: %s", type(property_shape.group))
         if group_name not in groups:
             groups[group_name] = PropertyGroup(URIRef(property_shape.group), property_shape.graph)
         property_shape.graph.serialize("logs/property_shape.ttl", format="turtle")
-        logger.error("Group: %s", groups[group_name].name)
         groups[group_name].add_property(property_shape)
         property_shape._property_group = groups[group_name]
         return groups[group_name]
