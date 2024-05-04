@@ -179,13 +179,13 @@ def __verbose_describe_profile__(console, profile):
                                Markdown(check.description.strip()), level_info))
 
     table = Table(show_header=True,
-                  title="Profile Requirements",
+                  title="Profile Requirements Checks",
                   title_style="italic bold",
                   header_style="bold cyan",
                   border_style="bright_black",
                   show_footer=False,
                   show_lines=True,
-                  caption=f"[cyan](*)[/cyan] severity level of requirement: {', '.join(levels_list)}",
+                  caption=f"[cyan](*)[/cyan] severity level of requirement check: {', '.join(levels_list)}",
                   caption_style="italic bold")
 
     # Define columns
