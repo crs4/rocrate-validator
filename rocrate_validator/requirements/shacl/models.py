@@ -4,11 +4,14 @@ import logging
 from pathlib import Path
 from typing import Optional, Union
 
-from rdflib import Graph, Namespace
+from rdflib import Graph, Namespace, URIRef
 from rdflib.term import Node
 
-from ...constants import SHACL_NS
-from .utils import ShapesList, compute_hash, inject_attributes
+from rocrate_validator.constants import SHACL_NS
+from rocrate_validator.models import LevelCollection, RequirementLevel
+from rocrate_validator.requirements.shacl.utils import (ShapesList,
+                                                        compute_hash,
+                                                        inject_attributes)
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -107,6 +110,10 @@ class Shape(SHACLNode):
     pass
 
 
+class PropertyGroup(SHACLNodeCollection):
+    pass
+
+
 class PropertyShape(Shape):
 
     # define default values
@@ -115,6 +122,8 @@ class PropertyShape(Shape):
     group: str = None
     defaultValue: str = None
     order: int = 0
+    # store the reference to the property group
+    _property_group: PropertyGroup = None
 
     def __init__(self,
                  node: Node,
@@ -140,30 +149,32 @@ class PropertyShape(Shape):
         """Return the parent shape of the shape property"""
         return self._parent
 
+    @property
+    def propertyGroup(self) -> PropertyGroup:
+        """Return the group of the shape property"""
+        return self._property_group
 
-class NodeShape(Shape):
 
 class NodeShape(Shape, SHACLNodeCollection):
 
     @property
-    def properties(self) -> list[PropertyShape]:
-        """Return the properties of the shape"""
-        return self._properties.copy()
+    def property_groups(self) -> list[PropertyGroup]:
+        """Return the property groups of the shape"""
+        groups = set()
+        for prop in self.properties:
+            if prop.propertyGroup:
+                groups.add(prop.propertyGroup)
+        return list(groups)
 
-    def get_property(self, name) -> PropertyShape:
-        """Return the property of the shape with the given name"""
-        for prop in self._properties:
-            if prop.name == name:
-                return prop
-        return None
+    @property
+    def grouped_properties(self) -> list[PropertyShape]:
+        """Return the properties that are in a group"""
+        return [prop for prop in self.properties if prop.propertyGroup]
 
-    def add_property(self, property: PropertyShape):
-        """Add a property to the shape"""
-        self._properties.append(property)
-
-    def remove_property(self, property: PropertyShape):
-        """Remove a property from the shape"""
-        self._properties.remove(property)
+    @property
+    def ungrouped_properties(self) -> list[PropertyShape]:
+        """Return the properties that are not in a group"""
+        return [prop for prop in self.properties if not prop.propertyGroup]
 
 
 class ShapesRegistry:
@@ -207,8 +218,15 @@ class ShapesRegistry:
         # list of instantiated shapes
         shapes = []
 
+        # list of property groups
+        property_groups = {}
+
         # register Node Shapes
         for node_shape in shapes_list.node_shapes:
+            # flag to check if the nested properties are in a group
+            grouped = False
+            # list of properties ungroupped
+            ungrouped_properties = []
             # get the shape graph
             node_graph = shapes_list.get_shape_graph(node_shape)
             # create a node shape object
@@ -221,10 +239,24 @@ class ShapesRegistry:
                 p_shape = PropertyShape(
                     property_shape, property_graph, shape)
                 shape.add_property(p_shape)
+                group = __process_property_group__(property_groups, p_shape)
+                if group and not group in shapes:
+                    grouped = True
+                    shapes.append(group)
+                if not group:
+                    ungrouped_properties.append(p_shape)
+
+                # store the property shape in the registry
                 self.add_shape(p_shape)
-            # store the node shape
+            # store the node shape in the registry
             self.add_shape(shape)
-            shapes.append(shape)
+
+            #  store the node in the list of shapes
+            if not grouped:
+                shapes.append(shape)
+            else:
+                for prop in ungrouped_properties:
+                    shapes.append(prop)
 
         # register Property Shapes
         for property_shape in shapes_list.property_shapes:
@@ -251,3 +283,17 @@ class ShapesRegistry:
             instance = cls()
             setattr(ctx, "_shapes_registry_instance", instance)
         return instance
+
+
+def __process_property_group__(groups: dict[str, PropertyGroup], property_shape: PropertyShape) -> PropertyGroup:
+    group_name = property_shape.group
+    if group_name:
+        logger.warning("Type if property shape group: %s", type(property_shape.group))
+        if group_name not in groups:
+            groups[group_name] = PropertyGroup(URIRef(property_shape.group), property_shape.graph)
+        property_shape.graph.serialize("logs/property_shape.ttl", format="turtle")
+        logger.error("Group: %s", groups[group_name].name)
+        groups[group_name].add_property(property_shape)
+        property_shape._property_group = groups[group_name]
+        return groups[group_name]
+    return None
