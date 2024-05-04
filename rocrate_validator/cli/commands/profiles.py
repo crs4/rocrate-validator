@@ -185,7 +185,7 @@ def __verbose_describe_profile__(console, profile):
                   border_style="bright_black",
                   show_footer=False,
                   show_lines=True,
-                  caption=f"(*) severity level of requirement: {', '.join(levels_list)}",
+                  caption=f"[cyan](*)[/cyan] severity level of requirement: {', '.join(levels_list)}",
                   caption_style="italic bold")
 
     # Define columns
