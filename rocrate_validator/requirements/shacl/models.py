@@ -188,7 +188,12 @@ class ShapesRegistry:
         self._shapes[f"{hash(shape)}"] = shape
 
     def get_shape(self, hash_value: int) -> Optional[Shape]:
-        return self._shapes.get(f"{hash_value}", None)
+        logger.debug("Searching for shape %s in the registry: %s", hash_value, self._shapes)
+        result = self._shapes.get(f"{hash_value}", None)
+        if not result:
+            logger.debug(f"Shape {hash_value} not found in the registry")
+            raise ValueError(f"Shape not found in the registry: {hash_value}")
+        return result
 
     def get_shape_by_name(self, name: str) -> Optional[Shape]:
         for shape in self._shapes.values():
