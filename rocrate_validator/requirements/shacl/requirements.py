@@ -48,6 +48,13 @@ class SHACLRequirement(Requirement):
     def shape(self) -> Shape:
         return self._shape
 
+    @property
+    def level(self) -> RequirementLevel:
+        level = super().level
+        if level is None:
+            return self.shape.level
+        return level
+
 
 class SHACLRequirementLoader(RequirementLoader):
 

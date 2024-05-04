@@ -464,9 +464,13 @@ class RequirementLoader:
         req_id = 0
         requirements = []
         for requirement_path in files:
-            requirement_level = LevelCollection.get(requirement_path.parent.name)
-            if requirement_level.severity < severity:
-                continue
+            requirement_level = None
+            try:
+                requirement_level = LevelCollection.get(requirement_path.parent.name)
+                if requirement_level.severity < severity:
+                    continue
+            except AttributeError:
+                logger.debug("The requirement level could not be determined from the path: %s", requirement_path)
             requirement_loader = RequirementLoader.__get_requirement_loader__(profile, requirement_path)
             for requirement in requirement_loader.load(
                     profile, requirement_level,
