@@ -80,11 +80,20 @@ def list_profiles(ctx, profiles_path: Path = DEFAULT_PROFILES_PATH):
 
 
 @profiles.command("describe")
+@click.option(
+    '-v',
+    '--verbose',
+    is_flag=True,
+    help="Show detailed list of requirements",
+    default=False,
+    show_default=True
+)
 @click.argument("profile-name", type=click.STRING, default=DEFAULT_PROFILE_NAME, required=True)
 @click.pass_context
 def describe_profile(ctx,
                      profile_name: str = DEFAULT_PROFILE_NAME,
-                     profiles_path: Path = DEFAULT_PROFILES_PATH):
+                     profiles_path: Path = DEFAULT_PROFILES_PATH,
+                     verbose: bool = False):
     """
     Show a profile
     """
@@ -98,6 +107,11 @@ def describe_profile(ctx,
     console.print(Markdown(profile.description.strip()))
     console.print("\n", style="white bold")
 
+    if not verbose:
+        __compacted_describe_profile__(console, profile)
+    else:
+        __verbose_describe_profile__(console, profile)
+
 
 def __requirement_level_style__(requirement: RequirementLevel):
     """
@@ -107,6 +121,10 @@ def __requirement_level_style__(requirement: RequirementLevel):
     return f"{color} bold"
 
 
+def __compacted_describe_profile__(console, profile):
+    """
+    Show a profile in a compact way
+    """
     table_rows = []
     levels_list = set()
     for requirement in profile.requirements:
@@ -143,19 +161,39 @@ def __requirement_level_style__(requirement: RequirementLevel):
     console.print(table)
 
 
+def __verbose_describe_profile__(console, profile):
+    """
+    Show a profile in a verbose way
+    """
+    table_rows = []
+    levels_list = set()
+    for requirement in profile.requirements:
+
+        for check in requirement.get_checks():
+            color = get_severity_color(check.severity)
+            level_info = f"[{color}]{check.severity.name}[/{color}]"
+            levels_list.add(level_info)
+            logger.debug("Check %s: %s", check.name, check.description)
+            # checks.append(check)
+            table_rows.append((str(check.identifier).rjust(14), check.name,
+                               Markdown(check.description.strip()), level_info))
+
     table = Table(show_header=True,
                   title="Profile Requirements",
+                  title_style="italic bold",
                   header_style="bold cyan",
                   border_style="bright_black",
                   show_footer=False,
-                  caption=f"(*) Requirement level: {', '.join(levels_list)}")
+                  show_lines=True,
+                  caption=f"(*) severity level of requirement: {', '.join(levels_list)}",
+                  caption_style="italic bold")
 
     # Define columns
-    table.add_column("#", style="yellow bold", justify="right")
-    table.add_column("Name", style="magenta bold", justify="center")
+    table.add_column("Identifier", style="yellow bold", justify="right")
+    table.add_column("Name", style="magenta bold", justify="left")
     table.add_column("Description", style="white italic")
-    table.add_column("# Checks", style="white", justify="center")
-    table.add_column("Requirement Level (*)", style="white", justify="center")
+    table.add_column("Severity (*)", style="bold", justify="center")
+
     # Add data to the table
     for row in table_rows:
         table.add_row(*row)
