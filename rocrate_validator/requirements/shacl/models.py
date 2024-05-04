@@ -14,7 +14,7 @@ from .utils import ShapesList, compute_hash, inject_attributes
 logger = logging.getLogger(__name__)
 
 
-class Shape:
+class SHACLNode:
 
     # define default values
     name: str = None
@@ -66,6 +66,11 @@ class Shape:
             shape_hash = compute_hash(self.graph, self.node)
             self._hash = hash(shape_hash)
         return self._hash
+
+
+
+class Shape(SHACLNode):
+    pass
 
 
 class PropertyShape(Shape):
