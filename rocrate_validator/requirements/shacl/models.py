@@ -87,6 +87,12 @@ class SHACLNodeCollection(SHACLNode):
                 return prop
         return None
 
+    def get_property_index(self, name) -> int:
+        """Return the index of the property with the given name"""
+        for i, prop in enumerate(self._properties):
+            if prop.name == name:
+                return i
+        return -1
 
     def add_property(self, property: PropertyShape):
         """Add a property to the shape"""
