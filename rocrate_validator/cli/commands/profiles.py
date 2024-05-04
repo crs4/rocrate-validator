@@ -189,7 +189,7 @@ def __verbose_describe_profile__(console, profile):
                   caption_style="italic bold")
 
     # Define columns
-    table.add_column("Identifier", style="yellow bold", justify="right")
+    table.add_column("Identifier", style="cyan bold", justify="right")
     table.add_column("Name", style="magenta bold", justify="left")
     table.add_column("Description", style="white italic")
     table.add_column("Severity (*)", style="bold", justify="center")
