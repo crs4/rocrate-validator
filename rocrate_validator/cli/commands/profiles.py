@@ -50,7 +50,7 @@ def list_profiles(ctx, profiles_path: Path = DEFAULT_PROFILES_PATH):
                   header_style="bold cyan",
                   border_style="bright_black",
                   show_footer=False,
-                  caption="(*) Number of requirements by severity")
+                  caption="[cyan](*)[/cyan] Number of requirements by severity")
 
     # Define columns
     table.add_column("Name", style="magenta bold", justify="right")
@@ -144,7 +144,7 @@ def __compacted_describe_profile__(console, profile):
                   border_style="bright_black",
                   show_footer=False,
                   show_lines=True,
-                  caption=f"(*) number of checks by severity level: {', '.join(levels_list)}",
+                  caption=f"[cyan](*)[/cyan] number of checks by severity level: {', '.join(levels_list)}",
                   caption_style="italic bold")
 
     # Define columns
