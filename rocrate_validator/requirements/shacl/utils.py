@@ -59,13 +59,19 @@ def make_uris_relative(text: str, ro_crate_path: Union[Path, str]) -> str:
 def inject_attributes(obj: object, node_graph: Graph, node: Node) -> object:
     # inject attributes of the shape property
     # logger.debug("Injecting attributes of node %s", node)
+    skip_properties = ["node"]
     triples = node_graph.triples((node, None, None))
     for node, p, o in triples:
         predicate_as_string = p.toPython()
         # logger.debug(f"Processing {predicate_as_string} of property graph {node}")
         if predicate_as_string.startswith(SHACL_NS):
             property_name = predicate_as_string.split("#")[-1]
-            setattr(obj, property_name, o.toPython())
+            if property_name in skip_properties:
+                continue
+            try:
+                setattr(obj, property_name, o.toPython())
+            except AttributeError as e:
+                logger.error(f"Error injecting attribute {property_name}: {e}")
             # logger.debug("Injected attribute %s: %s", property_name, o.toPython())
     # logger.debug("Injected attributes ig node %s: %s", node, len(list(triples)))
     # return the object
