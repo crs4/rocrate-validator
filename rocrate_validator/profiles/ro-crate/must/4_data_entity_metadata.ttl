@@ -43,3 +43,68 @@ ro:FileDataEntity a sh:NodeShape ;
         sh:object rocrate:DataEntity ;
     ] .
 
+
+ro:DirectoryDataEntity a sh:NodeShape ;
+    sh:name "Definition of Directory Data Entity" ;
+    sh:description """A Directory Data Entity is a digital object that is stored in a directory""" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?this a schema:Dataset .
+                FILTER NOT EXISTS { ?this a rocrate:RootDataEntity }
+            }
+        """
+    ] ;
+    sh:targetClass rocrate:Directory ;
+    sh:property [
+        sh:name "Type of Directory Data Entities" ;
+        sh:description """Data Entities representing directories MUST have "Directory" as a value for @type.
+        Directory is an RO-Crate alias for http://schema.org/Dataset.
+        """ ;
+        sh:path rdf:type ;
+        sh:hasValue schema_org:Dataset ;
+        sh:severity sh:Violation ;
+    ] ;
+
+    # Decomment for debugging
+    # sh:property [
+    #     sh:name "Test Directory" ;
+    #     sh:description """Data Entities representing directories MUST have "Directory" as a value for @type.""" ;
+    #     sh:path rdf:type ;
+    #     sh:hasValue rocrate:File ;
+    #     sh:severity sh:Violation ;
+    # ] ;
+
+    # Expand data graph with triples from the file data entity
+    sh:rule [
+        a sh:TripleRule ;
+        sh:subject sh:this ;
+        sh:predicate rdf:type ;
+        sh:object rocrate:Directory ;
+    ] ;
+
+    # Expand data graph with triples from the directory data entity
+    sh:rule [
+        a sh:TripleRule ;
+        sh:subject sh:this ;
+        sh:predicate rdf:type ;
+        sh:object rocrate:DataEntity ;
+    ] .
+
+
+# Uncomment for debugging
+# ro:testDirectory a sh:NodeShape ;
+#     sh:name "Definition of Test Directory" ;
+#     sh:description """A Test Directory is a digital object that is stored in a file format""" ;
+#     sh:targetClass rocrate:Directory ;
+
+#     sh:property [
+#         sh:name "Test Directory instance" ;
+#         sh:description """Check if the Directory DataEntity instance has the fake property rocrate:foo""" ;
+#         sh:path rdf:type ;
+#         sh:hasValue rocrate:foo ;
+#         sh:severity sh:Violation ;
+#     ] .
