@@ -1,0 +1,44 @@
+@prefix ro: <./> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema_org: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xml1: <http://www.w3.org/2001/XMLSchema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+
+# Define the prefixes used in the SPARQL queries
+ro:sparqlPrefixes
+    sh:declare [
+        sh:prefix "schema" ;
+        sh:namespace "http://schema.org/"^^xsd:anyURI ;
+    ] ;
+    sh:declare [
+        sh:prefix "bioschemas" ;
+        sh:namespace "https://bioschemas.org/"^^xsd:anyURI ;
+    ] ;
+    sh:declare [
+        sh:prefix "rocrate" ;
+        sh:namespace "https://w3id.org/ro/crate/1.1/"^^xsd:anyURI ;
+    ] ;
+    sh:declare [
+        sh:prefix "ro" ;
+        sh:namespace "./"^^xsd:anyURI ;
+    ] .
+
+ro:SharedShape a sh:NodeShape ;
+    a sh:NodeShape ;
+    sh:name "Shared Shape" ;
+    sh:description "Shared Shape for all RO-Crate Metadata File Descriptor entities" ;
+    sh:targetNode ro:ro-crate-metadata.json ;
+    
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "id" ;
+        # sh:severity sh:Info ;
+        sh:description "The identifier of the entity" ;
+        sh:path rdf:type ;
+        sh:minCount 1 ;
+        # sh:message "The root of the document MUST have an entity with @id `ro-crate-metadata.json`" ;
+    ] .
+
