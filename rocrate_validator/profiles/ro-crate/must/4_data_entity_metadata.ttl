@@ -1,0 +1,45 @@
+@prefix ro: <./> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema_org: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xml1: <http://www.w3.org/2001/XMLSchema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
+
+
+ro:FileDataEntity a sh:NodeShape ;
+    sh:name "Definition of File Data Entity" ;
+    sh:description """A File Data Entity is a digital object that is stored in a file format""" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?this a schema:MediaObject .
+                FILTER(?this != ro:ro-crate-metadata.json)
+            }
+        """
+    ] ;
+
+    sh:property [
+        sh:name "Type of File Data Entities" ;
+        sh:description """Data Entities representing files MUST have "File" as a value for @type. 
+        File is an RO-Crate alias for http://schema.org/MediaObject. The term File here is liberal, and includes “downloadable” resources where @id is an absolute URI.
+        """ ;
+        sh:path rdf:type ;
+        sh:hasValue rocrate:File ;
+        sh:severity sh:Violation ;
+    ] ;
+
+    # Expand data graph with triples from the file data entity
+    sh:rule [
+        a sh:TripleRule ;
+        sh:subject sh:this ;
+        sh:predicate rdf:type ;
+        sh:object rocrate:DataEntity ;
+    ] .
+
