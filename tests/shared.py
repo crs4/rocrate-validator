@@ -53,7 +53,7 @@ def do_entity_test(
         result: models.ValidationResult = \
             services.validate(models.ValidationSettings(**{
                 "data_path": rocrate_path,
-                "requirement_severity": models.Severity.OPTIONAL,
+                "requirement_severity": requirement_severity,
                 "abort_on_first": abort_on_first
             }))
         logger.debug("Expected validation result: %s", expected_validation_result)
