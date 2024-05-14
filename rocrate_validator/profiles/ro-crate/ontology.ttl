@@ -143,14 +143,14 @@ rocrate:File rdf:type owl:Class ;
 # # #################################################################
 
 # # ###  ./
-ro: rdf:type owl:NamedIndividual ,
-        schema:Dataset ,
-        rocrate:RootDataEntity .
+ # ro: rdf:type owl:NamedIndividual ,
+ #         schema:Dataset ,
+ #         rocrate:RootDataEntity .
 
 
 # ###  ./ro-crate-metadata.json
-ro:ro-crate-metadata.json rdf:type owl:NamedIndividual ,
-                                    rocrate:ROCrateDescriptor .
+ # ro:ro-crate-metadata.json rdf:type owl:NamedIndividual ,
+ #                                     rocrate:ROCrateDescriptor .
 
 
 # # #################################################################
