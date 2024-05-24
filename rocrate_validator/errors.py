@@ -40,6 +40,26 @@ class InvalidProfilePath(ROCValidatorError):
 
     def __repr__(self):
         return f"InvalidProfilePath({self._profile_path!r})"
+
+
+class ProfileNotFound(ROCValidatorError):
+    """Raised when a profile is not found."""
+
+    def __init__(self, profile_name: Optional[str] = None):
+        self._profile_name = profile_name
+
+    @property
+    def profile_name(self) -> Optional[str]:
+        """The name of the profile."""
+        return self._profile_name
+
+    def __str__(self) -> str:
+        return f"Profile not found: {self._profile_name!r}"
+
+    def __repr__(self):
+        return f"ProfileNotFound({self._profile_name!r})"
+
+
 class InvalidSerializationFormat(ROCValidatorError):
     """Raised when an invalid serialization format is provided."""
 

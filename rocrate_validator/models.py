@@ -22,7 +22,7 @@ from rocrate_validator.constants import (DEFAULT_ONTOLOGY_FILE,
                                          RDF_SERIALIZATION_FORMATS_TYPES,
                                          ROCRATE_METADATA_FILE,
                                          VALID_INFERENCE_OPTIONS_TYPES)
-from rocrate_validator.errors import InvalidProfilePath
+from rocrate_validator.errors import InvalidProfilePath, ProfileNotFound
 from rocrate_validator.utils import (get_profiles_path,
                                      get_requirement_name_from_file)
 
@@ -968,11 +968,15 @@ class ValidationContext:
                 publicID=self.publicID,
                 severity=self.requirement_severity)
             return {profile.name: profile}
-        return [p for p in Profile.load_profiles(
+        profiles = [p for p in Profile.load_profiles(
             self.profiles_path,
             publicID=self.publicID,
             severity=self.requirement_severity,
             reverse_order=False) if p <= self.profile_name]
+        # Check if the target profile is in the list of profiles
+        if self.profile_name not in profiles:
+            raise ProfileNotFound(f"Profile '{self.profile_name}' not found in '{self.profiles_path}'")
+        return profiles
 
     @property
     def profiles(self) -> OrderedDict[str, Profile]:
