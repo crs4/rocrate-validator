@@ -30,6 +30,11 @@ def ro_crates_path():
 
 
 @fixture
+def fake_profiles_path():
+    return f"{TEST_DATA_PATH}/profiles/fake"
+
+
+@fixture
 def graphs_path():
     return f"{TEST_DATA_PATH}/graphs"
 
