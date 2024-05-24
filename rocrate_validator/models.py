@@ -968,11 +968,11 @@ class ValidationContext:
                 publicID=self.publicID,
                 severity=self.requirement_severity)
             return {profile.name: profile}
-        profiles = [p for p in Profile.load_profiles(
+        profiles = {pn: p for pn, p in Profile.load_profiles(
             self.profiles_path,
             publicID=self.publicID,
             severity=self.requirement_severity,
-            reverse_order=False) if p <= self.profile_name]
+            reverse_order=False).items() if pn <= self.profile_name}
         # Check if the target profile is in the list of profiles
         if self.profile_name not in profiles:
             raise ProfileNotFound(f"Profile '{self.profile_name}' not found in '{self.profiles_path}'")
