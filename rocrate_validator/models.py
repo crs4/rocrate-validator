@@ -22,6 +22,7 @@ from rocrate_validator.constants import (DEFAULT_ONTOLOGY_FILE,
                                          RDF_SERIALIZATION_FORMATS_TYPES,
                                          ROCRATE_METADATA_FILE,
                                          VALID_INFERENCE_OPTIONS_TYPES)
+from rocrate_validator.errors import InvalidProfilePath
 from rocrate_validator.utils import (get_profiles_path,
                                      get_requirement_name_from_file)
 
@@ -236,7 +237,8 @@ class Profile:
         if isinstance(path, str):
             path = Path(path)
         # check if the path is a directory
-        assert path.is_dir(), f"Invalid profile path: {path}"
+        if not path.is_dir():
+            raise InvalidProfilePath(path)
         # create a new profile
         profile = Profile(name=path.name, path=path, publicID=publicID, severity=severity)
         logger.debug("Loaded profile: %s", profile)
@@ -962,7 +964,7 @@ class ValidationContext:
     def __load_profiles__(self) -> OrderedDict[str, Profile]:
         if not self.inheritance_enabled:
             profile = Profile.load(
-                self.profile_name,
+                self.profiles_path / self.profile_name,
                 publicID=self.publicID,
                 severity=self.requirement_severity)
             return {profile.name: profile}
