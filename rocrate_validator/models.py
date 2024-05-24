@@ -246,7 +246,7 @@ class Profile:
     def load_profiles(profiles_path: Union[str, Path],
                       publicID: Optional[str] = None,
                       severity:  Severity = Severity.REQUIRED,
-                      reverse_order: bool = True) -> OrderedDict[str, Profile]:
+                      reverse_order: bool = False) -> OrderedDict[str, Profile]:
         # if the path is a string, convert it to a Path
         if isinstance(profiles_path, str):
             profiles_path = Path(profiles_path)
