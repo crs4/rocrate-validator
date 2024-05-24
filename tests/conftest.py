@@ -16,7 +16,7 @@ CURRENT_PATH = os.path.dirname(os.path.realpath(__file__))
 TEST_DATA_PATH = os.path.abspath(os.path.join(CURRENT_PATH, "data"))
 
 # profiles paths
-PROFILES_PATH = f"{CURRENT_PATH}/../profiles"
+PROFILES_PATH = os.path.abspath(f"{CURRENT_PATH}/../rocrate_validator/profiles")
 
 
 @fixture
