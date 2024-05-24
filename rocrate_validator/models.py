@@ -946,7 +946,7 @@ class ValidationContext:
 
     @property
     def inheritance_enabled(self) -> bool:
-        return not self.settings.get("disable_profile_inheritance", False)
+        return self.settings.get("inherit_profiles", False)
 
     @property
     def profiles_path(self) -> Path:
