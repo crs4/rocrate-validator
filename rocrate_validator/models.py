@@ -903,6 +903,13 @@ class ValidationContext:
         return path
 
     @property
+    def profiles_path(self) -> Path:
+        profiles_path = self.settings.get("profiles_path")
+        if isinstance(profiles_path, str):
+            profiles_path = Path(profiles_path)
+        return profiles_path
+
+    @property
     def requirement_severity(self) -> Severity:
         return self.settings.get("requirement_severity", Severity.REQUIRED)
 
@@ -947,10 +954,6 @@ class ValidationContext:
     @property
     def inheritance_enabled(self) -> bool:
         return self.settings.get("inherit_profiles", False)
-
-    @property
-    def profiles_path(self) -> Path:
-        return self.settings.get("profiles_path")
 
     @property
     def profile_name(self) -> str:
