@@ -963,11 +963,11 @@ class ValidationContext:
                 publicID=self.publicID,
                 severity=self.requirement_severity)
             return {profile.name: profile}
-        return Profile.load_profiles(
+        return [p for p in Profile.load_profiles(
             self.profiles_path,
             publicID=self.publicID,
             severity=self.requirement_severity,
-            reverse_order=False)
+            reverse_order=False) if p <= self.profile_name]
 
     @property
     def profiles(self) -> OrderedDict[str, Profile]:
