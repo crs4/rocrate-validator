@@ -28,9 +28,9 @@ def test_invalid_root_date():
     """Test a RO-Crate with an invalid root data entity date."""
     do_entity_test(
         paths.invalid_root_date,
-        models.Severity.REQUIRED,
+        models.Severity.RECOMMENDED,
         False,
-        ["RO-Crate Data Entity definition"],
+        ["RO-Crate Data Entity definition: RECOMMENDED properties"],
         ["The datePublished of the Root Data Entity MUST be a valid ISO 8601 date"]
     )
 
