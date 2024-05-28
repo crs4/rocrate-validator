@@ -40,7 +40,7 @@ ro:RootDataEntityExistenceAndType
     a sh:NodeShape ;
     sh:name "RO-Crate Root Data Entity MUST exist" ;
     sh:description "The root of the document MUST be a `Dataset` and must end with /" ;
-    sh:targetNode : ;
+    sh:targetClass rocrate:RootDataEntity ;
     sh:property [
         a sh:PropertyShape ;
         sh:name "Check existence of the Root Rata Entity" ;

@@ -5,6 +5,7 @@
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix xml1: <http://www.w3.org/2001/XMLSchema#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
 
 
 ro:RootDataEntityDirectRecommendedProperties a sh:NodeShape ;
@@ -12,7 +13,7 @@ ro:RootDataEntityDirectRecommendedProperties a sh:NodeShape ;
     sh:description """The Root Data Entity SHOULD have the properties
     `name`, `description` and `license` defined in
     <https://www.researchobject.org/ro-crate/1.1/root-data-entity.html>""";
-    sh:targetNode ro: ;
+    sh:targetClass rocrate:RootDataEntity ;
     sh:property [
         a sh:PropertyShape ;
         sh:name "Name of the Root Data Entity" ;
