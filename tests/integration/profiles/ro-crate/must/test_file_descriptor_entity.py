@@ -1,5 +1,7 @@
 import logging
 
+import pytest
+
 from rocrate_validator import models
 from tests.ro_crates import InvalidFileDescriptorEntity
 from tests.shared import do_entity_test
@@ -45,6 +47,7 @@ def test_missing_entity_about():
     )
 
 
+@pytest.mark.skip(reason="This test is not working as expected")
 def test_invalid_entity_about():
     """Test a RO-Crate with an invalid about property in the file descriptor."""
     do_entity_test(

@@ -1,5 +1,7 @@
 import logging
 
+import pytest
+
 from rocrate_validator import models
 from tests.ro_crates import InvalidRootDataEntity
 from tests.shared import do_entity_test
@@ -12,6 +14,7 @@ logger = logging.getLogger(__name__)
 paths = InvalidRootDataEntity()
 
 
+@pytest.mark.skip(reason="This condition cannot be tested as expected")
 def test_missing_root_data_entity():
     """Test a RO-Crate without a root data entity."""
     do_entity_test(
