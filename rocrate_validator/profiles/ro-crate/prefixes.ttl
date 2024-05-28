@@ -25,20 +25,3 @@ ro:sparqlPrefixes
         sh:prefix "ro" ;
         sh:namespace "./"^^xsd:anyURI ;
     ] .
-
-ro:SharedShape a sh:NodeShape ;
-    a sh:NodeShape ;
-    sh:name "Shared Shape" ;
-    sh:description "Shared Shape for all RO-Crate Metadata File Descriptor entities" ;
-    sh:targetNode ro:ro-crate-metadata.json ;
-    
-    sh:property [
-        a sh:PropertyShape ;
-        sh:name "id" ;
-        # sh:severity sh:Info ;
-        sh:description "The identifier of the entity" ;
-        sh:path rdf:type ;
-        sh:minCount 1 ;
-        # sh:message "The root of the document MUST have an entity with @id `ro-crate-metadata.json`" ;
-    ] .
-
