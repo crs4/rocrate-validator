@@ -78,18 +78,18 @@ rocrate:DataEntity rdf:type owl:Class ;
 
 
 # # ###  https://w3id.org/ro/crate/1.1/Directory
-# rocrate:Directory rdf:type owl:Class ;
-#                 owl:equivalentClass [
-#                         rdf:type owl:Class ;
-#                         owl:intersectionOf ( 
-#                                 schema:Dataset
-#                                 [
-#                                         rdf:type owl:Class ;
-#                                         owl:complementOf rocrate:RootDataEntity
-#                                 ]
-#                         ) ;
-#                 ] ;
-#                 rdfs:label "Directory"@en .
+rocrate:Directory rdf:type owl:Class ;
+                owl:equivalentClass [
+                        rdf:type owl:Class ;
+                        owl:intersectionOf ( 
+                                schema:Dataset
+                                [
+                                        rdf:type owl:Class ;
+                                        owl:complementOf rocrate:RootDataEntity
+                                ]
+                        ) ;
+                ] ;
+                rdfs:label "Directory"@en .
 
 
 # ###  https://w3id.org/ro/crate/1.1/File
