@@ -42,6 +42,11 @@
 # # #    Classes
 # # #################################################################
 
+# Declare the RootDataEntity class
+rocrate:RootDataEntity rdf:type owl:Class ;
+  rdfs:subClassOf schema:Dataset ;
+  rdfs:label "RootDataEntity"@en .
+
 ###  http://schema.org/CreativeWork
 schema:CreativeWork rdf:type owl:Class ;
                     rdfs:label "CreativeWork"@en .
