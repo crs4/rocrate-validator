@@ -50,19 +50,3 @@ ro:RootDataEntityExistenceAndType
         sh:minCount 1 ;
         sh:message """The file descriptor MUST have a root data entity of type schema_org:Dataset and ending with /""" ;
     ] .
-
-:RootDataEntityRequiredDirectProperties a sh:NodeShape ;
-    sh:name "RO-Crate Data Entity definition" ;
-    sh:description """The Root Data Entity MUST have the properties defined in
-    <https://www.researchobject.org/ro-crate/1.1/root-data-entity.html>""";
-    sh:targetNode : ;
-    sh:property [
-        a sh:PropertyShape ;
-        sh:name "Date Published of the Root Data Entity" ;
-        sh:description "The datePublished of the Root Data Entity MUST be a valid ISO 8601 date" ;
-        sh:minCount 1 ;
-        sh:nodeKind sh:Literal ;
-        sh:path schema_org:datePublished ;
-        sh:pattern "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\+\\d{2}:\\d{2}$" ;
-        sh:message "The datePublished of the Root Data Entity MUST be a valid ISO 8601 date" ;
-    ] .
