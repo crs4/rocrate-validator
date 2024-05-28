@@ -5,6 +5,37 @@
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix xml1: <http://www.w3.org/2001/XMLSchema#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
+
+
+rocrate:FindRootDataEntity a sh:NodeShape ;
+    sh:name "Identify the Root Data Entity of the RO-Crate" ;
+    sh:description """The Root Data Entity is the top-level Data Entity in the RO-Crate and serves as the starting point for the description of the RO-Crate.
+        It is a schema:Dataset and is indirectly identified by the about property of the resource ro-crate-metadata.json in the RO-Crate 
+        (see the definition at [Finding RO-Crate Root in RDF triple stores](https://www.researchobject.org/ro-crate/1.1/appendix/relative-uris.html#finding-ro-crate-root-in-rdf-triple-stores)).
+    """ ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?this a schema:Dataset .
+                ?metadatafile schema:about ?this .
+                FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
+            }
+        """
+    ] ;
+
+    # Expand data graph with triples from the file data entity
+    sh:rule [
+        a sh:TripleRule ;
+        sh:subject sh:this ;
+        sh:predicate rdf:type ;
+        sh:object rocrate:RootDataEntity ;
+    ] .
+
+
 ro:RootDataEntityExistenceAndType
     a sh:NodeShape ;
     sh:name "RO-Crate Root Data Entity MUST exist" ;
