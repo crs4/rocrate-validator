@@ -1,4 +1,4 @@
-@prefix : <./> .
+@prefix ro: <./> .
 @prefix dct: <http://purl.org/dc/terms/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix schema_org: <http://schema.org/> .
@@ -7,12 +7,12 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 
-:RootDataEntityDirectRecommendedProperties a sh:NodeShape ;
+ro:RootDataEntityDirectRecommendedProperties a sh:NodeShape ;
     sh:name "RO-Crate Data Entity definition: RECOMMENDED properties" ;
     sh:description """The Root Data Entity SHOULD have the properties
     `name`, `description` and `license` defined in
     <https://www.researchobject.org/ro-crate/1.1/root-data-entity.html>""";
-    sh:targetNode : ;
+    sh:targetNode ro: ;
     sh:property [
         a sh:PropertyShape ;
         sh:name "Name of the Root Data Entity" ;

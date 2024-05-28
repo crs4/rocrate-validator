@@ -1,4 +1,4 @@
-@prefix : <./> .
+@prefix ro: <./> .
 @prefix dct: <http://purl.org/dc/terms/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix schema_org: <http://schema.org/> .
@@ -7,11 +7,11 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 
-:FileDescriptorExistence
+ro:FileDescriptorExistence
     a sh:NodeShape ;
     sh:name "RO-Crate Metadata File Descriptor entity MUST exist" ;
     sh:description "The root of the document MUST have an entity with @id `ro-crate-metadata.json`" ;
-    sh:targetNode :ro-crate-metadata.json ;
+    sh:targetNode ro:ro-crate-metadata.json ;
     sh:property [
         a sh:PropertyShape ;
         sh:name "Check Metadata File Descriptor entity existence" ;
@@ -21,12 +21,12 @@
         sh:message "The root of the document MUST have an entity with @id `ro-crate-metadata.json`" ;
     ] .
 
-:MetadataFileDescriptorDefinition a sh:NodeShape ;
+ro:MetadataFileDescriptorDefinition a sh:NodeShape ;
     sh:name "RO-Crate Metadata File Descriptor: recommended properties" ;
     sh:description """RO-Crate Metadata Descriptor MUST be defined
     according with the requirements details defined in
     <https://www.researchobject.org/ro-crate/1.1/root-data-entity.html>""";
-    sh:targetNode :ro-crate-metadata.json ;
+    sh:targetNode ro:ro-crate-metadata.json ;
     sh:property [ 
         a sh:PropertyShape ;
         sh:name "Check if the Metadata File Descriptor is a CreativeWork" ;
