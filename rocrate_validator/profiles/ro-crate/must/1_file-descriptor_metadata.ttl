@@ -23,16 +23,16 @@ ro:ROCrateMetadataFileDescriptorExistence
         sh:message "The root of the document MUST have an entity with @id `ro-crate-metadata.json`" ;
     ] .
 
-ro:MetadataFileDescriptorDefinition a sh:NodeShape ;
-    sh:name "RO-Crate Metadata File Descriptor: recommended properties" ;
+ro:ROCrateMetadataFileDescriptorRecommendedProperties a sh:NodeShape ;
+    sh:name "RO-Crate Metadata File Descriptor required properties" ;
     sh:description """RO-Crate Metadata Descriptor MUST be defined
     according with the requirements details defined in
-    <https://www.researchobject.org/ro-crate/1.1/root-data-entity.html>""";
+    [RO-Crate Metadata File Descriptor](https://www.researchobject.org/ro-crate/1.1/root-data-entity.html#ro-crate-metadata-file-descriptor)""";
     sh:targetNode ro:ro-crate-metadata.json ;
     sh:property [ 
         a sh:PropertyShape ;
-        sh:name "Check if the Metadata File Descriptor is a CreativeWork" ;
-        sh:description "The RO-Crate metadata file MUST be a CreativeWork, as per schema.org" ;
+        sh:name "Metadata File Descriptor entity type" ;
+        sh:description "Check if the RO-Crate Metadata File Descriptor has `@type` CreativeWork, as per schema.org" ;
         sh:minCount 1 ;
         sh:nodeKind sh:IRI ;
         sh:path rdf:type ;
@@ -41,9 +41,8 @@ ro:MetadataFileDescriptorDefinition a sh:NodeShape ;
     ] ;
     sh:property [ 
         a sh:PropertyShape ;
-        sh:name "Check if the `Metadata File Descriptor` has the `about` property" ;
-        sh:description """The URL of the RO-Crate metadata file itself, which is the root of the RO-Crate. 
-            This is used to identify the RO-Crate, and is the only property that is required to be present in the metadata file.""" ;
+        sh:name "Metadata File Descriptor entity: `about` property" ;
+        sh:description """Check if the RO-Crate Metadata File Descriptor has an `about` property referencing the Root Data Entity""" ;
         sh:maxCount 1;
         sh:minCount 1 ;
         sh:nodeKind sh:IRI ;
@@ -53,8 +52,8 @@ ro:MetadataFileDescriptorDefinition a sh:NodeShape ;
     ] ;
     sh:property [
         a sh:PropertyShape ;
-        sh:name "conformsTo property" ;
-        sh:description "The specification(s) that the RO-Crate JSON-LD conforms to" ;
+        sh:name "Metadata File Descriptor entity: `conformsTo` property" ;
+        sh:description """Check if the RO-Crate Metadata File Descriptor has a `conformsTo` property which points to the RO-Crate specification version""" ;
         sh:minCount 1 ;
         sh:nodeKind sh:IRI ;
         sh:path dct:conformsTo ;

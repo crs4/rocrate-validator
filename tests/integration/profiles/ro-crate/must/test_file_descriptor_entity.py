@@ -30,7 +30,7 @@ def test_invalid_entity_type():
         paths.invalid_entity_type,
         models.Severity.REQUIRED,
         False,
-        ["RO-Crate Metadata File Descriptor: recommended properties"],
+        ["RO-Crate Metadata File Descriptor required properties"],
         ["The RO-Crate metadata file MUST be a CreativeWork, as per schema.org"]
     )
 
@@ -41,7 +41,7 @@ def test_missing_entity_about():
         paths.missing_entity_about,
         models.Severity.REQUIRED,
         False,
-        ["RO-Crate Metadata File Descriptor: recommended properties"],
+        ["RO-Crate Metadata File Descriptor required properties"],
         ["The RO-Crate metadata file MUST be a CreativeWork, as per schema.org",
          "The RO-Crate metadata file descriptor MUST have an `about` property referencing the Root Data Entity"]
     )
@@ -54,7 +54,7 @@ def test_invalid_entity_about():
         paths.invalid_entity_about,
         models.Severity.REQUIRED,
         False,
-        ["RO-Crate Metadata File Descriptor: recommended properties"],
+        ["RO-Crate Metadata File Descriptor required properties"],
         ["The RO-Crate metadata file descriptor MUST have an `about` property referencing the Root Data Entity"]
     )
 
@@ -65,7 +65,7 @@ def test_invalid_entity_about_type():
         paths.invalid_entity_about_type,
         models.Severity.REQUIRED,
         False,
-        ["RO-Crate Metadata File Descriptor: recommended properties"],
+        ["RO-Crate Metadata File Descriptor required properties"],
         ["The RO-Crate metadata file MUST be a CreativeWork, as per schema.org",
          "The RO-Crate metadata file descriptor MUST have an `about` property referencing the Root Data Entity"]
     )
@@ -77,7 +77,7 @@ def test_missing_conforms_to():
         paths.missing_conforms_to,
         models.Severity.REQUIRED,
         False,
-        ["RO-Crate Metadata File Descriptor: recommended properties"],
+        ["RO-Crate Metadata File Descriptor required properties"],
         ["The RO-Crate metadata file descriptor MUST have a `conformsTo` "
          "property with the RO-Crate specification version"]
     )
@@ -89,7 +89,7 @@ def test_invalid_conforms_to():
         paths.invalid_conforms_to,
         models.Severity.REQUIRED,
         False,
-        ["RO-Crate Metadata File Descriptor: recommended properties"],
+        ["RO-Crate Metadata File Descriptor required properties"],
         ["The RO-Crate metadata file descriptor MUST have a `conformsTo` "
          "property with the RO-Crate specification version"]
     )
