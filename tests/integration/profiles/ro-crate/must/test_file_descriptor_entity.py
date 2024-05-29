@@ -19,7 +19,7 @@ def test_missing_entity():
         paths.missing_entity,
         models.Severity.REQUIRED,
         False,
-        ["RO-Crate Metadata File Descriptor entity MUST exist"],
+        ["RO-Crate Metadata File Descriptor entity existence"],
         ["The root of the document MUST have an entity with @id `ro-crate-metadata.json`"]
     )
 

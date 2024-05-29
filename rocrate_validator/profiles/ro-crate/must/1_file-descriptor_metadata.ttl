@@ -7,9 +7,10 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 
-ro:FileDescriptorExistence
+
+ro:ROCrateMetadataFileDescriptorExistence
     a sh:NodeShape ;
-    sh:name "RO-Crate Metadata File Descriptor entity MUST exist" ;
+    sh:name "RO-Crate Metadata File Descriptor entity existence" ;
     sh:description "The root of the document MUST have an entity with @id `ro-crate-metadata.json`" ;
     sh:targetNode ro:ro-crate-metadata.json ;
     sh:property [
