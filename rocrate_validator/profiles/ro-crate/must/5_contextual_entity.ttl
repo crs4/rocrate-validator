@@ -10,7 +10,7 @@
 @prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
 
 
-rocrate:FindLicenseEntity a sh:NodeShape ;
+rocrate:FindLicenseEntity a sh:NodeShape, sh:hidden ;
     sh:name "Identify License Entity" ;
     sh:description """Mark a license entity any Data Entity referenced by the `schema:licence` property.""" ;
     sh:target [
