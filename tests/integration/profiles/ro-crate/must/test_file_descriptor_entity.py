@@ -66,8 +66,7 @@ def test_invalid_entity_about_type():
         models.Severity.REQUIRED,
         False,
         ["RO-Crate Metadata File Descriptor required properties"],
-        ["The RO-Crate metadata file MUST be a CreativeWork, as per schema.org",
-         "The RO-Crate metadata file descriptor MUST have an `about` property referencing the Root Data Entity"]
+        ["The RO-Crate metadata file descriptor MUST have an `about` property referencing the Root Data Entity"]
     )
 
 
