@@ -43,7 +43,7 @@ def test_invalid_root_date():
         models.Severity.RECOMMENDED,
         False,
         ["RO-Crate Root Data Entity RECOMMENDED properties"],
-        ["The datePublished of the Root Data Entity MUST be a valid ISO 8601 date"]
+        ["The Root Data Entity SHOULD have a `datePublished` property (as specified by schema.org) with a valid ISO 8601 date and the precision of at least the day level"]
     )
 
 
@@ -54,7 +54,7 @@ def test_missing_root_name():
         models.Severity.RECOMMENDED,
         False,
         ["RO-Crate Root Data Entity RECOMMENDED properties"],
-        ["The Root Data Entity SHOULD have a schema_org:name"]
+        ["The Root Data Entity SHOULD have a `name` property (as specified by schema.org)"]
     )
 
 
@@ -65,7 +65,7 @@ def test_missing_root_description():
         models.Severity.RECOMMENDED,
         False,
         ["RO-Crate Root Data Entity RECOMMENDED properties"],
-        ["The Root Data Entity SHOULD have a schema_org:description"]
+        ["The Root Data Entity SHOULD have a `description` property (as specified by schema.org)"]
     )
 
 
