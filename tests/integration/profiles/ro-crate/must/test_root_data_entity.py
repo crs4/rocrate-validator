@@ -42,7 +42,7 @@ def test_invalid_root_date():
         paths.invalid_root_date,
         models.Severity.RECOMMENDED,
         False,
-        ["RO-Crate Root Data Entity definition RECOMMENDED properties"],
+        ["RO-Crate Root Data Entity RECOMMENDED properties"],
         ["The datePublished of the Root Data Entity MUST be a valid ISO 8601 date"]
     )
 
@@ -53,7 +53,7 @@ def test_missing_root_name():
         paths.missing_root_name,
         models.Severity.RECOMMENDED,
         False,
-        ["RO-Crate Root Data Entity definition RECOMMENDED properties"],
+        ["RO-Crate Root Data Entity RECOMMENDED properties"],
         ["The Root Data Entity SHOULD have a schema_org:name"]
     )
 
@@ -64,7 +64,7 @@ def test_missing_root_description():
         paths.missing_root_description,
         models.Severity.RECOMMENDED,
         False,
-        ["RO-Crate Root Data Entity definition RECOMMENDED properties"],
+        ["RO-Crate Root Data Entity RECOMMENDED properties"],
         ["The Root Data Entity SHOULD have a schema_org:description"]
     )
 
@@ -75,7 +75,7 @@ def test_missing_root_license():
         paths.missing_root_license,
         models.Severity.RECOMMENDED,
         False,
-        ["RO-Crate Root Data Entity definition RECOMMENDED properties"],
+        ["RO-Crate Root Data Entity RECOMMENDED properties"],
         ["The Root Data Entity SHOULD have a link to a Contextual Entity representing the schema_org:license type"]
     )
 
