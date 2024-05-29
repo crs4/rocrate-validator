@@ -11,12 +11,13 @@
 ro:ROCrateMetadataFileDescriptorExistence
     a sh:NodeShape ;
     sh:name "RO-Crate Metadata File Descriptor entity existence" ;
-    sh:description "The root of the document MUST have an entity with @id `ro-crate-metadata.json`" ;
+    sh:description "The RO-Crate JSON-LD MUST contain a Metadata File Descriptor entity named `ro-crate-metadata.json` and typed as `schema:CreativeWork`" ;
     sh:targetNode ro:ro-crate-metadata.json ;
     sh:property [
         a sh:PropertyShape ;
-        sh:name "Check Metadata File Descriptor entity existence" ;
-        sh:description "Check if the RO-Crate Metadata File Descriptor entity exists" ;
+        sh:name "File Descriptor entity existence" ;
+        sh:description """Check if the RO-Crate Metadata File Descriptor entity exists,
+            i.e., if there exists an entity with @id `ro-crate-metadata.json` and type `schema:CreativeWork`""" ;
         sh:path rdf:type ;
         sh:minCount 1 ;
         sh:message "The root of the document MUST have an entity with @id `ro-crate-metadata.json`" ;
