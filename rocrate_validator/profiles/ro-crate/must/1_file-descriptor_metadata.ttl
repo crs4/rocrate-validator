@@ -15,7 +15,7 @@ ro:ROCrateMetadataFileDescriptorExistence
     sh:targetNode ro:ro-crate-metadata.json ;
     sh:property [
         a sh:PropertyShape ;
-        sh:name "File Descriptor entity existence" ;
+        sh:name "RO-Crate Metadata File Descriptor entity existence" ;
         sh:description """Check if the RO-Crate Metadata File Descriptor entity exists,
             i.e., if there exists an entity with @id `ro-crate-metadata.json` and type `schema:CreativeWork`""" ;
         sh:path rdf:type ;
@@ -24,7 +24,7 @@ ro:ROCrateMetadataFileDescriptorExistence
     ] .
 
 ro:ROCrateMetadataFileDescriptorRecommendedProperties a sh:NodeShape ;
-    sh:name "RO-Crate Metadata File Descriptor required properties" ;
+    sh:name "RO-Crate Metadata File Descriptor REQUIRED properties" ;
     sh:description """RO-Crate Metadata Descriptor MUST be defined
     according with the requirements details defined in
     [RO-Crate Metadata File Descriptor](https://www.researchobject.org/ro-crate/1.1/root-data-entity.html#ro-crate-metadata-file-descriptor)""";

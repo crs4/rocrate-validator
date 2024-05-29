@@ -9,7 +9,7 @@
 
 
 ro:RootDataEntityDirectRecommendedProperties a sh:NodeShape ;
-    sh:name "RO-Crate Data Entity definition: RECOMMENDED properties" ;
+    sh:name "RO-Crate Root Data Entity definition RECOMMENDED properties" ;
     sh:description """The Root Data Entity SHOULD have the properties
     `name`, `description` and `license` defined in
     <https://www.researchobject.org/ro-crate/1.1/root-data-entity.html>""";
