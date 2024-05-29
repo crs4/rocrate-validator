@@ -8,6 +8,33 @@
 @prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
 
 
+ro:RootDataEntityType
+    a sh:NodeShape ;
+    sh:name "RO-Crate Root Data Entity type" ;
+    sh:description "The Root Data Entity MUST be a `Dataset` (as per `schema.org`)" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?metadatafile schema:about ?this .
+                FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
+            }
+        """
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Root Data Entity type" ;
+        sh:description "Check if the Root Data Entity is a `Dataset` (as per `schema.org`)" ;
+        sh:path rdf:type ;
+        sh:hasValue schema_org:Dataset ;
+        sh:minCount 1 ;
+        sh:message """The Root Data Entity MUST be a `Dataset` (as per `schema.org`)""" ;
+    ] .
+    
+
+
 rocrate:FindRootDataEntity a sh:NodeShape, sh:hidden;
     sh:name "Identify the Root Data Entity of the RO-Crate" ;
     sh:description """The Root Data Entity is the top-level Data Entity in the RO-Crate and serves as the starting point for the description of the RO-Crate.
