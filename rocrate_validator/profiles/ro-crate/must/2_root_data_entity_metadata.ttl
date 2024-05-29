@@ -63,17 +63,17 @@ rocrate:FindRootDataEntity a sh:NodeShape, sh:hidden;
     ] .
 
 
-ro:RootDataEntityExistenceAndType
+ro:RootDataEntityValueRestriction
     a sh:NodeShape ;
-    sh:name "RO-Crate Root Data Entity MUST exist" ;
-    sh:description "The root of the document MUST be a `Dataset` and must end with /" ;
-    sh:targetClass rocrate:RootDataEntity ;
+    sh:name "RO-Crate Root Data Entity value restriction" ;
+    sh:description "The Root Data Entity MUST end with `/`" ;
+    sh:targetNode rocrate:RootDataEntity ;
     sh:property [
         a sh:PropertyShape ;
-        sh:name "Check existence of the Root Rata Entity" ;
-        sh:description "Check if the Root Data Entity exists in the file descriptor" ;
-        sh:path rdf:type ;
-        sh:hasValue schema_org:Dataset ;
+        sh:name "Root Data Entity URI value" ;
+        sh:description "Check if the Root Data Entity URI ends with `/`" ;
+        sh:path [ sh:inversePath rdf:type ] ;
         sh:minCount 1 ;
-        sh:message """The file descriptor MUST have a root data entity of type schema_org:Dataset and ending with /""" ;
+        sh:message """The Root Data Entity URI MUST end with `/`""" ;
+        sh:pattern "/$" ;
     ] .
