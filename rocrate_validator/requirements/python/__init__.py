@@ -73,6 +73,10 @@ class PyRequirement(Requirement):
 
         return checks
 
+    @property
+    def hidden(self) -> bool:
+        return getattr(self.requirement_check_class, "hidden", False)
+
 
 def check(name: Optional[str] = None):
     """

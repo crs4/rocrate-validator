@@ -128,6 +128,10 @@ def __compacted_describe_profile__(console, profile):
     table_rows = []
     levels_list = set()
     for requirement in profile.requirements:
+        # skip hidden requirements
+        if requirement.hidden:
+            continue
+        # add the requirement to the list
         color = get_severity_color(requirement.severity)
         level_info = f"[{color}]{requirement.severity.name}[/{color}]"
         levels_list.add(level_info)
@@ -168,7 +172,10 @@ def __verbose_describe_profile__(console, profile):
     table_rows = []
     levels_list = set()
     for requirement in profile.requirements:
-
+        # skip hidden requirements
+        if requirement.hidden:
+            continue
+        # add the requirement to the list
         for check in requirement.get_checks():
             color = get_severity_color(check.severity)
             level_info = f"[{color}]{check.severity.name}[/{color}]"

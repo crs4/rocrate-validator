@@ -55,6 +55,15 @@ class SHACLRequirement(Requirement):
             return self.shape.level
         return level
 
+    @property
+    def hidden(self) -> bool:
+        from rdflib import RDF, Namespace
+        SHACL = Namespace("http://www.w3.org/ns/shacl#")
+        if self.shape.node is not None:
+            if (self.shape.node, RDF.type, SHACL.hidden) in self.shape.graph:
+                return True
+        return False
+
 
 class SHACLRequirementLoader(RequirementLoader):
 

@@ -332,6 +332,11 @@ class Requirement(ABC):
         return self._description
 
     @property
+    @abstractmethod
+    def hidden(self) -> bool:
+        pass
+
+    @property
     def path(self) -> Optional[Path]:
         return self._path
 
