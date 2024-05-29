@@ -466,7 +466,6 @@ class RequirementLoader:
         files = sorted((p for p in profile.path.rglob('*.*') if ok_file(p)),
                        key=lambda x: (not x.suffix == '.py', x))
 
-        req_id = 0
         requirements = []
         for requirement_path in files:
             requirement_level = None
@@ -480,9 +479,12 @@ class RequirementLoader:
             for requirement in requirement_loader.load(
                     profile, requirement_level,
                     requirement_path, publicID=profile.publicID):
-                req_id += 1
-                requirement._order_number = req_id
                 requirements.append(requirement)
+        # sort the requirements by severity
+        requirements = sorted(requirements, key=lambda x: x.level.severity, reverse=True)
+        # assign order numbers to requirements
+        for i, requirement in enumerate(requirements):
+            requirement._order_number = i + 1
         # log and return the requirements
         logger.debug("Profile %s loaded %s requirements: %s",
                      profile.name, len(requirements), requirements)
