@@ -21,7 +21,8 @@
         {
             "@id": "./",
             "@type": "Dataset",
-            "datePublished": "2024-01-22",
+            "datePublished": "2024 Jan 01",
+            "description": "This RO Crate contains the workflow MyWorkflow",
             "hasPart": [
                 {
                     "@id": "my-workflow.ga"
