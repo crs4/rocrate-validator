@@ -57,7 +57,7 @@
         },
         {
             "@id": "ro-crate-metadata.json",
-            "@type": "CreativeWorkInvalid",
+            "@type": "CreativeWork",
             "about": {
                 "@id": "my-workflow.ga"
             },
