@@ -243,7 +243,7 @@ class ShapesRegistry:
         for node_shape in shapes_list.node_shapes:
             # flag to check if the nested properties are in a group
             grouped = False
-            # list of properties ungroupped
+            # list of properties ungrouped
             ungrouped_properties = []
             # get the shape graph
             node_graph = shapes_list.get_shape_graph(node_shape)
