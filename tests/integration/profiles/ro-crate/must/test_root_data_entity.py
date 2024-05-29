@@ -14,16 +14,25 @@ logger = logging.getLogger(__name__)
 paths = InvalidRootDataEntity()
 
 
-@pytest.mark.skip(reason="This condition cannot be tested as expected")
 def test_missing_root_data_entity():
     """Test a RO-Crate without a root data entity."""
     do_entity_test(
         paths.invalid_root_type,
         models.Severity.REQUIRED,
         False,
-        ["RO-Crate Root Data Entity MUST exist",
-         "RO-Crate Metadata File Descriptor: recommended properties"],
-        ["The file descriptor MUST have a root data entity of type schema_org:Dataset and ending with /"]
+        ["RO-Crate Root Data Entity type"],
+        ["The Root Data Entity MUST be a `Dataset` (as per `schema.org`)"]
+    )
+
+
+def test_invalid_root_data_entity_value():
+    """Test a RO-Crate with an invalid root data entity value."""
+    do_entity_test(
+        paths.invalid_root_value,
+        models.Severity.REQUIRED,
+        False,
+        ["RO-Crate Root Data Entity value restriction"],
+        ["The Root Data Entity URI MUST end with `/`"]
     )
 
 
