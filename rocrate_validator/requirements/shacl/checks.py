@@ -24,10 +24,12 @@ class SHACLCheck(RequirementCheck):
         self._shape = shape
         # init the check
         super().__init__(requirement,
-                         shape.name
-                         if shape and shape.name else None,
-                         shape.description
-                         if shape and shape.description else None)
+                         shape.name if shape and shape.name
+                         else shape.parent.name if shape.parent
+                         else None,
+                         shape.description if shape and shape.description
+                         else shape.parent.description if shape.parent
+                         else None)
         # store the instance
         SHACLCheck.__add_instance__(shape, self)
 
