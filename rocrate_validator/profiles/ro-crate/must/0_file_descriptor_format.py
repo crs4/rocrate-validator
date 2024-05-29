@@ -40,12 +40,12 @@ class FileDescriptorExistence(PyFunctionCheck):
         return True
 
 
-@requirement(name="File Descriptor JSON Format")
+@requirement(name="File Descriptor JSON format")
 class FileDescriptorJsonFormat(PyFunctionCheck):
     """
     The file descriptor MUST be a valid JSON file
     """
-    @check(name="File Descriptor JSON Format")
+    @check(name="File Descriptor JSON format")
     def check(self, context: ValidationContext) -> bool:
         """ Check if the file descriptor is in the correct format"""
         try:
@@ -61,7 +61,7 @@ class FileDescriptorJsonFormat(PyFunctionCheck):
             return False
 
 
-@requirement(name="File Descriptor JSON-LD Format")
+@requirement(name="File Descriptor JSON-LD format")
 class FileDescriptorJsonLdFormat(PyFunctionCheck):
     """
     The file descriptor MUST be a valid JSON-LD file
