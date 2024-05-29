@@ -8,7 +8,7 @@
 @prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
 
 
-rocrate:FindRootDataEntity a sh:NodeShape ;
+rocrate:FindRootDataEntity a sh:NodeShape, sh:hidden;
     sh:name "Identify the Root Data Entity of the RO-Crate" ;
     sh:description """The Root Data Entity is the top-level Data Entity in the RO-Crate and serves as the starting point for the description of the RO-Crate.
         It is a schema:Dataset and is indirectly identified by the about property of the resource ro-crate-metadata.json in the RO-Crate 
