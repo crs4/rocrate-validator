@@ -10,9 +10,27 @@
 @prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
 
 
+ro:DataEntityRequiredProperties a sh:NodeShape ;
+    sh:name "Data Entity: REQUIRED properties" ;
+    sh:description """A Data Entity MUST be a `URI Path` relative to the ROCrate root,
+        or an sbsolute URI""" ;
+    sh:targetClass rocrate:DataEntity ;
+
+    sh:property [
+        sh:name "Data Entity: @id value restriction" ;
+        sh:description """Check if the Data Entity has an absolute or relative URI as `@id`""" ;
+        sh:path [sh:inversePath rdf:type ] ;
+        sh:nodeKind sh:IRI ;
+        sh:severity sh:Violation ;
+        sh:message """Data Entities MUST have an absolute or relative URI as @id.""" ;
+    ] .
+
 ro:FileDataEntity a sh:NodeShape ;
-    sh:name "Definition of File Data Entity" ;
-    sh:description """A File Data Entity is a digital object that is stored in a file format""" ;
+    sh:name "File Data Entity: REQUIRED properties" ;
+    sh:description """A File Data Entity MUST be a `File`.
+    `File` is an RO-Crate alias for the schema.org `MediaObject`.
+    The term `File` here is liberal, and includes "downloadable" resources where `@id` is an absolute URI.
+    """ ;
     sh:target [
         a sh:SPARQLTarget ;
         sh:prefixes ro:sparqlPrefixes ;
@@ -26,13 +44,14 @@ ro:FileDataEntity a sh:NodeShape ;
     ] ;
 
     sh:property [
-        sh:name "Type of File Data Entities" ;
-        sh:description """Data Entities representing files MUST have "File" as a value for @type. 
-        File is an RO-Crate alias for http://schema.org/MediaObject. The term File here is liberal, and includes “downloadable” resources where @id is an absolute URI.
+        sh:name "File Data Entity: REQUIRED type" ;
+        sh:description """Check if the File Data Entity has `File` as `@type`.
+        `File` is an RO-Crate alias for the schema.org `MediaObject`.
         """ ;
         sh:path rdf:type ;
         sh:hasValue rocrate:File ;
         sh:severity sh:Violation ;
+        sh:message """File Data Entities MUST have "File" as a value for @type.""" ;
     ] ;
 
     # Expand data graph with triples from the file data entity
@@ -45,8 +64,10 @@ ro:FileDataEntity a sh:NodeShape ;
 
 
 ro:DirectoryDataEntity a sh:NodeShape ;
-    sh:name "Definition of Directory Data Entity" ;
-    sh:description """A Directory Data Entity is a digital object that is stored in a directory""" ;
+    sh:name "Directory Data Entity: REQUIRED properties" ;
+    sh:description """A Directory Data Entity MUST be of @type `Dataset`.
+    The term `directory` here includes HTTP file listings where `@id` is an absolute URI.
+    """ ;
     sh:target [
         a sh:SPARQLTarget ;
         sh:prefixes ro:sparqlPrefixes ;
@@ -57,16 +78,6 @@ ro:DirectoryDataEntity a sh:NodeShape ;
                 FILTER NOT EXISTS { ?this a rocrate:RootDataEntity }
             }
         """
-    ] ;
-    sh:targetClass rocrate:Directory ;
-    sh:property [
-        sh:name "Type of Directory Data Entities" ;
-        sh:description """Data Entities representing directories MUST have "Directory" as a value for @type.
-        Directory is an RO-Crate alias for http://schema.org/Dataset.
-        """ ;
-        sh:path rdf:type ;
-        sh:hasValue schema_org:Dataset ;
-        sh:severity sh:Violation ;
     ] ;
 
     # Decomment for debugging
@@ -92,6 +103,24 @@ ro:DirectoryDataEntity a sh:NodeShape ;
         sh:subject sh:this ;
         sh:predicate rdf:type ;
         sh:object rocrate:DataEntity ;
+    ] ;
+    
+    sh:property [
+        sh:name "Directory Data Entity: REQUIRED type" ;
+        sh:description """Check if the Directory Data Entity has `Dataset` as `@type`.""" ;
+        sh:path rdf:type ;
+        sh:hasValue schema_org:Dataset ;
+        sh:severity sh:Violation ;
+    ] ;
+
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Directory Data Entity: REQUIRED value restriction" ;
+        sh:description """Check if the Directory Data Entity ends with `/`""" ;
+        sh:path [ sh:inversePath rdf:type ] ;
+        sh:minCount 1 ;
+        sh:message """The Directory Data Entity URI MUST end with `/`""" ;
+        sh:pattern "/$" ;
     ] .
 
 
