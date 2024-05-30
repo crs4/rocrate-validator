@@ -1,0 +1,45 @@
+@prefix ro: <./> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema_org: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xml1: <http://www.w3.org/2001/XMLSchema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
+
+rocrate:FindMainWorkflow a sh:NodeShape ;
+    sh:name "Identify Main Workflow" ;
+    sh:description "Main Workflow" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?root schema:mainEntity ?this .
+                ?root a schema:Dataset .
+                ?metadatafile schema:about ?root .
+                FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
+            }
+        """
+    ] ;
+    sh:rule [
+        a sh:TripleRule ;
+        sh:subject sh:this ;
+        sh:predicate rdf:type ;
+        sh:object rocrate:MainWorkflow ;
+    ] .
+
+ro:MainWorkflowRecommendedProperties a sh:NodeShape ;
+    sh:name "Main Workflow definition" ;
+    sh:description """The Main Workflow MUST have the properties defined in
+    <https://www.researchobject.org/ro-crate/1.1/main-workflow.html>""";
+    sh:targetClass rocrate:MainWorkflow ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "X" ;
+        sh:description "XXX" ;
+        sh:path schema_org:name ;
+        sh:minCount 1 ;
+        sh:nodeKind sh:Literal ;
+    ] .
