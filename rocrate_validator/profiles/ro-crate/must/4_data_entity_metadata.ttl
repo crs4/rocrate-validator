@@ -111,7 +111,12 @@ ro:DirectoryDataEntity a sh:NodeShape ;
         sh:path rdf:type ;
         sh:hasValue schema_org:Dataset ;
         sh:severity sh:Violation ;
-    ] ;
+    ] .
+
+ro:DirectoryDataEntityRequiredValueRestriction a sh:NodeShape ;
+    sh:name "Directory Data Entity: REQUIRED value restriction" ;
+    sh:description """A Directory Data Entity MUST end with `/`""" ;
+    sh:targetNode rocrate:Directory ;
 
     sh:property [
         a sh:PropertyShape ;
@@ -122,7 +127,6 @@ ro:DirectoryDataEntity a sh:NodeShape ;
         sh:message """The Directory Data Entity URI MUST end with `/`""" ;
         sh:pattern "/$" ;
     ] .
-
 
 # Uncomment for debugging
 # ro:testDirectory a sh:NodeShape ;
