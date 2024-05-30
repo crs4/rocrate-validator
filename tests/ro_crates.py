@@ -59,6 +59,14 @@ class InvalidRootDataEntity:
         return self.base_path / "invalid_root_type"
 
     @property
+    def invalid_root_value(self) -> Path:
+        return self.base_path / "invalid_root_value"
+
+    @property
+    def recommended_root_value(self) -> Path:
+        return self.base_path / "recommended_root_value"
+
+    @property
     def invalid_root_date(self) -> Path:
         return self.base_path / "invalid_root_date"
 

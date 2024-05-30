@@ -36,6 +36,17 @@ def test_invalid_root_data_entity_value():
     )
 
 
+def test_recommended_root_data_entity_value():
+    """Test a RO-Crate with an invalid root data entity value."""
+    do_entity_test(
+        paths.recommended_root_value,
+        models.Severity.RECOMMENDED,
+        False,
+        ["RO-Crate Root Data Entity RECOMMENDED value"],
+        ["Root Data Entity URI is not denoted by the string `./`"]
+    )
+
+
 def test_invalid_root_date():
     """Test a RO-Crate with an invalid root data entity date."""
     do_entity_test(
