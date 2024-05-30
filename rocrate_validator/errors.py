@@ -24,6 +24,42 @@ class ProfilesDirectoryNotFound(ROCValidatorError):
         return f"ProfilesDirectoryNotFound({self._profiles_path!r})"
 
 
+class InvalidProfilePath(ROCValidatorError):
+    """Raised when an invalid profile path is provided."""
+
+    def __init__(self, profile_path: Optional[str] = None):
+        self._profile_path = profile_path
+
+    @property
+    def profile_path(self) -> Optional[str]:
+        """The invalid profile path."""
+        return self._profile_path
+
+    def __str__(self) -> str:
+        return f"Invalid profile path: {self._profile_path!r}"
+
+    def __repr__(self):
+        return f"InvalidProfilePath({self._profile_path!r})"
+
+
+class ProfileNotFound(ROCValidatorError):
+    """Raised when a profile is not found."""
+
+    def __init__(self, profile_name: Optional[str] = None):
+        self._profile_name = profile_name
+
+    @property
+    def profile_name(self) -> Optional[str]:
+        """The name of the profile."""
+        return self._profile_name
+
+    def __str__(self) -> str:
+        return f"Profile not found: {self._profile_name!r}"
+
+    def __repr__(self):
+        return f"ProfileNotFound({self._profile_name!r})"
+
+
 class InvalidSerializationFormat(ROCValidatorError):
     """Raised when an invalid serialization format is provided."""
 
@@ -40,6 +76,36 @@ class InvalidSerializationFormat(ROCValidatorError):
 
     def __repr__(self):
         return f"InvalidSerializationFormat({self._format!r})"
+
+
+class BadSyntaxError(ROCValidatorError):
+    """Raised when a syntax error occurs."""
+
+    def __init__(self, message, path: str = ".", code: int = -1):
+        self._message = message
+        self._path = path
+        self._code = code
+
+    @property
+    def message(self) -> str:
+        """The error message."""
+        return self._message
+
+    @property
+    def path(self) -> str:
+        """The path where the error occurred."""
+        return self._path
+
+    @property
+    def code(self) -> int:
+        """The error code."""
+        return self._code
+
+    def __str__(self) -> str:
+        return self._message
+
+    def __repr__(self):
+        return f"BadSyntaxError({self._message!r}, {self._path!r})"
 
 
 class ValidationError(ROCValidatorError):

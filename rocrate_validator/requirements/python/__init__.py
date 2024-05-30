@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Callable, Optional, Type
 
 from ...models import (Profile, Requirement, RequirementCheck,
-                       RequirementLevel, ValidationContext)
+                       RequirementLevel, RequirementLoader, ValidationContext)
 from ...utils import get_classes_from_file
 
 # set up logging
@@ -73,8 +73,30 @@ class PyRequirement(Requirement):
 
         return checks
 
-    @staticmethod
-    def load(profile: Profile,
+
+def check(name: Optional[str] = None):
+    """
+    A decorator to mark functions as "checks" (by setting an attribute
+    `check=True`) and optionally annotating them with a human-legible name.
+    """
+    def decorator(func):
+        check_name = name if name else func.__name__
+        sig = inspect.signature(func)
+        if len(sig.parameters) != 2:
+            raise RuntimeError(f"Invalid check {check_name}. Checks are expected to "
+                               "accept two arguments but this only takes {len(sig.parameters)}")
+        if sig.return_annotation not in (bool, inspect.Signature.empty):
+            raise RuntimeError(f"Invalid check {check_name}. Checks are expected to "
+                               "return bool but this only returns {sig.return_annotation}")
+        func.check = True
+        func.name = check_name
+        return func
+    return decorator
+
+
+class PyRequirementLoader(RequirementLoader):
+
+    def load(self, profile: Profile,
              requirement_level: RequirementLevel,
              file_path: Path,
              publicID: Optional[str] = None) -> list[Requirement]:
@@ -99,23 +121,3 @@ class PyRequirement(Requirement):
             requirements.append(r)
 
         return requirements
-
-
-def check(name: Optional[str] = None):
-    """
-    A decorator to mark functions as "checks" (by setting an attribute
-    `check=True`) and optionally annotating them with a human-legible name.
-    """
-    def decorator(func):
-        check_name = name if name else func.__name__
-        sig = inspect.signature(func)
-        if len(sig.parameters) != 2:
-            raise RuntimeError(f"Invalid check {check_name}. Checks are expected to "
-                               "accept two arguments but this only takes {len(sig.parameters)}")
-        if sig.return_annotation not in (bool, inspect.Signature.empty):
-            raise RuntimeError(f"Invalid check {check_name}. Checks are expected to "
-                               "return bool but this only returns {sig.return_annotation}")
-        func.check = True
-        func.name = check_name
-        return func
-    return decorator

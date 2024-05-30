@@ -1,10 +1,8 @@
 import logging
 from pathlib import Path
-from typing import Optional, Union
+from typing import  Union
 
-from .constants import (RDF_SERIALIZATION_FORMATS_TYPES,
-                        VALID_INFERENCE_OPTIONS_TYPES)
-from .models import Profile, Severity, ValidationResult, Validator
+from .models import Profile, Severity, ValidationResult, ValidationSettings, Validator
 from .utils import get_profiles_path
 
 # set the default profiles path
@@ -14,49 +12,17 @@ DEFAULT_PROFILES_PATH = get_profiles_path()
 logger = logging.getLogger(__name__)
 
 
-def validate(
-    rocrate_path: Path,
-    profiles_path: Path = DEFAULT_PROFILES_PATH,
-    profile_name: str = "ro-crate",
-    inherit_profiles: bool = True,
-    ontologies_path: Optional[Path] = None,
-    inference: Optional[VALID_INFERENCE_OPTIONS_TYPES] = None,
-    inplace: Optional[bool] = False,
-    abort_on_first: Optional[bool] = True,
-    allow_infos: Optional[bool] = False,
-    allow_warnings: Optional[bool] = False,
-    requirement_severity: Union[str, Severity] = Severity.REQUIRED,
-    requirement_severity_only: bool = False,
-    serialization_output_path: Optional[Path] = None,
-    serialization_output_format: RDF_SERIALIZATION_FORMATS_TYPES = "turtle",
-    **kwargs,
-) -> ValidationResult:
+def validate(settings: Union[dict, ValidationSettings]) -> ValidationResult:
     """
     Validate a RO-Crate against a profile
     """
-    # if requirement_severity is a str, convert to Severity
-    if not isinstance(requirement_severity, Severity):
-        requirement_severity = Severity[requirement_severity]
+    # if settings is a dict, convert to ValidationSettings
+    settings = ValidationSettings.parse(settings)
 
-    validator = Validator(
-        rocrate_path=rocrate_path,
-        profiles_path=profiles_path,
-        profile_name=profile_name,
-        inherit_profiles=inherit_profiles,
-        ontologies_path=ontologies_path,
-        advanced=True,
-        inference=inference,
-        inplace=inplace,
-        abort_on_first=abort_on_first,
-        allow_infos=allow_infos,
-        allow_warnings=allow_warnings,
-        requirement_severity=requirement_severity,
-        requirement_severity_only=requirement_severity_only,
-        serialization_output_path=serialization_output_path,
-        serialization_output_format=serialization_output_format,
-        **kwargs,
-    )
+    # create a validator
+    validator = Validator(settings)
     logger.debug("Validator created. Starting validation...")
+    # validate the RO-Crate
     result = validator.validate()
     logger.debug("Validation completed: %s", result)
     return result
@@ -79,6 +45,7 @@ def get_profile(profiles_path: Path = DEFAULT_PROFILES_PATH,
     profile_path = profiles_path / profile_name
     if not Path(profiles_path).exists():
         raise FileNotFoundError(f"Profile not found: {profile_path}")
-    profile = Profile.load(f"{profiles_path}/{profile_name}", publicID=publicID)
+    profile = Profile.load(f"{profiles_path}/{profile_name}",
+                           publicID=publicID, severity=Severity.OPTIONAL)
     logger.debug("Profile loaded: %s", profile)
     return profile

@@ -7,6 +7,8 @@ from typing import Optional
 from rich.align import Align
 from rich.console import Console
 
+from rocrate_validator.constants import DEFAULT_PROFILE_NAME
+
 from ... import services
 from ...colors import get_severity_color
 from ...models import Severity, ValidationResult
@@ -44,7 +46,7 @@ logger = logging.getLogger(__name__)
     "-p",
     "--profile-name",
     type=click.STRING,
-    default="ro-crate",
+    default=DEFAULT_PROFILE_NAME,
     show_default=True,
     help="Name of the profile to use for validation",
 )
@@ -111,14 +113,16 @@ def validate(ctx,
 
     # Validate the RO-Crate
     result: ValidationResult = services.validate(
-        profiles_path=profiles_path,
-        profile_name=profile_name,
-        requirement_severity=requirement_severity,
-        requirement_severity_only=requirement_severity_only,
-        disable_profile_inheritance=disable_profile_inheritance,
-        rocrate_path=Path(rocrate_path).absolute(),
-        ontologies_path=Path(ontologies_path).absolute() if ontologies_path else None,
-        abort_on_first=not no_fail_fast
+        {
+            "profiles_path": profiles_path,
+            "profile_name": profile_name,
+            "requirement_severity": requirement_severity,
+            "requirement_severity_only": requirement_severity_only,
+            "disable_profile_inheritance": disable_profile_inheritance,
+            "data_path": Path(rocrate_path).absolute(),
+            "ontology_path": Path(ontologies_path).absolute() if ontologies_path else None,
+            "abort_on_first": not no_fail_fast
+        }
     )
 
     # Print the validation result
@@ -153,11 +157,11 @@ def __print_validation_result__(
                                   key=lambda x: (-x.severity.value, x)):
             issue_color = get_severity_color(requirement.severity)
             console.print(
-                Align(f" [severity: [{issue_color}]{requirement.severity.name}[/{issue_color}], "
-                      f"profile: [magenta]{requirement.profile.name }[/magenta]]", align="right")
+                Align(f"\n [severity: [{issue_color}]{requirement.severity.name}[/{issue_color}], "
+                      f"profile: [magenta bold]{requirement.profile.name }[/magenta bold]]", align="right")
             )
             console.print(
-                f"  [bold][magenta][{requirement.order_number}] [u]{requirement.name}[/u][/magenta][/bold]",
+                f"  [bold][cyan][{requirement.order_number}] [u]{requirement.name}[/u][/cyan][/bold]",
                 style="white",
             )
             console.print(f"\n{' '*4}{requirement.description}\n", style="white italic")
@@ -168,11 +172,11 @@ def __print_validation_result__(
                 issue_color = get_severity_color(check.level.severity)
                 console.print(
                     f"{' '*4}- "
-                    f"[magenta]{check.name}[/magenta]: {check.description}")
+                    f"[magenta bold]{check.name}[/magenta bold]: {check.description}")
                 console.print(f"\n{' '*6}Detected issues:", style="white bold")
                 for issue in sorted(result.get_issues_by_check(check),
                                     key=lambda x: (-x.severity.value, x)):
                     console.print(
-                        f"{' '*6}- [[{issue_color}]Violation[/{issue_color}] of "
-                        f"[magenta]{issue.check.identifier}[/magenta]]: {issue.message}")
+                        f"{' '*6}- [[red]Violation[/red] of "
+                        f"[{issue_color} bold]{issue.check.identifier}[/{issue_color} bold]]: {issue.message}")
                 console.print("\n", style="white")

@@ -1,9 +1,8 @@
-
 import pytest
 
 from rocrate_validator import models, services
 from rocrate_validator.models import (LevelCollection, RequirementLevel,
-                                      Severity)
+                                      Severity, ValidationSettings)
 from tests.ro_crates import InvalidFileDescriptor, InvalidRootDataEntity
 
 
@@ -57,20 +56,26 @@ def test_level_collection():
     assert 'REQUIRED' in level_names
 
 
-def test_sortability_requirements():
-    result: models.ValidationResult = services.validate(InvalidRootDataEntity().invalid_root_type,
-                                                        requirement_severity=Severity.OPTIONAL,
-                                                        abort_on_first=False)
+@pytest.fixture
+def validation_settings():
+    return ValidationSettings(
+        requirement_severity=Severity.OPTIONAL,
+        abort_on_first=False
+    )
+
+
+def test_sortability_requirements(validation_settings: ValidationSettings):
+    validation_settings.data_path = InvalidRootDataEntity().invalid_root_type
+    result: models.ValidationResult = services.validate(validation_settings)
     failed_requirements = sorted(result.failed_requirements, reverse=True)
     assert len(failed_requirements) > 1
     assert failed_requirements[0] >= failed_requirements[1]
     assert failed_requirements[0].level >= failed_requirements[1].level
 
 
-def test_sortability_checks():
-    result: models.ValidationResult = services.validate(InvalidFileDescriptor().invalid_json_format,
-                                                        requirement_severity=Severity.OPTIONAL,
-                                                        abort_on_first=False)
+def test_sortability_checks(validation_settings: ValidationSettings):
+    validation_settings.data_path = InvalidFileDescriptor().invalid_json_format
+    result: models.ValidationResult = services.validate(validation_settings)
     failed_checks = sorted(result.failed_checks, reverse=True)
     assert len(failed_checks) > 1
     i_checks = iter(failed_checks)
@@ -79,10 +84,9 @@ def test_sortability_checks():
     assert one.requirement >= two.requirement
 
 
-def test_sortability_issues():
-    result: models.ValidationResult = services.validate(InvalidFileDescriptor().invalid_json_format,
-                                                        requirement_severity=Severity.OPTIONAL,
-                                                        abort_on_first=False)
+def test_sortability_issues(validation_settings: ValidationSettings):
+    validation_settings.data_path = InvalidFileDescriptor().invalid_json_format
+    result: models.ValidationResult = services.validate(validation_settings)
     issues = sorted(result.get_issues(min_severity=Severity.OPTIONAL), reverse=True)
     assert len(issues) > 1
     i_issues = iter(issues)

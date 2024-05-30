@@ -62,7 +62,7 @@ def get_profiles_path() -> Path:
 
     :return: The path to the profiles directory
     """
-    return Path(CURRENT_DIR) / "profiles"
+    return Path(CURRENT_DIR) / constants.DEFAULT_PROFILES_PATH
 
 
 def get_format_extension(serialization_format: constants.RDF_SERIALIZATION_FORMATS_TYPES) -> str:

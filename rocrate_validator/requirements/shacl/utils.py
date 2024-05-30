@@ -1,11 +1,16 @@
 from __future__ import annotations
 
+import hashlib
 import logging
+from pathlib import Path
+from typing import Union
 
 from rdflib import RDF, BNode, Graph, Namespace
 from rdflib.term import Node
 
 from rocrate_validator.constants import RDF_SYNTAX_NS, SHACL_NS
+from rocrate_validator.errors import BadSyntaxError
+from rocrate_validator.models import Severity
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -32,45 +37,131 @@ def build_node_subgraph(graph: Graph, node: Node) -> Graph:
     return shape_graph
 
 
+def map_severity(shacl_severity: str) -> Severity:
+    """
+    Map the SHACL severity term to our Severity enum values
+    """
+    if f"{SHACL_NS}Violation" == shacl_severity:
+        return Severity.REQUIRED
+    elif f"{SHACL_NS}Warning" == shacl_severity:
+        return Severity.RECOMMENDED
+    elif f"{SHACL_NS}Info" == shacl_severity:
+        return Severity.OPTIONAL
+    else:
+        raise RuntimeError(f"Unrecognized SHACL severity term {shacl_severity}")
+
+
+def make_uris_relative(text: str, ro_crate_path: Union[Path, str]) -> str:
+    # globally replace the string "file://" with "./
+    return text.replace(f'file://{ro_crate_path}', '.')
+
+
 def inject_attributes(obj: object, node_graph: Graph, node: Node) -> object:
     # inject attributes of the shape property
-    for node, p, o in node_graph.triples((node, None, None)):
+    # logger.debug("Injecting attributes of node %s", node)
+    skip_properties = ["node"]
+    triples = node_graph.triples((node, None, None))
+    for node, p, o in triples:
         predicate_as_string = p.toPython()
-        logger.debug(f"Processing {predicate_as_string} of property graph {node}")
+        # logger.debug(f"Processing {predicate_as_string} of property graph {node}")
         if predicate_as_string.startswith(SHACL_NS):
             property_name = predicate_as_string.split("#")[-1]
-            setattr(obj, property_name, o.toPython())
-            logger.debug("Injecting attribute %s: %s", property_name, o.toPython())
-
+            if property_name in skip_properties:
+                continue
+            try:
+                setattr(obj, property_name, o.toPython())
+            except AttributeError as e:
+                logger.error(f"Error injecting attribute {property_name}: {e}")
+            # logger.debug("Injected attribute %s: %s", property_name, o.toPython())
+    # logger.debug("Injected attributes ig node %s: %s", node, len(list(triples)))
     # return the object
     return obj
+
+
+def __compute_values__(g: Graph, s: Node) -> list[tuple]:
+    """
+    Compute the values of the triples in the graph (excluding BNodes)
+    starting from the given subject node `s`.
+    """
+
+    # Collect the values of the triples in the graph (excluding BNodes)
+    values = []
+    # Assuming the list of triples values is stored in a variable called 'triples_values'
+    triples_values = list([(_, x, _) for (_, x, _) in g.triples((s, None, None)) if x != RDF.type])
+
+    for (s, p, o) in triples_values:
+        if isinstance(o, BNode):
+            values.extend(__compute_values__(g, o))
+        else:
+            values.append((s, p, o) if not isinstance(s, BNode) else (p, o))
+    return values
+
+
+def compute_hash(g: Graph, s: Node):
+    """
+    Compute the hash of the triples in the graph (excluding BNodes)
+    starting from the given subject node `s`.
+    """
+
+    # Collect the values of the triples in the graph (excluding BNodes)
+    triples_values = sorted(__compute_values__(g, s))
+    # Convert the list of triples values to a string representation
+    triples_string = str(triples_values)
+    # Calculate the hash of the triples string
+    hash_value = hashlib.sha256(triples_string.encode()).hexdigest()
+    # Return the hash value
+    return hash_value
 
 
 class ShapesList:
     def __init__(self,
                  node_shapes: list[Node],
                  property_shapes: list[Node],
-                 shapes_graphs: dict[Node, Graph]):
-        self._shapes_graphs = shapes_graphs
+                 shapes_graphs: dict[Node, Graph],
+                 shapes_graph: Graph):
         self._node_shapes = node_shapes
         self._property_shapes = property_shapes
+        self._shapes_graph = shapes_graph
+        self._shapes_graphs = shapes_graphs
 
     @property
     def node_shapes(self) -> list[Node]:
+        """
+        Get all the node shapes
+        """
         return self._node_shapes.copy()
 
     @property
     def property_shapes(self) -> list[Node]:
+        """
+        Get all the property shapes
+        """
         return self._property_shapes.copy()
 
     @property
     def shapes(self) -> list[Node]:
+        """
+        Get all the shapes
+        """
         return self._node_shapes + self._property_shapes
 
+    @property
+    def shapes_graph(self) -> Graph:
+        """
+        Get the graph containing all the shapes
+        """
+        return self._shapes_graph
+
     def get_shape_graph(self, shape_node: Node) -> Graph:
+        """
+        Get the subgraph of the given shape node
+        """
         return self._shapes_graphs[shape_node]
 
     def get_shape_property_graph(self, shape_node: Node, shape_property: Node) -> Graph:
+        """
+        Get the subgraph of the given shape node excluding the given property
+        """
         node_graph = self.get_shape_graph(shape_node)
         assert node_graph is not None, "The shape graph cannot be None"
 
@@ -128,13 +219,16 @@ def __extract_related_triples__(graph, subject_node):
 
 
 def load_shapes_from_file(file_path: str, publicID: str = None) -> ShapesList:
-    # Check the file path is not None
-    assert file_path is not None, "The file path cannot be None"
-    # Load the graph from the file
-    g = Graph()
-    g.parse(file_path, format="turtle", publicID=publicID)
-    # Extract the shapes from the graph
-    return load_shapes_from_graph(g)
+    try:
+        # Check the file path is not None
+        assert file_path is not None, "The file path cannot be None"
+        # Load the graph from the file
+        g = Graph()
+        g.parse(file_path, format="turtle", publicID=publicID)
+        # Extract the shapes from the graph
+        return load_shapes_from_graph(g)
+    except Exception as e:
+        raise BadSyntaxError(str(e), file_path) from e
 
 
 def load_shapes_from_graph(g: Graph) -> ShapesList:
@@ -163,4 +257,4 @@ def load_shapes_from_graph(g: Graph) -> ShapesList:
             subgraph.add((s, p, o))
         subgraphs[shape] = subgraph
 
-    return ShapesList(node_shapes, property_shapes, subgraphs)
+    return ShapesList(node_shapes, property_shapes, subgraphs, g)

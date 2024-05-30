@@ -2,7 +2,8 @@ import logging
 from pathlib import Path
 from typing import Optional
 
-from ...models import Profile, Requirement, RequirementCheck, RequirementLevel
+from ...models import (Profile, Requirement, RequirementCheck,
+                       RequirementLevel, RequirementLoader)
 from .checks import SHACLCheck
 from .models import Shape, ShapesRegistry
 
@@ -47,11 +48,31 @@ class SHACLRequirement(Requirement):
     def shape(self) -> Shape:
         return self._shape
 
-    @staticmethod
-    def load(profile: Profile, requirement_level: RequirementLevel,
+    @property
+    def level(self) -> RequirementLevel:
+        level = super().level
+        if level is None:
+            return self.shape.level
+        return level
+
+
+class SHACLRequirementLoader(RequirementLoader):
+
+    def __init__(self, profile: Profile):
+        super().__init__(profile)
+        self._shape_registry = ShapesRegistry.get_instance(profile)
+        # reset the shapes registry
+        self._shape_registry.clear()  # should be removed
+
+    @property
+    def shapes_registry(self) -> ShapesRegistry:
+        return self._shape_registry
+
+    def load(self, profile: Profile,
+             requirement_level: RequirementLevel,
              file_path: Path, publicID: Optional[str] = None) -> list[Requirement]:
         assert file_path is not None, "The file path cannot be None"
-        shapes: list[Shape] = ShapesRegistry.get_instance().load_shapes(file_path, publicID)
+        shapes: list[Shape] = self.shapes_registry.load_shapes(file_path, publicID)
         logger.debug("Loaded %s shapes: %s", len(shapes), shapes)
         requirements = []
         for shape in shapes:
