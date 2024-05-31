@@ -5,7 +5,9 @@ from rocrate_validator.models import (Requirement, RequirementCheck,
                                       ValidationContext)
 from rocrate_validator.requirements.shacl.models import Shape
 
-from .validator import SHACLValidationContext, SHACLValidator
+from .validator import (SHACLValidationAlreadyProcessed,
+                        SHACLValidationContext, SHACLValidationContextManager,
+                        SHACLValidationSkip, SHACLValidator)
 
 logger = logging.getLogger(__name__)
 
@@ -38,27 +40,30 @@ class SHACLCheck(RequirementCheck):
         return self._shape
 
     def execute_check(self, context: ValidationContext):
-        # retrieve the SHACLValidationContext
-        shacl_context = SHACLValidationContext.get_instance(context)
+        try:
+            result = None
+            with SHACLValidationContextManager(self, context) as ctx:
+                result = self.__do_execute_check__(ctx)
+                ctx.current_validation_result = result
+                return result
+        except SHACLValidationAlreadyProcessed as e:
+            logger.debug("SHACL Validation of profile %s already processed", self.requirement.profile)
+            return e.result
 
+    def __do_execute_check__(self, shacl_context: SHACLValidationContext):
         # get the shapes registry
         shapes_registry = shacl_context.shapes_registry
 
         # set up the input data for the validator
         ontology_graph = shacl_context.ontology_graph
         data_graph = shacl_context.data_graph
-        shapes_graph = shacl_context.shapes_graph
+        shapes_graph = shapes_registry.shapes_graph
 
         # uncomment to save the graphs to the logs folder (for debugging purposes)
         # data_graph.serialize("logs/data_graph.ttl", format="turtle")
         # shapes_graph.serialize("logs/shapes_graph.ttl", format="turtle")
         # if ontology_graph:
         #     ontology_graph.serialize("logs/ontology_graph.ttl", format="turtle")
-
-        # if the SHACLvalidation has been done, skip the check
-        result = getattr(context, "shacl_validation", None)
-        if result is not None:
-            return result
 
         # validate the data graph
         shacl_validator = SHACLValidator(shapes_graph=shapes_graph, ont_graph=ontology_graph)
@@ -68,7 +73,6 @@ class SHACLCheck(RequirementCheck):
         logger.debug("Validation '%s' conforms: %s", self.name, shacl_result.conforms)
         # store the validation result in the context
         result = shacl_result.conforms
-        setattr(context, "shacl_validation", result)
         # if the validation failed, add the issues to the context
         if not shacl_result.conforms:
             logger.debug("Validation failed")
@@ -78,11 +82,11 @@ class SHACLCheck(RequirementCheck):
                 assert shape is not None, "Unable to map the violation to a shape"
                 requirementCheck = SHACLCheck.get_instance(shape)
                 assert requirementCheck is not None, "The requirement check cannot be None"
-                c = shacl_context.result.add_check_issue(message=violation.get_result_message(shacl_context.rocrate_path),
-                                                         check=requirementCheck,
-                                                         severity=violation.get_result_severity())
-                logger.debug("Added validation issue to the context: %s", c)
-                if context.fail_fast:
+                    c = shacl_context.result.add_check_issue(message=violation.get_result_message(shacl_context.rocrate_path),
+                                                             check=requirementCheck,
+                                                             severity=violation.get_result_severity())
+                    logger.debug("Added validation issue to the context: %s", c)
+                if shacl_context.base_context.fail_fast:
                     break
 
         return result

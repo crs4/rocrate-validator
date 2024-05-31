@@ -10,8 +10,8 @@ from pyshacl.pytypes import GraphLike
 from rdflib import Graph
 from rdflib.term import Node, URIRef
 
-from rocrate_validator.models import (Severity, ValidationContext,
-                                      ValidationResult)
+from rocrate_validator.models import (Profile, RequirementCheck, Severity,
+                                      ValidationContext, ValidationResult)
 from rocrate_validator.requirements.shacl.utils import (make_uris_relative,
                                                         map_severity)
 
@@ -25,6 +25,49 @@ from .models import PropertyShape, ShapesRegistry
 logger = logging.getLogger(__name__)
 
 
+class SHACLValidationSkip(Exception):
+    pass
+
+
+class SHACLValidationAlreadyProcessed(Exception):
+
+    def __init__(self, profile_name: str, result: SHACLValidationResult) -> None:
+        super().__init__(f"Profile {profile_name} has already been processed")
+        self.result = result
+
+
+class SHACLValidationContextManager:
+
+    def __init__(self, check: RequirementCheck, context: ValidationContext) -> None:
+        self._check = check
+        self._profile = check.requirement.profile
+        self._context = context
+        self._shacl_context = SHACLValidationContext.get_instance(context)
+
+    def __enter__(self) -> SHACLValidationContext:
+        logger.debug("Entering SHACLValidationContextManager")
+        if not self._shacl_context.__set_current_validation_profile__(self._profile):
+            raise SHACLValidationAlreadyProcessed(
+                self._profile.name, self._shacl_context.get_validation_result(self._profile))
+        return self._shacl_context
+
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+        self._shacl_context.__unset_current_validation_profile__()
+        logger.debug("Exiting SHACLValidationContextManager")
+
+    @property
+    def context(self) -> ValidationContext:
+        return self._context
+
+    @property
+    def shacl_context(self) -> SHACLValidationContext:
+        return self._shacl_context
+
+    @property
+    def check(self) -> RequirementCheck:
+        return self._check
+
+
 class SHACLValidationContext(ValidationContext):
 
     def __init__(self, context: ValidationContext):
@@ -33,9 +76,65 @@ class SHACLValidationContext(ValidationContext):
         # reference to the ontology path
         self._ontology_path: Path = None
 
+        # reference to the contextual ShapeRegistry instance
+        self._shapes_registry: ShapesRegistry = ShapesRegistry()
+
+        # processed profiles
+        self._processed_profiles: dict[str, bool] = {}
+
+        # reference to the current validation profile
+        self._current_validation_profile: Profile = None
+
+        # store the validation result of the current profile
+        self._validation_result: SHACLValidationResult = None
+
+        # reference to the contextual ontology graph
+        self._ontology_graph: Graph = Graph()
+
+    def __set_current_validation_profile__(self, profile: Profile) -> bool:
+        if not profile.name in self._processed_profiles:
+            # augment the ontology graph with the profile ontology
+            self._ontology_graph += self.__load_ontology_graph__(profile.name)
+            # augment the shapes registry with the profile shapes
+            profile_registry = ShapesRegistry.get_instance(profile)
+            profile_shapes = profile_registry.get_shapes()
+            profile_shapes_graph = profile_registry.shapes_graph
+
+            # add the shapes to the registry
+            self._shapes_registry.extend(profile_shapes, profile_shapes_graph)
+            # set the current validation profile
+            self._current_validation_profile = profile
+            # return True if the profile should be processed
+            return True
+        # return False if the profile has already been processed
+        return False
+
+    def __unset_current_validation_profile__(self) -> None:
+        self._current_validation_profile = None
+
     @property
     def base_context(self) -> ValidationContext:
         return self._base_context
+
+    @property
+    def current_validation_profile(self) -> Profile:
+        return self._current_validation_profile
+
+    @property
+    def current_validation_result(self) -> SHACLValidationResult:
+        return self._validation_result
+
+    @current_validation_result.setter
+    def current_validation_result(self, result: ValidationResult):
+        assert self._current_validation_profile is not None, "Invalid state: current profile not set"
+        # store the validation result
+        self._validation_result = result
+        # mark the profile as processed and store the result
+        self._processed_profiles[self._current_validation_profile.name] = result
+
+    def get_validation_result(self, profile: Profile) -> Optional[bool]:
+        assert profile is not None, "Invalid profile"
+        return self._processed_profiles.get(profile.name, None)
 
     @property
     def result(self) -> ValidationResult:
@@ -43,17 +142,15 @@ class SHACLValidationContext(ValidationContext):
 
     @property
     def shapes_registry(self) -> ShapesRegistry:
-        return ShapesRegistry.get_instance(self.base_context.profile)
+        return self._shapes_registry
 
     @property
     def shapes_graph(self) -> Graph:
         return self.shapes_registry.shapes_graph
 
-    @property
-    def ontology_path(self) -> Path:
+    def __get_ontology_path__(self, profile_name: str, ontology_filename: str = DEFAULT_ONTOLOGY_FILE) -> Path:
         if not self._ontology_path:
-            # TODO: implement custom ontology file ???
-            supported_path = f"{self.profiles_path}/{self.profile_name}/{DEFAULT_ONTOLOGY_FILE}"
+            supported_path = f"{self.profiles_path}/{profile_name}/{ontology_filename}"
             if self.settings.get("ontology_path", None):
                 logger.warning("Detected an ontology path. Custom ontology file is not yet supported."
                                f"Use {supported_path} to provide an ontology for your profile.")
@@ -61,24 +158,20 @@ class SHACLValidationContext(ValidationContext):
             self._ontology_path = Path(supported_path)
         return self._ontology_path
 
-    def __load_ontology_graph__(self):
+    def __load_ontology_graph__(self, profile_name: str, ontology_filename: Optional[str] = DEFAULT_ONTOLOGY_FILE) -> Graph:
         # load the graph of ontologies
         ontology_graph = None
-        if os.path.exists(self.ontology_path):
-            logger.debug("Loading ontologies: %s", self.ontology_path)
+        ontology_path = self.__get_ontology_path__(profile_name, ontology_filename)
+        if os.path.exists(ontology_path):
+            logger.debug("Loading ontologies: %s", ontology_path)
             ontology_graph = Graph()
-            ontology_graph.parse(self.ontology_path, format="ttl",
+            ontology_graph.parse(ontology_path, format="ttl",
                                  publicID=self.publicID)
         return ontology_graph
 
     @property
     def ontology_graph(self) -> Graph:
-        ontology_key = "_shacl_ontology"
-        ontology = getattr(self.base_context, ontology_key, None)
-        if not ontology:
-            ontology = self.__load_ontology_graph__()
-            setattr(self.base_context, ontology_key, ontology)
-        return ontology
+        return self._ontology_graph
 
     @ classmethod
     def get_instance(cls, context: ValidationContext) -> SHACLValidationContext:
