@@ -118,7 +118,7 @@ def validate(ctx,
             "profile_name": profile_name,
             "requirement_severity": requirement_severity,
             "requirement_severity_only": requirement_severity_only,
-            "disable_profile_inheritance": disable_profile_inheritance,
+            "inherit_profiles": not disable_profile_inheritance,
             "data_path": Path(rocrate_path).absolute(),
             "ontology_path": Path(ontologies_path).absolute() if ontologies_path else None,
             "abort_on_first": not no_fail_fast
