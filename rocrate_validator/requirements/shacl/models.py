@@ -23,7 +23,7 @@ class SHACLNode:
     name: str = None
     description: str = None
 
-    def __init__(self, node: Node, graph: Graph):
+    def __init__(self, node: Node, graph: Graph, parent: Optional[SHACLNode] = None):
 
         # store the shape node
         self._node = node
@@ -31,6 +31,8 @@ class SHACLNode:
         self._graph = graph
         # cache the hash
         self._hash = None
+        # store the parent shape
+        self._parent = parent
 
         # inject attributes of the shape to the object
         inject_attributes(self, graph, node)
@@ -44,6 +46,11 @@ class SHACLNode:
     def graph(self):
         """Return the subgraph of the shape"""
         return self._graph
+
+    @property
+    def parent(self) -> Optional[SHACLNode]:
+        """Return the parent shape of the shape"""
+        return self._parent
 
     @property
     def level(self) -> RequirementLevel:
