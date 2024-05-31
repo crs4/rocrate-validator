@@ -49,6 +49,10 @@ class SHACLValidationContextManager:
         if not self._shacl_context.__set_current_validation_profile__(self._profile):
             raise SHACLValidationAlreadyProcessed(
                 self._profile.name, self._shacl_context.get_validation_result(self._profile))
+        if self._context.settings.get("target_only_validation", False) and \
+                self._profile.name != self._context.settings.get("profile_name", None):
+            logger.debug("Skipping validation of profile %s", self._profile.name)
+            raise SHACLValidationSkip(f"Skipping validation of profile {self._profile.name}")
         return self._shacl_context
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:

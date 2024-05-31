@@ -49,6 +49,11 @@ class SHACLCheck(RequirementCheck):
         except SHACLValidationAlreadyProcessed as e:
             logger.debug("SHACL Validation of profile %s already processed", self.requirement.profile)
             return e.result
+        except SHACLValidationSkip as e:
+            logger.debug("SHACL Validation of profile %s skipped", self.requirement.profile)
+            # the validation is postponed to the subsequent profiles
+            #  so we return True to continue the validation
+            return True
 
     def __do_execute_check__(self, shacl_context: SHACLValidationContext):
         # get the shapes registry
@@ -82,6 +87,10 @@ class SHACLCheck(RequirementCheck):
                 assert shape is not None, "Unable to map the violation to a shape"
                 requirementCheck = SHACLCheck.get_instance(shape)
                 assert requirementCheck is not None, "The requirement check cannot be None"
+                # add only the issues for the current profile when the `target_profile_only` mode is disabled
+                # (issues related to other profiles will be added by the corresponding profile validation)
+                if requirementCheck.requirement.profile == shacl_context.current_validation_profile or \
+                        shacl_context.settings.get("target_only_validation", False):
                     c = shacl_context.result.add_check_issue(message=violation.get_result_message(shacl_context.rocrate_path),
                                                              check=requirementCheck,
                                                              severity=violation.get_result_severity())
