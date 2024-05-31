@@ -207,6 +207,11 @@ class ShapesRegistry:
         assert isinstance(shape, Shape), "Invalid shape"
         self._shapes[f"{hash(shape)}"] = shape
 
+    def remove_shape(self, shape: Shape):
+        assert isinstance(shape, Shape), "Invalid shape"
+        self._shapes.pop(f"{hash(shape)}", None)
+        self._shapes_graph -= shape.graph
+
     def get_shape(self, hash_value: int) -> Optional[Shape]:
         logger.debug("Searching for shape %s in the registry: %s", hash_value, self._shapes)
         result = self._shapes.get(f"{hash_value}", None)
@@ -214,6 +219,14 @@ class ShapesRegistry:
             logger.debug(f"Shape {hash_value} not found in the registry")
             raise ValueError(f"Shape not found in the registry: {hash_value}")
         return result
+
+    def get_shape_key(self, shape: Shape) -> str:
+        assert isinstance(shape, Shape), "Invalid shape"
+        return f"{hash(shape)}"
+
+    def extend(self, shapes: dict[str, Shape], graph: Graph) -> None:
+        self._shapes.update(shapes)
+        self._shapes_graph += graph
 
     def get_shape_by_name(self, name: str) -> Optional[Shape]:
         for shape in self._shapes.values():
@@ -226,7 +239,9 @@ class ShapesRegistry:
 
     @property
     def shapes_graph(self) -> Graph:
-        return self._shapes_graph
+        g = Graph()
+        g += self._shapes_graph
+        return g
 
     def load_shapes(self, shapes_path: Union[str, Path], publicID: Optional[str] = None) -> list[Shape]:
         """
