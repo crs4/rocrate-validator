@@ -1,8 +1,9 @@
 import logging
 from pathlib import Path
-from typing import  Union
+from typing import Union
 
-from .models import Profile, Severity, ValidationResult, ValidationSettings, Validator
+from .models import (Profile, Severity, ValidationResult, ValidationSettings,
+                     Validator)
 from .utils import get_profiles_path
 
 # set the default profiles path
