@@ -75,7 +75,9 @@ ro:DirectoryDataEntity a sh:NodeShape ;
             SELECT ?this
             WHERE {
                 ?this a schema:Dataset .
-                FILTER NOT EXISTS { ?this a rocrate:RootDataEntity }
+                ?metadatafile schema:about ?root .
+                FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
+                FILTER(?this != ?root)
             }
         """
     ] ;
