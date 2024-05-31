@@ -876,9 +876,9 @@ class Validator:
         for profile in profiles:
             logger.debug("Validating profile %s", profile.name)
             # perform the requirements validation
-            if not requirements:
-                requirements = profile.get_requirements(
-                    context.requirement_severity, exact_match=context.requirement_severity_only)
+            requirements = profile.get_requirements(
+                context.requirement_severity, exact_match=context.requirement_severity_only)
+            logger.debug("Validating profile %s with %s requirements", profile.name, len(requirements))
             logger.debug("For profile %s, validating these %s requirements: %s",
                          profile.name, len(requirements), requirements)
             for requirement in requirements:
