@@ -60,6 +60,30 @@ class ProfileNotFound(ROCValidatorError):
         return f"ProfileNotFound({self._profile_name!r})"
 
 
+class DuplicateRequirementCheck(ROCValidatorError):
+    """Raised when a duplicate requirement check is found."""
+
+    def __init__(self, check_name: str, profile_name: Optional[str] = None):
+        self._check_name = check_name
+        self._profile_name = profile_name
+
+    @property
+    def check_name(self) -> str:
+        """The name of the duplicate requirement check."""
+        return self._check_name
+
+    @property
+    def profile_name(self) -> Optional[str]:
+        """The name of the profile."""
+        return self._profile_name
+
+    def __str__(self) -> str:
+        return f"Duplicate requirement check found: {self._check_name!r} in profile {self._profile_name!r}"
+
+    def __repr__(self):
+        return f"DuplicateRequirementCheck({self._check_name!r}, {self._profile_name!r})"
+
+
 class InvalidSerializationFormat(ROCValidatorError):
     """Raised when an invalid serialization format is provided."""
 

@@ -22,7 +22,7 @@ from rocrate_validator.constants import (DEFAULT_ONTOLOGY_FILE,
                                          RDF_SERIALIZATION_FORMATS_TYPES,
                                          ROCRATE_METADATA_FILE,
                                          VALID_INFERENCE_OPTIONS_TYPES)
-from rocrate_validator.errors import InvalidProfilePath, ProfileNotFound
+from rocrate_validator.errors import DuplicateRequirementCheck, InvalidProfilePath, ProfileNotFound
 from rocrate_validator.utils import (get_profiles_path,
                                      get_requirement_name_from_file)
 
@@ -797,6 +797,7 @@ class ValidationSettings:
     inplace: Optional[bool] = False
     meta_shacl: bool = False
     iterate_rules: bool = True
+    target_only_validation: bool = True
     # Requirement severity settings
     requirement_severity: Union[str, Severity] = Severity.REQUIRED
     requirement_severity_only: bool = False
