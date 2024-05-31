@@ -372,7 +372,12 @@ class Requirement(ABC):
         all_passed = True
         for check in self._checks:
             try:
-                logger.debug("Running check '%s' - Desc: %s", check.name, check.description)
+                logger.debug("Running check '%s' - Desc: %s - overridden: %s.%s",
+                             check.name, check.description, check.overridden_by,
+                             check.overridden_by.requirement.profile if check.overridden_by else None)
+                if check.overridden:
+                    logger.debug("Skipping check '%s' because overridden by '%s'", check.name, check.overridden_by.name)
+                    continue
                 check_result = check.execute_check(context)
                 logger.debug("Ran check '%s'. Got result %s", check.name, check_result)
                 if not isinstance(check_result, bool):
@@ -507,6 +512,7 @@ class RequirementCheck(ABC):
         self._order_number = 0
         self._name = name
         self._description = description
+        self._overridden_by: RequirementCheck = None
 
     @property
     def order_number(self) -> int:
@@ -545,6 +551,20 @@ class RequirementCheck(ABC):
     @property
     def severity(self) -> Severity:
         return self.requirement.level.severity
+
+    @property
+    def overridden_by(self) -> RequirementCheck:
+        return self._overridden_by
+
+    @overridden_by.setter
+    def overridden_by(self, value: RequirementCheck) -> None:
+        assert value is None or isinstance(value, RequirementCheck) and value != self, \
+            f"Invalid value for overridden_by: {value}"
+        self._overridden_by = value
+
+    @property
+    def overridden(self) -> bool:
+        return self._overridden_by is not None
 
     @abstractmethod
     def execute_check(self, context: ValidationContext) -> bool:
@@ -766,6 +786,7 @@ class ValidationSettings:
     profiles_path: Path = DEFAULT_PROFILES_PATH
     profile_name: str = DEFAULT_PROFILE_NAME
     inherit_profiles: bool = True
+    allow_shapes_override: bool = True
     # Ontology and inference settings
     ontology_path: Optional[Path] = None
     inference: Optional[VALID_INFERENCE_OPTIONS_TYPES] = None
@@ -983,6 +1004,33 @@ class ValidationContext:
         # Check if the target profile is in the list of profiles
         if self.profile_name not in profiles:
             raise ProfileNotFound(f"Profile '{self.profile_name}' not found in '{self.profiles_path}'")
+
+        # navigate the profiles and check for overridden checks
+        # if the override is enabled in the settings
+        # overridden checks should be marked as such
+        # otherwise, raise an error
+        profiles_checks = {}
+        # visit the profiles in reverse order
+        # (the order is important to visit the most specific profiles first)
+        for profile in sorted(profiles.values(), reverse=True):
+            profile_checks = [_ for r in profile.get_requirements() for _ in r.get_checks()]
+            profile_check_names = []
+            for check in profile_checks:
+                #  find duplicated checks and raise an error
+                if check.name in profile_check_names:
+                    raise DuplicateRequirementCheck(check.name, profile.name)
+                #  add check to the list
+                profile_check_names.append(check.name)
+                #  mark overridden checks
+                check_chain = profiles_checks.get(check.name, None)
+                if not check_chain:
+                    profiles_checks[check.name] = [check]
+                elif self.settings.get("allow_shapes_override", True):
+                    check.overridden_by = check_chain[-1]
+                    check_chain.append(check)
+                else:
+                    raise DuplicateRequirementCheck(check.name, profile.name)
+
         return profiles
 
     @property
@@ -990,7 +1038,3 @@ class ValidationContext:
         if not self._profiles:
             self._profiles = self.__load_profiles__()
         return self._profiles.copy()
-
-    @property
-    def profile(self) -> Profile:
-        return list(self.profiles.values())[-1]

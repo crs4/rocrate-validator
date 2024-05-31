@@ -100,6 +100,19 @@ class SHACLValidationContext(ValidationContext):
             profile_shapes = profile_registry.get_shapes()
             profile_shapes_graph = profile_registry.shapes_graph
 
+            # enable overriding of checks
+            if self.settings.get("override_checks", False):
+                from rocrate_validator.requirements.shacl.requirements import \
+                    SHACLRequirement
+                for requirement in [_ for _ in profile.requirements if isinstance(_, SHACLRequirement)]:
+                    logger.debug("Processing requirement: %s", requirement.name)
+                    for check in requirement.get_checks():
+                        logger.debug("Processing check: %s", check)
+                        if check.overridden:
+                            logger.debug("Overridden check: %s", check)
+                            profile_shapes_graph -= check.shape.graph
+                            profile_shapes.pop(profile_registry.get_shape_key(check.shape))
+
             # add the shapes to the registry
             self._shapes_registry.extend(profile_shapes, profile_shapes_graph)
             # set the current validation profile
