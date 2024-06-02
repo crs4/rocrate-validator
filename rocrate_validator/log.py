@@ -61,6 +61,9 @@ __loggers__ = {}
 # user settings for the loggers
 __settings__ = DEFAULT_SETTINGS.copy()
 
+# store logger handlers (only one handler per logger)
+__handlers__ = {}
+
 
 def __setup_logger__(logger: Logger):
 
@@ -75,16 +78,16 @@ def __setup_logger__(logger: Logger):
     if not isinstance(level, int):
         level = getattr(__module__, settings['level'].upper(), None)
 
-    # set the log format
-    log_format = colorlog.ColoredFormatter(get_log_format(level))
-
     # set the log level
     logger.setLevel(level)
-    if not logger.hasHandlers():
-        # create a console handler
+
+    # configure the logger handler
+    ch = __handlers__.get(logger.name, None)
+    if not ch:
         ch = StreamHandler()
         ch.setLevel(level)
-        ch.setFormatter(log_format)
+        ch.setFormatter(colorlog.ColoredFormatter(get_log_format(level)))
+
         logger.addHandler(ch)
 
     # enable/disable the logger
