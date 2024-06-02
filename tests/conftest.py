@@ -7,7 +7,12 @@ from pytest import fixture
 import rocrate_validator.log as logging
 
 # set up logging
-logging.basicConfig(level="warning", modules_config={"rocrate_validator.models": {"level": logging.DEBUG}})
+logging.basicConfig(
+    level="warning",
+    modules_config={
+        # "rocrate_validator.models": {"level": logging.DEBUG}
+    }
+)
 
 CURRENT_PATH = os.path.dirname(os.path.realpath(__file__))
 
