@@ -1,4 +1,3 @@
-import logging
 import os
 import sys
 from pathlib import Path
@@ -8,6 +7,7 @@ from rich.align import Align
 from rich.console import Console
 
 from rocrate_validator.constants import DEFAULT_PROFILE_NAME
+import rocrate_validator.log as logging
 
 from ... import services
 from ...colors import get_severity_color

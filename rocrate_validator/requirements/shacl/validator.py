@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import logging
 import os
 from pathlib import Path
 from typing import Optional, Union
@@ -10,6 +9,7 @@ from pyshacl.pytypes import GraphLike
 from rdflib import Graph
 from rdflib.term import Node, URIRef
 
+import rocrate_validator.log as logging
 from rocrate_validator.models import (Profile, RequirementCheck, Severity,
                                       ValidationContext, ValidationResult)
 from rocrate_validator.requirements.shacl.utils import (make_uris_relative,

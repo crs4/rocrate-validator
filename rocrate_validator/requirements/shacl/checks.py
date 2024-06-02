@@ -1,6 +1,6 @@
-import logging
 from typing import Optional
 
+import rocrate_validator.log as logging
 from rocrate_validator.models import (Requirement, RequirementCheck,
                                       ValidationContext)
 from rocrate_validator.requirements.shacl.models import Shape

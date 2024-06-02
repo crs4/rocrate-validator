@@ -1,6 +1,7 @@
-import logging
 from pathlib import Path
 from typing import Optional
+
+import rocrate_validator.log as logging
 
 from ...models import (Profile, Requirement, RequirementCheck,
                        RequirementLevel, RequirementLoader)
@@ -40,7 +41,8 @@ class SHACLRequirement(Requirement):
                 checks.append(property_check)
 
         # if no property checks, add a generic one
-        if len(checks) == 0:
+        assert self.shape is not None, "The shape cannot be None"
+        if len(checks) == 0 and self.shape is not None and self.shape.node is not None:
             checks.append(SHACLCheck(self, self.shape))
         return checks
 

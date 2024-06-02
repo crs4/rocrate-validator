@@ -1,14 +1,15 @@
-import logging
 from pathlib import Path
 
 from rich.markdown import Markdown
 from rich.table import Table
 
+import rocrate_validator.log as logging
 from rocrate_validator import services
 from rocrate_validator.cli.main import cli, click
 from rocrate_validator.colors import get_severity_color
 from rocrate_validator.constants import DEFAULT_PROFILE_NAME
-from rocrate_validator.models import LevelCollection, Requirement, RequirementLevel
+from rocrate_validator.models import (LevelCollection, Requirement,
+                                      RequirementLevel)
 from rocrate_validator.utils import get_profiles_path
 
 # set the default profiles path

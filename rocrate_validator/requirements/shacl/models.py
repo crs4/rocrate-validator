@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import logging
 from pathlib import Path
 from typing import Optional, Union
 
@@ -8,6 +7,7 @@ from rdflib import Graph, Namespace, URIRef
 from rdflib.term import Node
 
 from rocrate_validator.constants import SHACL_NS
+import rocrate_validator.log as logging
 from rocrate_validator.models import LevelCollection, RequirementLevel
 from rocrate_validator.requirements.shacl.utils import (ShapesList,
                                                         compute_hash,

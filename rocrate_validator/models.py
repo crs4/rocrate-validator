@@ -3,7 +3,6 @@ from __future__ import annotations
 import bisect
 import enum
 import inspect
-import logging
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 from collections.abc import Collection
@@ -14,6 +13,7 @@ from typing import Optional, Union
 
 from rdflib import Graph
 
+import rocrate_validator.log as logging
 from rocrate_validator.constants import (DEFAULT_ONTOLOGY_FILE,
                                          DEFAULT_PROFILE_NAME,
                                          DEFAULT_PROFILE_README_FILE,
@@ -22,7 +22,8 @@ from rocrate_validator.constants import (DEFAULT_ONTOLOGY_FILE,
                                          RDF_SERIALIZATION_FORMATS_TYPES,
                                          ROCRATE_METADATA_FILE,
                                          VALID_INFERENCE_OPTIONS_TYPES)
-from rocrate_validator.errors import DuplicateRequirementCheck, InvalidProfilePath, ProfileNotFound
+from rocrate_validator.errors import (DuplicateRequirementCheck,
+                                      InvalidProfilePath, ProfileNotFound)
 from rocrate_validator.utils import (get_profiles_path,
                                      get_requirement_name_from_file)
 

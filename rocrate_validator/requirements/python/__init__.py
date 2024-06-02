@@ -1,8 +1,10 @@
 import inspect
-import logging
+
 import re
 from pathlib import Path
 from typing import Callable, Optional, Type
+
+import rocrate_validator.log as logging
 
 from ...models import (Profile, Requirement, RequirementCheck,
                        RequirementLevel, RequirementLoader, ValidationContext)

@@ -1,10 +1,10 @@
-import logging
+
 import sys
 
 import rich_click as click
 from rich.console import Console
 
-from rocrate_validator.config import configure_logging
+import rocrate_validator.log as logging
 from rocrate_validator.errors import ProfilesDirectoryNotFound
 from rocrate_validator.utils import get_version
 
@@ -41,7 +41,6 @@ def cli(ctx: click.Context, debug: bool, version: bool, disable_color: bool):
     console = Console(no_color=disable_color)
     # pass the console to subcommands through the click context, after configuration
     ctx.obj['console'] = console
-
     try:
         # If the version flag is set, print the version and exit
         if version:
@@ -49,15 +48,13 @@ def cli(ctx: click.Context, debug: bool, version: bool, disable_color: bool):
                 f"[bold]rocrate-validator [cyan]{get_version()}[/cyan][/bold]")
             sys.exit(0)
         # Set the log level
-        if debug:
-            configure_logging(level=logging.DEBUG)
-        else:
-            configure_logging(level=logging.WARNING)
+        logging.basicConfig(level=logging.DEBUG if debug else logging.WARNING)
         # If no subcommand is provided, invoke the default command
         if ctx.invoked_subcommand is None:
             # If no subcommand is provided, invoke the default command
             from .commands.validate import validate
             ctx.invoke(validate)
+
     except ProfilesDirectoryNotFound as e:
         error_message = f"""
         The profile folder could not be located at the specified path: [red]{e.profiles_path}[/red]. 

@@ -1,7 +1,7 @@
 import json
-import logging
 from typing import Optional
 
+import rocrate_validator.log as logging
 from rocrate_validator.models import ValidationContext
 from rocrate_validator.requirements.python import (PyFunctionCheck, check,
                                                    requirement)
