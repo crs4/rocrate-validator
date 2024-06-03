@@ -106,7 +106,8 @@ ro:DirectoryDataEntity a sh:NodeShape ;
         sh:predicate rdf:type ;
         sh:object rocrate:DataEntity ;
     ] ;
-    
+
+    # Ensure that the directory data entity is a dataset
     sh:property [
         sh:name "Directory Data Entity: REQUIRED type" ;
         sh:description """Check if the Directory Data Entity has `Dataset` as `@type`.""" ;
