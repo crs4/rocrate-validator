@@ -1,7 +1,5 @@
 import logging
 
-import pytest
-
 from rocrate_validator import models
 from tests.ro_crates import InvalidRootDataEntity
 from tests.shared import do_entity_test
@@ -77,6 +75,17 @@ def test_missing_root_description():
         False,
         ["RO-Crate Root Data Entity RECOMMENDED properties"],
         ["The Root Data Entity SHOULD have a `description` property (as specified by schema.org)"]
+    )
+
+
+def test_invalid_referenced_data_entities():
+    """Test a RO-Crate with invalid referenced data entities."""
+    do_entity_test(
+        paths.invalid_referenced_data_entities,
+        models.Severity.REQUIRED,
+        False,
+        ["RO-Crate Root Data Entity: `hasPart` value restriction"],
+        ["Node <./foo/> does not conform to one or more shapes"]
     )
 
 

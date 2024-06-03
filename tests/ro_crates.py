@@ -90,6 +90,10 @@ class InvalidRootDataEntity:
     def missing_root_license_description(self) -> Path:
         return self.base_path / "missing_root_license_description"
 
+    @property
+    def invalid_referenced_data_entities(self) -> Path:
+        return self.base_path / "invalid_referenced_data_entities"
+
 
 class InvalidFileDescriptorEntity:
 
@@ -122,3 +126,20 @@ class InvalidFileDescriptorEntity:
     @property
     def invalid_conforms_to(self) -> Path:
         return self.base_path / "invalid_conforms_to"
+
+
+class InvalidDataEntity:
+
+    base_path = INVALID_CRATES_DATA_PATH / "4_data_entity_metadata"
+
+    @property
+    def missing_hasPart_data_entity_reference(self) -> Path:
+        return self.base_path / "invalid_missing_hasPart_reference"
+
+    @property
+    def direct_hasPart_data_entity_reference(self) -> Path:
+        return self.base_path / "valid_direct_hasPart_reference"
+
+    @property
+    def indirect_hasPart_data_entity_reference(self) -> Path:
+        return self.base_path / "valid_indirect_hasPart_reference"
