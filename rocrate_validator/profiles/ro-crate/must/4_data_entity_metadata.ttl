@@ -115,20 +115,35 @@ ro:DirectoryDataEntity a sh:NodeShape ;
         sh:severity sh:Violation ;
     ] .
 
-ro:DirectoryDataEntityRequiredValueRestriction a sh:NodeShape ;
-    sh:name "Directory Data Entity: REQUIRED value restriction" ;
-    sh:description """A Directory Data Entity MUST end with `/`""" ;
-    sh:targetNode rocrate:Directory ;
+ro:DataEntityRquiredPropertiesShape a sh:NodeShape ;
+    sh:name "Data Entity: REQUIRED properties" ;
+    sh:description """A `DataEntity` MUST be linked, either directly or inderectly, from the Root Data Entity""" ;
+    sh:targetClass rocrate:DataEntity ;
+    sh:property
+        [
+            a sh:PropertyShape ;
+            sh:path [ sh:inversePath schema_org:hasPart ] ;
+            sh:node schema_org:Dataset ;
+            sh:minCount 1 ;
+            sh:name "Data Entity MUST be directly referenced" ;
+            sh:description """Check if the Data Entity is linked, either directly of inderectly, to the `Root Data Entity` using the `hasPart` (as defined in `schema.org`) property" """ ;
+            # sh:message "A Data Entity MUST be directly or indirectly linked to the `Root Data Entity` through the `hasPart` property" ;
+        ] .
 
-    sh:property [
-        a sh:PropertyShape ;
-        sh:name "Directory Data Entity: REQUIRED value restriction" ;
-        sh:description """Check if the Directory Data Entity ends with `/`""" ;
-        sh:path [ sh:inversePath rdf:type ] ;
-        sh:minCount 1 ;
-        sh:message """The Directory Data Entity URI MUST end with `/`""" ;
-        sh:pattern "/$" ;
-    ] .
+# ro:DirectoryDataEntityRequiredValueRestriction a sh:NodeShape ;
+#     sh:name "Directory Data Entity: REQUIRED value restriction" ;
+#     sh:description """A Directory Data Entity MUST end with `/`""" ;
+#     sh:targetNode rocrate:Directory ;
+
+#     sh:property [
+#         a sh:PropertyShape ;
+#         sh:name "Directory Data Entity: REQUIRED value restriction" ;
+#         sh:description """Check if the Directory Data Entity ends with `/`""" ;
+#         sh:path [ sh:inversePath rdf:type ] ;
+#         sh:minCount 1 ;
+#         sh:message """The Directory Data Entity URI MUST end with `/`""" ;
+#         sh:pattern "/$" ;
+#     ] .
 
 # Uncomment for debugging
 # ro:testDirectory a sh:NodeShape ;
