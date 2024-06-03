@@ -39,3 +39,14 @@ def test_data_entity_must_be_indirectly_linked():
         models.Severity.REQUIRED,
         True
     )
+
+
+def test_directory_data_entity_wo_trailing_slash():
+    """Test a RO-Crate without a root data entity."""
+    do_entity_test(
+        paths.directory_data_entity_wo_trailing_slash,
+        models.Severity.REQUIRED,
+        False,
+        ["Directory Data Entity: REQUIRED value restriction"],
+        ["Every Data Entity Directory URI MUST end with `/`"]
+    )

@@ -143,3 +143,7 @@ class InvalidDataEntity:
     @property
     def indirect_hasPart_data_entity_reference(self) -> Path:
         return self.base_path / "valid_indirect_hasPart_reference"
+
+    @property
+    def directory_data_entity_wo_trailing_slash(self) -> Path:
+        return self.base_path / "directory_data_entity_wo_trailing_slash"
