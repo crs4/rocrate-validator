@@ -625,12 +625,16 @@ class CheckIssue:
     #    without having it provided through an additional argument.
     def __init__(self, severity: Severity,
                  check: RequirementCheck,
-                 message: Optional[str] = None):
+                 message: Optional[str] = None,
+                 focusNode: Optional[str] = None,
+                 value: Optional[str] = None):
         if not isinstance(severity, Severity):
             raise TypeError(f"CheckIssue constructed with a severity '{severity}' of type {type(severity)}")
         self._severity = severity
         self._message = message
         self._check: RequirementCheck = check
+        self._focusNode = focusNode
+        self._value = value
 
     @property
     def message(self) -> Optional[str]:
@@ -655,6 +659,14 @@ class CheckIssue:
     def check(self) -> RequirementCheck:
         """The check that generated the issue"""
         return self._check
+
+    @property
+    def focusNode(self) -> Optional[str]:
+        return self._focusNode
+
+    @property
+    def value(self) -> Optional[str]:
+        return self._value
 
     def __eq__(self, other: object) -> bool:
         return isinstance(other, CheckIssue) and \
@@ -742,9 +754,11 @@ class ValidationResult:
     def add_check_issue(self,
                         message: str,
                         check: RequirementCheck,
-                        severity: Optional[Severity] = None) -> CheckIssue:
+                        severity: Optional[Severity] = None,
+                        focusNode: Optional[str] = None,
+                        value: Optional[str] = None) -> CheckIssue:
         sev_value = severity if severity is not None else check.requirement.severity
-        c = CheckIssue(sev_value, check, message)
+        c = CheckIssue(sev_value, check, message, focusNode=focusNode, value=value)
         # self._issues.append(c)
         bisect.insort(self._issues, c)
         return c
