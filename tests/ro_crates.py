@@ -147,3 +147,27 @@ class InvalidDataEntity:
     @property
     def directory_data_entity_wo_trailing_slash(self) -> Path:
         return self.base_path / "directory_data_entity_wo_trailing_slash"
+
+    @property
+    def missing_data_entity_encoding_format(self) -> Path:
+        return self.base_path / "missing_encoding_format"
+
+    @property
+    def invalid_data_entity_encoding_format_pronom(self) -> Path:
+        return self.base_path / "invalid_encoding_format_pronom"
+
+    @property
+    def invalid_encoding_format_ctx_entity_missing_ws_type(self) -> Path:
+        return self.base_path / "invalid_encoding_format_ctx_entity_missing_ws_type"
+
+    @property
+    def invalid_encoding_format_ctx_entity_missing_ws_name(self) -> Path:
+        return self.base_path / "invalid_encoding_format_ctx_entity_missing_ws_name"
+
+    @property
+    def valid_encoding_format_ctx_entity(self) -> Path:
+        return self.base_path / "valid_encoding_format_ctx_entity"
+
+    @property
+    def valid_encoding_format_pronom(self) -> Path:
+        return self.base_path / "valid_encoding_format_pronom"

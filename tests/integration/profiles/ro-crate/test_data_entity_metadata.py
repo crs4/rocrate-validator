@@ -50,3 +50,65 @@ def test_directory_data_entity_wo_trailing_slash():
         ["Directory Data Entity: REQUIRED value restriction"],
         ["Every Data Entity Directory URI MUST end with `/`"]
     )
+
+
+def test_missing_data_entity_encoding_format():
+    """"""
+    do_entity_test(
+        paths.missing_data_entity_encoding_format,
+        models.Severity.RECOMMENDED,
+        False,
+        ["File Data Entity: RECOMMENDED properties"],
+        ["Missing or invalid `encodingFormat` linked to the `File Data Entity`"]
+    )
+
+
+def test_invalid_data_entity_encoding_format_pronom():
+    """"""
+    do_entity_test(
+        paths.invalid_data_entity_encoding_format_pronom,
+        models.Severity.RECOMMENDED,
+        False,
+        ["File Data Entity: RECOMMENDED properties"],
+        ["Missing or invalid `encodingFormat` linked to the `File Data Entity`"]
+    )
+
+
+def test_invalid_data_entity_encoding_format_ctx_website_type():
+    """"""
+    do_entity_test(
+        paths.invalid_encoding_format_ctx_entity_missing_ws_type,
+        models.Severity.RECOMMENDED,
+        False,
+        ["File Data Entity: RECOMMENDED properties"],
+        ["Missing or invalid `encodingFormat` linked to the `File Data Entity`"]
+    )
+
+
+def test_invalid_data_entity_encoding_format_ctx_website_name():
+    """"""
+    do_entity_test(
+        paths.invalid_encoding_format_ctx_entity_missing_ws_name,
+        models.Severity.RECOMMENDED,
+        False,
+        ["WebSite RECOMMENDED Properties"],
+        ["A WebSite MUST have a `name` property"]
+    )
+
+
+def test_valid_data_entity_encoding_format_pronom():
+    """"""
+    do_entity_test(
+        paths.valid_encoding_format_pronom,
+        models.Severity.RECOMMENDED,
+        True
+    )
+
+
+def test_valid_data_entity_encoding_format_ctx_website():
+    """"""
+    do_entity_test(
+        paths.valid_encoding_format_ctx_entity,
+        models.Severity.RECOMMENDED,
+        True
+    )
