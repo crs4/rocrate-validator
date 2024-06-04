@@ -178,5 +178,5 @@ def __print_validation_result__(
                                     key=lambda x: (-x.severity.value, x)):
                     console.print(
                         f"{' '*6}- [[red]Violation[/red] of "
-                        f"[{issue_color} bold]{issue.check.identifier}[/{issue_color} bold]]: {issue.message}")
+                        f"[{issue_color} bold]{issue.check.identifier}[/{issue_color} bold] on [cyan]<{issue.focusNode}>[/cyan]]: {issue.message}")
                 console.print("\n", style="white")
