@@ -4,6 +4,7 @@ import rocrate_validator.log as logging
 from rocrate_validator.models import (Requirement, RequirementCheck,
                                       ValidationContext)
 from rocrate_validator.requirements.shacl.models import Shape
+from rocrate_validator.requirements.shacl.utils import make_uris_relative
 
 from .validator import (SHACLValidationAlreadyProcessed,
                         SHACLValidationContext, SHACLValidationContextManager,
@@ -93,7 +94,10 @@ class SHACLCheck(RequirementCheck):
                         shacl_context.settings.get("target_only_validation", False):
                     c = shacl_context.result.add_check_issue(message=violation.get_result_message(shacl_context.rocrate_path),
                                                              check=requirementCheck,
-                                                             severity=violation.get_result_severity())
+                                                             severity=violation.get_result_severity(),
+                                                             focusNode=make_uris_relative(
+                                                                 violation.focusNode.toPython(), shacl_context.rocrate_path),
+                                                             value=violation.value)
                     logger.debug("Added validation issue to the context: %s", c)
                 if shacl_context.base_context.fail_fast:
                     break
