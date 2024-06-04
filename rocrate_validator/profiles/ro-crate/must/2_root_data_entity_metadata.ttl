@@ -81,12 +81,12 @@ ro:RootDataEntityValueRestriction
 ro:RootDataEntityHasPartValueRestriction
     a sh:NodeShape ;
     sh:name "RO-Crate Root Data Entity: `hasPart` value restriction" ;
-    sh:description "The Root Data Entity MUST be linked to the declared `File` and `Foldeds` instances through the `hasPart` property" ;
+    sh:description "The Root Data Entity MUST be linked to the declared `File` and `Directories` instances through the `hasPart` property" ;
     sh:targetClass rocrate:RootDataEntity ;
     sh:property [
         a sh:PropertyShape ;
         sh:name "RO-Crate Root Data Entity: `hasPart` value restriction" ;
-        sh:description "Check if Root Data Entity is be linked to the declared `File` and `Foldeds` instances through the `hasPart` property" ;
+        sh:description "Check if Root Data Entity is be linked to the declared `File` and `Directories` instances through the `hasPart` property" ;
         sh:path schema_org:hasPart ;
         sh:or (
             [ sh:class rocrate:File ]
