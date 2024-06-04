@@ -1,12 +1,44 @@
 @prefix ro: <./> .
-@prefix dct: <http://purl.org/dc/terms/> .
+@prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix dct: <http://purl.org/dc/terms/> .
 @prefix schema_org: <http://schema.org/> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
-@prefix xml1: <http://www.w3.org/2001/XMLSchema#> .
+@prefix xml: <http://www.w3.org/2001/XMLSchema#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
 
-
+rocrate:FileRecommendedProperties a sh:NodeShape ;
+    sh:targetClass rocrate:File ;
+    sh:name "File Data Entity: RECOMMENDED properties";
+    sh:description """A `File` Data Entity SHOULD have detailed descriptions encodings through the `encodingFormat` property""" ;
+    sh:property [
+        sh:minCount 1 ;
+        sh:maxCount 2 ;
+        sh:path schema_org:encodingFormat ;
+        sh:severity sh:Warning ;
+        sh:name "File Data Entity: RECOMMENDED `encodingFormat` property" ;
+        sh:description """Check if the File Data Entity has a detailed description of encodings through the `encodingFormat` property.
+        The `encodingFormat` property SHOULD be a PRONOM identifier (e.g., application/pdf) or,
+        to add more detail, SHOULD be linked using a `PRONOM` to  a `Contextual Entity` of type `WebSite`
+        (see [Adding detailed descriptions of encodings](https://www.researchobject.org/ro-crate/1.1/data-entities.html#adding-detailed-descriptions-of-encodings)).
+        """ ;
+        sh:message "Missing or invalid `encodingFormat` linked to the `File Data Entity`";
+        sh:or (
+            [
+                sh:datatype xsd:string ;
+                sh:pattern "^[-a-zA-Z0-9]+/[-a-zA-Z0-9]+$" ;
+                sh:name "File Data Entity: RECOMMENDED `PRONOM` for the `encodingFormat` property" ;
+                sh:description "Check if the File Data Entity is linked to its `encodingFormat` through a PRONOM identifier (e.g., application/pdf)." ;
+                sh:message "The `encodingFormat` SHOULD be linked using a PRONOM identifier (e.g., application/pdf).";
+            ]
+            [
+                sh:nodeKind sh:IRI ;
+                sh:class schema_org:WebSite ;
+                sh:name "File Data Entity: RECOMMENDED `Contextual Entity` linked to the `encodingFormat` property";
+                sh:description "Check if the File Data Entity `encodingFormat` is linked to a `Contextual Entity of type `WebSite`." ;
+                sh:message "The `encodingFormat` SHOULD be linked to a `Contextual Entity` of type `Web Site`." ;
+            ]
+        )
+    ] .
