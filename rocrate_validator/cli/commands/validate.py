@@ -176,7 +176,8 @@ def __print_validation_result__(
                 console.print(f"\n{' '*6}Detected issues:", style="white bold")
                 for issue in sorted(result.get_issues_by_check(check),
                                     key=lambda x: (-x.severity.value, x)):
+                    actual_value = f"value \"[green]{issue.value}[/green]\" of " if issue.value else ""
                     console.print(
                         f"{' '*6}- [[red]Violation[/red] of "
-                        f"[{issue_color} bold]{issue.check.identifier}[/{issue_color} bold] on [cyan]<{issue.focusNode}>[/cyan]]: {issue.message}")
+                        f"[{issue_color} bold]{issue.check.identifier}[/{issue_color} bold] on {actual_value}[cyan]<{issue.focusNode}>[/cyan]]: {issue.message}",)
                 console.print("\n", style="white")
