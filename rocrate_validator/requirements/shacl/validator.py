@@ -248,7 +248,6 @@ class SHACLViolation:
     def value(self):
         if not self._value:
             self._value = self.graph.value(self._violation_node, URIRef(f"{SHACL_NS}value"))
-            assert self._value is not None, f"Unable to get value from violation node {self._violation_node}"
         return self._value
 
     def get_result_severity(self) -> Severity:
