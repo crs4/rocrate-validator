@@ -1,7 +1,7 @@
 @prefix ro: <./> .
 @prefix dct: <http://purl.org/dc/terms/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
-@prefix schema_org: <http://schema.org/> .
+@prefix schema: <http://schema.org/> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix xml1: <http://www.w3.org/2001/XMLSchema#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
@@ -30,4 +30,25 @@ rocrate:FindLicenseEntity a sh:NodeShape, sh:hidden ;
         sh:subject sh:this ;
         sh:predicate rdf:type ;
         sh:object rocrate:ContextualEntity ;
+    ] .
+
+
+rocrate:WebSiteRecommendedProperties a sh:NodeShape ;
+    sh:name "WebSite RECOMMENDED Properties" ;
+    sh:description """A `WebSite` MUST be identified by a valid IRI and MUST have a `name` property.""" ;
+    sh:targetClass schema:WebSite ;
+    sh:property [
+        sh:path [sh:inversePath rdf:type] ;
+        sh:datType sh:IRI ;
+        sh:name "WebSite: value restriction of its identifier" ;
+        sh:description "Check if the WebSite has a valid IRI" ;
+        sh:message "A WebSite MUST have a valid IRI" ;
+    ] ;
+    sh:property [
+        sh:path schema:name ;
+        sh:minCount 1 ;
+        sh:dataType xsd:string ;
+        sh:name "WebSite: REQUIRED `name` property" ;
+        sh:description "Check if the WebSite has a `name` property" ;
+        sh:message "A WebSite MUST have a `name` property" ;
     ] .
