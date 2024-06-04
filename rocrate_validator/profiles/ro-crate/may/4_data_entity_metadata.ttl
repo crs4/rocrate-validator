@@ -1,0 +1,26 @@
+@prefix ro: <./> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema_org: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xml1: <http://www.w3.org/2001/XMLSchema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
+
+
+ro:DataEntityRequiredProperties a sh:NodeShape ;
+    sh:name "Data Entity: REQUIRED properties" ;
+    sh:description """A Data Entity MUST be a `URI Path` relative to the ROCrate root,
+        or an sbsolute URI""" ;
+    sh:targetClass rocrate:DataEntity ;
+
+    sh:property [
+        sh:name "Data Entity: @id value restriction" ;
+        sh:description """Check if the Data Entity has an absolute or relative URI as `@id`""" ;
+        sh:path [sh:inversePath rdf:type ] ;
+        sh:nodeKind sh:IRI ;
+        sh:severity sh:Violation ;
+        sh:message """Data Entities MUST have an absolute or relative URI as @id.""" ;
+    ] .
