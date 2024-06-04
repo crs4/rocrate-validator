@@ -233,7 +233,7 @@ class SHACLViolation:
     @property
     def focusNode(self) -> Node:
         if not self._focus_node:
-            self._focus_node = self.graph.value(self._violation_node, URIRef(f"{SHACL_NS}sourceShape"))
+            self._focus_node = self.graph.value(self._violation_node, URIRef(f"{SHACL_NS}focusNode"))
             assert self._focus_node is not None, f"Unable to get focus node from violation node {self._violation_node}"
         return self._focus_node
 
