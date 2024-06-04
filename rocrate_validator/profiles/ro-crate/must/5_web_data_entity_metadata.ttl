@@ -35,3 +35,31 @@ ro:WebBasedDataEntity a sh:NodeShape, sh:hidden ;
         sh:object rocrate:WebDataEntity ;
     ] .
 
+
+ro:WebBasedDataEntityRequiredValueRestriction a sh:NodeShape ;
+    sh:name "WebBased Data Entity: RECOMMENDED properties" ;
+    sh:description """A WebBased Data Entity MUST be identified by an absolute URL and 
+    SHOULD have a `contentSize` and `sdDatePublished` property""" ;
+    sh:targetClass rocrate:WebDataEntity ;
+    # Check if the WebBased Data Entity has a contentSize property
+    sh:property [
+        a sh:PropertyShape ;
+        sh:minCount 1 ;
+        sh:name "WebBased Data Entity: RECOMMENDED `contentSize` property" ;
+        sh:description """Check if the WebBased Data Entity has a `contentSize` property""" ;
+        sh:path schema_org:contentSize ;
+        sh:datatype xsd:int ;
+        sh:severity sh:Warning ;
+        sh:message """WebBased Data Entities SHOULD have a `contentSize` property""" ;
+    ] ;
+    # Check if the WebBased Data Entity has a sdDatePublished property
+    sh:property [
+        a sh:PropertyShape ;
+        sh:minCount 1 ;
+        sh:name "WebBased Data Entity: RECOMMENDED `sdDatePublished` property" ;
+        sh:description """Check if the WebBased Data Entity has a `sdSatePublished` property""" ;
+        sh:path schema_org:sdDatePublished ;
+        sh:datatype xsd:date ;
+        sh:severity sh:Warning ;
+        sh:message """WebBased Data Entities SHOULD have a `sdDatePublished` property""" ;
+    ] .
