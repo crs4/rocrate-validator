@@ -72,10 +72,10 @@ class WebDataEntity:
             return False
 
 
-@requirement(name="Web Data Entity: RECOMMENDED resource availability")
+@requirement(name="Web-based Data Entity: RECOMMENDED resource availability")
 class WebDataEntityRecommendedChecker(PyFunctionCheck):
     """
-    Web Data Entity instances SHOULD be available at the URIs specified in the `@id` property of the Web Data Entity.
+    Web-based Data Entity instances SHOULD be available at the URIs specified in the `@id` property of the Web-based Data Entity.
     """
 
     _json_dict_cache: Optional[dict] = None
@@ -127,39 +127,38 @@ class WebDataEntityRecommendedChecker(PyFunctionCheck):
                 web_data_entities.append(WebDataEntity(entity))
         return web_data_entities
 
-    @check(name="Web Data Entity availability")
+    @check(name="Web-based Data Entity: resource availability")
     def check_availability(self, context: ValidationContext) -> bool:
         """
-        Check if the Web Data Entity is directly downloadable 
+        Check if the Web-based Data Entity is directly downloadable 
         by a simple retrieval (e.g. HTTP GET) permitting redirection and HTTP/HTTPS URIs
         """
         result = True
         for entity in self.get_web_data_entities(context):
             assert entity.id is not None, "Entity has no @id"
-            logger.error("Is a web data entity")
             try:
                 if not entity.is_downloadable(silent=False):
                     response = entity.remote_resource
                     if response is None:
                         context.result.add_error(
-                            f'Web Data Entity {entity.id} is not available', self)
+                            f'Web-based Data Entity {entity.id} is not available', self)
                         result = False
                     elif response.status != 200:
                         context.result.add_error(
-                            f'Web Data Entity {entity.id} is not available (HTTP {response.status_code})', self)
+                            f'Web-based Data Entity {entity.id} is not available (HTTP {response.status_code})', self)
                         result = False
             except Exception as e:
                 context.result.add_error(
-                    f'Web Data Entity {entity.id} is not available: {e}', self)
+                    f'Web-based Data Entity {entity.id} is not available: {e}', self)
                 result = False
             if not result and context.fail_fast:
                 return result
         return result
 
-    @check(name="Web Data Entity: `contentSize` property")
+    @check(name="Web-based Data Entity: `contentSize` property")
     def check_content_size(self, context: ValidationContext) -> bool:
         """
-        Check if the Web Data Entity has a `contentSize` property
+        Check if the Web-based Data Entity has a `contentSize` property
         and if it is set to actual size of the downloadable content
         """
         result = True
@@ -169,7 +168,7 @@ class WebDataEntityRecommendedChecker(PyFunctionCheck):
                 content_size = entity.get_property("contentSize")
                 if content_size and int(content_size) != entity.content_size:
                     context.result.add_check_issue(
-                        f'The property contentSize={content_size} of the Web Data Entity {entity.id} does not match the actual size of '
+                        f'The property contentSize={content_size} of the Web-based Data Entity {entity.id} does not match the actual size of '
                         f'the downloadable content, i.e., {entity.content_size} (bytes)', self,
                         focusNode=entity.id, resultPath='contentSize', value=content_size)
                     result = False
