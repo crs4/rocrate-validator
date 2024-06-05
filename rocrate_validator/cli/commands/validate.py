@@ -161,10 +161,10 @@ def __print_validation_result__(
                       f"profile: [magenta bold]{requirement.profile.name }[/magenta bold]]", align="right")
             )
             console.print(
-                f"  [bold][cyan][{requirement.order_number}] [u]{requirement.name}[/u][/cyan][/bold]",
+                f"  [bold][cyan][{requirement.order_number}] [u]{Markdown(requirement.name).markup}[/u][/cyan][/bold]",
                 style="white",
             )
-            console.print(f"\n{' '*4}{requirement.description}\n", style="white italic")
+            console.print(f"\n{' '*4}{Markdown(requirement.description).markup}\n", style="white italic")
 
             console.print(f"{' '*4}[cyan u]Failed checks[/cyan u]:\n", style="white bold")
             for check in sorted(result.get_failed_checks_by_requirement(requirement),
@@ -172,7 +172,7 @@ def __print_validation_result__(
                 issue_color = get_severity_color(check.level.severity)
                 console.print(
                     f"{' '*4}- "
-                    f"[magenta bold]{check.name}[/magenta bold]: {check.description}")
+                    f"[magenta bold]{check.name}[/magenta bold]: {Markdown(check.description).markup}")
                 console.print(f"\n{' '*6}[u]Detected issues[/u]:", style="white bold")
                 for issue in sorted(result.get_issues_by_check(check),
                                     key=lambda x: (-x.severity.value, x)):
@@ -187,5 +187,5 @@ def __print_validation_result__(
                     console.print(
                         f"{' ' * 6}- [[red]Violation[/red] of "
                         f"[{issue_color} bold]{issue.check.identifier}[/{issue_color} bold] {path}[cyan]<{issue.focusNode}>[/cyan]]: "
-                        f"{issue.message}",)
+                        f"{Markdown(issue.message).markup}",)
                 console.print("\n", style="white")
