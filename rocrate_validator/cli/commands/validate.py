@@ -126,7 +126,7 @@ def validate(ctx,
     )
 
     # Print the validation result
-    __print_validation_result__(console, result)
+    __print_validation_result__(console, result, result.context.requirement_severity)
 
     # using ctx.exit seems to raise an Exception that gets caught below,
     # so we use sys.exit instead.
