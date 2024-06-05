@@ -1,4 +1,6 @@
+import http
 import json
+import urllib.request
 from typing import Optional
 
 import requests
@@ -16,7 +18,7 @@ class WebDataEntity:
 
     def __init__(self, entity: dict):
         self._data = entity
-        self._http_response = None
+        self._remote_site = None
         self._download_exception = None
 
     @property
@@ -36,34 +38,38 @@ class WebDataEntity:
     def is_ftp_data_entity(self) -> bool:
         return self._data.get("@id", "").startswith(("ftp", "ftps"))
 
-    def download_entity(self) -> Optional[bytes]:
-        if not self.is_downloadable():
-            return None
-        return self._http_response.content
+    @property
+    def remote_resource(self) -> http.client.HTTPResponse:
+        if not self._remote_site:
+            self._remote_site = urllib.request.urlopen(self.id)
+        return self._remote_site
 
-    def is_downloadable(self) -> bool:
+    @property
+    def content_size(self) -> Optional[int]:
+        r = self.remote_resource
+        if not r:
+            return -1
+        try:
+            return int(r.info().get('Content-Length'))
+        except Exception as e:
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.exception(e)
+            return -1
+
+    def is_downloadable(self, silent: bool = True) -> bool:
         if not self.is_web_data_entity():
             return False
         # if self.is_ftp_data_entity() and not self._data.get("@id", "").startswith(("ftp://", "ftps://")):
         #     return False
         try:
-            if self._http_response is None:
-                self._http_response = requests.get(self._data.get("@id", ""), allow_redirects=True)
-            return self._http_response and self._http_response.status_code == 200
+            remote = self.remote_resource
+            return remote and remote.status == 200
         except Exception as e:
-            self._download_exception = e
+            logger.exception(e)
+            # if not silent raise the exception
+            if not silent:
+                raise e
             return False
-
-    def get_content_size(self) -> Optional[int]:
-        if not self.is_downloadable():
-            return None
-        return len(self._http_response.content)
-
-    def get_http_response(self) -> Optional[requests.Response]:
-        return self._http_response
-
-    def get_download_exception(self) -> Optional[Exception]:
-        return self._download_exception
 
 
 @requirement(name="Web Data Entity: RECOMMENDED resource availability")
@@ -105,18 +111,18 @@ class WebDataEntityRecommendedChecker(PyFunctionCheck):
             return entity.get(property_name, {})
         return {}
 
-    def get_resource(self, context: ValidationContext, entity_id: str) -> Optional[requests.Response]:
-        response = self._resources_cache.get(entity_id, None)
-        if response is None:
-            response = requests.get(entity_id, allow_redirects=True)
-            self._resources_cache[entity_id] = response
-        return response
-
     def get_web_data_entities(self, context: ValidationContext) -> list[WebDataEntity]:
         json_dict = self.get_json_dict(context)
         web_data_entities = []
         for entity in json_dict["@graph"]:
             entity_id = entity.get("@id", None)
+            entity_type = entity.get("@type", None)
+            # Skip entity if it is not a File
+            if isinstance(entity_type, list):
+                if not "File" in entity_type:
+                    continue
+            if not "File" in entity_type:
+                continue
             if entity_id is not None and entity_id.startswith(("http", "https")):
                 web_data_entities.append(WebDataEntity(entity))
         return web_data_entities
@@ -132,14 +138,13 @@ class WebDataEntityRecommendedChecker(PyFunctionCheck):
             assert entity.id is not None, "Entity has no @id"
             logger.error("Is a web data entity")
             try:
-                if not entity.is_downloadable():
-
-                    response = entity.get_http_response()
+                if not entity.is_downloadable(silent=False):
+                    response = entity.remote_resource
                     if response is None:
                         context.result.add_error(
                             f'Web Data Entity {entity.id} is not available', self)
                         result = False
-                    elif response.status_code != 200:
+                    elif response.status != 200:
                         context.result.add_error(
                             f'Web Data Entity {entity.id} is not available (HTTP {response.status_code})', self)
                         result = False
@@ -161,18 +166,13 @@ class WebDataEntityRecommendedChecker(PyFunctionCheck):
         for entity in self.get_web_data_entities(context):
             assert entity.id is not None, "Entity has no @id"
             if entity.is_downloadable():
-                response = entity.get_http_response()
-                if response is not None:
-                    content_size = entity.get_property("contentSize")
-                    if content_size is None:
-                        context.result.add_error(
-                            f'Web Data Entity {entity.id} has no `contentSize` property', self)
-                        result = False
-                    elif content_size != entity.get_content_size():
-                        context.result.add_error(
-                            f'Web Data Entity {entity.id} `contentSize={content_size}` property does not match the actual size of '
-                            f'the downloadable content, i.e., `{entity.get_content_size()}`bytes', self)
-                        result = False
+                content_size = entity.get_property("contentSize")
+                if content_size and int(content_size) != entity.content_size:
+                    context.result.add_check_issue(
+                        f'The property contentSize={content_size} of the Web Data Entity {entity.id} does not match the actual size of '
+                        f'the downloadable content, i.e., {entity.content_size} (bytes)', self,
+                        focusNode=entity.id, resultPath='contentSize', value=content_size)
+                    result = False
             if not result and context.fail_fast:
                 return result
 

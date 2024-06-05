@@ -45,12 +45,24 @@ ro:WebBasedDataEntityRequiredValueRestriction a sh:NodeShape ;
     sh:property [
         a sh:PropertyShape ;
         sh:minCount 1 ;
-        sh:name "WebBased Data Entity: RECOMMENDED `contentSize` property" ;
+        sh:name "WebBased Data Entity: RECOMMENDED `contentSize` property string" ;
         sh:description """Check if the WebBased Data Entity has a `contentSize` property""" ;
         sh:path schema_org:contentSize ;
-        sh:datatype xsd:int ;
+        sh:datatype xsd:string ;
         sh:severity sh:Warning ;
         sh:message """WebBased Data Entities SHOULD have a `contentSize` property""" ;
+        sh:sparql [
+            sh:message "If the value is a string it must be a string representing an integer." ;
+            sh:select """
+                SELECT ?this ?value
+                WHERE {
+                    ?this schema:contentSize ?value .
+                    FILTER NOT EXISTS {
+                        FILTER (xsd:integer(?value) = ?value)
+                    }
+                }
+            """ ;
+        ] ;
     ] ;
     # Check if the WebBased Data Entity has a sdDatePublished property
     sh:property [
