@@ -69,7 +69,7 @@ ro:WebBasedDataEntityRequiredValueRestriction a sh:NodeShape ;
         a sh:PropertyShape ;
         sh:minCount 1 ;
         sh:name "WebBased Data Entity: RECOMMENDED `sdDatePublished` property" ;
-        sh:description """Check if the WebBased Data Entity has a `sdSatePublished` property""" ;
+        sh:description """Check if the WebBased Data Entity has a `sdDatePublished` property""" ;
         sh:path schema_org:sdDatePublished ;
         sh:datatype xsd:date ;
         sh:severity sh:Warning ;
