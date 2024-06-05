@@ -95,6 +95,7 @@ class SHACLCheck(RequirementCheck):
                     c = shacl_context.result.add_check_issue(message=violation.get_result_message(shacl_context.rocrate_path),
                                                              check=requirementCheck,
                                                              severity=violation.get_result_severity(),
+                                                             resultPath=violation.resultPath.toPython() if violation.resultPath else None,
                                                              focusNode=make_uris_relative(
                                                                  violation.focusNode.toPython(), shacl_context.rocrate_path),
                                                              value=violation.value)

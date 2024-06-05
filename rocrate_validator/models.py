@@ -626,6 +626,7 @@ class CheckIssue:
     def __init__(self, severity: Severity,
                  check: RequirementCheck,
                  message: Optional[str] = None,
+                 resultPath: Optional[str] = None,
                  focusNode: Optional[str] = None,
                  value: Optional[str] = None):
         if not isinstance(severity, Severity):
@@ -633,6 +634,7 @@ class CheckIssue:
         self._severity = severity
         self._message = message
         self._check: RequirementCheck = check
+        self._resultPath = resultPath
         self._focusNode = focusNode
         self._value = value
 
@@ -659,6 +661,10 @@ class CheckIssue:
     def check(self) -> RequirementCheck:
         """The check that generated the issue"""
         return self._check
+
+    @property
+    def resultPath(self) -> Optional[str]:
+        return self._resultPath
 
     @property
     def focusNode(self) -> Optional[str]:
