@@ -27,8 +27,8 @@ ro:DataEntityRequiredProperties a sh:NodeShape ;
     ] .
 
 rocrate:FileDataEntityWebOptionalProperties a sh:NodeShape ;
-    sh:name "Web-based Data Entity: OPTIONAL properties" ;
-    sh:description """A Web-based Data Entity which have a corresponding web presence,
+    sh:name "File Data Entity with web presence: OPTIONAL properties" ;
+    sh:description """A File Data Entity which have a corresponding web presence,
     for instance a landing page that describes the file, including persistence identifiers (e.g. DOI),
     resolving to an intermediate HTML page instead of the downloadable file directly.
     These can included for File Data Entities as additional metadata by using the properties:
@@ -38,42 +38,42 @@ rocrate:FileDataEntityWebOptionalProperties a sh:NodeShape ;
     sh:property [
         a sh:PropertyShape ;
         sh:minCount 1 ;
-        sh:name "Web-based Data Entity: optional formal `identifier` (e.g. DOI)" ;
-        sh:description """Check if the Web-based Data Entity has a formal identifier string such as a DOI""" ;
+        sh:name "File Data Entity: optional formal `identifier` (e.g. DOI)" ;
+        sh:description """Check if the File Data Entity has a formal identifier string such as a DOI""" ;
         sh:path schema:identifier ;
         sh:datatype xsd:anyURI ;
         sh:severity sh:Info ;
-        sh:message """The Web Based Data Entity MAY have a formal identifier specified through an `identifier` property""" ;
+        sh:message """The File Data Entity MAY have a formal identifier specified through an `identifier` property""" ;
     ] ;
     sh:property [
         a sh:PropertyShape ;
         sh:minCount 1 ;
-        sh:name "Web-based Data Entity: optional `url` property" ;
-        sh:description """Check if the Web-based Data Entity has a `download` link""" ;
+        sh:name "File Data Entity: optional `url` property" ;
+        sh:description """Check if the File Data Entity has an optional `download` link""" ;
         sh:path schema:url ;
         sh:datatype xsd:anyURI ;
         sh:severity sh:Info ;
-        sh:message """The Web Based Data Entity MAY use a `url` property to denote a `download` link""" ;
+        sh:message """The File Data Entity MAY use a `url` property to denote a `download` link""" ;
     ] ;
     sh:property [
         a sh:PropertyShape ;
         sh:minCount 1 ;
-        sh:name "Web-based Data Entity: optional `subjectOf` property" ;
-        sh:description """Check if the Web-based Data Entity includes a `subjectOf` property to link `CreativeWork` instances that mention it.""" ;
+        sh:name "File Data Entity: optional `subjectOf` property" ;
+        sh:description """Check if the File Data Entity includes a `subjectOf` property to link `CreativeWork` instances that mention it.""" ;
         sh:path schema:subjectOf ;
         sh:class schema:WebPage, schema:CreativeWork ;
         sh:severity sh:Info ;
-        sh:message """The Web Based Data Entity MAY include a `subjectOf` property to link `CreativeWork` instances that mention it.""" ;
+        sh:message """The File Data Entity MAY include a `subjectOf` property to link `CreativeWork` instances that mention it.""" ;
     ] ;
     sh:property [
         a sh:PropertyShape ;
         sh:minCount 1 ;
-        sh:name "Web-based Data Entity: optional `mainEntityOfPage` property" ;
-        sh:description """Check if the Web-based Data Entity has a `mainEntityOfPage` property""" ;
+        sh:name "File Data Entity: optional `mainEntityOfPage` property" ;
+        sh:description """Check if the File Data Entity has a `mainEntityOfPage` property""" ;
         sh:path schema:mainEntityOfPage ;
         sh:class schema:WebPage, schema:CreativeWork ;
         sh:severity sh:Info ;
-        sh:message """The Web Based Data Entity MAY have a `mainEntityOfPage` property""" ;
+        sh:message """The File Data Entity MAY have a `mainEntityOfPage` property""" ;
     ] .
 
 
