@@ -77,5 +77,19 @@ rocrate:FileDataEntityWebOptionalProperties a sh:NodeShape ;
     ] .
 
 
-
+rocrate:DirectoryDataEntityWebOptionalDistribution a sh:NodeShape ;
+    sh:name "Directory Data Entity: OPTIONAL `distribution` property" ;
+    sh:description """A Directory Data Entity MAY have a `distribution` property to denote the distribution of the files within the directory""" ;
+    sh:targetClass rocrate:File ;
+    # Check if the Web-based Data Entity has a contentSize property
+    sh:property [
+        a sh:PropertyShape ;
+        sh:minCount 1 ;
+        sh:name "Directory Data Entity: optional `distribution` property" ;
+        sh:description """Check if the Directory Data Entity has a `distribution` property""" ;
+        sh:path schema:distribution ;
+        sh:datatype xsd:anyURI ;
+        sh:severity sh:Info ;
+        sh:message """The Directory Data Entity MAY have a `distribution` property to denote the distribution of the files within the directory""" ;
+    ] .
 
