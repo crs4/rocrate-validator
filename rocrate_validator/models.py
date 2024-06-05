@@ -761,10 +761,11 @@ class ValidationResult:
                         message: str,
                         check: RequirementCheck,
                         severity: Optional[Severity] = None,
+                        resultPath: Optional[str] = None,
                         focusNode: Optional[str] = None,
                         value: Optional[str] = None) -> CheckIssue:
         sev_value = severity if severity is not None else check.requirement.severity
-        c = CheckIssue(sev_value, check, message, focusNode=focusNode, value=value)
+        c = CheckIssue(sev_value, check, message, resultPath=resultPath, focusNode=focusNode, value=value)
         # self._issues.append(c)
         bisect.insort(self._issues, c)
         return c
