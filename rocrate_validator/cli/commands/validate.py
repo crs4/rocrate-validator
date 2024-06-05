@@ -173,7 +173,7 @@ def __print_validation_result__(
                 console.print(
                     f"{' '*4}- "
                     f"[magenta bold]{check.name}[/magenta bold]: {check.description}")
-                console.print(f"\n{' '*6}[u cyan]Detected issues[/u cyan]:", style="white bold")
+                console.print(f"\n{' '*6}[u]Detected issues[/u]:", style="white bold")
                 for issue in sorted(result.get_issues_by_check(check),
                                     key=lambda x: (-x.severity.value, x)):
                     path = ""
@@ -183,10 +183,9 @@ def __print_validation_result__(
                         if issue.resultPath:
                             path += "="
                         path += f"\"[green]{issue.value}[/green]\""
-                    # if len(path) > 0:
                     path = path + " of " if len(path) > 0 else "on "
                     console.print(
-                        f"\n{' ' * 6}- [[red]Violation[/red] of "
+                        f"{' ' * 6}- [[red]Violation[/red] of "
                         f"[{issue_color} bold]{issue.check.identifier}[/{issue_color} bold] {path}[cyan]<{issue.focusNode}>[/cyan]]: "
                         f"{issue.message}",)
                 console.print("\n", style="white")
