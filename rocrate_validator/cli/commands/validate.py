@@ -166,18 +166,27 @@ def __print_validation_result__(
             )
             console.print(f"\n{' '*4}{requirement.description}\n", style="white italic")
 
-            console.print(f"{' '*4}Failed checks:\n", style="white bold")
+            console.print(f"{' '*4}[cyan u]Failed checks[/cyan u]:\n", style="white bold")
             for check in sorted(result.get_failed_checks_by_requirement(requirement),
                                 key=lambda x: (-x.severity.value, x)):
                 issue_color = get_severity_color(check.level.severity)
                 console.print(
                     f"{' '*4}- "
                     f"[magenta bold]{check.name}[/magenta bold]: {check.description}")
-                console.print(f"\n{' '*6}Detected issues:", style="white bold")
+                console.print(f"\n{' '*6}[u cyan]Detected issues[/u cyan]:", style="white bold")
                 for issue in sorted(result.get_issues_by_check(check),
                                     key=lambda x: (-x.severity.value, x)):
-                    actual_value = f"value \"[green]{issue.value}[/green]\" of " if issue.value else ""
+                    path = ""
+                    if issue.resultPath and issue.value:
+                        path = f"on [yellow]{issue.resultPath}[/yellow]"
+                    if issue.value:
+                        if issue.resultPath:
+                            path += "="
+                        path += f"\"[green]{issue.value}[/green]\""
+                    # if len(path) > 0:
+                    path = path + " of " if len(path) > 0 else "on "
                     console.print(
-                        f"{' '*6}- [[red]Violation[/red] of "
-                        f"[{issue_color} bold]{issue.check.identifier}[/{issue_color} bold] on {actual_value}[cyan]<{issue.focusNode}>[/cyan]]: {issue.message}",)
+                        f"\n{' ' * 6}- [[red]Violation[/red] of "
+                        f"[{issue_color} bold]{issue.check.identifier}[/{issue_color} bold] {path}[cyan]<{issue.focusNode}>[/cyan]]: "
+                        f"{issue.message}",)
                 console.print("\n", style="white")
