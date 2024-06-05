@@ -71,7 +71,8 @@ ro:WebBasedDataEntityRequiredValueRestriction a sh:NodeShape ;
         sh:name "WebBased Data Entity: RECOMMENDED `sdDatePublished` property" ;
         sh:description """Check if the WebBased Data Entity has a `sdDatePublished` property""" ;
         sh:path schema_org:sdDatePublished ;
-        sh:datatype xsd:date ;
+        # sh:datatype xsd:dateTime ;
+        sh:pattern "^(\\d{4}-\\d{2}-\\d{2})(T\\d{2}:\\d{2}:\\d{2}(\\.\\d{3})?\\+\\d{2}:\\d{2})?$" ;
         sh:severity sh:Warning ;
         sh:message """WebBased Data Entities SHOULD have a `sdDatePublished` property""" ;
     ] .
