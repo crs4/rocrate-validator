@@ -24,8 +24,24 @@ rocrate:CreativeWorkAuthorMinimuRecommendedProperties a sh:NodeShape ;
     sh:property [
         sh:path schema:affiliation ;
         sh:minCount 1 ;
-        sh:dataType xsd:string ;
+        sh:or (
+            [ sh:dataType xsd:string ; ]
+            [ sh:class schema:Organization ;]
+        ) ;
+        sh:severity sh:Violation ;
         sh:name "CreativeWork Author: RECOMMENDED affiliation property" ;
         sh:description "Check if the author has an organizational affiliation." ;
         sh:message "The author SHOULD have an organizational affiliation." ;
+    ] ;
+    sh:property [
+        sh:path schema:affiliation ;
+        sh:minCount 1 ;
+        sh:class schema:Organization ;
+        sh:severity sh:Warning ;
+        sh:name "CreativeWork Author: RECOMMENDED Contextual Entity linked for the organizational `affiliation` property" ;
+        sh:description "Check if the author has a Contextual Entity for the organizational `affiliation` property." ;
+        sh:message "The author SHOULD have a Contextual Entity which specifies the organizational `affiliation`." ;
+    ] .
+
+
     ] .
