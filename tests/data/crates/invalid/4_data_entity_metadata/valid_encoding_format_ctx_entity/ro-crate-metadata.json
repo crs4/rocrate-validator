@@ -25,7 +25,30 @@
                 {
                     "@id": "https://spdx.org/licenses/MIT.html"
                 }
-            ]
+            ],
+
+            "author": {
+                "@id": "https://orcid.org/0000-0002-1825-0097"
+            }
+        },
+        {
+            "@id": "https://orcid.org/0000-0002-1825-0097",
+            "@type": "Person",
+            "name": "Stian Soiland-Reyes",
+            "affiliation": {
+                "@id": "https://orcid.org/0000-0001-9842-9718"
+            },
+            "url": {
+                "@id": "https://orcid.org/0000-0002-1825-0097"
+            }
+        },
+        {
+            "@id": "https://orcid.org/0000-0001-9842-9718",
+            "@type": "Organization",
+            "name": "The University of Manchester",
+            "url": {
+                "@id": "https://www.manchester.ac.uk/"
+            }
         },
         {
             "@id": "ro-crate-metadata.json",
