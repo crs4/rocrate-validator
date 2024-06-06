@@ -44,4 +44,23 @@ rocrate:CreativeWorkAuthorMinimuRecommendedProperties a sh:NodeShape ;
     ] .
 
 
+rocrate:OrganizationRecommendedProperties a sh:NodeShape ;
+    sh:name "Organization: RECOMMENDED properties" ;
+    sh:description """The recommended properties for an `Organization` are `name` and `url`.""" ;
+    sh:targetClass schema:Organization ;
+    sh:property [
+        sh:path schema:name ;
+        sh:minCount 1 ;
+        sh:dataType xsd:string ;
+        sh:name "Organization: RECOMMENDED name property" ;
+        sh:description "Check if the `organization` has a name." ;
+        sh:message "The organization SHOULD have a name." ;
+    ] ;
+    sh:property [
+        sh:path schema:url ;
+        sh:minCount 1 ;
+        sh:dataType xsd:anyURI ;
+        sh:name "Organization: RECOMMENDED url property" ;
+        sh:description "Check if the `organization` has a URL." ;
+        sh:message "The organization SHOULD have a URL." ;
     ] .
