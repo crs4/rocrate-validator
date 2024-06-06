@@ -24,7 +24,7 @@
                 "@id": "./"
             },
             "author": {
-                "@id": "https://orcid.org/0000-0001-9842-9718"
+                "@id": "https://orcid.org/0000-0001-8271-5429"
             },
             "license": {
                 "@id": "https://creativecommons.org/publicdomain/zero/1.0/"
@@ -43,57 +43,6 @@
             "author": [
                 {
                     "@id": "https://orcid.org/0000-0001-8271-5429"
-                },
-                {
-                    "@id": "https://orcid.org/0000-0002-2961-9670"
-                },
-                {
-                    "@id": "https://orcid.org/0000-0003-4929-1219"
-                },
-                {
-                    "@id": "https://orcid.org/0000-0003-0606-2512"
-                },
-                {
-                    "@id": "https://orcid.org/0000-0002-3468-0652"
-                },
-                {
-                    "@id": "https://orcid.org/0000-0002-8940-4946"
-                },
-                {
-                    "@id": "https://orcid.org/0000-0002-0003-2024"
-                },
-                {
-                    "@id": "https://orcid.org/0000-0002-4663-5613"
-                },
-                {
-                    "@id": "https://orcid.org/0000-0003-0454-7145"
-                },
-                {
-                    "@id": "https://orcid.org/0000-0002-4806-5140"
-                },
-                {
-                    "@id": "https://orcid.org/0000-0001-9290-2017"
-                },
-                {
-                    "@id": "https://orcid.org/0000-0002-1119-1792"
-                },
-                {
-                    "@id": "https://orcid.org/0000-0003-3777-5945"
-                },
-                {
-                    "@id": "https://orcid.org/0000-0003-2765-0049"
-                },
-                {
-                    "@id": "https://orcid.org/0000-0002-0309-604X"
-                },
-                {
-                    "@id": "https://orcid.org/0000-0003-0902-0086"
-                },
-                {
-                    "@id": "https://orcid.org/0000-0001-8250-4074"
-                },
-                {
-                    "@id": "https://orcid.org/0000-0001-9842-9718"
                 }
             ],
             "description": "RO-Crate for the manuscript that describes Workflow Run Crate, includes mapping to PROV using SKOS/SSSOM",
@@ -253,8 +202,16 @@
         {
             "@id": "https://orcid.org/0000-0001-8271-5429",
             "@type": "Person",
-            "affiliation": "Center for Advanced Studies, Research, and Development in Sardinia (CRS4), Pula, Sardinia, Italy",
+            "affiliation": {
+                "@id": "https://crs4.it"
+            },
             "name": "Simone Leo"
+        },
+        {
+            "@id": "https://crs4.it",
+            "@type": "Organization",
+            "name": "Center for Advanced Studies, Research, and Development in Sardinia (CRS4)",
+            "url": "https://crs4.it"
         },
         {
             "@id": "https://orcid.org/0000-0002-2961-9670",
@@ -434,10 +391,7 @@
             ],
             "author": [
                 {
-                    "@id": "https://orcid.org/0000-0003-0454-7145"
-                },
-                {
-                    "@id": "https://orcid.org/0000-0001-9842-9718"
+                    "@id": "https://orcid.org/0000-0001-8271-5429"
                 }
             ],
             "creator": {
