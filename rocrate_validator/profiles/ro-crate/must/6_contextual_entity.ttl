@@ -52,3 +52,15 @@ rocrate:WebSiteRecommendedProperties a sh:NodeShape ;
         sh:description "Check if the WebSite has a `name` property" ;
         sh:message "A WebSite MUST have a `name` property" ;
     ] .
+
+
+rocrate:CreativeWorkAuthorDefinition a sh:NodeShape, sh:hidden ;
+    sh:name "CreativeWork Author Definition" ;
+    sh:description """A `CreativeWork` MUST have an `author` property.""" ;
+    sh:targetObjectsOf schema:author ;
+    sh:rule [
+        a sh:TripleRule ;
+        sh:subject sh:this ;
+        sh:predicate rdf:type ;
+        sh:object rocrate:CreativeWorkAuthor ;
+    ] .
