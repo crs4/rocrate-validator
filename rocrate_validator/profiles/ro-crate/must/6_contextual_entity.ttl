@@ -56,11 +56,17 @@ rocrate:WebSiteRecommendedProperties a sh:NodeShape ;
 
 rocrate:CreativeWorkAuthorDefinition a sh:NodeShape, sh:hidden ;
     sh:name "CreativeWork Author Definition" ;
-    sh:description """A `CreativeWork` MUST have an `author` property.""" ;
+    sh:description """Define the `CretiveWorkAuthor` as the `Person` object of the `schema:author` predicate.""" ;
     sh:targetObjectsOf schema:author ;
     sh:rule [
         a sh:TripleRule ;
         sh:subject sh:this ;
         sh:predicate rdf:type ;
         sh:object rocrate:CreativeWorkAuthor ;
+        sh:condition [
+            sh:property [ sh:path rdf:type ; sh:hasValue schema:Person ; sh:minCount 1 ] ;
+        ] ;
+    ] .
+
+
     ] .
