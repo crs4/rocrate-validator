@@ -91,8 +91,8 @@ class InvalidRootDataEntity:
         return self.base_path / "missing_root_license_description"
 
     @property
-    def invalid_referenced_data_entities(self) -> Path:
-        return self.base_path / "invalid_referenced_data_entities"
+    def valid_referenced_generic_data_entities(self) -> Path:
+        return self.base_path / "valid_referenced_generic_data_entities"
 
 
 class InvalidFileDescriptorEntity:

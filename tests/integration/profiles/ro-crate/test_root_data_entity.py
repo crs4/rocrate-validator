@@ -78,14 +78,12 @@ def test_missing_root_description():
     )
 
 
-def test_invalid_referenced_data_entities():
+def test_valid_referenced_generic_data_entities():
     """Test a RO-Crate with invalid referenced data entities."""
     do_entity_test(
-        paths.invalid_referenced_data_entities,
+        paths.valid_referenced_generic_data_entities,
         models.Severity.REQUIRED,
-        False,
-        ["RO-Crate Root Data Entity: `hasPart` value restriction"],
-        ["Node <./foo/> does not conform to one or more shapes"]
+        True
     )
 
 

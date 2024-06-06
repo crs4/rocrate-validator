@@ -92,7 +92,7 @@
         },
         {
             "@id": "foo/",
-            "@type": "InvalidEntity",
+            "@type": "UnknownCollection",
             "hasPart": [
                 {
                     "@id": "foo/xxx"
