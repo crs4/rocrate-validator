@@ -911,7 +911,7 @@ class Validator:
                     logger.debug("Validation Requirement passed")
                 else:
                     logger.debug(f"Validation Requirement {requirement} failed ")
-                    if context.settings.get("abort_on_first") is True:
+                    if context.settings.get("abort_on_first") is True and context.profile_name == profile.name:
                         logger.debug("Aborting on first requirement failure")
                         return context.result
 
