@@ -757,6 +757,21 @@
             "name": "JSON"
         },
         {
+            "@id": "https://www.nationalarchives.gov.uk/PRONOM/x-fmt/13",
+            "@type": "WebSite",
+            "name": "Tab-separated Values"
+        },
+        {
+            "@id": "https://www.nationalarchives.gov.uk/PRONOM/fmt/874",
+            "@type": "WebSite",
+            "name": "Turtle"
+        },
+        {
+            "@id": "https://www.nationalarchives.gov.uk/PRONOM/fmt/875",
+            "@type": "WebSite",
+            "name": "RDF/XML"
+        },
+        {
           "@id": "https://www.nationalarchives.gov.uk/PRONOM/fmt/818",
           "@type": "WebSite",
           "name": "YAML"
