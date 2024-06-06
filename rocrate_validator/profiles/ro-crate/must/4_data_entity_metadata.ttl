@@ -144,6 +144,62 @@ ro:DirectoryDataEntityRequiredValueRestriction a sh:NodeShape ;
         sh:pattern "/$" ;
     ] .
 
+ro:GenericDataEntity a sh:NodeShape ;
+    sh:name "Generic Data Entity: REQUIRED properties" ;
+    sh:description """A Data Entity other than a File or a Directory MUST be a `DataEntity`""" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?root schema:hasPart ?this .
+                ?metadatafile schema:about ?root .
+                FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
+                FILTER(?this != ?root)
+                FILTER(?this != ?metadatafile)
+                FILTER NOT EXISTS { 
+                    ?this a schema:MediaObject .
+                    ?this a schema:Dataset .
+                }
+            }
+        """
+    ] ;
+
+    # Expand data graph with triples to mark the matching entities as GenericDataEntity instances
+    sh:rule [
+        a sh:TripleRule ;
+        sh:subject sh:this ;
+        sh:predicate rdf:type ;
+        sh:object rocrate:GenericDataEntity ;
+    ] ;
+
+    # Expand data graph with triples to mark the matching entities as DataEntity instances
+    sh:rule [
+        a sh:TripleRule ;
+        sh:subject sh:this ;
+        sh:predicate rdf:type ;
+        sh:object rocrate:DataEntity ;
+    ] .
+
+
+# Uncomment for debugging
+# rocrate:TestGenericDataEntity a sh:NodeShape ;
+#     sh:disabled true ;
+#     sh:targetClass rocrate:GenericDataEntity ;
+#     sh:name "Generic Data Entity: test invalid property";
+#     sh:description """Check if the GenericDataEntity has the invalidProperty property""" ;
+#     sh:property [
+#         sh:minCount 1 ;
+#         sh:maxCount 1 ;
+#         sh:path rocrate:invalidProperty ;
+#         sh:severity sh:Violation ;
+#         sh:message "Testing the generic data entity";
+#         sh:datatype xsd:string ;
+#         sh:message "Testing for the invalidProperty of the generic data entity";
+#     ] .
+
+
 # Uncomment for debugging
 # ro:testDirectory a sh:NodeShape ;
 #     sh:name "Definition of Test Directory" ;
