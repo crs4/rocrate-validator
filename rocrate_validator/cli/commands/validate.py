@@ -5,9 +5,10 @@ from typing import Optional
 
 from rich.align import Align
 from rich.console import Console
+from rich.markdown import Markdown
 
-from rocrate_validator.constants import DEFAULT_PROFILE_NAME
 import rocrate_validator.log as logging
+from rocrate_validator.constants import DEFAULT_PROFILE_NAME
 
 from ... import services
 from ...colors import get_severity_color
