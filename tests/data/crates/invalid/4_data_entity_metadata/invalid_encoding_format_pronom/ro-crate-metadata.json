@@ -74,7 +74,7 @@
         {
             "@id": "blank.png",
             "@type": ["File", "ImageObject"],
-            "encodingFormat": ["image/png"]
+            "encodingFormat": 1234566
         },
         {
             "@id": "README.md",
