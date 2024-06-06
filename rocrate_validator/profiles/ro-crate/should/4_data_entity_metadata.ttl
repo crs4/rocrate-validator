@@ -28,9 +28,11 @@ rocrate:FileRecommendedProperties a sh:NodeShape ;
         sh:or (
             [
                 sh:datatype xsd:string ;
-                sh:pattern "^[-a-zA-Z0-9]+/[-a-zA-Z0-9]+$" ;
+                sh:pattern "^(\\w*)\\/(\\w[\\w\\.-]*)(?:\\+(\\w[\\w\\.-]*))?(?:;(\\w+=[^;]+))*$" ;
                 sh:name "File Data Entity: RECOMMENDED `PRONOM` for the `encodingFormat` property" ;
-                sh:description "Check if the File Data Entity is linked to its `encodingFormat` through a PRONOM identifier (e.g., application/pdf)." ;
+                sh:description """Check if the File Data Entity is linked to its `encodingFormat` through a PRONOM identifier 
+                (e.g., application/pdf, application/text, image/svg+xml, image/svg;q=0.9,/;q=0.8,image/svg+xml;q=0.9,/;q=0.8, application/vnd.uplanet.listcmd-wbxml;charset=utf-8).
+                """ ;
                 sh:message "The `encodingFormat` SHOULD be linked using a PRONOM identifier (e.g., application/pdf).";
             ]
             [
