@@ -24,12 +24,12 @@ def test_order_of_loaded_profiles(profiles_path: str):
     assert len(profiles) > 0
 
     # Extract the profile names
-    profile_names = [profile for profile in profiles]
+    profile_names = sorted([profile for profile in profiles])
     logger.debug("The profile names: %r", profile_names)
 
     # The order of the profiles should be the same as the order of the directories
     # in the profiles directory
-    profile_directories = os.listdir(profiles_path)
+    profile_directories = sorted(os.listdir(profiles_path))
     logger.debug("The profile directories: %r", profile_directories)
     assert profile_names == profile_directories
 
