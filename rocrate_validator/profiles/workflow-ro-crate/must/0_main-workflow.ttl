@@ -1,13 +1,15 @@
 @prefix ro: <./> .
 @prefix dct: <http://purl.org/dc/terms/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
-@prefix schema_org: <http://schema.org/> .
+@prefix schema: <http://schema.org/> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix xml1: <http://www.w3.org/2001/XMLSchema#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
+@prefix bioschemas: <https://bioschemas.org/> .
 
-rocrate:FindMainWorkflow a sh:NodeShape ;
+
+ro:FindMainWorkflow a sh:NodeShape ;
     sh:name "Identify Main Workflow" ;
     sh:description "Main Workflow" ;
     sh:target [
@@ -37,9 +39,12 @@ ro:MainWorkflowRecommendedProperties a sh:NodeShape ;
     sh:targetClass rocrate:MainWorkflow ;
     sh:property [
         a sh:PropertyShape ;
-        sh:name "X" ;
-        sh:description "XXX" ;
-        sh:path schema_org:name ;
+        sh:name "Main Workflow type" ;
+        sh:description "The Main Workflow must have types File, SoftwareSourceCode, ComputationalWorfklow" ;
+        sh:path rdf:type ;
+        sh:hasValue schema:MediaObject ,
+                    schema:SoftwareSourceCode ,
+                    bioschemas:ComputationalWorkflow ;
         sh:minCount 1 ;
-        sh:nodeKind sh:Literal ;
+        sh:message "The Main Workflow must have types File, SoftwareSourceCode, ComputationalWorfklow" ;
     ] .

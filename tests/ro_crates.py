@@ -171,3 +171,12 @@ class InvalidDataEntity:
     @property
     def valid_encoding_format_pronom(self) -> Path:
         return self.base_path / "valid_encoding_format_pronom"
+
+
+class InvalidMainWorkflow:
+
+    base_path = INVALID_CRATES_DATA_PATH / "0_main_workflow"
+
+    @property
+    def main_workflow_bad_type(self) -> Path:
+        return self.base_path / "main_workflow_bad_type"
