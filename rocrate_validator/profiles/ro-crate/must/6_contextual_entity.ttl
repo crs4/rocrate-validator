@@ -68,5 +68,3 @@ rocrate:CreativeWorkAuthorDefinition a sh:NodeShape, sh:hidden ;
         ] ;
     ] .
 
-
-    ] .
