@@ -11,21 +11,6 @@
 @prefix schema: <http://schema.org/> .
 
 
-ro:DataEntityRequiredProperties a sh:NodeShape ;
-    sh:name "Data Entity: REQUIRED properties" ;
-    sh:description """A Data Entity MUST be a `URI Path` relative to the ROCrate root,
-        or an sbsolute URI""" ;
-    sh:targetClass rocrate:DataEntity ;
-
-    sh:property [
-        sh:name "Data Entity: @id value restriction" ;
-        sh:description """Check if the Data Entity has an absolute or relative URI as `@id`""" ;
-        sh:path [sh:inversePath rdf:type ] ;
-        sh:nodeKind sh:IRI ;
-        sh:severity sh:Violation ;
-        sh:message """Data Entities MUST have an absolute or relative URI as @id.""" ;
-    ] .
-
 rocrate:FileDataEntityWebOptionalProperties a sh:NodeShape ;
     sh:name "File Data Entity with web presence: OPTIONAL properties" ;
     sh:description """A File Data Entity which have a corresponding web presence,
