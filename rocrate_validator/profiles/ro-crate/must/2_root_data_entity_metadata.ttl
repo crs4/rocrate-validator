@@ -31,8 +31,19 @@ ro:RootDataEntityType
         sh:hasValue schema_org:Dataset ;
         sh:minCount 1 ;
         sh:message """The Root Data Entity MUST be a `Dataset` (as per `schema.org`)""" ;
+    ] ;
+    # Validate that if the publisher is specified, it is an Organization or a Person
+    sh:property [
+        sh:path schema_org:publisher ;
+        sh:severity sh:Violation ;
+        sh:name "Root Data Entity: `publisher` property" ;
+        sh:description """Check if the Root Data Entity has a `publisher` property of type `Organization` or `Person`.""" ;
+        sh:or (
+            [ sh:class schema_org:Organization ]
+            [ sh:class schema_org:Person ]
+        ) ;
+        sh:message """The Root Data Entity MUST have a `publisher` property of type `Organization` or `Person`.""" ;
     ] .
-    
 
 
 rocrate:FindRootDataEntity a sh:NodeShape, sh:hidden;
