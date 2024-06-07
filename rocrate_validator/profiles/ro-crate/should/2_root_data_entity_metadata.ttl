@@ -68,4 +68,15 @@ ro:RootDataEntityDirectRecommendedProperties a sh:NodeShape ;
         sh:path schema_org:author;
         sh:minCount 1 ;
         sh:message """The Root Data Entity SHOULD have a link to a Contextual Entity representing the `author` of the RO-Crate""" ;
+    ] ;
+    sh:property [
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:path schema_org:publisher ;
+        sh:severity sh:Warning ;
+        sh:name "Root Data Entity: `publisher` property" ;
+        sh:description """Check if the Root Data Entity has a `publisher` property of type `Organization`.""" ;
+        sh:message "The `publisher` property of a `Root Data Entity` SHOULD be an `Organization`";
+        sh:nodeKind sh:IRI ;
+        sh:class schema_org:Organization ;
     ] .
