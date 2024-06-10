@@ -1,0 +1,33 @@
+@prefix ro: <./> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xml1: <http://www.w3.org/2001/XMLSchema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
+@prefix bioschemas: <https://bioschemas.org/> .
+
+
+ro:FindReadme a sh:NodeShape ;
+    sh:name "Identify README.md" ;
+    sh:description "README file for the Workflow RO-Crate" ;
+    sh:targetNode ro:README.md ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "README.md about" ;
+        sh:description "The README.md SHOULD be about the crate" ;
+        sh:path schema:about ;
+        sh:class rocrate:RootDataEntity ;
+        sh:minCount 1 ;
+        sh:message "The README.md SHOULD be about the crate" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "README.md encodingFormat" ;
+        sh:description "The README.md SHOULD have text/markdown as its encodingFormat" ;
+        sh:path schema:encodingFormat ;
+        sh:hasValue "text/markdown" ;
+        sh:minCount 1 ;
+        sh:message "The README.md SHOULD have text/markdown as its encodingFormat" ;
+    ] .
