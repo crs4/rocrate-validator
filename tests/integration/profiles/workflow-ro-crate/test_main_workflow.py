@@ -50,3 +50,48 @@ def test_main_workflow_no_image():
         ["The Crate MAY contain a Main Workflow Diagram; if present it MUST be referred to via 'image'"],
         profile_name="workflow-ro-crate"
     )
+
+
+def test_main_workflow_no_cwl_desc():
+    """\
+    Test a Workflow RO-Crate where the main workflow does not have an
+    CWL description.
+    """
+    do_entity_test(
+        InvalidMainWorkflow().main_workflow_no_cwl_desc,
+        Severity.OPTIONAL,
+        False,
+        ["Main Workflow optional properties"],
+        ["The Crate MAY contain a Main Workflow CWL Description; if present it MUST be referred to via 'subjectOf'"],
+        profile_name="workflow-ro-crate"
+    )
+
+
+def test_main_workflow_cwl_desc_bad_type():
+    """\
+    Test a Workflow RO-Crate where the main workflow has a CWL description
+    but of the wrong type.
+    """
+    do_entity_test(
+        InvalidMainWorkflow().main_workflow_cwl_desc_bad_type,
+        Severity.OPTIONAL,
+        False,
+        ["Main Workflow optional properties"],
+        ["The CWL Description type must be File, SoftwareSourceCode, HowTo"],
+        profile_name="workflow-ro-crate"
+    )
+
+
+def test_main_workflow_cwl_desc_no_lang():
+    """\
+    Test a Workflow RO-Crate where the main workflow has a CWL description
+    but the description has no programmingLanguage.
+    """
+    do_entity_test(
+        InvalidMainWorkflow().main_workflow_cwl_desc_no_lang,
+        Severity.OPTIONAL,
+        False,
+        ["Main Workflow optional properties"],
+        ["The CWL Description SHOULD have a language of https://w3id.org/workflowhub/workflow-ro-crate#cwl"],
+        profile_name="workflow-ro-crate"
+    )

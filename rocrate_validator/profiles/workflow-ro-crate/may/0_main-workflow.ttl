@@ -7,6 +7,7 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
 @prefix bioschemas: <https://bioschemas.org/> .
+@prefix wroc: <https://w3id.org/workflowhub/workflow-ro-crate#> .
 
 
 ro:MainWorkflowOptionalProperties a sh:NodeShape ;
@@ -22,4 +23,38 @@ ro:MainWorkflowOptionalProperties a sh:NodeShape ;
         sh:minCount 1 ;
         sh:message "The Crate MAY contain a Main Workflow Diagram; if present it MUST be referred to via 'image'" ;
          # sh:severity sh:Info ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Main Workflow subjectOf" ;
+        sh:description "The Crate MAY contain a Main Workflow CWL Description; if present it MUST be referred to via 'subjectOf'" ;
+        sh:path schema:subjectOf ;
+        sh:node ro:CWLDescriptionProperties ;
+        sh:minCount 1 ;
+        sh:message "The Crate MAY contain a Main Workflow CWL Description; if present it MUST be referred to via 'subjectOf'" ;
+         # sh:severity sh:Info ;
+    ] .
+
+
+ro:CWLDescriptionProperties a sh:NodeShape ;
+    sh:name: "CWL Description properties" ;
+    sh:description: "Main Workflow CWL Description properties" ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "CWL Description type" ;
+        sh:description "The CWL Description type must be File, SoftwareSourceCode, HowTo" ;
+        sh:path rdf:type ;
+        sh:hasValue schema:MediaObject, schema:SoftwareSourceCode, schema:HowTo ;
+        sh:message "The CWL Description type must be File, SoftwareSourceCode, HowTo" ;
+        # sh:severity sh:Info ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "CWL Description language" ;
+        sh:description "The CWL Description SHOULD have a language of https://w3id.org/workflowhub/workflow-ro-crate#cwl" ;
+        sh:path schema:programmingLanguage ;
+        sh:hasValue wroc:cwl ;
+        sh:class schema:ComputerLanguage ;
+        sh:message "The CWL Description SHOULD have a language of https://w3id.org/workflowhub/workflow-ro-crate#cwl" ;
+        # sh:severity sh:Info ;
     ] .

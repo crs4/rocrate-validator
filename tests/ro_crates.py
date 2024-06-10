@@ -188,3 +188,15 @@ class InvalidMainWorkflow:
     @property
     def main_workflow_no_image(self) -> Path:
         return self.base_path / "main_workflow_no_image"
+
+    @property
+    def main_workflow_no_cwl_desc(self) -> Path:
+        return self.base_path / "main_workflow_no_cwl_desc"
+
+    @property
+    def main_workflow_cwl_desc_bad_type(self) -> Path:
+        return self.base_path / "main_workflow_cwl_desc_bad_type"
+
+    @property
+    def main_workflow_cwl_desc_no_lang(self) -> Path:
+        return self.base_path / "main_workflow_cwl_desc_no_lang"
