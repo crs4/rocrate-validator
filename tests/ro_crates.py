@@ -184,3 +184,7 @@ class InvalidMainWorkflow:
     @property
     def main_workflow_no_lang(self) -> Path:
         return self.base_path / "main_workflow_no_lang"
+
+    @property
+    def main_workflow_no_image(self) -> Path:
+        return self.base_path / "main_workflow_no_image"

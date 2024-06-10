@@ -32,10 +32,9 @@ ro:FindMainWorkflow a sh:NodeShape ;
         sh:object rocrate:MainWorkflow ;
     ] .
 
-ro:MainWorkflowRecommendedProperties a sh:NodeShape ;
+ro:MainWorkflowRequiredProperties a sh:NodeShape ;
     sh:name "Main Workflow definition" ;
-    sh:description """The Main Workflow MUST have the properties defined in
-    <https://www.researchobject.org/ro-crate/1.1/main-workflow.html>""";
+    sh:description """Main Workflow properties defined as MUST""";
     sh:targetClass rocrate:MainWorkflow ;
     sh:property [
         a sh:PropertyShape ;

@@ -35,3 +35,18 @@ def test_main_workflow_no_lang():
         ["The Main Workflow must refer to its language via programmingLanguage"],
         profile_name="workflow-ro-crate"
     )
+
+
+def test_main_workflow_no_image():
+    """\
+    Test a Workflow RO-Crate where the main workflow does not have an
+    image property.
+    """
+    do_entity_test(
+        InvalidMainWorkflow().main_workflow_no_image,
+        Severity.OPTIONAL,
+        False,
+        ["Main Workflow optional properties"],
+        ["The Crate MAY contain a Main Workflow Diagram; if present it MUST be referred to via 'image'"],
+        profile_name="workflow-ro-crate"
+    )
