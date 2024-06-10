@@ -180,3 +180,7 @@ class InvalidMainWorkflow:
     @property
     def main_workflow_bad_type(self) -> Path:
         return self.base_path / "main_workflow_bad_type"
+
+    @property
+    def main_workflow_no_lang(self) -> Path:
+        return self.base_path / "main_workflow_no_lang"

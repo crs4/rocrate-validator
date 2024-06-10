@@ -20,3 +20,18 @@ def test_main_workflow_bad_type():
         ["The Main Workflow must have types File, SoftwareSourceCode, ComputationalWorfklow"],
         profile_name="workflow-ro-crate"
     )
+
+
+def test_main_workflow_no_lang():
+    """\
+    Test a Workflow RO-Crate where the main workflow does not have a
+    programmingLanguage property.
+    """
+    do_entity_test(
+        InvalidMainWorkflow().main_workflow_no_lang,
+        Severity.REQUIRED,
+        False,
+        ["Main Workflow definition"],
+        ["The Main Workflow must refer to its language via programmingLanguage"],
+        profile_name="workflow-ro-crate"
+    )

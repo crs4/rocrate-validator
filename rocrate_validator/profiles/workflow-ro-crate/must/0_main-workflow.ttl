@@ -47,4 +47,13 @@ ro:MainWorkflowRecommendedProperties a sh:NodeShape ;
                     bioschemas:ComputationalWorkflow ;
         sh:minCount 1 ;
         sh:message "The Main Workflow must have types File, SoftwareSourceCode, ComputationalWorfklow" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Main Workflow language" ;
+        sh:description "The Main Workflow must refer to its language via programmingLanguage" ;
+        sh:path schema:programmingLanguage ;
+        sh:class schema:ComputerLanguage ;
+        sh:minCount 1 ;
+        sh:message "The Main Workflow must refer to its language via programmingLanguage" ;
     ] .
