@@ -27,9 +27,9 @@ def find_main_workflow(entity_dict: dict):
     return entity_dict[root_data_entity["mainEntity"]["@id"]]
 
 
-@requirement(name="Workflow-related files existence")
-class WorkflowFilesExistence(PyFunctionCheck):
-    """Checks for workflow-related crate files existence."""
+@requirement(name="Main Workflow file existence")
+class MainWorkflowFileExistence(PyFunctionCheck):
+    """Checks for main workflow file existence."""
 
     _json_dict_cache: Optional[dict] = None
 
@@ -50,34 +50,18 @@ class WorkflowFilesExistence(PyFunctionCheck):
                 return {}
         return self._json_dict_cache['json']
 
-    @check(name="Workflow diagram existence")
-    def check_workflow_diagram(self, validation_context: ValidationContext) -> bool:
-        """Check if the crate contains the workflow diagram."""
+    @check(name="Main Workflow file must exist")
+    def check_workflow(self, validation_context: ValidationContext) -> bool:
+        """Check if the crate contains the main workflow file."""
         json_dict = self.get_json_dict(validation_context)
         entity_dict = {_["@id"]: _ for _ in json_dict["@graph"]}
         main_workflow = find_main_workflow(entity_dict)
-        diagram_relpath = main_workflow.get("image")["@id"]
-        if not diagram_relpath:
-            validation_context.result.add_error(f"main workflow does not have an 'image' property", self)
+        if not main_workflow:
+            validation_context.result.add_error(f"main workflow does not exist in metadata file", self)
             return False
-        diagram_path = validation_context.rocrate_path / diagram_relpath
-        if not diagram_path.is_file():
-            validation_context.result.add_error(f"Workflow diagram {diagram_path} not found in crate", self)
-            return False
-        return True
-
-    @check(name="Workflow description existence")
-    def check_workflow_description(self, validation_context: ValidationContext) -> bool:
-        """Check if the crate contains the workflow CWL description."""
-        json_dict = self.get_json_dict(validation_context)
-        entity_dict = {_["@id"]: _ for _ in json_dict["@graph"]}
-        main_workflow = find_main_workflow(entity_dict)
-        description_relpath = main_workflow.get("subjectOf")["@id"]
-        if not description_relpath:
-            validation_context.result.add_error("main workflow does not have a 'subjectOf' property", self)
-            return False
-        description_path = validation_context.rocrate_path / description_relpath
-        if not description_path.is_file():
-            validation_context.result.add_error(f"Workflow CWL description {description_path} not found in crate", self)
+        workflow_relpath = main_workflow["@id"]
+        workflow_path = validation_context.rocrate_path / workflow_relpath
+        if not workflow_path.is_file():
+            validation_context.result.add_error(f"Main Workflow {workflow_path} not found in crate", self)
             return False
         return True

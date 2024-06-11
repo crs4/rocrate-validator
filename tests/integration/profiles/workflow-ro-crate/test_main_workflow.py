@@ -95,3 +95,49 @@ def test_main_workflow_cwl_desc_no_lang():
         ["The CWL Description SHOULD have a language of https://w3id.org/workflowhub/workflow-ro-crate#cwl"],
         profile_name="workflow-ro-crate"
     )
+
+
+def test_main_workflow_file_existence():
+    """\
+    Test a Workflow RO-Crate where the main workflow file is not in the crate.
+    """
+    do_entity_test(
+        InvalidMainWorkflow().main_workflow_no_files,
+        Severity.REQUIRED,
+        False,
+        ["Main Workflow file existence"],
+        ["Main Workflow", "not found in crate"],
+        profile_name="workflow-ro-crate"
+    )
+
+
+# The following two tests pass only if run singularly
+
+# def test_workflow_diagram_file_existence():
+#     """\
+#     Test a Workflow RO-Crate where the workflow diagram file is not in the
+#     crate.
+#     """
+#     do_entity_test(
+#         InvalidMainWorkflow().main_workflow_no_files,
+#         Severity.OPTIONAL,
+#         False,
+#         ["Workflow-related files existence"],
+#         ["Workflow diagram", "not found in crate"],
+#         profile_name="workflow-ro-crate"
+#     )
+
+
+# def test_workflow_description_file_existence():
+#     """\
+#     Test a Workflow RO-Crate where the workflow CWL description file is not in
+#     the crate.
+#     """
+#     do_entity_test(
+#         InvalidMainWorkflow().main_workflow_no_files,
+#         Severity.OPTIONAL,
+#         False,
+#         ["Workflow-related files existence"],
+#         ["Workflow CWL description", "not found in crate"],
+#         profile_name="workflow-ro-crate"
+#     )

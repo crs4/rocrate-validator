@@ -200,3 +200,7 @@ class InvalidMainWorkflow:
     @property
     def main_workflow_cwl_desc_no_lang(self) -> Path:
         return self.base_path / "main_workflow_cwl_desc_no_lang"
+
+    @property
+    def main_workflow_no_files(self) -> Path:
+        return self.base_path / "no_files"
