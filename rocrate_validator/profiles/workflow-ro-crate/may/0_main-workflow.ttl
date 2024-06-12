@@ -37,8 +37,8 @@ ro:MainWorkflowOptionalProperties a sh:NodeShape ;
 
 
 ro:CWLDescriptionProperties a sh:NodeShape ;
-    sh:name: "CWL Description properties" ;
-    sh:description: "Main Workflow CWL Description properties" ;
+    sh:name "CWL Description properties" ;
+    sh:description "Main Workflow CWL Description properties" ;
     sh:property [
         a sh:PropertyShape ;
         sh:name "CWL Description type" ;
