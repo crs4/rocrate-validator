@@ -9,6 +9,21 @@
 @prefix bioschemas: <https://bioschemas.org/> .
 
 
+ro:DescriptorProperties a sh:NodeShape ;
+    sh:name "WROC Metadata File Descriptor properties" ;
+    sh:description "Properties of the WROC Metadata File Descriptor" ;
+    sh:targetNode ro:ro-crate-metadata.json ;
+    sh:property [
+        a sh:propertyShape ;
+        sh:name "Metadata File Descriptor conformsTo" ;
+        sh:description "The Metadata File Descriptor conformsTo SHOULD contain https://w3id.org/ro/crate/1.1 and https://w3id.org/workflowhub/workflow-ro-crate/1.0" ;
+        sh:path dct:conformsTo ;
+        sh:hasValue <https://w3id.org/ro/crate/1.1> ,
+                    <https://w3id.org/workflowhub/workflow-ro-crate/1.0> ;
+        sh:minCount 1 ;
+        sh:message "The Metadata File Descriptor conformsTo SHOULD contain https://w3id.org/ro/crate/1.1 and https://w3id.org/workflowhub/workflow-ro-crate/1.0" ;
+    ] .
+
 ro:FindReadme a sh:NodeShape ;
     sh:name "Identify README.md" ;
     sh:description "README file for the Workflow RO-Crate" ;

@@ -204,3 +204,12 @@ class InvalidMainWorkflow:
     @property
     def main_workflow_no_files(self) -> Path:
         return self.base_path / "no_files"
+
+
+class WROCInvalidConformsTo:
+
+    base_path = INVALID_CRATES_DATA_PATH / "2_wroc_descriptor"
+
+    @property
+    def wroc_descriptor_bad_conforms_to(self) -> Path:
+        return self.base_path / "wroc_descriptor_bad_conforms_to"
