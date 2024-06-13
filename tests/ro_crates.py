@@ -28,6 +28,10 @@ class ValidROC:
     def workflow_roc(self) -> Path:
         return VALID_CRATES_DATA_PATH / "workflow-roc"
 
+    @property
+    def workflow_roc_string_license(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "workflow-roc-string-license"
+
 
 class InvalidFileDescriptor:
 
@@ -226,3 +230,12 @@ class WROCInvalidReadme:
     @property
     def wroc_readme_wrong_encoding_format(self) -> Path:
         return self.base_path / "readme_wrong_encoding_format"
+
+
+class WROCNoLicense:
+
+    base_path = INVALID_CRATES_DATA_PATH / "1_wroc_crate/"
+
+    @property
+    def wroc_no_license(self) -> Path:
+        return self.base_path / "no_license"

@@ -1,0 +1,27 @@
+@prefix ro: <./> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xml1: <http://www.w3.org/2001/XMLSchema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
+@prefix bioschemas: <https://bioschemas.org/> .
+
+
+ro:WROCRootDataEntityRequiredProperties a sh:NodeShape ;
+    sh:name "WROC Root Data Entity Required Properties" ;
+    sh:description """Root Data Entity properties defined as MUST""" ;
+    sh:targetClass rocrate:RootDataEntity ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Crate license" ;
+        sh:description "The Crate must specify a license" ;
+        sh:path schema:license ;
+        sh:or (
+            [ sh:nodeKind sh:Literal; sh:datatype xsd:string ; ]
+            [ sh:nodeKind sh:IRI ; ]
+        ) ;
+        sh:minCount 1 ;
+        sh:message "The Crate (Root Data Entity) must specify a license, which should be a URL but can also be a string" ;
+    ] .

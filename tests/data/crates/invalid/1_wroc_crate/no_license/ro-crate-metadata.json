@@ -19,17 +19,9 @@
                     "@id": "README.md"
                 }
             ],
-            "license": {
-                "@id": "https://spdx.org/licenses/Apache-2.0.html"
-            },
             "mainEntity": {
                 "@id": "sort-and-change-case.ga"
             }
-        },
-        {
-            "@id": "https://spdx.org/licenses/Apache-2.0.html",
-            "@type": "CreativeWork",
-            "name": "Apache 2.0 license"
         },
         {
             "@id": "ro-crate-metadata.json",
