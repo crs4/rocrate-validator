@@ -213,3 +213,16 @@ class WROCInvalidConformsTo:
     @property
     def wroc_descriptor_bad_conforms_to(self) -> Path:
         return self.base_path / "wroc_descriptor_bad_conforms_to"
+
+
+class WROCInvalidReadme:
+
+    base_path = INVALID_CRATES_DATA_PATH / "1_wroc_crate/"
+
+    @property
+    def wroc_readme_not_about_crate(self) -> Path:
+        return self.base_path / "readme_not_about_crate"
+
+    @property
+    def wroc_readme_wrong_encoding_format(self) -> Path:
+        return self.base_path / "readme_wrong_encoding_format"

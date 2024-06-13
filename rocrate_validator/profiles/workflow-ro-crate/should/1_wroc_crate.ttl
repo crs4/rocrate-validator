@@ -25,7 +25,7 @@ ro:DescriptorProperties a sh:NodeShape ;
     ] .
 
 ro:FindReadme a sh:NodeShape ;
-    sh:name "Identify README.md" ;
+    sh:name "README.md properties" ;
     sh:description "README file for the Workflow RO-Crate" ;
     sh:targetNode ro:README.md ;
     sh:property [
