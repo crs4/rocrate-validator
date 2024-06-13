@@ -115,6 +115,14 @@
                 "@id": "./"
             },
             "encodingFormat": "text/markdown"
+        },
+        {
+            "@id": "test/",
+            "@type": "Dataset"
+        },
+        {
+            "@id": "examples/",
+            "@type": "Dataset"
         }
     ]
 }
