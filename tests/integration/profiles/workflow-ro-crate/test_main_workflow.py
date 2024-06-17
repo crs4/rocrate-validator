@@ -139,3 +139,18 @@ def test_workflow_description_file_existence():
         ["Workflow CWL description", "not found in crate"],
         profile_name="workflow-ro-crate"
     )
+
+
+def test_main_workflow_bad_conformsto():
+    """\
+    Test a Workflow RO-Crate where the main workflow does not conform to the
+    bioschemas computational workflow 1.0 or later.
+    """
+    do_entity_test(
+        InvalidMainWorkflow().main_workflow_bad_conformsto,
+        Severity.RECOMMENDED,
+        False,
+        ["Main Workflow recommended properties"],
+        ["The Main Workflow SHOULD comply with Bioschemas ComputationalWorkflow profile version 1.0 or later"],
+        profile_name="workflow-ro-crate"
+    )

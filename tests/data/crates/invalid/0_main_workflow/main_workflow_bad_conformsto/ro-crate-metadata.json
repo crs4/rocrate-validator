@@ -60,7 +60,7 @@
                 "ComputationalWorkflow"
             ],
             "conformsTo": {
-                "@id": "https://bioschemas.org/profiles/ComputationalWorkflow/1.0-RELEASE"
+                "@id": "https://bioschemas.org/profiles/ComputationalWorkflow/0.5-DRAFT-2020_07_21"
             },
             "description": "sort lines and change text to upper case",
             "image": {

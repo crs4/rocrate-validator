@@ -209,6 +209,10 @@ class InvalidMainWorkflow:
     def main_workflow_no_files(self) -> Path:
         return self.base_path / "no_files"
 
+    @property
+    def main_workflow_bad_conformsto(self) -> Path:
+        return self.base_path / "main_workflow_bad_conformsto"
+
 
 class WROCInvalidConformsTo:
 
