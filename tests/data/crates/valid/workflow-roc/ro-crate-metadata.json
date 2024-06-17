@@ -17,6 +17,12 @@
                 },
                 {
                     "@id": "README.md"
+                },
+                {
+                    "@id": "test/"
+                },
+                {
+                    "@id": "examples/"
                 }
             ],
             "license": {
