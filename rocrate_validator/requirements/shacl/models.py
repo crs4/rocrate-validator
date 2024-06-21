@@ -221,19 +221,19 @@ class ShapesRegistry:
 
     def add_shape(self, shape: Shape):
         assert isinstance(shape, Shape), "Invalid shape"
-        self._shapes[f"{hash(shape)}"] = shape
+        self._shapes[shape.key] = shape
 
     def remove_shape(self, shape: Shape):
         assert isinstance(shape, Shape), "Invalid shape"
-        self._shapes.pop(f"{hash(shape)}", None)
+        self._shapes.pop(shape.key, None)
         self._shapes_graph -= shape.graph
 
-    def get_shape(self, hash_value: int) -> Optional[Shape]:
-        logger.debug("Searching for shape %s in the registry: %s", hash_value, self._shapes)
-        result = self._shapes.get(f"{hash_value}", None)
+    def get_shape(self, shape_key: str) -> Optional[Shape]:
+        logger.debug("Searching for shape %s in the registry: %s", shape_key, self._shapes)
+        result = self._shapes.get(shape_key, None)
         if not result:
-            logger.debug(f"Shape {hash_value} not found in the registry")
-            raise ValueError(f"Shape not found in the registry: {hash_value}")
+            logger.debug(f"Shape {shape_key} not found in the registry")
+            raise ValueError(f"Shape not found in the registry: {shape_key}")
         return result
 
     def get_shape_key(self, shape: Shape) -> str:
