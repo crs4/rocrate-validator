@@ -115,7 +115,7 @@ class SHACLValidationContext(ValidationContext):
                         if check.overridden:
                             logger.debug("Overridden check: %s", check)
                             profile_shapes_graph -= check.shape.graph
-                            profile_shapes.pop(profile_registry.get_shape_key(check.shape))
+                            profile_shapes.pop(check.shape.key)
 
             # add the shapes to the registry
             self._shapes_registry.extend(profile_shapes, profile_shapes_graph)

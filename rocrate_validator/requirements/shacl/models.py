@@ -236,10 +236,6 @@ class ShapesRegistry:
             raise ValueError(f"Shape not found in the registry: {shape_key}")
         return result
 
-    def get_shape_key(self, shape: Shape) -> str:
-        assert isinstance(shape, Shape), "Invalid shape"
-        return f"{hash(shape)}"
-
     def extend(self, shapes: dict[str, Shape], graph: Graph) -> None:
         self._shapes.update(shapes)
         self._shapes_graph += graph
