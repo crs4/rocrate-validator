@@ -6,7 +6,7 @@ from typing import Optional, Union
 
 import pyshacl
 from pyshacl.pytypes import GraphLike
-from rdflib import Graph
+from rdflib import BNode, Graph
 from rdflib.term import Node, URIRef
 
 import rocrate_validator.log as logging
@@ -19,7 +19,7 @@ from ...constants import (DEFAULT_ONTOLOGY_FILE, RDF_SERIALIZATION_FORMATS,
                           RDF_SERIALIZATION_FORMATS_TYPES, SHACL_NS,
                           VALID_INFERENCE_OPTIONS,
                           VALID_INFERENCE_OPTIONS_TYPES)
-from .models import PropertyShape, ShapesRegistry
+from .models import ShapesRegistry
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -274,12 +274,11 @@ class SHACLViolation:
         return self._result_message
 
     @property
-    def sourceShape(self) -> PropertyShape:
+    def sourceShape(self) -> Union[URIRef, BNode]:
         if not self._source_shape_node:
             self._source_shape_node = self.graph.value(self._violation_node, URIRef(f"{SHACL_NS}sourceShape"))
             assert self._source_shape_node is not None, f"Unable to get source shape node from violation node {self._violation_node}"
-            self._source_shape = PropertyShape(self._source_shape_node, self.graph)
-        return self._source_shape
+        return self._source_shape_node
 
 
 class SHACLValidationResult:
