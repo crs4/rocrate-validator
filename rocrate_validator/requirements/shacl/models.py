@@ -95,13 +95,17 @@ class SHACLNode:
 
     def __hash__(self):
         if self._hash is None:
-            shape_hash = compute_hash(self.graph, self.node)
-            self._hash = hash(shape_hash)
+            self._hash = hash(self.key)
         return self._hash
 
     @staticmethod
     def compute_key(graph: Graph, node: Node) -> str:
         return compute_key(graph, node)
+
+    @staticmethod
+    def compute_hash(graph: Graph, node: Node) -> int:
+        return hash(compute_key(graph, node))
+
 
 class SHACLNodeCollection(SHACLNode):
 
