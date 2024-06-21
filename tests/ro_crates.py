@@ -41,6 +41,10 @@ class ValidROC:
     def sort_and_change_archive(self) -> Path:
         return VALID_CRATES_DATA_PATH / "sortchangecase.crate.zip"
 
+    @property
+    def process_run_crate(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "process-run-crate"
+
 
 class InvalidFileDescriptor:
 
@@ -252,3 +256,16 @@ class WROCNoLicense:
     @property
     def wroc_no_license(self) -> Path:
         return self.base_path / "no_license"
+
+
+class InvalidProcRC:
+
+    base_path = INVALID_CRATES_DATA_PATH / "3_process_run_crate/"
+
+    @property
+    def conformsto_bad_type(self) -> Path:
+        return self.base_path / "conformsto_bad_type"
+
+    @property
+    def conformsto_bad_profile(self) -> Path:
+        return self.base_path / "conformsto_bad_profile"
