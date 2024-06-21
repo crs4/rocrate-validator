@@ -241,7 +241,6 @@ class SHACLViolation:
     def resultPath(self):
         if not self._result_path:
             self._result_path = self.graph.value(self._violation_node, URIRef(f"{SHACL_NS}resultPath"))
-            assert self._result_path is not None, f"Unable to get result path from violation node {self._violation_node}"
         return self._result_path
 
     @property
