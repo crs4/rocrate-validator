@@ -10,7 +10,7 @@ from rocrate_validator.constants import SHACL_NS
 import rocrate_validator.log as logging
 from rocrate_validator.models import LevelCollection, RequirementLevel
 from rocrate_validator.requirements.shacl.utils import (ShapesList,
-                                                        compute_hash,
+                                                        compute_key,
                                                         inject_attributes)
 
 # set up logging
@@ -25,6 +25,8 @@ class SHACLNode:
 
     def __init__(self, node: Node, graph: Graph, parent: Optional[SHACLNode] = None):
 
+        # store the shape key
+        self._key = None
         # store the shape node
         self._node = node
         # store the shapes graph
@@ -36,6 +38,13 @@ class SHACLNode:
 
         # inject attributes of the shape to the object
         inject_attributes(self, graph, node)
+
+    @property
+    def key(self) -> str:
+        """Return the key of the shape"""
+        if self._key is None:
+            return compute_key(self.graph, self.node)
+        return self._key
 
     @property
     def node(self):
@@ -90,6 +99,9 @@ class SHACLNode:
             self._hash = hash(shape_hash)
         return self._hash
 
+    @staticmethod
+    def compute_key(graph: Graph, node: Node) -> str:
+        return compute_key(graph, node)
 
 class SHACLNodeCollection(SHACLNode):
 
