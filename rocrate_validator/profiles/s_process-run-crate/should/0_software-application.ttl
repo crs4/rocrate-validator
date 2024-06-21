@@ -1,0 +1,80 @@
+@prefix ro: <./> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xml1: <http://www.w3.org/2001/XMLSchema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
+@prefix bioschemas: <https://bioschemas.org/> .
+
+
+ro:ProcRCApplication a sh:NodeShape ;
+    sh:name "ProcRC Application" ;
+    sh:description "Properties of a Process Run Crate Application" ;
+    sh:targetClass schema:SoftwareApplication,
+                   schema:SoftwareSourceCode,
+                   bioschemas:ComputationalWorkflow;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Application name" ;
+        sh:description "The Application SHOULD have a name" ;
+        sh:path schema:name ;
+        sh:minCount 1 ;
+        sh:message "The Application SHOULD have a name" ;
+    ] .
+
+
+ro:ProcRCSoftwareSourceCodeComputationalWorkflow a sh:NodeShape ;
+    sh:name "ProcRC SoftwareSourceCode or ComputationalWorkflow" ;
+    sh:description "Properties of a Process Run Crate SoftwareSourceCode or ComputationalWorkflow" ;
+    sh:targetClass schema:SoftwareSourceCode,
+                   bioschemas:ComputationalWorkflow;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "version" ;
+        sh:description "The SoftwareSourceCode or ComputationalWorkflow SHOULD have a version" ;
+        sh:path schema:version ;
+        sh:minCount 1 ;
+        sh:message "The SoftwareSourceCode or ComputationalWorkflow SHOULD have a version" ;
+    ] .
+
+
+ # ro:ProcRCSoftwareApplication a sh:NodeShape ;
+ #     sh:name "ProcRC SoftwareApplication" ;
+ #     sh:description "Properties of a Process Run Crate SoftwareApplication" ;
+ #     sh:targetClass schema:SoftwareApplication ;
+ #     sh:or (
+ #       [ sh:property [
+ #           a sh:PropertyShape ;
+ #           sh:name "version" ;
+ #           sh:description "The SoftwareApplication SHOULD have a version or softwareVersion" ;
+ #           sh:path schema:version ;
+ #           sh:minCount 1 ;
+ #           sh:message "The SoftwareApplication SHOULD have a version or softwareVersion" ;
+ #       ]]
+ #       [ sh:property [
+ #           a sh:PropertyShape ;
+ #           sh:name "softwareVersion" ;
+ #           sh:description "The SoftwareApplication SHOULD have a version or softwareVersion" ;
+ #           sh:path schema:softwareVersion ;
+ #           sh:minCount 1 ;
+ #           sh:message "The SoftwareApplication SHOULD have a version or softwareVersion" ;
+ #       ]]
+ #     ) .
+
+
+ro:ProcRCSoftwareApplicationID a sh:NodeShape ;
+    sh:name "ProcRC SoftwareApplication ID" ;
+    sh:description "Process Run Crate SoftwareApplication ID" ;
+    sh:targetNode schema:SoftwareApplication ,
+                   schema:SoftwareSourceCode,
+                   bioschemas:ComputationalWorkflow;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "SoftwareApplication id" ;
+        sh:description "The SoftwareApplication id SHOULD be an absolute URI" ;
+        sh:path [ sh:inversePath rdf:type ] ;
+        sh:pattern "^http.*" ;
+        sh:message "The SoftwareApplication id SHOULD be an absolute URI" ;
+    ] .
