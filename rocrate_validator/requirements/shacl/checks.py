@@ -84,7 +84,7 @@ class SHACLCheck(RequirementCheck):
             logger.debug("Validation failed")
             logger.debug("Parsing Validation result: %s", result)
             for violation in shacl_result.violations:
-                shape = shapes_registry.get_shape(hash(violation.sourceShape))
+                shape = shapes_registry.get_shape(Shape.compute_key(shacl_context.shapes_graph, violation.sourceShape))
                 assert shape is not None, "Unable to map the violation to a shape"
                 requirementCheck = SHACLCheck.get_instance(shape)
                 assert requirementCheck is not None, "The requirement check cannot be None"

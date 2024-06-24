@@ -99,7 +99,7 @@ def __compute_values__(g: Graph, s: Node) -> list[tuple]:
 
 def compute_hash(g: Graph, s: Node):
     """
-    Compute the hash of the triples in the graph (excluding BNodes)
+    Compute the hash of the triples in the graph (including BNodes)
     starting from the given subject node `s`.
     """
 
@@ -111,6 +111,19 @@ def compute_hash(g: Graph, s: Node):
     hash_value = hashlib.sha256(triples_string.encode()).hexdigest()
     # Return the hash value
     return hash_value
+
+
+def compute_key(g: Graph, s: Node) -> str:
+    """
+    Compute the key of the node `s` in the graph `g`.
+    If the node is a URI, return the URI as a string.
+    If the node is a BNode, return the hash of the triples in the graph starting from the BNode.
+    """
+
+    if isinstance(s, BNode):
+        return compute_hash(g, s)
+    else:
+        return s.toPython()
 
 
 class ShapesList:
