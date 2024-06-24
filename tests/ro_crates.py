@@ -269,3 +269,23 @@ class InvalidProcRC:
     @property
     def conformsto_bad_profile(self) -> Path:
         return self.base_path / "conformsto_bad_profile"
+
+    @property
+    def application_no_name(self) -> Path:
+        return self.base_path / "application_no_name"
+
+    @property
+    def application_no_url(self) -> Path:
+        return self.base_path / "application_no_url"
+
+    @property
+    def application_no_version(self) -> Path:
+        return self.base_path / "application_no_version"
+
+    @property
+    def softwaresourcecode_no_version(self) -> Path:
+        return self.base_path / "softwaresourcecode_no_version"
+
+    @property
+    def application_id_no_absoluteuri(self) -> Path:
+        return self.base_path / "application_id_no_absoluteuri"

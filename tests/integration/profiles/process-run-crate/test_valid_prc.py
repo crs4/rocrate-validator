@@ -7,7 +7,7 @@ from tests.shared import do_entity_test
 logger = logging.getLogger(__name__)
 
 
-def test_valid_workflow_roc_required():
+def test_valid_process_run_crate_required():
     """Test a valid Process Run Crate."""
     do_entity_test(
         ValidROC().process_run_crate,
