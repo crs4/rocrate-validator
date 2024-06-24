@@ -18,7 +18,7 @@ def test_missing_file_descriptor():
             rocrate_path,
             models.Severity.REQUIRED,
             False,
-            ["FileDescriptorExistence"],
+            ["File Descriptor existence"],
             []
         )
 
@@ -29,7 +29,7 @@ def test_not_valid_json_format():
         paths.invalid_json_format,
         models.Severity.REQUIRED,
         False,
-        ["FileDescriptorJsonFormat"],
+        ["File Descriptor JSON format"],
         []
     )
 
@@ -40,7 +40,7 @@ def test_not_valid_jsonld_format_missing_context():
         f"{paths.invalid_jsonld_format}/missing_context",
         models.Severity.REQUIRED,
         False,
-        ["FileDescriptorJsonLdFormat"],
+        ["File Descriptor JSON-LD format"],
         []
     )
 
@@ -54,7 +54,7 @@ def test_not_valid_jsonld_format_missing_ids():
         f"{paths.invalid_jsonld_format}/missing_id",
         models.Severity.REQUIRED,
         False,
-        ["FileDescriptorJsonLdFormat"],
+        ["File Descriptor JSON-LD format"],
         ["file descriptor does not contain the @id attribute"]
     )
 
@@ -68,6 +68,6 @@ def test_not_valid_jsonld_format_missing_types():
         f"{paths.invalid_jsonld_format}/missing_type",
         models.Severity.REQUIRED,
         False,
-        ["FileDescriptorJsonLdFormat"],
+        ["File Descriptor JSON-LD format"],
         ["file descriptor does not contain the @type attribute"]
     )

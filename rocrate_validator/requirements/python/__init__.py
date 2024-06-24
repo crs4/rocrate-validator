@@ -1,7 +1,10 @@
 import inspect
-import logging
+
+import re
 from pathlib import Path
 from typing import Callable, Optional, Type
+
+import rocrate_validator.log as logging
 
 from ...models import (Profile, Requirement, RequirementCheck,
                        RequirementLevel, RequirementLoader, ValidationContext)
@@ -73,6 +76,25 @@ class PyRequirement(Requirement):
 
         return checks
 
+    @property
+    def hidden(self) -> bool:
+        return getattr(self.requirement_check_class, "hidden", False)
+
+
+def requirement(name: str, description: Optional[str] = None):
+    """
+    A decorator to mark functions as "requirements" (by setting an attribute
+    `requirement=True`) and annotating them with a human-legible name.
+    """
+    def decorator(cls):
+        if name:
+            cls.__rq_name__ = name
+        if description:
+            cls.__rq_description__ = description
+        return cls
+
+    return decorator
+
 
 def check(name: Optional[str] = None):
     """
@@ -84,10 +106,10 @@ def check(name: Optional[str] = None):
         sig = inspect.signature(func)
         if len(sig.parameters) != 2:
             raise RuntimeError(f"Invalid check {check_name}. Checks are expected to "
-                               "accept two arguments but this only takes {len(sig.parameters)}")
+                               f"accept two arguments but this only takes {len(sig.parameters)}")
         if sig.return_annotation not in (bool, inspect.Signature.empty):
             raise RuntimeError(f"Invalid check {check_name}. Checks are expected to "
-                               "return bool but this only returns {sig.return_annotation}")
+                               f"return bool but this only returns {sig.return_annotation}")
         func.check = True
         func.name = check_name
         return func
@@ -109,13 +131,26 @@ class PyRequirementLoader(RequirementLoader):
 
         # instantiate a requirement for each class
         for requirement_name, check_class in classes.items():
+            # set default requirement name and description
+            rq = {}
+            rq["name"] = " ".join(re.findall(r'[A-Z](?:[a-z]+|[A-Z]*(?=[A-Z]|$))',
+                                             requirement_name.strip())) if requirement_name else ""
+            rq["description"] = check_class.__doc__.strip() if check_class.__doc__ else ""
+            # handle default overrides via decorators
+            for pn in ("name", "description"):
+                try:
+                    pv = getattr(check_class, f"__rq_{pn}__", None)
+                    if pv and isinstance(pv, str):
+                        rq[pn] = pv
+                except AttributeError:
+                    pass
             logger.debug("Processing requirement: %r", requirement_name)
             r = PyRequirement(
                 requirement_level,
                 profile,
                 requirement_check_class=check_class,
-                name=requirement_name.strip() if requirement_name else "",
-                description=check_class.__doc__.strip() if check_class.__doc__ else "",
+                name=rq["name"],
+                description=rq["description"],
                 path=file_path)
             logger.debug("Created requirement: %r", r)
             requirements.append(r)

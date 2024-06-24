@@ -1,39 +1,108 @@
-@prefix : <./> .
+@prefix ro: <./> .
 @prefix dct: <http://purl.org/dc/terms/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix schema_org: <http://schema.org/> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix xml1: <http://www.w3.org/2001/XMLSchema#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
 
 
-:RootDataEntityExistenceAndType
+ro:RootDataEntityType
     a sh:NodeShape ;
-    sh:name "RO-Crate Root Data Entity MUST exist" ;
-    sh:description "The root of the document MUST be a `Dataset` and must end with /" ;
-    sh:targetNode : ;
+    sh:name "RO-Crate Root Data Entity type" ;
+    sh:description "The Root Data Entity MUST be a `Dataset` (as per `schema.org`)" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?metadatafile schema:about ?this .
+                FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
+            }
+        """
+    ] ;
     sh:property [
         a sh:PropertyShape ;
-        sh:name "Check existence of the Root Rata Entity" ;
-        sh:description "Check if the Root Data Entity exists in the file descriptor" ;
+        sh:name "Root Data Entity type" ;
+        sh:description "Check if the Root Data Entity is a `Dataset` (as per `schema.org`)" ;
         sh:path rdf:type ;
         sh:hasValue schema_org:Dataset ;
         sh:minCount 1 ;
-        sh:message """The file descriptor MUST have a root data entity of type schema_org:Dataset and ending with /""" ;
+        sh:message """The Root Data Entity MUST be a `Dataset` (as per `schema.org`)""" ;
+    ] ;
+    # Validate that if the publisher is specified, it is an Organization or a Person
+    sh:property [
+        sh:path schema_org:publisher ;
+        sh:severity sh:Violation ;
+        sh:name "Root Data Entity: `publisher` property" ;
+        sh:description """Check if the Root Data Entity has a `publisher` property of type `Organization` or `Person`.""" ;
+        sh:or (
+            [ sh:class schema_org:Organization ]
+            [ sh:class schema_org:Person ]
+        ) ;
+        sh:message """The Root Data Entity MUST have a `publisher` property of type `Organization` or `Person`.""" ;
     ] .
 
-:RootDataEntityRequiredDirectProperties a sh:NodeShape ;
-    sh:name "RO-Crate Data Entity definition" ;
-    sh:description """The Root Data Entity MUST have the properties defined in
-    <https://www.researchobject.org/ro-crate/1.1/root-data-entity.html>""";
-    sh:targetNode : ;
+
+rocrate:FindRootDataEntity a sh:NodeShape, sh:hidden;
+    sh:name "Identify the Root Data Entity of the RO-Crate" ;
+    sh:description """The Root Data Entity is the top-level Data Entity in the RO-Crate and serves as the starting point for the description of the RO-Crate.
+        It is a schema:Dataset and is indirectly identified by the about property of the resource ro-crate-metadata.json in the RO-Crate 
+        (see the definition at [Finding RO-Crate Root in RDF triple stores](https://www.researchobject.org/ro-crate/1.1/appendix/relative-uris.html#finding-ro-crate-root-in-rdf-triple-stores)).
+    """ ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?this a schema:Dataset .
+                ?metadatafile schema:about ?this .
+                FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
+            }
+        """
+    ] ;
+
+    # Expand data graph with triples from the file data entity
+    sh:rule [
+        a sh:TripleRule ;
+        sh:subject sh:this ;
+        sh:predicate rdf:type ;
+        sh:object rocrate:RootDataEntity ;
+    ] .
+
+
+ro:RootDataEntityValueRestriction
+    a sh:NodeShape ;
+    sh:name "RO-Crate Root Data Entity value restriction" ;
+    sh:description "The Root Data Entity MUST end with `/`" ;
+    sh:targetNode rocrate:RootDataEntity ;
     sh:property [
         a sh:PropertyShape ;
-        sh:name "Date Published of the Root Data Entity" ;
-        sh:description "The datePublished of the Root Data Entity MUST be a valid ISO 8601 date" ;
+        sh:name "Root Data Entity URI value" ;
+        sh:description "Check if the Root Data Entity URI ends with `/`" ;
+        sh:path [ sh:inversePath rdf:type ] ;
         sh:minCount 1 ;
-        sh:nodeKind sh:Literal ;
-        sh:path schema_org:datePublished ;
-        sh:pattern "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\+\\d{2}:\\d{2}$" ;
-        sh:message "The datePublished of the Root Data Entity MUST be a valid ISO 8601 date" ;
+        sh:message """The Root Data Entity URI MUST end with `/`""" ;
+        sh:pattern "/$" ;
+    ] .
+
+ro:RootDataEntityHasPartValueRestriction
+    a sh:NodeShape ;
+    sh:name "RO-Crate Root Data Entity: `hasPart` value restriction" ;
+    sh:description "The Root Data Entity MUST be linked to the declared `File`, `Directory` and other types of instances through the `hasPart` property" ;
+    sh:targetClass rocrate:RootDataEntity ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "RO-Crate Root Data Entity: `hasPart` value restriction" ;
+        sh:description "Check if the Root Data Entity is linked to the declared `File`, `Directory` and other types of instances through the `hasPart` property" ;
+        sh:path schema_org:hasPart ;
+        sh:or (
+            [ sh:class rocrate:File ]
+            [ sh:class rocrate:Directory ]
+            [ sh:class rocrate:GenericDataEntity ]
+        ) ;
+        # sh:message """The Root Data Entity MUST be linked to either File or Directory instances, nothing else""" ;
     ] .

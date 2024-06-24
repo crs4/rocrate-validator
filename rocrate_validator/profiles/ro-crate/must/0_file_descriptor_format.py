@@ -1,17 +1,20 @@
 import json
-import logging
 from typing import Optional
 
+import rocrate_validator.log as logging
 from rocrate_validator.models import ValidationContext
-from rocrate_validator.requirements.python import PyFunctionCheck, check
+from rocrate_validator.requirements.python import (PyFunctionCheck, check,
+                                                   requirement)
 
 # set up logging
 logger = logging.getLogger(__name__)
 
 
+@requirement(name="File Descriptor existence")
 class FileDescriptorExistence(PyFunctionCheck):
     """The file descriptor MUST be present in the RO-Crate and MUST not be empty."""
-    @check(name="File Description Existence")
+
+    @check(name="File Descriptor Existence")
     def test_existence(self, context: ValidationContext) -> bool:
         """
         Check if the file descriptor is present in the RO-Crate
@@ -22,7 +25,7 @@ class FileDescriptorExistence(PyFunctionCheck):
             return False
         return True
 
-    @check(name="File size check")
+    @check(name="File Descriptor size check")
     def test_size(self, context: ValidationContext) -> bool:
         """
         Check if the file descriptor is not empty
@@ -37,13 +40,14 @@ class FileDescriptorExistence(PyFunctionCheck):
         return True
 
 
+@requirement(name="File Descriptor JSON format")
 class FileDescriptorJsonFormat(PyFunctionCheck):
     """
     The file descriptor MUST be a valid JSON file
     """
-    @check(name="Check JSON Format of the file descriptor")
+    @check(name="File Descriptor JSON format")
     def check(self, context: ValidationContext) -> bool:
-        # check if the file descriptor is in the correct format
+        """ Check if the file descriptor is in the correct format"""
         try:
             logger.debug("Checking validity of JSON file at %s", context.file_descriptor_path)
             with open(context.file_descriptor_path, "r") as file:
@@ -57,6 +61,7 @@ class FileDescriptorJsonFormat(PyFunctionCheck):
             return False
 
 
+@requirement(name="File Descriptor JSON-LD format")
 class FileDescriptorJsonLdFormat(PyFunctionCheck):
     """
     The file descriptor MUST be a valid JSON-LD file
@@ -81,8 +86,9 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
                 return {}
         return self._json_dict_cache['json']
 
-    @check(name="Check if the @context property is present in the file descriptor")
+    @check(name="File Descriptor @context property validation")
     def check_context(self, validation_context: ValidationContext) -> bool:
+        """ Check if the file descriptor contains the @context property """
         json_dict = self.get_json_dict(validation_context)
         if "@context" not in json_dict:
             validation_context.result.add_error(
@@ -91,8 +97,9 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
             return False
         return True
 
-    @check(name="Check if descriptor entities have the @id property")
+    @check(name="Validation of the @id property of the file descriptor entities")
     def check_identifiers(self, context: ValidationContext) -> bool:
+        """ Check if the file descriptor entities have the @id property """
         json_dict = self.get_json_dict(context)
         for entity in json_dict["@graph"]:
             if "@id" not in entity:
@@ -103,8 +110,9 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
                 return False
         return True
 
-    @check(name="Check if descriptor entities have the @type property")
+    @check(name="Validation of the @type property of the file descriptor entities")
     def check_types(self, context: ValidationContext) -> bool:
+        """ Check if the file descriptor entities have the @type property """
         json_dict = self.get_json_dict(context)
         for entity in json_dict["@graph"]:
             if "@type" not in entity:

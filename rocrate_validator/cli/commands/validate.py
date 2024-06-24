@@ -1,4 +1,3 @@
-import logging
 import os
 import sys
 from pathlib import Path
@@ -6,7 +5,9 @@ from typing import Optional
 
 from rich.align import Align
 from rich.console import Console
+from rich.markdown import Markdown
 
+import rocrate_validator.log as logging
 from rocrate_validator.constants import DEFAULT_PROFILE_NAME
 
 from ... import services
@@ -118,7 +119,7 @@ def validate(ctx,
             "profile_name": profile_name,
             "requirement_severity": requirement_severity,
             "requirement_severity_only": requirement_severity_only,
-            "disable_profile_inheritance": disable_profile_inheritance,
+            "inherit_profiles": not disable_profile_inheritance,
             "data_path": Path(rocrate_path).absolute(),
             "ontology_path": Path(ontologies_path).absolute() if ontologies_path else None,
             "abort_on_first": not no_fail_fast
@@ -126,7 +127,7 @@ def validate(ctx,
     )
 
     # Print the validation result
-    __print_validation_result__(console, result)
+    __print_validation_result__(console, result, result.context.requirement_severity)
 
     # using ctx.exit seems to raise an Exception that gets caught below,
     # so we use sys.exit instead.
@@ -161,22 +162,31 @@ def __print_validation_result__(
                       f"profile: [magenta bold]{requirement.profile.name }[/magenta bold]]", align="right")
             )
             console.print(
-                f"  [bold][cyan][{requirement.order_number}] [u]{requirement.name}[/u][/cyan][/bold]",
+                f"  [bold][cyan][{requirement.order_number}] [u]{Markdown(requirement.name).markup}[/u][/cyan][/bold]",
                 style="white",
             )
-            console.print(f"\n{' '*4}{requirement.description}\n", style="white italic")
+            console.print(f"\n{' '*4}{Markdown(requirement.description).markup}\n", style="white italic")
 
-            console.print(f"{' '*4}Failed checks:\n", style="white bold")
+            console.print(f"{' '*4}[cyan u]Failed checks[/cyan u]:\n", style="white bold")
             for check in sorted(result.get_failed_checks_by_requirement(requirement),
                                 key=lambda x: (-x.severity.value, x)):
                 issue_color = get_severity_color(check.level.severity)
                 console.print(
                     f"{' '*4}- "
-                    f"[magenta bold]{check.name}[/magenta bold]: {check.description}")
-                console.print(f"\n{' '*6}Detected issues:", style="white bold")
+                    f"[magenta bold]{check.name}[/magenta bold]: {Markdown(check.description).markup}")
+                console.print(f"\n{' '*6}[u]Detected issues[/u]:", style="white bold")
                 for issue in sorted(result.get_issues_by_check(check),
                                     key=lambda x: (-x.severity.value, x)):
+                    path = ""
+                    if issue.resultPath and issue.value:
+                        path = f"on [yellow]{issue.resultPath}[/yellow]"
+                    if issue.value:
+                        if issue.resultPath:
+                            path += "="
+                        path += f"\"[green]{issue.value}[/green]\""
+                    path = path + " of " if len(path) > 0 else "on "
                     console.print(
-                        f"{' '*6}- [[red]Violation[/red] of "
-                        f"[{issue_color} bold]{issue.check.identifier}[/{issue_color} bold]]: {issue.message}")
+                        f"{' ' * 6}- [[red]Violation[/red] of "
+                        f"[{issue_color} bold]{issue.check.identifier}[/{issue_color} bold] {path}[cyan]<{issue.focusNode}>[/cyan]]: "
+                        f"{Markdown(issue.message).markup}",)
                 console.print("\n", style="white")

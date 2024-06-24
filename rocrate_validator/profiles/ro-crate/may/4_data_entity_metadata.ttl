@@ -1,0 +1,80 @@
+@prefix ro: <./> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema_org: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xml1: <http://www.w3.org/2001/XMLSchema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
+@prefix schema: <http://schema.org/> .
+
+
+rocrate:FileDataEntityWebOptionalProperties a sh:NodeShape ;
+    sh:name "File Data Entity with web presence: OPTIONAL properties" ;
+    sh:description """A File Data Entity which have a corresponding web presence,
+    for instance a landing page that describes the file, including persistence identifiers (e.g. DOI),
+    resolving to an intermediate HTML page instead of the downloadable file directly.
+    These can included for File Data Entities as additional metadata by using the properties:
+    `ìdentifier`, `url`, `subjectOf`and `mainEntityOfPage`""" ;
+    sh:targetClass rocrate:File ;
+    # Check if the Web-based Data Entity has a contentSize property
+    sh:property [
+        a sh:PropertyShape ;
+        sh:minCount 1 ;
+        sh:name "File Data Entity: optional formal `identifier` (e.g. DOI)" ;
+        sh:description """Check if the File Data Entity has a formal identifier string such as a DOI""" ;
+        sh:path schema:identifier ;
+        sh:datatype xsd:anyURI ;
+        sh:severity sh:Info ;
+        sh:message """The File Data Entity MAY have a formal identifier specified through an `identifier` property""" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:minCount 1 ;
+        sh:name "File Data Entity: optional `url` property" ;
+        sh:description """Check if the File Data Entity has an optional `download` link""" ;
+        sh:path schema:url ;
+        sh:datatype xsd:anyURI ;
+        sh:severity sh:Info ;
+        sh:message """The File Data Entity MAY use a `url` property to denote a `download` link""" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:minCount 1 ;
+        sh:name "File Data Entity: optional `subjectOf` property" ;
+        sh:description """Check if the File Data Entity includes a `subjectOf` property to link `CreativeWork` instances that mention it.""" ;
+        sh:path schema:subjectOf ;
+        sh:class schema:WebPage, schema:CreativeWork ;
+        sh:severity sh:Info ;
+        sh:message """The File Data Entity MAY include a `subjectOf` property to link `CreativeWork` instances that mention it.""" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:minCount 1 ;
+        sh:name "File Data Entity: optional `mainEntityOfPage` property" ;
+        sh:description """Check if the File Data Entity has a `mainEntityOfPage` property""" ;
+        sh:path schema:mainEntityOfPage ;
+        sh:class schema:WebPage, schema:CreativeWork ;
+        sh:severity sh:Info ;
+        sh:message """The File Data Entity MAY have a `mainEntityOfPage` property""" ;
+    ] .
+
+
+rocrate:DirectoryDataEntityWebOptionalDistribution a sh:NodeShape ;
+    sh:name "Directory Data Entity: OPTIONAL `distribution` property" ;
+    sh:description """A Directory Data Entity MAY have a `distribution` property to denote the distribution of the files within the directory""" ;
+    sh:targetClass rocrate:File ;
+    # Check if the Web-based Data Entity has a contentSize property
+    sh:property [
+        a sh:PropertyShape ;
+        sh:minCount 1 ;
+        sh:name "Directory Data Entity: optional `distribution` property" ;
+        sh:description """Check if the Directory Data Entity has a `distribution` property""" ;
+        sh:path schema:distribution ;
+        sh:datatype xsd:anyURI ;
+        sh:severity sh:Info ;
+        sh:message """The Directory Data Entity MAY have a `distribution` property to denote the distribution of the files within the directory""" ;
+    ] .
+

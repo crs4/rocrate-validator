@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import hashlib
-import logging
 from pathlib import Path
 from typing import Union
 
@@ -10,6 +9,7 @@ from rdflib.term import Node
 
 from rocrate_validator.constants import RDF_SYNTAX_NS, SHACL_NS
 from rocrate_validator.errors import BadSyntaxError
+import rocrate_validator.log as logging
 from rocrate_validator.models import Severity
 
 # set up logging

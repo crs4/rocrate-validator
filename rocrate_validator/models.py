@@ -3,7 +3,6 @@ from __future__ import annotations
 import bisect
 import enum
 import inspect
-import logging
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 from collections.abc import Collection
@@ -14,6 +13,7 @@ from typing import Optional, Union
 
 from rdflib import Graph
 
+import rocrate_validator.log as logging
 from rocrate_validator.constants import (DEFAULT_ONTOLOGY_FILE,
                                          DEFAULT_PROFILE_NAME,
                                          DEFAULT_PROFILE_README_FILE,
@@ -22,7 +22,8 @@ from rocrate_validator.constants import (DEFAULT_ONTOLOGY_FILE,
                                          RDF_SERIALIZATION_FORMATS_TYPES,
                                          ROCRATE_METADATA_FILE,
                                          VALID_INFERENCE_OPTIONS_TYPES)
-from rocrate_validator.errors import InvalidProfilePath, ProfileNotFound
+from rocrate_validator.errors import (DuplicateRequirementCheck,
+                                      InvalidProfilePath, ProfileNotFound)
 from rocrate_validator.utils import (get_profiles_path,
                                      get_requirement_name_from_file)
 
@@ -332,6 +333,11 @@ class Requirement(ABC):
         return self._description
 
     @property
+    @abstractmethod
+    def hidden(self) -> bool:
+        pass
+
+    @property
     def path(self) -> Optional[Path]:
         return self._path
 
@@ -367,7 +373,12 @@ class Requirement(ABC):
         all_passed = True
         for check in self._checks:
             try:
-                logger.debug("Running check '%s' - Desc: %s", check.name, check.description)
+                logger.debug("Running check '%s' - Desc: %s - overridden: %s.%s",
+                             check.name, check.description, check.overridden_by,
+                             check.overridden_by.requirement.profile if check.overridden_by else None)
+                if check.overridden:
+                    logger.debug("Skipping check '%s' because overridden by '%s'", check.name, check.overridden_by.name)
+                    continue
                 check_result = check.execute_check(context)
                 logger.debug("Ran check '%s'. Got result %s", check.name, check_result)
                 if not isinstance(check_result, bool):
@@ -502,6 +513,7 @@ class RequirementCheck(ABC):
         self._order_number = 0
         self._name = name
         self._description = description
+        self._overridden_by: RequirementCheck = None
 
     @property
     def order_number(self) -> int:
@@ -540,6 +552,20 @@ class RequirementCheck(ABC):
     @property
     def severity(self) -> Severity:
         return self.requirement.level.severity
+
+    @property
+    def overridden_by(self) -> RequirementCheck:
+        return self._overridden_by
+
+    @overridden_by.setter
+    def overridden_by(self, value: RequirementCheck) -> None:
+        assert value is None or isinstance(value, RequirementCheck) and value != self, \
+            f"Invalid value for overridden_by: {value}"
+        self._overridden_by = value
+
+    @property
+    def overridden(self) -> bool:
+        return self._overridden_by is not None
 
     @abstractmethod
     def execute_check(self, context: ValidationContext) -> bool:
@@ -599,12 +625,18 @@ class CheckIssue:
     #    without having it provided through an additional argument.
     def __init__(self, severity: Severity,
                  check: RequirementCheck,
-                 message: Optional[str] = None):
+                 message: Optional[str] = None,
+                 resultPath: Optional[str] = None,
+                 focusNode: Optional[str] = None,
+                 value: Optional[str] = None):
         if not isinstance(severity, Severity):
             raise TypeError(f"CheckIssue constructed with a severity '{severity}' of type {type(severity)}")
         self._severity = severity
         self._message = message
         self._check: RequirementCheck = check
+        self._resultPath = resultPath
+        self._focusNode = focusNode
+        self._value = value
 
     @property
     def message(self) -> Optional[str]:
@@ -629,6 +661,18 @@ class CheckIssue:
     def check(self) -> RequirementCheck:
         """The check that generated the issue"""
         return self._check
+
+    @property
+    def resultPath(self) -> Optional[str]:
+        return self._resultPath
+
+    @property
+    def focusNode(self) -> Optional[str]:
+        return self._focusNode
+
+    @property
+    def value(self) -> Optional[str]:
+        return self._value
 
     def __eq__(self, other: object) -> bool:
         return isinstance(other, CheckIssue) and \
@@ -716,9 +760,12 @@ class ValidationResult:
     def add_check_issue(self,
                         message: str,
                         check: RequirementCheck,
-                        severity: Optional[Severity] = None) -> CheckIssue:
+                        severity: Optional[Severity] = None,
+                        resultPath: Optional[str] = None,
+                        focusNode: Optional[str] = None,
+                        value: Optional[str] = None) -> CheckIssue:
         sev_value = severity if severity is not None else check.requirement.severity
-        c = CheckIssue(sev_value, check, message)
+        c = CheckIssue(sev_value, check, message, resultPath=resultPath, focusNode=focusNode, value=value)
         # self._issues.append(c)
         bisect.insort(self._issues, c)
         return c
@@ -761,6 +808,7 @@ class ValidationSettings:
     profiles_path: Path = DEFAULT_PROFILES_PATH
     profile_name: str = DEFAULT_PROFILE_NAME
     inherit_profiles: bool = True
+    allow_shapes_override: bool = True
     # Ontology and inference settings
     ontology_path: Optional[Path] = None
     inference: Optional[VALID_INFERENCE_OPTIONS_TYPES] = None
@@ -771,6 +819,7 @@ class ValidationSettings:
     inplace: Optional[bool] = False
     meta_shacl: bool = False
     iterate_rules: bool = True
+    target_only_validation: bool = True
     # Requirement severity settings
     requirement_severity: Union[str, Severity] = Severity.REQUIRED
     requirement_severity_only: bool = False
@@ -850,9 +899,9 @@ class Validator:
         for profile in profiles:
             logger.debug("Validating profile %s", profile.name)
             # perform the requirements validation
-            if not requirements:
-                requirements = profile.get_requirements(
-                    context.requirement_severity, exact_match=context.requirement_severity_only)
+            requirements = profile.get_requirements(
+                context.requirement_severity, exact_match=context.requirement_severity_only)
+            logger.debug("Validating profile %s with %s requirements", profile.name, len(requirements))
             logger.debug("For profile %s, validating these %s requirements: %s",
                          profile.name, len(requirements), requirements)
             for requirement in requirements:
@@ -862,7 +911,7 @@ class Validator:
                     logger.debug("Validation Requirement passed")
                 else:
                     logger.debug(f"Validation Requirement {requirement} failed ")
-                    if context.settings.get("abort_on_first") is True:
+                    if context.settings.get("abort_on_first") is True and context.profile_name == profile.name:
                         logger.debug("Aborting on first requirement failure")
                         return context.result
 
@@ -978,6 +1027,33 @@ class ValidationContext:
         # Check if the target profile is in the list of profiles
         if self.profile_name not in profiles:
             raise ProfileNotFound(f"Profile '{self.profile_name}' not found in '{self.profiles_path}'")
+
+        # navigate the profiles and check for overridden checks
+        # if the override is enabled in the settings
+        # overridden checks should be marked as such
+        # otherwise, raise an error
+        profiles_checks = {}
+        # visit the profiles in reverse order
+        # (the order is important to visit the most specific profiles first)
+        for profile in sorted(profiles.values(), reverse=True):
+            profile_checks = [_ for r in profile.get_requirements() for _ in r.get_checks()]
+            profile_check_names = []
+            for check in profile_checks:
+                #  find duplicated checks and raise an error
+                if check.name in profile_check_names:
+                    raise DuplicateRequirementCheck(check.name, profile.name)
+                #  add check to the list
+                profile_check_names.append(check.name)
+                #  mark overridden checks
+                check_chain = profiles_checks.get(check.name, None)
+                if not check_chain:
+                    profiles_checks[check.name] = [check]
+                elif self.settings.get("allow_shapes_override", True):
+                    check.overridden_by = check_chain[-1]
+                    check_chain.append(check)
+                else:
+                    raise DuplicateRequirementCheck(check.name, profile.name)
+
         return profiles
 
     @property
@@ -985,7 +1061,3 @@ class ValidationContext:
         if not self._profiles:
             self._profiles = self.__load_profiles__()
         return self._profiles.copy()
-
-    @property
-    def profile(self) -> Profile:
-        return list(self.profiles.values())[-1]

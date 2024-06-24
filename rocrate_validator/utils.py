@@ -1,5 +1,4 @@
 import inspect
-import logging
 import os
 import re
 import sys
@@ -9,6 +8,8 @@ from typing import Optional
 
 import toml
 from rdflib import Graph
+
+import rocrate_validator.log as logging
 
 from . import constants, errors
 

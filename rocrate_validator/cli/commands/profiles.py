@@ -1,14 +1,15 @@
-import logging
 from pathlib import Path
 
 from rich.markdown import Markdown
 from rich.table import Table
 
+import rocrate_validator.log as logging
 from rocrate_validator import services
 from rocrate_validator.cli.main import cli, click
 from rocrate_validator.colors import get_severity_color
 from rocrate_validator.constants import DEFAULT_PROFILE_NAME
-from rocrate_validator.models import LevelCollection, Requirement, RequirementLevel
+from rocrate_validator.models import (LevelCollection,
+                                      RequirementLevel)
 from rocrate_validator.utils import get_profiles_path
 
 # set the default profiles path
@@ -128,6 +129,10 @@ def __compacted_describe_profile__(console, profile):
     table_rows = []
     levels_list = set()
     for requirement in profile.requirements:
+        # skip hidden requirements
+        if requirement.hidden:
+            continue
+        # add the requirement to the list
         color = get_severity_color(requirement.severity)
         level_info = f"[{color}]{requirement.severity.name}[/{color}]"
         levels_list.add(level_info)
@@ -168,7 +173,10 @@ def __verbose_describe_profile__(console, profile):
     table_rows = []
     levels_list = set()
     for requirement in profile.requirements:
-
+        # skip hidden requirements
+        if requirement.hidden:
+            continue
+        # add the requirement to the list
         for check in requirement.get_checks():
             color = get_severity_color(check.severity)
             level_info = f"[{color}]{check.severity.name}[/{color}]"

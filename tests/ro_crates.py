@@ -59,6 +59,14 @@ class InvalidRootDataEntity:
         return self.base_path / "invalid_root_type"
 
     @property
+    def invalid_root_value(self) -> Path:
+        return self.base_path / "invalid_root_value"
+
+    @property
+    def recommended_root_value(self) -> Path:
+        return self.base_path / "recommended_root_value"
+
+    @property
     def invalid_root_date(self) -> Path:
         return self.base_path / "invalid_root_date"
 
@@ -81,6 +89,10 @@ class InvalidRootDataEntity:
     @property
     def missing_root_license_description(self) -> Path:
         return self.base_path / "missing_root_license_description"
+
+    @property
+    def valid_referenced_generic_data_entities(self) -> Path:
+        return self.base_path / "valid_referenced_generic_data_entities"
 
 
 class InvalidFileDescriptorEntity:
@@ -114,3 +126,48 @@ class InvalidFileDescriptorEntity:
     @property
     def invalid_conforms_to(self) -> Path:
         return self.base_path / "invalid_conforms_to"
+
+
+class InvalidDataEntity:
+
+    base_path = INVALID_CRATES_DATA_PATH / "4_data_entity_metadata"
+
+    @property
+    def missing_hasPart_data_entity_reference(self) -> Path:
+        return self.base_path / "invalid_missing_hasPart_reference"
+
+    @property
+    def direct_hasPart_data_entity_reference(self) -> Path:
+        return self.base_path / "valid_direct_hasPart_reference"
+
+    @property
+    def indirect_hasPart_data_entity_reference(self) -> Path:
+        return self.base_path / "valid_indirect_hasPart_reference"
+
+    @property
+    def directory_data_entity_wo_trailing_slash(self) -> Path:
+        return self.base_path / "directory_data_entity_wo_trailing_slash"
+
+    @property
+    def missing_data_entity_encoding_format(self) -> Path:
+        return self.base_path / "missing_encoding_format"
+
+    @property
+    def invalid_data_entity_encoding_format_pronom(self) -> Path:
+        return self.base_path / "invalid_encoding_format_pronom"
+
+    @property
+    def invalid_encoding_format_ctx_entity_missing_ws_type(self) -> Path:
+        return self.base_path / "invalid_encoding_format_ctx_entity_missing_ws_type"
+
+    @property
+    def invalid_encoding_format_ctx_entity_missing_ws_name(self) -> Path:
+        return self.base_path / "invalid_encoding_format_ctx_entity_missing_ws_name"
+
+    @property
+    def valid_encoding_format_ctx_entity(self) -> Path:
+        return self.base_path / "valid_encoding_format_ctx_entity"
+
+    @property
+    def valid_encoding_format_pronom(self) -> Path:
+        return self.base_path / "valid_encoding_format_pronom"

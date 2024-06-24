@@ -1,4 +1,4 @@
-@prefix : <./> .
+@prefix ro: <./> .
 @prefix dct: <http://purl.org/dc/terms/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix schema_org: <http://schema.org/> .
@@ -6,7 +6,7 @@
 @prefix xml1: <http://www.w3.org/2001/XMLSchema#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-:LicenseDefinition a sh:NodeShape ;
+ro:LicenseDefinition a sh:NodeShape ;
     sh:name "License definition" ;
     sh:description """Contextual entity representing a license with a name and description.""";
     sh:targetClass schema_org:license ;

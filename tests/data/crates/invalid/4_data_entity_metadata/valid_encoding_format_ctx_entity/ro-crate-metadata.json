@@ -1,0 +1,123 @@
+{
+    "@context": "https://w3id.org/ro/crate/1.1/context",
+    "@graph": [
+        {
+            "@id": "./",
+            "@type": "Dataset",
+            "datePublished": "2024-04-17T13:39:44+00:00",
+            "name": "Valid RO Crate with foo/xxx indirectly referenced",
+            "description": "This RO Crate contains a foo Dataset (directory) which doesn't have a trailing slash in its @id",
+            "hasPart": [
+                {
+                    "@id": "sort-and-change-case.ga"
+                },
+                {
+                    "@id": "blank.png"
+                },
+                {
+                    "@id": "README.md"
+                }
+            ],
+            "mainEntity": {
+                "@id": "sort-and-change-case.ga"
+            },
+            "license": [
+                {
+                    "@id": "https://spdx.org/licenses/MIT.html"
+                }
+            ],
+            "author": {
+                "@id": "https://orcid.org/0000-0002-1825-0097"
+            },
+            "publisher": {
+                "@id": "https://orcid.org/0000-0001-9842-9718"
+            }
+        },
+        {
+            "@id": "https://orcid.org/0000-0002-1825-0097",
+            "@type": "Person",
+            "name": "Stian Soiland-Reyes",
+            "affiliation": {
+                "@id": "https://orcid.org/0000-0001-9842-9718"
+            },
+            "url": {
+                "@id": "https://orcid.org/0000-0002-1825-0097"
+            }
+        },
+        {
+            "@id": "https://orcid.org/0000-0001-9842-9718",
+            "@type": "Organization",
+            "name": "The University of Manchester",
+            "url": {
+                "@id": "https://www.manchester.ac.uk/"
+            }
+        },
+        {
+            "@id": "ro-crate-metadata.json",
+            "@type": "CreativeWork",
+            "about": {
+                "@id": "./"
+            },
+            "conformsTo": [
+                {
+                    "@id": "https://w3id.org/ro/crate/1.1"
+                },
+                {
+                    "@id": "https://w3id.org/workflowhub/workflow-ro-crate/1.0"
+                }
+            ]
+        },
+        {
+            "@id": "sort-and-change-case.ga",
+            "@type": ["File", "SoftwareSourceCode", "ComputationalWorkflow"],
+            "description": "sort lines and change text to upper case",
+            "image": {
+                "@id": "blank.png"
+            },
+            "license": "https://spdx.org/licenses/MIT.html",
+            "name": "sort-and-change-case",
+            "programmingLanguage": {
+                "@id": "https://w3id.org/workflowhub/workflow-ro-crate#galaxy"
+            },
+            "subjectOf": {
+                "@id": "sort-and-change-case.cwl"
+            },
+            "encodingFormat": ["application/galaxy"]
+        },
+        {
+            "@id": "https://w3id.org/workflowhub/workflow-ro-crate#galaxy",
+            "@type": "ComputerLanguage",
+            "identifier": {
+                "@id": "https://galaxyproject.org/"
+            },
+            "name": "Galaxy",
+            "url": {
+                "@id": "https://galaxyproject.org/"
+            },
+            "encodingFormat": ["application/galaxy"]
+        },
+        {
+            "@id": "blank.png",
+            "@type": ["File", "ImageObject"],
+            "encodingFormat": [
+                {
+                    "@id": "https://www.iana.org/assignments/media-types/image/png"
+                }
+            ]
+        },
+        {
+            "@id": "https://www.iana.org/assignments/media-types/image/png",
+            "@type": "WebSite",
+            "name": "image/png"
+        },
+        {
+            "@id": "README.md",
+            "@type": "File",
+            "about": {
+                "@id": "./"
+            },
+            "encodingFormat": ["text/markdown"]
+        },
+        { "@id": "https://spdx.org/licenses/MIT.html", "@type": "license" }
+    ]
+}

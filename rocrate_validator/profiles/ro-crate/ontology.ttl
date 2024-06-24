@@ -1,0 +1,179 @@
+@prefix ro: <./> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <http://schema.org/> .
+@prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
+@prefix bioschemas: <https://bioschemas.org/> .
+# @base <./.> .
+
+<urn:absolute:.> rdf:type owl:Ontology ;
+                  owl:versionIRI <urn:absolute:1.0> .
+
+# # ################################################################
+# # #   Object Properties
+# # ################################################################
+
+# # ###  http://schema.org/about
+# # schema:about rdf:type owl:ObjectProperty ,
+# #                       owl:FunctionalProperty ;
+# #              rdfs:domain rocrate:ROCrateMetadataFileDescriptor ;
+# #              rdfs:range rocrate:RootDataEntity ;
+# #              rdfs:label "about"@en .
+
+
+# # ###  http://schema.org/hasPart
+# # schema:hasPart rdf:type owl:ObjectProperty ;
+# #                rdfs:domain rocrate:RootDataEntity ;
+# #                rdfs:range rocrate:DataEntity ;
+# #                rdfs:label "hasPart"@en .
+
+
+# # ###  http://schema.org/mainEntity
+# # schema:mainEntity rdf:type owl:ObjectProperty ,
+# #                            owl:FunctionalProperty ;
+# #                   rdfs:domain rocrate:RootDataEntity ;
+# #                   rdfs:range rocrate:MainWorkflow .
+
+
+# # #################################################################
+# # #    Classes
+# # #################################################################
+
+# Declare the RootDataEntity class
+rocrate:RootDataEntity rdf:type owl:Class ;
+  rdfs:subClassOf schema:Dataset ;
+  rdfs:label "RootDataEntity"@en .
+
+###  http://schema.org/CreativeWork
+schema:CreativeWork rdf:type owl:Class ;
+                    rdfs:label "CreativeWork"@en .
+
+###  http://schema.org/MediaObject
+schema:MediaObject rdf:type owl:Class ;
+                   owl:equivalentClass rocrate:File ;
+                   rdfs:label "MediaObject"@en .
+
+
+###  http://schema.org/SoftwareSourceCode
+schema:SoftwareSourceCode rdf:type owl:Class ;
+                          rdfs:subClassOf schema:CreativeWork .
+
+
+###  https://bioschemas.org/ComputationalWorkflow
+bioschemas:ComputationalWorkflow rdf:type owl:Class .
+
+
+###  https://w3id.org/ro/crate/1.1/DataEntity
+rocrate:DataEntity rdf:type owl:Class ;
+                   owl:equivalentClass [ rdf:type owl:Class ;
+                                         owl:unionOf ( rocrate:Directory
+                                                       rocrate:File
+                                                     )
+                                       ] ;
+                   rdfs:subClassOf schema:CreativeWork ;
+                   rdfs:label "DataEntity"@en .
+
+
+# # ###  https://w3id.org/ro/crate/1.1/Directory
+rocrate:Directory rdf:type owl:Class ;
+                owl:equivalentClass [
+                        rdf:type owl:Class ;
+                        owl:intersectionOf ( 
+                                schema:Dataset
+                                [
+                                        rdf:type owl:Class ;
+                                        owl:complementOf rocrate:RootDataEntity
+                                ]
+                        ) ;
+                ] ;
+                rdfs:label "Directory"@en .
+
+
+# ###  https://w3id.org/ro/crate/1.1/File
+rocrate:File rdf:type owl:Class ;
+        owl:equivalentClass schema:MediaObject ;
+        owl:disjointWith rocrate:Directory ,
+                         rocrate:RootDataEntity ;
+             rdfs:label "File"@en .
+
+
+# # ###  https://w3id.org/ro/crate/1.1/MainWorkflow
+# # rocrate:MainWorkflow rdf:type owl:Class ;
+# #                      rdfs:subClassOf rocrate:Workflow .
+
+
+# # ###  https://w3id.org/ro/crate/1.1/ROCrateMetadataFileDescriptor
+# rocrate:ROCrateMetadataFileDescriptor rdf:type owl:Class ;
+#                           owl:equivalentClass [ rdf:type owl:Class ;
+#                                                 owl:oneOf ( ro:ro-crate-metadata.json
+#                                                           )
+#                                               ] ;
+#                           rdfs:label "ROCrateMetadataFileDescriptor"@en .
+# #                                               [ rdf:type owl:Restriction ;
+# #                                                 owl:onProperty schema:about ;
+# #                                                 owl:someValuesFrom owl:Thing
+# #                                               ] ;
+# #                           rdfs:label "ROCrateMetadataFileDescriptor"@en .
+
+
+# # ###  https://w3id.org/ro/crate/1.1/RootDataEntity
+# rocrate:RootDataEntity rdf:type owl:Class ;
+#                        owl:equivalentClass [ rdf:type owl:Class ;
+#                                              owl:oneOf ( ro:
+#                                                        )
+#                                            ] .
+# #                                            [ rdf:type owl:Restriction ;
+# #                                              owl:onProperty schema:mainEntity ;
+# #                                              owl:someValuesFrom owl:Thing
+# #                                            ] ;
+# #                        rdfs:subClassOf [ rdf:type owl:Restriction ;
+# #                                          owl:onProperty schema:hasPart ;
+# #                                          owl:minCardinality "1"^^xsd:nonNegativeInteger
+# #                                        ] ;
+# #                        rdfs:label "RootDataEntity"@en .
+
+
+# # ###  https://w3id.org/ro/crate/1.1/Workflow
+# # rocrate:Workflow rdf:type owl:Class ;
+# #                  rdfs:subClassOf schema:SoftwareSourceCode ,
+# #                                  bioschemas:ComputationalWorkflow ,
+# #                                  rocrate:File .
+
+
+# # #################################################################
+# # #    Individuals
+# # #################################################################
+
+# # ###  ./
+# ro: rdf:type owl:NamedIndividual ,
+#         schema:Dataset ,
+#         rocrate:RootDataEntity .
+
+
+# ###  ./ro-crate-metadata.json
+# ro:ro-crate-metadata.json rdf:type owl:NamedIndividual ,
+#                                     rocrate:ROCrateMetadataFileDescriptor .
+
+
+# # #################################################################
+# # #    General axioms
+# # #################################################################
+
+[ rdf:type owl:Class ;
+  owl:unionOf ( schema:Dataset
+                schema:MediaObject
+                rocrate:ROCrateMetadataFileDescriptor
+              ) ;
+  rdfs:subClassOf schema:CreativeWork
+] .
+
+
+[ rdf:type owl:AllDisjointClasses ;
+  owl:members ( schema:Dataset
+                schema:MediaObject
+                rocrate:ROCrateMetadataFileDescriptor
+              )
+] .

@@ -3,7 +3,7 @@ import os
 
 import pytest
 
-from rocrate_validator.errors import InvalidProfilePath
+from rocrate_validator.errors import DuplicateRequirementCheck, InvalidProfilePath
 from rocrate_validator.models import (Profile, ValidationContext,
                                       ValidationSettings, Validator)
 from tests.ro_crates import InvalidFileDescriptorEntity
@@ -24,12 +24,12 @@ def test_order_of_loaded_profiles(profiles_path: str):
     assert len(profiles) > 0
 
     # Extract the profile names
-    profile_names = [profile for profile in profiles]
+    profile_names = sorted([profile for profile in profiles])
     logger.debug("The profile names: %r", profile_names)
 
     # The order of the profiles should be the same as the order of the directories
     # in the profiles directory
-    profile_directories = os.listdir(profiles_path)
+    profile_directories = sorted(os.listdir(profiles_path))
     logger.debug("The profile directories: %r", profile_directories)
     assert profile_names == profile_directories
 
@@ -109,3 +109,79 @@ def test_loaded_valid_profile_with_inheritance_from_validator_context(fake_profi
     __perform_test__("b", 2)
     # Test the inheritance mode with 3 profiles
     __perform_test__("c", 3)
+
+
+def test_load_invalid_profile_no_override_enabled(fake_profiles_path: str):
+    """Test the loaded profiles from the validator context."""
+    settings = {
+        "profiles_path": fake_profiles_path,
+        "profile_name": "invalid-duplicated-shapes",
+        "data_path": "/tmp/random_path",
+        "inherit_profiles": True,
+        "override_profiles": False
+    }
+
+    settings = ValidationSettings(**settings)
+    assert settings.inherit_profiles, "The inheritance mode should be set to True"
+    assert not settings.override_profiles, "The override mode should be set to False"
+
+    validator = Validator(settings)
+    # initialize the validation context
+    context = ValidationContext(validator, validator.validation_settings.to_dict())
+
+    with pytest.raises(DuplicateRequirementCheck):
+        # Load the profiles
+        profiles = context.profiles
+        logger.debug("The profiles: %r", profiles)
+
+
+def test_load_invalid_profile_with_override_on_same_profile(fake_profiles_path: str):
+    """Test the loaded profiles from the validator context."""
+    settings = {
+        "profiles_path": fake_profiles_path,
+        "profile_name": "invalid-duplicated-shapes",
+        "data_path": "/tmp/random_path",
+        "inherit_profiles": True,
+        "override_profiles": True
+    }
+
+    settings = ValidationSettings(**settings)
+    assert settings.inherit_profiles, "The inheritance mode should be set to True"
+    assert settings.override_profiles, "The override mode should be set to `True`"
+    validator = Validator(settings)
+    # initialize the validation context
+    context = ValidationContext(validator, validator.validation_settings.to_dict())
+
+    with pytest.raises(DuplicateRequirementCheck):
+        # Load the profiles
+        profiles = context.profiles
+        logger.debug("The profiles: %r", profiles)
+
+
+def test_load_valid_profile_with_override_on_inherited_profile(fake_profiles_path: str):
+    """Test the loaded profiles from the validator context."""
+    settings = {
+        "profiles_path": fake_profiles_path,
+        "profile_name": "c-overridden",
+        "data_path": "/tmp/random_path",
+        "inherit_profiles": True,
+        "override_profiles": True
+    }
+
+    settings = ValidationSettings(**settings)
+    assert settings.inherit_profiles, "The inheritance mode should be set to True"
+    assert settings.override_profiles, "The override mode should be set to `True`"
+    validator = Validator(settings)
+    # initialize the validation context
+    context = ValidationContext(validator, validator.validation_settings.to_dict())
+
+    # Load the profiles
+    profiles = context.profiles
+    logger.debug("The profiles: %r", profiles)
+
+    # The number of profiles should be 2
+    assert len(profiles) == 4, "The number of profiles should be 2"
+
+    # the number of checks should be 2
+    requirements_checks = [requirement for profile in profiles.values() for requirement in profile.requirements]
+    assert len(requirements_checks) == 4, "The number of requirements should be 2"

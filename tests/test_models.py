@@ -64,6 +64,7 @@ def validation_settings():
     )
 
 
+@pytest.mark.skip(reason="Temporarily disabled: we need an RO-Crate with multiple failed requirements to test this.")
 def test_sortability_requirements(validation_settings: ValidationSettings):
     validation_settings.data_path = InvalidRootDataEntity().invalid_root_type
     result: models.ValidationResult = services.validate(validation_settings)

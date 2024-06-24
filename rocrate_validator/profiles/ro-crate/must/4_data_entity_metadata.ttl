@@ -1,0 +1,215 @@
+@prefix ro: <./> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema_org: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xml1: <http://www.w3.org/2001/XMLSchema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
+
+
+ro:DataEntityRequiredProperties a sh:NodeShape ;
+    sh:name "Data Entity: REQUIRED properties" ;
+    sh:description """A Data Entity MUST be a `URI Path` relative to the ROCrate root,
+        or an sbsolute URI""" ;
+    sh:targetClass rocrate:DataEntity ;
+
+    sh:property [
+        sh:name "Data Entity: @id value restriction" ;
+        sh:description """Check if the Data Entity has an absolute or relative URI as `@id`""" ;
+        sh:path [sh:inversePath rdf:type ] ;
+        sh:nodeKind sh:IRI ;
+        sh:severity sh:Violation ;
+        sh:message """Data Entities MUST have an absolute or relative URI as @id.""" ;
+    ] .
+
+ro:FileDataEntity a sh:NodeShape ;
+    sh:name "File Data Entity: REQUIRED properties" ;
+    sh:description """A File Data Entity MUST be a `File`.
+    `File` is an RO-Crate alias for the schema.org `MediaObject`.
+    The term `File` here is liberal, and includes "downloadable" resources where `@id` is an absolute URI.
+    """ ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?this a schema:MediaObject .
+                FILTER(?this != ro:ro-crate-metadata.json)
+            }
+        """
+    ] ;
+
+    sh:property [
+        sh:name "File Data Entity: REQUIRED type" ;
+        sh:description """Check if the File Data Entity has `File` as `@type`.
+        `File` is an RO-Crate alias for the schema.org `MediaObject`.
+        """ ;
+        sh:path rdf:type ;
+        sh:hasValue rocrate:File ;
+        sh:severity sh:Violation ;
+        sh:message """File Data Entities MUST have "File" as a value for @type.""" ;
+    ] ;
+
+    # Expand data graph with triples from the file data entity
+    sh:rule [
+        a sh:TripleRule ;
+        sh:subject sh:this ;
+        sh:predicate rdf:type ;
+        sh:object rocrate:DataEntity ;
+    ] .
+
+
+ro:DirectoryDataEntity a sh:NodeShape ;
+    sh:name "Directory Data Entity: REQUIRED properties" ;
+    sh:description """A Directory Data Entity MUST be of @type `Dataset`.
+    The term `directory` here includes HTTP file listings where `@id` is an absolute URI.
+    """ ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?this a schema:Dataset .
+                ?metadatafile schema:about ?root .
+                FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
+                FILTER(?this != ?root)
+            }
+        """
+    ] ;
+
+    # Decomment for debugging
+    # sh:property [
+    #     sh:name "Test Directory" ;
+    #     sh:description """Data Entities representing directories MUST have "Directory" as a value for @type.""" ;
+    #     sh:path rdf:type ;
+    #     sh:hasValue rocrate:File ;
+    #     sh:severity sh:Violation ;
+    # ] ;
+
+    # Expand data graph with triples from the file data entity
+    sh:rule [
+        a sh:TripleRule ;
+        sh:subject sh:this ;
+        sh:predicate rdf:type ;
+        sh:object rocrate:Directory ;
+    ] ;
+
+    # Expand data graph with triples from the directory data entity
+    sh:rule [
+        a sh:TripleRule ;
+        sh:subject sh:this ;
+        sh:predicate rdf:type ;
+        sh:object rocrate:DataEntity ;
+    ] ;
+
+    # Ensure that the directory data entity is a dataset
+    sh:property [
+        sh:name "Directory Data Entity: REQUIRED type" ;
+        sh:description """Check if the Directory Data Entity has `Dataset` as `@type`.""" ;
+        sh:path rdf:type ;
+        sh:hasValue schema_org:Dataset ;
+        sh:severity sh:Violation ;
+    ] .
+
+ro:DataEntityRquiredPropertiesShape a sh:NodeShape ;
+    sh:name "Data Entity: REQUIRED properties" ;
+    sh:description """A `DataEntity` MUST be linked, either directly or inderectly, from the Root Data Entity""" ;
+    sh:targetClass rocrate:DataEntity ;
+    sh:property
+        [
+            a sh:PropertyShape ;
+            sh:path [ sh:inversePath schema_org:hasPart ] ;
+            sh:node schema_org:Dataset ;
+            sh:minCount 1 ;
+            sh:name "Data Entity MUST be directly referenced" ;
+            sh:description """Check if the Data Entity is linked, either directly of inderectly, to the `Root Data Entity` using the `hasPart` (as defined in `schema.org`) property" """ ;
+            # sh:message "A Data Entity MUST be directly or indirectly linked to the `Root Data Entity` through the `hasPart` property" ;
+        ] .
+
+ro:DirectoryDataEntityRequiredValueRestriction a sh:NodeShape ;
+    sh:name "Directory Data Entity: REQUIRED value restriction" ;
+    sh:description """A Directory Data Entity MUST end with `/`""" ;
+    sh:targetNode rocrate:Directory ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Directory Data Entity: REQUIRED value restriction" ;
+        sh:description """Check if the Directory Data Entity ends with `/`""" ;
+        sh:path [ sh:inversePath rdf:type ] ;
+        sh:message """Every Data Entity Directory URI MUST end with `/`""" ;
+        sh:pattern "/$" ;
+    ] .
+
+ro:GenericDataEntity a sh:NodeShape ;
+    sh:name "Generic Data Entity: REQUIRED properties" ;
+    sh:description """A Data Entity other than a File or a Directory MUST be a `DataEntity`""" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?root schema:hasPart ?this .
+                ?metadatafile schema:about ?root .
+                FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
+                FILTER(?this != ?root)
+                FILTER(?this != ?metadatafile)
+                FILTER NOT EXISTS { 
+                    ?this a schema:MediaObject .
+                    ?this a schema:Dataset .
+                }
+            }
+        """
+    ] ;
+
+    # Expand data graph with triples to mark the matching entities as GenericDataEntity instances
+    sh:rule [
+        a sh:TripleRule ;
+        sh:subject sh:this ;
+        sh:predicate rdf:type ;
+        sh:object rocrate:GenericDataEntity ;
+    ] ;
+
+    # Expand data graph with triples to mark the matching entities as DataEntity instances
+    sh:rule [
+        a sh:TripleRule ;
+        sh:subject sh:this ;
+        sh:predicate rdf:type ;
+        sh:object rocrate:DataEntity ;
+    ] .
+
+
+# Uncomment for debugging
+# rocrate:TestGenericDataEntity a sh:NodeShape ;
+#     sh:disabled true ;
+#     sh:targetClass rocrate:GenericDataEntity ;
+#     sh:name "Generic Data Entity: test invalid property";
+#     sh:description """Check if the GenericDataEntity has the invalidProperty property""" ;
+#     sh:property [
+#         sh:minCount 1 ;
+#         sh:maxCount 1 ;
+#         sh:path rocrate:invalidProperty ;
+#         sh:severity sh:Violation ;
+#         sh:message "Testing the generic data entity";
+#         sh:datatype xsd:string ;
+#         sh:message "Testing for the invalidProperty of the generic data entity";
+#     ] .
+
+
+# Uncomment for debugging
+# ro:testDirectory a sh:NodeShape ;
+#     sh:name "Definition of Test Directory" ;
+#     sh:description """A Test Directory is a digital object that is stored in a file format""" ;
+#     sh:targetClass rocrate:Directory ;
+
+#     sh:property [
+#         sh:name "Test Directory instance" ;
+#         sh:description """Check if the Directory DataEntity instance has the fake property rocrate:foo""" ;
+#         sh:path rdf:type ;
+#         sh:hasValue rocrate:foo ;
+#         sh:severity sh:Violation ;
+#     ] .

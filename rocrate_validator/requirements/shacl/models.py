@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import logging
 from pathlib import Path
 from typing import Optional, Union
 
@@ -8,6 +7,7 @@ from rdflib import Graph, Namespace, URIRef
 from rdflib.term import Node
 
 from rocrate_validator.constants import SHACL_NS
+import rocrate_validator.log as logging
 from rocrate_validator.models import LevelCollection, RequirementLevel
 from rocrate_validator.requirements.shacl.utils import (ShapesList,
                                                         compute_hash,
@@ -23,7 +23,7 @@ class SHACLNode:
     name: str = None
     description: str = None
 
-    def __init__(self, node: Node, graph: Graph):
+    def __init__(self, node: Node, graph: Graph, parent: Optional[SHACLNode] = None):
 
         # store the shape node
         self._node = node
@@ -31,6 +31,8 @@ class SHACLNode:
         self._graph = graph
         # cache the hash
         self._hash = None
+        # store the parent shape
+        self._parent = parent
 
         # inject attributes of the shape to the object
         inject_attributes(self, graph, node)
@@ -44,6 +46,11 @@ class SHACLNode:
     def graph(self):
         """Return the subgraph of the shape"""
         return self._graph
+
+    @property
+    def parent(self) -> Optional[SHACLNode]:
+        """Return the parent shape of the shape"""
+        return self._parent
 
     @property
     def level(self) -> RequirementLevel:
@@ -200,6 +207,11 @@ class ShapesRegistry:
         assert isinstance(shape, Shape), "Invalid shape"
         self._shapes[f"{hash(shape)}"] = shape
 
+    def remove_shape(self, shape: Shape):
+        assert isinstance(shape, Shape), "Invalid shape"
+        self._shapes.pop(f"{hash(shape)}", None)
+        self._shapes_graph -= shape.graph
+
     def get_shape(self, hash_value: int) -> Optional[Shape]:
         logger.debug("Searching for shape %s in the registry: %s", hash_value, self._shapes)
         result = self._shapes.get(f"{hash_value}", None)
@@ -207,6 +219,14 @@ class ShapesRegistry:
             logger.debug(f"Shape {hash_value} not found in the registry")
             raise ValueError(f"Shape not found in the registry: {hash_value}")
         return result
+
+    def get_shape_key(self, shape: Shape) -> str:
+        assert isinstance(shape, Shape), "Invalid shape"
+        return f"{hash(shape)}"
+
+    def extend(self, shapes: dict[str, Shape], graph: Graph) -> None:
+        self._shapes.update(shapes)
+        self._shapes_graph += graph
 
     def get_shape_by_name(self, name: str) -> Optional[Shape]:
         for shape in self._shapes.values():
@@ -219,7 +239,9 @@ class ShapesRegistry:
 
     @property
     def shapes_graph(self) -> Graph:
-        return self._shapes_graph
+        g = Graph()
+        g += self._shapes_graph
+        return g
 
     def load_shapes(self, shapes_path: Union[str, Path], publicID: Optional[str] = None) -> list[Shape]:
         """
@@ -243,7 +265,7 @@ class ShapesRegistry:
         for node_shape in shapes_list.node_shapes:
             # flag to check if the nested properties are in a group
             grouped = False
-            # list of properties ungroupped
+            # list of properties ungrouped
             ungrouped_properties = []
             # get the shape graph
             node_graph = shapes_list.get_shape_graph(node_shape)

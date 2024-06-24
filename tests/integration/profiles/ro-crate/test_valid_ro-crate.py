@@ -10,7 +10,6 @@ from tests.shared import do_entity_test
 logger = logging.getLogger(__name__)
 
 
-@pytest.mark.xfail(reason="Known problem with data validation in RO-Crate profile")
 def test_valid_roc_required():
     """Test a valid RO-Crate."""
     do_entity_test(
@@ -20,7 +19,6 @@ def test_valid_roc_required():
     )
 
 
-@pytest.mark.xfail(reason="Known problem with data validation in RO-Crate profile")
 def test_valid_roc_recommended():
     """Test a valid RO-Crate."""
     do_entity_test(
