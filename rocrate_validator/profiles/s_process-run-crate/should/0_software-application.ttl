@@ -65,6 +65,27 @@ ro:ProcRCSoftwareApplication a sh:NodeShape ;
     ] .
 
 
+ro:ProcRCSoftwareApplicationSingleVersion a sh:NodeShape ;
+    sh:name "ProcRC SoftwareApplication SingleVersion" ;
+    sh:description "Process Run Crate SoftwareApplication should not have both version and softwareVersion" ;
+    sh:message "Process Run Crate SoftwareApplication should not have both version and softwareVersion" ;
+    sh:targetClass schema:SoftwareApplication ;
+    sh:not [
+        sh:and (
+            [ sh:property [
+                a sh:PropertyShape ;
+                sh:path schema:version ;
+                sh:minCount 1 ;
+            ]]
+            [ sh:property [
+                a sh:PropertyShape ;
+                sh:path schema:softwareVersion ;
+                sh:minCount 1 ;
+            ]]
+        ) ;
+    ] .
+
+
 ro:ProcRCSoftwareApplicationID a sh:NodeShape ;
     sh:name "ProcRC SoftwareApplication ID" ;
     sh:description "Process Run Crate SoftwareApplication ID" ;

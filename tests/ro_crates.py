@@ -289,3 +289,7 @@ class InvalidProcRC:
     @property
     def application_id_no_absoluteuri(self) -> Path:
         return self.base_path / "application_id_no_absoluteuri"
+
+    @property
+    def application_version_softwareVersion(self) -> Path:
+        return self.base_path / "application_version_softwareVersion"

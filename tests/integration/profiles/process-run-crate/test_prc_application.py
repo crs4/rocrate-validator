@@ -51,6 +51,21 @@ def test_prc_application_no_version():
     )
 
 
+def test_prc_application_version_softwareversion():
+    """\
+    Test a Process Run Crate where the application has both a version and a
+    SoftwareVersion (SoftwareApplication).
+    """
+    do_entity_test(
+        InvalidProcRC().application_version_softwareVersion,
+        Severity.RECOMMENDED,
+        False,
+        ["ProcRC SoftwareApplication SingleVersion"],
+        ["Process Run Crate SoftwareApplication should not have both version and softwareVersion"],
+        profile_name="s_process-run-crate"
+    )
+
+
 def test_prc_softwaresourcecode_no_version():
     """\
     Test a Process Run Crate where the application does not have a version
