@@ -904,6 +904,7 @@ class ValidationSettings:
     profile_name: str = DEFAULT_PROFILE_NAME
     inherit_profiles: bool = True
     allow_shapes_override: bool = True
+    disable_check_for_duplicates: bool = False
     # Ontology and inference settings
     ontology_path: Optional[Path] = None
     inference: Optional[VALID_INFERENCE_OPTIONS_TYPES] = None
@@ -1107,7 +1108,14 @@ class ValidationContext:
     def profile_name(self) -> str:
         return self.settings.get("profile_name")
 
-    def __load_profiles__(self) -> OrderedDict[str, Profile]:
+    @property
+    def allow_shapes_override(self) -> bool:
+        return self.settings.get("allow_shapes_override", True)
+
+    @property
+    def disable_check_for_duplicates(self) -> bool:
+        return self.settings.get("disable_check_for_duplicates", False)
+
         if not self.inheritance_enabled:
             profile = Profile.load(
                 self.profiles_path / self.profile_name,
