@@ -308,22 +308,6 @@ class Profile:
     def __str__(self) -> str:
         return self.name
 
-    # def get_requirement(self, name: str) -> Requirement:
-    #     for requirement in self.requirements:
-    #         if requirement.name == name:
-    #             return requirement
-    #     return None
-
-    # @property
-    # def requirements_by_severity_map(self) -> dict[Severity, list[Requirement]]:
-    #     return {level.severity: self.get_requirements_by_type(level.severity)
-    #             for level in LevelCollection.all()}
-
-    # def has_requirement(self, name: str) -> bool:
-    #     return self.get_requirement(name) is not None
-
-    # def get_requirements_by_type(self, type: RequirementLevel) -> list[Requirement]:
-
     @staticmethod
     def load(path: Union[str, Path],
              publicID: Optional[str] = None,
