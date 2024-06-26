@@ -4,27 +4,30 @@ import bisect
 import enum
 import inspect
 from abc import ABC, abstractmethod
-from collections import OrderedDict
 from collections.abc import Collection
 from dataclasses import asdict, dataclass
 from functools import total_ordering
 from pathlib import Path
 from typing import Optional, Union
 
-from rdflib import Graph
+from rdflib import RDF, RDFS, Graph, Namespace, URIRef
 
 import rocrate_validator.log as logging
 from rocrate_validator.constants import (DEFAULT_ONTOLOGY_FILE,
                                          DEFAULT_PROFILE_NAME,
                                          DEFAULT_PROFILE_README_FILE,
-                                         IGNORED_PROFILE_DIRECTORIES,
+                                         IGNORED_PROFILE_DIRECTORIES, PROF_NS,
                                          PROFILE_FILE_EXTENSIONS,
+                                         PROFILE_SPECIFICATION_FILE,
                                          RDF_SERIALIZATION_FORMATS_TYPES,
-                                         ROCRATE_METADATA_FILE,
+                                         ROCRATE_METADATA_FILE, SCHEMA_ORG_NS,
                                          VALID_INFERENCE_OPTIONS_TYPES)
 from rocrate_validator.errors import (DuplicateRequirementCheck,
-                                      InvalidProfilePath, ProfileNotFound)
-from rocrate_validator.utils import (get_profiles_path,
+                                      InvalidProfilePath, ProfileNotFound,
+                                      ProfileSpecificationError,
+                                      ProfileSpecificationNotFound)
+from rocrate_validator.utils import (MapIndex, MultiIndexMap,
+                                     get_profiles_path,
                                      get_requirement_name_from_file)
 
 # set the default profiles path
@@ -122,6 +125,10 @@ class LevelCollection:
 
 @total_ordering
 class Profile:
+
+    # store the map of profiles: profile URI -> Profile instance
+    __profiles_map: MultiIndexMap = MultiIndexMap("uri", indexes=[MapIndex("name"), MapIndex("token", unique=True)])
+
     def __init__(self, name: str, path: Path,
                  requirements: Optional[list[Requirement]] = None,
                  publicID: Optional[str] = None,
@@ -132,6 +139,31 @@ class Profile:
         self._requirements: list[Requirement] = requirements if requirements is not None else []
         self._publicID = publicID
         self._severity = severity
+
+        # init property to store the RDF node which is the root of the profile specification graph
+        self._profile_node = None
+
+        # init property to store the RDF graph of the profile specification
+        self._profile_specification_graph = None
+
+        # check if the profile specification file exists
+        spec_file = self.profile_specification_file_path
+        if not spec_file or not spec_file.exists():
+            raise ProfileSpecificationNotFound(name, spec_file)
+        # load the profile specification expressed using the Profiles Vocabulary
+        profile = Graph()
+        profile.parse(str(spec_file), format="turtle")
+        # check that the specification Graph hosts only one profile
+        profiles = list(profile.subjects(predicate=RDF.type, object=PROF_NS.Profile))
+        if len(profiles) == 1:
+            self._profile_node = profiles[0]
+            self._profile_specification_graph = profile
+            self.__profiles_map.add(
+                self._profile_node.toPython(), self, token=self.token, name=self.name)  # add the profile to the profiles map
+        else:
+            raise ProfileSpecificationError(
+                profile_name=name, message=f"Profile specification file {spec_file} must contain exactly one profile")
+
 
     @property
     def path(self):
