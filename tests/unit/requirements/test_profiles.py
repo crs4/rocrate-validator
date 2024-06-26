@@ -25,7 +25,7 @@ def test_order_of_loaded_profiles(profiles_path: str):
     assert len(profiles) > 0
 
     # Extract the profile names
-    profile_names = sorted([profile for profile in profiles])
+    profile_names = sorted([profile.name for profile in profiles])
     logger.debug("The profile names: %r", profile_names)
 
     # The order of the profiles should be the same as the order of the directories
@@ -81,14 +81,49 @@ def test_load_valid_profile_without_inheritance_from_validation_context(fake_pro
     assert len(profiles) == 1, "The number of profiles should be 1"
 
 
+def test_profile_spec_properties(fake_profiles_path: str):
+    """Test the loaded profiles from the validator context."""
+    settings = {
+        "profiles_path": fake_profiles_path,
+        "profile_name": "c",
+        "data_path": "/tmp/random_path",
+        "inherit_profiles": True,
+        "disable_check_for_duplicates": True,
+    }
+
+    settings = ValidationSettings(**settings)
+    assert settings.inherit_profiles, "The inheritance mode should be set to True"
+
+    validator = Validator(settings)
+    # initialize the validation context
+    context = ValidationContext(validator, validator.validation_settings.to_dict())
+
+    # Load the profiles
+    profiles = context.profiles
+    logger.debug("The profiles: %r", profiles)
+
+    # The number of profiles should be 1
+    assert len(profiles) == 2, "The number of profiles should be 2"
+
+    # Get the profile
+    profile = context.get_profile_by_token("c")
+    assert profile.name == "c", "The profile name should be c"
+    assert profile.comment == "Comment for the Profile C.", "The profile comment should be 'Comment for the Profile C.'"
+    assert profile.version == "1.0.0", "The profile version should be 1.0.0"
+    assert profile.is_profile_of == ["https://w3id.org/a"], "The profileOf property should be ['a']"
+    assert profile.is_transitive_profile_of == [
+        "https://w3id.org/a"], "The transitiveProfileOf property should be ['a']"
+
+
 def test_loaded_valid_profile_with_inheritance_from_validator_context(fake_profiles_path: str):
     """Test the loaded profiles from the validator context."""
 
-    def __perform_test__(profile_name: str, expected_profiles: int):
+    def __perform_test__(profile_name: str, expected_inherited_profiles: list[str]):
         settings = {
             "profiles_path": fake_profiles_path,
             "profile_name": profile_name,
             "data_path": "/tmp/random_path",
+            "disable_check_for_duplicates": True,
         }
 
         validator = Validator(settings)
@@ -101,15 +136,24 @@ def test_loaded_valid_profile_with_inheritance_from_validator_context(fake_profi
         profiles = context.profiles
         logger.debug("The profiles: %r", profiles)
 
+        # get and check the profile
+        profile = context.get_profile_by_token(profile_name)
+        assert profile.name == profile_name, f"The profile name should be {profile_name}"
+
         # The number of profiles should be 1
-        assert len(profiles) == expected_profiles, f"The number of profiles should be {expected_profiles}"
+        profiles_names = [_.name for _ in profile.inherited_profiles]
+        assert profiles_names == expected_inherited_profiles, f"The number of profiles should be {expected_inherited_profiles}"
 
     # Test the inheritance mode with 1 profile
-    __perform_test__("a", 1)
+    __perform_test__("a", [])
     # Test the inheritance mode with 2 profiles
-    __perform_test__("b", 2)
-    # Test the inheritance mode with 3 profiles
-    __perform_test__("c", 3)
+    __perform_test__("b", ["a"])
+    # Test the inheritance mode with 2 profiles
+    __perform_test__("c", ["a"])
+    # Test the inheritance mode with 4 profiles: using the profileOf property
+    __perform_test__("d1", ["a", "b", "c"])
+    # Test the inheritance mode with 4 profiles: using the transitiveProfileOf property
+    __perform_test__("d2", ["a", "b", "c"])
 
 
 def test_load_invalid_profile_no_override_enabled(fake_profiles_path: str):
@@ -119,12 +163,12 @@ def test_load_invalid_profile_no_override_enabled(fake_profiles_path: str):
         "profile_name": "invalid-duplicated-shapes",
         "data_path": "/tmp/random_path",
         "inherit_profiles": True,
-        "override_profiles": False
+        "allow_shapes_override": False,
     }
 
     settings = ValidationSettings(**settings)
     assert settings.inherit_profiles, "The inheritance mode should be set to True"
-    assert not settings.override_profiles, "The override mode should be set to False"
+    assert not settings.allow_shapes_override, "The override mode should be set to False"
 
     validator = Validator(settings)
     # initialize the validation context
@@ -143,12 +187,12 @@ def test_load_invalid_profile_with_override_on_same_profile(fake_profiles_path: 
         "profile_name": "invalid-duplicated-shapes",
         "data_path": "/tmp/random_path",
         "inherit_profiles": True,
-        "override_profiles": True
+        "allow_shapes_override": False
     }
 
     settings = ValidationSettings(**settings)
     assert settings.inherit_profiles, "The inheritance mode should be set to True"
-    assert settings.override_profiles, "The override mode should be set to `True`"
+    assert not settings.allow_shapes_override, "The override mode should be set to `True`"
     validator = Validator(settings)
     # initialize the validation context
     context = ValidationContext(validator, validator.validation_settings.to_dict())
@@ -166,12 +210,12 @@ def test_load_valid_profile_with_override_on_inherited_profile(fake_profiles_pat
         "profile_name": "c-overridden",
         "data_path": "/tmp/random_path",
         "inherit_profiles": True,
-        "override_profiles": True
+        "allow_shapes_override": True
     }
 
     settings = ValidationSettings(**settings)
     assert settings.inherit_profiles, "The inheritance mode should be set to True"
-    assert settings.override_profiles, "The override mode should be set to `True`"
+    assert settings.allow_shapes_override, "The override mode should be set to `True`"
     validator = Validator(settings)
     # initialize the validation context
     context = ValidationContext(validator, validator.validation_settings.to_dict())
@@ -181,8 +225,8 @@ def test_load_valid_profile_with_override_on_inherited_profile(fake_profiles_pat
     logger.debug("The profiles: %r", profiles)
 
     # The number of profiles should be 2
-    assert len(profiles) == 4, "The number of profiles should be 2"
+    assert len(profiles) == 3, "The number of profiles should be 3"
 
     # the number of checks should be 2
-    requirements_checks = [requirement for profile in profiles.values() for requirement in profile.requirements]
-    assert len(requirements_checks) == 4, "The number of requirements should be 2"
+    requirements_checks = [requirement for profile in profiles for requirement in profile.requirements]
+    assert len(requirements_checks) == 3, "The number of requirements should be 2"
