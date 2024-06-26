@@ -3,6 +3,7 @@ import os
 
 import pytest
 
+from rocrate_validator.constants import DEFAULT_PROFILE_NAME
 from rocrate_validator.errors import DuplicateRequirementCheck, InvalidProfilePath
 from rocrate_validator.models import (Profile, ValidationContext,
                                       ValidationSettings, Validator)
@@ -37,8 +38,8 @@ def test_order_of_loaded_profiles(profiles_path: str):
 def test_load_invalid_profile_from_validation_context(fake_profiles_path: str):
     """Test the loaded profiles from the validator context."""
     settings = {
-        "profiles_path": fake_profiles_path,
-        "profile_name": "ro-crate",
+        "profiles_path": "/tmp/random_path_xxx",
+        "profile_name": DEFAULT_PROFILE_NAME,
         "data_path": "/tmp/random_path",
         "inherit_profiles": False
     }
