@@ -7,6 +7,9 @@ SHACL_NS = "http://www.w3.org/ns/shacl#"
 # Define RDF syntax namespace
 RDF_SYNTAX_NS = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
 
+# Define the file name for the profile specification conforms to the Profiles Vocabulary
+PROFILE_SPECIFICATION_FILE = "profile.ttl"
+
 # Define the rocrate-metadata.json file name
 ROCRATE_METADATA_FILE = "ro-crate-metadata.json"
 
