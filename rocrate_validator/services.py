@@ -31,11 +31,11 @@ def validate(settings: Union[dict, ValidationSettings]) -> ValidationResult:
     return result
 
 
-def get_profiles(profiles_path: Path = DEFAULT_PROFILES_PATH, publicID: str = None) -> dict[str, Profile]:
+def get_profiles(profiles_path: Path = DEFAULT_PROFILES_PATH, publicID: str = None, severity=Severity.OPTIONAL) -> list:
     """
     Load the profiles from the given path
     """
-    profiles = Profile.load_profiles(profiles_path, publicID=publicID)
+    profiles = Profile.load_profiles(profiles_path, publicID=publicID, severity=severity)
     logger.debug("Profiles loaded: %s", profiles)
     return profiles
 
