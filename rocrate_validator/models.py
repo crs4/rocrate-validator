@@ -252,11 +252,31 @@ class Profile:
                 if (not exact_match and requirement.severity >= severity) or
                 (exact_match and requirement.severity == severity)]
 
+    @classmethod
+    def __get_nested_profiles__(cls, source: str) -> list[str]:
+        result = []
+        visited = []
+        queue = [source]
+        while len(queue) > 0:
+            p = queue.pop()
+            if not p in visited:
+                visited.append(p)
+                profile = cls.__profiles_map.get_by_key(p)
+                inherited_profiles = profile.is_profile_of
+                for p in sorted(inherited_profiles, reverse=True):
+                    if not p in visited:
+                        queue.append(p)
+                    if not p in result:
+                        result.insert(0, p)
+        return result
+
     @property
     def inherited_profiles(self) -> list[Profile]:
-        profiles = [_ for _ in Profile.load_profiles(self.path.parent).values() if _ < self]
-        logger.debug("Inherited profiles: %s", profiles)
-        return profiles
+        inherited_profiles = self.is_transitive_profile_of
+        if not inherited_profiles or len(inherited_profiles) == 0:
+            inherited_profiles = Profile.__get_nested_profiles__(self.uri)
+        profile_keys = self.__profiles_map.keys
+        return [self.__profiles_map.get_by_key(_) for _ in inherited_profiles if _ in profile_keys]
 
     def add_requirement(self, requirement: Requirement):
         self._requirements.append(requirement)
