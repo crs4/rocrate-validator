@@ -56,7 +56,8 @@ class WorkflowFilesExistence(PyFunctionCheck):
         json_dict = self.get_json_dict(validation_context)
         entity_dict = {_["@id"]: _ for _ in json_dict["@graph"]}
         main_workflow = find_main_workflow(entity_dict)
-        diagram_relpath = main_workflow.get("image")["@id"]
+        image = main_workflow.get("image")
+        diagram_relpath = image["@id"] if image else None
         if not diagram_relpath:
             validation_context.result.add_error(f"main workflow does not have an 'image' property", self)
             return False
@@ -72,7 +73,8 @@ class WorkflowFilesExistence(PyFunctionCheck):
         json_dict = self.get_json_dict(validation_context)
         entity_dict = {_["@id"]: _ for _ in json_dict["@graph"]}
         main_workflow = find_main_workflow(entity_dict)
-        description_relpath = main_workflow.get("subjectOf")["@id"]
+        main_workflow = main_workflow.get("subjectOf")
+        description_relpath = main_workflow["@id"] if main_workflow else None
         if not description_relpath:
             validation_context.result.add_error("main workflow does not have a 'subjectOf' property", self)
             return False
