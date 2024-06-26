@@ -1116,20 +1116,33 @@ class ValidationContext:
     def disable_check_for_duplicates(self) -> bool:
         return self.settings.get("disable_check_for_duplicates", False)
 
+    def __load_profiles__(self) -> list[Profile]:
+
+        # if the inheritance is disabled, load only the target profile
         if not self.inheritance_enabled:
             profile = Profile.load(
                 self.profiles_path / self.profile_name,
                 publicID=self.publicID,
                 severity=self.requirement_severity)
-            return {profile.name: profile}
-        profiles = {pn: p for pn, p in Profile.load_profiles(
+            return [profile]
+
+        # load all profiles
+        profiles = Profile.load_profiles(
             self.profiles_path,
             publicID=self.publicID,
-            severity=self.requirement_severity,
-            reverse_order=False).items() if pn <= self.profile_name}
+            severity=self.requirement_severity)
+
         # Check if the target profile is in the list of profiles
-        if self.profile_name not in profiles:
+        profile = Profile.get_by_token(self.profile_name) or Profile.get_by_name(self.profile_name)[0]
+        if profile is None:
             raise ProfileNotFound(f"Profile '{self.profile_name}' not found in '{self.profiles_path}'")
+
+        # Set the profiles to validate against as the target profile and its inherited profiles
+        profiles = profile.inherited_profiles + [profile]
+
+        # if the check for duplicates is disabled, return the profiles
+        if self.disable_check_for_duplicates:
+            return profiles
 
         # navigate the profiles and check for overridden checks
         # if the override is enabled in the settings
@@ -1138,12 +1151,12 @@ class ValidationContext:
         profiles_checks = {}
         # visit the profiles in reverse order
         # (the order is important to visit the most specific profiles first)
-        for profile in sorted(profiles.values(), reverse=True):
+        for profile in sorted(profiles, reverse=True):
             profile_checks = [_ for r in profile.get_requirements() for _ in r.get_checks()]
             profile_check_names = []
             for check in profile_checks:
                 #  find duplicated checks and raise an error
-                if check.name in profile_check_names:
+                if check.name in profile_check_names and not self.allow_shapes_override:
                     raise DuplicateRequirementCheck(check.name, profile.name)
                 #  add check to the list
                 profile_check_names.append(check.name)
@@ -1160,7 +1173,7 @@ class ValidationContext:
         return profiles
 
     @property
-    def profiles(self) -> OrderedDict[str, Profile]:
+    def profiles(self) -> list[Profile]:
         if not self._profiles:
             self._profiles = self.__load_profiles__()
         return self._profiles.copy()
