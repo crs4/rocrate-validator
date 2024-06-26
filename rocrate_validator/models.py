@@ -323,7 +323,6 @@ class Profile:
     #     return self.get_requirement(name) is not None
 
     # def get_requirements_by_type(self, type: RequirementLevel) -> list[Requirement]:
-    #     return [requirement for requirement in self.requirements if requirement.severity == type]
 
     @staticmethod
     def load(path: Union[str, Path],
@@ -343,22 +342,24 @@ class Profile:
     @staticmethod
     def load_profiles(profiles_path: Union[str, Path],
                       publicID: Optional[str] = None,
-                      severity:  Severity = Severity.REQUIRED,
-                      reverse_order: bool = False) -> OrderedDict[str, Profile]:
+                      severity:  Severity = Severity.REQUIRED) -> list[Profile]:
         # if the path is a string, convert it to a Path
         if isinstance(profiles_path, str):
             profiles_path = Path(profiles_path)
         # check if the path is a directory
-        assert profiles_path.is_dir(), f"Invalid profiles path: {profiles_path}"
-        # initialize the profiles
-        profiles = {}
-        # iterate through the directories
+        if not profiles_path.is_dir():
+            raise InvalidProfilePath(profiles_path)
+        # initialize the profiles list
+        profiles = []
+        # iterate through the directories and load the profiles
         for profile_path in profiles_path.iterdir():
             logger.debug("Checking profile path: %s %s %r", profile_path,
                          profile_path.is_dir(), IGNORED_PROFILE_DIRECTORIES)
             if profile_path.is_dir() and profile_path not in IGNORED_PROFILE_DIRECTORIES:
                 profile = Profile.load(profile_path, publicID=publicID, severity=severity)
-                profiles[profile.name] = profile
+                profiles.append(profile)
+        #  order profiles according to the dependencies between them: first the profiles that do not depend on ???
+        return profiles
 
         return OrderedDict(sorted(profiles.items(), key=lambda x: x, reverse=reverse_order))
 
