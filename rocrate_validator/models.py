@@ -565,6 +565,7 @@ class RequirementLoader:
             return p.is_file() \
                 and p.suffix in PROFILE_FILE_EXTENSIONS \
                 and not p.name == DEFAULT_ONTOLOGY_FILE \
+                and not p.name == PROFILE_SPECIFICATION_FILE \
                 and not p.name.startswith('.') \
                 and not p.name.startswith('_')
 
