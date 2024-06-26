@@ -301,3 +301,7 @@ class InvalidProcRC:
     @property
     def action_instrument_bad_type(self) -> Path:
         return self.base_path / "action_instrument_bad_type"
+
+    @property
+    def action_not_mentioned(self) -> Path:
+        return self.base_path / "action_not_mentioned"

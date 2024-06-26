@@ -8,7 +8,7 @@
 @prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
 @prefix bioschemas: <https://bioschemas.org/> .
 
-ro:ProcRCAction a sh:NodeShape ;
+ro:ProcRCActionRequired a sh:NodeShape ;
     sh:name "Process Run Crate Action" ;
     sh:description "Properties of the Process Run Crate Action" ;
     sh:targetClass schema:CreateAction ,

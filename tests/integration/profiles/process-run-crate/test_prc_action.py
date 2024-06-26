@@ -35,3 +35,18 @@ def test_prc_action_instrument_bad_type():
         ["The Action MUST have an instrument property that references the executed tool"],
         profile_name="s_process-run-crate"
     )
+
+
+def test_prc_action_not_mentioned():
+    """\
+    Test a Process Run Crate where the action is not listed in the Root Data
+    Entity's mentions.
+    """
+    do_entity_test(
+        InvalidProcRC().action_not_mentioned,
+        Severity.RECOMMENDED,
+        False,
+        ["Process Run Crate Action SHOULD"],
+        ["The Action SHOULD be referenced from the Root Data Entity via mentions"],
+        profile_name="s_process-run-crate"
+    )
