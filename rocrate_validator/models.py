@@ -1177,3 +1177,9 @@ class ValidationContext:
         if not self._profiles:
             self._profiles = self.__load_profiles__()
         return self._profiles.copy()
+
+    def get_profile_by_token(self, token: str) -> Profile:
+        for p in self.profiles:
+            if p.token == token:
+                return p
+        raise ProfileNotFound(f"Profile with token '{token}' not found")
