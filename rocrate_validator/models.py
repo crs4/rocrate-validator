@@ -989,11 +989,11 @@ class Validator:
         context = ValidationContext(self, self.validation_settings.to_dict())
 
         # set the profiles to validate against
-        profiles = context.profiles.values()
-        logger.debug("Profiles to validate: %r", profiles)
+        profiles = context.profiles
+        assert len(profiles) > 0, "No profiles to validate"
 
         for profile in profiles:
-            logger.debug("Validating profile %s", profile.name)
+            logger.debug("Validating profile %s (id: %s)", profile.name, profile.token)
             # perform the requirements validation
             requirements = profile.get_requirements(
                 context.requirement_severity, exact_match=context.requirement_severity_only)
