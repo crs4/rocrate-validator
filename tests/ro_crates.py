@@ -293,3 +293,11 @@ class InvalidProcRC:
     @property
     def application_version_softwareVersion(self) -> Path:
         return self.base_path / "application_version_softwareVersion"
+
+    @property
+    def action_no_instrument(self) -> Path:
+        return self.base_path / "action_no_instrument"
+
+    @property
+    def action_instrument_bad_type(self) -> Path:
+        return self.base_path / "action_instrument_bad_type"
