@@ -345,7 +345,21 @@ class Profile:
         #  order profiles according to the dependencies between them: first the profiles that do not depend on ???
         return profiles
 
-        return OrderedDict(sorted(profiles.items(), key=lambda x: x, reverse=reverse_order))
+    @classmethod
+    def get_by_uri(cls, uri: str) -> Profile:
+        return cls.__profiles_map.get_by_key(uri)
+
+    @classmethod
+    def get_by_name(cls, name: str) -> list[Profile]:
+        return cls.__profiles_map.get_by_index("name", name)
+
+    @classmethod
+    def get_by_token(cls, token: str) -> Profile:
+        return cls.__profiles_map.get_by_index("token", token)
+
+    @classmethod
+    def all(cls) -> list[Profile]:
+        return cls.__profiles_map.values()
 
 
 @total_ordering
