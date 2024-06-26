@@ -164,6 +164,13 @@ class Profile:
             raise ProfileSpecificationError(
                 profile_name=name, message=f"Profile specification file {spec_file} must contain exactly one profile")
 
+    def __get_specification_property__(self, property: str, namespace: Namespace,
+                                       pop_first: bool = True, as_Python_object: bool = True) -> Union[str, list[Union[str, URIRef]]]:
+        assert self._profile_specification_graph is not None, "Profile specification graph not loaded"
+        values = list(self._profile_specification_graph.objects(self._profile_node, namespace[property]))
+        if values and as_Python_object:
+            values = [v.toPython() for v in values]
+        return values[0] if values and len(values) >= 1 and pop_first else values
 
     @property
     def path(self):
@@ -174,8 +181,44 @@ class Profile:
         return self._name
 
     @property
+    def profile_node(self):
+        return self._profile_node
+
+    @property
+    def token(self):
+        return self.__get_specification_property__("hasToken", PROF_NS) or self._name.lower().replace(" ", "_")
+
+    @property
+    def uri(self):
+        return self._profile_node.toPython()
+
+    @property
+    def label(self):
+        return self.__get_specification_property__("label", RDFS)
+
+    @property
+    def comment(self):
+        return self.__get_specification_property__("comment", RDFS)
+
+    @property
+    def version(self):
+        return self.__get_specification_property__("version", SCHEMA_ORG_NS)
+
+    @property
+    def is_profile_of(self) -> list[str]:
+        return self.__get_specification_property__("isProfileOf", PROF_NS, pop_first=False)
+
+    @property
+    def is_transitive_profile_of(self) -> list[str]:
+        return self.__get_specification_property__("isTransitiveProfileOf", PROF_NS, pop_first=False)
+
+    @property
     def readme_file_path(self) -> Path:
         return self.path / DEFAULT_PROFILE_README_FILE
+
+    @property
+    def profile_specification_file_path(self) -> Path:
+        return self.path / PROFILE_SPECIFICATION_FILE
 
     @property
     def publicID(self) -> Optional[str]:
