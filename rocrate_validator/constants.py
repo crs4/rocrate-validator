@@ -1,8 +1,16 @@
 # Define allowed RDF extensions and serialization formats as map
 import typing
 
+from rdflib import Namespace
+
 # Define SHACL namespace
 SHACL_NS = "http://www.w3.org/ns/shacl#"
+
+# Define the Profiles Vocabulary namespace
+PROF_NS = Namespace("http://www.w3.org/ns/dx/prof/")
+
+# Define the Schema.org namespace
+SCHEMA_ORG_NS = Namespace("http://schema.org/")
 
 # Define RDF syntax namespace
 RDF_SYNTAX_NS = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
