@@ -48,7 +48,7 @@ def get_profile(profiles_path: Path = DEFAULT_PROFILES_PATH,
     profile_path = profiles_path / profile_name
     if not Path(profiles_path).exists():
         raise FileNotFoundError(f"Profile not found: {profile_path}")
-    profile = Profile.load(f"{profiles_path}/{profile_name}",
+    profile = Profile.load(profiles_path, f"{profiles_path}/{profile_name}",
                            publicID=publicID, severity=Severity.OPTIONAL)
     logger.debug("Profile loaded: %s", profile)
     return profile

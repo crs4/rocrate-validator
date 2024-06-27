@@ -129,12 +129,12 @@ class Profile:
     # store the map of profiles: profile URI -> Profile instance
     __profiles_map: MultiIndexMap = MultiIndexMap("uri", indexes=[MapIndex("name"), MapIndex("token", unique=True)])
 
-    def __init__(self, name: str, path: Path,
+                 profiles_base_path: Path,
                  requirements: Optional[list[Requirement]] = None,
                  publicID: Optional[str] = None,
                  severity: Severity = Severity.REQUIRED):
-        self._path = path
-        self._name = name
+        self._profiles_base_path = profiles_base_path
+        self._profile_path = profile_path
         self._description: Optional[str] = None
         self._requirements: list[Requirement] = requirements if requirements is not None else []
         self._publicID = publicID
@@ -174,7 +174,7 @@ class Profile:
 
     @property
     def path(self):
-        return self._path
+        return self._profile_path
 
     @property
     def name(self):
@@ -1121,6 +1121,7 @@ class ValidationContext:
         # if the inheritance is disabled, load only the target profile
         if not self.inheritance_enabled:
             profile = Profile.load(
+                self.profiles_path,
                 self.profiles_path / self.profile_name,
                 publicID=self.publicID,
                 severity=self.requirement_severity)
