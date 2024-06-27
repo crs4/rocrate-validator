@@ -144,10 +144,8 @@ def __compacted_describe_profile__(console, profile):
     """
     table_rows = []
     levels_list = set()
-    for requirement in profile.requirements:
-        # skip hidden requirements
-        if requirement.hidden:
-            continue
+    requirements = [_ for _ in profile.requirements if not _.hidden]
+    for requirement in requirements:
         # add the requirement to the list
         color = get_severity_color(requirement.severity)
         level_info = f"[{color}]{requirement.severity.name}[/{color}]"
@@ -159,7 +157,7 @@ def __compacted_describe_profile__(console, profile):
                            f"{len(requirement.get_checks_by_level(LevelCollection.OPTIONAL))}"))
 
     table = Table(show_header=True,
-                  title="Profile Requirements",
+                  title=f"[cyan]{len(requirements)}[/cyan] Profile Requirements",
                   title_style="italic bold",
                   header_style="bold cyan",
                   border_style="bright_black",
@@ -188,6 +186,7 @@ def __verbose_describe_profile__(console, profile):
     """
     table_rows = []
     levels_list = set()
+    count_checks = 0
     for requirement in profile.requirements:
         # skip hidden requirements
         if requirement.hidden:
@@ -201,9 +200,10 @@ def __verbose_describe_profile__(console, profile):
             # checks.append(check)
             table_rows.append((str(check.identifier).rjust(14), check.name,
                                Markdown(check.description.strip()), level_info))
+            count_checks += 1
 
     table = Table(show_header=True,
-                  title="Profile Requirements Checks",
+                  title=f"[cyan]{count_checks}[/cyan] Profile Requirements Checks",
                   title_style="italic bold",
                   header_style="bold cyan",
                   border_style="bright_black",
