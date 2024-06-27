@@ -90,6 +90,23 @@ def list_profiles(ctx):  # , profiles_path: Path = DEFAULT_PROFILES_PATH):
     console.print(table)
 
 
+def __format_version_identifier__(profile):
+    """
+    Format the version and identifier
+    """
+
+    table = Table(show_header=True,
+                  title=profile.identifier,
+                  header_style="bold cyan",
+                  border_style="bright_black",
+                  show_footer=False)
+    table.add_column("prefix", style="magenta bold", justify="center")
+    table.add_column("version", style="yellow bold", justify="center")
+
+    table.add_row(profile.token, profile.version)
+    return table
+
+
 @profiles.command("describe")
 @click.option(
     '-v',
