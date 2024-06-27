@@ -676,7 +676,7 @@ class RequirementLoader:
             requirement._order_number = i + 1
         # log and return the requirements
         logger.debug("Profile %s loaded %s requirements: %s",
-                     profile.name, len(requirements), requirements)
+                     profile.identifier, len(requirements), requirements)
         return requirements
 
 
@@ -1076,13 +1076,13 @@ class Validator:
         assert len(profiles) > 0, "No profiles to validate"
 
         for profile in profiles:
-            logger.debug("Validating profile %s (id: %s)", profile.name, profile.token)
+            logger.debug("Validating profile %s (id: %s)", profile.name, profile.identifier)
             # perform the requirements validation
             requirements = profile.get_requirements(
                 context.requirement_severity, exact_match=context.requirement_severity_only)
-            logger.debug("Validating profile %s with %s requirements", profile.name, len(requirements))
+            logger.debug("Validating profile %s with %s requirements", profile.identifier, len(requirements))
             logger.debug("For profile %s, validating these %s requirements: %s",
-                         profile.name, len(requirements), requirements)
+                         profile.identifier, len(requirements), requirements)
             for requirement in requirements:
                 passed = requirement.__do_validate__(context)
                 logger.debug("Number of issues: %s", len(context.result.issues))
