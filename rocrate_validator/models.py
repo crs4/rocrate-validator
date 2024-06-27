@@ -140,6 +140,7 @@ class Profile:
         self._identifier: Optional[str] = identifier
         self._profiles_base_path = profiles_base_path
         self._profile_path = profile_path
+        self._name: Optional[str] = None
         self._description: Optional[str] = None
         self._requirements: list[Requirement] = requirements if requirements is not None else []
         self._publicID = publicID
@@ -193,7 +194,7 @@ class Profile:
 
     @property
     def name(self):
-        return self._name
+        return self.label or f"Profile {self.uri}"
 
     @property
     def profile_node(self):
