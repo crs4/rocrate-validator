@@ -106,3 +106,32 @@ def test_prc_action_bad_endtime():
         ["The Action SHOULD have an endTime in ISO 8601 format"],
         profile_name="s_process-run-crate"
     )
+
+
+def test_prc_action_no_agent():
+    """\
+    Test a Process Run Crate where the action does not have an agent.
+    """
+    do_entity_test(
+        InvalidProcRC().action_no_agent,
+        Severity.RECOMMENDED,
+        False,
+        ["Process Run Crate Action SHOULD"],
+        ["The Action SHOULD have an agent that is a Person or Organization"],
+        profile_name="s_process-run-crate"
+    )
+
+
+def test_prc_action_bad_agent():
+    """\
+    Test a Process Run Crate where the agent is neither a Person nor an
+    Organization.
+    """
+    do_entity_test(
+        InvalidProcRC().action_bad_agent,
+        Severity.RECOMMENDED,
+        False,
+        ["Process Run Crate Action SHOULD"],
+        ["The Action SHOULD have an agent that is a Person or Organization"],
+        profile_name="s_process-run-crate"
+    )
