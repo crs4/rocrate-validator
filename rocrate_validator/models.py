@@ -1241,7 +1241,7 @@ class ValidationContext:
             for check in profile_checks:
                 #  find duplicated checks and raise an error
                 if check.name in profile_check_names and not self.allow_shapes_override:
-                    raise DuplicateRequirementCheck(check.name, profile.name)
+                    raise DuplicateRequirementCheck(check.name, profile.identifier)
                 #  add check to the list
                 profile_check_names.append(check.name)
                 #  mark overridden checks
@@ -1252,7 +1252,7 @@ class ValidationContext:
                     check.overridden_by = check_chain[-1]
                     check_chain.append(check)
                 else:
-                    raise DuplicateRequirementCheck(check.name, profile.name)
+                    raise DuplicateRequirementCheck(check.name, profile.identifier)
 
         return profiles
 
