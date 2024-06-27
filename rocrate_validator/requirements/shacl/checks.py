@@ -1,3 +1,4 @@
+import json
 from timeit import default_timer as timer
 from typing import Optional
 
@@ -67,10 +68,15 @@ class SHACLCheck(RequirementCheck):
         end_time = timer()
         logger.debug(f"Execution time for getting ontology graph: {end_time - start_time} seconds")
 
-        start_time = timer()
-        data_graph = shacl_context.data_graph
-        end_time = timer()
-        logger.debug(f"Execution time for getting data graph: {end_time - start_time} seconds")
+        data_graph = None
+        try:
+            start_time = timer()
+            data_graph = shacl_context.data_graph
+            end_time = timer()
+            logger.debug(f"Execution time for getting data graph: {end_time - start_time} seconds")
+        except json.decoder.JSONDecodeError as e:
+            logger.warning("Unable to perform metadata validation due to an error in the JSON-LD data file: %s", e)
+            return False
 
         # Begin the timer
         start_time = timer()
