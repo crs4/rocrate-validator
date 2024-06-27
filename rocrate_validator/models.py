@@ -3,12 +3,13 @@ from __future__ import annotations
 import bisect
 import enum
 import inspect
+import re
 from abc import ABC, abstractmethod
 from collections.abc import Collection
 from dataclasses import asdict, dataclass
 from functools import total_ordering
 from pathlib import Path
-from typing import Optional, Union
+from typing import Optional, Tuple, Union
 
 from rdflib import RDF, RDFS, Graph, Namespace, URIRef
 
@@ -379,16 +380,20 @@ class Profile:
         # return the candidate token and version
         return candidate_token, version
 
+    @classmethod
+    def load(cls, profiles_base_path: str,
+             profile_path: Union[str, Path],
              publicID: Optional[str] = None,
              severity:  Severity = Severity.REQUIRED) -> Profile:
         # if the path is a string, convert it to a Path
-        if isinstance(path, str):
-            path = Path(path)
+        if isinstance(profile_path, str):
+            profile_path = Path(profile_path)
         # check if the path is a directory
-        if not path.is_dir():
-            raise InvalidProfilePath(path)
+        if not profile_path.is_dir():
+            raise InvalidProfilePath(profile_path)
         # create a new profile
-        profile = Profile(name=path.name, path=path, publicID=publicID, severity=severity)
+        profile = Profile(profiles_base_path=profiles_base_path,
+                          profile_path=profile_path, publicID=publicID, severity=severity)
         logger.debug("Loaded profile: %s", profile)
         return profile
 
@@ -404,12 +409,16 @@ class Profile:
             raise InvalidProfilePath(profiles_path)
         # initialize the profiles list
         profiles = []
+        # calculate the list of profiles path as the subdirectories of the profiles path
+        # where the profile specification file is present
+        profile_paths = [p.parent for p in profiles_path.rglob('*.*') if p.name == PROFILE_SPECIFICATION_FILE]
+
         # iterate through the directories and load the profiles
-        for profile_path in profiles_path.iterdir():
+        for profile_path in profile_paths:
             logger.debug("Checking profile path: %s %s %r", profile_path,
                          profile_path.is_dir(), IGNORED_PROFILE_DIRECTORIES)
             if profile_path.is_dir() and profile_path not in IGNORED_PROFILE_DIRECTORIES:
-                profile = Profile.load(profile_path, publicID=publicID, severity=severity)
+                profile = Profile.load(profiles_path, profile_path, publicID=publicID, severity=severity)
                 profiles.append(profile)
         #  order profiles according to the dependencies between them: first the profiles that do not depend on ???
         return profiles
