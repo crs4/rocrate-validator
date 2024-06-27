@@ -158,6 +158,8 @@ class Profile:
         if len(profiles) == 1:
             self._profile_node = profiles[0]
             self._profile_specification_graph = profile
+            # initialize the token and version
+            self._token, self._version = self.__init_token_version__()
             self.__profiles_map.add(
                 self._profile_node.toPython(), self, token=self.token, name=self.name)  # add the profile to the profiles map
         else:
@@ -186,7 +188,7 @@ class Profile:
 
     @property
     def token(self):
-        return self.__get_specification_property__("hasToken", PROF_NS) or self._name.lower().replace(" ", "_")
+        return self._token
 
     @property
     def uri(self):
@@ -202,7 +204,7 @@ class Profile:
 
     @property
     def version(self):
-        return self.__get_specification_property__("version", SCHEMA_ORG_NS)
+        return self._version
 
     @property
     def is_profile_of(self) -> list[str]:
@@ -309,7 +311,57 @@ class Profile:
         return self.name
 
     @staticmethod
-    def load(path: Union[str, Path],
+    def __extract_version_from_token__(token: str) -> Optional[str]:
+        if not token:
+            return None
+        pattern = r"\Wv?(\d+(\.\d+(\.\d+)?)?)"
+        matches = re.findall(pattern, token)
+        if matches:
+            return matches[-1][0]
+        return None
+
+    def __get_consistent_version__(self, candidate_token: str) -> str:
+        candidates = {_ for _ in [
+            self.__get_specification_property__("version", SCHEMA_ORG_NS),
+            self.__extract_version_from_token__(candidate_token),
+            self.__extract_version_from_token__(str(self.path.relative_to(self._profiles_base_path))),
+            self.__extract_version_from_token__(str(self.uri))
+        ] if _ is not None}
+        if len(candidates) > 1:
+            raise ProfileSpecificationError(f"Inconsistent versions found: {candidates}")
+        logger.debug("Candidate versions: %s", candidates)
+        return candidates.pop() if len(candidates) == 1 else None
+
+    def __extract_token_from_path__(self) -> str:
+        base_path = str(self._profiles_base_path.absolute())
+        identifier = str(self.path.absolute())
+        # Check if the path starts with the base path
+        if not identifier.startswith(base_path):
+            raise ValueError("Path does not start with the base path")
+        # Remove the base path from the identifier
+        identifier = identifier.replace(f"{base_path}/", "")
+        # Replace slashes with hyphens
+        identifier = identifier.replace('/', '-')
+        return identifier
+
+    def __init_token_version__(self) -> Tuple[str, str, str]:
+        # try to extract the token from the specs or the path
+        candidate_token = self.__get_specification_property__("hasToken", PROF_NS)
+        if not candidate_token:
+            candidate_token = self.__extract_token_from_path__()
+        logger.debug("Candidate token: %s", candidate_token)
+
+        # try to extract the version from the specs or the token or the path or the URI
+        version = self.__get_consistent_version__(candidate_token)
+        logger.debug("Extracted version: %s", version)
+
+        # remove the version from the token if it is present
+        if version:
+            candidate_token = re.sub(r"[\W|_]+" + re.escape(version) + r"$", "", candidate_token)
+
+        # return the candidate token and version
+        return candidate_token, version
+
              publicID: Optional[str] = None,
              severity:  Severity = Severity.REQUIRED) -> Profile:
         # if the path is a string, convert it to a Path
