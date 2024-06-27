@@ -1217,9 +1217,22 @@ class ValidationContext:
             severity=self.requirement_severity)
 
         # Check if the target profile is in the list of profiles
-        profile = Profile.get_by_token(self.profile_name) or Profile.get_by_name(self.profile_name)[0]
-        if profile is None:
-            raise ProfileNotFound(f"Profile '{self.profile_name}' not found in '{self.profiles_path}'")
+        profile = Profile.get_by_identifier(self.profile_name)
+        if not profile:
+            try:
+                candidate_profiles = Profile.get_by_token(self.profile_name)
+                logger.error("Candidate profiles found by token: %s", profile)
+                if candidate_profiles:
+                    # Find the profile with the highest version number
+                    profile = max(candidate_profiles, key=lambda p: p.version)
+                    self.settings["profile_name"] = profile.identifier
+                    logger.error("Profile with the highest version number: %s", profile)
+                # if the profile is found by token, set the profile name to the identifier
+                self.settings["profile_name"] = profile.identifier
+            except Exception as e:
+                if logger.isEnabledFor(logging.DEBUG):
+                    logger.exception(e)
+                raise ProfileNotFound(f"Profile '{self.profile_name}' not found in '{self.profiles_path}'")
 
         # Set the profiles to validate against as the target profile and its inherited profiles
         profiles = profile.inherited_profiles + [profile]
