@@ -31,7 +31,7 @@ def validate(settings: Union[dict, ValidationSettings]) -> ValidationResult:
     return result
 
 
-def get_profiles(profiles_path: Path = DEFAULT_PROFILES_PATH, publicID: str = None, severity=Severity.OPTIONAL) -> list:
+def get_profiles(profiles_path: Path = DEFAULT_PROFILES_PATH, publicID: str = None, severity=Severity.OPTIONAL) -> list[Profile]:
     """
     Load the profiles from the given path
     """
