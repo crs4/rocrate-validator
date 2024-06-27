@@ -18,7 +18,7 @@ paths = InvalidFileDescriptorEntity()
 
 def test_order_of_loaded_profiles(profiles_path: str):
     """Test the order of the loaded profiles."""
-    logger.error("The profiles path: %r", profiles_path)
+    logger.debug("The profiles path: %r", profiles_path)
     assert os.path.exists(profiles_path)
     profiles = Profile.load_profiles(profiles_path=profiles_path)
     # The number of profiles should be greater than 0
