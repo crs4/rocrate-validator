@@ -282,11 +282,12 @@ class Profile:
                 visited.append(p)
                 profile = cls.__profiles_map.get_by_key(p)
                 inherited_profiles = profile.is_profile_of
-                for p in sorted(inherited_profiles, reverse=True):
-                    if not p in visited:
-                        queue.append(p)
-                    if not p in result:
-                        result.insert(0, p)
+                if inherited_profiles:
+                    for p in sorted(inherited_profiles, reverse=True):
+                        if not p in visited:
+                            queue.append(p)
+                        if not p in result:
+                            result.insert(0, p)
         return result
 
     @property
