@@ -60,3 +60,17 @@ ro:ProcRCActionRecommended a sh:NodeShape ;
         sh:minCount 1 ;
         sh:message "The Action SHOULD have an agent that is a Person or Organization" ;
     ] .
+
+ro:ProcRCCreateUpdateActionRecommended a sh:NodeShape ;
+    sh:name "Process Run Crate CreateAction UpdateAction SHOULD" ;
+    sh:description "Recommended properties of the Process Run Crate CreateAction or UpdateAction" ;
+    sh:targetClass schema:CreateAction ,
+                   schema:UpdateAction ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Action result" ;
+        sh:description "The Action SHOULD have a result" ;
+        sh:path schema:result ;
+        sh:minCount 1 ;
+        sh:message "The Action SHOULD have a result" ;
+    ] .

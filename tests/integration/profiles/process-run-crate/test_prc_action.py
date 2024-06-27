@@ -135,3 +135,18 @@ def test_prc_action_bad_agent():
         ["The Action SHOULD have an agent that is a Person or Organization"],
         profile_name="s_process-run-crate"
     )
+
+
+def test_prc_action_no_result():
+    """\
+    Test a Process Run Crate where the CreateAction or UpdateAction does not
+    have a result.
+    """
+    do_entity_test(
+        InvalidProcRC().action_no_result,
+        Severity.RECOMMENDED,
+        False,
+        ["Process Run Crate CreateAction UpdateAction SHOULD"],
+        ["The Action SHOULD have a result"],
+        profile_name="s_process-run-crate"
+    )
