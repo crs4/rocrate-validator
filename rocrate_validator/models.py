@@ -149,7 +149,7 @@ class Profile:
         # check if the profile specification file exists
         spec_file = self.profile_specification_file_path
         if not spec_file or not spec_file.exists():
-            raise ProfileSpecificationNotFound(name, spec_file)
+            raise ProfileSpecificationNotFound(spec_file)
         # load the profile specification expressed using the Profiles Vocabulary
         profile = Graph()
         profile.parse(str(spec_file), format="turtle")
@@ -162,7 +162,7 @@ class Profile:
                 self._profile_node.toPython(), self, token=self.token, name=self.name)  # add the profile to the profiles map
         else:
             raise ProfileSpecificationError(
-                profile_name=name, message=f"Profile specification file {spec_file} must contain exactly one profile")
+                message=f"Profile specification file {spec_file} must contain exactly one profile")
 
     def __get_specification_property__(self, property: str, namespace: Namespace,
                                        pop_first: bool = True, as_Python_object: bool = True) -> Union[str, list[Union[str, URIRef]]]:
