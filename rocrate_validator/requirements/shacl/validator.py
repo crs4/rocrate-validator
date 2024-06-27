@@ -48,13 +48,13 @@ class SHACLValidationContextManager:
         logger.debug("Entering SHACLValidationContextManager")
         if not self._shacl_context.__set_current_validation_profile__(self._profile):
             raise SHACLValidationAlreadyProcessed(
-                self._profile.name, self._shacl_context.get_validation_result(self._profile))
-        logger.debug("Processing profile: %s (id: %s)", self._profile.name,  self._profile.token)
+                self._profile.identifier, self._shacl_context.get_validation_result(self._profile))
+        logger.debug("Processing profile: %s (id: %s)", self._profile.name,  self._profile.identifier)
         if self._context.settings.get("target_only_validation", False) and \
-                self._profile.token != self._context.settings.get("profile_name", None):
-            logger.debug("Skipping validation of profile %s", self._profile.name)
-            raise SHACLValidationSkip(f"Skipping validation of profile {self._profile.name}")
-        logger.debug("ValidationContext of profile %s initialized", self._profile.name)
+                self._profile.identifier != self._context.settings.get("profile_name", None):
+            logger.debug("Skipping validation of profile %s", self._profile.identifier)
+            raise SHACLValidationSkip(f"Skipping validation of profile {self._profile.identifier}")
+        logger.debug("ValidationContext of profile %s initialized", self._profile.identifier)
         return self._shacl_context
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
@@ -98,7 +98,7 @@ class SHACLValidationContext(ValidationContext):
         self._ontology_graph: Graph = Graph()
 
     def __set_current_validation_profile__(self, profile: Profile) -> bool:
-        if not profile.token in self._processed_profiles:
+        if not profile.identifier in self._processed_profiles:
             # augment the ontology graph with the profile ontology
             ontology_graph = self.__load_ontology_graph__(profile.path)
             if ontology_graph:
@@ -152,11 +152,11 @@ class SHACLValidationContext(ValidationContext):
         # store the validation result
         self._validation_result = result
         # mark the profile as processed and store the result
-        self._processed_profiles[self._current_validation_profile.token] = result
+        self._processed_profiles[self._current_validation_profile.identifier] = result
 
     def get_validation_result(self, profile: Profile) -> Optional[bool]:
         assert profile is not None, "Invalid profile"
-        return self._processed_profiles.get(profile.token, None)
+        return self._processed_profiles.get(profile.identifier, None)
 
     @property
     def result(self) -> ValidationResult:
