@@ -19,5 +19,5 @@ def test_wroc_descriptor_bad_conforms_to():
         False,
         ["WROC Metadata File Descriptor properties"],
         ["The Metadata File Descriptor conformsTo SHOULD contain https://w3id.org/ro/crate/1.1 and https://w3id.org/workflowhub/workflow-ro-crate/1.0"],
-        profile_name="workflow-ro-crate"
+        profile_identifier="workflow-ro-crate"
     )

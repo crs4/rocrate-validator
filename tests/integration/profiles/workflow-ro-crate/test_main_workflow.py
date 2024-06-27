@@ -18,7 +18,7 @@ def test_main_workflow_bad_type():
         False,
         ["Main Workflow definition"],
         ["The Main Workflow must have types File, SoftwareSourceCode, ComputationalWorfklow"],
-        profile_name="workflow-ro-crate"
+        profile_identifier="workflow-ro-crate"
     )
 
 
@@ -33,7 +33,7 @@ def test_main_workflow_no_lang():
         False,
         ["Main Workflow definition"],
         ["The Main Workflow must refer to its language via programmingLanguage"],
-        profile_name="workflow-ro-crate"
+        profile_identifier="workflow-ro-crate"
     )
 
 
@@ -48,7 +48,7 @@ def test_main_workflow_no_image():
         False,
         ["Main Workflow optional properties"],
         ["The Crate MAY contain a Main Workflow Diagram; if present it MUST be referred to via 'image'"],
-        profile_name="workflow-ro-crate"
+        profile_identifier="workflow-ro-crate"
     )
 
 
@@ -63,7 +63,7 @@ def test_main_workflow_no_cwl_desc():
         False,
         ["Main Workflow optional properties"],
         ["The Crate MAY contain a Main Workflow CWL Description; if present it MUST be referred to via 'subjectOf'"],
-        profile_name="workflow-ro-crate"
+        profile_identifier="workflow-ro-crate"
     )
 
 
@@ -78,7 +78,7 @@ def test_main_workflow_cwl_desc_bad_type():
         False,
         ["Main Workflow optional properties"],
         ["The CWL Description type must be File, SoftwareSourceCode, HowTo"],
-        profile_name="workflow-ro-crate"
+        profile_identifier="workflow-ro-crate"
     )
 
 
@@ -93,7 +93,7 @@ def test_main_workflow_cwl_desc_no_lang():
         False,
         ["Main Workflow optional properties"],
         ["The CWL Description SHOULD have a language of https://w3id.org/workflowhub/workflow-ro-crate#cwl"],
-        profile_name="workflow-ro-crate"
+        profile_identifier="workflow-ro-crate"
     )
 
 
@@ -107,7 +107,7 @@ def test_main_workflow_file_existence():
         False,
         ["Main Workflow file existence"],
         ["Main Workflow", "not found in crate"],
-        profile_name="workflow-ro-crate"
+        profile_identifier="workflow-ro-crate"
     )
 
 
@@ -122,7 +122,7 @@ def test_workflow_diagram_file_existence():
         False,
         ["Workflow-related files existence"],
         ["Workflow diagram", "not found in crate"],
-        profile_name="workflow-ro-crate"
+        profile_identifier="workflow-ro-crate"
     )
 
 
@@ -137,7 +137,7 @@ def test_workflow_description_file_existence():
         False,
         ["Workflow-related files existence"],
         ["Workflow CWL description", "not found in crate"],
-        profile_name="workflow-ro-crate"
+        profile_identifier="workflow-ro-crate"
     )
 
 
@@ -152,5 +152,5 @@ def test_main_workflow_bad_conformsto():
         False,
         ["Main Workflow recommended properties"],
         ["The Main Workflow SHOULD comply with Bioschemas ComputationalWorkflow profile version 1.0 or later"],
-        profile_name="workflow-ro-crate"
+        profile_identifier="workflow-ro-crate"
     )

@@ -17,7 +17,7 @@ def test_wroc_readme_not_about_crate():
         False,
         ["README.md properties"],
         ["The README.md SHOULD be about the crate"],
-        profile_name="workflow-ro-crate"
+        profile_identifier="workflow-ro-crate"
     )
 
 
@@ -31,5 +31,5 @@ def test_wroc_readme_wrong_encoding_format():
         False,
         ["README.md properties"],
         ["The README.md SHOULD have text/markdown as its encodingFormat"],
-        profile_name="workflow-ro-crate"
+        profile_identifier="workflow-ro-crate"
     )

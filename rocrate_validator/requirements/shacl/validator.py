@@ -31,8 +31,8 @@ class SHACLValidationSkip(Exception):
 
 class SHACLValidationAlreadyProcessed(Exception):
 
-    def __init__(self, profile_name: str, result: SHACLValidationResult) -> None:
-        super().__init__(f"Profile {profile_name} has already been processed")
+    def __init__(self, profile_identifier: str, result: SHACLValidationResult) -> None:
+        super().__init__(f"Profile {profile_identifier} has already been processed")
         self.result = result
 
 
@@ -51,8 +51,8 @@ class SHACLValidationContextManager:
                 self._profile.identifier, self._shacl_context.get_validation_result(self._profile))
         logger.debug("Processing profile: %s (id: %s)", self._profile.name,  self._profile.identifier)
         if self._context.settings.get("target_only_validation", False) and \
-                self._profile.identifier != self._context.settings.get("profile_name", None):
-            logger.debug("Skipping validation of profile %s", self._profile.identifier)
+                self._profile.identifier != self._context.settings.get("profile_identifier", None):
+            logger.error("Skipping validation of profile %s", self._profile.identifier)
             raise SHACLValidationSkip(f"Skipping validation of profile {self._profile.identifier}")
         logger.debug("ValidationContext of profile %s initialized", self._profile.identifier)
         return self._shacl_context

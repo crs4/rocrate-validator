@@ -7,7 +7,7 @@ import rocrate_validator.log as logging
 from rocrate_validator import services
 from rocrate_validator.cli.main import cli, click
 from rocrate_validator.colors import get_severity_color
-from rocrate_validator.constants import DEFAULT_PROFILE_NAME
+from rocrate_validator.constants import DEFAULT_PROFILE_IDENTIFIER
 from rocrate_validator.models import (LevelCollection,
                                       RequirementLevel)
 from rocrate_validator.utils import get_profiles_path
@@ -58,7 +58,7 @@ def list_profiles(ctx):  # , profiles_path: Path = DEFAULT_PROFILES_PATH):
                   caption="[cyan](*)[/cyan] Number of requirements by severity")
 
     # Define columns
-    table.add_column("ID", style="magenta bold", justify="center")
+    table.add_column("Identifier", style="magenta bold", justify="center")
     table.add_column("URI", style="yellow bold", justify="center")
     table.add_column("Name", style="white bold", justify="center")
     table.add_column("Description", style="white italic")
@@ -80,7 +80,7 @@ def list_profiles(ctx):  # , profiles_path: Path = DEFAULT_PROFILES_PATH):
              for severity, count in requirements.items() if count > 0])
 
         # Add the row to the table
-        table.add_row(profile.identifier, profile.uri,
+        table.add_row(__format_version_identifier__(profile), profile.uri,
                       profile.name, Markdown(profile.description.strip()),
                       ", ".join([p.identifier for p in profile.inherited_profiles]),
                       requirements)
@@ -99,10 +99,10 @@ def list_profiles(ctx):  # , profiles_path: Path = DEFAULT_PROFILES_PATH):
     default=False,
     show_default=True
 )
-@click.argument("profile-name", type=click.STRING, default=DEFAULT_PROFILE_NAME, required=True)
+@click.argument("profile-identifier", type=click.STRING, default=DEFAULT_PROFILE_IDENTIFIER, required=True)
 @click.pass_context
 def describe_profile(ctx,
-                     profile_name: str = DEFAULT_PROFILE_NAME,
+                     profile_identifier: str = DEFAULT_PROFILE_IDENTIFIER,
                      profiles_path: Path = DEFAULT_PROFILES_PATH,
                      verbose: bool = False):
     """
@@ -110,10 +110,9 @@ def describe_profile(ctx,
     """
     console = ctx.obj['console']
     # Get the profile
-    profile = services.get_profile(profiles_path=profiles_path, profile_name=profile_name)
-
+    profile = services.get_profile(profiles_path=profiles_path, profile_identifier=profile_identifier)
     console.print("\n", style="white bold")
-    console.print(f"[bold]Profile: {profile_name}[/bold]", style="magenta bold")
+    console.print(f"[bold]Profile: {profile_identifier}[/bold]", style="magenta bold")
     console.print("\n", style="white bold")
     console.print(Markdown(profile.description.strip()))
     console.print("\n", style="white bold")

@@ -17,5 +17,5 @@ def test_wroc_no_license():
         False,
         ["WROC Root Data Entity Required Properties"],
         ["The Crate (Root Data Entity) must specify a license, which should be a URL but can also be a string"],
-        profile_name="workflow-ro-crate"
+        profile_identifier="workflow-ro-crate"
     )

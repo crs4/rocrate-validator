@@ -15,7 +15,7 @@ from rdflib import RDF, RDFS, Graph, Namespace, URIRef
 
 import rocrate_validator.log as logging
 from rocrate_validator.constants import (DEFAULT_ONTOLOGY_FILE,
-                                         DEFAULT_PROFILE_NAME,
+                                         DEFAULT_PROFILE_IDENTIFIER,
                                          DEFAULT_PROFILE_README_FILE,
                                          IGNORED_PROFILE_DIRECTORIES, PROF_NS,
                                          PROFILE_FILE_EXTENSIONS,
@@ -254,7 +254,7 @@ class Profile:
                 with open(self.readme_file_path, "r") as f:
                     self._description = f.read()
             else:
-                self._description = "RO-Crate profile"
+                self._description = self.comment
         return self._description
 
     @property
@@ -984,7 +984,7 @@ class ValidationSettings:
     data_path: Path
     # Profile settings
     profiles_path: Path = DEFAULT_PROFILES_PATH
-    profile_name: str = DEFAULT_PROFILE_NAME
+    profile_identifier: str = DEFAULT_PROFILE_IDENTIFIER
     inherit_profiles: bool = True
     allow_shapes_override: bool = True
     disable_check_for_duplicates: bool = False
@@ -1090,7 +1090,7 @@ class Validator:
                     logger.debug("Validation Requirement passed")
                 else:
                     logger.debug(f"Validation Requirement {requirement} failed ")
-                    if context.settings.get("abort_on_first") is True and context.profile_name == profile.name:
+                    if context.settings.get("abort_on_first") is True and context.profile_identifier == profile.name:
                         logger.debug("Aborting on first requirement failure")
                         return context.result
 
@@ -1188,8 +1188,8 @@ class ValidationContext:
         return self.settings.get("inherit_profiles", False)
 
     @property
-    def profile_name(self) -> str:
-        return self.settings.get("profile_name")
+    def profile_identifier(self) -> str:
+        return self.settings.get("profile_identifier")
 
     @property
     def allow_shapes_override(self) -> bool:
@@ -1205,7 +1205,7 @@ class ValidationContext:
         if not self.inheritance_enabled:
             profile = Profile.load(
                 self.profiles_path,
-                self.profiles_path / self.profile_name,
+                self.profiles_path / self.profile_identifier,
                 publicID=self.publicID,
                 severity=self.requirement_severity)
             return [profile]
@@ -1217,22 +1217,22 @@ class ValidationContext:
             severity=self.requirement_severity)
 
         # Check if the target profile is in the list of profiles
-        profile = Profile.get_by_identifier(self.profile_name)
+        profile = Profile.get_by_identifier(self.profile_identifier)
         if not profile:
             try:
-                candidate_profiles = Profile.get_by_token(self.profile_name)
+                candidate_profiles = Profile.get_by_token(self.profile_identifier)
                 logger.error("Candidate profiles found by token: %s", profile)
                 if candidate_profiles:
                     # Find the profile with the highest version number
                     profile = max(candidate_profiles, key=lambda p: p.version)
-                    self.settings["profile_name"] = profile.identifier
+                    self.settings["profile_identifier"] = profile.identifier
                     logger.error("Profile with the highest version number: %s", profile)
                 # if the profile is found by token, set the profile name to the identifier
-                self.settings["profile_name"] = profile.identifier
+                self.settings["profile_identifier"] = profile.identifier
             except Exception as e:
                 if logger.isEnabledFor(logging.DEBUG):
                     logger.exception(e)
-                raise ProfileNotFound(f"Profile '{self.profile_name}' not found in '{self.profiles_path}'")
+                raise ProfileNotFound(f"Profile '{self.profile_identifier}' not found in '{self.profiles_path}'")
 
         # Set the profiles to validate against as the target profile and its inherited profiles
         profiles = profile.inherited_profiles + [profile]

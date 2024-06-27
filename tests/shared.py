@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Optional, TypeVar, Union
 
 from rocrate_validator import models, services
-from rocrate_validator.constants import DEFAULT_PROFILE_NAME
+from rocrate_validator.constants import DEFAULT_PROFILE_IDENTIFIER
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +27,7 @@ def do_entity_test(
         expected_triggered_requirements: Optional[list[str]] = None,
         expected_triggered_issues: Optional[list[str]] = None,
         abort_on_first: bool = True,
-        profile_name: str = DEFAULT_PROFILE_NAME
+        profile_identifier: str = DEFAULT_PROFILE_IDENTIFIER
 ):
     """
     Shared function to test a RO-Crate entity
@@ -57,7 +57,7 @@ def do_entity_test(
                 "data_path": rocrate_path,
                 "requirement_severity": requirement_severity,
                 "abort_on_first": abort_on_first,
-                "profile_name": profile_name
+                "profile_identifier": profile_identifier
             }))
         logger.debug("Expected validation result: %s", expected_validation_result)
 

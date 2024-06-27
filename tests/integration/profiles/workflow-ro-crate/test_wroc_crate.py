@@ -17,7 +17,7 @@ def test_wroc_no_tests():
         False,
         ["test directory"],
         ["The test/ dir should be a Dataset"],
-        profile_name="workflow-ro-crate"
+        profile_identifier="workflow-ro-crate"
     )
 
 
@@ -31,5 +31,5 @@ def test_wroc_no_examples():
         False,
         ["examples directory"],
         ["The examples/ dir should be a Dataset"],
-        profile_name="workflow-ro-crate"
+        profile_identifier="workflow-ro-crate"
     )
