@@ -50,3 +50,45 @@ def test_prc_action_not_mentioned():
         ["The Action SHOULD be referenced from the Root Data Entity via mentions"],
         profile_name="s_process-run-crate"
     )
+
+
+def test_prc_action_no_name():
+    """\
+    Test a Process Run Crate where the action does not have an name.
+    """
+    do_entity_test(
+        InvalidProcRC().action_no_name,
+        Severity.RECOMMENDED,
+        False,
+        ["Process Run Crate Action SHOULD"],
+        ["The Action SHOULD have a name"],
+        profile_name="s_process-run-crate"
+    )
+
+
+def test_prc_action_no_description():
+    """\
+    Test a Process Run Crate where the action does not have a description.
+    """
+    do_entity_test(
+        InvalidProcRC().action_no_description,
+        Severity.RECOMMENDED,
+        False,
+        ["Process Run Crate Action SHOULD"],
+        ["The Action SHOULD have a description"],
+        profile_name="s_process-run-crate"
+    )
+
+
+def test_prc_action_no_endtime():
+    """\
+    Test a Process Run Crate where the action does not have an endTime.
+    """
+    do_entity_test(
+        InvalidProcRC().action_no_endtime,
+        Severity.RECOMMENDED,
+        False,
+        ["Process Run Crate Action SHOULD"],
+        ["The Action SHOULD have an endTime"],
+        profile_name="s_process-run-crate"
+    )

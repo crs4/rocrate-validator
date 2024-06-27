@@ -22,4 +22,28 @@ ro:ProcRCActionRecommended a sh:NodeShape ;
         sh:node rocrate:RootDataEntity ;
         sh:minCount 1 ;
         sh:message "The Action SHOULD be referenced from the Root Data Entity via mentions" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Action name" ;
+        sh:description "The Action SHOULD have a name" ;
+        sh:path schema:name ;
+        sh:minCount 1 ;
+        sh:message "The Action SHOULD have a name" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Action description" ;
+        sh:description "The Action SHOULD have a description" ;
+        sh:path schema:description ;
+        sh:minCount 1 ;
+        sh:message "The Action SHOULD have a description" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Action endTime" ;
+        sh:description "The Action SHOULD have an endTime" ;
+        sh:path schema:endTime ;
+        sh:minCount 1 ;
+        sh:message "The Action SHOULD have an endTime" ;
     ] .

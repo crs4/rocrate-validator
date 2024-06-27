@@ -305,3 +305,15 @@ class InvalidProcRC:
     @property
     def action_not_mentioned(self) -> Path:
         return self.base_path / "action_not_mentioned"
+
+    @property
+    def action_no_name(self) -> Path:
+        return self.base_path / "action_no_name"
+
+    @property
+    def action_no_description(self) -> Path:
+        return self.base_path / "action_no_description"
+
+    @property
+    def action_no_endtime(self) -> Path:
+        return self.base_path / "action_no_endtime"
