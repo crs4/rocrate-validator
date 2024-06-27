@@ -9,7 +9,7 @@
     a prof:Profile ;
 
     # the Profile's label
-    rdfs:label "Workflow RO-Crate Metadata Specification 1.1" ;
+    rdfs:label "Workflow RO-Crate Metadata Specification 1.0" ;
 
     # regular metadata, a basic description of the Profile
     rdfs:comment """RO-Crate Metadata Specification."""@en ;
