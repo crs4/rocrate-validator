@@ -421,8 +421,10 @@ class Profile:
             if profile_path.is_dir() and profile_path not in IGNORED_PROFILE_DIRECTORIES:
                 profile = Profile.load(profiles_path, profile_path, publicID=publicID, severity=severity)
                 profiles.append(profile)
-        #  order profiles according to the dependencies between them: first the profiles that do not depend on ???
-        return profiles
+        #  order profiles according to the number of profiles they depend on:
+        # i.e, first the profiles that do not depend on any other profile
+        # then the profiles that depend on the previous ones, and so on
+        return sorted(profiles, key=lambda x: len(x.inherited_profiles))
 
     @classmethod
     def get_by_identifier(cls, identifier: str) -> Profile:
