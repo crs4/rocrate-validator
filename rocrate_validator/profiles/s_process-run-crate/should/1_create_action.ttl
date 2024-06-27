@@ -42,8 +42,9 @@ ro:ProcRCActionRecommended a sh:NodeShape ;
     sh:property [
         a sh:PropertyShape ;
         sh:name "Action endTime" ;
-        sh:description "The Action SHOULD have an endTime" ;
+        sh:description "The Action SHOULD have an endTime in ISO 8601 format" ;
         sh:path schema:endTime ;
+        sh:pattern "^(\\d{4}-\\d{2}-\\d{2})(T\\d{2}:\\d{2}:\\d{2}(\\.\\d{3})?\\+\\d{2}:\\d{2})?$" ;
         sh:minCount 1 ;
-        sh:message "The Action SHOULD have an endTime" ;
+        sh:message "The Action SHOULD have an endTime in ISO 8601 format" ;
     ] .

@@ -317,3 +317,7 @@ class InvalidProcRC:
     @property
     def action_no_endtime(self) -> Path:
         return self.base_path / "action_no_endtime"
+
+    @property
+    def action_bad_endtime(self) -> Path:
+        return self.base_path / "action_bad_endtime"

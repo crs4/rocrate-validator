@@ -89,6 +89,20 @@ def test_prc_action_no_endtime():
         Severity.RECOMMENDED,
         False,
         ["Process Run Crate Action SHOULD"],
-        ["The Action SHOULD have an endTime"],
+        ["The Action SHOULD have an endTime in ISO 8601 format"],
+        profile_name="s_process-run-crate"
+    )
+
+
+def test_prc_action_bad_endtime():
+    """\
+    Test a Process Run Crate where the action does not have an endTime.
+    """
+    do_entity_test(
+        InvalidProcRC().action_bad_endtime,
+        Severity.RECOMMENDED,
+        False,
+        ["Process Run Crate Action SHOULD"],
+        ["The Action SHOULD have an endTime in ISO 8601 format"],
         profile_name="s_process-run-crate"
     )
