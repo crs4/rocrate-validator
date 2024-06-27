@@ -80,9 +80,9 @@ def list_profiles(ctx):  # , profiles_path: Path = DEFAULT_PROFILES_PATH):
              for severity, count in requirements.items() if count > 0])
 
         # Add the row to the table
-        table.add_row(profile.token, profile.uri,
-                      profile.label, Markdown(profile.description.strip()),
-                      ", ".join([p.token for p in profile.inherited_profiles]),
+        table.add_row(profile.identifier, profile.uri,
+                      profile.name, Markdown(profile.description.strip()),
+                      ", ".join([p.identifier for p in profile.inherited_profiles]),
                       requirements)
         table.add_row()
 
