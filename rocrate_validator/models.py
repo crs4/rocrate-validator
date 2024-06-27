@@ -127,12 +127,17 @@ class LevelCollection:
 class Profile:
 
     # store the map of profiles: profile URI -> Profile instance
-    __profiles_map: MultiIndexMap = MultiIndexMap("uri", indexes=[MapIndex("name"), MapIndex("token", unique=True)])
+    __profiles_map: MultiIndexMap = MultiIndexMap("uri",
+                                                  indexes=[MapIndex("name"), MapIndex("token", unique=False), MapIndex("identifier", unique=True)])
 
+    def __init__(self,
                  profiles_base_path: Path,
+                 profile_path: Path,
                  requirements: Optional[list[Requirement]] = None,
+                 identifier: str = None,
                  publicID: Optional[str] = None,
                  severity: Severity = Severity.REQUIRED):
+        self._identifier: Optional[str] = identifier
         self._profiles_base_path = profiles_base_path
         self._profile_path = profile_path
         self._description: Optional[str] = None
@@ -160,8 +165,9 @@ class Profile:
             self._profile_specification_graph = profile
             # initialize the token and version
             self._token, self._version = self.__init_token_version__()
+            # add the profile to the profiles map
             self.__profiles_map.add(
-                self._profile_node.toPython(), self, token=self.token, name=self.name)  # add the profile to the profiles map
+                self._profile_node.toPython(), self, token=self.token, name=self.name, identifier=self.identifier)  # add the profile to the profiles map
         else:
             raise ProfileSpecificationError(
                 message=f"Profile specification file {spec_file} must contain exactly one profile")
@@ -177,6 +183,13 @@ class Profile:
     @property
     def path(self):
         return self._profile_path
+
+    @property
+    def identifier(self) -> str:
+        if not self._identifier:
+            version = self.version
+            self._identifier = f"{self.token}-{version}" if version else self.token
+        return self._identifier
 
     @property
     def name(self):
@@ -288,27 +301,28 @@ class Profile:
 
     def __eq__(self, other: object) -> bool:
         return isinstance(other, Profile) \
-            and self.name == other.name \
+            and self.identifier == other.identifier \
             and self.path == other.path \
             and self.requirements == other.requirements
 
     def __lt__(self, other: object) -> bool:
         if not isinstance(other, Profile):
             raise TypeError(f"Cannot compare {type(self)} with {type(other)}")
-        return self.name < other.name
+        return self.identifier < other.identifier
 
     def __hash__(self) -> int:
-        return hash((self.name, self.path, self.requirements))
+        return hash((self.identifier, self.path, self.requirements))
 
     def __repr__(self) -> str:
         return (
-            f'Profile(name={self.name}, '
+            f'Profile(identifier={self.identifier}, '
+            f'name={self.name}, '
             f'path={self.path}, ' if self.path else ''
             f'requirements={self.requirements})'
         )
 
     def __str__(self) -> str:
-        return self.name
+        return f"{self.name} ({self.identifier})"
 
     @staticmethod
     def __extract_version_from_token__(token: str) -> Optional[str]:
