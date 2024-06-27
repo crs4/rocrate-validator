@@ -38,6 +38,7 @@ ipykernel = "^6.29.3"
 
 [tool.poetry.group.test.dependencies]
 pytest-cov = "^5.0.0"
+pytest-xdist = "^3.6.1"
 
 [tool.flake8]
 max-line-length = 120
