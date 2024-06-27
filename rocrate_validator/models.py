@@ -179,7 +179,9 @@ class Profile:
         values = list(self._profile_specification_graph.objects(self._profile_node, namespace[property]))
         if values and as_Python_object:
             values = [v.toPython() for v in values]
-        return values[0] if values and len(values) >= 1 and pop_first else values
+        if pop_first:
+            return values[0] if values and len(values) >= 1 else None
+        return values
 
     @property
     def path(self):
