@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from rich.markdown import Markdown
+from rich.panel import Panel
 from rich.table import Table
 
 import rocrate_validator.log as logging
@@ -8,8 +9,7 @@ from rocrate_validator import services
 from rocrate_validator.cli.main import cli, click
 from rocrate_validator.colors import get_severity_color
 from rocrate_validator.constants import DEFAULT_PROFILE_IDENTIFIER
-from rocrate_validator.models import (LevelCollection,
-                                      RequirementLevel)
+from rocrate_validator.models import LevelCollection, RequirementLevel
 from rocrate_validator.utils import get_profiles_path
 
 # set the default profiles path
@@ -109,19 +109,25 @@ def describe_profile(ctx,
     """
     Show a profile
     """
+    # Get the console
     console = ctx.obj['console']
     # Get the profile
     profile = services.get_profile(profiles_path=profiles_path, profile_identifier=profile_identifier)
+    # Print the profile header
     console.print("\n", style="white bold")
-    console.print(f"[bold]Profile: {profile_identifier}[/bold]", style="magenta bold")
-    console.print("\n", style="white bold")
-    console.print(Markdown(profile.description.strip()))
-    console.print("\n", style="white bold")
-
+    title_text = f"[bold cyan]Version:[/bold cyan] [italic green]{profile.version}[/italic green]\n"
+    title_text += f"[bold cyan]URI:[/bold cyan] [italic yellow]{profile.uri}[/italic yellow]\n"
+    title_text += f"[bold cyan]Description:[/bold cyan] [italic]{profile.description.strip()}[/italic]"
+    box = Panel(
+        title_text, title=f"[bold][cyan]Profile:[/cyan] [magenta italic]{profile.identifier}[/magenta italic][/bold]", padding=(1, 1))
+    console.print(box)
+    # Print the profile requirements
     if not verbose:
         __compacted_describe_profile__(console, profile)
     else:
         __verbose_describe_profile__(console, profile)
+    # End with a new line
+    console.print("\n")
 
 
 def __requirement_level_style__(requirement: RequirementLevel):
