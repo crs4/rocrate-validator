@@ -12,7 +12,7 @@
     rdfs:label "Workflow RO-Crate Metadata Specification 1.0" ;
 
     # regular metadata, a basic description of the Profile
-    rdfs:comment """RO-Crate Metadata Specification."""@en ;
+    rdfs:comment """Workflow RO-Crate Metadata Specification."""@en ;
 
     # URI of the publisher of the Workflow RO-Crate Metadata Specification
     dct:publisher <https://w3id.org/workflowhub/> ;
