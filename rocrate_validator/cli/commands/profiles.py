@@ -60,9 +60,10 @@ def list_profiles(ctx):  # , profiles_path: Path = DEFAULT_PROFILES_PATH):
     # Define columns
     table.add_column("Identifier", style="magenta bold", justify="center")
     table.add_column("URI", style="yellow bold", justify="center")
+    table.add_column("Version", style="green bold", justify="center")
     table.add_column("Name", style="white bold", justify="center")
     table.add_column("Description", style="white italic")
-    table.add_column("based on", style="white", justify="center")
+    table.add_column("Based on", style="white", justify="center")
     table.add_column("Requirements (*)", style="white", justify="center")
 
     # Add data to the table
@@ -74,37 +75,20 @@ def list_profiles(ctx):  # , profiles_path: Path = DEFAULT_PROFILES_PATH):
             if not requirements.get(req.severity.name, None):
                 requirements[req.severity.name] = 0
             requirements[req.severity.name] += 1
-        requirements = ", ".join(
+        requirements = "\n".join(
             [f"[bold][{get_severity_color(severity)}]{severity}: "
              f"{count}[/{get_severity_color(severity)}][/bold]"
              for severity, count in requirements.items() if count > 0])
 
         # Add the row to the table
-        table.add_row(__format_version_identifier__(profile), profile.uri,
+        table.add_row(profile.identifier, profile.uri, profile.version,
                       profile.name, Markdown(profile.description.strip()),
-                      ", ".join([p.identifier for p in profile.inherited_profiles]),
+                      "\n".join([p.identifier for p in profile.inherited_profiles]),
                       requirements)
         table.add_row()
 
     # Print the table
     console.print(table)
-
-
-def __format_version_identifier__(profile):
-    """
-    Format the version and identifier
-    """
-
-    table = Table(show_header=True,
-                  title=profile.identifier,
-                  header_style="bold cyan",
-                  border_style="bright_black",
-                  show_footer=False)
-    table.add_column("prefix", style="magenta bold", justify="center")
-    table.add_column("version", style="yellow bold", justify="center")
-
-    table.add_row(profile.token, profile.version)
-    return table
 
 
 @profiles.command("describe")
