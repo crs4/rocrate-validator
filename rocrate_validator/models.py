@@ -412,6 +412,10 @@ class Profile:
         return profiles
 
     @classmethod
+    def get_by_identifier(cls, identifier: str) -> Profile:
+        return cls.__profiles_map.get_by_index("identifier", identifier)
+
+    @classmethod
     def get_by_uri(cls, uri: str) -> Profile:
         return cls.__profiles_map.get_by_key(uri)
 
