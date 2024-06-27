@@ -116,7 +116,7 @@ def describe_profile(ctx,
     # Print the profile header
     console.print("\n", style="white bold")
     title_text = f"[bold cyan]Version:[/bold cyan] [italic green]{profile.version}[/italic green]\n"
-    title_text += f"[bold cyan]URI:[/bold cyan] [italic yellow]{profile.uri}[/italic yellow]\n"
+    title_text += f"[bold cyan]URI:[/bold cyan] [italic yellow]{profile.uri}[/italic yellow]\n\n"
     title_text += f"[bold cyan]Description:[/bold cyan] [italic]{profile.description.strip()}[/italic]"
     box = Panel(
         title_text, title=f"[bold][cyan]Profile:[/cyan] [magenta italic]{profile.identifier}[/magenta italic][/bold]", padding=(1, 1))
