@@ -424,7 +424,7 @@ class Profile:
         #  order profiles according to the number of profiles they depend on:
         # i.e, first the profiles that do not depend on any other profile
         # then the profiles that depend on the previous ones, and so on
-        return sorted(profiles, key=lambda x: len(x.inherited_profiles))
+        return sorted(profiles, key=lambda x: f"{len(x.inherited_profiles)}_{x.identifier}")
 
     @classmethod
     def get_by_identifier(cls, identifier: str) -> Profile:
