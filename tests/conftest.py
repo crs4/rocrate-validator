@@ -39,6 +39,11 @@ def fake_profiles_path():
 
 
 @fixture
+def profiles_with_free_folder_structure_path():
+    return f"{TEST_DATA_PATH}/profiles/free_folder_structure"
+
+
+@fixture
 def graphs_path():
     return f"{TEST_DATA_PATH}/graphs"
 

@@ -115,6 +115,19 @@ def test_profile_spec_properties(fake_profiles_path: str):
         "https://w3id.org/a"], "The transitiveProfileOf property should be ['a']"
 
 
+def test_profiles_loading_free_folder_structure(profiles_with_free_folder_structure_path):
+    """Test the loaded profiles from the validator context."""
+    profiles = Profile.load_profiles(profiles_path=profiles_with_free_folder_structure_path)
+    logger.debug("The profiles: %r", profiles)
+    for p in profiles:
+        logger.warning("The profile '%s' has %d requirements", p, len(p.requirements))
+
+    assert len(profiles) == 3, "The number of profiles should be 3"
+    assert profiles[0].token == "a", "The profile name should be 'a'"
+    assert profiles[1].token == "b", "The profile name should be 'b'"
+    assert profiles[2].token == "c", "The profile name should be 'c'"
+
+
 def test_loaded_valid_profile_with_inheritance_from_validator_context(fake_profiles_path: str):
     """Test the loaded profiles from the validator context."""
 
