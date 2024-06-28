@@ -130,9 +130,28 @@ def test_profiles_loading_free_folder_structure(profiles_with_free_folder_struct
     assert profiles[1].token == "b", "The profile name should be 'b'"
     assert profiles[2].token == "c", "The profile name should be 'c'"
 
+
+def test_versioned_profiles_loading(fake_versioned_profiles_path):
+    """Test the loaded profiles from the validator context."""
+    profiles = Profile.load_profiles(profiles_path=fake_versioned_profiles_path)
+    logger.debug("The profiles: %r", profiles)
+    for p in profiles:
+        logger.warning("The profile '%s' has %d requirements", p, len(p.requirements))
+    # The number of profiles should be 3
+    assert len(profiles) == 3, "The number of profiles should be 3"
+
+    # The profile a should have an explicit version 1.0.0
     assert profiles[0].token == "a", "The profile name should be 'a'"
+    assert profiles[0].version == "1.0.0", "The profile version should be 1.0.0"
+
+    # The profile b should have a version inferred by the 2.0
     assert profiles[1].token == "b", "The profile name should be 'b'"
+    assert profiles[1].version == "2.0", "The profile version should be 2.0"
+
+    # The profile c should have a version inferred by the 3.2.1
     assert profiles[2].token == "c", "The profile name should be 'c'"
+    assert profiles[2].version == "3.2.1", "The profile version should be 3.2.1"
+
 
 
 def test_loaded_valid_profile_with_inheritance_from_validator_context(fake_profiles_path: str):
