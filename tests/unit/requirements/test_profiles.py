@@ -4,7 +4,7 @@ import os
 import pytest
 
 from rocrate_validator.constants import DEFAULT_PROFILE_IDENTIFIER
-from rocrate_validator.errors import DuplicateRequirementCheck, InvalidProfilePath
+from rocrate_validator.errors import DuplicateRequirementCheck, InvalidProfilePath, ProfileSpecificationError
 from rocrate_validator.models import (Profile, ValidationContext,
                                       ValidationSettings, Validator)
 from tests.ro_crates import InvalidFileDescriptorEntity
@@ -152,6 +152,14 @@ def test_versioned_profiles_loading(fake_versioned_profiles_path):
     assert profiles[2].token == "c", "The profile name should be 'c'"
     assert profiles[2].version == "3.2.1", "The profile version should be 3.2.1"
 
+
+def test_conflicting_versioned_profiles_loading(fake_conflicting_versioned_profiles_path):
+    """Test the loaded profiles from the validator context."""
+    with pytest.raises(ProfileSpecificationError) as excinfo:
+        # Load the profiles
+        Profile.load_profiles(profiles_path=fake_conflicting_versioned_profiles_path)
+    # Check that the conflicting versions are found
+    assert "Inconsistent versions found: {'3.2.2', '3.2.1', '2.3'}"
 
 
 def test_loaded_valid_profile_with_inheritance_from_validator_context(fake_profiles_path: str):
