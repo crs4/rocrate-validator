@@ -60,6 +60,56 @@ class ProfileNotFound(ROCValidatorError):
         return f"ProfileNotFound({self._profile_name!r})"
 
 
+class ProfileSpecificationNotFound(ROCValidatorError):
+    """Raised when the profile specification is not found."""
+
+    def __init__(self, profile_name: Optional[str] = None, spec_file: Optional[str] = None):
+        self._profile_name = profile_name
+        self._spec_file = spec_file
+
+    @property
+    def profile_name(self) -> Optional[str]:
+        """The name of the profile."""
+        return self._profile_name
+
+    @property
+    def spec_file(self) -> Optional[str]:
+        """The name of the profile specification file."""
+        return self._spec_file
+
+    def __str__(self) -> str:
+        msg = f"Unable to find the `profile.ttl` specification for the profile \"{self._profile_name!r}\""
+        if self._spec_file:
+            msg += f" in the file {self._spec_file!r}"
+        return msg
+
+    def __repr__(self):
+        return f"ProfileSpecificationNotFound({self._profile_name!r})"
+
+
+class ProfileSpecificationError(ROCValidatorError):
+
+    def __init__(self, profile_name: Optional[str] = None, message: Optional[str] = None):
+        self._profile_name = profile_name
+        self._message = message
+
+    @property
+    def profile_name(self) -> Optional[str]:
+        """The name of the profile."""
+        return self._profile_name
+
+    @property
+    def message(self) -> Optional[str]:
+        """The error message."""
+        return self._message
+
+    def __str__(self) -> str:
+        return f"Error in the `profile.ttl` specification for the profile \"{self._profile_name!r}\": {self._message!r}"
+
+    def __repr__(self):
+        return f"ProfileSpecificationError({self._profile_name!r}, {self._message!r})"
+
+
 class DuplicateRequirementCheck(ROCValidatorError):
     """Raised when a duplicate requirement check is found."""
 

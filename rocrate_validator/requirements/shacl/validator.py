@@ -49,10 +49,12 @@ class SHACLValidationContextManager:
         if not self._shacl_context.__set_current_validation_profile__(self._profile):
             raise SHACLValidationAlreadyProcessed(
                 self._profile.name, self._shacl_context.get_validation_result(self._profile))
+        logger.debug("Processing profile: %s (id: %s)", self._profile.name,  self._profile.token)
         if self._context.settings.get("target_only_validation", False) and \
-                self._profile.name != self._context.settings.get("profile_name", None):
+                self._profile.token != self._context.settings.get("profile_name", None):
             logger.debug("Skipping validation of profile %s", self._profile.name)
             raise SHACLValidationSkip(f"Skipping validation of profile {self._profile.name}")
+        logger.debug("ValidationContext of profile %s initialized", self._profile.name)
         return self._shacl_context
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
@@ -96,13 +98,16 @@ class SHACLValidationContext(ValidationContext):
         self._ontology_graph: Graph = Graph()
 
     def __set_current_validation_profile__(self, profile: Profile) -> bool:
-        if not profile.name in self._processed_profiles:
+        if not profile.token in self._processed_profiles:
             # augment the ontology graph with the profile ontology
-            self._ontology_graph += self.__load_ontology_graph__(profile.name)
+            ontology_graph = self.__load_ontology_graph__(profile.path)
+            if ontology_graph:
+                self._ontology_graph += ontology_graph
             # augment the shapes registry with the profile shapes
             profile_registry = ShapesRegistry.get_instance(profile)
             profile_shapes = profile_registry.get_shapes()
             profile_shapes_graph = profile_registry.shapes_graph
+            logger.debug("Loaded shapes: %s", profile_shapes)
 
             # enable overriding of checks
             if self.settings.get("override_checks", False):
@@ -147,11 +152,11 @@ class SHACLValidationContext(ValidationContext):
         # store the validation result
         self._validation_result = result
         # mark the profile as processed and store the result
-        self._processed_profiles[self._current_validation_profile.name] = result
+        self._processed_profiles[self._current_validation_profile.token] = result
 
     def get_validation_result(self, profile: Profile) -> Optional[bool]:
         assert profile is not None, "Invalid profile"
-        return self._processed_profiles.get(profile.name, None)
+        return self._processed_profiles.get(profile.token, None)
 
     @property
     def result(self) -> ValidationResult:
@@ -165,9 +170,9 @@ class SHACLValidationContext(ValidationContext):
     def shapes_graph(self) -> Graph:
         return self.shapes_registry.shapes_graph
 
-    def __get_ontology_path__(self, profile_name: str, ontology_filename: str = DEFAULT_ONTOLOGY_FILE) -> Path:
+    def __get_ontology_path__(self, profile_path: Path, ontology_filename: str = DEFAULT_ONTOLOGY_FILE) -> Path:
         if not self._ontology_path:
-            supported_path = f"{self.profiles_path}/{profile_name}/{ontology_filename}"
+            supported_path = f"{profile_path}/{ontology_filename}"
             if self.settings.get("ontology_path", None):
                 logger.warning("Detected an ontology path. Custom ontology file is not yet supported."
                                f"Use {supported_path} to provide an ontology for your profile.")
@@ -175,15 +180,16 @@ class SHACLValidationContext(ValidationContext):
             self._ontology_path = Path(supported_path)
         return self._ontology_path
 
-    def __load_ontology_graph__(self, profile_name: str, ontology_filename: Optional[str] = DEFAULT_ONTOLOGY_FILE) -> Graph:
+    def __load_ontology_graph__(self, profile_path: Path, ontology_filename: Optional[str] = DEFAULT_ONTOLOGY_FILE) -> Graph:
         # load the graph of ontologies
         ontology_graph = None
-        ontology_path = self.__get_ontology_path__(profile_name, ontology_filename)
+        ontology_path = self.__get_ontology_path__(profile_path, ontology_filename)
         if os.path.exists(ontology_path):
             logger.debug("Loading ontologies: %s", ontology_path)
             ontology_graph = Graph()
             ontology_graph.parse(ontology_path, format="ttl",
                                  publicID=self.publicID)
+            logger.debug("Ontologies loaded: %s", ontology_graph)
         return ontology_graph
 
     @property

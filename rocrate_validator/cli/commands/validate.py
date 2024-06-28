@@ -85,7 +85,7 @@ logger = logging.getLogger(__name__)
 @click.pass_context
 def validate(ctx,
              profiles_path: Path = DEFAULT_PROFILES_PATH,
-             profile_name: str = "ro-crate",
+             profile_name: str = DEFAULT_PROFILE_NAME,
              disable_profile_inheritance: bool = False,
              requirement_severity: str = Severity.REQUIRED.name,
              requirement_severity_only: bool = False,

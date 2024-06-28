@@ -1,3 +1,4 @@
+from timeit import default_timer as timer
 from typing import Optional
 
 import rocrate_validator.log as logging
@@ -61,30 +62,50 @@ class SHACLCheck(RequirementCheck):
         shapes_registry = shacl_context.shapes_registry
 
         # set up the input data for the validator
+        start_time = timer()
         ontology_graph = shacl_context.ontology_graph
-        data_graph = shacl_context.data_graph
-        shapes_graph = shapes_registry.shapes_graph
+        end_time = timer()
+        logger.debug(f"Execution time for getting ontology graph: {end_time - start_time} seconds")
 
-        # uncomment to save the graphs to the logs folder (for debugging purposes)
+        start_time = timer()
+        data_graph = shacl_context.data_graph
+        end_time = timer()
+        logger.debug(f"Execution time for getting data graph: {end_time - start_time} seconds")
+
+        # Begin the timer
+        start_time = timer()
+        shapes_graph = shapes_registry.shapes_graph
+        end_time = timer()
+        logger.debug(f"Execution time for getting shapes: {end_time - start_time} seconds")
+
+        # # uncomment to save the graphs to the logs folder (for debugging purposes)
+        # start_time = timer()
         # data_graph.serialize("logs/data_graph.ttl", format="turtle")
         # shapes_graph.serialize("logs/shapes_graph.ttl", format="turtle")
         # if ontology_graph:
         #     ontology_graph.serialize("logs/ontology_graph.ttl", format="turtle")
+        # end_time = timer()
+        # logger.debug(f"Execution time for saving graphs: {end_time - start_time} seconds")
 
         # validate the data graph
+        start_time = timer()
         shacl_validator = SHACLValidator(shapes_graph=shapes_graph, ont_graph=ontology_graph)
         shacl_result = shacl_validator.validate(
             data_graph=data_graph, ontology_graph=ontology_graph, **shacl_context.settings)
         # parse the validation result
+        end_time = timer()
         logger.debug("Validation '%s' conforms: %s", self.name, shacl_result.conforms)
+        logger.debug(f"Execution time for validating the data graph: {end_time - start_time} seconds")
+
         # store the validation result in the context
+        start_time = timer()
         result = shacl_result.conforms
         # if the validation failed, add the issues to the context
         if not shacl_result.conforms:
             logger.debug("Validation failed")
             logger.debug("Parsing Validation result: %s", result)
             for violation in shacl_result.violations:
-                shape = shapes_registry.get_shape(Shape.compute_key(shacl_context.shapes_graph, violation.sourceShape))
+                shape = shapes_registry.get_shape(Shape.compute_key(shapes_graph, violation.sourceShape))
                 assert shape is not None, "Unable to map the violation to a shape"
                 requirementCheck = SHACLCheck.get_instance(shape)
                 assert requirementCheck is not None, "The requirement check cannot be None"
@@ -102,6 +123,8 @@ class SHACLCheck(RequirementCheck):
                     logger.debug("Added validation issue to the context: %s", c)
                 if shacl_context.base_context.fail_fast:
                     break
+        end_time = timer()
+        logger.debug(f"Execution time for parsing the validation result: {end_time - start_time} seconds")
 
         return result
 

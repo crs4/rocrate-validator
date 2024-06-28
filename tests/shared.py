@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Optional, TypeVar, Union
 
 from rocrate_validator import models, services
+from rocrate_validator.constants import DEFAULT_PROFILE_NAME
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +27,7 @@ def do_entity_test(
         expected_triggered_requirements: Optional[list[str]] = None,
         expected_triggered_issues: Optional[list[str]] = None,
         abort_on_first: bool = True,
-        profile_name: str = "ro-crate"
+        profile_name: str = DEFAULT_PROFILE_NAME
 ):
     """
     Shared function to test a RO-Crate entity

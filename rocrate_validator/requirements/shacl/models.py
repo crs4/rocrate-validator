@@ -22,6 +22,7 @@ class SHACLNode:
     # define default values
     name: str = None
     description: str = None
+    severity: str = None
 
     def __init__(self, node: Node, graph: Graph, parent: Optional[SHACLNode] = None):
 

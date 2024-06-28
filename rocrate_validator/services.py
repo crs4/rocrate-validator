@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import Union
 
 import rocrate_validator.log as logging
+from rocrate_validator.constants import DEFAULT_PROFILE_NAME
 
 from .models import (Profile, Severity, ValidationResult, ValidationSettings,
                      Validator)
@@ -30,17 +31,17 @@ def validate(settings: Union[dict, ValidationSettings]) -> ValidationResult:
     return result
 
 
-def get_profiles(profiles_path: Path = DEFAULT_PROFILES_PATH, publicID: str = None) -> dict[str, Profile]:
+def get_profiles(profiles_path: Path = DEFAULT_PROFILES_PATH, publicID: str = None, severity=Severity.OPTIONAL) -> list:
     """
     Load the profiles from the given path
     """
-    profiles = Profile.load_profiles(profiles_path, publicID=publicID)
+    profiles = Profile.load_profiles(profiles_path, publicID=publicID, severity=severity)
     logger.debug("Profiles loaded: %s", profiles)
     return profiles
 
 
 def get_profile(profiles_path: Path = DEFAULT_PROFILES_PATH,
-                profile_name: str = "ro-crate", publicID: str = None) -> Profile:
+                profile_name: str = DEFAULT_PROFILE_NAME, publicID: str = None) -> Profile:
     """
     Load the profiles from the given path
     """

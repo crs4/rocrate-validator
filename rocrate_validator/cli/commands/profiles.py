@@ -33,15 +33,19 @@ def profiles(ctx, profiles_path: Path = DEFAULT_PROFILES_PATH):
     """
     [magenta]rocrate-validator:[/magenta] Manage profiles
     """
+    logger.debug("Profiles path: %s", profiles_path)
+    ctx.obj['profiles_path'] = profiles_path
 
 
 @profiles.command("list")
 @click.pass_context
-def list_profiles(ctx, profiles_path: Path = DEFAULT_PROFILES_PATH):
+def list_profiles(ctx):  # , profiles_path: Path = DEFAULT_PROFILES_PATH):
     """
     List available profiles
     """
+    profiles_path = ctx.obj['profiles_path']
     console = ctx.obj['console']
+    # Get the profiles
     profiles = services.get_profiles(profiles_path=profiles_path)
     # console.print("\nAvailable profiles:", style="white bold")
     console.print("\n", style="white bold")
@@ -54,12 +58,15 @@ def list_profiles(ctx, profiles_path: Path = DEFAULT_PROFILES_PATH):
                   caption="[cyan](*)[/cyan] Number of requirements by severity")
 
     # Define columns
-    table.add_column("Name", style="magenta bold", justify="right")
+    table.add_column("ID", style="magenta bold", justify="center")
+    table.add_column("URI", style="yellow bold", justify="center")
+    table.add_column("Name", style="white bold", justify="center")
     table.add_column("Description", style="white italic")
+    table.add_column("based on", style="white", justify="center")
     table.add_column("Requirements (*)", style="white", justify="center")
 
     # Add data to the table
-    for profile_name, profile in profiles.items():
+    for profile in profiles:
         # Count requirements by severity
         requirements = {}
         logger.debug("Requirements: %s", requirements)
@@ -73,7 +80,10 @@ def list_profiles(ctx, profiles_path: Path = DEFAULT_PROFILES_PATH):
              for severity, count in requirements.items() if count > 0])
 
         # Add the row to the table
-        table.add_row(profile_name, Markdown(profile.description.strip()), requirements)
+        table.add_row(profile.token, profile.uri,
+                      profile.label, Markdown(profile.description.strip()),
+                      ", ".join([p.token for p in profile.inherited_profiles]),
+                      requirements)
         table.add_row()
 
     # Print the table

@@ -1,0 +1,14 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix prof: <http://www.w3.org/ns/dx/prof/> .
+@prefix role: <http://www.w3.org/ns/dx/prof/role/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+<https://w3id.org/c2>
+    a prof:Profile ;
+    rdfs:label "Profile C2" ;
+    rdfs:comment """Comment for Profile C2."""@en ;
+    dct:publisher <https://publisherC2> ;
+    prof:isProfileOf <https://w3id.org/c> ;
+    prof:isTransitiveProfileOf <https://w3id.org/a>, <https://w3id.org/c> ;
+    prof:hasToken "c-overridden" ;
+.

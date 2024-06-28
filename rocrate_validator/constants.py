@@ -1,11 +1,22 @@
 # Define allowed RDF extensions and serialization formats as map
 import typing
 
+from rdflib import Namespace
+
 # Define SHACL namespace
 SHACL_NS = "http://www.w3.org/ns/shacl#"
 
+# Define the Profiles Vocabulary namespace
+PROF_NS = Namespace("http://www.w3.org/ns/dx/prof/")
+
+# Define the Schema.org namespace
+SCHEMA_ORG_NS = Namespace("http://schema.org/")
+
 # Define RDF syntax namespace
 RDF_SYNTAX_NS = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+
+# Define the file name for the profile specification conforms to the Profiles Vocabulary
+PROFILE_SPECIFICATION_FILE = "profile.ttl"
 
 # Define the rocrate-metadata.json file name
 ROCRATE_METADATA_FILE = "ro-crate-metadata.json"
