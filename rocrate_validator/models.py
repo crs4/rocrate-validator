@@ -3,18 +3,19 @@ from __future__ import annotations
 import bisect
 import enum
 import inspect
+import re
 from abc import ABC, abstractmethod
 from collections.abc import Collection
 from dataclasses import asdict, dataclass
 from functools import total_ordering
 from pathlib import Path
-from typing import Optional, Union
+from typing import Optional, Tuple, Union
 
 from rdflib import RDF, RDFS, Graph, Namespace, URIRef
 
 import rocrate_validator.log as logging
 from rocrate_validator.constants import (DEFAULT_ONTOLOGY_FILE,
-                                         DEFAULT_PROFILE_NAME,
+                                         DEFAULT_PROFILE_IDENTIFIER,
                                          DEFAULT_PROFILE_README_FILE,
                                          IGNORED_PROFILE_DIRECTORIES, PROF_NS,
                                          PROFILE_FILE_EXTENSIONS,
@@ -127,14 +128,20 @@ class LevelCollection:
 class Profile:
 
     # store the map of profiles: profile URI -> Profile instance
-    __profiles_map: MultiIndexMap = MultiIndexMap("uri", indexes=[MapIndex("name"), MapIndex("token", unique=True)])
+    __profiles_map: MultiIndexMap = MultiIndexMap("uri",
+                                                  indexes=[MapIndex("name"), MapIndex("token", unique=False), MapIndex("identifier", unique=True)])
 
-    def __init__(self, name: str, path: Path,
+    def __init__(self,
+                 profiles_base_path: Path,
+                 profile_path: Path,
                  requirements: Optional[list[Requirement]] = None,
+                 identifier: str = None,
                  publicID: Optional[str] = None,
                  severity: Severity = Severity.REQUIRED):
-        self._path = path
-        self._name = name
+        self._identifier: Optional[str] = identifier
+        self._profiles_base_path = profiles_base_path
+        self._profile_path = profile_path
+        self._name: Optional[str] = None
         self._description: Optional[str] = None
         self._requirements: list[Requirement] = requirements if requirements is not None else []
         self._publicID = publicID
@@ -149,7 +156,7 @@ class Profile:
         # check if the profile specification file exists
         spec_file = self.profile_specification_file_path
         if not spec_file or not spec_file.exists():
-            raise ProfileSpecificationNotFound(name, spec_file)
+            raise ProfileSpecificationNotFound(spec_file)
         # load the profile specification expressed using the Profiles Vocabulary
         profile = Graph()
         profile.parse(str(spec_file), format="turtle")
@@ -158,11 +165,14 @@ class Profile:
         if len(profiles) == 1:
             self._profile_node = profiles[0]
             self._profile_specification_graph = profile
+            # initialize the token and version
+            self._token, self._version = self.__init_token_version__()
+            # add the profile to the profiles map
             self.__profiles_map.add(
-                self._profile_node.toPython(), self, token=self.token, name=self.name)  # add the profile to the profiles map
+                self._profile_node.toPython(), self, token=self.token, name=self.name, identifier=self.identifier)  # add the profile to the profiles map
         else:
             raise ProfileSpecificationError(
-                profile_name=name, message=f"Profile specification file {spec_file} must contain exactly one profile")
+                message=f"Profile specification file {spec_file} must contain exactly one profile")
 
     def __get_specification_property__(self, property: str, namespace: Namespace,
                                        pop_first: bool = True, as_Python_object: bool = True) -> Union[str, list[Union[str, URIRef]]]:
@@ -170,15 +180,24 @@ class Profile:
         values = list(self._profile_specification_graph.objects(self._profile_node, namespace[property]))
         if values and as_Python_object:
             values = [v.toPython() for v in values]
-        return values[0] if values and len(values) >= 1 and pop_first else values
+        if pop_first:
+            return values[0] if values and len(values) >= 1 else None
+        return values
 
     @property
     def path(self):
-        return self._path
+        return self._profile_path
+
+    @property
+    def identifier(self) -> str:
+        if not self._identifier:
+            version = self.version
+            self._identifier = f"{self.token}-{version}" if version else self.token
+        return self._identifier
 
     @property
     def name(self):
-        return self._name
+        return self.label or f"Profile {self.uri}"
 
     @property
     def profile_node(self):
@@ -186,7 +205,7 @@ class Profile:
 
     @property
     def token(self):
-        return self.__get_specification_property__("hasToken", PROF_NS) or self._name.lower().replace(" ", "_")
+        return self._token
 
     @property
     def uri(self):
@@ -202,7 +221,7 @@ class Profile:
 
     @property
     def version(self):
-        return self.__get_specification_property__("version", SCHEMA_ORG_NS)
+        return self._version
 
     @property
     def is_profile_of(self) -> list[str]:
@@ -235,7 +254,7 @@ class Profile:
                 with open(self.readme_file_path, "r") as f:
                     self._description = f.read()
             else:
-                self._description = "RO-Crate profile"
+                self._description = self.comment
         return self._description
 
     @property
@@ -263,11 +282,12 @@ class Profile:
                 visited.append(p)
                 profile = cls.__profiles_map.get_by_key(p)
                 inherited_profiles = profile.is_profile_of
-                for p in sorted(inherited_profiles, reverse=True):
-                    if not p in visited:
-                        queue.append(p)
-                    if not p in result:
-                        result.insert(0, p)
+                if inherited_profiles:
+                    for p in sorted(inherited_profiles, reverse=True):
+                        if not p in visited:
+                            queue.append(p)
+                        if not p in result:
+                            result.insert(0, p)
         return result
 
     @property
@@ -286,40 +306,95 @@ class Profile:
 
     def __eq__(self, other: object) -> bool:
         return isinstance(other, Profile) \
-            and self.name == other.name \
+            and self.identifier == other.identifier \
             and self.path == other.path \
             and self.requirements == other.requirements
 
     def __lt__(self, other: object) -> bool:
         if not isinstance(other, Profile):
             raise TypeError(f"Cannot compare {type(self)} with {type(other)}")
-        return self.name < other.name
+        return self.identifier < other.identifier
 
     def __hash__(self) -> int:
-        return hash((self.name, self.path, self.requirements))
+        return hash((self.identifier, self.path, self.requirements))
 
     def __repr__(self) -> str:
         return (
-            f'Profile(name={self.name}, '
+            f'Profile(identifier={self.identifier}, '
+            f'name={self.name}, '
             f'path={self.path}, ' if self.path else ''
             f'requirements={self.requirements})'
         )
 
     def __str__(self) -> str:
-        return self.name
+        return f"{self.name} ({self.identifier})"
 
     @staticmethod
-    def load(path: Union[str, Path],
+    def __extract_version_from_token__(token: str) -> Optional[str]:
+        if not token:
+            return None
+        pattern = r"\Wv?(\d+(\.\d+(\.\d+)?)?)"
+        matches = re.findall(pattern, token)
+        if matches:
+            return matches[-1][0]
+        return None
+
+    def __get_consistent_version__(self, candidate_token: str) -> str:
+        candidates = {_ for _ in [
+            self.__get_specification_property__("version", SCHEMA_ORG_NS),
+            self.__extract_version_from_token__(candidate_token),
+            self.__extract_version_from_token__(str(self.path.relative_to(self._profiles_base_path))),
+            self.__extract_version_from_token__(str(self.uri))
+        ] if _ is not None}
+        if len(candidates) > 1:
+            raise ProfileSpecificationError(f"Inconsistent versions found: {candidates}")
+        logger.debug("Candidate versions: %s", candidates)
+        return candidates.pop() if len(candidates) == 1 else None
+
+    def __extract_token_from_path__(self) -> str:
+        base_path = str(self._profiles_base_path.absolute())
+        identifier = str(self.path.absolute())
+        # Check if the path starts with the base path
+        if not identifier.startswith(base_path):
+            raise ValueError("Path does not start with the base path")
+        # Remove the base path from the identifier
+        identifier = identifier.replace(f"{base_path}/", "")
+        # Replace slashes with hyphens
+        identifier = identifier.replace('/', '-')
+        return identifier
+
+    def __init_token_version__(self) -> Tuple[str, str, str]:
+        # try to extract the token from the specs or the path
+        candidate_token = self.__get_specification_property__("hasToken", PROF_NS)
+        if not candidate_token:
+            candidate_token = self.__extract_token_from_path__()
+        logger.debug("Candidate token: %s", candidate_token)
+
+        # try to extract the version from the specs or the token or the path or the URI
+        version = self.__get_consistent_version__(candidate_token)
+        logger.debug("Extracted version: %s", version)
+
+        # remove the version from the token if it is present
+        if version:
+            candidate_token = re.sub(r"[\W|_]+" + re.escape(version) + r"$", "", candidate_token)
+
+        # return the candidate token and version
+        return candidate_token, version
+
+    @classmethod
+    def load(cls, profiles_base_path: str,
+             profile_path: Union[str, Path],
              publicID: Optional[str] = None,
              severity:  Severity = Severity.REQUIRED) -> Profile:
         # if the path is a string, convert it to a Path
-        if isinstance(path, str):
-            path = Path(path)
+        if isinstance(profile_path, str):
+            profile_path = Path(profile_path)
         # check if the path is a directory
-        if not path.is_dir():
-            raise InvalidProfilePath(path)
+        if not profile_path.is_dir():
+            raise InvalidProfilePath(profile_path)
         # create a new profile
-        profile = Profile(name=path.name, path=path, publicID=publicID, severity=severity)
+        profile = Profile(profiles_base_path=profiles_base_path,
+                          profile_path=profile_path, publicID=publicID, severity=severity)
         logger.debug("Loaded profile: %s", profile)
         return profile
 
@@ -335,15 +410,25 @@ class Profile:
             raise InvalidProfilePath(profiles_path)
         # initialize the profiles list
         profiles = []
+        # calculate the list of profiles path as the subdirectories of the profiles path
+        # where the profile specification file is present
+        profile_paths = [p.parent for p in profiles_path.rglob('*.*') if p.name == PROFILE_SPECIFICATION_FILE]
+
         # iterate through the directories and load the profiles
-        for profile_path in profiles_path.iterdir():
+        for profile_path in profile_paths:
             logger.debug("Checking profile path: %s %s %r", profile_path,
                          profile_path.is_dir(), IGNORED_PROFILE_DIRECTORIES)
             if profile_path.is_dir() and profile_path not in IGNORED_PROFILE_DIRECTORIES:
-                profile = Profile.load(profile_path, publicID=publicID, severity=severity)
+                profile = Profile.load(profiles_path, profile_path, publicID=publicID, severity=severity)
                 profiles.append(profile)
-        #  order profiles according to the dependencies between them: first the profiles that do not depend on ???
-        return profiles
+        #  order profiles according to the number of profiles they depend on:
+        # i.e, first the profiles that do not depend on any other profile
+        # then the profiles that depend on the previous ones, and so on
+        return sorted(profiles, key=lambda x: f"{len(x.inherited_profiles)}_{x.identifier}")
+
+    @classmethod
+    def get_by_identifier(cls, identifier: str) -> Profile:
+        return cls.__profiles_map.get_by_index("identifier", identifier)
 
     @classmethod
     def get_by_uri(cls, uri: str) -> Profile:
@@ -593,7 +678,7 @@ class RequirementLoader:
             requirement._order_number = i + 1
         # log and return the requirements
         logger.debug("Profile %s loaded %s requirements: %s",
-                     profile.name, len(requirements), requirements)
+                     profile.identifier, len(requirements), requirements)
         return requirements
 
 
@@ -901,7 +986,7 @@ class ValidationSettings:
     data_path: Path
     # Profile settings
     profiles_path: Path = DEFAULT_PROFILES_PATH
-    profile_name: str = DEFAULT_PROFILE_NAME
+    profile_identifier: str = DEFAULT_PROFILE_IDENTIFIER
     inherit_profiles: bool = True
     allow_shapes_override: bool = True
     disable_check_for_duplicates: bool = False
@@ -993,13 +1078,13 @@ class Validator:
         assert len(profiles) > 0, "No profiles to validate"
 
         for profile in profiles:
-            logger.debug("Validating profile %s (id: %s)", profile.name, profile.token)
+            logger.debug("Validating profile %s (id: %s)", profile.name, profile.identifier)
             # perform the requirements validation
             requirements = profile.get_requirements(
                 context.requirement_severity, exact_match=context.requirement_severity_only)
-            logger.debug("Validating profile %s with %s requirements", profile.name, len(requirements))
+            logger.debug("Validating profile %s with %s requirements", profile.identifier, len(requirements))
             logger.debug("For profile %s, validating these %s requirements: %s",
-                         profile.name, len(requirements), requirements)
+                         profile.identifier, len(requirements), requirements)
             for requirement in requirements:
                 passed = requirement.__do_validate__(context)
                 logger.debug("Number of issues: %s", len(context.result.issues))
@@ -1007,7 +1092,7 @@ class Validator:
                     logger.debug("Validation Requirement passed")
                 else:
                     logger.debug(f"Validation Requirement {requirement} failed ")
-                    if context.settings.get("abort_on_first") is True and context.profile_name == profile.name:
+                    if context.settings.get("abort_on_first") is True and context.profile_identifier == profile.name:
                         logger.debug("Aborting on first requirement failure")
                         return context.result
 
@@ -1105,8 +1190,8 @@ class ValidationContext:
         return self.settings.get("inherit_profiles", False)
 
     @property
-    def profile_name(self) -> str:
-        return self.settings.get("profile_name")
+    def profile_identifier(self) -> str:
+        return self.settings.get("profile_identifier")
 
     @property
     def allow_shapes_override(self) -> bool:
@@ -1121,7 +1206,8 @@ class ValidationContext:
         # if the inheritance is disabled, load only the target profile
         if not self.inheritance_enabled:
             profile = Profile.load(
-                self.profiles_path / self.profile_name,
+                self.profiles_path,
+                self.profiles_path / self.profile_identifier,
                 publicID=self.publicID,
                 severity=self.requirement_severity)
             return [profile]
@@ -1133,9 +1219,22 @@ class ValidationContext:
             severity=self.requirement_severity)
 
         # Check if the target profile is in the list of profiles
-        profile = Profile.get_by_token(self.profile_name) or Profile.get_by_name(self.profile_name)[0]
-        if profile is None:
-            raise ProfileNotFound(f"Profile '{self.profile_name}' not found in '{self.profiles_path}'")
+        profile = Profile.get_by_identifier(self.profile_identifier)
+        if not profile:
+            try:
+                candidate_profiles = Profile.get_by_token(self.profile_identifier)
+                logger.error("Candidate profiles found by token: %s", profile)
+                if candidate_profiles:
+                    # Find the profile with the highest version number
+                    profile = max(candidate_profiles, key=lambda p: p.version)
+                    self.settings["profile_identifier"] = profile.identifier
+                    logger.error("Profile with the highest version number: %s", profile)
+                # if the profile is found by token, set the profile name to the identifier
+                self.settings["profile_identifier"] = profile.identifier
+            except Exception as e:
+                if logger.isEnabledFor(logging.DEBUG):
+                    logger.exception(e)
+                raise ProfileNotFound(f"Profile '{self.profile_identifier}' not found in '{self.profiles_path}'")
 
         # Set the profiles to validate against as the target profile and its inherited profiles
         profiles = profile.inherited_profiles + [profile]
@@ -1157,7 +1256,7 @@ class ValidationContext:
             for check in profile_checks:
                 #  find duplicated checks and raise an error
                 if check.name in profile_check_names and not self.allow_shapes_override:
-                    raise DuplicateRequirementCheck(check.name, profile.name)
+                    raise DuplicateRequirementCheck(check.name, profile.identifier)
                 #  add check to the list
                 profile_check_names.append(check.name)
                 #  mark overridden checks
@@ -1168,7 +1267,7 @@ class ValidationContext:
                     check.overridden_by = check_chain[-1]
                     check_chain.append(check)
                 else:
-                    raise DuplicateRequirementCheck(check.name, profile.name)
+                    raise DuplicateRequirementCheck(check.name, profile.identifier)
 
         return profiles
 
@@ -1178,8 +1277,11 @@ class ValidationContext:
             self._profiles = self.__load_profiles__()
         return self._profiles.copy()
 
-    def get_profile_by_token(self, token: str) -> Profile:
+    def get_profile_by_token(self, token: str) -> list[Profile]:
+        return [p for p in self.profiles if p.token == token]
+
+    def get_profile_by_identifier(self, identifier: str) -> list[Profile]:
         for p in self.profiles:
-            if p.token == token:
+            if p.identifier == identifier:
                 return p
-        raise ProfileNotFound(f"Profile with token '{token}' not found")
+        raise ProfileNotFound(identifier)

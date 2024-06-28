@@ -1,15 +1,15 @@
 from pathlib import Path
 
 from rich.markdown import Markdown
+from rich.panel import Panel
 from rich.table import Table
 
 import rocrate_validator.log as logging
 from rocrate_validator import services
 from rocrate_validator.cli.main import cli, click
 from rocrate_validator.colors import get_severity_color
-from rocrate_validator.constants import DEFAULT_PROFILE_NAME
-from rocrate_validator.models import (LevelCollection,
-                                      RequirementLevel)
+from rocrate_validator.constants import DEFAULT_PROFILE_IDENTIFIER
+from rocrate_validator.models import LevelCollection, RequirementLevel
 from rocrate_validator.utils import get_profiles_path
 
 # set the default profiles path
@@ -58,11 +58,12 @@ def list_profiles(ctx):  # , profiles_path: Path = DEFAULT_PROFILES_PATH):
                   caption="[cyan](*)[/cyan] Number of requirements by severity")
 
     # Define columns
-    table.add_column("ID", style="magenta bold", justify="center")
+    table.add_column("Identifier", style="magenta bold", justify="center")
     table.add_column("URI", style="yellow bold", justify="center")
+    table.add_column("Version", style="green bold", justify="center")
     table.add_column("Name", style="white bold", justify="center")
     table.add_column("Description", style="white italic")
-    table.add_column("based on", style="white", justify="center")
+    table.add_column("Based on", style="white", justify="center")
     table.add_column("Requirements (*)", style="white", justify="center")
 
     # Add data to the table
@@ -74,15 +75,15 @@ def list_profiles(ctx):  # , profiles_path: Path = DEFAULT_PROFILES_PATH):
             if not requirements.get(req.severity.name, None):
                 requirements[req.severity.name] = 0
             requirements[req.severity.name] += 1
-        requirements = ", ".join(
+        requirements = "\n".join(
             [f"[bold][{get_severity_color(severity)}]{severity}: "
              f"{count}[/{get_severity_color(severity)}][/bold]"
              for severity, count in requirements.items() if count > 0])
 
         # Add the row to the table
-        table.add_row(profile.token, profile.uri,
-                      profile.label, Markdown(profile.description.strip()),
-                      ", ".join([p.token for p in profile.inherited_profiles]),
+        table.add_row(profile.identifier, profile.uri, profile.version,
+                      profile.name, Markdown(profile.description.strip()),
+                      "\n".join([p.identifier for p in profile.inherited_profiles]),
                       requirements)
         table.add_row()
 
@@ -99,29 +100,34 @@ def list_profiles(ctx):  # , profiles_path: Path = DEFAULT_PROFILES_PATH):
     default=False,
     show_default=True
 )
-@click.argument("profile-name", type=click.STRING, default=DEFAULT_PROFILE_NAME, required=True)
+@click.argument("profile-identifier", type=click.STRING, default=DEFAULT_PROFILE_IDENTIFIER, required=True)
 @click.pass_context
 def describe_profile(ctx,
-                     profile_name: str = DEFAULT_PROFILE_NAME,
+                     profile_identifier: str = DEFAULT_PROFILE_IDENTIFIER,
                      profiles_path: Path = DEFAULT_PROFILES_PATH,
                      verbose: bool = False):
     """
     Show a profile
     """
+    # Get the console
     console = ctx.obj['console']
     # Get the profile
-    profile = services.get_profile(profiles_path=profiles_path, profile_name=profile_name)
-
+    profile = services.get_profile(profiles_path=profiles_path, profile_identifier=profile_identifier)
+    # Print the profile header
     console.print("\n", style="white bold")
-    console.print(f"[bold]Profile: {profile_name}[/bold]", style="magenta bold")
-    console.print("\n", style="white bold")
-    console.print(Markdown(profile.description.strip()))
-    console.print("\n", style="white bold")
-
+    title_text = f"[bold cyan]Version:[/bold cyan] [italic green]{profile.version}[/italic green]\n"
+    title_text += f"[bold cyan]URI:[/bold cyan] [italic yellow]{profile.uri}[/italic yellow]\n\n"
+    title_text += f"[bold cyan]Description:[/bold cyan] [italic]{profile.description.strip()}[/italic]"
+    box = Panel(
+        title_text, title=f"[bold][cyan]Profile:[/cyan] [magenta italic]{profile.identifier}[/magenta italic][/bold]", padding=(1, 1))
+    console.print(box)
+    # Print the profile requirements
     if not verbose:
         __compacted_describe_profile__(console, profile)
     else:
         __verbose_describe_profile__(console, profile)
+    # End with a new line
+    console.print("\n")
 
 
 def __requirement_level_style__(requirement: RequirementLevel):
@@ -138,10 +144,8 @@ def __compacted_describe_profile__(console, profile):
     """
     table_rows = []
     levels_list = set()
-    for requirement in profile.requirements:
-        # skip hidden requirements
-        if requirement.hidden:
-            continue
+    requirements = [_ for _ in profile.requirements if not _.hidden]
+    for requirement in requirements:
         # add the requirement to the list
         color = get_severity_color(requirement.severity)
         level_info = f"[{color}]{requirement.severity.name}[/{color}]"
@@ -153,7 +157,7 @@ def __compacted_describe_profile__(console, profile):
                            f"{len(requirement.get_checks_by_level(LevelCollection.OPTIONAL))}"))
 
     table = Table(show_header=True,
-                  title="Profile Requirements",
+                  title=f"[cyan]{len(requirements)}[/cyan] Profile Requirements",
                   title_style="italic bold",
                   header_style="bold cyan",
                   border_style="bright_black",
@@ -182,6 +186,7 @@ def __verbose_describe_profile__(console, profile):
     """
     table_rows = []
     levels_list = set()
+    count_checks = 0
     for requirement in profile.requirements:
         # skip hidden requirements
         if requirement.hidden:
@@ -195,9 +200,10 @@ def __verbose_describe_profile__(console, profile):
             # checks.append(check)
             table_rows.append((str(check.identifier).rjust(14), check.name,
                                Markdown(check.description.strip()), level_info))
+            count_checks += 1
 
     table = Table(show_header=True,
-                  title="Profile Requirements Checks",
+                  title=f"[cyan]{count_checks}[/cyan] Profile Requirements Checks",
                   title_style="italic bold",
                   header_style="bold cyan",
                   border_style="bright_black",

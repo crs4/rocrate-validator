@@ -8,7 +8,7 @@ from rich.console import Console
 from rich.markdown import Markdown
 
 import rocrate_validator.log as logging
-from rocrate_validator.constants import DEFAULT_PROFILE_NAME
+from rocrate_validator.constants import DEFAULT_PROFILE_IDENTIFIER
 
 from ... import services
 from ...colors import get_severity_color
@@ -45,11 +45,11 @@ logger = logging.getLogger(__name__)
 )
 @click.option(
     "-p",
-    "--profile-name",
+    "--profile-identifier",
     type=click.STRING,
-    default=DEFAULT_PROFILE_NAME,
+    default=DEFAULT_PROFILE_IDENTIFIER,
     show_default=True,
-    help="Name of the profile to use for validation",
+    help="Identifier of the profile to use for validation",
 )
 @click.option(
     '-nh',
@@ -85,7 +85,7 @@ logger = logging.getLogger(__name__)
 @click.pass_context
 def validate(ctx,
              profiles_path: Path = DEFAULT_PROFILES_PATH,
-             profile_name: str = DEFAULT_PROFILE_NAME,
+             profile_identifier: str = DEFAULT_PROFILE_IDENTIFIER,
              disable_profile_inheritance: bool = False,
              requirement_severity: str = Severity.REQUIRED.name,
              requirement_severity_only: bool = False,
@@ -98,7 +98,7 @@ def validate(ctx,
     console: Console = ctx.obj['console']
     # Log the input parameters for debugging
     logger.debug("profiles_path: %s", os.path.abspath(profiles_path))
-    logger.debug("profile_name: %s", profile_name)
+    logger.debug("profile_identifier: %s", profile_identifier)
     logger.debug("requirement_severity: %s", requirement_severity)
     logger.debug("requirement_severity_only: %s", requirement_severity_only)
 
@@ -116,7 +116,7 @@ def validate(ctx,
     result: ValidationResult = services.validate(
         {
             "profiles_path": profiles_path,
-            "profile_name": profile_name,
+            "profile_identifier": profile_identifier,
             "requirement_severity": requirement_severity,
             "requirement_severity_only": requirement_severity_only,
             "inherit_profiles": not disable_profile_inheritance,

@@ -63,14 +63,8 @@ class ProfileNotFound(ROCValidatorError):
 class ProfileSpecificationNotFound(ROCValidatorError):
     """Raised when the profile specification is not found."""
 
-    def __init__(self, profile_name: Optional[str] = None, spec_file: Optional[str] = None):
-        self._profile_name = profile_name
+    def __init__(self, spec_file: Optional[str] = None):
         self._spec_file = spec_file
-
-    @property
-    def profile_name(self) -> Optional[str]:
-        """The name of the profile."""
-        return self._profile_name
 
     @property
     def spec_file(self) -> Optional[str]:
@@ -78,25 +72,20 @@ class ProfileSpecificationNotFound(ROCValidatorError):
         return self._spec_file
 
     def __str__(self) -> str:
-        msg = f"Unable to find the `profile.ttl` specification for the profile \"{self._profile_name!r}\""
+        msg = "Unable to find the `profile.ttl` specification"
         if self._spec_file:
             msg += f" in the file {self._spec_file!r}"
         return msg
 
     def __repr__(self):
-        return f"ProfileSpecificationNotFound({self._profile_name!r})"
+        return f"ProfileSpecificationNotFound()"
 
 
 class ProfileSpecificationError(ROCValidatorError):
+    """Raised when an error occurs in the profile specification."""
 
-    def __init__(self, profile_name: Optional[str] = None, message: Optional[str] = None):
-        self._profile_name = profile_name
+    def __init__(self, message: Optional[str] = None):
         self._message = message
-
-    @property
-    def profile_name(self) -> Optional[str]:
-        """The name of the profile."""
-        return self._profile_name
 
     @property
     def message(self) -> Optional[str]:
@@ -104,10 +93,10 @@ class ProfileSpecificationError(ROCValidatorError):
         return self._message
 
     def __str__(self) -> str:
-        return f"Error in the `profile.ttl` specification for the profile \"{self._profile_name!r}\": {self._message!r}"
+        return f"Error in the `profile.ttl` specification: {self._message!r}"
 
     def __repr__(self):
-        return f"ProfileSpecificationError({self._profile_name!r}, {self._message!r})"
+        return f"ProfileSpecificationError({self._message!r})"
 
 
 class DuplicateRequirementCheck(ROCValidatorError):

@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Union
 
 import rocrate_validator.log as logging
-from rocrate_validator.constants import DEFAULT_PROFILE_NAME
+from rocrate_validator.constants import DEFAULT_PROFILE_IDENTIFIER
 
 from .models import (Profile, Severity, ValidationResult, ValidationSettings,
                      Validator)
@@ -31,7 +31,7 @@ def validate(settings: Union[dict, ValidationSettings]) -> ValidationResult:
     return result
 
 
-def get_profiles(profiles_path: Path = DEFAULT_PROFILES_PATH, publicID: str = None, severity=Severity.OPTIONAL) -> list:
+def get_profiles(profiles_path: Path = DEFAULT_PROFILES_PATH, publicID: str = None, severity=Severity.OPTIONAL) -> list[Profile]:
     """
     Load the profiles from the given path
     """
@@ -41,14 +41,14 @@ def get_profiles(profiles_path: Path = DEFAULT_PROFILES_PATH, publicID: str = No
 
 
 def get_profile(profiles_path: Path = DEFAULT_PROFILES_PATH,
-                profile_name: str = DEFAULT_PROFILE_NAME, publicID: str = None) -> Profile:
+                profile_identifier: str = DEFAULT_PROFILE_IDENTIFIER, publicID: str = None) -> Profile:
     """
     Load the profiles from the given path
     """
-    profile_path = profiles_path / profile_name
+    profile_path = profiles_path / profile_identifier
     if not Path(profiles_path).exists():
         raise FileNotFoundError(f"Profile not found: {profile_path}")
-    profile = Profile.load(f"{profiles_path}/{profile_name}",
+    profile = Profile.load(profiles_path, f"{profiles_path}/{profile_identifier}",
                            publicID=publicID, severity=Severity.OPTIONAL)
     logger.debug("Profile loaded: %s", profile)
     return profile
