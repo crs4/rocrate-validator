@@ -122,7 +122,14 @@ def test_profiles_loading_free_folder_structure(profiles_with_free_folder_struct
     for p in profiles:
         logger.warning("The profile '%s' has %d requirements", p, len(p.requirements))
 
+    # The number of profiles should be 3
     assert len(profiles) == 3, "The number of profiles should be 3"
+
+    # The profile names should be a, b, and c
+    assert profiles[0].token == "a", "The profile name should be 'a'"
+    assert profiles[1].token == "b", "The profile name should be 'b'"
+    assert profiles[2].token == "c", "The profile name should be 'c'"
+
     assert profiles[0].token == "a", "The profile name should be 'a'"
     assert profiles[1].token == "b", "The profile name should be 'b'"
     assert profiles[2].token == "c", "The profile name should be 'c'"
