@@ -54,7 +54,6 @@
             "@type": "CreateAction",
             "name": "Convert dog image to sepia",
             "description": "convert -sepia-tone 80% pics/2017-06-11\\ 12.56.14.jpg pics/sepia_fence.jpg",
-            "startTime": "2024-05-17T01:04:50+01:00",
             "endTime": "2024-05-17T01:04:52+01:00",
             "instrument": {
                 "@id": "https://www.imagemagick.org/"

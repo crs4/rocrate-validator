@@ -150,3 +150,31 @@ def test_prc_action_no_result():
         ["The Action SHOULD have a result"],
         profile_name="process-run-crate"
     )
+
+
+def test_prc_action_no_starttime():
+    """\
+    Test a Process Run Crate where the action does not have an startTime.
+    """
+    do_entity_test(
+        InvalidProcRC().action_no_starttime,
+        Severity.OPTIONAL,
+        False,
+        ["Process Run Crate Action MAY"],
+        ["The Action MAY have a startTime in ISO 8601 format"],
+        profile_name="process-run-crate"
+    )
+
+
+def test_prc_action_bad_starttime():
+    """\
+    Test a Process Run Crate where the action does not have an startTime.
+    """
+    do_entity_test(
+        InvalidProcRC().action_bad_starttime,
+        Severity.OPTIONAL,
+        False,
+        ["Process Run Crate Action MAY"],
+        ["The Action MAY have a startTime in ISO 8601 format"],
+        profile_name="process-run-crate"
+    )

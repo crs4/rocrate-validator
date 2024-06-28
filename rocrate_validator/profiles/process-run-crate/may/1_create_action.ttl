@@ -1,0 +1,25 @@
+@prefix ro: <./> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xml1: <http://www.w3.org/2001/XMLSchema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
+@prefix bioschemas: <https://bioschemas.org/> .
+
+ro:ProcRCActionOptional a sh:NodeShape ;
+    sh:name "Process Run Crate Action MAY" ;
+    sh:description "Recommended properties of the Process Run Crate Action" ;
+    sh:targetClass schema:CreateAction ,
+                   schema:ActivateAction ,
+                   schema:UpdateAction ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Action startTime" ;
+        sh:description "The Action MAY have a startTime in ISO 8601 format" ;
+        sh:path schema:startTime ;
+        sh:pattern "^(\\d{4}-\\d{2}-\\d{2})(T\\d{2}:\\d{2}:\\d{2}(\\.\\d{3})?\\+\\d{2}:\\d{2})?$" ;
+        sh:minCount 1 ;
+        sh:message "The Action MAY have a startTime in ISO 8601 format" ;
+    ] .

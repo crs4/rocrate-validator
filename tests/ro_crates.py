@@ -333,3 +333,11 @@ class InvalidProcRC:
     @property
     def action_no_result(self) -> Path:
         return self.base_path / "action_no_result"
+
+    @property
+    def action_no_starttime(self) -> Path:
+        return self.base_path / "action_no_starttime"
+
+    @property
+    def action_bad_starttime(self) -> Path:
+        return self.base_path / "action_bad_starttime"
