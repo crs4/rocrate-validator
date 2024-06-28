@@ -8,7 +8,6 @@ from tests.shared import do_entity_test
 logger = logging.getLogger(__name__)
 
 
-@pytest.mark.xfail(reason="workflow ro-crate loaded after process run crate")
 def test_valid_workflow_roc_required():
     """Test a valid Workflow RO-Crate."""
     do_entity_test(

@@ -13,5 +13,5 @@ def test_valid_process_run_crate_required():
         ValidROC().process_run_crate,
         Severity.REQUIRED,
         True,
-        profile_name="s_process-run-crate"
+        profile_name="process-run-crate"
     )
