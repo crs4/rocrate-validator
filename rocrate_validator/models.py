@@ -1223,12 +1223,12 @@ class ValidationContext:
         if not profile:
             try:
                 candidate_profiles = Profile.get_by_token(self.profile_identifier)
-                logger.error("Candidate profiles found by token: %s", profile)
+                logger.debug("Candidate profiles found by token: %s", profile)
                 if candidate_profiles:
                     # Find the profile with the highest version number
                     profile = max(candidate_profiles, key=lambda p: p.version)
                     self.settings["profile_identifier"] = profile.identifier
-                    logger.error("Profile with the highest version number: %s", profile)
+                    logger.debug("Profile with the highest version number: %s", profile)
                 # if the profile is found by token, set the profile name to the identifier
                 self.settings["profile_identifier"] = profile.identifier
             except Exception as e:
