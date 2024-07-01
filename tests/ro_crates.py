@@ -341,3 +341,7 @@ class InvalidProcRC:
     @property
     def action_bad_starttime(self) -> Path:
         return self.base_path / "action_bad_starttime"
+
+    @property
+    def action_error_not_failed_status(self) -> Path:
+        return self.base_path / "action_error_not_failed_status"

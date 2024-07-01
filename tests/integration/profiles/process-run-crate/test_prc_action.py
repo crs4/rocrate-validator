@@ -178,3 +178,18 @@ def test_prc_action_bad_starttime():
         ["The Action MAY have a startTime in ISO 8601 format"],
         profile_identifier="process-run-crate"
     )
+
+
+def test_prc_action_error_not_failed_status():
+    """\
+    Test a Process Run Crate where the action has an error even though its
+    actionStatus is not FailedActionStatus.
+    """
+    do_entity_test(
+        InvalidProcRC().action_error_not_failed_status,
+        Severity.OPTIONAL,
+        False,
+        ["Process Run Crate Action error"],
+        ["error SHOULD NOT be specified unless actionStatus is set to FailedActionStatus"],
+        profile_identifier="process-run-crate"
+    )
