@@ -18,7 +18,7 @@ def test_prc_application_no_name():
         False,
         ["ProcRC Application"],
         ["The Application SHOULD have a name"],
-        profile_name="process-run-crate"
+        profile_identifier="process-run-crate"
     )
 
 
@@ -32,7 +32,7 @@ def test_prc_application_no_url():
         False,
         ["ProcRC Application"],
         ["The Application SHOULD have a url"],
-        profile_name="process-run-crate"
+        profile_identifier="process-run-crate"
     )
 
 
@@ -47,7 +47,7 @@ def test_prc_application_no_version():
         False,
         ["ProcRC SoftwareApplication"],
         ["The SoftwareApplication SHOULD have a version or softwareVersion"],
-        profile_name="process-run-crate"
+        profile_identifier="process-run-crate"
     )
 
 
@@ -62,7 +62,7 @@ def test_prc_application_version_softwareversion():
         False,
         ["ProcRC SoftwareApplication SingleVersion"],
         ["Process Run Crate SoftwareApplication should not have both version and softwareVersion"],
-        profile_name="process-run-crate"
+        profile_identifier="process-run-crate"
     )
 
 
@@ -77,7 +77,7 @@ def test_prc_softwaresourcecode_no_version():
         False,
         ["ProcRC SoftwareSourceCode or ComputationalWorkflow"],
         ["The SoftwareSourceCode or ComputationalWorkflow SHOULD have a version"],
-        profile_name="process-run-crate"
+        profile_identifier="process-run-crate"
     )
 
 
@@ -92,5 +92,5 @@ def test_prc_application_id_no_absoluteuri():
         False,
         ["ProcRC SoftwareApplication ID"],
         ["The SoftwareApplication id SHOULD be an absolute URI"],
-        profile_name="process-run-crate"
+        profile_identifier="process-run-crate"
     )

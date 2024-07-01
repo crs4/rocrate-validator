@@ -18,7 +18,7 @@ def test_prc_action_no_instrument():
         False,
         ["Process Run Crate Action"],
         ["The Action MUST have an instrument property that references the executed tool"],
-        profile_name="process-run-crate"
+        profile_identifier="process-run-crate"
     )
 
 
@@ -33,7 +33,7 @@ def test_prc_action_instrument_bad_type():
         False,
         ["Process Run Crate Action"],
         ["The Action MUST have an instrument property that references the executed tool"],
-        profile_name="process-run-crate"
+        profile_identifier="process-run-crate"
     )
 
 
@@ -48,7 +48,7 @@ def test_prc_action_not_mentioned():
         False,
         ["Process Run Crate Action SHOULD"],
         ["The Action SHOULD be referenced from the Root Data Entity via mentions"],
-        profile_name="process-run-crate"
+        profile_identifier="process-run-crate"
     )
 
 
@@ -62,7 +62,7 @@ def test_prc_action_no_name():
         False,
         ["Process Run Crate Action SHOULD"],
         ["The Action SHOULD have a name"],
-        profile_name="process-run-crate"
+        profile_identifier="process-run-crate"
     )
 
 
@@ -76,7 +76,7 @@ def test_prc_action_no_description():
         False,
         ["Process Run Crate Action SHOULD"],
         ["The Action SHOULD have a description"],
-        profile_name="process-run-crate"
+        profile_identifier="process-run-crate"
     )
 
 
@@ -90,7 +90,7 @@ def test_prc_action_no_endtime():
         False,
         ["Process Run Crate Action SHOULD"],
         ["The Action SHOULD have an endTime in ISO 8601 format"],
-        profile_name="process-run-crate"
+        profile_identifier="process-run-crate"
     )
 
 
@@ -104,7 +104,7 @@ def test_prc_action_bad_endtime():
         False,
         ["Process Run Crate Action SHOULD"],
         ["The Action SHOULD have an endTime in ISO 8601 format"],
-        profile_name="process-run-crate"
+        profile_identifier="process-run-crate"
     )
 
 
@@ -118,7 +118,7 @@ def test_prc_action_no_agent():
         False,
         ["Process Run Crate Action SHOULD"],
         ["The Action SHOULD have an agent that is a Person or Organization"],
-        profile_name="process-run-crate"
+        profile_identifier="process-run-crate"
     )
 
 
@@ -133,7 +133,7 @@ def test_prc_action_bad_agent():
         False,
         ["Process Run Crate Action SHOULD"],
         ["The Action SHOULD have an agent that is a Person or Organization"],
-        profile_name="process-run-crate"
+        profile_identifier="process-run-crate"
     )
 
 
@@ -148,7 +148,7 @@ def test_prc_action_no_result():
         False,
         ["Process Run Crate CreateAction UpdateAction SHOULD"],
         ["The Action SHOULD have a result"],
-        profile_name="process-run-crate"
+        profile_identifier="process-run-crate"
     )
 
 
@@ -162,7 +162,7 @@ def test_prc_action_no_starttime():
         False,
         ["Process Run Crate Action MAY"],
         ["The Action MAY have a startTime in ISO 8601 format"],
-        profile_name="process-run-crate"
+        profile_identifier="process-run-crate"
     )
 
 
@@ -176,5 +176,5 @@ def test_prc_action_bad_starttime():
         False,
         ["Process Run Crate Action MAY"],
         ["The Action MAY have a startTime in ISO 8601 format"],
-        profile_name="process-run-crate"
+        profile_identifier="process-run-crate"
     )

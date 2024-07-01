@@ -19,7 +19,7 @@ def test_prc_no_conformsto():
         False,
         ["Root Data Entity Metadata"],
         ["The Root Data Entity MUST reference a CreativeWork entity with an @id URI that is consistent with the versioned permalink of the profile"],
-        profile_name="process-run-crate"
+        profile_identifier="process-run-crate"
     )
 
 
@@ -34,7 +34,7 @@ def test_prc_conformsto_bad_type():
         False,
         ["Root Data Entity Metadata"],
         ["The Root Data Entity MUST reference a CreativeWork entity with an @id URI that is consistent with the versioned permalink of the profile"],
-        profile_name="process-run-crate"
+        profile_identifier="process-run-crate"
     )
 
 
@@ -49,5 +49,5 @@ def test_prc_conformsto_bad_profile():
         False,
         ["Root Data Entity Metadata"],
         ["The Root Data Entity MUST reference a CreativeWork entity with an @id URI that is consistent with the versioned permalink of the profile"],
-        profile_name="process-run-crate"
+        profile_identifier="process-run-crate"
     )
