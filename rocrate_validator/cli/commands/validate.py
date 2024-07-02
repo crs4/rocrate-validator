@@ -13,7 +13,7 @@ from rocrate_validator.constants import DEFAULT_PROFILE_IDENTIFIER
 from ... import services
 from ...colors import get_severity_color
 from ...models import Severity, ValidationResult
-from ...utils import get_profiles_path
+from ...utils import URI, get_profiles_path
 from ..main import cli, click
 
 # from rich.markdown import Markdown
@@ -26,8 +26,28 @@ DEFAULT_PROFILES_PATH = get_profiles_path()
 logger = logging.getLogger(__name__)
 
 
+def validate_uri(ctx, param, value):
+    """
+    Validate if the value is a path or a URI
+    """
+    if value:
+        try:
+            # parse the value to extract the scheme
+            uri = URI(value)
+            if not uri.is_remote_resource() and not uri.is_local_directory() and not uri.is_local_file():
+                raise click.BadParameter(f"Invalid RO-Crate URI \"{value}\": "
+                                         "it MUST be a local directory or a ZIP file (local or remote).", param=param)
+            if not uri.is_available():
+                raise click.BadParameter("RO-crate URI not available", param=param)
+        except ValueError as e:
+            logger.debug(e)
+            raise click.BadParameter("Invalid RO-crate path or URI", param=param)
+
+    return value
+
+
 @cli.command("validate")
-@click.argument("rocrate-path", type=click.Path(exists=True), default=".")
+@click.argument("rocrate-uri", callback=validate_uri, default=".")
 @click.option(
     '-nff',
     '--no-fail-fast',
@@ -89,7 +109,7 @@ def validate(ctx,
              disable_profile_inheritance: bool = False,
              requirement_severity: str = Severity.REQUIRED.name,
              requirement_severity_only: bool = False,
-             rocrate_path: Path = Path("."),
+             rocrate_uri: Path = ".",
              no_fail_fast: bool = False,
              ontologies_path: Optional[Path] = None):
     """
@@ -103,14 +123,14 @@ def validate(ctx,
     logger.debug("requirement_severity_only: %s", requirement_severity_only)
 
     logger.debug("disable_inheritance: %s", disable_profile_inheritance)
-    logger.debug("rocrate_path: %s", os.path.abspath(rocrate_path))
+    logger.debug("rocrate_uri: %s", rocrate_uri)
     logger.debug("no_fail_fast: %s", no_fail_fast)
     logger.debug("fail fast: %s", not no_fail_fast)
 
     if ontologies_path:
         logger.debug("ontologies_path: %s", os.path.abspath(ontologies_path))
-    if rocrate_path:
-        logger.debug("rocrate_path: %s", os.path.abspath(rocrate_path))
+    if rocrate_uri:
+        logger.debug("rocrate_path: %s", os.path.abspath(rocrate_uri))
 
     # Validate the RO-Crate
     result: ValidationResult = services.validate(
@@ -120,7 +140,7 @@ def validate(ctx,
             "requirement_severity": requirement_severity,
             "requirement_severity_only": requirement_severity_only,
             "inherit_profiles": not disable_profile_inheritance,
-            "data_path": Path(rocrate_path).absolute(),
+            "data_path": rocrate_uri,
             "ontology_path": Path(ontologies_path).absolute() if ontologies_path else None,
             "abort_on_first": not no_fail_fast
         }
