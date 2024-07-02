@@ -1,11 +1,15 @@
+from __future__ import annotations
+
 import inspect
 import os
 import re
 import sys
 from importlib import import_module
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
+from urllib.parse import ParseResult, parse_qsl, urlparse
 
+import requests
 import toml
 from rdflib import Graph
 
@@ -225,6 +229,89 @@ def to_camel_case(snake_str: str) -> str:
     """
     components = re.split('_|-', snake_str)
     return components[0].capitalize() + ''.join(x.title() for x in components[1:])
+
+
+class URI:
+
+    REMOTE_SUPPORTED_SCHEMA = ('http', 'https', 'ftp')
+
+    def __init__(self, uri: Union[str, Path]):
+        self._uri = uri = str(uri)
+        try:
+            # map local path to URI with file scheme
+            if not re.match(r'^\w+://', uri):
+                uri = f"file://{uri}"
+            # parse the value to extract the scheme
+            self._parse_result = urlparse(uri)
+            assert self.scheme in self.REMOTE_SUPPORTED_SCHEMA + ('file',), "Invalid URI scheme"
+        except Exception as e:
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.debug(e)
+            raise ValueError("Invalid URI: %s", uri)
+
+    @property
+    def uri(self) -> str:
+        return self._uri
+
+    @property
+    def parse_result(self) -> ParseResult:
+        return self._parse_result
+
+    @property
+    def scheme(self) -> str:
+        return self._parse_result.scheme
+
+    @property
+    def fragment(self) -> Optional[str]:
+        fragment = self._parse_result.fragment
+        return fragment if fragment else None
+
+    def get_query_param(self, param: str) -> Optional[str]:
+        query_params = dict(parse_qsl(self._parse_result.query))
+        return query_params.get(param)
+
+    def as_path(self) -> Path:
+        if not self.is_local_resource():
+            raise ValueError("URI is not a local resource")
+        return Path(self._uri)
+
+    def is_remote_resource(self) -> bool:
+        return self.scheme in self.REMOTE_SUPPORTED_SCHEMA
+
+    def is_local_resource(self) -> bool:
+        return not self.is_remote_resource()
+
+    def is_local_directory(self) -> bool:
+        return self.is_local_resource() and self.as_path().is_dir()
+
+    def is_local_file(self) -> bool:
+        return self.is_local_resource() and self.as_path().is_file()
+
+    def is_available(self) -> bool:
+        """Check if the resource is available"""
+        if self.is_remote_resource():
+            try:
+                response = requests.head(self._uri, allow_redirects=True)
+                return response.status_code in (200, 302)
+            except Exception as e:
+                if logger.isEnabledFor(logging.DEBUG):
+                    logger.debug(e)
+                return False
+        return Path(self._uri).exists()
+
+    def __str__(self):
+        return self._uri
+
+    def __repr__(self):
+        return f"URI(uri={self._uri})"
+
+    def __eq__(self, other):
+        if isinstance(other, URI):
+            return self._uri == other.uri
+        return False
+
+    def __hash__(self):
+        return hash(self._uri)
 
 
 class MapIndex:
