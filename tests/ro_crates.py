@@ -32,6 +32,15 @@ class ValidROC:
     def workflow_roc_string_license(self) -> Path:
         return VALID_CRATES_DATA_PATH / "workflow-roc-string-license"
 
+    @property
+    def sort_and_change_remote(self) -> Path:
+        # TODO: replace with a stable remote URL; this one might be deleted
+        return "https://dev.workflowhub.eu/workflows/161/ro_crate?version=1"
+
+    @property
+    def sort_and_change_archive(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "sortchangecase.crate.zip"
+
 
 class InvalidFileDescriptor:
 
