@@ -4,10 +4,12 @@ import os
 import pytest
 
 from rocrate_validator.constants import DEFAULT_PROFILE_IDENTIFIER
-from rocrate_validator.errors import DuplicateRequirementCheck, InvalidProfilePath, ProfileSpecificationError
+from rocrate_validator.errors import (DuplicateRequirementCheck,
+                                      InvalidProfilePath,
+                                      ProfileSpecificationError)
 from rocrate_validator.models import (Profile, ValidationContext,
                                       ValidationSettings, Validator)
-from tests.ro_crates import InvalidFileDescriptorEntity
+from tests.ro_crates import InvalidFileDescriptorEntity, ValidROC
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -40,7 +42,7 @@ def test_load_invalid_profile_from_validation_context(fake_profiles_path: str):
     settings = {
         "profiles_path": "/tmp/random_path_xxx",
         "profile_identifier": DEFAULT_PROFILE_IDENTIFIER,
-        "data_path": "/tmp/random_path",
+        "data_path": ValidROC().wrroc_paper,
         "inherit_profiles": False
     }
 
@@ -62,7 +64,7 @@ def test_load_valid_profile_without_inheritance_from_validation_context(fake_pro
     settings = {
         "profiles_path": fake_profiles_path,
         "profile_identifier": "c",
-        "data_path": "/tmp/random_path",
+        "data_path": ValidROC().wrroc_paper,
         "inherit_profiles": False
     }
 
@@ -86,7 +88,7 @@ def test_profile_spec_properties(fake_profiles_path: str):
     settings = {
         "profiles_path": fake_profiles_path,
         "profile_identifier": "c",
-        "data_path": "/tmp/random_path",
+        "data_path": ValidROC().wrroc_paper,
         "inherit_profiles": True,
         "disable_check_for_duplicates": True,
     }
@@ -169,7 +171,7 @@ def test_loaded_valid_profile_with_inheritance_from_validator_context(fake_profi
         settings = {
             "profiles_path": fake_profiles_path,
             "profile_identifier": profile_identifier,
-            "data_path": "/tmp/random_path",
+            "data_path": ValidROC().wrroc_paper,
             "disable_check_for_duplicates": True,
         }
 
@@ -208,7 +210,7 @@ def test_load_invalid_profile_no_override_enabled(fake_profiles_path: str):
     settings = {
         "profiles_path": fake_profiles_path,
         "profile_identifier": "invalid-duplicated-shapes",
-        "data_path": "/tmp/random_path",
+        "data_path": ValidROC().wrroc_paper,
         "inherit_profiles": True,
         "allow_shapes_override": False,
     }
@@ -232,7 +234,7 @@ def test_load_invalid_profile_with_override_on_same_profile(fake_profiles_path: 
     settings = {
         "profiles_path": fake_profiles_path,
         "profile_identifier": "invalid-duplicated-shapes",
-        "data_path": "/tmp/random_path",
+        "data_path": ValidROC().wrroc_paper,
         "inherit_profiles": True,
         "allow_shapes_override": False
     }
@@ -255,7 +257,7 @@ def test_load_valid_profile_with_override_on_inherited_profile(fake_profiles_pat
     settings = {
         "profiles_path": fake_profiles_path,
         "profile_identifier": "c-overridden",
-        "data_path": "/tmp/random_path",
+        "data_path": ValidROC().wrroc_paper,
         "inherit_profiles": True,
         "allow_shapes_override": True
     }
