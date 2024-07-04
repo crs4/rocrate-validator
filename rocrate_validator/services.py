@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Union
 
 import requests
+import requests_cache
 
 import rocrate_validator.log as logging
 from rocrate_validator.constants import DEFAULT_PROFILE_IDENTIFIER
@@ -35,6 +36,16 @@ def validate(settings: Union[dict, ValidationSettings]) -> ValidationResult:
     if not rocrate_path.is_available():
         raise FileNotFoundError(f"RO-Crate not found: {rocrate_path}")
 
+    # check if the requests cache is enabled
+    if settings.http_cache_timeout > 0:
+        # Set up requests cache
+        requests_cache.install_cache(
+            '/tmp/rocrate_validator_cache',
+            expire_after=settings.http_cache_timeout,  # Cache expiration time in seconds
+            backend='sqlite',  # Use SQLite backend
+            allowable_methods=('GET',),  # Cache GET
+            allowable_codes=(200, 302, 404)  # Cache responses with these status codes
+        )
 
     # check if remote validation is enabled
     remote_validation = settings.remote_validation

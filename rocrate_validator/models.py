@@ -1004,6 +1004,7 @@ class ValidationSettings:
     iterate_rules: bool = True
     target_only_validation: bool = True
     remote_validation: bool = True
+    http_cache_timeout: int = 60
     # Requirement severity settings
     requirement_severity: Union[str, Severity] = Severity.REQUIRED
     requirement_severity_only: bool = False
