@@ -254,6 +254,10 @@ class URI:
         return self._uri
 
     @property
+    def base_uri(self) -> str:
+        return f"{self.scheme}://{self._parse_result.netloc}{self._parse_result.path}"
+
+    @property
     def parse_result(self) -> ParseResult:
         return self._parse_result
 
@@ -265,6 +269,18 @@ class URI:
     def fragment(self) -> Optional[str]:
         fragment = self._parse_result.fragment
         return fragment if fragment else None
+
+    def get_scheme(self) -> str:
+        return self._parse_result.scheme
+
+    def get_netloc(self) -> str:
+        return self._parse_result.netloc
+
+    def get_path(self) -> str:
+        return self._parse_result.path
+
+    def get_query_string(self) -> str:
+        return self._parse_result.query
 
     def get_query_param(self, param: str) -> Optional[str]:
         query_params = dict(parse_qsl(self._parse_result.query))
