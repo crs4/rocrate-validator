@@ -3,7 +3,7 @@ import pytest
 from rocrate_validator import models, services
 from rocrate_validator.models import (LevelCollection, RequirementLevel,
                                       Severity, ValidationSettings)
-from tests.ro_crates import InvalidFileDescriptor, InvalidRootDataEntity
+from tests.ro_crates import InvalidRootDataEntity, WROCInvalidReadme
 
 
 def test_severity_ordering():
@@ -64,7 +64,7 @@ def validation_settings():
     )
 
 
-@pytest.mark.skip(reason="Temporarily disabled: we need an RO-Crate with multiple failed requirements to test this.")
+# @pytest.mark.skip(reason="Temporarily disabled: we need an RO-Crate with multiple failed requirements to test this.")
 def test_sortability_requirements(validation_settings: ValidationSettings):
     validation_settings.data_path = InvalidRootDataEntity().invalid_root_type
     result: models.ValidationResult = services.validate(validation_settings)
@@ -75,7 +75,7 @@ def test_sortability_requirements(validation_settings: ValidationSettings):
 
 
 def test_sortability_checks(validation_settings: ValidationSettings):
-    validation_settings.data_path = InvalidFileDescriptor().invalid_json_format
+    validation_settings.data_path = WROCInvalidReadme().wroc_readme_wrong_encoding_format
     result: models.ValidationResult = services.validate(validation_settings)
     failed_checks = sorted(result.failed_checks, reverse=True)
     assert len(failed_checks) > 1
@@ -86,7 +86,7 @@ def test_sortability_checks(validation_settings: ValidationSettings):
 
 
 def test_sortability_issues(validation_settings: ValidationSettings):
-    validation_settings.data_path = InvalidFileDescriptor().invalid_json_format
+    validation_settings.data_path = WROCInvalidReadme().wroc_readme_wrong_encoding_format
     result: models.ValidationResult = services.validate(validation_settings)
     issues = sorted(result.get_issues(min_severity=Severity.OPTIONAL), reverse=True)
     assert len(issues) > 1
