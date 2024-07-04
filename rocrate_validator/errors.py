@@ -219,3 +219,60 @@ class CheckValidationError(ValidationError):
 
     def __repr__(self):
         return f"CheckValidationError({self._check!r}, {self._message!r}, {self._path!r})"
+
+
+class ROCrateInvalidURIError(ROCValidatorError):
+    """Raised when an invalid URI is provided."""
+
+    def __init__(self, uri: Optional[str] = None, message: Optional[str] = None):
+        self._uri = uri
+        self._message = message
+
+    @property
+    def uri(self) -> Optional[str]:
+        """The invalid URI."""
+        return self._uri
+
+    @property
+    def message(self) -> Optional[str]:
+        """The error message."""
+        return self._message
+
+    def __str__(self) -> str:
+        if self._message:
+            return f"Invalid URI \"{self._uri!r}\": {self._message!r}"
+        else:
+            return f"Invalid URI \"{self._uri!r}\""
+
+    def __repr__(self):
+        return f"ROCrateInvalidURIError({self._uri!r})"
+
+
+class ROCrateMetadataNotFoundError(ROCValidatorError):
+    """Raised when the RO-Crate metadata is not found."""
+
+    def __init__(self, message: Optional[str] = None, path: Optional[str] = None):
+        self._message = message
+        self._path = path
+
+    @property
+    def message(self) -> Optional[str]:
+        """The error message."""
+        return self._message
+
+    @property
+    def path(self) -> Optional[str]:
+        """The path where the error occurred."""
+        return self._path
+
+    def __str__(self) -> str:
+        if self._path:
+            if self._message:
+                return f"RO-Crate metadata not found on '{self._path!r}': {self._message!r}"
+            else:
+                return f"RO-Crate metadata not found on '{self._path!r}'"
+        else:
+            return "RO-Crate metadata not found"
+
+    def __repr__(self):
+        return f"ROCrateMetadataNotFoundError({self._path!r},{self._message!r})"
