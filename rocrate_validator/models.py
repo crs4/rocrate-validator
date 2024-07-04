@@ -26,8 +26,10 @@ from rocrate_validator.constants import (DEFAULT_ONTOLOGY_FILE,
 from rocrate_validator.errors import (DuplicateRequirementCheck,
                                       InvalidProfilePath, ProfileNotFound,
                                       ProfileSpecificationError,
-                                      ProfileSpecificationNotFound)
-from rocrate_validator.utils import (MapIndex, MultiIndexMap,
+                                      ProfileSpecificationNotFound,
+                                      ROCrateMetadataNotFoundError)
+from rocrate_validator.rocrate import ROCrate
+from rocrate_validator.utils import (URI, MapIndex, MultiIndexMap,
                                      get_profiles_path,
                                      get_requirement_name_from_file)
 
@@ -1185,9 +1187,13 @@ class ValidationContext:
 
     def get_data_graph(self, refresh: bool = False):
         # load the data graph
-        if not self._data_graph or refresh:
-            self._data_graph = self.__load_data_graph__()
-        return self._data_graph
+        try:
+            if not self._data_graph or refresh:
+                self._data_graph = self.__load_data_graph__()
+            return self._data_graph
+        except FileNotFoundError as e:
+            logger.debug("Error loading data graph: %s", e)
+            raise ROCrateMetadataNotFoundError(self.rocrate_path)
 
     @property
     def data_graph(self) -> Graph:
