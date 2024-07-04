@@ -53,7 +53,7 @@ def map_severity(shacl_severity: str) -> Severity:
 
 def make_uris_relative(text: str, ro_crate_path: Union[Path, str]) -> str:
     # globally replace the string "file://" with "./
-    return text.replace(f'file://{ro_crate_path}', '.')
+    return text.replace(str(ro_crate_path), './')
 
 
 def inject_attributes(obj: object, node_graph: Graph, node: Node) -> object:

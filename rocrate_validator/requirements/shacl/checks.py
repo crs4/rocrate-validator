@@ -128,7 +128,7 @@ class SHACLCheck(RequirementCheck):
                                                              severity=violation.get_result_severity(),
                                                              resultPath=violation.resultPath.toPython() if violation.resultPath else None,
                                                              focusNode=make_uris_relative(
-                                                                 violation.focusNode.toPython(), shacl_context.rocrate_path),
+                                                                 violation.focusNode.toPython(), shacl_context.publicID),
                                                              value=violation.value)
                     logger.debug("Added validation issue to the context: %s", c)
                 if shacl_context.base_context.fail_fast:
