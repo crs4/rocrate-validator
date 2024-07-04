@@ -35,6 +35,19 @@ def validate(settings: Union[dict, ValidationSettings]) -> ValidationResult:
     if not rocrate_path.is_available():
         raise FileNotFoundError(f"RO-Crate not found: {rocrate_path}")
 
+
+    # check if remote validation is enabled
+    remote_validation = settings.remote_validation
+    logger.debug("Remote validation: %s", remote_validation)
+    if remote_validation:
+        # create a validator
+        validator = Validator(settings)
+        logger.debug("Validator created. Starting validation...")
+        # validate the RO-Crate
+        result = validator.validate()
+        logger.debug("Validation completed: %s", result)
+        return result
+
     def __do_validate__(settings: ValidationSettings):
         # create a validator
         validator = Validator(settings)

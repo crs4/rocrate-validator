@@ -1003,6 +1003,7 @@ class ValidationSettings:
     meta_shacl: bool = False
     iterate_rules: bool = True
     target_only_validation: bool = True
+    remote_validation: bool = True
     # Requirement severity settings
     requirement_severity: Union[str, Severity] = Severity.REQUIRED
     requirement_severity_only: bool = False
