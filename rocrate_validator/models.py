@@ -1168,10 +1168,6 @@ class ValidationContext:
         return self.settings.get("data_path")
 
     @property
-    def file_descriptor_path(self) -> Path:
-        return self.rocrate_path / ROCRATE_METADATA_FILE
-
-    @property
     def fail_fast(self) -> bool:
         return self.settings.get("abort_on_first", True)
 
@@ -1181,8 +1177,8 @@ class ValidationContext:
 
     def __load_data_graph__(self):
         data_graph = Graph()
-        logger.debug("Loading RO-Crate metadata: %s", self.file_descriptor_path)
-        _ = data_graph.parse(self.file_descriptor_path,
+        logger.debug("Loading RO-Crate metadata of: %s", self.ro_crate.uri)
+        _ = data_graph.parse(data=self.ro_crate.metadata.as_dict(),
                              format="json-ld", publicID=self.publicID)
         logger.debug("RO-Crate metadata loaded: %s", data_graph)
         return data_graph
