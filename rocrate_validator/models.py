@@ -1143,9 +1143,9 @@ class ValidationContext:
 
     @property
     def publicID(self) -> str:
-        path = str(self.rocrate_path)
+        path = str(self.ro_crate.uri.base_uri)
         if not path.endswith("/"):
-            return f"{path}/"
+            path = f"{path}/"
         return path
 
     @property
