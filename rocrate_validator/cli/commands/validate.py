@@ -12,7 +12,7 @@ from rocrate_validator.constants import DEFAULT_PROFILE_IDENTIFIER
 
 from ... import services
 from ...colors import get_severity_color
-from ...models import Severity, ValidationResult
+from ...models import LevelCollection, Severity, ValidationResult
 from ...utils import URI, get_profiles_path
 from ..main import cli, click
 
@@ -151,7 +151,7 @@ def validate(ctx,
 
     # using ctx.exit seems to raise an Exception that gets caught below,
     # so we use sys.exit instead.
-    sys.exit(0 if result.passed(Severity.RECOMMENDED) else 1)
+    sys.exit(0 if result.passed(LevelCollection.get(requirement_severity).severity) else 1)
 
 
 def __print_validation_result__(
@@ -204,9 +204,10 @@ def __print_validation_result__(
                         if issue.resultPath:
                             path += "="
                         path += f"\"[green]{issue.value}[/green]\""
-                    path = path + " of " if len(path) > 0 else "on "
+                    if issue.focusNode:
+                        path = path + " of " if len(path) > 0 else " on " + f"[cyan]<{issue.focusNode}>[/cyan]"
                     console.print(
                         f"{' ' * 6}- [[red]Violation[/red] of "
-                        f"[{issue_color} bold]{issue.check.identifier}[/{issue_color} bold] {path}[cyan]<{issue.focusNode}>[/cyan]]: "
+                        f"[{issue_color} bold]{issue.check.identifier}[/{issue_color} bold]{path}]: "
                         f"{Markdown(issue.message).markup}",)
                 console.print("\n", style="white")
