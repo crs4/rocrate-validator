@@ -1115,6 +1115,18 @@ class ValidationContext:
         # additional properties for the context
         self._properties = {}
 
+        # parse the rocrate path
+        rocrate_path: URI = URI(settings.get("data_path"))
+        logger.debug("Validating RO-Crate: %s", rocrate_path)
+
+        # initialize the ROCrate object
+        self._rocrate = ROCrate.new_instance(rocrate_path)
+        assert isinstance(self._rocrate, ROCrate), "Invalid RO-Crate instance"
+
+    @property
+    def ro_crate(self) -> ROCrate:
+        return self._rocrate
+
     @property
     def validator(self) -> Validator:
         return self._validator
