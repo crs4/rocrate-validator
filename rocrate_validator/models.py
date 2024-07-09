@@ -26,8 +26,10 @@ from rocrate_validator.constants import (DEFAULT_ONTOLOGY_FILE,
 from rocrate_validator.errors import (DuplicateRequirementCheck,
                                       InvalidProfilePath, ProfileNotFound,
                                       ProfileSpecificationError,
-                                      ProfileSpecificationNotFound)
-from rocrate_validator.utils import (MapIndex, MultiIndexMap,
+                                      ProfileSpecificationNotFound,
+                                      ROCrateMetadataNotFoundError)
+from rocrate_validator.rocrate import ROCrate
+from rocrate_validator.utils import (URI, MapIndex, MultiIndexMap,
                                      get_profiles_path,
                                      get_requirement_name_from_file)
 
@@ -1001,6 +1003,8 @@ class ValidationSettings:
     meta_shacl: bool = False
     iterate_rules: bool = True
     target_only_validation: bool = True
+    remote_validation: bool = True
+    http_cache_timeout: int = 60
     # Requirement severity settings
     requirement_severity: Union[str, Severity] = Severity.REQUIRED
     requirement_severity_only: bool = False
@@ -1115,6 +1119,18 @@ class ValidationContext:
         # additional properties for the context
         self._properties = {}
 
+        # parse the rocrate path
+        rocrate_path: URI = URI(settings.get("data_path"))
+        logger.debug("Validating RO-Crate: %s", rocrate_path)
+
+        # initialize the ROCrate object
+        self._rocrate = ROCrate.new_instance(rocrate_path)
+        assert isinstance(self._rocrate, ROCrate), "Invalid RO-Crate instance"
+
+    @property
+    def ro_crate(self) -> ROCrate:
+        return self._rocrate
+
     @property
     def validator(self) -> Validator:
         return self._validator
@@ -1131,9 +1147,9 @@ class ValidationContext:
 
     @property
     def publicID(self) -> str:
-        path = str(self.rocrate_path)
+        path = str(self.ro_crate.uri.base_uri)
         if not path.endswith("/"):
-            return f"{path}/"
+            path = f"{path}/"
         return path
 
     @property
@@ -1156,10 +1172,6 @@ class ValidationContext:
         return self.settings.get("data_path")
 
     @property
-    def file_descriptor_path(self) -> Path:
-        return self.rocrate_path / ROCRATE_METADATA_FILE
-
-    @property
     def fail_fast(self) -> bool:
         return self.settings.get("abort_on_first", True)
 
@@ -1169,17 +1181,21 @@ class ValidationContext:
 
     def __load_data_graph__(self):
         data_graph = Graph()
-        logger.debug("Loading RO-Crate metadata: %s", self.file_descriptor_path)
-        _ = data_graph.parse(self.file_descriptor_path,
+        logger.debug("Loading RO-Crate metadata of: %s", self.ro_crate.uri)
+        _ = data_graph.parse(data=self.ro_crate.metadata.as_dict(),
                              format="json-ld", publicID=self.publicID)
         logger.debug("RO-Crate metadata loaded: %s", data_graph)
         return data_graph
 
     def get_data_graph(self, refresh: bool = False):
         # load the data graph
-        if not self._data_graph or refresh:
-            self._data_graph = self.__load_data_graph__()
-        return self._data_graph
+        try:
+            if not self._data_graph or refresh:
+                self._data_graph = self.__load_data_graph__()
+            return self._data_graph
+        except FileNotFoundError as e:
+            logger.debug("Error loading data graph: %s", e)
+            raise ROCrateMetadataNotFoundError(self.rocrate_path)
 
     @property
     def data_graph(self) -> Graph:

@@ -30,6 +30,7 @@ toml = "^0.10.2"
 rich-click = "^1.7.3"
 colorlog = "^6.8"
 requests = "^2.32.3"
+requests-cache = "^1.2.1"
 
 [tool.poetry.group.dev.dependencies]
 pyproject-flake8 = "^6.1.0"

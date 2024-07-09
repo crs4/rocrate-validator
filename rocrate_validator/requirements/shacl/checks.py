@@ -3,6 +3,7 @@ from timeit import default_timer as timer
 from typing import Optional
 
 import rocrate_validator.log as logging
+from rocrate_validator.errors import ROCrateMetadataNotFoundError
 from rocrate_validator.models import (Requirement, RequirementCheck,
                                       ValidationContext)
 from rocrate_validator.requirements.shacl.models import Shape
@@ -57,6 +58,9 @@ class SHACLCheck(RequirementCheck):
             # the validation is postponed to the subsequent profiles
             #  so we return True to continue the validation
             return True
+        except ROCrateMetadataNotFoundError as e:
+            logger.debug("Unable to perform metadata validation due to missing metadata file: %s", e)
+            return False
 
     def __do_execute_check__(self, shacl_context: SHACLValidationContext):
         # get the shapes registry
@@ -75,7 +79,7 @@ class SHACLCheck(RequirementCheck):
             end_time = timer()
             logger.debug(f"Execution time for getting data graph: {end_time - start_time} seconds")
         except json.decoder.JSONDecodeError as e:
-            logger.warning("Unable to perform metadata validation due to an error in the JSON-LD data file: %s", e)
+            logger.debug("Unable to perform metadata validation due to an error in the JSON-LD data file: %s", e)
             return False
 
         # Begin the timer
@@ -124,7 +128,7 @@ class SHACLCheck(RequirementCheck):
                                                              severity=violation.get_result_severity(),
                                                              resultPath=violation.resultPath.toPython() if violation.resultPath else None,
                                                              focusNode=make_uris_relative(
-                                                                 violation.focusNode.toPython(), shacl_context.rocrate_path),
+                                                                 violation.focusNode.toPython(), shacl_context.publicID),
                                                              value=violation.value)
                     logger.debug("Added validation issue to the context: %s", c)
                 if shacl_context.base_context.fail_fast:
