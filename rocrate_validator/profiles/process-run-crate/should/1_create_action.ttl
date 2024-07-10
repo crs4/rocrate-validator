@@ -50,6 +50,15 @@ ro:ProcRCActionRecommended a sh:NodeShape ;
     ] ;
     sh:property [
         a sh:PropertyShape ;
+        sh:name "Action startTime" ;
+        sh:description "If present, the Action startTime SHOULD be in ISO 8601 format" ;
+        sh:path schema:startTime ;
+        sh:pattern "^(\\d{4}-\\d{2}-\\d{2})(T\\d{2}:\\d{2}:\\d{2}(\\.\\d{3})?\\+\\d{2}:\\d{2})?$" ;
+        sh:minCount 0 ;
+        sh:message "If present, the Action startTime SHOULD be in ISO 8601 format" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
         sh:name "Action agent" ;
         sh:description "The Action SHOULD have an agent that is a Person or Organization" ;
         sh:path schema:agent ;

@@ -161,7 +161,7 @@ def test_prc_action_no_starttime():
         Severity.OPTIONAL,
         False,
         ["Process Run Crate Action MAY"],
-        ["The Action MAY have a startTime in ISO 8601 format"],
+        ["The Action MAY have a startTime"],
         profile_identifier="process-run-crate"
     )
 
@@ -172,10 +172,10 @@ def test_prc_action_bad_starttime():
     """
     do_entity_test(
         InvalidProcRC().action_bad_starttime,
-        Severity.OPTIONAL,
+        Severity.RECOMMENDED,
         False,
-        ["Process Run Crate Action MAY"],
-        ["The Action MAY have a startTime in ISO 8601 format"],
+        ["Process Run Crate Action SHOULD"],
+        ["If present, the Action startTime SHOULD be in ISO 8601 format"],
         profile_identifier="process-run-crate"
     )
 
