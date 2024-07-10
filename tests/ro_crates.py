@@ -347,6 +347,10 @@ class InvalidProcRC:
         return self.base_path / "action_error_not_failed_status"
 
     @property
+    def action_error_no_status(self) -> Path:
+        return self.base_path / "action_error_no_status"
+
+    @property
     def action_no_object(self) -> Path:
         return self.base_path / "action_no_object"
 

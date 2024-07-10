@@ -187,7 +187,22 @@ def test_prc_action_error_not_failed_status():
     """
     do_entity_test(
         InvalidProcRC().action_error_not_failed_status,
-        Severity.OPTIONAL,
+        Severity.RECOMMENDED,
+        False,
+        ["Process Run Crate Action error"],
+        ["error SHOULD NOT be specified unless actionStatus is set to FailedActionStatus"],
+        profile_identifier="process-run-crate"
+    )
+
+
+def test_prc_action_error_no_status():
+    """\
+    Test a Process Run Crate where the action has an error even though it has
+    no actionStatus.
+    """
+    do_entity_test(
+        InvalidProcRC().action_error_no_status,
+        Severity.RECOMMENDED,
         False,
         ["Process Run Crate Action error"],
         ["error SHOULD NOT be specified unless actionStatus is set to FailedActionStatus"],

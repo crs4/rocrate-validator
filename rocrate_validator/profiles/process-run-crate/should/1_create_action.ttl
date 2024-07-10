@@ -95,3 +95,29 @@ ro:ProcRCCreateUpdateActionRecommended a sh:NodeShape ;
         sh:minCount 1 ;
         sh:message "The Action SHOULD have a result" ;
     ] .
+
+
+ro:ProcRCActionError a sh:NodeShape ;
+    sh:name "Process Run Crate Action error" ;
+    sh:description "error SHOULD NOT be specified unless actionStatus is set to FailedActionStatus" ;
+    sh:message "error SHOULD NOT be specified unless actionStatus is set to FailedActionStatus" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                { ?this a schema:CreateAction } UNION
+                { ?this a schema:ActivateAction } UNION
+                { ?this a schema:UpdateAction } .
+                { FILTER NOT EXISTS { ?this schema:actionStatus ?status } } UNION
+                { ?this schema:actionStatus ?status .
+                  FILTER(?status != schema:FailedActionStatus) }
+            }
+        """
+    ] ;
+    sh:not [
+        a sh:PropertyShape ;
+        sh:path schema:error ;
+        sh:minCount 1 ;
+    ] .
