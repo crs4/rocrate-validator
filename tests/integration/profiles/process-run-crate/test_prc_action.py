@@ -193,3 +193,45 @@ def test_prc_action_error_not_failed_status():
         ["error SHOULD NOT be specified unless actionStatus is set to FailedActionStatus"],
         profile_identifier="process-run-crate"
     )
+
+
+def test_prc_action_no_object():
+    """\
+    Test a Process Run Crate where the Action does not have an object.
+    """
+    do_entity_test(
+        InvalidProcRC().action_no_object,
+        Severity.OPTIONAL,
+        False,
+        ["Process Run Crate Action MAY"],
+        ["The Action MAY have an object"],
+        profile_identifier="process-run-crate"
+    )
+
+
+def test_prc_action_no_actionstatus():
+    """\
+    Test a Process Run Crate where the Action does not have an actionstatus.
+    """
+    do_entity_test(
+        InvalidProcRC().action_no_actionstatus,
+        Severity.OPTIONAL,
+        False,
+        ["Process Run Crate Action MAY"],
+        ["The Action MAY have an actionStatus"],
+        profile_identifier="process-run-crate"
+    )
+
+
+def test_prc_action_bad_actionstatus():
+    """\
+    Test a Process Run Crate where the Action has an invalid actionstatus.
+    """
+    do_entity_test(
+        InvalidProcRC().action_bad_actionstatus,
+        Severity.RECOMMENDED,
+        False,
+        ["Process Run Crate Action SHOULD"],
+        ["If the Action has an actionStatus, it should be http://schema.org/CompletedActionStatus or http://schema.org/FailedActionStatus"],
+        profile_identifier="process-run-crate"
+    )

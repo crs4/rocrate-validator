@@ -21,6 +21,22 @@ ro:ProcRCActionOptional a sh:NodeShape ;
         sh:path schema:startTime ;
         sh:minCount 1 ;
         sh:message "The Action MAY have a startTime" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Action object" ;
+        sh:description "The Action MAY have an object" ;
+        sh:path schema:object ;
+        sh:minCount 1 ;
+        sh:message "The Action MAY have an object" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Action actionStatus" ;
+        sh:description "The Action MAY have an actionStatus" ;
+        sh:path schema:actionStatus ;
+        sh:minCount 1 ;
+        sh:message "The Action MAY have an actionStatus" ;
     ] .
 
 ro:ProcRCActionError a sh:NodeShape ;

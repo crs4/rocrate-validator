@@ -68,6 +68,18 @@ ro:ProcRCActionRecommended a sh:NodeShape ;
         ) ;
         sh:minCount 1 ;
         sh:message "The Action SHOULD have an agent that is a Person or Organization" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Action actionStatus" ;
+        sh:description "If the Action has an actionStatus, it should be http://schema.org/CompletedActionStatus or http://schema.org/FailedActionStatus" ;
+        sh:path schema:actionStatus ;
+        sh:or (
+            [ sh:hasValue schema:CompletedActionStatus ; ]
+            [ sh:hasValue schema:FailedActionStatus ; ]
+        ) ;
+        sh:minCount 0 ;
+        sh:message "If the Action has an actionStatus, it should be http://schema.org/CompletedActionStatus or http://schema.org/FailedActionStatus" ;
     ] .
 
 ro:ProcRCCreateUpdateActionRecommended a sh:NodeShape ;
