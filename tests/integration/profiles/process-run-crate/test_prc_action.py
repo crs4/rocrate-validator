@@ -250,3 +250,17 @@ def test_prc_action_bad_actionstatus():
         ["If the Action has an actionStatus, it should be http://schema.org/CompletedActionStatus or http://schema.org/FailedActionStatus"],
         profile_identifier="process-run-crate"
     )
+
+
+def test_prc_action_no_error():
+    """\
+    Test a Process Run Crate where the Action does not have an error.
+    """
+    do_entity_test(
+        InvalidProcRC().action_no_error,
+        Severity.OPTIONAL,
+        False,
+        ["Process Run Crate Action MAY have error"],
+        ["error MAY be specified if actionStatus is set to FailedActionStatus"],
+        profile_identifier="process-run-crate"
+    )

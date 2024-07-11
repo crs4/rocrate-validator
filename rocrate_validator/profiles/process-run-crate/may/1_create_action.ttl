@@ -38,3 +38,28 @@ ro:ProcRCActionOptional a sh:NodeShape ;
         sh:minCount 1 ;
         sh:message "The Action MAY have an actionStatus" ;
     ] .
+
+
+ro:ProcRCActionErrorMay a sh:NodeShape ;
+    sh:name "Process Run Crate Action MAY have error" ;
+    sh:description "error MAY be specified if actionStatus is set to FailedActionStatus" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                { ?this a schema:CreateAction } UNION
+                { ?this a schema:ActivateAction } UNION
+                { ?this a schema:UpdateAction } .
+                ?this schema:actionStatus ?status .
+                FILTER(?status = schema:FailedActionStatus) .
+            }
+        """
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:error ;
+        sh:minCount 1 ;
+        sh:message "error MAY be specified if actionStatus is set to FailedActionStatus" ;
+    ] .
