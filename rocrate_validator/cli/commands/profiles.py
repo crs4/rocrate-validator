@@ -57,11 +57,9 @@ def list_profiles(ctx, no_paging: bool = False):  # , profiles_path: Path = DEFA
     enable_pager = not no_paging
     # Get the profiles
     profiles = services.get_profiles(profiles_path=profiles_path)
-    # console.print("\nAvailable profiles:", style="white bold")
-    console.print("\n", style="white bold")
 
     table = Table(show_header=True,
-                  title=" Available profiles",
+                  title="   Available profiles",
                   title_style="italic bold cyan",
                   title_justify="left",
                   header_style="bold cyan",
