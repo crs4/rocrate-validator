@@ -10,7 +10,6 @@ from rich.text import Text
 from rocrate_validator import log as logging
 from rocrate_validator.utils import get_version
 
-
 # set up logging
 logger = logging.getLogger(__name__)
 
@@ -34,4 +33,5 @@ def format_text(text: str,
 
 
 def get_app_header_rule() -> Text:
-    return Padding(Rule(f"\n[bold][green]ROCrate Validator[/green] (ver. [magenta]{get_version()}[/magenta])[/bold]"), (1, 1))
+    return Padding(Rule(f"\n[bold][cyan]ROCrate Validator[/cyan] (ver. [magenta]{get_version()}[/magenta])[/bold]",
+                        style="bold cyan"), (1, 1))
