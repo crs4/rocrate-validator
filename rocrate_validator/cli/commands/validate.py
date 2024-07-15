@@ -7,10 +7,12 @@ from typing import Optional
 from rich.align import Align
 from rich.console import Console
 from rich.markdown import Markdown
+from rich.padding import Padding
 
 import rocrate_validator.log as logging
 from rocrate_validator import services
 from rocrate_validator.cli.main import cli, click
+from rocrate_validator.cli.utils import format_text
 from rocrate_validator.colors import get_severity_color
 from rocrate_validator.constants import DEFAULT_PROFILE_IDENTIFIER
 from rocrate_validator.errors import ProfileNotFound, ProfilesDirectoryNotFound
@@ -206,16 +208,16 @@ def __print_validation_result__(
     with console.pager(styles=True) if enable_pager else console:
         if result.passed(severity=severity):
             console.print(
-                f"\n\n[bold][[green]OK[/green]] RO-Crate is [green]valid[/green] !!![/bold]\n\n",
+                Padding(f"\n\n[bold][[green]OK[/green]] RO-Crate is [green]valid[/green] !!![/bold]\n\n", (0, 2)),
                 style="white",
             )
         else:
             console.print(
-                f"\n\n[bold][[red]FAILED[/red]] RO-Crate is [red]not valid[/red] !!![/bold]\n",
+                Padding(f"\n\n[bold][[red]FAILED[/red]] RO-Crate is [red]not valid[/red] !!![/bold]\n", (0, 2)),
                 style="white",
             )
 
-            console.print("\n[bold]The following requirements have not meet: [/bold]\n", style="white")
+            console.print(Padding("\n[bold]The following requirements have not meet: [/bold]", (0, 2)), style="white")
 
             for requirement in sorted(result.failed_requirements,
                                       key=lambda x: (-x.severity.value, x)):
@@ -228,29 +230,28 @@ def __print_validation_result__(
                     f"  [bold][cyan][{requirement.order_number}] [u]{Markdown(requirement.name).markup}[/u][/cyan][/bold]",
                     style="white",
                 )
-                console.print(f"\n{' '*4}{Markdown(requirement.description).markup}\n", style="white italic")
+                console.print(Padding(Markdown(requirement.description), (1, 7)))
+                console.print(Padding("[white bold u]  Failed checks  [/white bold u]\n",
+                              (0, 8)), style="white bold")
 
-                console.print(f"{' '*4}[cyan u]Failed checks[/cyan u]:\n", style="white bold")
                 for check in sorted(result.get_failed_checks_by_requirement(requirement),
                                     key=lambda x: (-x.severity.value, x)):
                     issue_color = get_severity_color(check.level.severity)
                     console.print(
-                        f"{' '*4}- "
-                        f"[magenta bold]{check.name}[/magenta bold]: {Markdown(check.description).markup}")
-                    console.print(f"\n{' '*6}[u]Detected issues[/u]:", style="white bold")
+                        Padding(f"[bold][{issue_color}][{check.identifier.center(16)}][/{issue_color}]  [magenta]{check.name}[/magenta][/bold]:", (0, 7)), style="white bold")
+                    console.print(Padding(Markdown(check.description), (0, 27)))
+                    console.print(Padding("[u]Detected issues[/u]", (0, 8)), style="white bold")
                     for issue in sorted(result.get_issues_by_check(check),
                                         key=lambda x: (-x.severity.value, x)):
                         path = ""
                         if issue.resultPath and issue.value:
-                            path = f"on [yellow]{issue.resultPath}[/yellow]"
+                            path = f"of [yellow]{issue.resultPath}[/yellow]"
                         if issue.value:
                             if issue.resultPath:
                                 path += "="
-                            path += f"\"[green]{issue.value}[/green]\""
-                        if issue.focusNode:
-                            path = path + " of " if len(path) > 0 else " on " + f"[cyan]<{issue.focusNode}>[/cyan]"
+                            path += f"\"[green]{issue.value}[/green]\" "  # keep the ending space
+                        path = path + "on " + f"[cyan]<{issue.focusNode}>[/cyan]"
                         console.print(
-                            f"{' ' * 6}- [[red]Violation[/red] of "
-                            f"[{issue_color} bold]{issue.check.identifier}[/{issue_color} bold]{path}]: "
-                            f"{Markdown(issue.message).markup}",)
+                            Padding(f"- [[red]Violation[/red] {path}]: "
+                                    f"{Markdown(issue.message).markup}", (0, 9)), style="white")
                     console.print("\n", style="white")
