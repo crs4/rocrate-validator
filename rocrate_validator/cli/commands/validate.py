@@ -95,6 +95,13 @@ def validate_uri(ctx, param, value):
     default=False,
     show_default=True
 )
+@click.option(
+    '--no-paging',
+    is_flag=True,
+    help="Disable paging",
+    default=False,
+    show_default=True
+)
 # @click.option(
 #     "-o",
 #     "--ontologies-path",
@@ -111,11 +118,14 @@ def validate(ctx,
              requirement_severity_only: bool = False,
              rocrate_uri: Path = ".",
              no_fail_fast: bool = False,
-             ontologies_path: Optional[Path] = None):
+             ontologies_path: Optional[Path] = None,
+             no_paging: bool = False):
     """
     [magenta]rocrate-validator:[/magenta] Validate a RO-Crate against a profile
     """
     console: Console = ctx.obj['console']
+    # Get the no_paging flag
+    enable_pager = not no_paging
     # Log the input parameters for debugging
     logger.debug("profiles_path: %s", os.path.abspath(profiles_path))
     logger.debug("profile_identifier: %s", profile_identifier)
@@ -147,7 +157,7 @@ def validate(ctx,
     )
 
     # Print the validation result
-    __print_validation_result__(console, result, result.context.requirement_severity)
+    __print_validation_result__(console, result, result.context.requirement_severity, enable_pager=enable_pager)
 
     # using ctx.exit seems to raise an Exception that gets caught below,
     # so we use sys.exit instead.
@@ -157,57 +167,59 @@ def validate(ctx,
 def __print_validation_result__(
         console: Console,
         result: ValidationResult,
-        severity: Severity = Severity.RECOMMENDED):
+        severity: Severity = Severity.RECOMMENDED,
+        enable_pager: bool = True):
     """
     Print the validation result
     """
-    if result.passed(severity=severity):
-        console.print(
-            f"\n\n[bold][[green]OK[/green]] RO-Crate is [green]valid[/green] !!![/bold]\n\n",
-            style="white",
-        )
-    else:
-        console.print(
-            f"\n\n[bold][[red]FAILED[/red]] RO-Crate is [red]not valid[/red] !!![/bold]\n",
-            style="white",
-        )
-
-        console.print("\n[bold]The following requirements have not meet: [/bold]\n", style="white")
-
-        for requirement in sorted(result.failed_requirements,
-                                  key=lambda x: (-x.severity.value, x)):
-            issue_color = get_severity_color(requirement.severity)
+    with console.pager(styles=True) if enable_pager else console:
+        if result.passed(severity=severity):
             console.print(
-                Align(f"\n [severity: [{issue_color}]{requirement.severity.name}[/{issue_color}], "
-                      f"profile: [magenta bold]{requirement.profile.name }[/magenta bold]]", align="right")
-            )
-            console.print(
-                f"  [bold][cyan][{requirement.order_number}] [u]{Markdown(requirement.name).markup}[/u][/cyan][/bold]",
+                f"\n\n[bold][[green]OK[/green]] RO-Crate is [green]valid[/green] !!![/bold]\n\n",
                 style="white",
             )
-            console.print(f"\n{' '*4}{Markdown(requirement.description).markup}\n", style="white italic")
+        else:
+            console.print(
+                f"\n\n[bold][[red]FAILED[/red]] RO-Crate is [red]not valid[/red] !!![/bold]\n",
+                style="white",
+            )
 
-            console.print(f"{' '*4}[cyan u]Failed checks[/cyan u]:\n", style="white bold")
-            for check in sorted(result.get_failed_checks_by_requirement(requirement),
-                                key=lambda x: (-x.severity.value, x)):
-                issue_color = get_severity_color(check.level.severity)
+            console.print("\n[bold]The following requirements have not meet: [/bold]\n", style="white")
+
+            for requirement in sorted(result.failed_requirements,
+                                      key=lambda x: (-x.severity.value, x)):
+                issue_color = get_severity_color(requirement.severity)
                 console.print(
-                    f"{' '*4}- "
-                    f"[magenta bold]{check.name}[/magenta bold]: {Markdown(check.description).markup}")
-                console.print(f"\n{' '*6}[u]Detected issues[/u]:", style="white bold")
-                for issue in sorted(result.get_issues_by_check(check),
+                    Align(f"\n [severity: [{issue_color}]{requirement.severity.name}[/{issue_color}], "
+                          f"profile: [magenta bold]{requirement.profile.name }[/magenta bold]]", align="right")
+                )
+                console.print(
+                    f"  [bold][cyan][{requirement.order_number}] [u]{Markdown(requirement.name).markup}[/u][/cyan][/bold]",
+                    style="white",
+                )
+                console.print(f"\n{' '*4}{Markdown(requirement.description).markup}\n", style="white italic")
+
+                console.print(f"{' '*4}[cyan u]Failed checks[/cyan u]:\n", style="white bold")
+                for check in sorted(result.get_failed_checks_by_requirement(requirement),
                                     key=lambda x: (-x.severity.value, x)):
-                    path = ""
-                    if issue.resultPath and issue.value:
-                        path = f"on [yellow]{issue.resultPath}[/yellow]"
-                    if issue.value:
-                        if issue.resultPath:
-                            path += "="
-                        path += f"\"[green]{issue.value}[/green]\""
-                    if issue.focusNode:
-                        path = path + " of " if len(path) > 0 else " on " + f"[cyan]<{issue.focusNode}>[/cyan]"
+                    issue_color = get_severity_color(check.level.severity)
                     console.print(
-                        f"{' ' * 6}- [[red]Violation[/red] of "
-                        f"[{issue_color} bold]{issue.check.identifier}[/{issue_color} bold]{path}]: "
-                        f"{Markdown(issue.message).markup}",)
-                console.print("\n", style="white")
+                        f"{' '*4}- "
+                        f"[magenta bold]{check.name}[/magenta bold]: {Markdown(check.description).markup}")
+                    console.print(f"\n{' '*6}[u]Detected issues[/u]:", style="white bold")
+                    for issue in sorted(result.get_issues_by_check(check),
+                                        key=lambda x: (-x.severity.value, x)):
+                        path = ""
+                        if issue.resultPath and issue.value:
+                            path = f"on [yellow]{issue.resultPath}[/yellow]"
+                        if issue.value:
+                            if issue.resultPath:
+                                path += "="
+                            path += f"\"[green]{issue.value}[/green]\""
+                        if issue.focusNode:
+                            path = path + " of " if len(path) > 0 else " on " + f"[cyan]<{issue.focusNode}>[/cyan]"
+                        console.print(
+                            f"{' ' * 6}- [[red]Violation[/red] of "
+                            f"[{issue_color} bold]{issue.check.identifier}[/{issue_color} bold]{path}]: "
+                            f"{Markdown(issue.message).markup}",)
+                    console.print("\n", style="white")

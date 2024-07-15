@@ -1,12 +1,14 @@
 from pathlib import Path
 
 from rich.markdown import Markdown
+from rich.padding import Padding
 from rich.panel import Panel
 from rich.table import Table
 
 import rocrate_validator.log as logging
 from rocrate_validator import services
 from rocrate_validator.cli.main import cli, click
+from rocrate_validator.cli.utils import get_app_header_rule
 from rocrate_validator.colors import get_severity_color
 from rocrate_validator.constants import DEFAULT_PROFILE_IDENTIFIER
 from rocrate_validator.models import LevelCollection, RequirementLevel
@@ -38,23 +40,34 @@ def profiles(ctx, profiles_path: Path = DEFAULT_PROFILES_PATH):
 
 
 @profiles.command("list")
+@click.option(
+    '--no-paging',
+    is_flag=True,
+    help="Disable paging",
+    default=False,
+    show_default=True
+)
 @click.pass_context
-def list_profiles(ctx):  # , profiles_path: Path = DEFAULT_PROFILES_PATH):
+def list_profiles(ctx, no_paging: bool = False):  # , profiles_path: Path = DEFAULT_PROFILES_PATH):
     """
     List available profiles
     """
     profiles_path = ctx.obj['profiles_path']
     console = ctx.obj['console']
+    enable_pager = not no_paging
     # Get the profiles
     profiles = services.get_profiles(profiles_path=profiles_path)
     # console.print("\nAvailable profiles:", style="white bold")
     console.print("\n", style="white bold")
 
     table = Table(show_header=True,
-                  title="Available profiles",
+                  title=" Available profiles",
+                  title_style="italic bold cyan",
+                  title_justify="left",
                   header_style="bold cyan",
                   border_style="bright_black",
                   show_footer=False,
+                  caption_style="italic bold",
                   caption="[cyan](*)[/cyan] Number of requirements by severity")
 
     # Define columns
@@ -88,7 +101,9 @@ def list_profiles(ctx):  # , profiles_path: Path = DEFAULT_PROFILES_PATH):
         table.add_row()
 
     # Print the table
-    console.print(table)
+    with console.pager(styles=True) if enable_pager else console:
+        console.print(get_app_header_rule())
+        console.print(Padding(table, (0, 1)))
 
 
 @profiles.command("describe")
@@ -101,33 +116,48 @@ def list_profiles(ctx):  # , profiles_path: Path = DEFAULT_PROFILES_PATH):
     show_default=True
 )
 @click.argument("profile-identifier", type=click.STRING, default=DEFAULT_PROFILE_IDENTIFIER, required=True)
+@click.option(
+    '--no-paging',
+    is_flag=True,
+    help="Disable paging",
+    default=False,
+    show_default=True
+)
 @click.pass_context
 def describe_profile(ctx,
                      profile_identifier: str = DEFAULT_PROFILE_IDENTIFIER,
                      profiles_path: Path = DEFAULT_PROFILES_PATH,
-                     verbose: bool = False):
+                     verbose: bool = False, no_paging: bool = False):
     """
     Show a profile
     """
     # Get the console
     console = ctx.obj['console']
+    # Get the no_paging flag
+    enable_pager = not no_paging
+
     # Get the profile
     profile = services.get_profile(profiles_path=profiles_path, profile_identifier=profile_identifier)
-    # Print the profile header
-    console.print("\n", style="white bold")
-    title_text = f"[bold cyan]Version:[/bold cyan] [italic green]{profile.version}[/italic green]\n"
-    title_text += f"[bold cyan]URI:[/bold cyan] [italic yellow]{profile.uri}[/italic yellow]\n\n"
-    title_text += f"[bold cyan]Description:[/bold cyan] [italic]{profile.description.strip()}[/italic]"
-    box = Panel(
-        title_text, title=f"[bold][cyan]Profile:[/cyan] [magenta italic]{profile.identifier}[/magenta italic][/bold]", padding=(1, 1))
-    console.print(box)
-    # Print the profile requirements
+
+    # Set the subheader title
+    subheader_title = f"[bold][cyan]Profile:[/cyan] [magenta italic]{profile.identifier}[/magenta italic][/bold]"
+
+    # Set the subheader content
+    subheader_content = f"[bold cyan]Version:[/bold cyan] [italic green]{profile.version}[/italic green]\n"
+    subheader_content += f"[bold cyan]URI:[/bold cyan] [italic yellow]{profile.uri}[/italic yellow]\n\n"
+    subheader_content += f"[bold cyan]Description:[/bold cyan] [italic]{profile.description.strip()}[/italic]"
+
+    # Build the profile table
     if not verbose:
-        __compacted_describe_profile__(console, profile)
+        table = __compacted_describe_profile__(profile)
     else:
-        __verbose_describe_profile__(console, profile)
-    # End with a new line
-    console.print("\n")
+        table = __verbose_describe_profile__(profile)
+
+    with console.pager(styles=True) if enable_pager else console:
+        console.print(get_app_header_rule())
+        console.print(Padding(Panel(subheader_content, title=subheader_title, padding=(1, 1),
+                                    title_align="left", border_style="cyan"), (0, 1, 0, 1)))
+        console.print(Padding(table, (1, 1)))
 
 
 def __requirement_level_style__(requirement: RequirementLevel):
@@ -138,7 +168,7 @@ def __requirement_level_style__(requirement: RequirementLevel):
     return f"{color} bold"
 
 
-def __compacted_describe_profile__(console, profile):
+def __compacted_describe_profile__(profile):
     """
     Show a profile in a compact way
     """
@@ -157,14 +187,15 @@ def __compacted_describe_profile__(console, profile):
                            f"{len(requirement.get_checks_by_level(LevelCollection.OPTIONAL))}"))
 
     table = Table(show_header=True,
+                  #   renderer=renderer,
                   title=f"[cyan]{len(requirements)}[/cyan] Profile Requirements",
                   title_style="italic bold",
                   header_style="bold cyan",
                   border_style="bright_black",
                   show_footer=False,
                   show_lines=True,
-                  caption=f"[cyan](*)[/cyan] number of checks by severity level: {', '.join(levels_list)}",
-                  caption_style="italic bold")
+                  caption_style="italic bold",
+                  caption=f"[cyan](*)[/cyan] number of checks by severity level: {', '.join(levels_list)}")
 
     # Define columns
     table.add_column("#", style="cyan bold", justify="right")
@@ -176,11 +207,10 @@ def __compacted_describe_profile__(console, profile):
     # Add data to the table
     for row in table_rows:
         table.add_row(*row)
-    # Print the table
-    console.print(table)
+    return table
 
 
-def __verbose_describe_profile__(console, profile):
+def __verbose_describe_profile__(profile):
     """
     Show a profile in a verbose way
     """
@@ -203,14 +233,15 @@ def __verbose_describe_profile__(console, profile):
             count_checks += 1
 
     table = Table(show_header=True,
+                  #   renderer=renderer,
                   title=f"[cyan]{count_checks}[/cyan] Profile Requirements Checks",
                   title_style="italic bold",
                   header_style="bold cyan",
                   border_style="bright_black",
                   show_footer=False,
                   show_lines=True,
-                  caption=f"[cyan](*)[/cyan] severity level of requirement check: {', '.join(levels_list)}",
-                  caption_style="italic bold")
+                  caption_style="italic bold",
+                  caption=f"[cyan](*)[/cyan] number of checks by severity level: {', '.join(levels_list)}")
 
     # Define columns
     table.add_column("Identifier", style="cyan bold", justify="right")
@@ -221,5 +252,4 @@ def __verbose_describe_profile__(console, profile):
     # Add data to the table
     for row in table_rows:
         table.add_row(*row)
-    # Print the table
-    console.print(table)
+    return table
