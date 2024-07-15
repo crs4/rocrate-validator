@@ -1247,10 +1247,12 @@ class ValidationContext:
                     logger.debug("Profile with the highest version number: %s", profile)
                 # if the profile is found by token, set the profile name to the identifier
                 self.settings["profile_identifier"] = profile.identifier
-            except Exception as e:
+            except AttributeError as e:
+                # raised when the profile is not found
                 if logger.isEnabledFor(logging.DEBUG):
                     logger.exception(e)
-                raise ProfileNotFound(f"Profile '{self.profile_identifier}' not found in '{self.profiles_path}'")
+                raise ProfileNotFound(self.profile_identifier,
+                                      message=f"Profile '{self.profile_identifier}' not found in '{self.profiles_path}'") from e
 
         # Set the profiles to validate against as the target profile and its inherited profiles
         profiles = profile.inherited_profiles + [profile]
