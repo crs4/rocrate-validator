@@ -12,7 +12,6 @@ from rich.padding import Padding
 import rocrate_validator.log as logging
 from rocrate_validator import services
 from rocrate_validator.cli.main import cli, click
-from rocrate_validator.cli.utils import format_text
 from rocrate_validator.colors import get_severity_color
 from rocrate_validator.constants import DEFAULT_PROFILE_IDENTIFIER
 from rocrate_validator.errors import ProfileNotFound, ProfilesDirectoryNotFound
@@ -106,13 +105,6 @@ def validate_uri(ctx, param, value):
     default=False,
     show_default=True
 )
-# @click.option(
-#     "-o",
-#     "--ontologies-path",
-#     type=click.Path(exists=True),
-#     default="./ontologies",
-#     help="Path containing the ontology files",
-# )
 @click.pass_context
 def validate(ctx,
              profiles_path: Path = DEFAULT_PROFILES_PATH,
@@ -147,7 +139,6 @@ def validate(ctx,
         logger.debug("rocrate_path: %s", os.path.abspath(rocrate_uri))
 
     # Validate the RO-Crate
-
     try:
         result: ValidationResult = services.validate(
             {
