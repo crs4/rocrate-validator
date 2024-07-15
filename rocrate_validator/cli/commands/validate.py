@@ -8,13 +8,14 @@ from rich.console import Console
 from rich.markdown import Markdown
 
 import rocrate_validator.log as logging
+from rocrate_validator import services
+from rocrate_validator.cli.main import cli, click
+from rocrate_validator.colors import get_severity_color
 from rocrate_validator.constants import DEFAULT_PROFILE_IDENTIFIER
-
-from ... import services
-from ...colors import get_severity_color
-from ...models import LevelCollection, Severity, ValidationResult
-from ...utils import URI, get_profiles_path
-from ..main import cli, click
+from rocrate_validator.errors import ProfileNotFound, ProfilesDirectoryNotFound
+from rocrate_validator.models import (LevelCollection, Severity,
+                                      ValidationResult)
+from rocrate_validator.utils import URI, get_profiles_path
 
 # from rich.markdown import Markdown
 # from rich.table import Table
@@ -143,25 +144,55 @@ def validate(ctx,
         logger.debug("rocrate_path: %s", os.path.abspath(rocrate_uri))
 
     # Validate the RO-Crate
-    result: ValidationResult = services.validate(
-        {
-            "profiles_path": profiles_path,
-            "profile_identifier": profile_identifier,
-            "requirement_severity": requirement_severity,
-            "requirement_severity_only": requirement_severity_only,
-            "inherit_profiles": not disable_profile_inheritance,
-            "data_path": rocrate_uri,
-            "ontology_path": Path(ontologies_path).absolute() if ontologies_path else None,
-            "abort_on_first": not no_fail_fast
-        }
-    )
 
-    # Print the validation result
-    __print_validation_result__(console, result, result.context.requirement_severity, enable_pager=enable_pager)
+    try:
+        result: ValidationResult = services.validate(
+            {
+                "profiles_path": profiles_path,
+                "profile_identifier": profile_identifier,
+                "requirement_severity": requirement_severity,
+                "requirement_severity_only": requirement_severity_only,
+                "inherit_profiles": not disable_profile_inheritance,
+                "data_path": rocrate_uri,
+                "ontology_path": Path(ontologies_path).absolute() if ontologies_path else None,
+                "abort_on_first": not no_fail_fast
+            }
+        )
 
-    # using ctx.exit seems to raise an Exception that gets caught below,
-    # so we use sys.exit instead.
-    sys.exit(0 if result.passed(LevelCollection.get(requirement_severity).severity) else 1)
+        # Print the validation result
+        __print_validation_result__(console, result, result.context.requirement_severity, enable_pager=enable_pager)
+
+        # using ctx.exit seems to raise an Exception that gets caught below,
+        # so we use sys.exit instead.
+        sys.exit(0 if result.passed(LevelCollection.get(requirement_severity).severity) else 1)
+    except ProfilesDirectoryNotFound as e:
+        error_message = f"""
+        The profile folder could not be located at the specified path: [red]{e.profiles_path}[/red]. 
+        Please ensure that the path is correct and try again.
+        """
+        console.print(
+            f"\n\n[bold][[red]ERROR[/red]] {error_message} !!![/bold]\n", style="white")
+        sys.exit(2)
+    except ProfileNotFound as e:
+        error_message = f"""The profile with the identifier "[red bold]{e.profile_name}[/red bold]" could not be found. 
+        Please ensure that the profile exists and try again.
+        
+        To see the available profiles, run: 
+        [cyan bold]rocrate-validator profiles list[/cyan bold]
+        """
+        console.print(
+            f"\n\n[bold][[red]ERROR[/red]] {error_message}[/bold]\n", style="white")
+        sys.exit(2)
+    except Exception as e:
+        console.print(
+            f"\n\n[bold][[red]FAILED[/red]] Unexpected error: {e} !!![/bold]\n", style="white")
+        if logger.isEnabledFor(logging.DEBUG):
+            console.print_exception()
+        console.print("""This error may be due to a bug. Please report it to the issue tracker
+            along with the following stack trace:
+            """)
+        console.print_exception()
+        sys.exit(2)
 
 
 def __print_validation_result__(
