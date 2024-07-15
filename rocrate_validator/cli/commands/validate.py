@@ -12,6 +12,7 @@ from rich.padding import Padding
 import rocrate_validator.log as logging
 from rocrate_validator import services
 from rocrate_validator.cli.main import cli, click
+from rocrate_validator.cli.utils import get_app_header_rule
 from rocrate_validator.colors import get_severity_color
 from rocrate_validator.constants import DEFAULT_PROFILE_IDENTIFIER
 from rocrate_validator.errors import ProfileNotFound, ProfilesDirectoryNotFound
@@ -197,14 +198,17 @@ def __print_validation_result__(
     Print the validation result
     """
     with console.pager(styles=True) if enable_pager else console:
+        # Print the header
+        console.print(get_app_header_rule())
+        
         if result.passed(severity=severity):
             console.print(
-                Padding(f"\n\n[bold][[green]OK[/green]] RO-Crate is [green]valid[/green] !!![/bold]\n\n", (0, 2)),
+                Padding(f"[bold][[green]OK[/green]] RO-Crate is [green]valid[/green] !!![/bold]\n\n", (0, 2)),
                 style="white",
             )
         else:
             console.print(
-                Padding(f"\n\n[bold][[red]FAILED[/red]] RO-Crate is [red]not valid[/red] !!![/bold]\n", (0, 2)),
+                Padding(f"[bold][[red]FAILED[/red]] RO-Crate is [red]not valid[/red] !!![/bold]\n", (0, 2)),
                 style="white",
             )
 
