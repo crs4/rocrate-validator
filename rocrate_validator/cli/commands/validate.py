@@ -1,5 +1,6 @@
 import os
 import sys
+import textwrap
 from pathlib import Path
 from typing import Optional
 
@@ -167,17 +168,17 @@ def validate(ctx,
         sys.exit(0 if result.passed(LevelCollection.get(requirement_severity).severity) else 1)
     except ProfilesDirectoryNotFound as e:
         error_message = f"""
-        The profile folder could not be located at the specified path: [red]{e.profiles_path}[/red]. 
+        The profile folder could not be located at the specified path: [red]{e.profiles_path}[/red].
         Please ensure that the path is correct and try again.
         """
         console.print(
             f"\n\n[bold][[red]ERROR[/red]] {error_message} !!![/bold]\n", style="white")
         sys.exit(2)
     except ProfileNotFound as e:
-        error_message = f"""The profile with the identifier "[red bold]{e.profile_name}[/red bold]" could not be found. 
+        error_message = f"""The profile with the identifier "[red bold]{e.profile_name}[/red bold]" could not be found.
         Please ensure that the profile exists and try again.
-        
-        To see the available profiles, run: 
+
+        To see the available profiles, run:
         [cyan bold]rocrate-validator profiles list[/cyan bold]
         """
         console.print(
@@ -188,9 +189,8 @@ def validate(ctx,
             f"\n\n[bold][[red]FAILED[/red]] Unexpected error: {e} !!![/bold]\n", style="white")
         if logger.isEnabledFor(logging.DEBUG):
             console.print_exception()
-        console.print("""This error may be due to a bug. Please report it to the issue tracker
-            along with the following stack trace:
-            """)
+        console.print(textwrap.indent("This error may be due to a bug.\n"
+                      "Please report it to the issue tracker along with the following stack trace:\n", ' ' * 9))
         console.print_exception()
         sys.exit(2)
 
