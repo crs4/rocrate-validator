@@ -17,7 +17,11 @@ ro:ProcRCRootDataEntityMetadata a sh:NodeShape ;
         sh:description "The Root Data Entity MUST reference a CreativeWork entity with an @id URI that is consistent with the versioned permalink of the profile" ;
         sh:path dct:conformsTo ;
         sh:class schema:CreativeWork;
-        sh:pattern "^https://w3id.org/ro/wfrun/process/.*" ;
+        # At least one value of conformsTo must match the pattern
+        sh:qualifiedValueShape [
+            sh:pattern "^https://w3id.org/ro/wfrun/process/.*" ;
+        ] ;
+        sh:qualifiedMinCount 1 ;
         sh:minCount 1 ;
         sh:message "The Root Data Entity MUST reference a CreativeWork entity with an @id URI that is consistent with the versioned permalink of the profile" ;
     ] .
