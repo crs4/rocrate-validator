@@ -264,3 +264,19 @@ def test_prc_action_no_error():
         ["error MAY be specified if actionStatus is set to FailedActionStatus"],
         profile_identifier="process-run-crate"
     )
+
+
+def test_prc_action_obj_res_bad_type():
+    """\
+    Test a Process Run Crate where the Action's object or result does not
+    point to a MediaObject, Dataset, Collection, CreativeWork or
+    PropertyValue.
+    """
+    do_entity_test(
+        InvalidProcRC().action_obj_res_bad_type,
+        Severity.RECOMMENDED,
+        False,
+        ["Process Run Crate Action object and result types"],
+        ["object and result SHOULD point to entities of type MediaObject, Dataset, Collection, CreativeWork or PropertyValue"],
+        profile_identifier="process-run-crate"
+    )

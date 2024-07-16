@@ -121,3 +121,25 @@ ro:ProcRCActionError a sh:NodeShape ;
         sh:path schema:error ;
         sh:minCount 1 ;
     ] .
+
+
+ro:ProcRCActionObjectResultType a sh:NodeShape ;
+    sh:name "Process Run Crate Action object and result types" ;
+    sh:description "object and result SHOULD point to entities of type MediaObject, Dataset, Collection, CreativeWork or PropertyValue" ;
+    sh:targetClass schema:CreateAction ,
+                   schema:ActivateAction ,
+                   schema:UpdateAction ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path [
+            sh:alternativePath (schema:object schema:result) ;
+        ] ;
+        sh:or (
+            [ sh:class schema:MediaObject ; ]
+            [ sh:class schema:Dataset ; ]
+            [ sh:class schema:Collection ; ]
+            [ sh:class schema:CreativeWork ; ]
+            [ sh:class schema:PropertyValue ; ]
+        );
+        sh:message "object and result SHOULD point to entities of type MediaObject, Dataset, Collection, CreativeWork or PropertyValue" ;
+    ] .
