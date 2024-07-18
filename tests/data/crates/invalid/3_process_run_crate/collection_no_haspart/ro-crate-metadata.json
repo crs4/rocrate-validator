@@ -1,0 +1,120 @@
+{
+    "@context": "https://w3id.org/ro/crate/1.1/context",
+    "@graph": [
+        {
+            "@id": "ro-crate-metadata.json",
+            "@type": "CreativeWork",
+            "conformsTo": {
+                "@id": "https://w3id.org/ro/crate/1.1"
+            },
+            "about": {
+                "@id": "./"
+            }
+        },
+        {
+            "@id": "./",
+            "@type": "Dataset",
+            "conformsTo": [
+                {
+                    "@id": "https://w3id.org/ro/wfrun/process/0.5"
+                }
+            ],
+            "hasPart": [
+                {
+                    "@id": "pics/in_01.jpg"
+                },
+                {
+                    "@id": "pics/in_02.jpg"
+                },
+                {
+                    "@id": "pics/in_main.jpg"
+                },
+                {
+                    "@id": "pics/out_01.jpg"
+                },
+                {
+                    "@id": "pics/out_02.jpg"
+                },
+                {
+                    "@id": "pics/out_main.jpg"
+                }
+            ],
+            "license": {
+                "@id": "https://spdx.org/licenses/Apache-2.0"
+            },
+            "mentions": [
+                {
+                    "@id": "#Conversion"
+                },
+                {
+                    "@id": "#InCollection"
+                },
+                {
+                    "@id": "#OutCollection"
+                }
+            ],
+            "name": "Test Collections"
+        },
+        {
+            "@id": "https://w3id.org/ro/wfrun/process/0.5",
+            "@type": "CreativeWork",
+            "name": "Process Run Crate",
+            "version": "0.5"
+        },
+        {
+            "@id": "https://www.imagemagick.org/",
+            "@type": "SoftwareApplication",
+            "url": "https://www.imagemagick.org/",
+            "name": "ImageMagick",
+            "softwareVersion": "6.9.7-4"
+        },
+        {
+            "@id": "#Conversion",
+            "@type": "CreateAction",
+            "name": "Convert image collections",
+            "description": "Convert image collections",
+            "startTime": "2024-05-17T01:04:50+01:00",
+            "endTime": "2024-05-17T01:04:52+01:00",
+            "instrument": {
+                "@id": "https://www.imagemagick.org/"
+            },
+            "object": {
+                "@id": "#InCollection"
+            },
+            "result": {
+                "@id": "#OutCollection"
+            },
+            "agent": {
+                "@id": "https://orcid.org/0000-0002-1825-0097"
+            },
+            "actionStatus": { "@id": "http://schema.org/FailedActionStatus" },
+            "error": "this is just to test the error property"
+        },
+        {
+            "@id": "#InCollection",
+            "@type": "Collection",
+            "mainEntity": "pics/in_main.jpg"
+        },
+        {
+            "@id": "#OutCollection",
+            "@type": "Collection",
+            "mainEntity": "pics/out_main.jpg",
+            "hasPart": [
+                {
+                    "@id": "pics/out_01.jpg"
+                },
+                {
+                    "@id": "pics/out_02.jpg"
+                },
+                {
+                    "@id": "pics/out_main.jpg"
+                }
+            ]
+        },
+        {
+            "@id": "https://orcid.org/0000-0002-1825-0097",
+            "@type": "Person",
+            "name": "Josiah Carberry"
+        }
+    ]
+}

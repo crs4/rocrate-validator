@@ -45,6 +45,10 @@ class ValidROC:
     def process_run_crate(self) -> Path:
         return VALID_CRATES_DATA_PATH / "process-run-crate"
 
+    @property
+    def process_run_crate_collections(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "process-run-crate-collections"
+
 
 class InvalidFileDescriptor:
 
@@ -369,3 +373,15 @@ class InvalidProcRC:
     @property
     def action_obj_res_bad_type(self) -> Path:
         return self.base_path / "action_obj_res_bad_type"
+
+    @property
+    def collection_not_mentioned(self) -> Path:
+        return self.base_path / "collection_not_mentioned"
+
+    @property
+    def collection_no_haspart(self) -> Path:
+        return self.base_path / "collection_no_haspart"
+
+    @property
+    def collection_no_mainentity(self) -> Path:
+        return self.base_path / "collection_no_mainentity"
