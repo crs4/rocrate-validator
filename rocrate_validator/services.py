@@ -142,10 +142,9 @@ def get_profile(profiles_path: Path = DEFAULT_PROFILES_PATH,
     """
     Load the profiles from the given path
     """
-    profile_path = profiles_path / profile_identifier
-    if not Path(profile_path).exists():
-        raise ProfileNotFound(profile_identifier)
-    profile = Profile.load(profiles_path, f"{profiles_path}/{profile_identifier}",
-                           publicID=publicID, severity=Severity.OPTIONAL)
-    logger.debug("Profile loaded: %s", profile)
+    profiles = get_profiles(profiles_path, publicID=publicID)
+    profile = next((p for p in profiles if p.identifier == profile_identifier), None) or \
+        next((p for p in profiles if str(p.identifier).replace(f"-{p.version}", '') == profile_identifier), None)
+    if not profile:
+        raise ProfileNotFound(f"Profile not found: {profile_identifier}")
     return profile
