@@ -56,6 +56,10 @@ class Severity(enum.Enum):
         else:
             raise TypeError(f"Comparison not supported between instances of {type(self)} and {type(other)}")
 
+    @staticmethod
+    def get(name: str) -> Severity:
+        return getattr(Severity, name.upper())
+
 
 @total_ordering
 @dataclass
