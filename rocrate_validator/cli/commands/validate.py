@@ -5,20 +5,26 @@ from pathlib import Path
 from typing import Optional
 
 from rich.align import Align
-from rich.console import Console
+from rich.console import Console, Group
+from rich.layout import Layout
+from rich.live import Live
 from rich.markdown import Markdown
 from rich.padding import Padding
+from rich.panel import Panel
+from rich.progress import BarColumn, Progress, TextColumn, TimeElapsedColumn
+from rich.prompt import Confirm
+from rich.rule import Rule
 
 import rocrate_validator.log as logging
 from rocrate_validator import services
 from rocrate_validator.cli.main import cli, click
-from rocrate_validator.cli.utils import get_app_header_rule
 from rocrate_validator.colors import get_severity_color
 from rocrate_validator.constants import DEFAULT_PROFILE_IDENTIFIER
 from rocrate_validator.errors import ProfileNotFound, ProfilesDirectoryNotFound
+from rocrate_validator.events import Event, EventType, Subscriber
 from rocrate_validator.models import (LevelCollection, Severity,
                                       ValidationResult)
-from rocrate_validator.utils import URI, get_profiles_path
+from rocrate_validator.utils import URI, get_profiles_path, get_version
 
 # from rich.markdown import Markdown
 # from rich.table import Table
@@ -189,31 +195,278 @@ def validate(ctx,
         sys.exit(2)
 
 
-def __print_validation_result__(
-        console: Console,
-        result: ValidationResult,
-        severity: Severity = Severity.RECOMMENDED,
-        enable_pager: bool = True):
-    """
-    Print the validation result
-    """
-    with console.pager(styles=True) if enable_pager else console:
-        # Print the header
-        console.print(get_app_header_rule())
-        
-        if result.passed(severity=severity):
-            console.print(
-                Padding(f"[bold][[green]OK[/green]] RO-Crate is [green]valid[/green] !!![/bold]\n\n", (0, 2)),
-                style="white",
+class ProgressMonitor(Subscriber):
+
+    PROFILE_VALIDATION = "Profiles"
+    REQUIREMENT_VALIDATION = "Requirements"
+    REQUIREMENT_CHECK_VALIDATION = "Requirements Checks"
+
+    def __init__(self, layout: ValidationReportLayout, stats: dict):
+        self.__progress = Progress(
+            TextColumn("[progress.description]{task.description}"),
+            BarColumn(),
+            TextColumn("{task.completed}/{task.total}"),
+            TimeElapsedColumn(),
+            expand=True)
+        self._stats = stats
+        self.profile_validation = self.progress.add_task(
+            self.PROFILE_VALIDATION, total=len(stats.get("profiles")))
+        self.requirement_validation = self.progress.add_task(
+            self.REQUIREMENT_VALIDATION, total=stats.get("total_requirements"))
+        self.requirement_check_validation = self.progress.add_task(
+            self.REQUIREMENT_CHECK_VALIDATION, total=stats.get("total_checks"))
+        self.__layout = layout
+        super().__init__("ProgressMonitor")
+
+    def start(self):
+        self.progress.start()
+
+    def stop(self):
+        self.progress.stop()
+
+    @property
+    def layout(self) -> ValidationReportLayout:
+        return self.__layout
+
+    @property
+    def progress(self) -> Progress:
+        return self.__progress
+
+    def update(self, event: Event):
+        # logger.debug("Event: %s", event.event_type)
+        if event.event_type == EventType.PROFILE_VALIDATION_START:
+            logger.debug("Profile validation start")
+        elif event.event_type == EventType.REQUIREMENT_VALIDATION_START:
+            logger.debug("Requirement validation start")
+        elif event.event_type == EventType.REQUIREMENT_CHECK_VALIDATION_START:
+            logger.debug("Requirement check validation start")
+        elif event.event_type == EventType.REQUIREMENT_CHECK_VALIDATION_END:
+            if not event.requirement_check.requirement.hidden:
+                self.progress.update(task_id=self.requirement_check_validation, advance=1)
+                if event.validation_result is not None:
+                    if event.validation_result:
+                        self._stats["passed_checks"].append(event.requirement_check)
+                    else:
+                        self._stats["failed_checks"].append(event.requirement_check)
+                    self.layout.update(self._stats)
+        elif event.event_type == EventType.REQUIREMENT_VALIDATION_END:
+            if not event.requirement.hidden:
+                self.progress.update(task_id=self.requirement_validation, advance=1)
+                if event.validation_result:
+                    self._stats["passed_requirements"].append(event.requirement)
+                else:
+                    self._stats["failed_requirements"].append(event.requirement)
+                self.layout.update(self._stats)
+        elif event.event_type == EventType.PROFILE_VALIDATION_END:
+            self.progress.update(task_id=self.profile_validation, advance=1)
+        elif event.event_type == EventType.VALIDATION_END:
+            self.layout.set_overall_result(event.validation_result)
+
+
+class ValidationReportLayout(Layout):
+
+    def __init__(self, console: Console, validation_settings: dict, profile_stats: dict, result: ValidationResult):
+        super().__init__()
+        self.console = console
+        self.validation_settings = validation_settings
+        self.profile_stats = profile_stats
+        self.result = result
+        self.__layout = None
+        self._validation_checks_progress = None
+        self.__progress_monitor = None
+        self.requirement_checks_container_layout = None
+        self.passed_checks = None
+        self.failed_checks = None
+        self.report_details_container = None
+
+    @property
+    def layout(self):
+        if not self.__layout:
+            self.__init_layout__()
+        return self.__layout
+
+    @property
+    def validation_checks_progress(self):
+        return self._validation_checks_progress
+
+    @property
+    def progress_monitor(self) -> ProgressMonitor:
+        if not self.__progress_monitor:
+            self.__progress_monitor = ProgressMonitor(self, self.profile_stats)
+        return self.__progress_monitor
+
+    def live(self, update_callable: callable) -> any:
+        assert update_callable, "Update callable must be provided"
+        # Start live rendering
+        result = None
+        with Live(self.layout, console=self.console, refresh_per_second=10, transient=False):
+            result = update_callable()
+        return result
+
+    def __init_layout__(self):
+
+        # Get the validation settings
+        settings = self.validation_settings
+
+        # Set the console height
+        self.console.height = 27
+
+        # Create the layout of the base info of the validation report
+        base_info_layout = Layout(
+            Align(
+                f"\n[bold cyan]RO-Crate:[/bold cyan] [bold]{URI(settings['data_path']).uri}[/bold]"
+                f"\n[bold cyan]Target Profile:[/bold cyan][bold magenta] {settings['profile_identifier']}[/bold magenta]",
+                style="white", align="left"),
+            name="Base Info", size=4)
+
+        #
+        self.passed_checks = Layout(name="PASSED")
+        self.failed_checks = Layout(name="FAILED")
+        # Create the layout of the requirement checks section
+        validated_checks_container = Layout(name="Requirement Checks Validated")
+        validated_checks_container.split_row(
+            self.passed_checks,
+            self.failed_checks
+        )
+
+        # Create the layout of the requirement checks section
+        requirement_checks_container_layout = Layout(name="Requirement Checks")
+        requirement_checks_container_layout.split_column(
+            self.requirement_checks_container_layout,
+            validated_checks_container
+        )
+
+        # Create the layout of the requirement checks section
+        self.requirement_checks_container_layout = Layout(name="Requirement Checks Validation", size=5)
+        self.requirement_checks_container_layout.split_row(
+            Layout(name="required"),
+            Layout(name="recommended"),
+            Layout(name="optional")
+        )
+
+        # Create the layout of the validation checks progress
+        self._validation_checks_progress = Layout(
+            Panel(Align(self.progress_monitor.progress, align="center"),
+                  border_style="white", padding=(0, 1), title="Overall Progress"),
+            name="Validation Progress", size=5)
+
+        # Create the layout of the report container
+        report_container_layout = Layout(name="Report Container Layout")
+        report_container_layout.split_column(
+            base_info_layout,
+            Layout(Panel(requirement_checks_container_layout,
+                   title="[bold]Requirements Checks Validation[/bold]", border_style="white", padding=(1, 1))),
+            self._validation_checks_progress
+        )
+
+        # Update the layout with the profile stats
+        self.update(self.profile_stats)
+
+        # Create the main layout
+        layout = Layout(
+            Panel(report_container_layout, title=f"[bold]RO-Crate Validator[/bold] [white](ver. [magenta]{get_version()}[/magenta])[/white]",
+                  border_style="cyan", title_align="center", padding=(1, 1)), size=25)
+
+        # Create the overall result layout
+        self.overall_result = Layout(Padding(Rule(f"\n[italic][cyan]Validating ROCrate...[/cyan][/italic]"), (1, 1)))
+
+        # Set the layout as a group container
+        self.__layout = Group(layout, self.overall_result)
+
+    def update(self, profile_stats: dict = None):
+        assert profile_stats, "Profile stats must be provided"
+        self.profile_stats = profile_stats
+        self.requirement_checks_container_layout["required"].update(
+            Panel(
+                Align(
+                    str(profile_stats['check_count_by_severity'][Severity.REQUIRED]) if profile_stats else "0",
+                    align="center"
+                ),
+                padding=(1, 1),
+                title="Severity: REQUIRED",
+                title_align="center",
+                border_style="RED"
             )
+        )
+        self.requirement_checks_container_layout["recommended"].update(
+            Panel(
+                Align(
+                    str(profile_stats['check_count_by_severity'][Severity.RECOMMENDED]) if profile_stats else "0",
+                    align="center"
+                ),
+                padding=(1, 1),
+                title="Severity: RECOMMENDED",
+                title_align="center",
+                border_style="orange1"
+            )
+        )
+        self.requirement_checks_container_layout["optional"].update(
+            Panel(
+                Align(
+                    str(profile_stats['check_count_by_severity'][Severity.OPTIONAL]) if profile_stats else "0",
+                    align="center"
+                ),
+                padding=(1, 1),
+                title="Severity: OPTIONAL",
+                title_align="center",
+                border_style="yellow"
+            )
+        )
+
+        self.passed_checks.update(
+            Panel(
+                Align(
+                    str(len(self.profile_stats["passed_checks"])),
+                    align="center"
+                ),
+                padding=(1, 1),
+                title="PASSED Checks",
+                title_align="center",
+                border_style="green"
+            )
+        )
+
+        self.failed_checks.update(
+            Panel(
+                Align(
+                    str(len(self.profile_stats["failed_checks"])),
+                    align="center"
+                ),
+                padding=(1, 1),
+                title="FAILED Checks",
+                title_align="center",
+                border_style="red"
+            )
+        )
+
+    def set_overall_result(self, result: ValidationResult):
+        assert result, "Validation result must be provided"
+        self.result = result
+        if result.passed():
+            self.overall_result.update(
+                Padding(Rule(f"[bold][[green]OK[/green]] RO-Crate is [green]valid[/green] !!![/bold]\n\n",
+                             style="bold green"), (1, 0)))
         else:
+            self.overall_result.update(
+                Padding(Rule(f"[bold][[red]FAILED[/red]] RO-Crate is [red]not valid[/red] !!![/bold]\n",
+                             style="bold red"), (0, 0)))
+
+    def show_validation_details(self, enable_pager: bool = True):
+        """
+        Print the validation result
+        """
+        if not self.result:
+            raise ValueError("Validation result is not available")
+
+        # init references to the console, result and severity
+        console = self.console
+        result = self.result
+
+        # Print validation details
+        with console.pager(styles=True) if enable_pager else console:
+            # Print the list of failed requirements
             console.print(
-                Padding(f"[bold][[red]FAILED[/red]] RO-Crate is [red]not valid[/red] !!![/bold]\n", (0, 2)),
-                style="white",
-            )
-
-            console.print(Padding("\n[bold]The following requirements have not meet: [/bold]", (0, 2)), style="white")
-
+                Padding("\n[bold]The following requirements have not meet: [/bold]", (0, 0)), style="white")
             for requirement in sorted(result.failed_requirements,
                                       key=lambda x: (-x.severity.value, x)):
                 issue_color = get_severity_color(requirement.severity)
@@ -227,7 +480,7 @@ def __print_validation_result__(
                 )
                 console.print(Padding(Markdown(requirement.description), (1, 7)))
                 console.print(Padding("[white bold u]  Failed checks  [/white bold u]\n",
-                              (0, 8)), style="white bold")
+                                      (0, 8)), style="white bold")
 
                 for check in sorted(result.get_failed_checks_by_requirement(requirement),
                                     key=lambda x: (-x.severity.value, x)):
@@ -235,7 +488,7 @@ def __print_validation_result__(
                     console.print(
                         Padding(f"[bold][{issue_color}][{check.identifier.center(16)}][/{issue_color}]  [magenta]{check.name}[/magenta][/bold]:", (0, 7)), style="white bold")
                     console.print(Padding(Markdown(check.description), (0, 27)))
-                    console.print(Padding("[u]Detected issues[/u]", (0, 8)), style="white bold")
+                    console.print(Padding("[u] Detected issues [/u]", (0, 8)), style="white bold")
                     for issue in sorted(result.get_issues_by_check(check),
                                         key=lambda x: (-x.severity.value, x)):
                         path = ""
@@ -250,3 +503,59 @@ def __print_validation_result__(
                             Padding(f"- [[red]Violation[/red] {path}]: "
                                     f"{Markdown(issue.message).markup}", (0, 9)), style="white")
                     console.print("\n", style="white")
+
+
+def __compute_profile_stats__(validation_settings: dict):
+    """
+    Compute the statistics of the profile
+    """
+    profiles = services.get_profiles(validation_settings.get("profiles_path"))
+    profile = services.get_profile(validation_settings.get("profiles_path"),
+                                   validation_settings.get("profile_identifier"))
+    severity_validation = Severity.get(validation_settings.get("requirement_severity"))
+    profiles = [profile]
+
+    if validation_settings.get("inherit_profiles"):
+        profiles.extend(profile.inherited_profiles)
+
+    total_requirements = 0
+    total_checks = 0
+    requirement_count_by_severity = {}
+    check_count_by_severity = {}
+
+    for profile in profiles:
+        for requirement in profile.requirements:
+            if requirement.hidden:
+                continue
+
+            severity = requirement.severity
+
+            # Count the number of requirements by severity
+            if severity not in requirement_count_by_severity:
+                requirement_count_by_severity[severity] = 0
+
+            if severity_validation <= severity:
+                requirement_count_by_severity[severity] += 1
+                total_requirements += 1
+
+            # Count the number of checks by severity
+            if severity not in check_count_by_severity:
+                check_count_by_severity[severity] = 0
+            if severity_validation <= severity:
+                num_checks = len(
+                    requirement.get_checks_by_level(LevelCollection.get(severity.name)))
+                check_count_by_severity[severity] += num_checks
+                total_checks += num_checks
+
+    return {
+        "profile": profile,
+        "profiles": profiles,
+        "requirement_count_by_severity": requirement_count_by_severity,
+        "check_count_by_severity": check_count_by_severity,
+        "total_requirements": total_requirements,
+        "total_checks": total_checks,
+        "failed_requirements": [],
+        "failed_checks": [],
+        "passed_requirements": [],
+        "passed_checks": []
+    }
