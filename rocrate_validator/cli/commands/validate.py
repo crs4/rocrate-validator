@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 import sys
 import termios
@@ -137,6 +138,22 @@ def get_single_char(console: Optional[Console] = None, end: str = "\n") -> str:
     default=False,
     show_default=True
 )
+@click.option(
+    '-f',
+    '--format',
+    type=click.Choice(["json", "text"], case_sensitive=False),
+    default="text",
+    show_default=True,
+    help="Output format of the validation report"
+)
+@click.option(
+    '-o',
+    '--output-file',
+    type=click.Path(),
+    default=None,
+    show_default=True,
+    help="Path to the output file for the validation report",
+)
 @click.pass_context
 def validate(ctx,
              profiles_path: Path = DEFAULT_PROFILES_PATH,
@@ -148,7 +165,9 @@ def validate(ctx,
              no_fail_fast: bool = False,
              ontologies_path: Optional[Path] = None,
              no_paging: bool = False,
-             details: bool = False):
+             details: bool = False,
+             format: str = "text",
+             output_file: Optional[Path] = None):
     """
     [magenta]rocrate-validator:[/magenta] Validate a RO-Crate against a profile
     """
@@ -205,6 +224,18 @@ def validate(ctx,
             details = get_single_char(console).lower() == 'y'
         if details:
             report_layout.show_validation_details(enable_pager=enable_pager)
+
+        if output_file:
+            # Print the validation report to a file
+            if format == "json":
+                with open(output_file, "w") as f:
+                    f.write(result.to_json())
+            elif format == "text":
+                with open(output_file, "w") as f:
+                    c = Console(file=f, color_system=None)
+                    c.print(report_layout.layout)
+                    report_layout.console = c
+                    report_layout.show_validation_details(enable_pager=False)
 
         # using ctx.exit seems to raise an Exception that gets caught below,
         # so we use sys.exit instead.
