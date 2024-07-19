@@ -3,7 +3,6 @@ from __future__ import annotations
 import os
 import sys
 import termios
-import textwrap
 import tty
 from pathlib import Path
 from typing import Optional
@@ -20,10 +19,10 @@ from rich.rule import Rule
 
 import rocrate_validator.log as logging
 from rocrate_validator import services
+from rocrate_validator.cli.commands.errors import handle_error
 from rocrate_validator.cli.main import cli, click
 from rocrate_validator.colors import get_severity_color
 from rocrate_validator.constants import DEFAULT_PROFILE_IDENTIFIER
-from rocrate_validator.errors import ProfileNotFound, ProfilesDirectoryNotFound
 from rocrate_validator.events import Event, EventType, Subscriber
 from rocrate_validator.models import (LevelCollection, Severity,
                                       ValidationResult)
@@ -205,33 +204,8 @@ def validate(ctx,
         # using ctx.exit seems to raise an Exception that gets caught below,
         # so we use sys.exit instead.
         sys.exit(0 if result.passed(LevelCollection.get(requirement_severity).severity) else 1)
-    except ProfilesDirectoryNotFound as e:
-        error_message = f"""
-        The profile folder could not be located at the specified path: [red]{e.profiles_path}[/red].
-        Please ensure that the path is correct and try again.
-        """
-        console.print(
-            f"\n\n[bold][[red]ERROR[/red]] {error_message} !!![/bold]\n", style="white")
-        sys.exit(2)
-    except ProfileNotFound as e:
-        error_message = f"""The profile with the identifier "[red bold]{e.profile_name}[/red bold]" could not be found.
-        Please ensure that the profile exists and try again.
-
-        To see the available profiles, run:
-        [cyan bold]rocrate-validator profiles list[/cyan bold]
-        """
-        console.print(
-            f"\n\n[bold][[red]ERROR[/red]] {error_message}[/bold]\n", style="white")
-        sys.exit(2)
     except Exception as e:
-        console.print(
-            f"\n\n[bold][[red]FAILED[/red]] Unexpected error: {e} !!![/bold]\n", style="white")
-        if logger.isEnabledFor(logging.DEBUG):
-            console.print_exception()
-        console.print(textwrap.indent("This error may be due to a bug.\n"
-                                      "Please report it to the issue tracker along with the following stack trace:\n", ' ' * 9))
-        console.print_exception()
-        sys.exit(2)
+        handle_error(e, console)
 
 
 class ProgressMonitor(Subscriber):

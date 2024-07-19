@@ -7,6 +7,7 @@ from rich.table import Table
 
 import rocrate_validator.log as logging
 from rocrate_validator import services
+from rocrate_validator.cli.commands.errors import handle_error
 from rocrate_validator.cli.main import cli, click
 from rocrate_validator.cli.utils import get_app_header_rule
 from rocrate_validator.colors import get_severity_color
@@ -55,53 +56,58 @@ def list_profiles(ctx, no_paging: bool = False):  # , profiles_path: Path = DEFA
     profiles_path = ctx.obj['profiles_path']
     console = ctx.obj['console']
     enable_pager = not no_paging
-    # Get the profiles
-    profiles = services.get_profiles(profiles_path=profiles_path)
 
-    table = Table(show_header=True,
-                  title="   Available profiles",
-                  title_style="italic bold cyan",
-                  title_justify="left",
-                  header_style="bold cyan",
-                  border_style="bright_black",
-                  show_footer=False,
-                  caption_style="italic bold",
-                  caption="[cyan](*)[/cyan] Number of requirements by severity")
+    try:
+        # Get the profiles
+        profiles = services.get_profiles(profiles_path=profiles_path)
 
-    # Define columns
-    table.add_column("Identifier", style="magenta bold", justify="center")
-    table.add_column("URI", style="yellow bold", justify="center")
-    table.add_column("Version", style="green bold", justify="center")
-    table.add_column("Name", style="white bold", justify="center")
-    table.add_column("Description", style="white italic")
-    table.add_column("Based on", style="white", justify="center")
-    table.add_column("Requirements (*)", style="white", justify="center")
+        table = Table(show_header=True,
+                      title="   Available profiles",
+                      title_style="italic bold cyan",
+                      title_justify="left",
+                      header_style="bold cyan",
+                      border_style="bright_black",
+                      show_footer=False,
+                      caption_style="italic bold",
+                      caption="[cyan](*)[/cyan] Number of requirements by severity")
 
-    # Add data to the table
-    for profile in profiles:
-        # Count requirements by severity
-        requirements = {}
-        logger.debug("Requirements: %s", requirements)
-        for req in profile.requirements:
-            if not requirements.get(req.severity.name, None):
-                requirements[req.severity.name] = 0
-            requirements[req.severity.name] += 1
-        requirements = "\n".join(
-            [f"[bold][{get_severity_color(severity)}]{severity}: "
-             f"{count}[/{get_severity_color(severity)}][/bold]"
-             for severity, count in requirements.items() if count > 0])
+        # Define columns
+        table.add_column("Identifier", style="magenta bold", justify="center")
+        table.add_column("URI", style="yellow bold", justify="center")
+        table.add_column("Version", style="green bold", justify="center")
+        table.add_column("Name", style="white bold", justify="center")
+        table.add_column("Description", style="white italic")
+        table.add_column("Based on", style="white", justify="center")
+        table.add_column("Requirements (*)", style="white", justify="center")
 
-        # Add the row to the table
-        table.add_row(profile.identifier, profile.uri, profile.version,
-                      profile.name, Markdown(profile.description.strip()),
-                      "\n".join([p.identifier for p in profile.inherited_profiles]),
-                      requirements)
-        table.add_row()
+        # Add data to the table
+        for profile in profiles:
+            # Count requirements by severity
+            requirements = {}
+            logger.debug("Requirements: %s", requirements)
+            for req in profile.requirements:
+                if not requirements.get(req.severity.name, None):
+                    requirements[req.severity.name] = 0
+                requirements[req.severity.name] += 1
+            requirements = "\n".join(
+                [f"[bold][{get_severity_color(severity)}]{severity}: "
+                 f"{count}[/{get_severity_color(severity)}][/bold]"
+                 for severity, count in requirements.items() if count > 0])
 
-    # Print the table
-    with console.pager(styles=True) if enable_pager else console:
-        console.print(get_app_header_rule())
-        console.print(Padding(table, (0, 1)))
+            # Add the row to the table
+            table.add_row(profile.identifier, profile.uri, profile.version,
+                          profile.name, Markdown(profile.description.strip()),
+                          "\n".join([p.identifier for p in profile.inherited_profiles]),
+                          requirements)
+            table.add_row()
+
+        # Print the table
+        with console.pager(styles=True) if enable_pager else console:
+            console.print(get_app_header_rule())
+            console.print(Padding(table, (0, 1)))
+
+    except Exception as e:
+        handle_error(e, console)
 
 
 @profiles.command("describe")
@@ -134,28 +140,32 @@ def describe_profile(ctx,
     # Get the no_paging flag
     enable_pager = not no_paging
 
-    # Get the profile
-    profile = services.get_profile(profiles_path=profiles_path, profile_identifier=profile_identifier)
+    try:
+        # Get the profile
+        profile = services.get_profile(profiles_path=profiles_path, profile_identifier=profile_identifier)
 
-    # Set the subheader title
-    subheader_title = f"[bold][cyan]Profile:[/cyan] [magenta italic]{profile.identifier}[/magenta italic][/bold]"
+        # Set the subheader title
+        subheader_title = f"[bold][cyan]Profile:[/cyan] [magenta italic]{profile.identifier}[/magenta italic][/bold]"
 
-    # Set the subheader content
-    subheader_content = f"[bold cyan]Version:[/bold cyan] [italic green]{profile.version}[/italic green]\n"
-    subheader_content += f"[bold cyan]URI:[/bold cyan] [italic yellow]{profile.uri}[/italic yellow]\n\n"
-    subheader_content += f"[bold cyan]Description:[/bold cyan] [italic]{profile.description.strip()}[/italic]"
+        # Set the subheader content
+        subheader_content = f"[bold cyan]Version:[/bold cyan] [italic green]{profile.version}[/italic green]\n"
+        subheader_content += f"[bold cyan]URI:[/bold cyan] [italic yellow]{profile.uri}[/italic yellow]\n\n"
+        subheader_content += f"[bold cyan]Description:[/bold cyan] [italic]{profile.description.strip()}[/italic]"
 
-    # Build the profile table
-    if not verbose:
-        table = __compacted_describe_profile__(profile)
-    else:
-        table = __verbose_describe_profile__(profile)
+        # Build the profile table
+        if not verbose:
+            table = __compacted_describe_profile__(profile)
+        else:
+            table = __verbose_describe_profile__(profile)
 
-    with console.pager(styles=True) if enable_pager else console:
-        console.print(get_app_header_rule())
-        console.print(Padding(Panel(subheader_content, title=subheader_title, padding=(1, 1),
-                                    title_align="left", border_style="cyan"), (0, 1, 0, 1)))
-        console.print(Padding(table, (1, 1)))
+        with console.pager(styles=True) if enable_pager else console:
+            console.print(get_app_header_rule())
+            console.print(Padding(Panel(subheader_content, title=subheader_title, padding=(1, 1),
+                                        title_align="left", border_style="cyan"), (0, 1, 0, 1)))
+            console.print(Padding(table, (1, 1)))
+
+    except Exception as e:
+        handle_error(e, console)
 
 
 def __requirement_level_style__(requirement: RequirementLevel):
