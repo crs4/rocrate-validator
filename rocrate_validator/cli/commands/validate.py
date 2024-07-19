@@ -58,7 +58,10 @@ def validate_uri(ctx, param, value):
     return value
 
 
-def get_single_char():
+def get_single_char(console: Optional[Console] = None, end: str = "\n") -> str:
+    """
+    Get a single character from the console
+    """
     fd = sys.stdin.fileno()
     old_settings = termios.tcgetattr(fd)
     try:
@@ -66,6 +69,8 @@ def get_single_char():
         char = sys.stdin.read(1)
     finally:
         termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+        if console:
+            console.print(char, end=end)
     return char
 
 
@@ -197,7 +202,7 @@ def validate(ctx,
         # Print the validation result
         if not details and enable_pager:
             console.print("[bold]Do you want to see the validation details? ([magenta]y/n[/magenta]): [/bold]", end="")
-            details = get_single_char().lower() == 'y'
+            details = get_single_char(console).lower() == 'y'
         if details:
             report_layout.show_validation_details(enable_pager=enable_pager)
 
