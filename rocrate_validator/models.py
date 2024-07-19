@@ -28,6 +28,7 @@ from rocrate_validator.errors import (DuplicateRequirementCheck,
                                       ProfileSpecificationError,
                                       ProfileSpecificationNotFound,
                                       ROCrateMetadataNotFoundError)
+from rocrate_validator.events import Event, EventType, Publisher
 from rocrate_validator.rocrate import ROCrate
 from rocrate_validator.utils import (URI, MapIndex, MultiIndexMap,
                                      get_profiles_path,
@@ -560,7 +561,11 @@ class Requirement(ABC):
                 if check.overridden:
                     logger.debug("Skipping check '%s' because overridden by '%s'", check.name, check.overridden_by.name)
                     continue
+                context.validator.notify(RequirementCheckValidationEvent(
+                    EventType.REQUIREMENT_CHECK_VALIDATION_START, check))
                 check_result = check.execute_check(context)
+                context.validator.notify(RequirementCheckValidationEvent(
+                    EventType.REQUIREMENT_CHECK_VALIDATION_END, check, validation_result=check_result))
                 logger.debug("Ran check '%s'. Got result %s", check.name, check_result)
                 if not isinstance(check_result, bool):
                     logger.warning("Ignoring the check %s as it returned the value %r instead of a boolean", check.name)
@@ -1048,7 +1053,64 @@ class ValidationSettings:
             raise ValueError(f"Invalid settings type: {type(settings)}")
 
 
-class Validator:
+class ValidationEvent(Event):
+    def __init__(self, event_type: EventType, validation_result: Optional[ValidationResult] = None, message: Optional[str] = None):
+        super().__init__(event_type, message)
+        self._validation_result = validation_result
+
+    @property
+    def validation_result(self) -> Optional[ValidationResult]:
+        return self._validation_result
+
+
+class ProfileValidationEvent(Event):
+    def __init__(self, event_type: EventType, profile: Profile, message: Optional[str] = None):
+        assert event_type in (EventType.PROFILE_VALIDATION_START, EventType.PROFILE_VALIDATION_END)
+        super().__init__(event_type, message)
+        self._profile = profile
+
+    @property
+    def profile(self) -> Profile:
+        return self._profile
+
+
+class RequirementValidationEvent(Event):
+    def __init__(self,
+                 event_type: EventType,
+                 requirement: Requirement,
+                 validation_result: Optional[bool] = None,
+                 message: Optional[str] = None):
+        assert event_type in (EventType.REQUIREMENT_VALIDATION_START, EventType.REQUIREMENT_VALIDATION_END)
+        super().__init__(event_type, message)
+        self._requirement = requirement
+        self._validation_result = validation_result
+
+    @property
+    def requirement(self) -> Requirement:
+        return self._requirement
+
+    @property
+    def validation_result(self) -> Optional[bool]:
+        return self._validation_result
+
+
+class RequirementCheckValidationEvent(Event):
+    def __init__(self, event_type: EventType, requirement_check: RequirementCheck, validation_result: Optional[bool] = None, message: Optional[str] = None):
+        assert event_type in (EventType.REQUIREMENT_CHECK_VALIDATION_START, EventType.REQUIREMENT_CHECK_VALIDATION_END)
+        super().__init__(event_type, message)
+        self._requirement_check = requirement_check
+        self._validation_result = validation_result
+
+    @property
+    def requirement_check(self) -> RequirementCheck:
+        return self._requirement_check
+
+    @property
+    def validation_result(self) -> Optional[bool]:
+        return self._validation_result
+
+
+class Validator(Publisher):
     """
     Can validate conformance to a single Profile (including any requirements
     inherited by parent profiles).
@@ -1056,6 +1118,7 @@ class Validator:
 
     def __init__(self, settings: Union[str, ValidationSettings]):
         self._validation_settings = ValidationSettings.parse(settings)
+        super().__init__()
 
     @property
     def validation_settings(self) -> ValidationSettings:
@@ -1080,9 +1143,10 @@ class Validator:
         # set the profiles to validate against
         profiles = context.profiles
         assert len(profiles) > 0, "No profiles to validate"
-
+        self.notify(EventType.PROFILE_VALIDATION_START)
         for profile in profiles:
             logger.debug("Validating profile %s (id: %s)", profile.name, profile.identifier)
+            self.notify(ProfileValidationEvent(EventType.PROFILE_VALIDATION_START, profile=profile))
             # perform the requirements validation
             requirements = profile.get_requirements(
                 context.requirement_severity, exact_match=context.requirement_severity_only)
@@ -1090,8 +1154,12 @@ class Validator:
             logger.debug("For profile %s, validating these %s requirements: %s",
                          profile.identifier, len(requirements), requirements)
             for requirement in requirements:
+                logger.debug("Validating Requirement %s", requirement)
+                self.notify(RequirementValidationEvent(EventType.REQUIREMENT_VALIDATION_START, requirement=requirement))
                 passed = requirement.__do_validate__(context)
                 logger.debug("Number of issues: %s", len(context.result.issues))
+                self.notify(RequirementValidationEvent(
+                    EventType.REQUIREMENT_VALIDATION_END, requirement=requirement, validation_result=passed))
                 if passed:
                     logger.debug("Validation Requirement passed")
                 else:
@@ -1099,6 +1167,9 @@ class Validator:
                     if context.settings.get("abort_on_first") is True and context.profile_identifier == profile.name:
                         logger.debug("Aborting on first requirement failure")
                         return context.result
+            self.notify(ProfileValidationEvent(EventType.PROFILE_VALIDATION_END, profile=profile))
+        self.notify(ValidationEvent(EventType.VALIDATION_END,
+                    validation_result=context.result))
 
         return context.result
 
