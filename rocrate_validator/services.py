@@ -9,6 +9,7 @@ import requests_cache
 
 import rocrate_validator.log as logging
 from rocrate_validator.constants import DEFAULT_PROFILE_IDENTIFIER
+from rocrate_validator.errors import ProfileNotFound
 from rocrate_validator.events import Subscriber
 from rocrate_validator.models import (Profile, Severity, ValidationResult,
                                       ValidationSettings, Validator)
@@ -142,8 +143,8 @@ def get_profile(profiles_path: Path = DEFAULT_PROFILES_PATH,
     Load the profiles from the given path
     """
     profile_path = profiles_path / profile_identifier
-    if not Path(profiles_path).exists():
-        raise FileNotFoundError(f"Profile not found: {profile_path}")
+    if not Path(profile_path).exists():
+        raise ProfileNotFound(profile_identifier)
     profile = Profile.load(profiles_path, f"{profiles_path}/{profile_identifier}",
                            publicID=publicID, severity=Severity.OPTIONAL)
     logger.debug("Profile loaded: %s", profile)
