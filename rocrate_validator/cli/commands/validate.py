@@ -1,6 +1,10 @@
+from __future__ import annotations
+
 import os
 import sys
+import termios
 import textwrap
+import tty
 from pathlib import Path
 from typing import Optional
 
@@ -12,7 +16,6 @@ from rich.markdown import Markdown
 from rich.padding import Padding
 from rich.panel import Panel
 from rich.progress import BarColumn, Progress, TextColumn, TimeElapsedColumn
-from rich.prompt import Confirm
 from rich.rule import Rule
 
 import rocrate_validator.log as logging
@@ -54,6 +57,17 @@ def validate_uri(ctx, param, value):
             raise click.BadParameter("Invalid RO-crate path or URI", param=param)
 
     return value
+
+
+def get_single_char():
+    fd = sys.stdin.fileno()
+    old_settings = termios.tcgetattr(fd)
+    try:
+        tty.setraw(sys.stdin.fileno())
+        char = sys.stdin.read(1)
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+    return char
 
 
 @cli.command("validate")
@@ -106,9 +120,16 @@ def validate_uri(ctx, param, value):
     show_default=True
 )
 @click.option(
+    '--details',
+    is_flag=True,
+    help="Output the validation details without prompting",
+    default=False,
+    show_default=True
+)
+@click.option(
     '--no-paging',
     is_flag=True,
-    help="Disable paging",
+    help="Disable pagination of the validation details",
     default=False,
     show_default=True
 )
@@ -122,7 +143,8 @@ def validate(ctx,
              rocrate_uri: Path = ".",
              no_fail_fast: bool = False,
              ontologies_path: Optional[Path] = None,
-             no_paging: bool = False):
+             no_paging: bool = False,
+             details: bool = False):
     """
     [magenta]rocrate-validator:[/magenta] Validate a RO-Crate against a profile
     """
@@ -145,23 +167,40 @@ def validate(ctx,
     if rocrate_uri:
         logger.debug("rocrate_path: %s", os.path.abspath(rocrate_uri))
 
-    # Validate the RO-Crate
     try:
-        result: ValidationResult = services.validate(
-            {
-                "profiles_path": profiles_path,
-                "profile_identifier": profile_identifier,
-                "requirement_severity": requirement_severity,
-                "requirement_severity_only": requirement_severity_only,
-                "inherit_profiles": not disable_profile_inheritance,
-                "data_path": rocrate_uri,
-                "ontology_path": Path(ontologies_path).absolute() if ontologies_path else None,
-                "abort_on_first": not no_fail_fast
-            }
+        # Validation settings
+        validation_settings = {
+            "profiles_path": profiles_path,
+            "profile_identifier": profile_identifier,
+            "requirement_severity": requirement_severity,
+            "requirement_severity_only": requirement_severity_only,
+            "inherit_profiles": not disable_profile_inheritance,
+            "show_details": False,
+            "details": details,
+            "data_path": rocrate_uri,
+            "ontology_path": Path(ontologies_path).absolute() if ontologies_path else None,
+            "abort_on_first": not no_fail_fast
+        }
+
+        # Compute the profile statistics
+        profile_stats = __compute_profile_stats__(validation_settings)
+
+        report_layout = ValidationReportLayout(console, validation_settings, profile_stats, None)
+
+        # Validate RO-Crate against the profile and get the validation result
+        result: ValidationResult = report_layout.live(
+            lambda: services.validate(
+                validation_settings,
+                subscribers=[report_layout.progress_monitor]
+            )
         )
 
         # Print the validation result
-        __print_validation_result__(console, result, result.context.requirement_severity, enable_pager=enable_pager)
+        if not details and enable_pager:
+            console.print("[bold]Do you want to see the validation details? ([magenta]y/n[/magenta]): [/bold]", end="")
+            details = get_single_char().lower() == 'y'
+        if details:
+            report_layout.show_validation_details(enable_pager=enable_pager)
 
         # using ctx.exit seems to raise an Exception that gets caught below,
         # so we use sys.exit instead.
@@ -190,7 +229,7 @@ def validate(ctx,
         if logger.isEnabledFor(logging.DEBUG):
             console.print_exception()
         console.print(textwrap.indent("This error may be due to a bug.\n"
-                      "Please report it to the issue tracker along with the following stack trace:\n", ' ' * 9))
+                                      "Please report it to the issue tracker along with the following stack trace:\n", ' ' * 9))
         console.print_exception()
         sys.exit(2)
 
