@@ -343,18 +343,18 @@ class ValidationReportLayout(Layout):
         )
 
         # Create the layout of the requirement checks section
-        requirement_checks_container_layout = Layout(name="Requirement Checks")
-        requirement_checks_container_layout.split_column(
-            self.requirement_checks_container_layout,
-            validated_checks_container
-        )
-
-        # Create the layout of the requirement checks section
-        self.requirement_checks_container_layout = Layout(name="Requirement Checks Validation", size=5)
-        self.requirement_checks_container_layout.split_row(
+        self.requirement_checks_by_severity_container_layout = Layout(name="Requirement Checks Validation", size=5)
+        self.requirement_checks_by_severity_container_layout.split_row(
             Layout(name="required"),
             Layout(name="recommended"),
             Layout(name="optional")
+        )
+
+        # Create the layout of the requirement checks section
+        requirement_checks_container_layout = Layout(name="Requirement Checks")
+        requirement_checks_container_layout.split_column(
+            self.requirement_checks_by_severity_container_layout,
+            validated_checks_container
         )
 
         # Create the layout of the validation checks progress
@@ -389,7 +389,7 @@ class ValidationReportLayout(Layout):
     def update(self, profile_stats: dict = None):
         assert profile_stats, "Profile stats must be provided"
         self.profile_stats = profile_stats
-        self.requirement_checks_container_layout["required"].update(
+        self.requirement_checks_by_severity_container_layout["required"].update(
             Panel(
                 Align(
                     str(profile_stats['check_count_by_severity'][Severity.REQUIRED]) if profile_stats else "0",
@@ -401,7 +401,7 @@ class ValidationReportLayout(Layout):
                 border_style="RED"
             )
         )
-        self.requirement_checks_container_layout["recommended"].update(
+        self.requirement_checks_by_severity_container_layout["recommended"].update(
             Panel(
                 Align(
                     str(profile_stats['check_count_by_severity'][Severity.RECOMMENDED]) if profile_stats else "0",
@@ -413,7 +413,7 @@ class ValidationReportLayout(Layout):
                 border_style="orange1"
             )
         )
-        self.requirement_checks_container_layout["optional"].update(
+        self.requirement_checks_by_severity_container_layout["optional"].update(
             Panel(
                 Align(
                     str(profile_stats['check_count_by_severity'][Severity.OPTIONAL]) if profile_stats else "0",
