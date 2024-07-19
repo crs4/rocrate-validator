@@ -3,6 +3,7 @@ from __future__ import annotations
 import bisect
 import enum
 import inspect
+import json
 import re
 from abc import ABC, abstractmethod
 from collections.abc import Collection
@@ -541,7 +542,7 @@ class Requirement(ABC):
         return None
 
     def get_checks_by_level(self, level: RequirementLevel) -> list[RequirementCheck]:
-        return [check for check in self._checks if check.level.severity == level.severity]
+        return list({check for check in self._checks if check.level.severity == level.severity})
 
     def __reorder_checks__(self) -> None:
         for i, check in enumerate(self._checks):
@@ -876,6 +877,28 @@ class CheckIssue:
             raise TypeError(f"Cannot compare {type(self)} with {type(other)}")
         return (self._check, self._severity, self._message) < (other._check, other._severity, other._message)
 
+    def __hash__(self) -> int:
+        return hash((self._check, self._severity, self._message))
+
+    def __repr__(self) -> str:
+        return f'CheckIssue(severity={self.severity}, check={self.check}, message={self.message})'
+
+    def __str__(self) -> str:
+        return f"{self.severity}: {self.message} ({self.check})"
+
+    def to_dict(self) -> dict:
+        return {
+            "severity": self.severity.name,
+            "message": self.message,
+            "check": self.check.name,
+            "resultPath": self.resultPath,
+            "focusNode": self.focusNode,
+            "value": self.value
+        }
+
+    def to_json(self) -> str:
+        return json.dumps(self.to_dict(), indent=4, cls=CustomEncoder)
+
     # @property
     # def code(self) -> int:
     #     breakpoint()
@@ -988,6 +1011,45 @@ class ValidationResult:
 
     def __repr__(self):
         return f"ValidationResult(issues={self._issues})"
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, ValidationResult):
+            raise TypeError(f"Cannot compare ValidationResult with {type(other)}")
+        return self._issues == other._issues
+
+    def to_dict(self) -> dict:
+        return {
+            "rocrate": str(self.rocrate_path),
+            "validation_settings": self.validation_settings,
+            "passed": self.passed(self.context.settings["requirement_severity"]),
+            "issues": [issue.to_dict() for issue in self.issues]
+        }
+
+    def to_json(self, path: Optional[Path] = None) -> str:
+
+        result = json.dumps(self.to_dict(), indent=4, cls=CustomEncoder)
+        if path:
+            with open(path, "w") as f:
+                f.write(result)
+        return result
+
+
+class CustomEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, CheckIssue):
+            return obj.__dict__
+        if isinstance(obj, Path):
+            return str(obj)
+        if isinstance(obj, Severity):
+            return obj.name
+        if isinstance(obj, RequirementCheck):
+            return obj.identifier
+        if isinstance(obj, Requirement):
+            return obj.identifier
+        if isinstance(obj, RequirementLevel):
+            return obj.name
+
+        return super().default(obj)
 
 
 @dataclass
