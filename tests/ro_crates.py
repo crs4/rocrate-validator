@@ -34,8 +34,7 @@ class ValidROC:
 
     @property
     def sort_and_change_remote(self) -> Path:
-        # TODO: replace with a stable remote URL; this one might be deleted
-        return "https://dev.workflowhub.eu/workflows/161/ro_crate?version=1"
+        return "https://raw.githubusercontent.com/lifemonitor/validator-test-data/main/sortchangecase.crate.zip"
 
     @property
     def sort_and_change_archive(self) -> Path:
