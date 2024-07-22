@@ -956,16 +956,19 @@ class ValidationResult:
 
     def get_issues_by_check(self,
                             check: RequirementCheck,
-                            min_severity: Severity = Severity.OPTIONAL) -> list[CheckIssue]:
+                            min_severity: Optional[Severity] = None) -> list[CheckIssue]:
+        min_severity = min_severity or self.context.requirement_severity
         return [issue for issue in self._issues if issue.check == check and issue.severity >= min_severity]
 
     # def get_issues_by_check_and_severity(self, check: RequirementCheck, severity: Severity) -> list[CheckIssue]:
     #     return [issue for issue in self.issues if issue.check == check and issue.severity == severity]
 
-    def has_issues(self, severity: Severity = Severity.OPTIONAL) -> bool:
+    def has_issues(self, severity: Optional[Severity] = None) -> bool:
+        severity = severity or self.context.requirement_severity
         return any(issue.severity >= severity for issue in self._issues)
 
-    def passed(self, severity: Severity = Severity.OPTIONAL) -> bool:
+    def passed(self, severity: Optional[Severity] = None) -> bool:
+        severity = severity or self.context.requirement_severity
         return not any(issue.severity >= severity for issue in self._issues)
 
     def add_issue(self, issue: CheckIssue):
@@ -1298,7 +1301,12 @@ class ValidationContext:
 
     @property
     def requirement_severity(self) -> Severity:
-        return self.settings.get("requirement_severity", Severity.REQUIRED)
+        severity = self.settings.get("requirement_severity", Severity.REQUIRED)
+        if isinstance(severity, str):
+            severity = Severity[severity]
+        elif not isinstance(severity, Severity):
+            raise ValueError(f"Invalid severity type: {type(severity)}")
+        return severity
 
     @property
     def requirement_severity_only(self) -> bool:
