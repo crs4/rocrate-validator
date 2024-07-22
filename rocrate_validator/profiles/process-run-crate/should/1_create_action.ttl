@@ -7,6 +7,7 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
 @prefix bioschemas: <https://bioschemas.org/> .
+@prefix wfrun: <https://w3id.org/ro/terms/workflow-run#> .
 
 ro:ProcRCActionRecommended a sh:NodeShape ;
     sh:name "Process Run Crate Action SHOULD" ;
@@ -54,7 +55,6 @@ ro:ProcRCActionRecommended a sh:NodeShape ;
         sh:description "If present, the Action startTime SHOULD be in ISO 8601 format" ;
         sh:path schema:startTime ;
         sh:pattern "^(\\d{4}-\\d{2}-\\d{2})(T\\d{2}:\\d{2}:\\d{2}(\\.\\d{3})?\\+\\d{2}:\\d{2})?$" ;
-        sh:minCount 0 ;
         sh:message "If present, the Action startTime SHOULD be in ISO 8601 format" ;
     ] ;
     sh:property [
@@ -74,13 +74,21 @@ ro:ProcRCActionRecommended a sh:NodeShape ;
         sh:name "Action actionStatus" ;
         sh:description "If the Action has an actionStatus, it should be http://schema.org/CompletedActionStatus or http://schema.org/FailedActionStatus" ;
         sh:path schema:actionStatus ;
-        sh:or (
-            [ sh:hasValue schema:CompletedActionStatus ; ]
-            [ sh:hasValue schema:FailedActionStatus ; ]
+        sh:in (
+            "http://schema.org/CompletedActionStatus"
+            "http://schema.org/FailedActionStatus"
         ) ;
-        sh:minCount 0 ;
         sh:message "If the Action has an actionStatus, it should be http://schema.org/CompletedActionStatus or http://schema.org/FailedActionStatus" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Action environment" ;
+        sh:description "If the Action has an environment, it should point to entities of type PropertyValue" ;
+        sh:path wfrun:environment ;
+        sh:class schema:PropertyValue ;
+        sh:message "If the Action has an environment, it should point to entities of type PropertyValue" ;
     ] .
+
 
 ro:ProcRCCreateUpdateActionRecommended a sh:NodeShape ;
     sh:name "Process Run Crate CreateAction UpdateAction SHOULD" ;
@@ -112,7 +120,7 @@ ro:ProcRCActionError a sh:NodeShape ;
                 { ?this a schema:UpdateAction } .
                 { FILTER NOT EXISTS { ?this schema:actionStatus ?status } } UNION
                 { ?this schema:actionStatus ?status .
-                  FILTER(?status != schema:FailedActionStatus) }
+                  FILTER(?status != "http://schema.org/FailedActionStatus") }
             }
         """
     ] ;

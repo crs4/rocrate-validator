@@ -385,3 +385,11 @@ class InvalidProcRC:
     @property
     def collection_no_mainentity(self) -> Path:
         return self.base_path / "collection_no_mainentity"
+
+    @property
+    def action_no_environment(self) -> Path:
+        return self.base_path / "action_no_environment"
+
+    @property
+    def action_bad_environment(self) -> Path:
+        return self.base_path / "action_bad_environment"

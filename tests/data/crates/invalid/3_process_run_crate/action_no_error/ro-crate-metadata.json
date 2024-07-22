@@ -68,7 +68,7 @@
             "agent": {
                 "@id": "https://orcid.org/0000-0001-9842-9718"
             },
-            "actionStatus": { "@id": "http://schema.org/FailedActionStatus" }
+            "actionStatus": "http://schema.org/FailedActionStatus"
         },
         {
             "@id": "pics/2017-06-11%2012.56.14.jpg",

@@ -1,5 +1,8 @@
 {
-    "@context": "https://w3id.org/ro/crate/1.1/context",
+    "@context": [
+        "https://w3id.org/ro/crate/1.1/context",
+        "https://w3id.org/ro/terms/workflow-run/context"
+    ],
     "@graph": [
         {
             "@id": "ro-crate-metadata.json",
@@ -14,9 +17,14 @@
         {
             "@id": "./",
             "@type": "Dataset",
-            "conformsTo": {
-                "@id": "https://w3id.org/ro/wfrun/process/0.5"
-            },
+            "conformsTo": [
+                {
+                    "@id": "https://w3id.org/ro/wfrun/process/0.5"
+                },
+                {
+                    "@id": "https://example.com/otherprofile/0.1"
+                }
+            ],
             "hasPart": [
                 {
                     "@id": "pics/2017-06-11%2012.56.14.jpg"
@@ -41,6 +49,12 @@
             "@type": "CreativeWork",
             "name": "Process Run Crate",
             "version": "0.5"
+        },
+        {
+            "@id": "https://example.com/otherprofile/0.1",
+            "@type": "CreativeWork",
+            "name": "Other Profile",
+            "version": "0.1"
         },
         {
             "@id": "https://www.imagemagick.org/",
@@ -68,8 +82,26 @@
             "agent": {
                 "@id": "https://orcid.org/0000-0001-9842-9718"
             },
-            "actionStatus": "http://schema.org/CompletedActionStatus",
-            "error": "this is just to test the error property"
+            "actionStatus": "http://schema.org/FailedActionStatus",
+            "error": "this is just to test the error property",
+            "environment": [
+                {
+                    "@id": "#height-limit-pv"
+                },
+                {
+                    "@id": "#width-limit-pv"
+                }
+            ]
+        },
+        {
+            "@id": "#width-limit-pv",
+            "@type": "CreativeWork"
+        },
+        {
+            "@id": "#height-limit-pv",
+            "@type": "PropertyValue",
+            "name": "MAGICK_HEIGHT_LIMIT",
+            "value": "3072"
         },
         {
             "@id": "pics/2017-06-11%2012.56.14.jpg",

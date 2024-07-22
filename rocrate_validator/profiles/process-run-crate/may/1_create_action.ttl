@@ -7,6 +7,7 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
 @prefix bioschemas: <https://bioschemas.org/> .
+@prefix wfrun: <https://w3id.org/ro/terms/workflow-run#> .
 
 ro:ProcRCActionOptional a sh:NodeShape ;
     sh:name "Process Run Crate Action MAY" ;
@@ -37,6 +38,14 @@ ro:ProcRCActionOptional a sh:NodeShape ;
         sh:path schema:actionStatus ;
         sh:minCount 1 ;
         sh:message "The Action MAY have an actionStatus" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Action environment" ;
+        sh:description "The Action MAY have an environment" ;
+        sh:path wfrun:environment ;
+        sh:minCount 1 ;
+        sh:message "The Action MAY have an environment" ;
     ] .
 
 
@@ -53,7 +62,7 @@ ro:ProcRCActionErrorMay a sh:NodeShape ;
                 { ?this a schema:ActivateAction } UNION
                 { ?this a schema:UpdateAction } .
                 ?this schema:actionStatus ?status .
-                FILTER(?status = schema:FailedActionStatus) .
+                FILTER(?status = "http://schema.org/FailedActionStatus") .
             }
         """
     ] ;

@@ -280,3 +280,32 @@ def test_prc_action_obj_res_bad_type():
         ["object and result SHOULD point to entities of type MediaObject, Dataset, Collection, CreativeWork or PropertyValue"],
         profile_identifier="process-run-crate"
     )
+
+
+def test_prc_action_no_environment():
+    """\
+    Test a Process Run Crate where the Action does not have an environment.
+    """
+    do_entity_test(
+        InvalidProcRC().action_no_environment,
+        Severity.OPTIONAL,
+        False,
+        ["Process Run Crate Action MAY"],
+        ["The Action MAY have an environment"],
+        profile_identifier="process-run-crate"
+    )
+
+
+def test_prc_action_bad_environment():
+    """\
+    Test a Process Run Crate where the Action has an environment that does not
+    point to PropertyValues.
+    """
+    do_entity_test(
+        InvalidProcRC().action_bad_environment,
+        Severity.RECOMMENDED,
+        False,
+        ["Process Run Crate Action SHOULD"],
+        ["If the Action has an environment, it should point to entities of type PropertyValue"],
+        profile_identifier="process-run-crate"
+    )

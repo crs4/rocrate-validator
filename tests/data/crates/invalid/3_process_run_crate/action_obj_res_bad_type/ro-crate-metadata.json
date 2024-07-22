@@ -79,7 +79,7 @@
             "agent": {
                 "@id": "https://orcid.org/0000-0001-9842-9718"
             },
-            "actionStatus": { "@id": "http://schema.org/FailedActionStatus" },
+            "actionStatus": "http://schema.org/FailedActionStatus",
             "error": "this is just to test the error property"
         },
         {

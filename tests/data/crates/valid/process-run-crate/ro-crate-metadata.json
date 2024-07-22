@@ -1,5 +1,8 @@
 {
-    "@context": "https://w3id.org/ro/crate/1.1/context",
+    "@context": [
+        "https://w3id.org/ro/crate/1.1/context",
+        "https://w3id.org/ro/terms/workflow-run/context"
+    ],
     "@graph": [
         {
             "@id": "ro-crate-metadata.json",
@@ -79,8 +82,28 @@
             "agent": {
                 "@id": "https://orcid.org/0000-0001-9842-9718"
             },
-            "actionStatus": { "@id": "http://schema.org/FailedActionStatus" },
-            "error": "this is just to test the error property"
+            "actionStatus": "http://schema.org/FailedActionStatus",
+            "error": "this is just to test the error property",
+            "environment": [
+                {
+                    "@id": "#height-limit-pv"
+                },
+                {
+                    "@id": "#width-limit-pv"
+                }
+            ]
+        },
+        {
+            "@id": "#width-limit-pv",
+            "@type": "PropertyValue",
+            "name": "MAGICK_WIDTH_LIMIT",
+            "value": "4096"
+        },
+        {
+            "@id": "#height-limit-pv",
+            "@type": "PropertyValue",
+            "name": "MAGICK_HEIGHT_LIMIT",
+            "value": "3072"
         },
         {
             "@id": "pics/2017-06-11%2012.56.14.jpg",
