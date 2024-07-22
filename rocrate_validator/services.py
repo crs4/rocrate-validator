@@ -146,5 +146,5 @@ def get_profile(profiles_path: Path = DEFAULT_PROFILES_PATH,
     profile = next((p for p in profiles if p.identifier == profile_identifier), None) or \
         next((p for p in profiles if str(p.identifier).replace(f"-{p.version}", '') == profile_identifier), None)
     if not profile:
-        raise ProfileNotFound(f"Profile not found: {profile_identifier}")
+        raise ProfileNotFound(profile_identifier)
     return profile
