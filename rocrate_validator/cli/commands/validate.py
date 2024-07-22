@@ -359,7 +359,7 @@ class ValidationReportLayout(Layout):
         settings = self.validation_settings
 
         # Set the console height
-        self.console.height = 27
+        self.console.height = 30
 
         # Create the layout of the base info of the validation report
         base_info_layout = Layout(
@@ -413,15 +413,19 @@ class ValidationReportLayout(Layout):
         self.update(self.profile_stats)
 
         # Create the main layout
-        layout = Layout(
+        self.checks_stats_layout = Layout(
             Panel(report_container_layout, title=f"[bold]RO-Crate Validator[/bold] [white](ver. [magenta]{get_version()}[/magenta])[/white]",
-                  border_style="cyan", title_align="center", padding=(1, 1)), size=25)
+                  border_style="cyan", title_align="center", padding=(1, 1)))
 
         # Create the overall result layout
-        self.overall_result = Layout(Padding(Rule(f"\n[italic][cyan]Validating ROCrate...[/cyan][/italic]"), (1, 1)))
+        self.overall_result = Layout(
+            Padding(Rule(f"\n[italic][cyan]Validating ROCrate...[/cyan][/italic]"), (1, 1)), size=3)
 
-        # Set the layout as a group container
-        self.__layout = Group(layout, self.overall_result)
+        group_layout = Layout()
+        group_layout.add_split(self.checks_stats_layout)
+        group_layout.add_split(self.overall_result)
+
+        self.__layout = group_layout
 
     def update(self, profile_stats: dict = None):
         assert profile_stats, "Profile stats must be provided"
