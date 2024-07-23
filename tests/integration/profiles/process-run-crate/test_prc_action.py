@@ -309,3 +309,34 @@ def test_prc_action_bad_environment():
         ["If the Action has an environment, it should point to entities of type PropertyValue"],
         profile_identifier="process-run-crate"
     )
+
+
+def test_prc_action_no_containerimage():
+    """\
+    Test a Process Run Crate where the Action does not have a containerimage.
+    """
+    do_entity_test(
+        InvalidProcRC().action_no_containerimage,
+        Severity.OPTIONAL,
+        False,
+        ["Process Run Crate Action MAY"],
+        ["The Action MAY have a containerImage"],
+        profile_identifier="process-run-crate"
+    )
+
+
+def test_prc_action_bad_containerimage():
+    """\
+    Test a Process Run Crate where the Action has a containerImage that does
+    not point to a URL or to a ContainerImage object.
+    """
+    for crate in (InvalidProcRC().action_bad_containerimage_url,
+                  InvalidProcRC().action_bad_containerimage_type):
+        do_entity_test(
+            InvalidProcRC().action_bad_containerimage_url,
+            Severity.RECOMMENDED,
+            False,
+            ["Process Run Crate Action SHOULD"],
+            ["If the Action has a containerImage, it should point to a ContainerImage or a URL"],
+            profile_identifier="process-run-crate"
+        )

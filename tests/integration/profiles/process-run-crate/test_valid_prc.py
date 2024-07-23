@@ -21,3 +21,9 @@ def test_valid_process_run_crate_required():
         True,
         profile_identifier="process-run-crate"
     )
+    do_entity_test(
+        ValidROC().process_run_crate_containerimage,
+        Severity.REQUIRED,
+        True,
+        profile_identifier="process-run-crate"
+    )

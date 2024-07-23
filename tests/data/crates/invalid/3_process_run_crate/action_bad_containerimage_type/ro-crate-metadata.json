@@ -92,7 +92,9 @@
                     "@id": "#width-limit-pv"
                 }
             ],
-            "containerImage": "https://example.com/imagemagick.sif"
+            "containerImage": {
+                "@id": "pics/sepia_fence.jpg"
+            }
         },
         {
             "@id": "#width-limit-pv",

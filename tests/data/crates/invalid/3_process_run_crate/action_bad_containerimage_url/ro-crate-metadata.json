@@ -92,7 +92,7 @@
                     "@id": "#width-limit-pv"
                 }
             ],
-            "containerImage": "https://example.com/imagemagick.sif"
+            "containerImage": "imagemagick"
         },
         {
             "@id": "#width-limit-pv",

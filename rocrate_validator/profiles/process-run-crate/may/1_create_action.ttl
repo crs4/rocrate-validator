@@ -46,6 +46,14 @@ ro:ProcRCActionOptional a sh:NodeShape ;
         sh:path wfrun:environment ;
         sh:minCount 1 ;
         sh:message "The Action MAY have an environment" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Action containerImage" ;
+        sh:description "The Action MAY have a containerImage" ;
+        sh:path wfrun:containerImage ;
+        sh:minCount 1 ;
+        sh:message "The Action MAY have a containerImage" ;
     ] .
 
 

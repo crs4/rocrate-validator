@@ -92,7 +92,20 @@
                     "@id": "#width-limit-pv"
                 }
             ],
-            "containerImage": "https://example.com/imagemagick.sif"
+            "containerImage": {
+                "@id": "#imagemagick-image"
+            }
+        },
+        {
+            "@id": "#imagemagick-image",
+            "@type": "ContainerImage",
+            "additionalType": {
+                "@id": "https://w3id.org/ro/terms/workflow-run#DockerImage"
+            },
+            "registry": "docker.io",
+            "name": "simleo/imagemagick",
+            "tag": "6.9.12-98",
+            "sha256": "dc6161af5a230ec48b7c9469c81c32b2e7cc2ae510b32dacc43bfc658a2bca1a"
         },
         {
             "@id": "#width-limit-pv",

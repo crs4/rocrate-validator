@@ -87,6 +87,17 @@ ro:ProcRCActionRecommended a sh:NodeShape ;
         sh:path wfrun:environment ;
         sh:class schema:PropertyValue ;
         sh:message "If the Action has an environment, it should point to entities of type PropertyValue" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Action containerImage" ;
+        sh:description "If the Action has a containerImage, it should point to a ContainerImage or a URL" ;
+        sh:path wfrun:containerImage ;
+        sh:or (
+            [ sh:class wfrun:ContainerImage ; ]
+            [ sh:pattern "^http.*" ; ]
+        ) ;
+        sh:message "If the Action has a containerImage, it should point to a ContainerImage or a URL" ;
     ] .
 
 
