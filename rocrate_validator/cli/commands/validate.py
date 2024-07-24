@@ -546,14 +546,15 @@ class ValidationReportLayout(Layout):
                                         key=lambda x: (-x.severity.value, x)):
                         path = ""
                         if issue.resultPath and issue.value:
-                            path = f"of [yellow]{issue.resultPath}[/yellow]"
+                            path = f" of [yellow]{issue.resultPath}[/yellow]"
                         if issue.value:
                             if issue.resultPath:
                                 path += "="
                             path += f"\"[green]{issue.value}[/green]\" "  # keep the ending space
-                        path = path + "on " + f"[cyan]<{issue.focusNode}>[/cyan]"
+                        if issue.focusNode:
+                            path = f"{path} on [cyan]<{issue.focusNode}>[/cyan]"
                         console.print(
-                            Padding(f"- [[red]Violation[/red] {path}]: "
+                            Padding(f"- [[red]Violation[/red]{path}]: "
                                     f"{Markdown(issue.message).markup}", (0, 9)), style="white")
                     console.print("\n", style="white")
 
