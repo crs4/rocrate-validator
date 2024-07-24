@@ -998,12 +998,13 @@ class ValidationResult:
     def issues(self) -> list[CheckIssue]:
         return self._issues
 
-    def get_issues(self, min_severity: Severity) -> list[CheckIssue]:
+    def get_issues(self, min_severity: Optional[Severity] = None) -> list[CheckIssue]:
+        min_severity = min_severity or self.context.requirement_severity
         return [issue for issue in self._issues if issue.severity >= min_severity]
 
     def get_issues_by_check(self,
                             check: RequirementCheck,
-                            min_severity: Optional[Severity] = None) -> list[CheckIssue]:
+                            min_severity: Severity = None) -> list[CheckIssue]:
         min_severity = min_severity or self.context.requirement_severity
         return [issue for issue in self._issues if issue.check == check and issue.severity >= min_severity]
 
