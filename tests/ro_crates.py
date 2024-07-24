@@ -425,3 +425,11 @@ class InvalidProcRC:
     @property
     def containerimage_no_name(self) -> Path:
         return self.base_path / "containerimage_no_name"
+
+    @property
+    def containerimage_no_tag(self) -> Path:
+        return self.base_path / "containerimage_no_tag"
+
+    @property
+    def containerimage_no_sha256(self) -> Path:
+        return self.base_path / "containerimage_no_sha256"

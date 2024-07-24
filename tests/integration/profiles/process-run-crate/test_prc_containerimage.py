@@ -63,3 +63,31 @@ def test_prc_containerimage_no_name():
         ["The ContainerImage SHOULD have a name"],
         profile_identifier="process-run-crate"
     )
+
+
+def test_prc_containerimage_no_tag():
+    """\
+    Test a Process Run Crate where the ContainerImage has no tag.
+    """
+    do_entity_test(
+        InvalidProcRC().containerimage_no_tag,
+        Severity.OPTIONAL,
+        False,
+        ["Process Run Crate ContainerImage MAY"],
+        ["The ContainerImage MAY have a tag"],
+        profile_identifier="process-run-crate"
+    )
+
+
+def test_prc_containerimage_no_sha256():
+    """\
+    Test a Process Run Crate where the ContainerImage has no sha256.
+    """
+    do_entity_test(
+        InvalidProcRC().containerimage_no_sha256,
+        Severity.OPTIONAL,
+        False,
+        ["Process Run Crate ContainerImage MAY"],
+        ["The ContainerImage MAY have a sha256"],
+        profile_identifier="process-run-crate"
+    )
