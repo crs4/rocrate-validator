@@ -137,10 +137,8 @@ class SHACLCheck(RequirementCheck):
         for requirementCheck in sorted(failed_requirements_checks, key=lambda x: (x.identifier, x.severity)):
             # add only the issues for the current profile when the `target_profile_only` mode is disabled
             # (issues related to other profiles will be added by the corresponding profile validation)
-            # failed_check_ids.append(requirementCheck.identifier)
             if requirementCheck.requirement.profile == shacl_context.current_validation_profile or \
                     shacl_context.settings.get("target_only_validation", False):
-                # failed_check_ids.append(requirementCheck.identifier)
                 c = shacl_context.result.add_check_issue(message=violation.get_result_message(shacl_context.rocrate_path),
                                                          check=requirementCheck,
                                                          severity=violation.get_result_severity(),
