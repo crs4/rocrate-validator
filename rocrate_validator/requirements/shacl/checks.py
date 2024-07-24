@@ -120,7 +120,7 @@ class SHACLCheck(RequirementCheck):
         start_time = timer()
         result = shacl_result.conforms
         # if the validation fails, process the failed checks
-        failed_requirements_checks = []
+        failed_requirements_checks = set()
         failed_requirements_checks_violations: dict[str, SHACLViolation] = {}
         failed_requirement_checks_notified = []
         if not shacl_result.conforms:
@@ -131,27 +131,30 @@ class SHACLCheck(RequirementCheck):
                 assert shape is not None, "Unable to map the violation to a shape"
                 requirementCheck = SHACLCheck.get_instance(shape)
                 assert requirementCheck is not None, "The requirement check cannot be None"
-                failed_requirements_checks.append(requirementCheck)
-                failed_requirements_checks_violations[requirementCheck.identifier] = violation
+                failed_requirements_checks.add(requirementCheck)
+                violations = failed_requirements_checks_violations.get(requirementCheck.identifier, None)
+                if violations is None:
+                    failed_requirements_checks_violations[requirementCheck.identifier] = violations = []
+                violations.append(violation)
         # sort the failed checks by identifier and severity
         # to ensure a consistent order of the issues
         # and to make the fail fast mode deterministic
         for requirementCheck in sorted(failed_requirements_checks, key=lambda x: (x.identifier, x.severity)):
             # add only the issues for the current profile when the `target_profile_only` mode is disabled
             # (issues related to other profiles will be added by the corresponding profile validation)
-            violation = failed_requirements_checks_violations[requirementCheck.identifier]
             if requirementCheck.requirement.profile == shacl_context.current_validation_profile or \
                     shacl_context.settings.get("target_only_validation", False):
-                c = shacl_context.result.add_check_issue(message=violation.get_result_message(shacl_context.rocrate_path),
-                                                         check=requirementCheck,
-                                                         severity=violation.get_result_severity(),
-                                                         resultPath=violation.resultPath.toPython() if violation.resultPath else None,
-                                                         focusNode=make_uris_relative(
-                    violation.focusNode.toPython(), shacl_context.publicID),
-                    value=violation.value)
-                # if the fail fast mode is enabled, stop the validation after the first issue
-                if shacl_context.fail_fast:
-                    break
+                for violation in failed_requirements_checks_violations[requirementCheck.identifier]:
+                    c = shacl_context.result.add_check_issue(message=violation.get_result_message(shacl_context.rocrate_path),
+                                                             check=requirementCheck,
+                                                             severity=violation.get_result_severity(),
+                                                             resultPath=violation.resultPath.toPython() if violation.resultPath else None,
+                                                             focusNode=make_uris_relative(
+                        violation.focusNode.toPython(), shacl_context.publicID),
+                        value=violation.value)
+                    # if the fail fast mode is enabled, stop the validation after the first issue
+                    if shacl_context.fail_fast:
+                        break
 
             # If the fail fast mode is disabled, notify all the validation issues
             # related to profiles other than the current one.
