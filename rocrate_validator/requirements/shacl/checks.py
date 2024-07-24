@@ -5,7 +5,8 @@ from typing import Optional
 import rocrate_validator.log as logging
 from rocrate_validator.errors import ROCrateMetadataNotFoundError
 from rocrate_validator.models import (Requirement, RequirementCheck,
-                                      ValidationContext)
+                                      RequirementCheckValidationEvent,
+                                      SkipRequirementCheck, ValidationContext)
 from rocrate_validator.requirements.shacl.models import Shape
 from rocrate_validator.requirements.shacl.utils import make_uris_relative
 
@@ -54,10 +55,12 @@ class SHACLCheck(RequirementCheck):
             logger.debug("SHACL Validation of profile %s already processed", self.requirement.profile)
             return e.result
         except SHACLValidationSkip as e:
-            logger.debug("SHACL Validation of profile %s skipped", self.requirement.profile)
-            # the validation is postponed to the subsequent profiles
-            #  so we return True to continue the validation
-            return True
+            logger.debug("SHACL Validation of profile %s requirement %s skipped", self.requirement.profile, self)
+            # The validation is postponed to the more specific profiles
+            # so the check is not considered as failed.
+            # We assume that the main algorithm catches the issue
+            # and the check is marked as skipped withing the context.result
+            raise SkipRequirementCheck(self, str(e))
         except ROCrateMetadataNotFoundError as e:
             logger.debug("Unable to perform metadata validation due to missing metadata file: %s", e)
             return False

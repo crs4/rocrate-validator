@@ -455,6 +455,15 @@ class Profile:
         return cls.__profiles_map.values()
 
 
+class SkipRequirementCheck(Exception):
+    def __init__(self, check: RequirementCheck, message: str = ""):
+        self.check = check
+        self.message = message
+
+    def __str__(self):
+        return f"SkipRequirementCheck(check={self.check})"
+
+
 @total_ordering
 class Requirement(ABC):
 
@@ -569,6 +578,7 @@ class Requirement(ABC):
                 context.validator.notify(RequirementCheckValidationEvent(
                     EventType.REQUIREMENT_CHECK_VALIDATION_START, check))
                 check_result = check.execute_check(context)
+                context.result.add_executed_check(check, check_result)
                 context.validator.notify(RequirementCheckValidationEvent(
                     EventType.REQUIREMENT_CHECK_VALIDATION_END, check, validation_result=check_result))
                 logger.debug("Ran check '%s'. Got result %s", check.name, check_result)
@@ -576,6 +586,10 @@ class Requirement(ABC):
                     logger.warning("Ignoring the check %s as it returned the value %r instead of a boolean", check.name)
                     raise RuntimeError(f"Ignoring invalid result from check {check.name}")
                 all_passed = all_passed and check_result
+            except SkipRequirementCheck as e:
+                logger.debug("Skipping check '%s' because: %s", check.name, e)
+                context.result.add_skipped_check(check)
+                continue
             except Exception as e:
                 # Ignore the fact that the check failed as far as the validation result is concerned.
                 logger.warning("Unexpected error during check %s.  Exception: %s", check, e)
@@ -933,6 +947,11 @@ class ValidationResult:
         self._validation_settings: dict[str, BaseTypes] = context.settings
         # keep track of the issues found during the validation
         self._issues: list[CheckIssue] = []
+        # keep track of the checks that have been executed
+        self._executed_checks: set[RequirementCheck] = set()
+        self._executed_checks_results: dict[str, bool] = {}
+        # keep track of the checks that have been skipped
+        self._skipped_checks: set[RequirementCheck] = set()
 
     @property
     def context(self) -> ValidationContext:
@@ -945,6 +964,32 @@ class ValidationResult:
     @property
     def validation_settings(self):
         return self._validation_settings
+
+    # --- Checks ---
+    @property
+    def executed_checks(self) -> set[RequirementCheck]:
+        return self._executed_checks
+
+    def add_executed_check(self, check: RequirementCheck, result: bool):
+        self._executed_checks.add(check)
+        self._executed_checks_results[check.identifier] = result
+        # remove the check from the skipped checks if it was skipped
+        if check in self._skipped_checks:
+            self._skipped_checks.remove(check)
+            logger.debug("Removing check '%s' from skipped checks", check.name)
+
+    def get_executed_check_result(self, check: RequirementCheck) -> Optional[bool]:
+        return self._executed_checks_results.get(check.identifier)
+
+    @property
+    def skipped_checks(self) -> set[RequirementCheck]:
+        return self._skipped_checks
+
+    def add_skipped_check(self, check: RequirementCheck):
+        self._skipped_checks.add(check)
+
+    def remove_skipped_check(self, check: RequirementCheck):
+        self._skipped_checks.remove(check)
 
     #  --- Issues ---
     @property
