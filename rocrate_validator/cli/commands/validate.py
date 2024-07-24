@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import os
 import sys
 import termios
@@ -9,7 +8,7 @@ from pathlib import Path
 from typing import Optional
 
 from rich.align import Align
-from rich.console import Console, Group
+from rich.console import Console
 from rich.layout import Layout
 from rich.live import Live
 from rich.markdown import Markdown
