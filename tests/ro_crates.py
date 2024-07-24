@@ -433,3 +433,11 @@ class InvalidProcRC:
     @property
     def containerimage_no_sha256(self) -> Path:
         return self.base_path / "containerimage_no_sha256"
+
+    @property
+    def softwareapplication_no_softwarerequirements(self) -> Path:
+        return self.base_path / "softwareapplication_no_softwarerequirements"
+
+    @property
+    def softwareapplication_bad_softwarerequirements(self) -> Path:
+        return self.base_path / "softwareapplication_bad_softwarerequirements"

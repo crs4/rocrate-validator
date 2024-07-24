@@ -1,0 +1,35 @@
+@prefix ro: <./> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xml1: <http://www.w3.org/2001/XMLSchema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
+@prefix bioschemas: <https://bioschemas.org/> .
+
+
+ro:ProcRCSoftwareApplicationOptional a sh:NodeShape ;
+    sh:name "ProcRC SoftwareApplication MAY" ;
+    sh:description "Optional properties of a Process Run Crate SoftwareApplication" ;
+    # Avoid performing checks on dependencies
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?this a schema:SoftwareApplication .
+                FILTER NOT EXISTS { ?other schema:softwareRequirements ?this } .
+            }
+        """
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "SoftwareApplication softwareRequirements" ;
+        sh:description "The SoftwareApplication MAY have a softwareRequirements that points to a SoftwareApplication" ;
+        sh:message "The SoftwareApplication MAY have a softwareRequirements that points to a SoftwareApplication" ;
+        sh:path schema:softwareRequirements ;
+        sh:class schema:SoftwareApplication ;
+        sh:minCount 1 ;
+    ] .

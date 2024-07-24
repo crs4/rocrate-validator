@@ -94,3 +94,33 @@ def test_prc_application_id_no_absoluteuri():
         ["The SoftwareApplication id SHOULD be an absolute URI"],
         profile_identifier="process-run-crate"
     )
+
+
+def test_prc_softwareapplication_no_softwarerequirements():
+    """\
+    Test a Process Run Crate where the SoftwareApplication does not have a
+    SoftwareRequirements.
+    """
+    do_entity_test(
+        InvalidProcRC().softwareapplication_no_softwarerequirements,
+        Severity.OPTIONAL,
+        False,
+        ["ProcRC SoftwareApplication MAY"],
+        ["The SoftwareApplication MAY have a softwareRequirements that points to a SoftwareApplication"],
+        profile_identifier="process-run-crate"
+    )
+
+
+def test_prc_softwareapplication_bad_softwarerequirements():
+    """\
+    Test a Process Run Crate where the SoftwareApplication has a
+    SoftwareRequirements that does not point to a SoftwareApplication.
+    """
+    do_entity_test(
+        InvalidProcRC().softwareapplication_bad_softwarerequirements,
+        Severity.OPTIONAL,
+        False,
+        ["ProcRC SoftwareApplication MAY"],
+        ["The SoftwareApplication MAY have a softwareRequirements that points to a SoftwareApplication"],
+        profile_identifier="process-run-crate"
+    )

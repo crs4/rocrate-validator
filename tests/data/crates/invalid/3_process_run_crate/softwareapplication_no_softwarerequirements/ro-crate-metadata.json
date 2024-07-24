@@ -61,16 +61,7 @@
             "@type": "SoftwareApplication",
             "url": "https://www.imagemagick.org/",
             "name": "ImageMagick",
-            "softwareVersion": "6.9.7-4",
-            "softwareRequirements": {
-                "@id": "https://example.com/foobar/1.0.0/"
-            }
-        },
-        {
-            "@id": "https://example.com/foobar/1.0.0/",
-            "@type": "SoftwareApplication",
-            "name": "foobar",
-            "softwareVersion": "1.0.0"
+            "softwareVersion": "6.9.7-4"
         },
         {
             "@id": "#SepiaConversion_1",
