@@ -414,7 +414,7 @@ class ValidationReportLayout(Layout):
         # Create the main layout
         self.checks_stats_layout = Layout(
             Panel(report_container_layout, title=f"[bold]RO-Crate Validator[/bold] [white](ver. [magenta]{get_version()}[/magenta])[/white]",
-                  border_style="cyan", title_align="center", padding=(1, 1)))
+                  border_style="cyan", title_align="center", padding=(1, 2)))
 
         # Create the overall result layout
         self.overall_result = Layout(
@@ -424,7 +424,7 @@ class ValidationReportLayout(Layout):
         group_layout.add_split(self.checks_stats_layout)
         group_layout.add_split(self.overall_result)
 
-        self.__layout = group_layout
+        self.__layout = Padding(group_layout, (2, 1))
 
     def update(self, profile_stats: dict = None):
         assert profile_stats, "Profile stats must be provided"
