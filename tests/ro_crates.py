@@ -409,3 +409,19 @@ class InvalidProcRC:
     @property
     def action_bad_containerimage_type(self) -> Path:
         return self.base_path / "action_bad_containerimage_type"
+
+    @property
+    def containerimage_no_additionaltype(self) -> Path:
+        return self.base_path / "containerimage_no_additionaltype"
+
+    @property
+    def containerimage_bad_additionaltype(self) -> Path:
+        return self.base_path / "containerimage_bad_additionaltype"
+
+    @property
+    def containerimage_no_registry(self) -> Path:
+        return self.base_path / "containerimage_no_registry"
+
+    @property
+    def containerimage_no_name(self) -> Path:
+        return self.base_path / "containerimage_no_name"
