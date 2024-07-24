@@ -586,6 +586,8 @@ class Requirement(ABC):
                     logger.warning("Ignoring the check %s as it returned the value %r instead of a boolean", check.name)
                     raise RuntimeError(f"Ignoring invalid result from check {check.name}")
                 all_passed = all_passed and check_result
+                if not all_passed and context.fail_fast:
+                    break
             except SkipRequirementCheck as e:
                 logger.debug("Skipping check '%s' because: %s", check.name, e)
                 context.result.add_skipped_check(check)
@@ -1267,6 +1269,7 @@ class Validator(Publisher):
             logger.debug("Validating profile %s with %s requirements", profile.identifier, len(requirements))
             logger.debug("For profile %s, validating these %s requirements: %s",
                          profile.identifier, len(requirements), requirements)
+            terminate = False
             for requirement in requirements:
                 logger.debug("Validating Requirement %s", requirement)
                 self.notify(RequirementValidationEvent(EventType.REQUIREMENT_VALIDATION_START, requirement=requirement))
@@ -1277,11 +1280,14 @@ class Validator(Publisher):
                 if passed:
                     logger.debug("Validation Requirement passed")
                 else:
-                    logger.debug(f"Validation Requirement {requirement} failed ")
-                    if context.settings.get("abort_on_first") is True and context.profile_identifier == profile.name:
+                    logger.debug(f"Validation Requirement {requirement} failed (profile: {profile.identifier})")
+                    if context.fail_fast:
                         logger.debug("Aborting on first requirement failure")
-                        return context.result
+                        terminate = True
+                        break
             self.notify(ProfileValidationEvent(EventType.PROFILE_VALIDATION_END, profile=profile))
+            if terminate:
+                break
         self.notify(ValidationEvent(EventType.VALIDATION_END,
                     validation_result=context.result))
 

@@ -146,6 +146,10 @@ class SHACLCheck(RequirementCheck):
                                                          focusNode=make_uris_relative(
                     violation.focusNode.toPython(), shacl_context.publicID),
                     value=violation.value)
+                # if the fail fast mode is enabled, stop the validation after the first issue
+                if shacl_context.fail_fast:
+                    break
+
                     logger.debug("Added validation issue to the context: %s", c)
                 if shacl_context.base_context.fail_fast:
                     break
