@@ -1259,7 +1259,7 @@ class Validator(Publisher):
         # set the profiles to validate against
         profiles = context.profiles
         assert len(profiles) > 0, "No profiles to validate"
-        self.notify(EventType.PROFILE_VALIDATION_START)
+        self.notify(EventType.VALIDATION_START)
         for profile in profiles:
             logger.debug("Validating profile %s (id: %s)", profile.name, profile.identifier)
             self.notify(ProfileValidationEvent(EventType.PROFILE_VALIDATION_START, profile=profile))
@@ -1271,10 +1271,9 @@ class Validator(Publisher):
                          profile.identifier, len(requirements), requirements)
             terminate = False
             for requirement in requirements:
-                logger.debug("Validating Requirement %s", requirement)
-                self.notify(RequirementValidationEvent(EventType.REQUIREMENT_VALIDATION_START, requirement=requirement))
+                self.notify(RequirementValidationEvent(
+                    EventType.REQUIREMENT_VALIDATION_START, requirement=requirement))
                 passed = requirement.__do_validate__(context)
-                logger.debug("Number of issues: %s", len(context.result.issues))
                 self.notify(RequirementValidationEvent(
                     EventType.REQUIREMENT_VALIDATION_END, requirement=requirement, validation_result=passed))
                 if passed:

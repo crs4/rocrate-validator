@@ -4,6 +4,7 @@ from typing import Optional
 
 import rocrate_validator.log as logging
 from rocrate_validator.errors import ROCrateMetadataNotFoundError
+from rocrate_validator.events import EventType
 from rocrate_validator.models import (Requirement, RequirementCheck,
                                       RequirementCheckValidationEvent,
                                       SkipRequirementCheck, ValidationContext)
@@ -120,6 +121,7 @@ class SHACLCheck(RequirementCheck):
         result = shacl_result.conforms
         # if the validation fails, process the failed checks
         failed_requirements_checks = []
+        failed_requirement_checks_notified = []
         if not shacl_result.conforms:
             logger.debug("Parsing Validation with result: %s", result)
             # process the failed checks to extract the requirement checks involved
@@ -150,9 +152,34 @@ class SHACLCheck(RequirementCheck):
                 if shacl_context.fail_fast:
                     break
 
+            # If the fail fast mode is disabled, notify all the validation issues
+            # related to profiles other than the current one.
+            # They are issues which have not been notified yet because skipped during
+            # the validation of their corresponding profile because SHACL checks are executed
+            # all together and not profile by profile
+            if not shacl_context.fail_fast:
+                if requirementCheck.requirement.profile != shacl_context.current_validation_profile and \
+                        not requirementCheck.identifier in failed_requirement_checks_notified:
+                    #
+                    failed_requirement_checks_notified.append(requirementCheck.identifier)
+
+                    shacl_context.validator.notify(RequirementCheckValidationEvent(
+                        EventType.REQUIREMENT_CHECK_VALIDATION_END, requirementCheck, validation_result=False))
                     logger.debug("Added validation issue to the context: %s", c)
-                if shacl_context.base_context.fail_fast:
-                    break
+
+        # As above, but for skipped checks which are not failed
+        if not shacl_context.fail_fast:
+            for requirementCheck in list(shacl_context.result.skipped_checks):
+                if not isinstance(requirementCheck, SHACLCheck):
+                    continue
+                if requirementCheck.requirement.profile != shacl_context.current_validation_profile and \
+                        not requirementCheck in failed_requirements_checks and \
+                        not requirementCheck.identifier in failed_requirement_checks_notified:
+                    failed_requirement_checks_notified.append(requirementCheck.identifier)
+                    shacl_context.result.add_executed_check(requirementCheck, True)
+                    shacl_context.validator.notify(RequirementCheckValidationEvent(
+                        EventType.REQUIREMENT_CHECK_VALIDATION_END, requirementCheck, validation_result=True))
+
         end_time = timer()
         logger.debug(f"Execution time for parsing the validation result: {end_time - start_time} seconds")
 
