@@ -13,7 +13,7 @@ from rocrate_validator.requirements.shacl.utils import make_uris_relative
 
 from .validator import (SHACLValidationAlreadyProcessed,
                         SHACLValidationContext, SHACLValidationContextManager,
-                        SHACLValidationSkip, SHACLValidator)
+                        SHACLValidationSkip, SHACLValidator, SHACLViolation)
 
 logger = logging.getLogger(__name__)
 
@@ -121,6 +121,7 @@ class SHACLCheck(RequirementCheck):
         result = shacl_result.conforms
         # if the validation fails, process the failed checks
         failed_requirements_checks = []
+        failed_requirements_checks_violations: dict[str, SHACLViolation] = {}
         failed_requirement_checks_notified = []
         if not shacl_result.conforms:
             logger.debug("Parsing Validation with result: %s", result)
@@ -131,12 +132,14 @@ class SHACLCheck(RequirementCheck):
                 requirementCheck = SHACLCheck.get_instance(shape)
                 assert requirementCheck is not None, "The requirement check cannot be None"
                 failed_requirements_checks.append(requirementCheck)
+                failed_requirements_checks_violations[requirementCheck.identifier] = violation
         # sort the failed checks by identifier and severity
         # to ensure a consistent order of the issues
         # and to make the fail fast mode deterministic
         for requirementCheck in sorted(failed_requirements_checks, key=lambda x: (x.identifier, x.severity)):
             # add only the issues for the current profile when the `target_profile_only` mode is disabled
             # (issues related to other profiles will be added by the corresponding profile validation)
+            violation = failed_requirements_checks_violations[requirementCheck.identifier]
             if requirementCheck.requirement.profile == shacl_context.current_validation_profile or \
                     shacl_context.settings.get("target_only_validation", False):
                 c = shacl_context.result.add_check_issue(message=violation.get_result_message(shacl_context.rocrate_path),
