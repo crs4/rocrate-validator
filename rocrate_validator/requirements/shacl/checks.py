@@ -45,15 +45,20 @@ class SHACLCheck(RequirementCheck):
         return self._shape
 
     def execute_check(self, context: ValidationContext):
+        logger.debug("Starting check %s", self)
         try:
-            result = None
+            logger.debug("SHACL Validation of profile %s requirement %s started", self.requirement.profile, self)
             with SHACLValidationContextManager(self, context) as ctx:
+                # The check is executed only if the profile is the most specific one
+                logger.debug("SHACL Validation of profile %s requirement %s started", self.requirement.profile, self)
                 result = self.__do_execute_check__(ctx)
-                ctx.current_validation_result = result
-                return result
+                ctx.current_validation_result = not self in result
+                return ctx.current_validation_result
         except SHACLValidationAlreadyProcessed as e:
             logger.debug("SHACL Validation of profile %s already processed", self.requirement.profile)
-            return e.result
+            # The check belongs to a profile which has already been processed
+            # so we can skip the validation and return the specific result for the check
+            return not self in [i.check for i in context.result.get_issues()]
         except SHACLValidationSkip as e:
             logger.debug("SHACL Validation of profile %s requirement %s skipped", self.requirement.profile, self)
             # The validation is postponed to the more specific profiles
@@ -113,33 +118,41 @@ class SHACLCheck(RequirementCheck):
         # store the validation result in the context
         start_time = timer()
         result = shacl_result.conforms
-        # if the validation failed, add the issues to the context
+        # if the validation fails, process the failed checks
+        failed_requirements_checks = []
         if not shacl_result.conforms:
-            logger.debug("Validation failed")
-            logger.debug("Parsing Validation result: %s", result)
+            logger.debug("Parsing Validation with result: %s", result)
+            # process the failed checks to extract the requirement checks involved
             for violation in shacl_result.violations:
                 shape = shapes_registry.get_shape(Shape.compute_key(shapes_graph, violation.sourceShape))
                 assert shape is not None, "Unable to map the violation to a shape"
                 requirementCheck = SHACLCheck.get_instance(shape)
                 assert requirementCheck is not None, "The requirement check cannot be None"
-                # add only the issues for the current profile when the `target_profile_only` mode is disabled
-                # (issues related to other profiles will be added by the corresponding profile validation)
-                if requirementCheck.requirement.profile == shacl_context.current_validation_profile or \
-                        shacl_context.settings.get("target_only_validation", False):
-                    c = shacl_context.result.add_check_issue(message=violation.get_result_message(shacl_context.rocrate_path),
-                                                             check=requirementCheck,
-                                                             severity=violation.get_result_severity(),
-                                                             resultPath=violation.resultPath.toPython() if violation.resultPath else None,
-                                                             focusNode=make_uris_relative(
-                                                                 violation.focusNode.toPython(), shacl_context.publicID),
-                                                             value=violation.value)
+                failed_requirements_checks.append(requirementCheck)
+        # sort the failed checks by identifier and severity
+        # to ensure a consistent order of the issues
+        # and to make the fail fast mode deterministic
+        for requirementCheck in sorted(failed_requirements_checks, key=lambda x: (x.identifier, x.severity)):
+            # add only the issues for the current profile when the `target_profile_only` mode is disabled
+            # (issues related to other profiles will be added by the corresponding profile validation)
+            # failed_check_ids.append(requirementCheck.identifier)
+            if requirementCheck.requirement.profile == shacl_context.current_validation_profile or \
+                    shacl_context.settings.get("target_only_validation", False):
+                # failed_check_ids.append(requirementCheck.identifier)
+                c = shacl_context.result.add_check_issue(message=violation.get_result_message(shacl_context.rocrate_path),
+                                                         check=requirementCheck,
+                                                         severity=violation.get_result_severity(),
+                                                         resultPath=violation.resultPath.toPython() if violation.resultPath else None,
+                                                         focusNode=make_uris_relative(
+                    violation.focusNode.toPython(), shacl_context.publicID),
+                    value=violation.value)
                     logger.debug("Added validation issue to the context: %s", c)
                 if shacl_context.base_context.fail_fast:
                     break
         end_time = timer()
         logger.debug(f"Execution time for parsing the validation result: {end_time - start_time} seconds")
 
-        return result
+        return failed_requirements_checks
 
     def __str__(self) -> str:
         return super().__str__() + (f" - {self._shape}" if self._shape else "")
