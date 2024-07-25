@@ -58,20 +58,31 @@ def validate_uri(ctx, param, value):
     return value
 
 
-def get_single_char(console: Optional[Console] = None, end: str = "\n") -> str:
+def get_single_char(console: Optional[Console] = None, end: str = "\n",
+                    message: Optional[str] = None,
+                    choices: Optional[list[str]] = None) -> str:
     """
     Get a single character from the console
     """
     fd = sys.stdin.fileno()
     old_settings = termios.tcgetattr(fd)
-    try:
-        tty.setraw(sys.stdin.fileno())
-        char = sys.stdin.read(1)
-    finally:
-        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-        if console:
-            console.print(char, end=end)
+
+    char = None
+    while char is None or (choices and char not in choices):
+        if console and message:
+            console.print(f"\n{message}", end="")
+        try:
+            tty.setraw(sys.stdin.fileno())
+            char = sys.stdin.read(1)
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+            if console:
+                console.print(char, end=end if choices and char in choices else "")
+        if choices and char not in choices:
+            if console:
+                console.print(f" [bold red]INVALID CHOICE[/bold red]", end=end)
     return char
+
 
 
 @cli.command("validate")
@@ -220,9 +231,9 @@ def validate(ctx,
         # Print the validation result
         if not result.passed():
             if not details and enable_pager:
-                console.print("[bold]Do you want to see the validation details? ([magenta]y/n[/magenta]): [/bold]", end="")
-                details = get_single_char(console).lower() == 'y'
-            if details:
+                details = get_single_char(console, choices=['y', 'n'],
+                                          message="[bold] > Do you want to see the validation details? ([magenta]y/n[/magenta]): [/bold]")
+            if details == "y":
                 report_layout.show_validation_details(enable_pager=enable_pager)
 
         if output_file:
