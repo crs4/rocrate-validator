@@ -423,11 +423,12 @@ class ValidationReportLayout(Layout):
         self.console.height = 31
 
         # Create the layout of the base info of the validation report
+        severity_color = get_severity_color(Severity.get(settings["requirement_severity"]))
         base_info_layout = Layout(
             Align(
                 f"\n[bold cyan]RO-Crate:[/bold cyan] [bold]{URI(settings['data_path']).uri}[/bold]"
                 f"\n[bold cyan]Target Profile:[/bold cyan][bold magenta] {settings['profile_identifier']}[/bold magenta] { '[italic](autodetected)[/italic]' if settings['profile_autodetected'] else ''}"
-                f"\n[bold cyan]Validation Severity:[/bold cyan] [bold]{settings['requirement_severity']}[/bold]",
+                f"\n[bold cyan]Validation Severity:[/bold cyan] [bold {severity_color}]{settings['requirement_severity']}[/bold {severity_color}]",
                 style="white", align="left"),
             name="Base Info", size=5)
         #
