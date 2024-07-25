@@ -107,7 +107,7 @@ def get_single_char(console: Optional[Console] = None, end: str = "\n",
     "-p",
     "--profile-identifier",
     type=click.STRING,
-    default=DEFAULT_PROFILE_IDENTIFIER,
+    default=None,
     show_default=True,
     help="Identifier of the profile to use for validation",
 )
@@ -168,7 +168,7 @@ def get_single_char(console: Optional[Console] = None, end: str = "\n",
 @click.pass_context
 def validate(ctx,
              profiles_path: Path = DEFAULT_PROFILES_PATH,
-             profile_identifier: str = DEFAULT_PROFILE_IDENTIFIER,
+             profile_identifier: Optional[str] = None,
              disable_profile_inheritance: bool = False,
              requirement_severity: str = Severity.REQUIRED.name,
              requirement_severity_only: bool = False,
@@ -215,6 +215,33 @@ def validate(ctx,
             "ontology_path": Path(ontologies_path).absolute() if ontologies_path else None,
             "abort_on_first": not no_fail_fast
         }
+
+        # Detect the profile to use for validation
+        autodetection = False
+        selected_profile = profile_identifier
+        if selected_profile is None:
+            candidate_profiles = services.detect_profiles(settings=validation_settings)
+            if len(candidate_profiles) == 1:
+                logger.info("Profile identifier autodetected: %s", candidate_profiles[0].identifier)
+                autodetection = True
+                selected_profile = candidate_profiles[0].identifier
+            else:
+                logger.debug("Candidate profiles: %s", candidate_profiles)
+                available_profiles = services.get_profiles(profiles_path)
+                # Define the list of choices
+                choices = [
+                    f"[bold]{profile.identifier}[/bold]: [white]{profile.name}[/white]" for profile in available_profiles]
+                selected_option = multiple_choice(
+                    console, choices, "[bold yellow]WARNING: [/bold yellow]"
+                    "[bold]Unable to automatically detect the profile to use for validation.[/bold]\n"
+                    f"{''*10}Please select a profile from the list below:")
+                selected_profile = available_profiles[int(selected_option) - 1].identifier
+                logger.error("Profile selected: %s", selected_profile)
+        # Set the selected profile
+        validation_settings["profile_identifier"] = selected_profile
+        validation_settings["profile_autodetected"] = autodetection
+        logger.debug("Profile selected for validation: %s", validation_settings["profile_identifier"])
+        logger.debug("Profile autodetected: %s", autodetection)
 
         # Compute the profile statistics
         profile_stats = __compute_profile_stats__(validation_settings)
