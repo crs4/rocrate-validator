@@ -26,7 +26,7 @@ def test_version(cli_runner: CliRunner):
 
 def test_validate_subcmd_invalid_rocrate1(cli_runner: CliRunner):
     result = cli_runner.invoke(cli, ['validate', str(
-        InvalidFileDescriptor().invalid_json_format), '--details', '--no-paging'])
+        InvalidFileDescriptor().invalid_json_format), '--details', '--no-paging', '-p', 'ro-crate'])
     logger.error(result.output)
     assert result.exit_code == 1
 
