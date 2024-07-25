@@ -420,7 +420,7 @@ class ValidationReportLayout(Layout):
         settings = self.validation_settings
 
         # Set the console height
-        self.console.height = 30
+        self.console.height = 31
 
         # Create the layout of the base info of the validation report
         base_info_layout = Layout(
