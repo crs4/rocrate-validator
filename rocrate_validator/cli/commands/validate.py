@@ -427,10 +427,10 @@ class ValidationReportLayout(Layout):
         base_info_layout = Layout(
             Align(
                 f"\n[bold cyan]RO-Crate:[/bold cyan] [bold]{URI(settings['data_path']).uri}[/bold]"
-                f"\n[bold cyan]Target Profile:[/bold cyan][bold magenta] {settings['profile_identifier']}[/bold magenta]",
+                f"\n[bold cyan]Target Profile:[/bold cyan][bold magenta] {settings['profile_identifier']}[/bold magenta] { '[italic](autodetected)[/italic]' if settings['profile_autodetected'] else ''}"
+                f"\n[bold cyan]Validation Severity:[/bold cyan] [bold]{settings['requirement_severity']}[/bold]",
                 style="white", align="left"),
-            name="Base Info", size=4)
-
+            name="Base Info", size=5)
         #
         self.passed_checks = Layout(name="PASSED")
         self.failed_checks = Layout(name="FAILED")
