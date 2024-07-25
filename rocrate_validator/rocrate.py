@@ -58,7 +58,10 @@ class ROCrateEntity:
     def get_property(self, name: str, default=None) -> Union[str, ROCrateEntity]:
         data = self._raw_data.get(name, default)
         if isinstance(data, dict) and '@id' in data:
-            return self.metadata.get_entity(data['@id'])
+            entity = self.metadata.get_entity(data['@id'])
+            if entity is None:
+                return ROCrateEntity(self, data)
+            return entity
         return data
 
     @property
