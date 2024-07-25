@@ -220,7 +220,7 @@ def validate(ctx,
         selected_profile = profile_identifier
         if selected_profile is None:
             candidate_profiles = services.detect_profiles(settings=validation_settings)
-            if len(candidate_profiles) == 1:
+            if candidate_profiles and len(candidate_profiles) == 1:
                 logger.info("Profile identifier autodetected: %s", candidate_profiles[0].identifier)
                 autodetection = True
                 selected_profile = candidate_profiles[0].identifier
