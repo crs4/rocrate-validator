@@ -15,14 +15,15 @@ from rich.markdown import Markdown
 from rich.padding import Padding
 from rich.panel import Panel
 from rich.progress import BarColumn, Progress, TextColumn, TimeElapsedColumn
+from rich.prompt import Prompt
 from rich.rule import Rule
+from rich.table import Table
 
 import rocrate_validator.log as logging
 from rocrate_validator import services
 from rocrate_validator.cli.commands.errors import handle_error
 from rocrate_validator.cli.main import cli, click
 from rocrate_validator.colors import get_severity_color
-from rocrate_validator.constants import DEFAULT_PROFILE_IDENTIFIER
 from rocrate_validator.events import Event, EventType, Subscriber
 from rocrate_validator.models import (LevelCollection, Severity,
                                       ValidationResult)
@@ -253,6 +254,30 @@ def validate(ctx,
         sys.exit(0 if result.passed(LevelCollection.get(requirement_severity).severity) else 1)
     except Exception as e:
         handle_error(e, console)
+
+
+def multiple_choice(console: Console,
+                    choices: list[str],
+                    title: str = "Main Menu",
+                    padding=None) -> str:
+    """
+    Display a multiple choice menu
+    """
+    table = Table(title=title, title_justify="center")
+    table.add_column("#", justify="center", style="bold cyan", no_wrap=True)
+    table.add_column("Option", justify="left", style="magenta")
+
+    for index, choice in enumerate(choices, start=1):
+        table.add_row(str(index), choice)
+
+    if padding:
+        console.print(Padding(table, padding))
+    else:
+        console.print(table)
+
+    selected_option = Prompt.ask("Please choose an option (enter the number)",
+                                 choices=[str(i) for i in range(1, len(choices) + 1)])
+    return selected_option
 
 
 class ProgressMonitor(Subscriber):
