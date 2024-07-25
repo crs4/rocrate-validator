@@ -27,6 +27,19 @@ def validate(settings: Union[dict, ValidationSettings],
     """
     Validate a RO-Crate against a profile
     """
+    # initialize the validator
+    validator = __initialise_validator__(settings, subscribers)
+    # validate the RO-Crate
+    result = validator.validate()
+    logger.debug("Validation completed: %s", result)
+    return result
+
+
+def __initialise_validator__(settings: Union[dict, ValidationSettings],
+                           subscribers: Optional[list[Subscriber]] = None) -> Validator:
+    """
+    Validate a RO-Crate against a profile
+    """
     # if settings is a dict, convert to ValidationSettings
     settings = ValidationSettings.parse(settings)
 
@@ -59,22 +72,16 @@ def validate(settings: Union[dict, ValidationSettings],
         if subscribers:
             for subscriber in subscribers:
                 validator.add_subscriber(subscriber)
-        # validate the RO-Crate
-        result = validator.validate()
-        logger.debug("Validation completed: %s", result)
-        return result
+        return validator
 
-    def __do_validate__(settings: ValidationSettings):
+    def __init_validator__(settings: ValidationSettings) -> Validator:
         # create a validator
         validator = Validator(settings)
         logger.debug("Validator created. Starting validation...")
         if subscribers:
             for subscriber in subscribers:
                 validator.add_subscriber(subscriber)
-        # validate the RO-Crate
-        result = validator.validate()
-        logger.debug("Validation completed: %s", result)
-        return result
+        return validator
 
     def __extract_and_validate_rocrate__(rocrate_path: Path):
         # store the original data path
@@ -89,7 +96,7 @@ def validate(settings: Union[dict, ValidationSettings],
                 # update the data path to point to the temporary directory
                 settings.data_path = Path(tmp_dir)
                 # continue with the validation process
-                return __do_validate__(settings)
+                return __init_validator__(settings)
             finally:
                 # restore the original data path
                 settings.data_path = original_data_path
@@ -121,7 +128,7 @@ def validate(settings: Union[dict, ValidationSettings],
     elif rocrate_path.is_local_directory():
         logger.debug("RO-Crate is a local directory")
         settings.data_path = rocrate_path.as_path()
-        return __do_validate__(settings)
+        return __init_validator__(settings)
     else:
         raise ValueError(
             f"Invalid RO-Crate URI: {rocrate_path}. "
