@@ -197,9 +197,11 @@ class ROCrateMetadata:
         try:
             file_descriptor = self.get_file_descriptor_entity()
             result = file_descriptor.get_property('conformsTo', [])
+            if result is None:
+                return None
             if not isinstance(result, list):
                 result = [result]
-            return [_["@id"] for _ in result]
+            return [_.id for _ in result]
         except Exception as e:
             if logger.isEnabledFor(logging.DEBUG):
                 logger.exception(e)
