@@ -22,6 +22,15 @@ DEFAULT_PROFILES_PATH = get_profiles_path()
 logger = logging.getLogger(__name__)
 
 
+def detect_profiles(settings: Union[dict, ValidationSettings]) -> list[Profile]:
+    # initialize the validator
+    validator = __initialise_validator__(settings)
+    # detect the profiles
+    profiles = validator.detect_rocrate_profiles()
+    logger.debug("Profiles detected: %s", profiles)
+    return profiles
+
+
 def validate(settings: Union[dict, ValidationSettings],
              subscribers: Optional[list[Subscriber]] = None) -> ValidationResult:
     """
