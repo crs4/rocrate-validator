@@ -85,7 +85,6 @@ def get_single_char(console: Optional[Console] = None, end: str = "\n",
     return char
 
 
-
 @cli.command("validate")
 @click.argument("rocrate-uri", callback=validate_uri, default=".")
 @click.option(
