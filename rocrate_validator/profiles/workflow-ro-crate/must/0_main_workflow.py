@@ -22,8 +22,8 @@ class MainWorkflowFileExistence(PyFunctionCheck):
             if not main_workflow.is_available():
                 context.result.add_error(f"Main Workflow {main_workflow.id} not found in crate", self)
                 return False
+            return True
         except ValueError as e:
             if logger.isEnabledFor(logging.DEBUG):
                 logger.exception(e)
-            raise ValueError("no metadata file descriptor in crate")
-        return True
+        return False

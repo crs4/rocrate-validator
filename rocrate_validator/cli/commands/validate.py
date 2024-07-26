@@ -15,14 +15,16 @@ from rich.markdown import Markdown
 from rich.padding import Padding
 from rich.panel import Panel
 from rich.progress import BarColumn, Progress, TextColumn, TimeElapsedColumn
+from rich.prompt import Prompt
 from rich.rule import Rule
+from rich.table import Table
 
 import rocrate_validator.log as logging
 from rocrate_validator import services
 from rocrate_validator.cli.commands.errors import handle_error
 from rocrate_validator.cli.main import cli, click
+from rocrate_validator.cli.utils import get_app_header_rule
 from rocrate_validator.colors import get_severity_color
-from rocrate_validator.constants import DEFAULT_PROFILE_IDENTIFIER
 from rocrate_validator.events import Event, EventType, Subscriber
 from rocrate_validator.models import (LevelCollection, Severity,
                                       ValidationResult)
@@ -58,19 +60,29 @@ def validate_uri(ctx, param, value):
     return value
 
 
-def get_single_char(console: Optional[Console] = None, end: str = "\n") -> str:
+def get_single_char(console: Optional[Console] = None, end: str = "\n",
+                    message: Optional[str] = None,
+                    choices: Optional[list[str]] = None) -> str:
     """
     Get a single character from the console
     """
     fd = sys.stdin.fileno()
     old_settings = termios.tcgetattr(fd)
-    try:
-        tty.setraw(sys.stdin.fileno())
-        char = sys.stdin.read(1)
-    finally:
-        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-        if console:
-            console.print(char, end=end)
+
+    char = None
+    while char is None or (choices and char not in choices):
+        if console and message:
+            console.print(f"\n{message}", end="")
+        try:
+            tty.setraw(sys.stdin.fileno())
+            char = sys.stdin.read(1)
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+            if console:
+                console.print(char, end=end if choices and char in choices else "")
+        if choices and char not in choices:
+            if console:
+                console.print(f" [bold red]INVALID CHOICE[/bold red]", end=end)
     return char
 
 
@@ -95,7 +107,7 @@ def get_single_char(console: Optional[Console] = None, end: str = "\n") -> str:
     "-p",
     "--profile-identifier",
     type=click.STRING,
-    default=DEFAULT_PROFILE_IDENTIFIER,
+    default=None,
     show_default=True,
     help="Identifier of the profile to use for validation",
 )
@@ -156,7 +168,7 @@ def get_single_char(console: Optional[Console] = None, end: str = "\n") -> str:
 @click.pass_context
 def validate(ctx,
              profiles_path: Path = DEFAULT_PROFILES_PATH,
-             profile_identifier: str = DEFAULT_PROFILE_IDENTIFIER,
+             profile_identifier: Optional[str] = None,
              disable_profile_inheritance: bool = False,
              requirement_severity: str = Severity.REQUIRED.name,
              requirement_severity_only: bool = False,
@@ -204,6 +216,38 @@ def validate(ctx,
             "abort_on_first": not no_fail_fast
         }
 
+        # Print the application header
+        console.print(get_app_header_rule())
+
+        # Detect the profile to use for validation
+        autodetection = False
+        selected_profile = profile_identifier
+        if selected_profile is None:
+            candidate_profiles = services.detect_profiles(settings=validation_settings)
+            if candidate_profiles and len(candidate_profiles) == 1:
+                logger.debug("Profile identifier autodetected: %s", candidate_profiles[0].identifier)
+                autodetection = True
+                selected_profile = candidate_profiles[0].identifier
+            else:
+                logger.debug("Candidate profiles: %s", candidate_profiles)
+                available_profiles = services.get_profiles(profiles_path)
+                # Define the list of choices
+                # console.print(get_app_header_rule())
+                choices = [
+                    f"[bold]{profile.identifier}[/bold]: [white]{profile.name}[/white]" for profile in available_profiles]
+                console.print(Padding(Rule("[bold yellow]WARNING: [/bold yellow]"
+                                           "[bold]Unable to automatically detect the profile to use for validation[/bold]\n", align="center", style="bold yellow"), (2, 2, 0, 2)))
+                selected_option = multiple_choice(
+                    console, choices, "[italic]Available Profiles[/italic]", padding=(1, 2))
+                selected_profile = available_profiles[int(selected_option) - 1].identifier
+                logger.debug("Profile selected: %s", selected_profile)
+                console.print(Padding(Rule(style="bold yellow"), (1, 2)))
+        # Set the selected profile
+        validation_settings["profile_identifier"] = selected_profile
+        validation_settings["profile_autodetected"] = autodetection
+        logger.debug("Profile selected for validation: %s", validation_settings["profile_identifier"])
+        logger.debug("Profile autodetected: %s", autodetection)
+
         # Compute the profile statistics
         profile_stats = __compute_profile_stats__(validation_settings)
 
@@ -220,9 +264,9 @@ def validate(ctx,
         # Print the validation result
         if not result.passed():
             if not details and enable_pager:
-                console.print("[bold]Do you want to see the validation details? ([magenta]y/n[/magenta]): [/bold]", end="")
-                details = get_single_char(console).lower() == 'y'
-            if details:
+                details = get_single_char(console, choices=['y', 'n'],
+                                          message="[bold] > Do you want to see the validation details? ([magenta]y/n[/magenta]): [/bold]")
+            if details == "y":
                 report_layout.show_validation_details(enable_pager=enable_pager)
 
         if output_file:
@@ -242,6 +286,37 @@ def validate(ctx,
         sys.exit(0 if result.passed(LevelCollection.get(requirement_severity).severity) else 1)
     except Exception as e:
         handle_error(e, console)
+
+
+def multiple_choice(console: Console,
+                    choices: list[str],
+                    title: str = "Main Menu",
+                    padding=(1, 2)) -> str:
+    """
+    Display a multiple choice menu
+    """
+    table = Table(title=title, title_justify="left")
+    table.add_column("#", justify="center", style="bold cyan", no_wrap=True)
+    table.add_column("Option", justify="left", style="magenta")
+
+    for index, choice in enumerate(choices, start=1):
+        table.add_row(str(index), choice)
+
+    if padding:
+        console.print(Padding(Align(table, align="left"), padding))
+    else:
+        console.print(table)
+
+    # Build the prompt text
+    prompt_text = "[bold] > Please select a profile (enter the number)[/bold]"
+    # console_width = console.size.width
+    # padding = (console_width - len(prompt_text)) // 2
+    # centered_prompt_text = " " * padding + prompt_text
+
+    # Get the selected option
+    selected_option = Prompt.ask(prompt_text,
+                                 choices=[str(i) for i in range(1, len(choices) + 1)])
+    return selected_option
 
 
 class ProgressMonitor(Subscriber):
@@ -358,16 +433,17 @@ class ValidationReportLayout(Layout):
         settings = self.validation_settings
 
         # Set the console height
-        self.console.height = 30
+        self.console.height = 31
 
         # Create the layout of the base info of the validation report
+        severity_color = get_severity_color(Severity.get(settings["requirement_severity"]))
         base_info_layout = Layout(
             Align(
                 f"\n[bold cyan]RO-Crate:[/bold cyan] [bold]{URI(settings['data_path']).uri}[/bold]"
-                f"\n[bold cyan]Target Profile:[/bold cyan][bold magenta] {settings['profile_identifier']}[/bold magenta]",
+                f"\n[bold cyan]Target Profile:[/bold cyan][bold magenta] {settings['profile_identifier']}[/bold magenta] { '[italic](autodetected)[/italic]' if settings['profile_autodetected'] else ''}"
+                f"\n[bold cyan]Validation Severity:[/bold cyan] [bold {severity_color}]{settings['requirement_severity']}[/bold {severity_color}]",
                 style="white", align="left"),
-            name="Base Info", size=4)
-
+            name="Base Info", size=5)
         #
         self.passed_checks = Layout(name="PASSED")
         self.failed_checks = Layout(name="FAILED")
@@ -413,7 +489,7 @@ class ValidationReportLayout(Layout):
 
         # Create the main layout
         self.checks_stats_layout = Layout(
-            Panel(report_container_layout, title=f"[bold]RO-Crate Validator[/bold] [white](ver. [magenta]{get_version()}[/magenta])[/white]",
+            Panel(report_container_layout, title=f"[bold]- Validation Report -[/bold]",
                   border_style="cyan", title_align="center", padding=(1, 2)))
 
         # Create the overall result layout
@@ -424,7 +500,7 @@ class ValidationReportLayout(Layout):
         group_layout.add_split(self.checks_stats_layout)
         group_layout.add_split(self.overall_result)
 
-        self.__layout = Padding(group_layout, (2, 1))
+        self.__layout = Padding(group_layout, (1, 1))
 
     def update(self, profile_stats: dict = None):
         assert profile_stats, "Profile stats must be provided"
@@ -498,11 +574,11 @@ class ValidationReportLayout(Layout):
         if result.passed():
             self.overall_result.update(
                 Padding(Rule(f"[bold][[green]OK[/green]] RO-Crate is [green]valid[/green] !!![/bold]\n\n",
-                             style="bold green"), (1, 0)))
+                             style="bold green"), (1, 1)))
         else:
             self.overall_result.update(
                 Padding(Rule(f"[bold][[red]FAILED[/red]] RO-Crate is [red]not valid[/red] !!![/bold]\n",
-                             style="bold red"), (0, 0)))
+                             style="bold red"), (1, 1)))
 
     def show_validation_details(self, enable_pager: bool = True):
         """

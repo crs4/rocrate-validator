@@ -1241,6 +1241,38 @@ class Validator(Publisher):
     def validation_settings(self) -> ValidationSettings:
         return self._validation_settings
 
+    def detect_rocrate_profiles(self) -> list[Profile]:
+        """
+        Detect the profiles to validate against
+        """
+        try:
+            # initialize the validation context
+            context = ValidationContext(self, self.validation_settings.to_dict())
+            candidate_profiles_uris = context.ro_crate.metadata.get_conforms_to()
+            logger.debug("Candidate profiles: %s", candidate_profiles_uris)
+            if not candidate_profiles_uris:
+                logger.debug("Unable to determine the profile to validate against")
+                return None
+            # load the profiles
+            profiles = []
+            candidate_profiles = []
+            available_profiles = Profile.load_profiles(context.profiles_path, publicID=context.publicID,
+                                                       severity=context.requirement_severity)
+            profiles = [p for p in available_profiles if p.uri in candidate_profiles_uris]
+            # get the candidate profiles
+            for profile in profiles:
+                candidate_profiles.append(profile)
+                inherited_profiles = profile.inherited_profiles
+                for inherited_profile in inherited_profiles:
+                    candidate_profiles.remove(inherited_profile)
+            logger.debug("%d Candidate Profiles found: %s", len(candidate_profiles), candidate_profiles)
+            return candidate_profiles
+
+        except Exception as e:
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.exception(e)
+            return None
+
     def validate(self) -> ValidationResult:
         return self.__do_validate__()
 

@@ -6,7 +6,7 @@ import struct
 import zipfile
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Union
+from typing import Optional, Union
 
 import requests
 from rdflib import Graph
@@ -58,7 +58,10 @@ class ROCrateEntity:
     def get_property(self, name: str, default=None) -> Union[str, ROCrateEntity]:
         data = self._raw_data.get(name, default)
         if isinstance(data, dict) and '@id' in data:
-            return self.metadata.get_entity(data['@id'])
+            entity = self.metadata.get_entity(data['@id'])
+            if entity is None:
+                return ROCrateEntity(self, data)
+            return entity
         return data
 
     @property
@@ -189,6 +192,21 @@ class ROCrateMetadata:
                 if entity.id.startswith("http"):
                     entities.append(entity)
         return entities
+
+    def get_conforms_to(self) -> Optional[list[str]]:
+        try:
+            file_descriptor = self.get_file_descriptor_entity()
+            result = file_descriptor.get_property('conformsTo', [])
+            if result is None:
+                return None
+            if not isinstance(result, list):
+                result = [result]
+            return [_.id for _ in result]
+        except Exception as e:
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.exception(e)
+            logger.exception(e)  # TODO: remove
+            return None
 
     def as_json(self) -> str:
         if not self._json:

@@ -14,27 +14,38 @@ class WorkflowFilesExistence(PyFunctionCheck):
     @check(name="Workflow diagram existence")
     def check_workflow_diagram(self, context: ValidationContext) -> bool:
         """Check if the crate contains the workflow diagram."""
-        main_workflow = context.ro_crate.metadata.get_main_workflow()
-        image = main_workflow.get_property("image")
-        diagram_relpath = image.id if image else None
-        if not diagram_relpath:
-            context.result.add_error(f"main workflow does not have an 'image' property", self)
+        try:
+            main_workflow = context.ro_crate.metadata.get_main_workflow()
+            image = main_workflow.get_property("image")
+            diagram_relpath = image.id if image else None
+            if not diagram_relpath:
+                context.result.add_error(f"main workflow does not have an 'image' property", self)
+                return False
+            if not image.is_available():
+                context.result.add_error(f"Workflow diagram '{image.id}' not found in crate", self)
+                return False
+            return True
+        except Exception as e:
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.exception(f"Unexpected error: {e}")
             return False
-        if not image.is_available():
-            context.result.add_error(f"Workflow diagram '{image.id}' not found in crate", self)
-            return False
-        return True
 
     @check(name="Workflow description existence")
     def check_workflow_description(self, context: ValidationContext) -> bool:
         """Check if the crate contains the workflow CWL description."""
-        main_workflow = context.ro_crate.metadata.get_main_workflow()
-        main_workflow_subject = main_workflow.get_property("subjectOf")
-        description_relpath = main_workflow_subject.id if main_workflow_subject else None
-        if not description_relpath:
-            context.result.add_error("main workflow does not have a 'subjectOf' property", self)
+        try:
+            main_workflow = context.ro_crate.metadata.get_main_workflow()
+            main_workflow_subject = main_workflow.get_property("subjectOf")
+            description_relpath = main_workflow_subject.id if main_workflow_subject else None
+            if not description_relpath:
+                context.result.add_error("main workflow does not have a 'subjectOf' property", self)
+                return False
+            if not main_workflow_subject.is_available():
+                context.result.add_error(
+                    f"Workflow CWL description {main_workflow_subject.id} not found in crate", self)
+                return False
+            return True
+        except Exception as e:
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.exception(f"Unexpected error: {e}")
             return False
-        if not main_workflow_subject.is_available():
-            context.result.add_error(f"Workflow CWL description {main_workflow_subject.id} not found in crate", self)
-            return False
-        return True
