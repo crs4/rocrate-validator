@@ -9,9 +9,10 @@
 @prefix bioschemas: <https://bioschemas.org/> .
 
 
-ro:FindMainWorkflow a sh:NodeShape ;
+
+ro:FindMainWorkflow a sh:NodeShape, sh:hidden ;
     sh:name "Identify Main Workflow" ;
-    sh:description "Main Workflow" ;
+    sh:description "Identify the Main Workflow" ;
     sh:target [
         a sh:SPARQLTarget ;
         sh:prefixes ro:sparqlPrefixes ;
