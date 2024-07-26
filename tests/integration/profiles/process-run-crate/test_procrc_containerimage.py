@@ -8,7 +8,7 @@ from tests.shared import do_entity_test
 logger = logging.getLogger(__name__)
 
 
-def test_prc_containerimage_no_additionaltype():
+def test_procrc_containerimage_no_additionaltype():
     """\
     Test a Process Run Crate where the ContainerImage has no additionalType.
     """
@@ -22,7 +22,7 @@ def test_prc_containerimage_no_additionaltype():
     )
 
 
-def test_prc_containerimage_bad_additionaltype():
+def test_procrc_containerimage_bad_additionaltype():
     """\
     Test a Process Run Crate where the ContainerImage additionalType does not
     point to one of the allowed values.
@@ -37,7 +37,7 @@ def test_prc_containerimage_bad_additionaltype():
     )
 
 
-def test_prc_containerimage_no_registry():
+def test_procrc_containerimage_no_registry():
     """\
     Test a Process Run Crate where the ContainerImage has no registry.
     """
@@ -51,7 +51,7 @@ def test_prc_containerimage_no_registry():
     )
 
 
-def test_prc_containerimage_no_name():
+def test_procrc_containerimage_no_name():
     """\
     Test a Process Run Crate where the ContainerImage has no name.
     """
@@ -65,7 +65,7 @@ def test_prc_containerimage_no_name():
     )
 
 
-def test_prc_containerimage_no_tag():
+def test_procrc_containerimage_no_tag():
     """\
     Test a Process Run Crate where the ContainerImage has no tag.
     """
@@ -79,7 +79,7 @@ def test_prc_containerimage_no_tag():
     )
 
 
-def test_prc_containerimage_no_sha256():
+def test_procrc_containerimage_no_sha256():
     """\
     Test a Process Run Crate where the ContainerImage has no sha256.
     """

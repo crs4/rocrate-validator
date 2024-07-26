@@ -8,7 +8,7 @@ from tests.shared import do_entity_test
 logger = logging.getLogger(__name__)
 
 
-def test_prc_application_no_name():
+def test_procrc_application_no_name():
     """\
     Test a Process Run Crate where the application does not have a name.
     """
@@ -22,7 +22,7 @@ def test_prc_application_no_name():
     )
 
 
-def test_prc_application_no_url():
+def test_procrc_application_no_url():
     """\
     Test a Process Run Crate where the application does not have a url.
     """
@@ -36,7 +36,7 @@ def test_prc_application_no_url():
     )
 
 
-def test_prc_application_no_version():
+def test_procrc_application_no_version():
     """\
     Test a Process Run Crate where the application does not have a version or
     SoftwareVersion (SoftwareApplication).
@@ -51,7 +51,7 @@ def test_prc_application_no_version():
     )
 
 
-def test_prc_application_version_softwareversion():
+def test_procrc_application_version_softwareversion():
     """\
     Test a Process Run Crate where the application has both a version and a
     SoftwareVersion (SoftwareApplication).
@@ -66,7 +66,7 @@ def test_prc_application_version_softwareversion():
     )
 
 
-def test_prc_softwaresourcecode_no_version():
+def test_procrc_softwaresourcecode_no_version():
     """\
     Test a Process Run Crate where the application does not have a version
     (SoftwareSourceCode).
@@ -81,7 +81,7 @@ def test_prc_softwaresourcecode_no_version():
     )
 
 
-def test_prc_application_id_no_absoluteuri():
+def test_procrc_application_id_no_absoluteuri():
     """\
     Test a Process Run Crate where the id of the application is not an
     absolute URI.
@@ -96,7 +96,7 @@ def test_prc_application_id_no_absoluteuri():
     )
 
 
-def test_prc_softwareapplication_no_softwarerequirements():
+def test_procrc_softwareapplication_no_softwarerequirements():
     """\
     Test a Process Run Crate where the SoftwareApplication does not have a
     SoftwareRequirements.
@@ -111,7 +111,7 @@ def test_prc_softwareapplication_no_softwarerequirements():
     )
 
 
-def test_prc_softwareapplication_bad_softwarerequirements():
+def test_procrc_softwareapplication_bad_softwarerequirements():
     """\
     Test a Process Run Crate where the SoftwareApplication has a
     SoftwareRequirements that does not point to a SoftwareApplication.

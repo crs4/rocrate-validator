@@ -8,7 +8,7 @@ from tests.shared import do_entity_test
 logger = logging.getLogger(__name__)
 
 
-def test_prc_collection_not_mentioned():
+def test_procrc_collection_not_mentioned():
     """\
     Test a Process Run Crate where the collection is not listed in the Root
     Data Entity's mentions.
@@ -23,7 +23,7 @@ def test_prc_collection_not_mentioned():
     )
 
 
-def test_prc_collection_no_haspart():
+def test_procrc_collection_no_haspart():
     """\
     Test a Process Run Crate where the collection does not have a hasPart.
     """
@@ -37,7 +37,7 @@ def test_prc_collection_no_haspart():
     )
 
 
-def test_prc_collection_no_mainentity():
+def test_procrc_collection_no_mainentity():
     """\
     Test a Process Run Crate where the collection does not have a mainEntity.
     """

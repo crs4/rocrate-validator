@@ -8,7 +8,7 @@ from tests.shared import do_entity_test
 logger = logging.getLogger(__name__)
 
 
-def test_prc_action_no_instrument():
+def test_procrc_action_no_instrument():
     """\
     Test a Process Run Crate where the action does not have an instrument.
     """
@@ -22,7 +22,7 @@ def test_prc_action_no_instrument():
     )
 
 
-def test_prc_action_instrument_bad_type():
+def test_procrc_action_instrument_bad_type():
     """\
     Test a Process Run Crate where the instrument does not point to a
     SoftwareApplication, SoftwareSourceCode or ComputationalWorkflow.
@@ -37,7 +37,7 @@ def test_prc_action_instrument_bad_type():
     )
 
 
-def test_prc_action_not_mentioned():
+def test_procrc_action_not_mentioned():
     """\
     Test a Process Run Crate where the action is not listed in the Root Data
     Entity's mentions.
@@ -52,7 +52,7 @@ def test_prc_action_not_mentioned():
     )
 
 
-def test_prc_action_no_name():
+def test_procrc_action_no_name():
     """\
     Test a Process Run Crate where the action does not have an name.
     """
@@ -66,7 +66,7 @@ def test_prc_action_no_name():
     )
 
 
-def test_prc_action_no_description():
+def test_procrc_action_no_description():
     """\
     Test a Process Run Crate where the action does not have a description.
     """
@@ -80,7 +80,7 @@ def test_prc_action_no_description():
     )
 
 
-def test_prc_action_no_endtime():
+def test_procrc_action_no_endtime():
     """\
     Test a Process Run Crate where the action does not have an endTime.
     """
@@ -94,7 +94,7 @@ def test_prc_action_no_endtime():
     )
 
 
-def test_prc_action_bad_endtime():
+def test_procrc_action_bad_endtime():
     """\
     Test a Process Run Crate where the action does not have an endTime.
     """
@@ -108,7 +108,7 @@ def test_prc_action_bad_endtime():
     )
 
 
-def test_prc_action_no_agent():
+def test_procrc_action_no_agent():
     """\
     Test a Process Run Crate where the action does not have an agent.
     """
@@ -122,7 +122,7 @@ def test_prc_action_no_agent():
     )
 
 
-def test_prc_action_bad_agent():
+def test_procrc_action_bad_agent():
     """\
     Test a Process Run Crate where the agent is neither a Person nor an
     Organization.
@@ -137,7 +137,7 @@ def test_prc_action_bad_agent():
     )
 
 
-def test_prc_action_no_result():
+def test_procrc_action_no_result():
     """\
     Test a Process Run Crate where the CreateAction or UpdateAction does not
     have a result.
@@ -152,7 +152,7 @@ def test_prc_action_no_result():
     )
 
 
-def test_prc_action_no_starttime():
+def test_procrc_action_no_starttime():
     """\
     Test a Process Run Crate where the action does not have an startTime.
     """
@@ -166,7 +166,7 @@ def test_prc_action_no_starttime():
     )
 
 
-def test_prc_action_bad_starttime():
+def test_procrc_action_bad_starttime():
     """\
     Test a Process Run Crate where the action does not have an startTime.
     """
@@ -180,7 +180,7 @@ def test_prc_action_bad_starttime():
     )
 
 
-def test_prc_action_error_not_failed_status():
+def test_procrc_action_error_not_failed_status():
     """\
     Test a Process Run Crate where the action has an error even though its
     actionStatus is not FailedActionStatus.
@@ -195,7 +195,7 @@ def test_prc_action_error_not_failed_status():
     )
 
 
-def test_prc_action_error_no_status():
+def test_procrc_action_error_no_status():
     """\
     Test a Process Run Crate where the action has an error even though it has
     no actionStatus.
@@ -210,7 +210,7 @@ def test_prc_action_error_no_status():
     )
 
 
-def test_prc_action_no_object():
+def test_procrc_action_no_object():
     """\
     Test a Process Run Crate where the Action does not have an object.
     """
@@ -224,7 +224,7 @@ def test_prc_action_no_object():
     )
 
 
-def test_prc_action_no_actionstatus():
+def test_procrc_action_no_actionstatus():
     """\
     Test a Process Run Crate where the Action does not have an actionstatus.
     """
@@ -238,7 +238,7 @@ def test_prc_action_no_actionstatus():
     )
 
 
-def test_prc_action_bad_actionstatus():
+def test_procrc_action_bad_actionstatus():
     """\
     Test a Process Run Crate where the Action has an invalid actionstatus.
     """
@@ -252,7 +252,7 @@ def test_prc_action_bad_actionstatus():
     )
 
 
-def test_prc_action_no_error():
+def test_procrc_action_no_error():
     """\
     Test a Process Run Crate where the Action does not have an error.
     """
@@ -266,7 +266,7 @@ def test_prc_action_no_error():
     )
 
 
-def test_prc_action_obj_res_bad_type():
+def test_procrc_action_obj_res_bad_type():
     """\
     Test a Process Run Crate where the Action's object or result does not
     point to a MediaObject, Dataset, Collection, CreativeWork or
@@ -282,7 +282,7 @@ def test_prc_action_obj_res_bad_type():
     )
 
 
-def test_prc_action_no_environment():
+def test_procrc_action_no_environment():
     """\
     Test a Process Run Crate where the Action does not have an environment.
     """
@@ -296,7 +296,7 @@ def test_prc_action_no_environment():
     )
 
 
-def test_prc_action_bad_environment():
+def test_procrc_action_bad_environment():
     """\
     Test a Process Run Crate where the Action has an environment that does not
     point to PropertyValues.
@@ -311,7 +311,7 @@ def test_prc_action_bad_environment():
     )
 
 
-def test_prc_action_no_containerimage():
+def test_procrc_action_no_containerimage():
     """\
     Test a Process Run Crate where the Action does not have a containerimage.
     """
@@ -325,7 +325,7 @@ def test_prc_action_no_containerimage():
     )
 
 
-def test_prc_action_bad_containerimage():
+def test_procrc_action_bad_containerimage():
     """\
     Test a Process Run Crate where the Action has a containerImage that does
     not point to a URL or to a ContainerImage object.

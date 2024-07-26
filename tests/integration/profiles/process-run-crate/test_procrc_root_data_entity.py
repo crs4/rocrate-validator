@@ -8,7 +8,7 @@ from tests.shared import do_entity_test
 logger = logging.getLogger(__name__)
 
 
-def test_prc_no_conformsto():
+def test_procrc_no_conformsto():
     """\
     Test a Process Run Crate where the root data entity does not have a
     conformsTo.
@@ -23,7 +23,7 @@ def test_prc_no_conformsto():
     )
 
 
-def test_prc_conformsto_bad_type():
+def test_procrc_conformsto_bad_type():
     """\
     Test a Process Run Crate where the root data entity does not conformsTo a
     CreativeWork.
@@ -38,7 +38,7 @@ def test_prc_conformsto_bad_type():
     )
 
 
-def test_prc_conformsto_bad_profile():
+def test_procrc_conformsto_bad_profile():
     """\
     Test a Process Run Crate where the root data entity does not conformsTo a
     Process Run Crate profile.
