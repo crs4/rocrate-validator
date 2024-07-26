@@ -2,17 +2,18 @@ import shutil
 import tempfile
 import zipfile
 from pathlib import Path
-from typing import Union
+from typing import Optional, Union
 
 import requests
 import requests_cache
 
 import rocrate_validator.log as logging
 from rocrate_validator.constants import DEFAULT_PROFILE_IDENTIFIER
-
-from .models import (Profile, Severity, ValidationResult, ValidationSettings,
-                     Validator)
-from .utils import URI, get_profiles_path
+from rocrate_validator.errors import ProfileNotFound
+from rocrate_validator.events import Subscriber
+from rocrate_validator.models import (Profile, Severity, ValidationResult,
+                                      ValidationSettings, Validator)
+from rocrate_validator.utils import URI, get_profiles_path
 
 # set the default profiles path
 DEFAULT_PROFILES_PATH = get_profiles_path()
@@ -21,7 +22,8 @@ DEFAULT_PROFILES_PATH = get_profiles_path()
 logger = logging.getLogger(__name__)
 
 
-def validate(settings: Union[dict, ValidationSettings]) -> ValidationResult:
+def validate(settings: Union[dict, ValidationSettings],
+             subscribers: Optional[list[Subscriber]] = None) -> ValidationResult:
     """
     Validate a RO-Crate against a profile
     """
@@ -54,6 +56,9 @@ def validate(settings: Union[dict, ValidationSettings]) -> ValidationResult:
         # create a validator
         validator = Validator(settings)
         logger.debug("Validator created. Starting validation...")
+        if subscribers:
+            for subscriber in subscribers:
+                validator.add_subscriber(subscriber)
         # validate the RO-Crate
         result = validator.validate()
         logger.debug("Validation completed: %s", result)
@@ -63,6 +68,9 @@ def validate(settings: Union[dict, ValidationSettings]) -> ValidationResult:
         # create a validator
         validator = Validator(settings)
         logger.debug("Validator created. Starting validation...")
+        if subscribers:
+            for subscriber in subscribers:
+                validator.add_subscriber(subscriber)
         # validate the RO-Crate
         result = validator.validate()
         logger.debug("Validation completed: %s", result)
@@ -134,10 +142,9 @@ def get_profile(profiles_path: Path = DEFAULT_PROFILES_PATH,
     """
     Load the profiles from the given path
     """
-    profile_path = profiles_path / profile_identifier
-    if not Path(profiles_path).exists():
-        raise FileNotFoundError(f"Profile not found: {profile_path}")
-    profile = Profile.load(profiles_path, f"{profiles_path}/{profile_identifier}",
-                           publicID=publicID, severity=Severity.OPTIONAL)
-    logger.debug("Profile loaded: %s", profile)
+    profiles = get_profiles(profiles_path, publicID=publicID)
+    profile = next((p for p in profiles if p.identifier == profile_identifier), None) or \
+        next((p for p in profiles if str(p.identifier).replace(f"-{p.version}", '') == profile_identifier), None)
+    if not profile:
+        raise ProfileNotFound(profile_identifier)
     return profile

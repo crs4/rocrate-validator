@@ -45,13 +45,19 @@ class InvalidProfilePath(ROCValidatorError):
 class ProfileNotFound(ROCValidatorError):
     """Raised when a profile is not found."""
 
-    def __init__(self, profile_name: Optional[str] = None):
+    def __init__(self, profile_name: Optional[str] = None, message: Optional[str] = None):
         self._profile_name = profile_name
+        self._message = message
 
     @property
     def profile_name(self) -> Optional[str]:
         """The name of the profile."""
         return self._profile_name
+
+    @property
+    def message(self) -> Optional[str]:
+        """The error message."""
+        return self._message
 
     def __str__(self) -> str:
         return f"Profile not found: {self._profile_name!r}"

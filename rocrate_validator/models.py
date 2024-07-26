@@ -3,6 +3,7 @@ from __future__ import annotations
 import bisect
 import enum
 import inspect
+import json
 import re
 from abc import ABC, abstractmethod
 from collections.abc import Collection
@@ -28,6 +29,7 @@ from rocrate_validator.errors import (DuplicateRequirementCheck,
                                       ProfileSpecificationError,
                                       ProfileSpecificationNotFound,
                                       ROCrateMetadataNotFoundError)
+from rocrate_validator.events import Event, EventType, Publisher
 from rocrate_validator.rocrate import ROCrate
 from rocrate_validator.utils import (URI, MapIndex, MultiIndexMap,
                                      get_profiles_path,
@@ -54,6 +56,10 @@ class Severity(enum.Enum):
             return self.value < other.value
         else:
             raise TypeError(f"Comparison not supported between instances of {type(self)} and {type(other)}")
+
+    @staticmethod
+    def get(name: str) -> Severity:
+        return getattr(Severity, name.upper())
 
 
 @total_ordering
@@ -449,6 +455,15 @@ class Profile:
         return cls.__profiles_map.values()
 
 
+class SkipRequirementCheck(Exception):
+    def __init__(self, check: RequirementCheck, message: str = ""):
+        self.check = check
+        self.message = message
+
+    def __str__(self):
+        return f"SkipRequirementCheck(check={self.check})"
+
+
 @total_ordering
 class Requirement(ABC):
 
@@ -536,7 +551,7 @@ class Requirement(ABC):
         return None
 
     def get_checks_by_level(self, level: RequirementLevel) -> list[RequirementCheck]:
-        return [check for check in self._checks if check.level.severity == level.severity]
+        return list({check for check in self._checks if check.level.severity == level.severity})
 
     def __reorder_checks__(self) -> None:
         for i, check in enumerate(self._checks):
@@ -560,12 +575,23 @@ class Requirement(ABC):
                 if check.overridden:
                     logger.debug("Skipping check '%s' because overridden by '%s'", check.name, check.overridden_by.name)
                     continue
+                context.validator.notify(RequirementCheckValidationEvent(
+                    EventType.REQUIREMENT_CHECK_VALIDATION_START, check))
                 check_result = check.execute_check(context)
+                context.result.add_executed_check(check, check_result)
+                context.validator.notify(RequirementCheckValidationEvent(
+                    EventType.REQUIREMENT_CHECK_VALIDATION_END, check, validation_result=check_result))
                 logger.debug("Ran check '%s'. Got result %s", check.name, check_result)
                 if not isinstance(check_result, bool):
                     logger.warning("Ignoring the check %s as it returned the value %r instead of a boolean", check.name)
                     raise RuntimeError(f"Ignoring invalid result from check {check.name}")
                 all_passed = all_passed and check_result
+                if not all_passed and context.fail_fast:
+                    break
+            except SkipRequirementCheck as e:
+                logger.debug("Skipping check '%s' because: %s", check.name, e)
+                context.result.add_skipped_check(check)
+                continue
             except Exception as e:
                 # Ignore the fact that the check failed as far as the validation result is concerned.
                 logger.warning("Unexpected error during check %s.  Exception: %s", check, e)
@@ -867,6 +893,28 @@ class CheckIssue:
             raise TypeError(f"Cannot compare {type(self)} with {type(other)}")
         return (self._check, self._severity, self._message) < (other._check, other._severity, other._message)
 
+    def __hash__(self) -> int:
+        return hash((self._check, self._severity, self._message))
+
+    def __repr__(self) -> str:
+        return f'CheckIssue(severity={self.severity}, check={self.check}, message={self.message})'
+
+    def __str__(self) -> str:
+        return f"{self.severity}: {self.message} ({self.check})"
+
+    def to_dict(self) -> dict:
+        return {
+            "severity": self.severity.name,
+            "message": self.message,
+            "check": self.check.name,
+            "resultPath": self.resultPath,
+            "focusNode": self.focusNode,
+            "value": self.value
+        }
+
+    def to_json(self) -> str:
+        return json.dumps(self.to_dict(), indent=4, cls=CustomEncoder)
+
     # @property
     # def code(self) -> int:
     #     breakpoint()
@@ -901,6 +949,11 @@ class ValidationResult:
         self._validation_settings: dict[str, BaseTypes] = context.settings
         # keep track of the issues found during the validation
         self._issues: list[CheckIssue] = []
+        # keep track of the checks that have been executed
+        self._executed_checks: set[RequirementCheck] = set()
+        self._executed_checks_results: dict[str, bool] = {}
+        # keep track of the checks that have been skipped
+        self._skipped_checks: set[RequirementCheck] = set()
 
     @property
     def context(self) -> ValidationContext:
@@ -914,26 +967,56 @@ class ValidationResult:
     def validation_settings(self):
         return self._validation_settings
 
+    # --- Checks ---
+    @property
+    def executed_checks(self) -> set[RequirementCheck]:
+        return self._executed_checks
+
+    def add_executed_check(self, check: RequirementCheck, result: bool):
+        self._executed_checks.add(check)
+        self._executed_checks_results[check.identifier] = result
+        # remove the check from the skipped checks if it was skipped
+        if check in self._skipped_checks:
+            self._skipped_checks.remove(check)
+            logger.debug("Removing check '%s' from skipped checks", check.name)
+
+    def get_executed_check_result(self, check: RequirementCheck) -> Optional[bool]:
+        return self._executed_checks_results.get(check.identifier)
+
+    @property
+    def skipped_checks(self) -> set[RequirementCheck]:
+        return self._skipped_checks
+
+    def add_skipped_check(self, check: RequirementCheck):
+        self._skipped_checks.add(check)
+
+    def remove_skipped_check(self, check: RequirementCheck):
+        self._skipped_checks.remove(check)
+
     #  --- Issues ---
     @property
     def issues(self) -> list[CheckIssue]:
         return self._issues
 
-    def get_issues(self, min_severity: Severity) -> list[CheckIssue]:
+    def get_issues(self, min_severity: Optional[Severity] = None) -> list[CheckIssue]:
+        min_severity = min_severity or self.context.requirement_severity
         return [issue for issue in self._issues if issue.severity >= min_severity]
 
     def get_issues_by_check(self,
                             check: RequirementCheck,
-                            min_severity: Severity = Severity.OPTIONAL) -> list[CheckIssue]:
+                            min_severity: Severity = None) -> list[CheckIssue]:
+        min_severity = min_severity or self.context.requirement_severity
         return [issue for issue in self._issues if issue.check == check and issue.severity >= min_severity]
 
     # def get_issues_by_check_and_severity(self, check: RequirementCheck, severity: Severity) -> list[CheckIssue]:
     #     return [issue for issue in self.issues if issue.check == check and issue.severity == severity]
 
-    def has_issues(self, severity: Severity = Severity.OPTIONAL) -> bool:
+    def has_issues(self, severity: Optional[Severity] = None) -> bool:
+        severity = severity or self.context.requirement_severity
         return any(issue.severity >= severity for issue in self._issues)
 
-    def passed(self, severity: Severity = Severity.OPTIONAL) -> bool:
+    def passed(self, severity: Optional[Severity] = None) -> bool:
+        severity = severity or self.context.requirement_severity
         return not any(issue.severity >= severity for issue in self._issues)
 
     def add_issue(self, issue: CheckIssue):
@@ -979,6 +1062,45 @@ class ValidationResult:
 
     def __repr__(self):
         return f"ValidationResult(issues={self._issues})"
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, ValidationResult):
+            raise TypeError(f"Cannot compare ValidationResult with {type(other)}")
+        return self._issues == other._issues
+
+    def to_dict(self) -> dict:
+        return {
+            "rocrate": str(self.rocrate_path),
+            "validation_settings": self.validation_settings,
+            "passed": self.passed(self.context.settings["requirement_severity"]),
+            "issues": [issue.to_dict() for issue in self.issues]
+        }
+
+    def to_json(self, path: Optional[Path] = None) -> str:
+
+        result = json.dumps(self.to_dict(), indent=4, cls=CustomEncoder)
+        if path:
+            with open(path, "w") as f:
+                f.write(result)
+        return result
+
+
+class CustomEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, CheckIssue):
+            return obj.__dict__
+        if isinstance(obj, Path):
+            return str(obj)
+        if isinstance(obj, Severity):
+            return obj.name
+        if isinstance(obj, RequirementCheck):
+            return obj.identifier
+        if isinstance(obj, Requirement):
+            return obj.identifier
+        if isinstance(obj, RequirementLevel):
+            return obj.name
+
+        return super().default(obj)
 
 
 @dataclass
@@ -1048,7 +1170,64 @@ class ValidationSettings:
             raise ValueError(f"Invalid settings type: {type(settings)}")
 
 
-class Validator:
+class ValidationEvent(Event):
+    def __init__(self, event_type: EventType, validation_result: Optional[ValidationResult] = None, message: Optional[str] = None):
+        super().__init__(event_type, message)
+        self._validation_result = validation_result
+
+    @property
+    def validation_result(self) -> Optional[ValidationResult]:
+        return self._validation_result
+
+
+class ProfileValidationEvent(Event):
+    def __init__(self, event_type: EventType, profile: Profile, message: Optional[str] = None):
+        assert event_type in (EventType.PROFILE_VALIDATION_START, EventType.PROFILE_VALIDATION_END)
+        super().__init__(event_type, message)
+        self._profile = profile
+
+    @property
+    def profile(self) -> Profile:
+        return self._profile
+
+
+class RequirementValidationEvent(Event):
+    def __init__(self,
+                 event_type: EventType,
+                 requirement: Requirement,
+                 validation_result: Optional[bool] = None,
+                 message: Optional[str] = None):
+        assert event_type in (EventType.REQUIREMENT_VALIDATION_START, EventType.REQUIREMENT_VALIDATION_END)
+        super().__init__(event_type, message)
+        self._requirement = requirement
+        self._validation_result = validation_result
+
+    @property
+    def requirement(self) -> Requirement:
+        return self._requirement
+
+    @property
+    def validation_result(self) -> Optional[bool]:
+        return self._validation_result
+
+
+class RequirementCheckValidationEvent(Event):
+    def __init__(self, event_type: EventType, requirement_check: RequirementCheck, validation_result: Optional[bool] = None, message: Optional[str] = None):
+        assert event_type in (EventType.REQUIREMENT_CHECK_VALIDATION_START, EventType.REQUIREMENT_CHECK_VALIDATION_END)
+        super().__init__(event_type, message)
+        self._requirement_check = requirement_check
+        self._validation_result = validation_result
+
+    @property
+    def requirement_check(self) -> RequirementCheck:
+        return self._requirement_check
+
+    @property
+    def validation_result(self) -> Optional[bool]:
+        return self._validation_result
+
+
+class Validator(Publisher):
     """
     Can validate conformance to a single Profile (including any requirements
     inherited by parent profiles).
@@ -1056,6 +1235,7 @@ class Validator:
 
     def __init__(self, settings: Union[str, ValidationSettings]):
         self._validation_settings = ValidationSettings.parse(settings)
+        super().__init__()
 
     @property
     def validation_settings(self) -> ValidationSettings:
@@ -1080,25 +1260,36 @@ class Validator:
         # set the profiles to validate against
         profiles = context.profiles
         assert len(profiles) > 0, "No profiles to validate"
-
+        self.notify(EventType.VALIDATION_START)
         for profile in profiles:
             logger.debug("Validating profile %s (id: %s)", profile.name, profile.identifier)
+            self.notify(ProfileValidationEvent(EventType.PROFILE_VALIDATION_START, profile=profile))
             # perform the requirements validation
             requirements = profile.get_requirements(
                 context.requirement_severity, exact_match=context.requirement_severity_only)
             logger.debug("Validating profile %s with %s requirements", profile.identifier, len(requirements))
             logger.debug("For profile %s, validating these %s requirements: %s",
                          profile.identifier, len(requirements), requirements)
+            terminate = False
             for requirement in requirements:
+                self.notify(RequirementValidationEvent(
+                    EventType.REQUIREMENT_VALIDATION_START, requirement=requirement))
                 passed = requirement.__do_validate__(context)
-                logger.debug("Number of issues: %s", len(context.result.issues))
+                self.notify(RequirementValidationEvent(
+                    EventType.REQUIREMENT_VALIDATION_END, requirement=requirement, validation_result=passed))
                 if passed:
                     logger.debug("Validation Requirement passed")
                 else:
-                    logger.debug(f"Validation Requirement {requirement} failed ")
-                    if context.settings.get("abort_on_first") is True and context.profile_identifier == profile.name:
+                    logger.debug(f"Validation Requirement {requirement} failed (profile: {profile.identifier})")
+                    if context.fail_fast:
                         logger.debug("Aborting on first requirement failure")
-                        return context.result
+                        terminate = True
+                        break
+            self.notify(ProfileValidationEvent(EventType.PROFILE_VALIDATION_END, profile=profile))
+            if terminate:
+                break
+        self.notify(ValidationEvent(EventType.VALIDATION_END,
+                    validation_result=context.result))
 
         return context.result
 
@@ -1161,7 +1352,12 @@ class ValidationContext:
 
     @property
     def requirement_severity(self) -> Severity:
-        return self.settings.get("requirement_severity", Severity.REQUIRED)
+        severity = self.settings.get("requirement_severity", Severity.REQUIRED)
+        if isinstance(severity, str):
+            severity = Severity[severity]
+        elif not isinstance(severity, Severity):
+            raise ValueError(f"Invalid severity type: {type(severity)}")
+        return severity
 
     @property
     def requirement_severity_only(self) -> bool:
@@ -1247,10 +1443,12 @@ class ValidationContext:
                     logger.debug("Profile with the highest version number: %s", profile)
                 # if the profile is found by token, set the profile name to the identifier
                 self.settings["profile_identifier"] = profile.identifier
-            except Exception as e:
+            except AttributeError as e:
+                # raised when the profile is not found
                 if logger.isEnabledFor(logging.DEBUG):
                     logger.exception(e)
-                raise ProfileNotFound(f"Profile '{self.profile_identifier}' not found in '{self.profiles_path}'")
+                raise ProfileNotFound(self.profile_identifier,
+                                      message=f"Profile '{self.profile_identifier}' not found in '{self.profiles_path}'") from e
 
         # Set the profiles to validate against as the target profile and its inherited profiles
         profiles = profile.inherited_profiles + [profile]

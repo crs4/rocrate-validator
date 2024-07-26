@@ -20,8 +20,8 @@ class RootDataEntityRelativeURI(PyFunctionCheck):
             if not context.ro_crate.metadata.get_root_data_entity().id == './':
                 context.result.add_error(
                     'Root Data Entity URI is not denoted by the string `./`', self)
-                return True
-            return False
+                return False
+            return True
         except Exception as e:
             context.result.add_error(
                 f'Error checking Root Data Entity URI: {str(e)}', self)

@@ -4,14 +4,16 @@ from typing import Optional
 
 import rocrate_validator.log as logging
 from rocrate_validator.errors import ROCrateMetadataNotFoundError
+from rocrate_validator.events import EventType
 from rocrate_validator.models import (Requirement, RequirementCheck,
-                                      ValidationContext)
+                                      RequirementCheckValidationEvent,
+                                      SkipRequirementCheck, ValidationContext)
 from rocrate_validator.requirements.shacl.models import Shape
 from rocrate_validator.requirements.shacl.utils import make_uris_relative
 
 from .validator import (SHACLValidationAlreadyProcessed,
                         SHACLValidationContext, SHACLValidationContextManager,
-                        SHACLValidationSkip, SHACLValidator)
+                        SHACLValidationSkip, SHACLValidator, SHACLViolation)
 
 logger = logging.getLogger(__name__)
 
@@ -44,20 +46,27 @@ class SHACLCheck(RequirementCheck):
         return self._shape
 
     def execute_check(self, context: ValidationContext):
+        logger.debug("Starting check %s", self)
         try:
-            result = None
+            logger.debug("SHACL Validation of profile %s requirement %s started", self.requirement.profile, self)
             with SHACLValidationContextManager(self, context) as ctx:
+                # The check is executed only if the profile is the most specific one
+                logger.debug("SHACL Validation of profile %s requirement %s started", self.requirement.profile, self)
                 result = self.__do_execute_check__(ctx)
-                ctx.current_validation_result = result
-                return result
+                ctx.current_validation_result = not self in result
+                return ctx.current_validation_result
         except SHACLValidationAlreadyProcessed as e:
             logger.debug("SHACL Validation of profile %s already processed", self.requirement.profile)
-            return e.result
+            # The check belongs to a profile which has already been processed
+            # so we can skip the validation and return the specific result for the check
+            return not self in [i.check for i in context.result.get_issues()]
         except SHACLValidationSkip as e:
-            logger.debug("SHACL Validation of profile %s skipped", self.requirement.profile)
-            # the validation is postponed to the subsequent profiles
-            #  so we return True to continue the validation
-            return True
+            logger.debug("SHACL Validation of profile %s requirement %s skipped", self.requirement.profile, self)
+            # The validation is postponed to the more specific profiles
+            # so the check is not considered as failed.
+            # We assume that the main algorithm catches the issue
+            # and the check is marked as skipped withing the context.result
+            raise SkipRequirementCheck(self, str(e))
         except ROCrateMetadataNotFoundError as e:
             logger.debug("Unable to perform metadata validation due to missing metadata file: %s", e)
             return False
@@ -110,33 +119,75 @@ class SHACLCheck(RequirementCheck):
         # store the validation result in the context
         start_time = timer()
         result = shacl_result.conforms
-        # if the validation failed, add the issues to the context
+        # if the validation fails, process the failed checks
+        failed_requirements_checks = set()
+        failed_requirements_checks_violations: dict[str, SHACLViolation] = {}
+        failed_requirement_checks_notified = []
         if not shacl_result.conforms:
-            logger.debug("Validation failed")
-            logger.debug("Parsing Validation result: %s", result)
+            logger.debug("Parsing Validation with result: %s", result)
+            # process the failed checks to extract the requirement checks involved
             for violation in shacl_result.violations:
                 shape = shapes_registry.get_shape(Shape.compute_key(shapes_graph, violation.sourceShape))
                 assert shape is not None, "Unable to map the violation to a shape"
                 requirementCheck = SHACLCheck.get_instance(shape)
                 assert requirementCheck is not None, "The requirement check cannot be None"
-                # add only the issues for the current profile when the `target_profile_only` mode is disabled
-                # (issues related to other profiles will be added by the corresponding profile validation)
-                if requirementCheck.requirement.profile == shacl_context.current_validation_profile or \
-                        shacl_context.settings.get("target_only_validation", False):
+                failed_requirements_checks.add(requirementCheck)
+                violations = failed_requirements_checks_violations.get(requirementCheck.identifier, None)
+                if violations is None:
+                    failed_requirements_checks_violations[requirementCheck.identifier] = violations = []
+                violations.append(violation)
+        # sort the failed checks by identifier and severity
+        # to ensure a consistent order of the issues
+        # and to make the fail fast mode deterministic
+        for requirementCheck in sorted(failed_requirements_checks, key=lambda x: (x.identifier, x.severity)):
+            # add only the issues for the current profile when the `target_profile_only` mode is disabled
+            # (issues related to other profiles will be added by the corresponding profile validation)
+            if requirementCheck.requirement.profile == shacl_context.current_validation_profile or \
+                    shacl_context.settings.get("target_only_validation", False):
+                for violation in failed_requirements_checks_violations[requirementCheck.identifier]:
                     c = shacl_context.result.add_check_issue(message=violation.get_result_message(shacl_context.rocrate_path),
                                                              check=requirementCheck,
                                                              severity=violation.get_result_severity(),
                                                              resultPath=violation.resultPath.toPython() if violation.resultPath else None,
                                                              focusNode=make_uris_relative(
-                                                                 violation.focusNode.toPython(), shacl_context.publicID),
-                                                             value=violation.value)
+                        violation.focusNode.toPython(), shacl_context.publicID),
+                        value=violation.value)
+                    # if the fail fast mode is enabled, stop the validation after the first issue
+                    if shacl_context.fail_fast:
+                        break
+
+            # If the fail fast mode is disabled, notify all the validation issues
+            # related to profiles other than the current one.
+            # They are issues which have not been notified yet because skipped during
+            # the validation of their corresponding profile because SHACL checks are executed
+            # all together and not profile by profile
+            if not shacl_context.fail_fast:
+                if requirementCheck.requirement.profile != shacl_context.current_validation_profile and \
+                        not requirementCheck.identifier in failed_requirement_checks_notified:
+                    #
+                    failed_requirement_checks_notified.append(requirementCheck.identifier)
+
+                    shacl_context.validator.notify(RequirementCheckValidationEvent(
+                        EventType.REQUIREMENT_CHECK_VALIDATION_END, requirementCheck, validation_result=False))
                     logger.debug("Added validation issue to the context: %s", c)
-                if shacl_context.base_context.fail_fast:
-                    break
+
+        # As above, but for skipped checks which are not failed
+        if not shacl_context.fail_fast:
+            for requirementCheck in list(shacl_context.result.skipped_checks):
+                if not isinstance(requirementCheck, SHACLCheck):
+                    continue
+                if requirementCheck.requirement.profile != shacl_context.current_validation_profile and \
+                        not requirementCheck in failed_requirements_checks and \
+                        not requirementCheck.identifier in failed_requirement_checks_notified:
+                    failed_requirement_checks_notified.append(requirementCheck.identifier)
+                    shacl_context.result.add_executed_check(requirementCheck, True)
+                    shacl_context.validator.notify(RequirementCheckValidationEvent(
+                        EventType.REQUIREMENT_CHECK_VALIDATION_END, requirementCheck, validation_result=True))
+
         end_time = timer()
         logger.debug(f"Execution time for parsing the validation result: {end_time - start_time} seconds")
 
-        return result
+        return failed_requirements_checks
 
     def __str__(self) -> str:
         return super().__str__() + (f" - {self._shape}" if self._shape else "")
