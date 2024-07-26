@@ -9,6 +9,18 @@
 @prefix bioschemas: <https://bioschemas.org/> .
 
 
+ro:MainEntityProperyMustExist a sh:NodeShape ;
+    sh:name "Main Workflow entity existence" ;
+    sh:description "The Main Workflow must be specified through a `mainEntity` property in the root data entity" ;
+    sh:targetClass rocrate:RootDataEntity ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:mainEntity ;
+        sh:minCount 1 ;
+        sh:description "Check if the Main Workflow is specified through a `mainEntity` property in the root data entity" ;
+        sh:message "The Main Workflow must be specified through a `mainEntity` property in the root data entity" ;
+    ] .
+
 
 ro:FindMainWorkflow a sh:NodeShape, sh:hidden ;
     sh:name "Identify Main Workflow" ;
