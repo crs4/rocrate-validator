@@ -285,11 +285,11 @@ def validate(ctx,
 def multiple_choice(console: Console,
                     choices: list[str],
                     title: str = "Main Menu",
-                    padding=None) -> str:
+                    padding=(1, 2)) -> str:
     """
     Display a multiple choice menu
     """
-    table = Table(title=title, title_justify="center")
+    table = Table(title=title, title_justify="left")
     table.add_column("#", justify="center", style="bold cyan", no_wrap=True)
     table.add_column("Option", justify="left", style="magenta")
 
@@ -297,11 +297,18 @@ def multiple_choice(console: Console,
         table.add_row(str(index), choice)
 
     if padding:
-        console.print(Padding(table, padding))
+        console.print(Padding(Align(table, align="left"), padding))
     else:
         console.print(table)
 
-    selected_option = Prompt.ask("Please choose an option (enter the number)",
+    # Build the prompt text
+    prompt_text = "[bold] > Please select a profile (enter the number)[/bold]"
+    # console_width = console.size.width
+    # padding = (console_width - len(prompt_text)) // 2
+    # centered_prompt_text = " " * padding + prompt_text
+
+    # Get the selected option
+    selected_option = Prompt.ask(prompt_text,
                                  choices=[str(i) for i in range(1, len(choices) + 1)])
     return selected_option
 
