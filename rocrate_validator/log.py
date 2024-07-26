@@ -1,10 +1,16 @@
+import atexit
 import sys
 import threading
+from io import StringIO
 from logging import (CRITICAL, DEBUG, ERROR, INFO, WARNING, Logger,
                      StreamHandler)
 from typing import Optional
 
 import colorlog
+from rich.console import Console
+from rich.padding import Padding
+from rich.rule import Rule
+from rich.text import Text
 
 # set the module to the current module
 __module__ = sys.modules[__name__]
@@ -65,6 +71,28 @@ __settings__ = DEFAULT_SETTINGS.copy()
 __handlers__ = {}
 
 
+# Create a StringIO stream to capture the logs
+__log_stream__ = StringIO()
+
+
+# Define the callback function that will be called on exit
+def __print_logs_on_exit__():
+    log_contents = __log_stream__.getvalue()
+    if not log_contents:
+        return
+    # print the logs
+    console = Console()
+    console.print(Padding(Rule("[bold cyan]Log Report[/bold cyan]", style="bold cyan"), (2, 0, 1, 0)))
+    console.print(Padding(Text(log_contents), (0, 1)))
+    console.print(Padding(Rule("", style="bold cyan"), (0, 0, 2, 0)))
+    # close the stream
+    __log_stream__.close()
+
+
+# Register the callback with atexit
+atexit.register(__print_logs_on_exit__)
+
+
 def __setup_logger__(logger: Logger):
 
     # prevent the logger from propagating the log messages to the root logger
@@ -84,10 +112,9 @@ def __setup_logger__(logger: Logger):
     # configure the logger handler
     ch = __handlers__.get(logger.name, None)
     if not ch:
-        ch = StreamHandler()
+        ch = StreamHandler(__log_stream__)
         ch.setLevel(level)
         ch.setFormatter(colorlog.ColoredFormatter(get_log_format(level)))
-
         logger.addHandler(ch)
 
     # enable/disable the logger
@@ -138,6 +165,7 @@ def basicConfig(level: int, modules_config: Optional[dict] = None):
                 'ERROR': 'red',
                 'CRITICAL': 'red,bg_white',
             },
+            handlers=[StreamHandler(__log_stream__)]
         )
 
         # reconfigure existing loggers
