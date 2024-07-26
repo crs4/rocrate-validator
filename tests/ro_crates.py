@@ -41,6 +41,18 @@ class ValidROC:
     def sort_and_change_archive(self) -> Path:
         return VALID_CRATES_DATA_PATH / "sortchangecase.crate.zip"
 
+    @property
+    def process_run_crate(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "process-run-crate"
+
+    @property
+    def process_run_crate_collections(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "process-run-crate-collections"
+
+    @property
+    def process_run_crate_containerimage(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "process-run-crate-containerimage"
+
 
 class InvalidFileDescriptor:
 
@@ -252,3 +264,180 @@ class WROCNoLicense:
     @property
     def wroc_no_license(self) -> Path:
         return self.base_path / "no_license"
+
+
+class InvalidProcRC:
+
+    base_path = INVALID_CRATES_DATA_PATH / "3_process_run_crate/"
+
+    @property
+    def conformsto_bad_type(self) -> Path:
+        return self.base_path / "conformsto_bad_type"
+
+    @property
+    def conformsto_bad_profile(self) -> Path:
+        return self.base_path / "conformsto_bad_profile"
+
+    @property
+    def application_no_name(self) -> Path:
+        return self.base_path / "application_no_name"
+
+    @property
+    def application_no_url(self) -> Path:
+        return self.base_path / "application_no_url"
+
+    @property
+    def application_no_version(self) -> Path:
+        return self.base_path / "application_no_version"
+
+    @property
+    def softwaresourcecode_no_version(self) -> Path:
+        return self.base_path / "softwaresourcecode_no_version"
+
+    @property
+    def application_id_no_absoluteuri(self) -> Path:
+        return self.base_path / "application_id_no_absoluteuri"
+
+    @property
+    def application_version_softwareVersion(self) -> Path:
+        return self.base_path / "application_version_softwareVersion"
+
+    @property
+    def action_no_instrument(self) -> Path:
+        return self.base_path / "action_no_instrument"
+
+    @property
+    def action_instrument_bad_type(self) -> Path:
+        return self.base_path / "action_instrument_bad_type"
+
+    @property
+    def action_not_mentioned(self) -> Path:
+        return self.base_path / "action_not_mentioned"
+
+    @property
+    def action_no_name(self) -> Path:
+        return self.base_path / "action_no_name"
+
+    @property
+    def action_no_description(self) -> Path:
+        return self.base_path / "action_no_description"
+
+    @property
+    def action_no_endtime(self) -> Path:
+        return self.base_path / "action_no_endtime"
+
+    @property
+    def action_bad_endtime(self) -> Path:
+        return self.base_path / "action_bad_endtime"
+
+    @property
+    def action_no_agent(self) -> Path:
+        return self.base_path / "action_no_agent"
+
+    @property
+    def action_bad_agent(self) -> Path:
+        return self.base_path / "action_bad_agent"
+
+    @property
+    def action_no_result(self) -> Path:
+        return self.base_path / "action_no_result"
+
+    @property
+    def action_no_starttime(self) -> Path:
+        return self.base_path / "action_no_starttime"
+
+    @property
+    def action_bad_starttime(self) -> Path:
+        return self.base_path / "action_bad_starttime"
+
+    @property
+    def action_error_not_failed_status(self) -> Path:
+        return self.base_path / "action_error_not_failed_status"
+
+    @property
+    def action_error_no_status(self) -> Path:
+        return self.base_path / "action_error_no_status"
+
+    @property
+    def action_no_object(self) -> Path:
+        return self.base_path / "action_no_object"
+
+    @property
+    def action_no_actionstatus(self) -> Path:
+        return self.base_path / "action_no_actionstatus"
+
+    @property
+    def action_bad_actionstatus(self) -> Path:
+        return self.base_path / "action_bad_actionstatus"
+
+    @property
+    def action_no_error(self) -> Path:
+        return self.base_path / "action_no_error"
+
+    @property
+    def action_obj_res_bad_type(self) -> Path:
+        return self.base_path / "action_obj_res_bad_type"
+
+    @property
+    def collection_not_mentioned(self) -> Path:
+        return self.base_path / "collection_not_mentioned"
+
+    @property
+    def collection_no_haspart(self) -> Path:
+        return self.base_path / "collection_no_haspart"
+
+    @property
+    def collection_no_mainentity(self) -> Path:
+        return self.base_path / "collection_no_mainentity"
+
+    @property
+    def action_no_environment(self) -> Path:
+        return self.base_path / "action_no_environment"
+
+    @property
+    def action_bad_environment(self) -> Path:
+        return self.base_path / "action_bad_environment"
+
+    @property
+    def action_no_containerimage(self) -> Path:
+        return self.base_path / "action_no_containerimage"
+
+    @property
+    def action_bad_containerimage_url(self) -> Path:
+        return self.base_path / "action_bad_containerimage_url"
+
+    @property
+    def action_bad_containerimage_type(self) -> Path:
+        return self.base_path / "action_bad_containerimage_type"
+
+    @property
+    def containerimage_no_additionaltype(self) -> Path:
+        return self.base_path / "containerimage_no_additionaltype"
+
+    @property
+    def containerimage_bad_additionaltype(self) -> Path:
+        return self.base_path / "containerimage_bad_additionaltype"
+
+    @property
+    def containerimage_no_registry(self) -> Path:
+        return self.base_path / "containerimage_no_registry"
+
+    @property
+    def containerimage_no_name(self) -> Path:
+        return self.base_path / "containerimage_no_name"
+
+    @property
+    def containerimage_no_tag(self) -> Path:
+        return self.base_path / "containerimage_no_tag"
+
+    @property
+    def containerimage_no_sha256(self) -> Path:
+        return self.base_path / "containerimage_no_sha256"
+
+    @property
+    def softwareapplication_no_softwarerequirements(self) -> Path:
+        return self.base_path / "softwareapplication_no_softwarerequirements"
+
+    @property
+    def softwareapplication_bad_softwarerequirements(self) -> Path:
+        return self.base_path / "softwareapplication_bad_softwarerequirements"

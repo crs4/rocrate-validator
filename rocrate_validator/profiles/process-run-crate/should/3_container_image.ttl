@@ -1,0 +1,43 @@
+@prefix ro: <./> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xml1: <http://www.w3.org/2001/XMLSchema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
+@prefix bioschemas: <https://bioschemas.org/> .
+@prefix wfrun: <https://w3id.org/ro/terms/workflow-run#> .
+
+ro:ProcRCContainerImageRecommended a sh:NodeShape ;
+    sh:name "Process Run Crate ContainerImage SHOULD" ;
+    sh:description "Recommended properties of the Process Run Crate ContainerImage" ;
+    sh:targetClass wfrun:ContainerImage ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "ContainerImage additionalType" ;
+        sh:description "The ContainerImage SHOULD have an additionalType pointing to <https://w3id.org/ro/terms/workflow-run#DockerImage> or <https://w3id.org/ro/terms/workflow-run#SIFImage>" ;
+        sh:path schema:additionalType ;
+        sh:or (
+            [ sh:hasValue wfrun:DockerImage ; ]
+            [ sh:hasValue wfrun:SIFImage ; ]
+        ) ;
+        sh:minCount 1 ;
+        sh:message "The ContainerImage SHOULD have an additionalType pointing to <https://w3id.org/ro/terms/workflow-run#DockerImage> or <https://w3id.org/ro/terms/workflow-run#SIFImage>" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "ContainerImage registry" ;
+        sh:description "The ContainerImage SHOULD have a registry" ;
+        sh:path wfrun:registry ;
+        sh:minCount 1 ;
+        sh:message "The ContainerImage SHOULD have a registry" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "ContainerImage name" ;
+        sh:description "The ContainerImage SHOULD have a name" ;
+        sh:path schema:name ;
+        sh:minCount 1 ;
+        sh:message "The ContainerImage SHOULD have a name" ;
+    ] .

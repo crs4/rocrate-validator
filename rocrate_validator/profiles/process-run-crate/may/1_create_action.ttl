@@ -1,0 +1,82 @@
+@prefix ro: <./> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xml1: <http://www.w3.org/2001/XMLSchema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
+@prefix bioschemas: <https://bioschemas.org/> .
+@prefix wfrun: <https://w3id.org/ro/terms/workflow-run#> .
+
+ro:ProcRCActionOptional a sh:NodeShape ;
+    sh:name "Process Run Crate Action MAY" ;
+    sh:description "Recommended properties of the Process Run Crate Action" ;
+    sh:targetClass schema:CreateAction ,
+                   schema:ActivateAction ,
+                   schema:UpdateAction ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Action startTime" ;
+        sh:description "The Action MAY have a startTime" ;
+        sh:path schema:startTime ;
+        sh:minCount 1 ;
+        sh:message "The Action MAY have a startTime" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Action object" ;
+        sh:description "The Action MAY have an object" ;
+        sh:path schema:object ;
+        sh:minCount 1 ;
+        sh:message "The Action MAY have an object" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Action actionStatus" ;
+        sh:description "The Action MAY have an actionStatus" ;
+        sh:path schema:actionStatus ;
+        sh:minCount 1 ;
+        sh:message "The Action MAY have an actionStatus" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Action environment" ;
+        sh:description "The Action MAY have an environment" ;
+        sh:path wfrun:environment ;
+        sh:minCount 1 ;
+        sh:message "The Action MAY have an environment" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Action containerImage" ;
+        sh:description "The Action MAY have a containerImage" ;
+        sh:path wfrun:containerImage ;
+        sh:minCount 1 ;
+        sh:message "The Action MAY have a containerImage" ;
+    ] .
+
+
+ro:ProcRCActionErrorMay a sh:NodeShape ;
+    sh:name "Process Run Crate Action MAY have error" ;
+    sh:description "error MAY be specified if actionStatus is set to FailedActionStatus" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                { ?this a schema:CreateAction } UNION
+                { ?this a schema:ActivateAction } UNION
+                { ?this a schema:UpdateAction } .
+                ?this schema:actionStatus ?status .
+                FILTER(?status = "http://schema.org/FailedActionStatus") .
+            }
+        """
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:error ;
+        sh:minCount 1 ;
+        sh:message "error MAY be specified if actionStatus is set to FailedActionStatus" ;
+    ] .

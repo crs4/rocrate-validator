@@ -1,0 +1,53 @@
+@prefix ro: <./> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xml1: <http://www.w3.org/2001/XMLSchema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
+@prefix bioschemas: <https://bioschemas.org/> .
+
+ro:ProcRCCollectionRecommended a sh:NodeShape ;
+    sh:name "Process Run Crate Collection SHOULD" ;
+    sh:description "Recommended properties of the Process Run Crate Collection" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?this a schema:Collection .
+                { ?action schema:object ?this } UNION
+                { ?action schema:result ?this } .
+                { ?action a schema:CreateAction } UNION
+                { ?action a schema:ActivateAction } UNION
+                { ?action a schema:UpdateAction } .
+            }
+        """
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Collection SHOULD be referenced via mentions from root" ;
+        sh:description "The Collection SHOULD be referenced from the Root Data Entity via mentions" ;
+        sh:path [ sh:inversePath schema:mentions ] ;
+        sh:node rocrate:RootDataEntity ;
+        sh:minCount 1 ;
+        sh:message "The Collection SHOULD be referenced from the Root Data Entity via mentions" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Collection hasPart" ;
+        sh:description "The Collection SHOULD have a hasPart" ;
+        sh:path schema:hasPart ;
+        sh:minCount 1 ;
+        sh:message "The Collection SHOULD have a hasPart" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Collection mainEntity" ;
+        sh:description "The Collection SHOULD have a mainEntity" ;
+        sh:path schema:mainEntity ;
+        sh:minCount 1 ;
+        sh:message "The Collection SHOULD have a mainEntity" ;
+    ] .
