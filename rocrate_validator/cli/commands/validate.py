@@ -23,6 +23,7 @@ import rocrate_validator.log as logging
 from rocrate_validator import services
 from rocrate_validator.cli.commands.errors import handle_error
 from rocrate_validator.cli.main import cli, click
+from rocrate_validator.cli.utils import get_app_header_rule
 from rocrate_validator.colors import get_severity_color
 from rocrate_validator.events import Event, EventType, Subscriber
 from rocrate_validator.models import (LevelCollection, Severity,
@@ -215,27 +216,32 @@ def validate(ctx,
             "abort_on_first": not no_fail_fast
         }
 
+        # Print the application header
+        console.print(get_app_header_rule())
+
         # Detect the profile to use for validation
         autodetection = False
         selected_profile = profile_identifier
         if selected_profile is None:
             candidate_profiles = services.detect_profiles(settings=validation_settings)
             if candidate_profiles and len(candidate_profiles) == 1:
-                logger.info("Profile identifier autodetected: %s", candidate_profiles[0].identifier)
+                logger.debug("Profile identifier autodetected: %s", candidate_profiles[0].identifier)
                 autodetection = True
                 selected_profile = candidate_profiles[0].identifier
             else:
                 logger.debug("Candidate profiles: %s", candidate_profiles)
                 available_profiles = services.get_profiles(profiles_path)
                 # Define the list of choices
+                # console.print(get_app_header_rule())
                 choices = [
                     f"[bold]{profile.identifier}[/bold]: [white]{profile.name}[/white]" for profile in available_profiles]
+                console.print(Padding(Rule("[bold yellow]WARNING: [/bold yellow]"
+                                           "[bold]Unable to automatically detect the profile to use for validation[/bold]\n", align="center", style="bold yellow"), (2, 2, 0, 2)))
                 selected_option = multiple_choice(
-                    console, choices, "[bold yellow]WARNING: [/bold yellow]"
-                    "[bold]Unable to automatically detect the profile to use for validation.[/bold]\n"
-                    f"{''*10}Please select a profile from the list below:")
+                    console, choices, "[italic]Available Profiles[/italic]", padding=(1, 2))
                 selected_profile = available_profiles[int(selected_option) - 1].identifier
-                logger.error("Profile selected: %s", selected_profile)
+                logger.debug("Profile selected: %s", selected_profile)
+                console.print(Padding(Rule(style="bold yellow"), (1, 2)))
         # Set the selected profile
         validation_settings["profile_identifier"] = selected_profile
         validation_settings["profile_autodetected"] = autodetection
@@ -483,7 +489,7 @@ class ValidationReportLayout(Layout):
 
         # Create the main layout
         self.checks_stats_layout = Layout(
-            Panel(report_container_layout, title=f"[bold]RO-Crate Validator[/bold] [white](ver. [magenta]{get_version()}[/magenta])[/white]",
+            Panel(report_container_layout, title=f"[bold]- Validation Report -[/bold]",
                   border_style="cyan", title_align="center", padding=(1, 2)))
 
         # Create the overall result layout
@@ -494,7 +500,7 @@ class ValidationReportLayout(Layout):
         group_layout.add_split(self.checks_stats_layout)
         group_layout.add_split(self.overall_result)
 
-        self.__layout = Padding(group_layout, (2, 1))
+        self.__layout = Padding(group_layout, (1, 1))
 
     def update(self, profile_stats: dict = None):
         assert profile_stats, "Profile stats must be provided"
@@ -568,11 +574,11 @@ class ValidationReportLayout(Layout):
         if result.passed():
             self.overall_result.update(
                 Padding(Rule(f"[bold][[green]OK[/green]] RO-Crate is [green]valid[/green] !!![/bold]\n\n",
-                             style="bold green"), (1, 0)))
+                             style="bold green"), (1, 1)))
         else:
             self.overall_result.update(
                 Padding(Rule(f"[bold][[red]FAILED[/red]] RO-Crate is [red]not valid[/red] !!![/bold]\n",
-                             style="bold red"), (0, 0)))
+                             style="bold red"), (1, 1)))
 
     def show_validation_details(self, enable_pager: bool = True):
         """
