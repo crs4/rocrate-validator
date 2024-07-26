@@ -34,4 +34,4 @@ def format_text(text: str,
 
 def get_app_header_rule() -> Text:
     return Padding(Rule(f"\n[bold][cyan]ROCrate Validator[/cyan] (ver. [magenta]{get_version()}[/magenta])[/bold]",
-                        style="bold cyan"), (1, 1))
+                        style="bold cyan"), (1, 2))
