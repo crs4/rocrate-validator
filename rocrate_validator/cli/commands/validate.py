@@ -593,7 +593,7 @@ class ValidationReportLayout(Layout):
         console = self.console
         result = self.result
 
-        logger.error("Validation failed: %s", result.failed_requirements)
+        logger.debug("Validation failed: %s", result.failed_requirements)
 
         # Print validation details
         with console.pager(pager=pager, styles=not console.no_color) if enable_pager else console:

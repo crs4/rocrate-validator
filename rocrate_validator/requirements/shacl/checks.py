@@ -112,6 +112,7 @@ class SHACLCheck(RequirementCheck):
         # parse the validation result
         end_time = timer()
         logger.debug("Validation '%s' conforms: %s", self.name, shacl_result.conforms)
+        logger.debug("Number of violations: %s", len(shacl_result.violations))
         logger.debug(f"Execution time for validating the data graph: {end_time - start_time} seconds")
 
         # store the validation result in the context
@@ -170,9 +171,11 @@ class SHACLCheck(RequirementCheck):
                     logger.debug("Added validation issue to the context: %s", c)
 
         # As above, but for skipped checks which are not failed
+        logger.debug("Skipped checks: %s", len(shacl_context.result.skipped_checks))
         for requirementCheck in list(shacl_context.result.skipped_checks):
             logger.debug("Processing skipped check: %s", requirementCheck.identifier)
             if not isinstance(requirementCheck, SHACLCheck):
+                logger.debug("Skipped check is not a SHACLCheck: %s", requirementCheck.identifier)
                 continue
             if requirementCheck.requirement.profile != shacl_context.current_validation_profile and \
                     not requirementCheck in failed_requirements_checks and \
@@ -183,8 +186,7 @@ class SHACLCheck(RequirementCheck):
                     EventType.REQUIREMENT_CHECK_VALIDATION_END, requirementCheck, validation_result=True))
                 logger.debug("Added skipped check to the context: %s", requirementCheck.identifier)
 
-        logger.debug("Remaining skipped checks: %s", shacl_context.result.skipped_checks)
-
+        logger.debug("Remaining skipped checks: %r", len(shacl_context.result.skipped_checks))
         end_time = timer()
         logger.debug(f"Execution time for parsing the validation result: {end_time - start_time} seconds")
 
