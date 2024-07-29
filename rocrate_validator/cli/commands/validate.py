@@ -359,7 +359,7 @@ class ProgressMonitor(Subscriber):
     def update(self, event: Event):
         # logger.debug("Event: %s", event.event_type)
         if event.event_type == EventType.PROFILE_VALIDATION_START:
-            logger.debug("Profile validation start")
+            logger.debug("Profile validation start: %s", event.profile.identifier)
         elif event.event_type == EventType.REQUIREMENT_VALIDATION_START:
             logger.debug("Requirement validation start")
         elif event.event_type == EventType.REQUIREMENT_CHECK_VALIDATION_START:
