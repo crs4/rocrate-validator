@@ -172,17 +172,20 @@ class SHACLCheck(RequirementCheck):
                     logger.debug("Added validation issue to the context: %s", c)
 
         # As above, but for skipped checks which are not failed
-        if not shacl_context.fail_fast:
-            for requirementCheck in list(shacl_context.result.skipped_checks):
-                if not isinstance(requirementCheck, SHACLCheck):
-                    continue
-                if requirementCheck.requirement.profile != shacl_context.current_validation_profile and \
-                        not requirementCheck in failed_requirements_checks and \
-                        not requirementCheck.identifier in failed_requirement_checks_notified:
-                    failed_requirement_checks_notified.append(requirementCheck.identifier)
-                    shacl_context.result.add_executed_check(requirementCheck, True)
-                    shacl_context.validator.notify(RequirementCheckValidationEvent(
-                        EventType.REQUIREMENT_CHECK_VALIDATION_END, requirementCheck, validation_result=True))
+        for requirementCheck in list(shacl_context.result.skipped_checks):
+            logger.debug("Processing skipped check: %s", requirementCheck.identifier)
+            if not isinstance(requirementCheck, SHACLCheck):
+                continue
+            if requirementCheck.requirement.profile != shacl_context.current_validation_profile and \
+                    not requirementCheck in failed_requirements_checks and \
+                    not requirementCheck.identifier in failed_requirement_checks_notified:
+                failed_requirement_checks_notified.append(requirementCheck.identifier)
+                shacl_context.result.add_executed_check(requirementCheck, True)
+                shacl_context.validator.notify(RequirementCheckValidationEvent(
+                    EventType.REQUIREMENT_CHECK_VALIDATION_END, requirementCheck, validation_result=True))
+                logger.debug("Added skipped check to the context: %s", requirementCheck.identifier)
+
+        logger.debug("Remaining skipped checks: %s", shacl_context.result.skipped_checks)
 
         end_time = timer()
         logger.debug(f"Execution time for parsing the validation result: {end_time - start_time} seconds")
