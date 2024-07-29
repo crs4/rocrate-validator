@@ -64,8 +64,6 @@ class SHACLCheck(RequirementCheck):
             logger.debug("SHACL Validation of profile %s requirement %s skipped", self.requirement.profile, self)
             # The validation is postponed to the more specific profiles
             # so the check is not considered as failed.
-            # We assume that the main algorithm catches the issue
-            # and the check is marked as skipped withing the context.result
             raise SkipRequirementCheck(self, str(e))
         except ROCrateMetadataNotFoundError as e:
             logger.debug("Unable to perform metadata validation due to missing metadata file: %s", e)
