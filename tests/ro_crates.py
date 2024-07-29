@@ -265,6 +265,15 @@ class WROCNoLicense:
         return self.base_path / "no_license"
 
 
+class WROCMainEntity:
+
+    base_path = INVALID_CRATES_DATA_PATH / "1_wroc_crate/"
+
+    @property
+    def wroc_no_mainentity(self) -> Path:
+        return self.base_path / "no_mainentity"
+
+
 class InvalidProcRC:
 
     base_path = INVALID_CRATES_DATA_PATH / "3_process_run_crate/"
