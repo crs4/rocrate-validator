@@ -38,7 +38,7 @@ __all__ = ["cli", "click"]
 @click.pass_context
 def cli(ctx: click.Context, debug: bool, version: bool, disable_color: bool):
     ctx.ensure_object(dict)
-    console = Console(no_color=disable_color, force_terminal=True)
+    console = Console(no_color=disable_color)
     # pass the console to subcommands through the click context, after configuration
     ctx.obj['console'] = console
     ctx.obj['pager'] = SystemPager()
