@@ -38,10 +38,15 @@ __all__ = ["cli", "click"]
 @click.pass_context
 def cli(ctx: click.Context, debug: bool, version: bool, disable_color: bool):
     ctx.ensure_object(dict)
-    console = Console(no_color=disable_color)
+
+    # determine if the console is interactive
+    interactive = sys.stdout.isatty()
+
+    console = Console(no_color=disable_color or not interactive)
     # pass the console to subcommands through the click context, after configuration
     ctx.obj['console'] = console
     ctx.obj['pager'] = SystemPager()
+    ctx.obj['interactive'] = interactive
 
     try:
         # If the version flag is set, print the version and exit

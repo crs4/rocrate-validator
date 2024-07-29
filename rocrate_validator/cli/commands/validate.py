@@ -185,8 +185,12 @@ def validate(ctx,
     """
     console: Console = ctx.obj['console']
     pager = ctx.obj['pager']
+    interactive = ctx.obj['interactive']
     # Get the no_paging flag
     enable_pager = not no_paging
+    # override the enable_pager flag if the interactive flag is False
+    if not interactive:
+        enable_pager = False
     # Log the input parameters for debugging
     logger.debug("profiles_path: %s", os.path.abspath(profiles_path))
     logger.debug("profile_identifier: %s", profile_identifier)
@@ -265,7 +269,8 @@ def validate(ctx,
 
         # Print the validation result
         if not result.passed():
-            if not details and enable_pager:
+            details_choice = "n"
+            if interactive and not details and enable_pager:
                 details_choice = get_single_char(console, choices=['y', 'n'],
                                                  message="[bold] > Do you want to see the validation details? ([magenta]y/n[/magenta]): [/bold]")
             if details_choice == "y" or details:

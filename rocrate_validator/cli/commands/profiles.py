@@ -56,7 +56,12 @@ def list_profiles(ctx, no_paging: bool = False):  # , profiles_path: Path = DEFA
     profiles_path = ctx.obj['profiles_path']
     console = ctx.obj['console']
     pager = ctx.obj['pager']
+    interactive = ctx.obj['interactive']
+    # Get the no_paging flag
     enable_pager = not no_paging
+    # override the enable_pager flag if the interactive flag is False
+    if not interactive:
+        enable_pager = False
 
     try:
         # Get the profiles
@@ -139,9 +144,12 @@ def describe_profile(ctx,
     # Get the console
     console = ctx.obj['console']
     pager = ctx.obj['pager']
-
+    interactive = ctx.obj['interactive']
     # Get the no_paging flag
     enable_pager = not no_paging
+    # override the enable_pager flag if the interactive flag is False
+    if not interactive:
+        enable_pager = False
 
     try:
         # Get the profile
