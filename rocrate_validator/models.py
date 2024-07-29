@@ -503,6 +503,10 @@ class Requirement(ABC):
 
     @property
     def identifier(self) -> str:
+        return f"{self.profile.identifier}.{self.relative_identifier}"
+
+    @property
+    def relative_identifier(self) -> str:
         return f"{self.level.name} {self.order_number}"
 
     @property
@@ -736,6 +740,10 @@ class RequirementCheck(ABC):
     @property
     def identifier(self) -> str:
         return f"{self.requirement.identifier}.{self.order_number}"
+
+    @property
+    def relative_identifier(self) -> str:
+        return f"{self.requirement.relative_identifier}.{self.order_number}"
 
     @property
     def name(self) -> str:

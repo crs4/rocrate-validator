@@ -239,7 +239,7 @@ def __verbose_describe_profile__(profile):
             levels_list.add(level_info)
             logger.debug("Check %s: %s", check.name, check.description)
             # checks.append(check)
-            table_rows.append((str(check.identifier).rjust(14), check.name,
+            table_rows.append((str(check.relative_identifier).rjust(14), check.name,
                                Markdown(check.description.strip()), level_info))
             count_checks += 1
 
