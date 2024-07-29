@@ -281,7 +281,8 @@ def validate(ctx,
                     c = Console(file=f, color_system=None)
                     c.print(report_layout.layout)
                     report_layout.console = c
-                    report_layout.show_validation_details(pager, enable_pager=False)
+                    if not result.passed():
+                        report_layout.show_validation_details(None, enable_pager=False)
 
         # using ctx.exit seems to raise an Exception that gets caught below,
         # so we use sys.exit instead.
