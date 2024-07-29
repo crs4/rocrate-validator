@@ -70,6 +70,10 @@ class ValidROC:
     def workflow_testing_ro_crate(self) -> Path:
         return VALID_CRATES_DATA_PATH / "workflow-testing-ro-crate"
 
+    @property
+    def workflow_run_crate(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "workflow-run-crate"
+
 
 class InvalidFileDescriptor:
 
@@ -540,3 +544,16 @@ class InvalidWTROC:
     @property
     def testdefinition_bad_engineversion(self) -> Path:
         return self.base_path / "testdefinition_bad_engineversion"
+
+
+class InvalidWfRC:
+
+    base_path = INVALID_CRATES_DATA_PATH / "4_workflow_run_crate/"
+
+    @property
+    def conformsto_no_wfrc(self) -> Path:
+        return self.base_path / "conformsto_no_wfrc"
+
+    @property
+    def conformsto_no_wroc(self) -> Path:
+        return self.base_path / "conformsto_no_wroc"

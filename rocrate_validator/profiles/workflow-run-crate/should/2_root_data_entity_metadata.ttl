@@ -1,0 +1,27 @@
+@prefix ro: <./> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xml1: <http://www.w3.org/2001/XMLSchema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
+
+ro:WfRCRootDataEntityMetadataRecommended a sh:NodeShape ;
+    sh:name "Root Data Entity Metadata SHOULD" ;
+    sh:description "Recommended Properties of the Root Data Entity" ;
+    sh:targetClass rocrate:RootDataEntity ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Root Data Entity conformsTo" ;
+        sh:description "The Root Data Entity SHOULD reference CreativeWork entities corresponding to the Process Run Crate and Workflow RO-Crate profiles" ;
+        sh:path dct:conformsTo ;
+        sh:class schema:CreativeWork;
+        # At least one value of conformsTo must match the pattern
+        sh:qualifiedValueShape [
+            sh:pattern "^https://w3id.org/(ro/wfrun/process|workflowhub/workflow-ro-crate)/.*" ;
+        ] ;
+        sh:qualifiedMinCount 2 ;
+        sh:minCount 1 ;
+        sh:message "The Root Data Entity SHOULD reference CreativeWork entities corresponding to the Process Run Crate and Workflow RO-Crate profiles" ;
+    ] .
