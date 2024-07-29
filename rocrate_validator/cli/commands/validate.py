@@ -266,9 +266,9 @@ def validate(ctx,
         # Print the validation result
         if not result.passed():
             if not details and enable_pager:
-                details = get_single_char(console, choices=['y', 'n'],
-                                          message="[bold] > Do you want to see the validation details? ([magenta]y/n[/magenta]): [/bold]")
-            if details == "y" or details:
+                details_choice = get_single_char(console, choices=['y', 'n'],
+                                                 message="[bold] > Do you want to see the validation details? ([magenta]y/n[/magenta]): [/bold]")
+            if details_choice == "y" or details:
                 report_layout.show_validation_details(pager, enable_pager=enable_pager)
 
         if output_file:
