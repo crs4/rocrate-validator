@@ -278,7 +278,7 @@ def validate(ctx,
                     f.write(result.to_json())
             elif format == "text":
                 with open(output_file, "w") as f:
-                    c = Console(file=f, color_system=None)
+                    c = Console(file=f, color_system=None, width=120, height=31)
                     c.print(report_layout.layout)
                     report_layout.console = c
                     if not result.passed():
