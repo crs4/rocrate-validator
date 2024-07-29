@@ -5,6 +5,7 @@ import rich_click as click
 from rich.console import Console
 
 import rocrate_validator.log as logging
+from rocrate_validator.cli.utils import SystemPager
 from rocrate_validator.utils import get_version
 
 # set up logging
@@ -37,9 +38,11 @@ __all__ = ["cli", "click"]
 @click.pass_context
 def cli(ctx: click.Context, debug: bool, version: bool, disable_color: bool):
     ctx.ensure_object(dict)
-    console = Console(no_color=disable_color)
+    console = Console(no_color=disable_color, force_terminal=True)
     # pass the console to subcommands through the click context, after configuration
     ctx.obj['console'] = console
+    ctx.obj['pager'] = SystemPager()
+
     try:
         # If the version flag is set, print the version and exit
         if version:

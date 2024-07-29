@@ -13,6 +13,7 @@ from rich.layout import Layout
 from rich.live import Live
 from rich.markdown import Markdown
 from rich.padding import Padding
+from rich.pager import Pager
 from rich.panel import Panel
 from rich.progress import BarColumn, Progress, TextColumn, TimeElapsedColumn
 from rich.prompt import Prompt
@@ -183,6 +184,7 @@ def validate(ctx,
     [magenta]rocrate-validator:[/magenta] Validate a RO-Crate against a profile
     """
     console: Console = ctx.obj['console']
+    pager = ctx.obj['pager']
     # Get the no_paging flag
     enable_pager = not no_paging
     # Log the input parameters for debugging
@@ -266,8 +268,8 @@ def validate(ctx,
             if not details and enable_pager:
                 details = get_single_char(console, choices=['y', 'n'],
                                           message="[bold] > Do you want to see the validation details? ([magenta]y/n[/magenta]): [/bold]")
-            if details == "y":
-                report_layout.show_validation_details(enable_pager=enable_pager)
+            if details == "y" or details:
+                report_layout.show_validation_details(pager, enable_pager=enable_pager)
 
         if output_file:
             # Print the validation report to a file
@@ -580,7 +582,7 @@ class ValidationReportLayout(Layout):
                 Padding(Rule(f"[bold][[red]FAILED[/red]] RO-Crate is [red]not valid[/red] !!![/bold]\n",
                              style="bold red"), (1, 1)))
 
-    def show_validation_details(self, enable_pager: bool = True):
+    def show_validation_details(self, pager: Pager, enable_pager: bool = True):
         """
         Print the validation result
         """
@@ -591,8 +593,10 @@ class ValidationReportLayout(Layout):
         console = self.console
         result = self.result
 
+        logger.error("Validation failed: %s", result.failed_requirements)
+
         # Print validation details
-        with console.pager(styles=True) if enable_pager else console:
+        with console.pager(pager=pager, styles=not console.no_color) if enable_pager else console:
             # Print the list of failed requirements
             console.print(
                 Padding("\n[bold]The following requirements have not meet: [/bold]", (0, 0)), style="white")

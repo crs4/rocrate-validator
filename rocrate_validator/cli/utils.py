@@ -1,9 +1,11 @@
 import os
+import pydoc
 import re
 import textwrap
-from typing import Optional
+from typing import Any, Optional
 
 from rich.padding import Padding
+from rich.pager import Pager
 from rich.rule import Rule
 from rich.text import Text
 
@@ -35,3 +37,14 @@ def format_text(text: str,
 def get_app_header_rule() -> Text:
     return Padding(Rule(f"\n[bold][cyan]ROCrate Validator[/cyan] (ver. [magenta]{get_version()}[/magenta])[/bold]",
                         style="bold cyan"), (1, 2))
+
+
+class SystemPager(Pager):
+    """Uses the pager installed on the system."""
+
+    def _pager(self, content: str) -> Any:
+        return pydoc.pipepager(content, "less -R")
+
+    def show(self, content: str) -> None:
+        """Use the same pager used by pydoc."""
+        self._pager(content)

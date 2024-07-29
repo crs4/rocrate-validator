@@ -55,6 +55,7 @@ def list_profiles(ctx, no_paging: bool = False):  # , profiles_path: Path = DEFA
     """
     profiles_path = ctx.obj['profiles_path']
     console = ctx.obj['console']
+    pager = ctx.obj['pager']
     enable_pager = not no_paging
 
     try:
@@ -102,7 +103,7 @@ def list_profiles(ctx, no_paging: bool = False):  # , profiles_path: Path = DEFA
             table.add_row()
 
         # Print the table
-        with console.pager(styles=True) if enable_pager else console:
+        with console.pager(pager=pager, styles=not console.no_color) if enable_pager else console:
             console.print(get_app_header_rule())
             console.print(Padding(table, (0, 1)))
 
@@ -137,6 +138,8 @@ def describe_profile(ctx,
     """
     # Get the console
     console = ctx.obj['console']
+    pager = ctx.obj['pager']
+
     # Get the no_paging flag
     enable_pager = not no_paging
 
@@ -158,7 +161,7 @@ def describe_profile(ctx,
         else:
             table = __verbose_describe_profile__(profile)
 
-        with console.pager(styles=True) if enable_pager else console:
+        with console.pager(pager=pager, styles=not console.no_color) if enable_pager else console:
             console.print(get_app_header_rule())
             console.print(Padding(Panel(subheader_content, title=subheader_title, padding=(1, 1),
                                         title_align="left", border_style="cyan"), (0, 1, 0, 1)))
