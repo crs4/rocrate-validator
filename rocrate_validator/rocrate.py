@@ -205,7 +205,6 @@ class ROCrateMetadata:
         except Exception as e:
             if logger.isEnabledFor(logging.DEBUG):
                 logger.exception(e)
-            logger.exception(e)  # TODO: remove
             return None
 
     def as_json(self) -> str:
