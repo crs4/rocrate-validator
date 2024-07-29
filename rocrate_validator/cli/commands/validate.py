@@ -593,8 +593,6 @@ class ValidationReportLayout(Layout):
         console = self.console
         result = self.result
 
-        console.print("[purple]Validation Report[/purple]", style="bold purple")
-
         logger.error("Validation failed: %s", result.failed_requirements)
 
         # Print validation details
