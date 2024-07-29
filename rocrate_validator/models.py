@@ -1264,7 +1264,8 @@ class Validator(Publisher):
                 candidate_profiles.append(profile)
                 inherited_profiles = profile.inherited_profiles
                 for inherited_profile in inherited_profiles:
-                    candidate_profiles.remove(inherited_profile)
+                    if inherited_profile in candidate_profiles:
+                        candidate_profiles.remove(inherited_profile)
             logger.debug("%d Candidate Profiles found: %s", len(candidate_profiles), candidate_profiles)
             return candidate_profiles
 

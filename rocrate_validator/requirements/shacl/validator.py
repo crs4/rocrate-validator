@@ -53,6 +53,7 @@ class SHACLValidationContextManager:
         if self._context.settings.get("target_only_validation", False) and \
                 self._profile.identifier != self._context.settings.get("profile_identifier", None):
             logger.debug("Skipping validation of profile %s", self._profile.identifier)
+            self.context.result.add_skipped_check(self._check)
             raise SHACLValidationSkip(f"Skipping validation of profile {self._profile.identifier}")
         logger.debug("ValidationContext of profile %s initialized", self._profile.identifier)
         return self._shacl_context

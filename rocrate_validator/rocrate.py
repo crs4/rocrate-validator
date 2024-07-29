@@ -55,14 +55,21 @@ class ROCrateEntity:
         e_types = self.type if isinstance(self.type, list) else [self.type]
         return any([t in e_types for t in entity_types])
 
-    def get_property(self, name: str, default=None) -> Union[str, ROCrateEntity]:
-        data = self._raw_data.get(name, default)
+    def __process_property__(self, name: str, data: object) -> object:
         if isinstance(data, dict) and '@id' in data:
             entity = self.metadata.get_entity(data['@id'])
             if entity is None:
                 return ROCrateEntity(self, data)
             return entity
         return data
+
+    def get_property(self, name: str, default=None) -> Union[str, ROCrateEntity]:
+        data = self._raw_data.get(name, default)
+        if data is None:
+            return None
+        if isinstance(data, list):
+            return [self.__process_property__(name, _) for _ in data]
+        return self.__process_property__(name, data)
 
     @property
     def raw_data(self) -> object:
@@ -205,7 +212,6 @@ class ROCrateMetadata:
         except Exception as e:
             if logger.isEnabledFor(logging.DEBUG):
                 logger.exception(e)
-            logger.exception(e)  # TODO: remove
             return None
 
     def as_json(self) -> str:
