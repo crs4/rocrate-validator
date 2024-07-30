@@ -30,17 +30,24 @@ __all__ = ["cli", "click"]
     default=False
 )
 @click.option(
+    '-y',
+    '--no-interactive',
+    is_flag=True,
+    help="Disable interactive mode",
+    default=False
+)
+@click.option(
     '--disable-color',
     is_flag=True,
     help="Disable colored console output",
     default=False
 )
 @click.pass_context
-def cli(ctx: click.Context, debug: bool, version: bool, disable_color: bool):
+def cli(ctx: click.Context, debug: bool, version: bool, disable_color: bool, no_interactive: bool):
     ctx.ensure_object(dict)
 
     # determine if the console is interactive
-    interactive = sys.stdout.isatty()
+    interactive = sys.stdout.isatty() and not no_interactive
 
     console = Console(no_color=disable_color or not interactive)
     # pass the console to subcommands through the click context, after configuration
