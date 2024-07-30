@@ -137,7 +137,8 @@ def get_single_char(console: Optional[Console] = None, end: str = "\n",
     show_default=True
 )
 @click.option(
-    '--details',
+    '-v',
+    '--verbose',
     is_flag=True,
     help="Output the validation details without prompting",
     default=False,
@@ -177,7 +178,7 @@ def validate(ctx,
              no_fail_fast: bool = False,
              ontologies_path: Optional[Path] = None,
              no_paging: bool = False,
-             details: bool = False,
+             verbose: bool = False,
              format: str = "text",
              output_file: Optional[Path] = None):
     """
@@ -216,7 +217,7 @@ def validate(ctx,
             "requirement_severity_only": requirement_severity_only,
             "inherit_profiles": not disable_profile_inheritance,
             "show_details": False,
-            "details": details,
+            "details": verbose,
             "data_path": rocrate_uri,
             "ontology_path": Path(ontologies_path).absolute() if ontologies_path else None,
             "abort_on_first": not no_fail_fast
@@ -269,11 +270,11 @@ def validate(ctx,
 
         # Print the validation result
         if not result.passed():
-            details_choice = "n"
-            if interactive and not details and enable_pager:
-                details_choice = get_single_char(console, choices=['y', 'n'],
+            verbose_choice = "n"
+            if interactive and not verbose and enable_pager:
+                verbose_choice = get_single_char(console, choices=['y', 'n'],
                                                  message="[bold] > Do you want to see the validation details? ([magenta]y/n[/magenta]): [/bold]")
-            if details_choice == "y" or details:
+            if verbose_choice == "y" or verbose:
                 report_layout.show_validation_details(pager, enable_pager=enable_pager)
 
         if output_file:
