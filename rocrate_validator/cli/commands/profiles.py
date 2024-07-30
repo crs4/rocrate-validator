@@ -245,10 +245,23 @@ def __verbose_describe_profile__(profile):
             color = get_severity_color(check.severity)
             level_info = f"[{color}]{check.severity.name}[/{color}]"
             levels_list.add(level_info)
-            logger.debug("Check %s: %s", check.name, check.description)
-            # checks.append(check)
-            table_rows.append((str(check.relative_identifier).rjust(14), check.name,
-                               Markdown(check.description.strip()), level_info))
+            override = None
+            if check.overridden_by:
+                severity_color = get_severity_color(check.overridden_by.severity)
+                override = f"[overridden by: [bold][magenta]{check.overridden_by.requirement.profile.identifier}[/magenta] "\
+                    f"[{severity_color}]{check.overridden_by.relative_identifier}[/{severity_color}][/bold]]"
+            elif check.override:
+                severity_color = get_severity_color(check.override.severity)
+                override = f"[override: [bold][magenta]{check.override.requirement.profile.identifier}[/magenta] "\
+                    f"[{severity_color}]{check.override.relative_identifier}[/{severity_color}][/bold]]"
+            from rich.align import Align
+            description_table = Table(show_header=False, show_footer=False, show_lines=False, show_edge=False)
+            if override:
+                description_table.add_row(Align(Padding(override, (0, 0, 1, 0)), align="right"))
+            description_table.add_row(Markdown(check.description.strip()))
+
+            table_rows.append((str(check.relative_identifier), check.name,
+                               description_table, level_info))
             count_checks += 1
 
     table = Table(show_header=True,
