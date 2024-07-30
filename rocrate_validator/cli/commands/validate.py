@@ -153,7 +153,7 @@ def get_single_char(console: Optional[Console] = None, end: str = "\n",
 )
 @click.option(
     '-f',
-    '--format',
+    '--output-format',
     type=click.Choice(["json", "text"], case_sensitive=False),
     default="text",
     show_default=True,
@@ -187,7 +187,7 @@ def validate(ctx,
              ontologies_path: Optional[Path] = None,
              no_paging: bool = False,
              verbose: bool = False,
-             format: str = "text",
+             output_format: str = "text",
              output_file: Optional[Path] = None,
              output_line_width: Optional[int] = None):
     """
@@ -287,10 +287,10 @@ def validate(ctx,
 
         if output_file:
             # Print the validation report to a file
-            if format == "json":
+            if output_format == "json":
                 with open(output_file, "w") as f:
                     f.write(result.to_json())
-            elif format == "text":
+            elif output_format == "text":
                 with open(output_file, "w") as f:
                     c = Console(file=f, color_system=None, width=output_line_width, height=31)
                     c.print(report_layout.layout)
