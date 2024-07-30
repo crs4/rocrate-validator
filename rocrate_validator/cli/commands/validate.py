@@ -137,7 +137,8 @@ def get_single_char(console: Optional[Console] = None, end: str = "\n",
     show_default=True
 )
 @click.option(
-    '--details',
+    '-v',
+    '--verbose',
     is_flag=True,
     help="Output the validation details without prompting",
     default=False,
@@ -152,7 +153,7 @@ def get_single_char(console: Optional[Console] = None, end: str = "\n",
 )
 @click.option(
     '-f',
-    '--format',
+    '--output-format',
     type=click.Choice(["json", "text"], case_sensitive=False),
     default="text",
     show_default=True,
@@ -166,6 +167,14 @@ def get_single_char(console: Optional[Console] = None, end: str = "\n",
     show_default=True,
     help="Path to the output file for the validation report",
 )
+@click.option(
+    '-w',
+    '--output-line-width',
+    type=click.INT,
+    default=120,
+    show_default=True,
+    help="Width of the output line",
+)
 @click.pass_context
 def validate(ctx,
              profiles_path: Path = DEFAULT_PROFILES_PATH,
@@ -177,16 +186,21 @@ def validate(ctx,
              no_fail_fast: bool = False,
              ontologies_path: Optional[Path] = None,
              no_paging: bool = False,
-             details: bool = False,
-             format: str = "text",
-             output_file: Optional[Path] = None):
+             verbose: bool = False,
+             output_format: str = "text",
+             output_file: Optional[Path] = None,
+             output_line_width: Optional[int] = None):
     """
     [magenta]rocrate-validator:[/magenta] Validate a RO-Crate against a profile
     """
     console: Console = ctx.obj['console']
     pager = ctx.obj['pager']
+    interactive = ctx.obj['interactive']
     # Get the no_paging flag
     enable_pager = not no_paging
+    # override the enable_pager flag if the interactive flag is False
+    if not interactive:
+        enable_pager = False
     # Log the input parameters for debugging
     logger.debug("profiles_path: %s", os.path.abspath(profiles_path))
     logger.debug("profile_identifier: %s", profile_identifier)
@@ -211,8 +225,7 @@ def validate(ctx,
             "requirement_severity": requirement_severity,
             "requirement_severity_only": requirement_severity_only,
             "inherit_profiles": not disable_profile_inheritance,
-            "show_details": False,
-            "details": details,
+            "verbose": verbose,
             "data_path": rocrate_uri,
             "ontology_path": Path(ontologies_path).absolute() if ontologies_path else None,
             "abort_on_first": not no_fail_fast
@@ -265,23 +278,25 @@ def validate(ctx,
 
         # Print the validation result
         if not result.passed():
-            if not details and enable_pager:
-                details = get_single_char(console, choices=['y', 'n'],
-                                          message="[bold] > Do you want to see the validation details? ([magenta]y/n[/magenta]): [/bold]")
-            if details == "y" or details:
+            verbose_choice = "n"
+            if interactive and not verbose and enable_pager:
+                verbose_choice = get_single_char(console, choices=['y', 'n'],
+                                                 message="[bold] > Do you want to see the validation details? ([magenta]y/n[/magenta]): [/bold]")
+            if verbose_choice == "y" or verbose:
                 report_layout.show_validation_details(pager, enable_pager=enable_pager)
 
         if output_file:
             # Print the validation report to a file
-            if format == "json":
+            if output_format == "json":
                 with open(output_file, "w") as f:
                     f.write(result.to_json())
-            elif format == "text":
+            elif output_format == "text":
                 with open(output_file, "w") as f:
-                    c = Console(file=f, color_system=None)
+                    c = Console(file=f, color_system=None, width=output_line_width, height=31)
                     c.print(report_layout.layout)
                     report_layout.console = c
-                    report_layout.show_validation_details(pager, enable_pager=False)
+                    if not result.passed():
+                        report_layout.show_validation_details(None, enable_pager=False)
 
         # using ctx.exit seems to raise an Exception that gets caught below,
         # so we use sys.exit instead.
@@ -593,7 +608,7 @@ class ValidationReportLayout(Layout):
         console = self.console
         result = self.result
 
-        logger.error("Validation failed: %s", result.failed_requirements)
+        logger.debug("Validation failed: %s", result.failed_requirements)
 
         # Print validation details
         with console.pager(pager=pager, styles=not console.no_color) if enable_pager else console:
@@ -619,7 +634,7 @@ class ValidationReportLayout(Layout):
                                     key=lambda x: (-x.severity.value, x)):
                     issue_color = get_severity_color(check.level.severity)
                     console.print(
-                        Padding(f"[bold][{issue_color}][{check.identifier.center(16)}][/{issue_color}]  [magenta]{check.name}[/magenta][/bold]:", (0, 7)), style="white bold")
+                        Padding(f"[bold][{issue_color}][{check.relative_identifier.center(16)}][/{issue_color}]  [magenta]{check.name}[/magenta][/bold]:", (0, 7)), style="white bold")
                     console.print(Padding(Markdown(check.description), (0, 27)))
                     console.print(Padding("[u] Detected issues [/u]", (0, 8)), style="white bold")
                     for issue in sorted(result.get_issues_by_check(check),
@@ -677,7 +692,7 @@ def __compute_profile_stats__(validation_settings: dict):
                 check_count_by_severity[severity] = 0
             if severity_validation <= severity:
                 num_checks = len(
-                    requirement.get_checks_by_level(LevelCollection.get(severity.name)))
+                    [_ for _ in requirement.get_checks_by_level(LevelCollection.get(severity.name)) if not _.overridden])
                 check_count_by_severity[severity] += num_checks
                 total_checks += num_checks
 

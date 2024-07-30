@@ -26,25 +26,25 @@ def test_version(cli_runner: CliRunner):
 
 def test_validate_subcmd_invalid_rocrate1(cli_runner: CliRunner):
     result = cli_runner.invoke(cli, ['validate', str(
-        InvalidFileDescriptor().invalid_json_format), '--details', '--no-paging', '-p', 'ro-crate'])
+        InvalidFileDescriptor().invalid_json_format), '--verbose', '--no-paging', '-p', 'ro-crate'])
     logger.error(result.output)
     assert result.exit_code == 1
 
 
 def test_validate_subcmd_valid_local_folder_rocrate(cli_runner: CliRunner):
-    result = cli_runner.invoke(cli, ['validate', str(ValidROC().wrroc_paper_long_date), '--details', '--no-paging'])
+    result = cli_runner.invoke(cli, ['validate', str(ValidROC().wrroc_paper_long_date), '--verbose', '--no-paging'])
     assert result.exit_code == 0
     assert re.search(r'RO-Crate.*is valid', result.output)
 
 
 def test_validate_subcmd_valid_remote_rocrate(cli_runner: CliRunner):
     result = cli_runner.invoke(
-        cli, ['validate', str(ValidROC().sort_and_change_remote), '--details', '--no-paging'])
+        cli, ['validate', str(ValidROC().sort_and_change_remote), '--verbose', '--no-paging'])
     assert result.exit_code == 0
     assert re.search(r'RO-Crate.*is valid', result.output)
 
 
 def test_validate_subcmd_invalid_local_archive_rocrate(cli_runner: CliRunner):
-    result = cli_runner.invoke(cli, ['validate', str(ValidROC().sort_and_change_archive), '--details', '--no-paging'])
+    result = cli_runner.invoke(cli, ['validate', str(ValidROC().sort_and_change_archive), '--verbose', '--no-paging'])
     assert result.exit_code == 0
     assert re.search(r'RO-Crate.*is valid', result.output)
