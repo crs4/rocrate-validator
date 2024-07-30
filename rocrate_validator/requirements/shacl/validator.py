@@ -118,7 +118,7 @@ class SHACLValidationContext(ValidationContext):
                     logger.debug("Processing requirement: %s", requirement.name)
                     for check in requirement.get_checks():
                         logger.debug("Processing check: %s", check)
-                        if check.overridden:
+                        if check.overridden and check.requirement.profile != self.target_profile:
                             logger.debug("Overridden check: %s", check)
                             profile_shapes_graph -= check.shape.graph
                             profile_shapes.pop(check.shape.key)

@@ -1542,6 +1542,12 @@ class ValidationContext:
             self._profiles = self.__load_profiles__()
         return self._profiles.copy()
 
+    @property
+    def target_profile(self) -> Profile:
+        profiles = self.profiles
+        assert len(profiles) > 0, "No profiles to validate"
+        return self.profiles[-1]
+
     def get_profile_by_token(self, token: str) -> list[Profile]:
         return [p for p in self.profiles if p.token == token]
 
