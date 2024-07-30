@@ -167,6 +167,14 @@ def get_single_char(console: Optional[Console] = None, end: str = "\n",
     show_default=True,
     help="Path to the output file for the validation report",
 )
+@click.option(
+    '-w',
+    '--output-line-width',
+    type=click.INT,
+    default=120,
+    show_default=True,
+    help="Width of the output line",
+)
 @click.pass_context
 def validate(ctx,
              profiles_path: Path = DEFAULT_PROFILES_PATH,
@@ -180,7 +188,8 @@ def validate(ctx,
              no_paging: bool = False,
              verbose: bool = False,
              format: str = "text",
-             output_file: Optional[Path] = None):
+             output_file: Optional[Path] = None,
+             output_line_width: Optional[int] = None):
     """
     [magenta]rocrate-validator:[/magenta] Validate a RO-Crate against a profile
     """
@@ -283,7 +292,7 @@ def validate(ctx,
                     f.write(result.to_json())
             elif format == "text":
                 with open(output_file, "w") as f:
-                    c = Console(file=f, color_system=None, width=120, height=31)
+                    c = Console(file=f, color_system=None, width=output_line_width, height=31)
                     c.print(report_layout.layout)
                     report_layout.console = c
                     if not result.passed():
