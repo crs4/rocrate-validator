@@ -111,7 +111,7 @@ class SHACLValidationContext(ValidationContext):
             logger.debug("Loaded shapes: %s", profile_shapes)
 
             # enable overriding of checks
-            if self.settings.get("override_checks", False):
+            if self.settings.get("allow_requirement_check_override", True):
                 from rocrate_validator.requirements.shacl.requirements import \
                     SHACLRequirement
                 for requirement in [_ for _ in profile.requirements if isinstance(_, SHACLRequirement)]:
