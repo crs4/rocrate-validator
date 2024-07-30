@@ -18,7 +18,7 @@ def test_procrc_conformsto_no_wfrc():
         Severity.REQUIRED,
         False,
         ["Root Data Entity Metadata"],
-        ["The Root Data Entity MUST reference a CreativeWork entity with an @id URI that is consistent with the versioned permalink of the profile"],
+        ["The Root Data Entity MUST reference a CreativeWork entity with an @id URI that is consistent with the versioned permalink of the Workflow Run Crate profile"],
         profile_identifier="workflow-run-crate"
     )
 

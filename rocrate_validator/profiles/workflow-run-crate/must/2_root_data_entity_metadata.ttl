@@ -14,7 +14,7 @@ ro:WfRCRootDataEntityMetadata a sh:NodeShape ;
     sh:property [
         a sh:PropertyShape ;
         sh:name "Root Data Entity conformsTo" ;
-        sh:description "The Root Data Entity MUST reference a CreativeWork entity with an @id URI that is consistent with the versioned permalink of the profile" ;
+        sh:description "The Root Data Entity MUST reference a CreativeWork entity with an @id URI that is consistent with the versioned permalink of the Workflow Run Crate profile" ;
         sh:path dct:conformsTo ;
         sh:class schema:CreativeWork;
         # At least one value of conformsTo must match the pattern
@@ -23,5 +23,5 @@ ro:WfRCRootDataEntityMetadata a sh:NodeShape ;
         ] ;
         sh:qualifiedMinCount 1 ;
         sh:minCount 1 ;
-        sh:message "The Root Data Entity MUST reference a CreativeWork entity with an @id URI that is consistent with the versioned permalink of the profile" ;
+        sh:message "The Root Data Entity MUST reference a CreativeWork entity with an @id URI that is consistent with the versioned permalink of the Workflow Run Crate profile" ;
     ] .
