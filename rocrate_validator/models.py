@@ -409,7 +409,8 @@ class Profile:
     @staticmethod
     def load_profiles(profiles_path: Union[str, Path],
                       publicID: Optional[str] = None,
-                      severity:  Severity = Severity.REQUIRED) -> list[Profile]:
+                      severity:  Severity = Severity.REQUIRED,
+                      allow_requirement_check_override: bool = True) -> list[Profile]:
         # if the path is a string, convert it to a Path
         if isinstance(profiles_path, str):
             profiles_path = Path(profiles_path)
@@ -429,6 +430,34 @@ class Profile:
             if profile_path.is_dir() and profile_path not in IGNORED_PROFILE_DIRECTORIES:
                 profile = Profile.load(profiles_path, profile_path, publicID=publicID, severity=severity)
                 profiles.append(profile)
+
+        # navigate the profiles and check for overridden checks
+        # if the override is enabled in the settings
+        # overridden checks should be marked as such
+        # otherwise, raise an error
+        profiles_checks = {}
+        # visit the profiles in reverse order
+        # (the order is important to visit the most specific profiles first)
+        for profile in sorted(profiles, reverse=True):
+            profile_checks = [_ for r in profile.get_requirements() for _ in r.get_checks()]
+            profile_check_names = []
+            for check in profile_checks:
+                #  find duplicated checks and raise an error
+                if check.name in profile_check_names and not allow_requirement_check_override:
+                    raise DuplicateRequirementCheck(check.name, profile.identifier)
+                #  add check to the list
+                profile_check_names.append(check.name)
+                #  mark overridden checks
+                check_chain = profiles_checks.get(check.name, None)
+                if not check_chain:
+                    profiles_checks[check.name] = [check]
+                elif allow_requirement_check_override:
+                    check.overridden_by = check_chain[-1]
+                    check_chain.append(check)
+                    logger.debug("Overridden check: %s", check)
+                else:
+                    raise DuplicateRequirementCheck(check.name, profile.identifier)
+
         #  order profiles according to the number of profiles they depend on:
         # i.e, first the profiles that do not depend on any other profile
         # then the profiles that depend on the previous ones, and so on
@@ -1120,7 +1149,7 @@ class ValidationSettings:
     profiles_path: Path = DEFAULT_PROFILES_PATH
     profile_identifier: str = DEFAULT_PROFILE_IDENTIFIER
     inherit_profiles: bool = True
-    allow_shapes_override: bool = True
+    allow_requirement_check_override: bool = True
     disable_check_for_duplicates: bool = False
     # Ontology and inference settings
     ontology_path: Optional[Path] = None
@@ -1447,8 +1476,8 @@ class ValidationContext:
         return self.settings.get("profile_identifier")
 
     @property
-    def allow_shapes_override(self) -> bool:
-        return self.settings.get("allow_shapes_override", True)
+    def allow_requirement_check_override(self) -> bool:
+        return self.settings.get("allow_requirement_check_override", True)
 
     @property
     def disable_check_for_duplicates(self) -> bool:
@@ -1469,7 +1498,8 @@ class ValidationContext:
         profiles = Profile.load_profiles(
             self.profiles_path,
             publicID=self.publicID,
-            severity=self.requirement_severity)
+            severity=self.requirement_severity,
+            allow_requirement_check_override=self.allow_requirement_check_override)
 
         # Check if the target profile is in the list of profiles
         profile = Profile.get_by_identifier(self.profile_identifier)
@@ -1497,32 +1527,6 @@ class ValidationContext:
         # if the check for duplicates is disabled, return the profiles
         if self.disable_check_for_duplicates:
             return profiles
-
-        # navigate the profiles and check for overridden checks
-        # if the override is enabled in the settings
-        # overridden checks should be marked as such
-        # otherwise, raise an error
-        profiles_checks = {}
-        # visit the profiles in reverse order
-        # (the order is important to visit the most specific profiles first)
-        for profile in sorted(profiles, reverse=True):
-            profile_checks = [_ for r in profile.get_requirements() for _ in r.get_checks()]
-            profile_check_names = []
-            for check in profile_checks:
-                #  find duplicated checks and raise an error
-                if check.name in profile_check_names and not self.allow_shapes_override:
-                    raise DuplicateRequirementCheck(check.name, profile.identifier)
-                #  add check to the list
-                profile_check_names.append(check.name)
-                #  mark overridden checks
-                check_chain = profiles_checks.get(check.name, None)
-                if not check_chain:
-                    profiles_checks[check.name] = [check]
-                elif self.settings.get("allow_shapes_override", True):
-                    check.overridden_by = check_chain[-1]
-                    check_chain.append(check)
-                else:
-                    raise DuplicateRequirementCheck(check.name, profile.identifier)
 
         return profiles
 

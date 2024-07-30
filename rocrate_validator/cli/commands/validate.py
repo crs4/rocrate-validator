@@ -684,7 +684,7 @@ def __compute_profile_stats__(validation_settings: dict):
                 check_count_by_severity[severity] = 0
             if severity_validation <= severity:
                 num_checks = len(
-                    requirement.get_checks_by_level(LevelCollection.get(severity.name)))
+                    [_ for _ in requirement.get_checks_by_level(LevelCollection.get(severity.name)) if not _.overridden])
                 check_count_by_severity[severity] += num_checks
                 total_checks += num_checks
 

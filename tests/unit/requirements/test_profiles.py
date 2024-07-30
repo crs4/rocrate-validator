@@ -212,12 +212,12 @@ def test_load_invalid_profile_no_override_enabled(fake_profiles_path: str):
         "profile_identifier": "invalid-duplicated-shapes",
         "data_path": ValidROC().wrroc_paper,
         "inherit_profiles": True,
-        "allow_shapes_override": False,
+        "allow_requirement_check_override": False,
     }
 
     settings = ValidationSettings(**settings)
     assert settings.inherit_profiles, "The inheritance mode should be set to True"
-    assert not settings.allow_shapes_override, "The override mode should be set to False"
+    assert not settings.allow_requirement_check_override, "The override mode should be set to False"
 
     validator = Validator(settings)
     # initialize the validation context
@@ -236,12 +236,12 @@ def test_load_invalid_profile_with_override_on_same_profile(fake_profiles_path: 
         "profile_identifier": "invalid-duplicated-shapes",
         "data_path": ValidROC().wrroc_paper,
         "inherit_profiles": True,
-        "allow_shapes_override": False
+        "allow_requirement_check_override": False
     }
 
     settings = ValidationSettings(**settings)
     assert settings.inherit_profiles, "The inheritance mode should be set to True"
-    assert not settings.allow_shapes_override, "The override mode should be set to `True`"
+    assert not settings.allow_requirement_check_override, "The override mode should be set to `True`"
     validator = Validator(settings)
     # initialize the validation context
     context = ValidationContext(validator, validator.validation_settings.to_dict())
@@ -259,12 +259,12 @@ def test_load_valid_profile_with_override_on_inherited_profile(fake_profiles_pat
         "profile_identifier": "c-overridden",
         "data_path": ValidROC().wrroc_paper,
         "inherit_profiles": True,
-        "allow_shapes_override": True
+        "allow_requirement_check_override": True
     }
 
     settings = ValidationSettings(**settings)
     assert settings.inherit_profiles, "The inheritance mode should be set to True"
-    assert settings.allow_shapes_override, "The override mode should be set to `True`"
+    assert settings.allow_requirement_check_override, "The override mode should be set to `True`"
     validator = Validator(settings)
     # initialize the validation context
     context = ValidationContext(validator, validator.validation_settings.to_dict())
