@@ -454,7 +454,7 @@ class Profile:
                 elif allow_requirement_check_override:
                     check.overridden_by = check_chain[-1]
                     check_chain.append(check)
-                    logger.debug("Overridden check: %s", check)
+                    logger.debug("Check %s overridden by %s", check.identifier, check.overridden_by.identifier)
                 else:
                     raise DuplicateRequirementCheck(check.name, profile.identifier)
 
