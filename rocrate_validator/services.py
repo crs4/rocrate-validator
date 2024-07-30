@@ -45,7 +45,7 @@ def validate(settings: Union[dict, ValidationSettings],
 
 
 def __initialise_validator__(settings: Union[dict, ValidationSettings],
-                           subscribers: Optional[list[Subscriber]] = None) -> Validator:
+                             subscribers: Optional[list[Subscriber]] = None) -> Validator:
     """
     Validate a RO-Crate against a profile
     """
