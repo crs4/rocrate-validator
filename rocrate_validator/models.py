@@ -755,6 +755,7 @@ class RequirementCheck(ABC):
         self._name = name
         self._description = description
         self._overridden_by: RequirementCheck = None
+        self._override: RequirementCheck = None
 
     @property
     def order_number(self) -> int:
@@ -807,6 +808,11 @@ class RequirementCheck(ABC):
         assert value is None or isinstance(value, RequirementCheck) and value != self, \
             f"Invalid value for overridden_by: {value}"
         self._overridden_by = value
+        value._override = self
+
+    @property
+    def override(self) -> RequirementCheck:
+        return self._override
 
     @property
     def overridden(self) -> bool:
