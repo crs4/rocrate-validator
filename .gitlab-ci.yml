@@ -1,0 +1,67 @@
+stages:
+  - install
+  - test
+  - build
+
+variables:
+  IMAGE: python:3.12-slim     # Define the desired Docker image for the runner
+  VENV_PATH: .venv            # Define the virtual environment path
+  POETRY_VERSION: 1.8.3       # Define the desired Poetry version
+  CACHE_KEY: python:3.12-slim # Define the cache key
+  RUNNER_TAG: rvdev           # Define the desired runner tag
+
+# Install dependencies
+install_dependencies:
+  stage: install
+  before_script:
+    - pip install --upgrade pip
+    - python -m venv ${VENV_PATH}
+    - source ${VENV_PATH}/bin/activate
+    - pip install poetry==${POETRY_VERSION}
+  script:
+    - poetry config virtualenvs.in-project true
+    - poetry install --no-interaction --no-ansi
+  cache:
+    key: ${CACHE_KEY}
+    paths:
+      - ${VENV_PATH}
+  tags:
+    - ${RUNNER_TAG}
+
+# Run tests
+test:
+  stage: test
+  before_script:
+    - source ${VENV_PATH}/bin/activate
+  script:
+    - poetry run pytest
+  dependencies:
+    - install_dependencies
+  coverage: '/TOTAL\s+\d+\s+\d+\s+(\d+)%/'
+  cache:
+    key: ${CACHE_KEY}
+    paths:
+      - ${VENV_PATH}
+  tags:
+    - ${RUNNER_TAG}
+
+
+# Build the application
+build:
+  stage: build
+  before_script:
+    - source ${VENV_PATH}/bin/activate
+  script:
+    - poetry build
+  dependencies:
+    - test
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 30 minutes
+  cache:
+    key: ${CACHE_KEY}
+    paths:
+      - ${VENV_PATH}
+  tags:
+    - ${RUNNER_TAG}
