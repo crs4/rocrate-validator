@@ -107,6 +107,7 @@ def get_single_char(console: Optional[Console] = None, end: str = "\n",
 @click.option(
     "-p",
     "--profile-identifier",
+    multiple=True,
     type=click.STRING,
     default=None,
     show_default=True,
@@ -237,7 +238,7 @@ def validate(ctx,
         # Detect the profile to use for validation
         autodetection = False
         selected_profile = profile_identifier
-        if selected_profile is None:
+        if selected_profile is None or len(selected_profile) == 0:
             candidate_profiles = services.detect_profiles(settings=validation_settings)
             if candidate_profiles and len(candidate_profiles) == 1:
                 logger.debug("Profile identifier autodetected: %s", candidate_profiles[0].identifier)
@@ -262,50 +263,63 @@ def validate(ctx,
                     console.print(f"\n{' '*2}[bold yellow]WARNING: [/bold yellow]"
                                   "[bold]Default profile will be used for validation[/bold]")
                     selected_profile = "ro-crate"
-        # Set the selected profile
-        validation_settings["profile_identifier"] = selected_profile
-        validation_settings["profile_autodetected"] = autodetection
-        logger.debug("Profile selected for validation: %s", validation_settings["profile_identifier"])
-        logger.debug("Profile autodetected: %s", autodetection)
+            # add the selected profile to the list of profile_identifier
+            profile_identifier = [selected_profile]
 
-        # Compute the profile statistics
-        profile_stats = __compute_profile_stats__(validation_settings)
+        # Validate the RO-Crate against the selected profiles
+        is_valid = True
+        for profile in profile_identifier:
+            # Set the selected profile
+            validation_settings["profile_identifier"] = profile
+            validation_settings["profile_autodetected"] = autodetection
+            logger.debug("Profile selected for validation: %s", validation_settings["profile_identifier"])
+            logger.debug("Profile autodetected: %s", autodetection)
 
-        report_layout = ValidationReportLayout(console, validation_settings, profile_stats, None)
+            # Compute the profile statistics
+            profile_stats = __compute_profile_stats__(validation_settings)
 
-        # Validate RO-Crate against the profile and get the validation result
-        result: ValidationResult = report_layout.live(
-            lambda: services.validate(
-                validation_settings,
-                subscribers=[report_layout.progress_monitor]
+            report_layout = ValidationReportLayout(console, validation_settings, profile_stats, None)
+
+            # Validate RO-Crate against the profile and get the validation result
+            result: ValidationResult = report_layout.live(
+                lambda: services.validate(
+                    validation_settings,
+                    subscribers=[report_layout.progress_monitor]
+                )
             )
-        )
 
-        # Print the validation result
-        if not result.passed():
-            verbose_choice = "n"
-            if interactive and not verbose and enable_pager:
-                verbose_choice = get_single_char(console, choices=['y', 'n'],
-                                                 message="[bold] > Do you want to see the validation details? ([magenta]y/n[/magenta]): [/bold]")
-            if verbose_choice == "y" or verbose:
-                report_layout.show_validation_details(pager, enable_pager=enable_pager)
+            # store the cumulative validation result
+            is_valid = is_valid and result.passed(LevelCollection.get(requirement_severity).severity)
 
-        if output_file:
-            # Print the validation report to a file
-            if output_format == "json":
-                with open(output_file, "w") as f:
-                    f.write(result.to_json())
-            elif output_format == "text":
-                with open(output_file, "w") as f:
-                    c = Console(file=f, color_system=None, width=output_line_width, height=31)
-                    c.print(report_layout.layout)
-                    report_layout.console = c
-                    if not result.passed():
-                        report_layout.show_validation_details(None, enable_pager=False)
+            # Print the validation result
+            if not result.passed():
+                verbose_choice = "n"
+                if interactive and not verbose and enable_pager:
+                    verbose_choice = get_single_char(console, choices=['y', 'n'],
+                                                     message="[bold] > Do you want to see the validation details? ([magenta]y/n[/magenta]): [/bold]")
+                if verbose_choice == "y" or verbose:
+                    report_layout.show_validation_details(pager, enable_pager=enable_pager)
+
+            if output_file:
+                # Print the validation report to a file
+                if output_format == "json":
+                    with open(output_file, "w") as f:
+                        f.write(result.to_json())
+                elif output_format == "text":
+                    with open(output_file, "w") as f:
+                        c = Console(file=f, color_system=None, width=output_line_width, height=31)
+                        c.print(report_layout.layout)
+                        report_layout.console = c
+                        if not result.passed():
+                            report_layout.show_validation_details(None, enable_pager=False)
+
+            # Interrupt the validation if the fail fast mode is enabled
+            if not no_fail_fast and not is_valid:
+                break
 
         # using ctx.exit seems to raise an Exception that gets caught below,
         # so we use sys.exit instead.
-        sys.exit(0 if result.passed(LevelCollection.get(requirement_severity).severity) else 1)
+        sys.exit(0 if is_valid else 1)
     except Exception as e:
         handle_error(e, console)
 
