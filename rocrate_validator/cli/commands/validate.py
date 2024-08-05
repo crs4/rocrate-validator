@@ -252,11 +252,16 @@ def validate(ctx,
                     f"[bold]{profile.identifier}[/bold]: [white]{profile.name}[/white]" for profile in available_profiles]
                 console.print(Padding(Rule("[bold yellow]WARNING: [/bold yellow]"
                                            "[bold]Unable to automatically detect the profile to use for validation[/bold]\n", align="center", style="bold yellow"), (2, 2, 0, 2)))
-                selected_option = multiple_choice(
-                    console, choices, "[italic]Available Profiles[/italic]", padding=(1, 2))
-                selected_profile = available_profiles[int(selected_option) - 1].identifier
-                logger.debug("Profile selected: %s", selected_profile)
-                console.print(Padding(Rule(style="bold yellow"), (1, 2)))
+                if interactive:
+                    selected_option = multiple_choice(
+                        console, choices, "[italic]Available Profiles[/italic]", padding=(1, 2))
+                    selected_profile = available_profiles[int(selected_option) - 1].identifier
+                    logger.debug("Profile selected: %s", selected_profile)
+                    console.print(Padding(Rule(style="bold yellow"), (1, 2)))
+                else:
+                    console.print(f"\n{' '*2}[bold yellow]WARNING: [/bold yellow]"
+                                  "[bold]Default profile will be used for validation[/bold]")
+                    selected_profile = "ro-crate"
         # Set the selected profile
         validation_settings["profile_identifier"] = selected_profile
         validation_settings["profile_autodetected"] = autodetection
