@@ -609,11 +609,11 @@ class ValidationReportLayout(Layout):
         self.result = result
         if result.passed():
             self.overall_result.update(
-                Padding(Rule(f"[bold][[green]OK[/green]] RO-Crate is [green]valid[/green] !!![/bold]\n\n",
+                Padding(Rule(f"[bold][[green]OK[/green]] RO-Crate is a [green]valid[/green] [magenta]{result.context.target_profile.identifier}[/magenta] !!![/bold]\n\n",
                              style="bold green"), (1, 1)))
         else:
             self.overall_result.update(
-                Padding(Rule(f"[bold][[red]FAILED[/red]] RO-Crate is [red]not valid[/red] !!![/bold]\n",
+                Padding(Rule(f"[bold][[red]FAILED[/red]] RO-Crate is [red]not[/red] a [red]valid[/red] [magenta]{result.context.target_profile.identifier}[/magenta] !!![/bold]\n",
                              style="bold red"), (1, 1)))
 
     def show_validation_details(self, pager: Pager, enable_pager: bool = True):
