@@ -246,11 +246,12 @@ def __verbose_describe_profile__(profile):
             level_info = f"[{color}]{check.severity.name}[/{color}]"
             levels_list.add(level_info)
             override = None
-            if check.overridden_by:
-                severity_color = get_severity_color(check.overridden_by.severity)
-                override = f"[overridden by: [bold][magenta]{check.overridden_by.requirement.profile.identifier}[/magenta] "\
-                    f"[{severity_color}]{check.overridden_by.relative_identifier}[/{severity_color}][/bold]]"
-            elif check.override:
+            # Uncomment the following lines to show the overridden checks
+            # if check.overridden_by:
+            #     severity_color = get_severity_color(check.overridden_by.severity)
+            #     override = f"[overridden by: [bold][magenta]{check.overridden_by.requirement.profile.identifier}[/magenta] "\
+            #         f"[{severity_color}]{check.overridden_by.relative_identifier}[/{severity_color}][/bold]]"
+            if check.override:
                 severity_color = get_severity_color(check.override.severity)
                 override = f"[override: [bold][magenta]{check.override.requirement.profile.identifier}[/magenta] "\
                     f"[{severity_color}]{check.override.relative_identifier}[/{severity_color}][/bold]]"
