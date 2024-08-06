@@ -48,20 +48,23 @@ class SHACLCheck(RequirementCheck):
     def execute_check(self, context: ValidationContext):
         logger.debug("Starting check %s", self)
         try:
-            logger.debug("SHACL Validation of profile %s requirement %s started", self.requirement.profile, self)
+            logger.debug("SHACL Validation of profile %s requirement %s started",
+                         self.requirement.profile.identifier, self.identifier)
             with SHACLValidationContextManager(self, context) as ctx:
                 # The check is executed only if the profile is the most specific one
-                logger.debug("SHACL Validation of profile %s requirement %s started", self.requirement.profile, self)
+                logger.debug("SHACL Validation of profile %s requirement %s started",
+                             self.requirement.profile.identifier, self.identifier)
                 result = self.__do_execute_check__(ctx)
                 ctx.current_validation_result = not self in result
                 return ctx.current_validation_result
         except SHACLValidationAlreadyProcessed as e:
-            logger.debug("SHACL Validation of profile %s already processed", self.requirement.profile)
+            logger.debug("SHACL Validation of profile %s already processed", self.requirement.profile.identifier)
             # The check belongs to a profile which has already been processed
             # so we can skip the validation and return the specific result for the check
             return not self in [i.check for i in context.result.get_issues()]
         except SHACLValidationSkip as e:
-            logger.debug("SHACL Validation of profile %s requirement %s skipped", self.requirement.profile, self)
+            logger.debug("SHACL Validation of profile %s requirement %s skipped",
+                         self.requirement.profile.identifier, self.identifier)
             # The validation is postponed to the more specific profiles
             # so the check is not considered as failed.
             raise SkipRequirementCheck(self, str(e))
@@ -162,11 +165,12 @@ class SHACLCheck(RequirementCheck):
             # all together and not profile by profile
             if not requirementCheck.identifier in failed_requirement_checks_notified:
                 #
-                failed_requirement_checks_notified.append(requirementCheck.identifier)
-                shacl_context.result.add_executed_check(requirementCheck, False)
-                shacl_context.validator.notify(RequirementCheckValidationEvent(
-                    EventType.REQUIREMENT_CHECK_VALIDATION_END, requirementCheck, validation_result=False))
-                logger.debug("Added validation issue to the context: %s", c)
+                if requirementCheck.requirement.profile != shacl_context.current_validation_profile:
+                    failed_requirement_checks_notified.append(requirementCheck.identifier)
+                    shacl_context.result.add_executed_check(requirementCheck, False)
+                    shacl_context.validator.notify(RequirementCheckValidationEvent(
+                        EventType.REQUIREMENT_CHECK_VALIDATION_END, requirementCheck, validation_result=False))
+                    logger.debug("Added validation issue to the context: %s", c)
 
             # if the fail fast mode is enabled, stop the validation after the first failed check
             if shacl_context.fail_fast:
