@@ -277,11 +277,15 @@ def validate(ctx,
                 autodetection = True
                 profile_identifier = [_.identifier for _ in candidate_profiles]
 
-                else:
-                    console.print(f"\n{' '*2}[bold yellow]WARNING: [/bold yellow]"
-                                  "[bold]Default profile will be used for validation[/bold]")
-                    selected_profile = "ro-crate"
-                    profile_identifier = [selected_profile]
+        # Fall back to the selected profile
+        if not profile_identifier or len(profile_identifier) == 0:
+            console.print(f"\n{' '*2}[bold yellow]WARNING: [/bold yellow]", end="")
+            if no_auto_profile:
+                console.print("[bold]Auto-detection of the profiles to use for validation is disabled[/bold]")
+            else:
+                console.print("[bold]Unable to automatically detect the profile to use for validation[/bold]")
+            console.print(f"{' '*11}[bold]The base `ro-crate` profile will be used for validation[/bold]")
+            profile_identifier = ["ro-crate"]
 
         # Validate the RO-Crate against the selected profiles
         is_valid = True
