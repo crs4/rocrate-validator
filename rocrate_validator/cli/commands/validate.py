@@ -114,6 +114,14 @@ def get_single_char(console: Optional[Console] = None, end: str = "\n",
     help="Identifier of the profile to use for validation",
 )
 @click.option(
+    "-np",
+    "--no-auto-profile",
+    is_flag=True,
+    help="Disable automatic detection of the profile to use for validation",
+    default=False,
+    show_default=True
+)
+@click.option(
     '-nh',
     '--disable-profile-inheritance',
     is_flag=True,
@@ -180,6 +188,7 @@ def get_single_char(console: Optional[Console] = None, end: str = "\n",
 def validate(ctx,
              profiles_path: Path = DEFAULT_PROFILES_PATH,
              profile_identifier: Optional[str] = None,
+             no_auto_profile: bool = False,
              disable_profile_inheritance: bool = False,
              requirement_severity: str = Severity.REQUIRED.name,
              requirement_severity_only: bool = False,
@@ -239,14 +248,13 @@ def validate(ctx,
         autodetection = False
         selected_profile = profile_identifier
         if selected_profile is None or len(selected_profile) == 0:
-            candidate_profiles = services.detect_profiles(settings=validation_settings)
-            if candidate_profiles and len(candidate_profiles) == 1:
-                logger.debug("Profile identifier autodetected: %s", candidate_profiles[0].identifier)
-                autodetection = True
-                profile_identifier = [candidate_profiles[0].identifier]
+            # Auto-detect the profile to use for validation (if not disabled)
+            candidate_profiles = None
+            if not no_auto_profile:
+                candidate_profiles = services.detect_profiles(settings=validation_settings)
+                logger.error("Candidate profiles: %s", candidate_profiles)
             else:
-                logger.debug("Candidate profiles: %s", candidate_profiles)
-                available_profiles = services.get_profiles(profiles_path)
+                logger.info("Auto-detection of the profiles to use for validation is disabled")
                 # Define the list of choices
                 console.print(Padding(Rule("[bold yellow]WARNING: [/bold yellow]"
                                            "[bold]Unable to automatically detect the profile to use for validation[/bold]\n", align="center", style="bold yellow"), (2, 2, 0, 2)))
