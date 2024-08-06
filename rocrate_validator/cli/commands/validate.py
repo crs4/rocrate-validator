@@ -244,10 +244,14 @@ def validate(ctx,
         # Print the application header
         console.print(get_app_header_rule())
 
+        # Get the available profiles
+        available_profiles = services.get_profiles(profiles_path)
+
         # Detect the profile to use for validation
         autodetection = False
         selected_profile = profile_identifier
         if selected_profile is None or len(selected_profile) == 0:
+
             # Auto-detect the profile to use for validation (if not disabled)
             candidate_profiles = None
             if not no_auto_profile:
@@ -255,15 +259,24 @@ def validate(ctx,
                 logger.error("Candidate profiles: %s", candidate_profiles)
             else:
                 logger.info("Auto-detection of the profiles to use for validation is disabled")
+
+            # Prompt the user to select the profile to use for validation if the interactive mode is enabled
+            # and no profile is autodetected or multiple profiles are detected
+            if interactive and (not candidate_profiles or len(candidate_profiles) == 0 or len(candidate_profiles) == len(available_profiles)):
                 # Define the list of choices
                 console.print(Padding(Rule("[bold yellow]WARNING: [/bold yellow]"
                                            "[bold]Unable to automatically detect the profile to use for validation[/bold]\n", align="center", style="bold yellow"), (2, 2, 0, 2)))
-                if interactive:
-                    selected_options = multiple_choice(console, available_profiles)
-                    profile_identifier = [available_profiles[int(
-                        selected_option)].identifier for selected_option in selected_options]
-                    logger.debug("Profile selected: %s", selected_options)
-                    console.print(Padding(Rule(style="bold yellow"), (1, 2)))
+                selected_options = multiple_choice(console, available_profiles)
+                profile_identifier = [available_profiles[int(
+                    selected_option)].identifier for selected_option in selected_options]
+                logger.debug("Profile selected: %s", selected_options)
+                console.print(Padding(Rule(style="bold yellow"), (1, 2)))
+
+            elif candidate_profiles and len(candidate_profiles) < len(available_profiles):
+                logger.debug("Profile identifier autodetected: %s", candidate_profiles[0].identifier)
+                autodetection = True
+                profile_identifier = [_.identifier for _ in candidate_profiles]
+
                 else:
                     console.print(f"\n{' '*2}[bold yellow]WARNING: [/bold yellow]"
                                   "[bold]Default profile will be used for validation[/bold]")
