@@ -335,7 +335,7 @@ def validate(ctx,
                             report_layout.show_validation_details(None, enable_pager=False)
 
             # Interrupt the validation if the fail fast mode is enabled
-            if not no_fail_fast and not is_valid:
+            if no_fail_fast and not is_valid:
                 break
 
         # using ctx.exit seems to raise an Exception that gets caught below,
