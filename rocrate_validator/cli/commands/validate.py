@@ -326,7 +326,7 @@ def multiple_choice(console: Console,
     Display a multiple choice menu
     """
     # Build the prompt text
-    prompt_text = "Please select the profiles to validate the RO-Crate against:"
+    prompt_text = "Please select the profiles to validate the RO-Crate against (<SPACE> to select):"
 
     # Get the selected option
     question = [
