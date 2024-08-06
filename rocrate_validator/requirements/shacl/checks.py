@@ -48,20 +48,23 @@ class SHACLCheck(RequirementCheck):
     def execute_check(self, context: ValidationContext):
         logger.debug("Starting check %s", self)
         try:
-            logger.debug("SHACL Validation of profile %s requirement %s started", self.requirement.profile, self)
+            logger.debug("SHACL Validation of profile %s requirement %s started",
+                         self.requirement.profile.identifier, self.identifier)
             with SHACLValidationContextManager(self, context) as ctx:
                 # The check is executed only if the profile is the most specific one
-                logger.debug("SHACL Validation of profile %s requirement %s started", self.requirement.profile, self)
+                logger.debug("SHACL Validation of profile %s requirement %s started",
+                             self.requirement.profile.identifier, self.identifier)
                 result = self.__do_execute_check__(ctx)
                 ctx.current_validation_result = not self in result
                 return ctx.current_validation_result
         except SHACLValidationAlreadyProcessed as e:
-            logger.debug("SHACL Validation of profile %s already processed", self.requirement.profile)
+            logger.debug("SHACL Validation of profile %s already processed", self.requirement.profile.identifier)
             # The check belongs to a profile which has already been processed
             # so we can skip the validation and return the specific result for the check
             return not self in [i.check for i in context.result.get_issues()]
         except SHACLValidationSkip as e:
-            logger.debug("SHACL Validation of profile %s requirement %s skipped", self.requirement.profile, self)
+            logger.debug("SHACL Validation of profile %s requirement %s skipped",
+                         self.requirement.profile.identifier, self.identifier)
             # The validation is postponed to the more specific profiles
             # so the check is not considered as failed.
             raise SkipRequirementCheck(self, str(e))
