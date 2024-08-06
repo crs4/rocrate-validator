@@ -256,7 +256,7 @@ def validate(ctx,
             candidate_profiles = None
             if not no_auto_profile:
                 candidate_profiles = services.detect_profiles(settings=validation_settings)
-                logger.error("Candidate profiles: %s", candidate_profiles)
+                logger.debug("Candidate profiles: %s", candidate_profiles)
             else:
                 logger.info("Auto-detection of the profiles to use for validation is disabled")
 
