@@ -1291,7 +1291,8 @@ class Validator(Publisher):
         try:
             # initialize the validation context
             context = ValidationContext(self, self.validation_settings.to_dict())
-            candidate_profiles_uris = context.ro_crate.metadata.get_conforms_to()
+            candidate_profiles_uris = set(context.ro_crate.metadata.get_conforms_to(
+            ) + context.ro_crate.metadata.get_root_data_entity_conforms_to())
             logger.debug("Candidate profiles: %s", candidate_profiles_uris)
             if not candidate_profiles_uris:
                 logger.debug("Unable to determine the profile to validate against")

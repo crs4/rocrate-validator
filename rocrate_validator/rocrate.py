@@ -160,6 +160,20 @@ class ROCrateMetadata:
             raise ValueError("no main entity in metadata file descriptor")
         return main_entity
 
+    def get_root_data_entity_conforms_to(self) -> Optional[list[str]]:
+        try:
+            root_data_entity = self.get_root_data_entity()
+            result = root_data_entity.get_property('conformsTo', [])
+            if result is None:
+                return None
+            if not isinstance(result, list):
+                result = [result]
+            return [_.id for _ in result]
+        except Exception as e:
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.exception(e)
+            return None
+
     def get_main_workflow(self) -> ROCrateEntity:
         root_data_entity = self.get_root_data_entity()
         main_workflow = root_data_entity.get_property('mainEntity')

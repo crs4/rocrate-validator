@@ -7,6 +7,8 @@ import tty
 from pathlib import Path
 from typing import Optional
 
+from InquirerPy import prompt
+from InquirerPy.base.control import Choice
 from rich.align import Align
 from rich.console import Console
 from rich.layout import Layout
@@ -16,9 +18,7 @@ from rich.padding import Padding
 from rich.pager import Pager
 from rich.panel import Panel
 from rich.progress import BarColumn, Progress, TextColumn, TimeElapsedColumn
-from rich.prompt import Prompt
 from rich.rule import Rule
-from rich.table import Table
 
 import rocrate_validator.log as logging
 from rocrate_validator import services
@@ -27,9 +27,9 @@ from rocrate_validator.cli.main import cli, click
 from rocrate_validator.cli.utils import get_app_header_rule
 from rocrate_validator.colors import get_severity_color
 from rocrate_validator.events import Event, EventType, Subscriber
-from rocrate_validator.models import (LevelCollection, Severity,
+from rocrate_validator.models import (LevelCollection, Profile, Severity,
                                       ValidationResult)
-from rocrate_validator.utils import URI, get_profiles_path, get_version
+from rocrate_validator.utils import URI, get_profiles_path
 
 # from rich.markdown import Markdown
 # from rich.table import Table
@@ -107,10 +107,19 @@ def get_single_char(console: Optional[Console] = None, end: str = "\n",
 @click.option(
     "-p",
     "--profile-identifier",
+    multiple=True,
     type=click.STRING,
     default=None,
     show_default=True,
     help="Identifier of the profile to use for validation",
+)
+@click.option(
+    "-np",
+    "--no-auto-profile",
+    is_flag=True,
+    help="Disable automatic detection of the profile to use for validation",
+    default=False,
+    show_default=True
 )
 @click.option(
     '-nh',
@@ -179,6 +188,7 @@ def get_single_char(console: Optional[Console] = None, end: str = "\n",
 def validate(ctx,
              profiles_path: Path = DEFAULT_PROFILES_PATH,
              profile_identifier: Optional[str] = None,
+             no_auto_profile: bool = False,
              disable_profile_inheritance: bool = False,
              requirement_severity: str = Severity.REQUIRED.name,
              requirement_severity_only: bool = False,
@@ -234,106 +244,133 @@ def validate(ctx,
         # Print the application header
         console.print(get_app_header_rule())
 
+        # Get the available profiles
+        available_profiles = services.get_profiles(profiles_path)
+
         # Detect the profile to use for validation
         autodetection = False
         selected_profile = profile_identifier
-        if selected_profile is None:
-            candidate_profiles = services.detect_profiles(settings=validation_settings)
-            if candidate_profiles and len(candidate_profiles) == 1:
-                logger.debug("Profile identifier autodetected: %s", candidate_profiles[0].identifier)
-                autodetection = True
-                selected_profile = candidate_profiles[0].identifier
-            else:
+        if selected_profile is None or len(selected_profile) == 0:
+
+            # Auto-detect the profile to use for validation (if not disabled)
+            candidate_profiles = None
+            if not no_auto_profile:
+                candidate_profiles = services.detect_profiles(settings=validation_settings)
                 logger.debug("Candidate profiles: %s", candidate_profiles)
-                available_profiles = services.get_profiles(profiles_path)
+            else:
+                logger.info("Auto-detection of the profiles to use for validation is disabled")
+
+            # Prompt the user to select the profile to use for validation if the interactive mode is enabled
+            # and no profile is autodetected or multiple profiles are detected
+            if interactive and (not candidate_profiles or len(candidate_profiles) == 0 or len(candidate_profiles) == len(available_profiles)):
                 # Define the list of choices
-                # console.print(get_app_header_rule())
-                choices = [
-                    f"[bold]{profile.identifier}[/bold]: [white]{profile.name}[/white]" for profile in available_profiles]
                 console.print(Padding(Rule("[bold yellow]WARNING: [/bold yellow]"
                                            "[bold]Unable to automatically detect the profile to use for validation[/bold]\n", align="center", style="bold yellow"), (2, 2, 0, 2)))
-                selected_option = multiple_choice(
-                    console, choices, "[italic]Available Profiles[/italic]", padding=(1, 2))
-                selected_profile = available_profiles[int(selected_option) - 1].identifier
-                logger.debug("Profile selected: %s", selected_profile)
+                selected_options = multiple_choice(console, available_profiles)
+                profile_identifier = [available_profiles[int(
+                    selected_option)].identifier for selected_option in selected_options]
+                logger.debug("Profile selected: %s", selected_options)
                 console.print(Padding(Rule(style="bold yellow"), (1, 2)))
-        # Set the selected profile
-        validation_settings["profile_identifier"] = selected_profile
-        validation_settings["profile_autodetected"] = autodetection
-        logger.debug("Profile selected for validation: %s", validation_settings["profile_identifier"])
-        logger.debug("Profile autodetected: %s", autodetection)
 
-        # Compute the profile statistics
-        profile_stats = __compute_profile_stats__(validation_settings)
+            elif candidate_profiles and len(candidate_profiles) < len(available_profiles):
+                logger.debug("Profile identifier autodetected: %s", candidate_profiles[0].identifier)
+                autodetection = True
+                profile_identifier = [_.identifier for _ in candidate_profiles]
 
-        report_layout = ValidationReportLayout(console, validation_settings, profile_stats, None)
+        # Fall back to the selected profile
+        if not profile_identifier or len(profile_identifier) == 0:
+            console.print(f"\n{' '*2}[bold yellow]WARNING: [/bold yellow]", end="")
+            if no_auto_profile:
+                console.print("[bold]Auto-detection of the profiles to use for validation is disabled[/bold]")
+            else:
+                console.print("[bold]Unable to automatically detect the profile to use for validation[/bold]")
+            console.print(f"{' '*11}[bold]The base `ro-crate` profile will be used for validation[/bold]")
+            profile_identifier = ["ro-crate"]
 
-        # Validate RO-Crate against the profile and get the validation result
-        result: ValidationResult = report_layout.live(
-            lambda: services.validate(
-                validation_settings,
-                subscribers=[report_layout.progress_monitor]
+        # Validate the RO-Crate against the selected profiles
+        is_valid = True
+        for profile in profile_identifier:
+            # Set the selected profile
+            validation_settings["profile_identifier"] = profile
+            validation_settings["profile_autodetected"] = autodetection
+            logger.debug("Profile selected for validation: %s", validation_settings["profile_identifier"])
+            logger.debug("Profile autodetected: %s", autodetection)
+
+            # Compute the profile statistics
+            profile_stats = __compute_profile_stats__(validation_settings)
+
+            report_layout = ValidationReportLayout(console, validation_settings, profile_stats, None)
+
+            # Validate RO-Crate against the profile and get the validation result
+            result: ValidationResult = report_layout.live(
+                lambda: services.validate(
+                    validation_settings,
+                    subscribers=[report_layout.progress_monitor]
+                )
             )
-        )
 
-        # Print the validation result
-        if not result.passed():
-            verbose_choice = "n"
-            if interactive and not verbose and enable_pager:
-                verbose_choice = get_single_char(console, choices=['y', 'n'],
-                                                 message="[bold] > Do you want to see the validation details? ([magenta]y/n[/magenta]): [/bold]")
-            if verbose_choice == "y" or verbose:
-                report_layout.show_validation_details(pager, enable_pager=enable_pager)
+            # store the cumulative validation result
+            is_valid = is_valid and result.passed(LevelCollection.get(requirement_severity).severity)
 
-        if output_file:
-            # Print the validation report to a file
-            if output_format == "json":
-                with open(output_file, "w") as f:
-                    f.write(result.to_json())
-            elif output_format == "text":
-                with open(output_file, "w") as f:
-                    c = Console(file=f, color_system=None, width=output_line_width, height=31)
-                    c.print(report_layout.layout)
-                    report_layout.console = c
-                    if not result.passed():
-                        report_layout.show_validation_details(None, enable_pager=False)
+            # Print the validation result
+            if not result.passed():
+                verbose_choice = "n"
+                if interactive and not verbose and enable_pager:
+                    verbose_choice = get_single_char(console, choices=['y', 'n'],
+                                                     message="[bold] > Do you want to see the validation details? ([magenta]y/n[/magenta]): [/bold]")
+                if verbose_choice == "y" or verbose:
+                    report_layout.show_validation_details(pager, enable_pager=enable_pager)
+
+            if output_file:
+                # Print the validation report to a file
+                if output_format == "json":
+                    with open(output_file, "w") as f:
+                        f.write(result.to_json())
+                elif output_format == "text":
+                    with open(output_file, "w") as f:
+                        c = Console(file=f, color_system=None, width=output_line_width, height=31)
+                        c.print(report_layout.layout)
+                        report_layout.console = c
+                        if not result.passed():
+                            report_layout.show_validation_details(None, enable_pager=False)
+
+            # Interrupt the validation if the fail fast mode is enabled
+            if not no_fail_fast and not is_valid:
+                break
 
         # using ctx.exit seems to raise an Exception that gets caught below,
         # so we use sys.exit instead.
-        sys.exit(0 if result.passed(LevelCollection.get(requirement_severity).severity) else 1)
+        sys.exit(0 if is_valid else 1)
     except Exception as e:
         handle_error(e, console)
 
 
 def multiple_choice(console: Console,
-                    choices: list[str],
-                    title: str = "Main Menu",
-                    padding=(1, 2)) -> str:
+                    choices: list[Profile]):
     """
     Display a multiple choice menu
     """
-    table = Table(title=title, title_justify="left")
-    table.add_column("#", justify="center", style="bold cyan", no_wrap=True)
-    table.add_column("Option", justify="left", style="magenta")
-
-    for index, choice in enumerate(choices, start=1):
-        table.add_row(str(index), choice)
-
-    if padding:
-        console.print(Padding(Align(table, align="left"), padding))
-    else:
-        console.print(table)
-
     # Build the prompt text
-    prompt_text = "[bold] > Please select a profile (enter the number)[/bold]"
-    # console_width = console.size.width
-    # padding = (console_width - len(prompt_text)) // 2
-    # centered_prompt_text = " " * padding + prompt_text
+    prompt_text = "Please select the profiles to validate the RO-Crate against (<SPACE> to select):"
 
     # Get the selected option
-    selected_option = Prompt.ask(prompt_text,
-                                 choices=[str(i) for i in range(1, len(choices) + 1)])
-    return selected_option
+    question = [
+        {
+            "type": "checkbox",
+            "name": "profiles",
+            "message": prompt_text,
+            "choices": [Choice(i, f"{choices[i].identifier}: {choices[i].name}") for i in range(0, len(choices))]
+        }
+    ]
+    console.print("\n")
+    selected = prompt(question, style={"questionmark": "#ff9d00 bold",
+                                       "questionmark": "#e5c07b",
+                                       "question": "bold",
+                                       "checkbox": "magenta",
+                                       "answer": "magenta"},
+                      style_override=False)
+    logger.debug("Selected profiles: %s", selected)
+    return selected["profiles"]
 
 
 class ProgressMonitor(Subscriber):
@@ -590,11 +627,11 @@ class ValidationReportLayout(Layout):
         self.result = result
         if result.passed():
             self.overall_result.update(
-                Padding(Rule(f"[bold][[green]OK[/green]] RO-Crate is [green]valid[/green] !!![/bold]\n\n",
+                Padding(Rule(f"[bold][[green]OK[/green]] RO-Crate is a [green]valid[/green] [magenta]{result.context.target_profile.identifier}[/magenta] !!![/bold]\n\n",
                              style="bold green"), (1, 1)))
         else:
             self.overall_result.update(
-                Padding(Rule(f"[bold][[red]FAILED[/red]] RO-Crate is [red]not valid[/red] !!![/bold]\n",
+                Padding(Rule(f"[bold][[red]FAILED[/red]] RO-Crate is [red]not[/red] a [red]valid[/red] [magenta]{result.context.target_profile.identifier}[/magenta] !!![/bold]\n",
                              style="bold red"), (1, 1)))
 
     def show_validation_details(self, pager: Pager, enable_pager: bool = True):
