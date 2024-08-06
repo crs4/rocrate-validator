@@ -165,11 +165,12 @@ class SHACLCheck(RequirementCheck):
             # all together and not profile by profile
             if not requirementCheck.identifier in failed_requirement_checks_notified:
                 #
-                failed_requirement_checks_notified.append(requirementCheck.identifier)
-                shacl_context.result.add_executed_check(requirementCheck, False)
-                shacl_context.validator.notify(RequirementCheckValidationEvent(
-                    EventType.REQUIREMENT_CHECK_VALIDATION_END, requirementCheck, validation_result=False))
-                logger.debug("Added validation issue to the context: %s", c)
+                if requirementCheck.requirement.profile != shacl_context.current_validation_profile:
+                    failed_requirement_checks_notified.append(requirementCheck.identifier)
+                    shacl_context.result.add_executed_check(requirementCheck, False)
+                    shacl_context.validator.notify(RequirementCheckValidationEvent(
+                        EventType.REQUIREMENT_CHECK_VALIDATION_END, requirementCheck, validation_result=False))
+                    logger.debug("Added validation issue to the context: %s", c)
 
             # if the fail fast mode is enabled, stop the validation after the first failed check
             if shacl_context.fail_fast:
