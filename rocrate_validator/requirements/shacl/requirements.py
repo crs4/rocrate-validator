@@ -15,7 +15,10 @@
 from pathlib import Path
 from typing import Optional
 
+from rdflib import RDF
+
 import rocrate_validator.log as logging
+from rocrate_validator.constants import VALIDATOR_NS
 
 from ...models import (Profile, Requirement, RequirementCheck,
                        RequirementLevel, RequirementLoader)
@@ -73,10 +76,8 @@ class SHACLRequirement(Requirement):
 
     @property
     def hidden(self) -> bool:
-        from rdflib import RDF, Namespace
-        SHACL = Namespace("http://www.w3.org/ns/shacl#")
         if self.shape.node is not None:
-            if (self.shape.node, RDF.type, SHACL.hidden) in self.shape.graph:
+            if (self.shape.node, RDF.type, VALIDATOR_NS.HiddenShape) in self.shape.graph:
                 return True
         return False
 
