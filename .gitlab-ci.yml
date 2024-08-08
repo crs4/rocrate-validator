@@ -18,11 +18,11 @@ stages:
   - build
 
 variables:
-  IMAGE: python:3.12-slim     # Define the desired Docker image for the runner
-  VENV_PATH: .venv            # Define the virtual environment path
-  POETRY_VERSION: 1.8.3       # Define the desired Poetry version
-  CACHE_KEY: python:3.12-slim # Define the cache key
-  RUNNER_TAG: rvdev           # Define the desired runner tag
+  IMAGE: python:3.12-slim        # Define the desired Docker image for the runner
+  VENV_PATH: .venv               # Define the virtual environment path
+  POETRY_VERSION: 1.8.3          # Define the desired Poetry version
+  CACHE_KEY: $CI_COMMIT_REF_NAME # Define the cache key
+  RUNNER_TAG: rvdev              # Define the desired runner tag
 
 # Install dependencies
 install_dependencies:
