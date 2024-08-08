@@ -7,14 +7,14 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
-
+@prefix validator: <https://github.com/crs4/rocrate-validator/> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
 
 ro:DataEntityRequiredProperties a sh:NodeShape ;
     sh:name "Data Entity: REQUIRED properties" ;
     sh:description """A Data Entity MUST be a `URI Path` relative to the ROCrate root,
         or an sbsolute URI""" ;
-    sh:targetClass rocrate:DataEntity ;
+    sh:targetClass ro-crate:DataEntity ;
 
     sh:property [
         sh:name "Data Entity: @id value restriction" ;
@@ -49,7 +49,7 @@ ro:FileDataEntity a sh:NodeShape ;
         `File` is an RO-Crate alias for the schema.org `MediaObject`.
         """ ;
         sh:path rdf:type ;
-        sh:hasValue rocrate:File ;
+        sh:hasValue ro-crate:File ;
         sh:severity sh:Violation ;
         sh:message """File Data Entities MUST have "File" as a value for @type.""" ;
     ] ;
@@ -59,7 +59,7 @@ ro:FileDataEntity a sh:NodeShape ;
         a sh:TripleRule ;
         sh:subject sh:this ;
         sh:predicate rdf:type ;
-        sh:object rocrate:DataEntity ;
+        sh:object ro-crate:DataEntity ;
     ] .
 
 
@@ -87,7 +87,7 @@ ro:DirectoryDataEntity a sh:NodeShape ;
     #     sh:name "Test Directory" ;
     #     sh:description """Data Entities representing directories MUST have "Directory" as a value for @type.""" ;
     #     sh:path rdf:type ;
-    #     sh:hasValue rocrate:File ;
+    #     sh:hasValue ro-crate:File ;
     #     sh:severity sh:Violation ;
     # ] ;
 
@@ -96,7 +96,7 @@ ro:DirectoryDataEntity a sh:NodeShape ;
         a sh:TripleRule ;
         sh:subject sh:this ;
         sh:predicate rdf:type ;
-        sh:object rocrate:Directory ;
+        sh:object ro-crate:Directory ;
     ] ;
 
     # Expand data graph with triples from the directory data entity
@@ -104,7 +104,7 @@ ro:DirectoryDataEntity a sh:NodeShape ;
         a sh:TripleRule ;
         sh:subject sh:this ;
         sh:predicate rdf:type ;
-        sh:object rocrate:DataEntity ;
+        sh:object ro-crate:DataEntity ;
     ] ;
 
     # Ensure that the directory data entity is a dataset
@@ -119,7 +119,7 @@ ro:DirectoryDataEntity a sh:NodeShape ;
 ro:DataEntityRquiredPropertiesShape a sh:NodeShape ;
     sh:name "Data Entity: REQUIRED properties" ;
     sh:description """A `DataEntity` MUST be linked, either directly or inderectly, from the Root Data Entity""" ;
-    sh:targetClass rocrate:DataEntity ;
+    sh:targetClass ro-crate:DataEntity ;
     sh:property
         [
             a sh:PropertyShape ;
@@ -134,7 +134,7 @@ ro:DataEntityRquiredPropertiesShape a sh:NodeShape ;
 ro:DirectoryDataEntityRequiredValueRestriction a sh:NodeShape ;
     sh:name "Directory Data Entity: REQUIRED value restriction" ;
     sh:description """A Directory Data Entity MUST end with `/`""" ;
-    sh:targetNode rocrate:Directory ;
+    sh:targetNode ro-crate:Directory ;
     sh:property [
         a sh:PropertyShape ;
         sh:name "Directory Data Entity: REQUIRED value restriction" ;
@@ -171,7 +171,7 @@ ro:GenericDataEntity a sh:NodeShape ;
         a sh:TripleRule ;
         sh:subject sh:this ;
         sh:predicate rdf:type ;
-        sh:object rocrate:GenericDataEntity ;
+        sh:object ro-crate:GenericDataEntity ;
     ] ;
 
     # Expand data graph with triples to mark the matching entities as DataEntity instances
@@ -179,20 +179,20 @@ ro:GenericDataEntity a sh:NodeShape ;
         a sh:TripleRule ;
         sh:subject sh:this ;
         sh:predicate rdf:type ;
-        sh:object rocrate:DataEntity ;
+        sh:object ro-crate:DataEntity ;
     ] .
 
 
 # Uncomment for debugging
-# rocrate:TestGenericDataEntity a sh:NodeShape ;
+# ro-crate:TestGenericDataEntity a sh:NodeShape ;
 #     sh:disabled true ;
-#     sh:targetClass rocrate:GenericDataEntity ;
+#     sh:targetClass ro-crate:GenericDataEntity ;
 #     sh:name "Generic Data Entity: test invalid property";
 #     sh:description """Check if the GenericDataEntity has the invalidProperty property""" ;
 #     sh:property [
 #         sh:minCount 1 ;
 #         sh:maxCount 1 ;
-#         sh:path rocrate:invalidProperty ;
+#         sh:path ro-crate:invalidProperty ;
 #         sh:severity sh:Violation ;
 #         sh:message "Testing the generic data entity";
 #         sh:datatype xsd:string ;
@@ -204,12 +204,12 @@ ro:GenericDataEntity a sh:NodeShape ;
 # ro:testDirectory a sh:NodeShape ;
 #     sh:name "Definition of Test Directory" ;
 #     sh:description """A Test Directory is a digital object that is stored in a file format""" ;
-#     sh:targetClass rocrate:Directory ;
+#     sh:targetClass ro-crate:Directory ;
 
 #     sh:property [
 #         sh:name "Test Directory instance" ;
-#         sh:description """Check if the Directory DataEntity instance has the fake property rocrate:foo""" ;
+#         sh:description """Check if the Directory DataEntity instance has the fake property ro-crate:foo""" ;
 #         sh:path rdf:type ;
-#         sh:hasValue rocrate:foo ;
+#         sh:hasValue ro-crate:foo ;
 #         sh:severity sh:Violation ;
 #     ] .

@@ -5,14 +5,19 @@
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix xml1: <http://www.w3.org/2001/XMLSchema#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-@prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
+# @prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
 @prefix bioschemas: <https://bioschemas.org/> .
+
+@prefix validator: <https://github.com/crs4/rocrate-validator/> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+@prefix workflow-ro-crate: <https://github.com/crs4/rocrate-validator/profiles/workflow-ro-crate/> .
+
 
 
 ro:MainWorkflowRecommendedProperties a sh:NodeShape ;
     sh:name "Main Workflow recommended properties" ;
     sh:description """Main Workflow properties defined as SHOULD""";
-    sh:targetClass rocrate:MainWorkflow ;
+    sh:targetClass workflow-ro-crate:MainWorkflow ;
     sh:property [
         a sh:PropertyShape ;
         sh:name "Main Workflow Bioschemas compliance" ;

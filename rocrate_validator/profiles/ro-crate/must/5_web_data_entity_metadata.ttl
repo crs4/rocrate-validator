@@ -9,6 +9,7 @@
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
 @prefix validator: <https://github.com/crs4/rocrate-validator/> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
 
 
 ro:WebBasedDataEntity a sh:NodeShape, validator:HiddenShape ;
@@ -33,7 +34,7 @@ ro:WebBasedDataEntity a sh:NodeShape, validator:HiddenShape ;
         a sh:TripleRule ;
         sh:subject sh:this ;
         sh:predicate rdf:type ;
-        sh:object rocrate:WebDataEntity ;
+        sh:object ro-crate:WebDataEntity ;
     ] .
 
 
@@ -41,7 +42,7 @@ ro:WebBasedDataEntityRequiredValueRestriction a sh:NodeShape ;
     sh:name "Web-based Data Entity: RECOMMENDED properties" ;
     sh:description """A Web-based Data Entity MUST be identified by an absolute URL and 
     SHOULD have a `contentSize` and `sdDatePublished` property""" ;
-    sh:targetClass rocrate:WebDataEntity ;
+    sh:targetClass ro-crate:WebDataEntity ;
     # Check if the Web-based Data Entity has a contentSize property
     sh:property [
         a sh:PropertyShape ;

@@ -5,14 +5,18 @@
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix xml1: <http://www.w3.org/2001/XMLSchema#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-@prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
+# @prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
 @prefix bioschemas: <https://bioschemas.org/> .
+
+@prefix validator: <https://github.com/crs4/rocrate-validator/> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+@prefix workflow-ro-crate: <https://github.com/crs4/rocrate-validator/profiles/workflow-ro-crate/> .
 
 
 ro:WROCRootDataEntityRequiredProperties a sh:NodeShape ;
     sh:name "WROC Root Data Entity Required Properties" ;
     sh:description """Root Data Entity properties defined as MUST""" ;
-    sh:targetClass rocrate:RootDataEntity ;
+    sh:targetClass ro-crate:RootDataEntity ;
     sh:property [
         a sh:PropertyShape ;
         sh:name "Crate license" ;

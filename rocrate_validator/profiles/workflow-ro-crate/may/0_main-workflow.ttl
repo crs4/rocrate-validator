@@ -5,15 +5,20 @@
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix xml1: <http://www.w3.org/2001/XMLSchema#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-@prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
+# @prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
 @prefix bioschemas: <https://bioschemas.org/> .
 @prefix wroc: <https://w3id.org/workflowhub/workflow-ro-crate#> .
+
+
+@prefix validator: <https://github.com/crs4/rocrate-validator/> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+@prefix workflow-ro-crate: <https://github.com/crs4/rocrate-validator/profiles/workflow-ro-crate/> .
 
 
 ro:MainWorkflowOptionalProperties a sh:NodeShape ;
     sh:name "Main Workflow optional properties" ;
     sh:description """Main Workflow properties defined as MAY""";
-    sh:targetClass rocrate:MainWorkflow ;
+    sh:targetClass workflow-ro-crate:MainWorkflow ;
     sh:property [
         a sh:PropertyShape ;
         sh:name "Main Workflow image" ;
