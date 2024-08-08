@@ -1,11 +1,10 @@
 # `rocrate-validator`
 
-[![Build Status](https://repolab.crs4.it/lifemonitor/rocrate-validator/badges/develop/pipeline.svg
-)](https://repolab.crs4.it/lifemonitor/rocrate-validator/-/pipelines?page=1&scope=branches&ref=develop)
+[![Build Status](https://repolab.crs4.it/lifemonitor/rocrate-validator/badges/develop/pipeline.svg)](https://repolab.crs4.it/lifemonitor/rocrate-validator/-/pipelines?page=1&scope=branches&ref=develop)
 [![PyPI version](https://badge.fury.io/py/rocrate-validator.svg)](https://badge.fury.io/py/rocrate-validator)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-<!-- [![codecov](https://codecov.io/gh/crs4/rocrate-validator/branch/main/graph/badge.svg?token=3ZQZQZQZQZ)](https://codecov.io/gh/crs4/rocrate-validator) -->
 
+<!-- [![codecov](https://codecov.io/gh/crs4/rocrate-validator/branch/main/graph/badge.svg?token=3ZQZQZQZQZ)](https://codecov.io/gh/crs4/rocrate-validator) -->
 
 A Python package to validate [ROCrate](https://researchobject.github.io/ro-crate/) packages.
 
@@ -96,3 +95,15 @@ Contributions are welcome! Please read our [contributing guidelines](CONTRIBUTIN
 
 This project is licensed under the terms of the Apache License 2.0. See the
 [LICENSE](LICENSE) file for details.
+
+## Acknowledgements
+
+This work has been partially funded by the following sources:
+
+<img alt="Co-funded by the EU"
+    src="https://repolab.crs4.it/lifemonitor/rocrate-validator/-/raw/add-acks/docs/img/eu-logo/EN_Co-fundedbytheEU_RGB_POS.png?ref_type=heads"
+    width="250" align="right"/>
+
+-   the [BY-COVID](https://by-covid.org/) project (HORIZON Europe grant agreement number 101046203);
+-   the [LIFEMap](https://www.thelifemap.it/) project, funded by the Italian Ministry of Health (Piano Operative Salute, Trajectory 3).
+
