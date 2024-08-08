@@ -1,8 +1,6 @@
-# `rocrate-validator`
+# rocrate-validator
 
-[![Build Status](https://repolab.crs4.it/lifemonitor/rocrate-validator/badges/develop/pipeline.svg)](https://repolab.crs4.it/lifemonitor/rocrate-validator/-/pipelines?page=1&scope=branches&ref=develop)
-[![PyPI version](https://badge.fury.io/py/rocrate-validator.svg)](https://badge.fury.io/py/rocrate-validator)
-[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Build Status](https://repolab.crs4.it/lifemonitor/rocrate-validator/badges/develop/pipeline.svg)](https://repolab.crs4.it/lifemonitor/rocrate-validator/-/pipelines?page=1&scope=branches&ref=develop)<!-- [![PyPI version](https://badge.fury.io/py/rocrate-validator.svg)](https://badge.fury.io/py/rocrate-validator) -->[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 <!-- [![codecov](https://codecov.io/gh/crs4/rocrate-validator/branch/main/graph/badge.svg?token=3ZQZQZQZQZ)](https://codecov.io/gh/crs4/rocrate-validator) -->
 
@@ -54,7 +52,7 @@ After installation, you can use the main command `rocrate-validator` to validate
 Run the validator using the following command:
 
 ```bash
-poetry run rocrate-validator <path_to_rocrate>
+poetry run rocrate-validator validate <path_to_rocrate>
 ```
 
 Replace `<path_to_rocrate>` with the path to the ROCrate you want to validate.
@@ -72,7 +70,7 @@ source .venv/bin/activate
 Then, run the validator using the following command:
 
 ```bash
-rocrate-validator <path_to_rocrate>
+rocrate-validator validate <path_to_rocrate>
 ```
 
 Replace `<path_to_rocrate>` with the path to the ROCrate you want to validate.
