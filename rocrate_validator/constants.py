@@ -20,6 +20,9 @@ from rdflib import Namespace
 # Define SHACL namespace
 SHACL_NS = "http://www.w3.org/ns/shacl#"
 
+# Define the Validator namespace
+VALIDATOR_NS = Namespace("https://github.com/crs4/rocrate-validator/")
+
 # Define the Profiles Vocabulary namespace
 PROF_NS = Namespace("http://www.w3.org/ns/dx/prof/")
 

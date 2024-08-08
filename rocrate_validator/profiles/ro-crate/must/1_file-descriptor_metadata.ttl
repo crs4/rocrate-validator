@@ -6,9 +6,10 @@
 @prefix xml1: <http://www.w3.org/2001/XMLSchema#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
+@prefix validator: <https://github.com/crs4/rocrate-validator/> .
 
 
-rocrate:FindROCrateMetadataFileDescriptorEntity a sh:NodeShape, sh:hidden;
+rocrate:FindROCrateMetadataFileDescriptorEntity a sh:NodeShape, validator:HiddenShape;
     sh:name "Identify the RO-Crate Metadata File Descriptor" ;
     sh:description """The RO-Crate Metadata File Descriptor entity describes the RO-Crate itself, and it is named as `ro-crate-metadata.json`.
         It can be identified by name according to the RO-Crate specification
