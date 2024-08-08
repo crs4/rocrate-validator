@@ -293,6 +293,12 @@ class Profile:
                 if (not exact_match and requirement.severity >= severity) or
                 (exact_match and requirement.severity == severity)]
 
+    def get_requirement(self, name: str) -> Optional[Requirement]:
+        for requirement in self.requirements:
+            if requirement.name == name:
+                return requirement
+        return None
+
     @classmethod
     def __get_nested_profiles__(cls, source: str) -> list[str]:
         result = []
