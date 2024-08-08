@@ -52,7 +52,7 @@ After installation, you can use the main command `rocrate-validator` to validate
 Run the validator using the following command:
 
 ```bash
-poetry run rocrate-validator <path_to_rocrate>
+poetry run rocrate-validator validate <path_to_rocrate>
 ```
 
 Replace `<path_to_rocrate>` with the path to the ROCrate you want to validate.
@@ -70,7 +70,7 @@ source .venv/bin/activate
 Then, run the validator using the following command:
 
 ```bash
-rocrate-validator <path_to_rocrate>
+rocrate-validator validate <path_to_rocrate>
 ```
 
 Replace `<path_to_rocrate>` with the path to the ROCrate you want to validate.
