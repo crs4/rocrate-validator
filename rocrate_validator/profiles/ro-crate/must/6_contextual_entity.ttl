@@ -8,9 +8,10 @@
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
+@prefix validator: <https://github.com/crs4/rocrate-validator/> .
 
 
-rocrate:FindLicenseEntity a sh:NodeShape, sh:hidden ;
+rocrate:FindLicenseEntity a sh:NodeShape, validator:HiddenShape ;
     sh:name "Identify License Entity" ;
     sh:description """Mark a license entity any Data Entity referenced by the `schema:licence` property.""" ;
     sh:target [
@@ -54,7 +55,7 @@ rocrate:WebSiteRecommendedProperties a sh:NodeShape ;
     ] .
 
 
-rocrate:CreativeWorkAuthorDefinition a sh:NodeShape, sh:hidden ;
+rocrate:CreativeWorkAuthorDefinition a sh:NodeShape, validator:HiddenShape ;
     sh:name "CreativeWork Author Definition" ;
     sh:description """Define the `CretiveWorkAuthor` as the `Person` object of the `schema:author` predicate.""" ;
     sh:targetObjectsOf schema:author ;

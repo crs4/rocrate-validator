@@ -8,9 +8,10 @@
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
+@prefix validator: <https://github.com/crs4/rocrate-validator/> .
 
 
-ro:WebBasedDataEntity a sh:NodeShape, sh:hidden ;
+ro:WebBasedDataEntity a sh:NodeShape, validator:HiddenShape ;
     sh:name "Web-based Data Entity: REQUIRED properties" ;
     sh:description """A Web-based Data Entity is a `File` identified by an absolute URL""" ;
     
