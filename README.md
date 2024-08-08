@@ -101,7 +101,7 @@ This project is licensed under the terms of the Apache License 2.0. See the
 This work has been partially funded by the following sources:
 
 <img alt="Co-funded by the EU"
-    src="https://repolab.crs4.it/lifemonitor/rocrate-validator/-/raw/add-acks/docs/img/eu-logo/EN_Co-fundedbytheEU_RGB_POS.png?ref_type=heads"
+    src="https://repolab.crs4.it/lifemonitor/rocrate-validator/-/raw/develop/docs/img/eu-logo/EN_Co-fundedbytheEU_RGB_POS.png?ref_type=heads"
     width="250" align="right"/>
 
 -   the [BY-COVID](https://by-covid.org/) project (HORIZON Europe grant agreement number 101046203);
