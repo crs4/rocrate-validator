@@ -6,7 +6,6 @@
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 <!-- [![codecov](https://codecov.io/gh/crs4/rocrate-validator/branch/main/graph/badge.svg?token=3ZQZQZQZQZ)](https://codecov.io/gh/crs4/rocrate-validator) -->
 
-
 A Python package to validate [ROCrate](https://researchobject.github.io/ro-crate/) packages.
 
 ## Setup
@@ -96,3 +95,10 @@ Contributions are welcome! Please read our [contributing guidelines](CONTRIBUTIN
 
 This project is licensed under the terms of the Apache License 2.0. See the
 [LICENSE](LICENSE) file for details.
+
+## Acknowledgements
+
+This work has been partially funded by the following sources:
+
+* the [BY-COVID](https://by-covid.org/) project (HORIZON Europe grant agreement number 101046203);
+* the [LIFEMap](https://www.thelifemap.it/) project, funded by the Italian Ministry of Health (Piano Operativo Salute, Traiettoria 3).
