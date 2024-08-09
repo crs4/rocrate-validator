@@ -23,7 +23,7 @@ env:
     # enable Docker push only if the required secrets are defined
     # ENABLE_DOCKER_PUSH: ${{ secrets.DOCKERHUB_USER != null && secrets.DOCKERHUB_TOKEN != null }}
     # Base Image
-    IMAGE: python:3.12-slim
+    # IMAGE: python:3.12-slim
     # Define the virtual environment path
     VENV_PATH: .venv
 
@@ -49,8 +49,8 @@ jobs:
     #           run: flake8 -v .
 
     test:
-        name: "Test"
-        runs-on: ${IMAGE}
+        name: "Tests"
+        runs-on: ubuntu-latest
         # needs: [flake8]
         steps:
             - name: Checkout
@@ -59,4 +59,12 @@ jobs:
               run: pip install --upgrade pip
             - name: Initialise a virtual env
               run: python -m venv ${VENV_PATH}
+            - name: Enable virtual env
+              run: source ${VENV_PATH}/bin/activate
+            - name: Install Poetry
+              run: pip install poetry
+            - name: Install dependencies
+              run: poetry install --no-interaction --no-ansi
+            - name: Run tests
+              run: poetry run pytest
 
