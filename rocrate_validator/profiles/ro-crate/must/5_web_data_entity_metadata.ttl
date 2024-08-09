@@ -12,7 +12,7 @@
 @prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
 
 
-ro:WebBasedDataEntity a sh:NodeShape, validator:HiddenShape ;
+ro-crate:WebBasedDataEntity a sh:NodeShape, validator:HiddenShape ;
     sh:name "Web-based Data Entity: REQUIRED properties" ;
     sh:description """A Web-based Data Entity is a `File` identified by an absolute URL""" ;
     
@@ -38,7 +38,7 @@ ro:WebBasedDataEntity a sh:NodeShape, validator:HiddenShape ;
     ] .
 
 
-ro:WebBasedDataEntityRequiredValueRestriction a sh:NodeShape ;
+ro-crate:WebBasedDataEntityRequiredValueRestriction a sh:NodeShape ;
     sh:name "Web-based Data Entity: RECOMMENDED properties" ;
     sh:description """A Web-based Data Entity MUST be identified by an absolute URL and 
     SHOULD have a `contentSize` and `sdDatePublished` property""" ;

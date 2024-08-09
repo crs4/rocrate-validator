@@ -6,7 +6,9 @@
 @prefix xml1: <http://www.w3.org/2001/XMLSchema#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-ro:LicenseDefinition a sh:NodeShape ;
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+
+ro-crate:LicenseDefinition a sh:NodeShape ;
     sh:name "License definition" ;
     sh:description """Contextual entity representing a license with a name and description.""";
     sh:targetClass schema_org:license ;

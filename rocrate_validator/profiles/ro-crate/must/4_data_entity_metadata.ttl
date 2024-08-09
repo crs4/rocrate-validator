@@ -10,7 +10,7 @@
 @prefix validator: <https://github.com/crs4/rocrate-validator/> .
 @prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
 
-ro:DataEntityRequiredProperties a sh:NodeShape ;
+ro-crate:DataEntityRequiredProperties a sh:NodeShape ;
     sh:name "Data Entity: REQUIRED properties" ;
     sh:description """A Data Entity MUST be a `URI Path` relative to the ROCrate root,
         or an sbsolute URI""" ;
@@ -25,7 +25,7 @@ ro:DataEntityRequiredProperties a sh:NodeShape ;
         sh:message """Data Entities MUST have an absolute or relative URI as @id.""" ;
     ] .
 
-ro:FileDataEntity a sh:NodeShape ;
+ro-crate:FileDataEntity a sh:NodeShape ;
     sh:name "File Data Entity: REQUIRED properties" ;
     sh:description """A File Data Entity MUST be a `File`.
     `File` is an RO-Crate alias for the schema.org `MediaObject`.
@@ -63,7 +63,7 @@ ro:FileDataEntity a sh:NodeShape ;
     ] .
 
 
-ro:DirectoryDataEntity a sh:NodeShape ;
+ro-crate:DirectoryDataEntity a sh:NodeShape ;
     sh:name "Directory Data Entity: REQUIRED properties" ;
     sh:description """A Directory Data Entity MUST be of @type `Dataset`.
     The term `directory` here includes HTTP file listings where `@id` is an absolute URI.
@@ -116,7 +116,7 @@ ro:DirectoryDataEntity a sh:NodeShape ;
         sh:severity sh:Violation ;
     ] .
 
-ro:DataEntityRquiredPropertiesShape a sh:NodeShape ;
+ro-crate:DataEntityRquiredPropertiesShape a sh:NodeShape ;
     sh:name "Data Entity: REQUIRED properties" ;
     sh:description """A `DataEntity` MUST be linked, either directly or inderectly, from the Root Data Entity""" ;
     sh:targetClass ro-crate:DataEntity ;
@@ -131,7 +131,7 @@ ro:DataEntityRquiredPropertiesShape a sh:NodeShape ;
             # sh:message "A Data Entity MUST be directly or indirectly linked to the `Root Data Entity` through the `hasPart` property" ;
         ] .
 
-ro:DirectoryDataEntityRequiredValueRestriction a sh:NodeShape ;
+ro-crate:DirectoryDataEntityRequiredValueRestriction a sh:NodeShape ;
     sh:name "Directory Data Entity: REQUIRED value restriction" ;
     sh:description """A Directory Data Entity MUST end with `/`""" ;
     sh:targetNode ro-crate:Directory ;
@@ -144,7 +144,7 @@ ro:DirectoryDataEntityRequiredValueRestriction a sh:NodeShape ;
         sh:pattern "/$" ;
     ] .
 
-ro:GenericDataEntity a sh:NodeShape ;
+ro-crate:GenericDataEntityRequiredProperties a sh:NodeShape ;
     sh:name "Generic Data Entity: REQUIRED properties" ;
     sh:description """A Data Entity other than a File or a Directory MUST be a `DataEntity`""" ;
     sh:target [

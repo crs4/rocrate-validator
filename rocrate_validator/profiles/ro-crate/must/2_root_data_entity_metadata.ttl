@@ -10,7 +10,7 @@
 @prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
 
 
-ro:RootDataEntityType
+ro-crate:RootDataEntityType
     a sh:NodeShape ;
     sh:name "RO-Crate Root Data Entity type" ;
     sh:description "The Root Data Entity MUST be a `Dataset` (as per `schema.org`)" ;
@@ -76,7 +76,7 @@ ro-crate:FindRootDataEntity a sh:NodeShape, validator:HiddenShape;
     ] .
 
 
-ro:RootDataEntityValueRestriction
+ro-crate:RootDataEntityValueRestriction
     a sh:NodeShape ;
     sh:name "RO-Crate Root Data Entity value restriction" ;
     sh:description "The Root Data Entity MUST end with `/`" ;
@@ -91,7 +91,7 @@ ro:RootDataEntityValueRestriction
         sh:pattern "/$" ;
     ] .
 
-ro:RootDataEntityHasPartValueRestriction
+ro-crate:RootDataEntityHasPartValueRestriction
     a sh:NodeShape ;
     sh:name "RO-Crate Root Data Entity: `hasPart` value restriction" ;
     sh:description "The Root Data Entity MUST be linked to the declared `File`, `Directory` and other types of instances through the `hasPart` property" ;
