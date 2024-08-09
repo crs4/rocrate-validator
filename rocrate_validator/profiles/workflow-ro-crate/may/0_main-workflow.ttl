@@ -1,19 +1,11 @@
 @prefix ro: <./> .
-@prefix dct: <http://purl.org/dc/terms/> .
-@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
-@prefix schema: <http://schema.org/> .
-@prefix sh: <http://www.w3.org/ns/shacl#> .
-@prefix xml1: <http://www.w3.org/2001/XMLSchema#> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-# @prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
-@prefix bioschemas: <https://bioschemas.org/> .
-@prefix wroc: <https://w3id.org/workflowhub/workflow-ro-crate#> .
-
-
-@prefix validator: <https://github.com/crs4/rocrate-validator/> .
 @prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
 @prefix workflow-ro-crate: <https://github.com/crs4/rocrate-validator/profiles/workflow-ro-crate/> .
-
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema: <http://schema.org/> .
+@prefix bioschemas: <https://bioschemas.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix wroc: <https://w3id.org/workflowhub/workflow-ro-crate#> .
 
 workflow-ro-crate:MainWorkflowOptionalProperties a sh:NodeShape ;
     sh:name "Main Workflow optional properties" ;
@@ -39,7 +31,6 @@ workflow-ro-crate:MainWorkflowOptionalProperties a sh:NodeShape ;
         sh:message "The Crate MAY contain a Main Workflow CWL Description; if present it MUST be referred to via 'subjectOf'" ;
          # sh:severity sh:Info ;
     ] .
-
 
 workflow-ro-crate:CWLDescriptionProperties a sh:NodeShape ;
     sh:name "CWL Description properties" ;

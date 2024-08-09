@@ -1,17 +1,11 @@
 @prefix ro: <./> .
-@prefix dct: <http://purl.org/dc/terms/> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+@prefix workflow-ro-crate: <https://github.com/crs4/rocrate-validator/profiles/workflow-ro-crate/> .
+@prefix bioschemas: <https://bioschemas.org/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix schema: <http://schema.org/> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
-@prefix xml1: <http://www.w3.org/2001/XMLSchema#> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-# @prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
-@prefix bioschemas: <https://bioschemas.org/> .
-
 @prefix validator: <https://github.com/crs4/rocrate-validator/> .
-@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
-@prefix workflow-ro-crate: <https://github.com/crs4/rocrate-validator/profiles/workflow-ro-crate/> .
-
 
 workflow-ro-crate:MainEntityProperyMustExist a sh:NodeShape ;
     sh:name "Main Workflow entity existence" ;
@@ -24,7 +18,6 @@ workflow-ro-crate:MainEntityProperyMustExist a sh:NodeShape ;
         sh:description "Check if the Main Workflow is specified through a `mainEntity` property in the root data entity" ;
         sh:message "The Main Workflow must be specified through a `mainEntity` property in the root data entity" ;
     ] .
-
 
 workflow-ro-crate:FindMainWorkflow a sh:NodeShape, validator:HiddenShape ;
     sh:name "Identify Main Workflow" ;

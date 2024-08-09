@@ -1,18 +1,10 @@
 @prefix ro: <./> .
-@prefix dct: <http://purl.org/dc/terms/> .
-@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
-@prefix schema: <http://schema.org/> .
-@prefix sh: <http://www.w3.org/ns/shacl#> .
-@prefix xml1: <http://www.w3.org/2001/XMLSchema#> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-# @prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
-@prefix bioschemas: <https://bioschemas.org/> .
-
-@prefix validator: <https://github.com/crs4/rocrate-validator/> .
 @prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
 @prefix process-run-crate: <https://github.com/crs4/rocrate-validator/profiles/process-run-crate/> .
-
-
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema: <http://schema.org/> .
+@prefix bioschemas: <https://bioschemas.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
 
 process-run-crate:ProcRCApplication a sh:NodeShape ;
     sh:name "ProcRC Application" ;
@@ -37,7 +29,6 @@ process-run-crate:ProcRCApplication a sh:NodeShape ;
         sh:message "The Application SHOULD have a url" ;
     ] .
 
-
 process-run-crate:ProcRCSoftwareSourceCodeComputationalWorkflow a sh:NodeShape ;
     sh:name "ProcRC SoftwareSourceCode or ComputationalWorkflow" ;
     sh:description "Properties of a Process Run Crate SoftwareSourceCode or ComputationalWorkflow" ;
@@ -51,7 +42,6 @@ process-run-crate:ProcRCSoftwareSourceCodeComputationalWorkflow a sh:NodeShape ;
         sh:minCount 1 ;
         sh:message "The SoftwareSourceCode or ComputationalWorkflow SHOULD have a version" ;
     ] .
-
 
 process-run-crate:ProcRCSoftwareApplication a sh:NodeShape ;
     sh:name "ProcRC SoftwareApplication" ;

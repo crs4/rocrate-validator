@@ -1,19 +1,10 @@
 @prefix ro: <./> .
-@prefix dct: <http://purl.org/dc/terms/> .
-@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
-@prefix schema: <http://schema.org/> .
-@prefix sh: <http://www.w3.org/ns/shacl#> .
-@prefix xml1: <http://www.w3.org/2001/XMLSchema#> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-# @prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
-@prefix bioschemas: <https://bioschemas.org/> .
-@prefix wfrun: <https://w3id.org/ro/terms/workflow-run#> .
-
-
-@prefix validator: <https://github.com/crs4/rocrate-validator/> .
 @prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
 @prefix process-run-crate: <https://github.com/crs4/rocrate-validator/profiles/process-run-crate/> .
-
+@prefix schema: <http://schema.org/> .
+@prefix bioschemas: <https://bioschemas.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix wfrun: <https://w3id.org/ro/terms/workflow-run#> .
 
 process-run-crate:ProcRCActionOptional a sh:NodeShape ;
     sh:name "Process Run Crate Action MAY" ;
