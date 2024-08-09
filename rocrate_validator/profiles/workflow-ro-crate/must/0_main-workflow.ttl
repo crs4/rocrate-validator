@@ -1,19 +1,16 @@
 @prefix ro: <./> .
-@prefix dct: <http://purl.org/dc/terms/> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+@prefix workflow-ro-crate: <https://github.com/crs4/rocrate-validator/profiles/workflow-ro-crate/> .
+@prefix bioschemas: <https://bioschemas.org/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix schema: <http://schema.org/> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
-@prefix xml1: <http://www.w3.org/2001/XMLSchema#> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-@prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
-@prefix bioschemas: <https://bioschemas.org/> .
 @prefix validator: <https://github.com/crs4/rocrate-validator/> .
 
-
-ro:MainEntityProperyMustExist a sh:NodeShape ;
+workflow-ro-crate:MainEntityProperyMustExist a sh:NodeShape ;
     sh:name "Main Workflow entity existence" ;
     sh:description "The Main Workflow must be specified through a `mainEntity` property in the root data entity" ;
-    sh:targetClass rocrate:RootDataEntity ;
+    sh:targetClass ro-crate:RootDataEntity ;
     sh:property [
         a sh:PropertyShape ;
         sh:path schema:mainEntity ;
@@ -22,13 +19,12 @@ ro:MainEntityProperyMustExist a sh:NodeShape ;
         sh:message "The Main Workflow must be specified through a `mainEntity` property in the root data entity" ;
     ] .
 
-
-ro:FindMainWorkflow a sh:NodeShape, validator:HiddenShape ;
+workflow-ro-crate:FindMainWorkflow a sh:NodeShape, validator:HiddenShape ;
     sh:name "Identify Main Workflow" ;
     sh:description "Identify the Main Workflow" ;
     sh:target [
         a sh:SPARQLTarget ;
-        sh:prefixes ro:sparqlPrefixes ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
         sh:select """
             SELECT ?this
             WHERE {
@@ -43,13 +39,13 @@ ro:FindMainWorkflow a sh:NodeShape, validator:HiddenShape ;
         a sh:TripleRule ;
         sh:subject sh:this ;
         sh:predicate rdf:type ;
-        sh:object rocrate:MainWorkflow ;
+        sh:object workflow-ro-crate:MainWorkflow ;
     ] .
 
-ro:MainWorkflowRequiredProperties a sh:NodeShape ;
+workflow-ro-crate:MainWorkflowRequiredProperties a sh:NodeShape ;
     sh:name "Main Workflow definition" ;
     sh:description """Main Workflow properties defined as MUST""";
-    sh:targetClass rocrate:MainWorkflow ;
+    sh:targetClass workflow-ro-crate:MainWorkflow ;
     sh:property [
         a sh:PropertyShape ;
         sh:name "Main Workflow type" ;

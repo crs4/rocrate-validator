@@ -1,14 +1,12 @@
 @prefix ro: <./> .
-@prefix dct: <http://purl.org/dc/terms/> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+@prefix workflow-ro-crate: <https://github.com/crs4/rocrate-validator/profiles/workflow-ro-crate/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix schema: <http://schema.org/> .
-@prefix sh: <http://www.w3.org/ns/shacl#> .
-@prefix xml1: <http://www.w3.org/2001/XMLSchema#> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-@prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
 @prefix bioschemas: <https://bioschemas.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
 
-ro:FindTestDir a sh:NodeShape ;
+workflow-ro-crate:FindTestDir a sh:NodeShape ;
     sh:name "test directory" ;
     sh:description "Dataset data entity to hold tests" ;
     sh:targetNode ro:test\/ ;
@@ -22,7 +20,7 @@ ro:FindTestDir a sh:NodeShape ;
         sh:message "The test/ dir should be a Dataset" ;
     ] .
 
-ro:FindExamplesDir a sh:NodeShape ;
+workflow-ro-crate:FindExamplesDir a sh:NodeShape ;
     sh:name "examples directory" ;
     sh:description "Dataset data entity to hold examples" ;
     sh:targetNode ro:examples\/ ;

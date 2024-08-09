@@ -1,16 +1,12 @@
 @prefix ro: <./> .
-@prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix dct: <http://purl.org/dc/terms/> .
 @prefix schema_org: <http://schema.org/> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
-@prefix xml: <http://www.w3.org/2001/XMLSchema#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-@prefix owl: <http://www.w3.org/2002/07/owl#> .
 
-rocrate:FileRecommendedProperties a sh:NodeShape ;
-    sh:targetClass rocrate:File ;
+ro-crate:FileRecommendedProperties a sh:NodeShape ;
+    sh:targetClass ro-crate:File ;
     sh:name "File Data Entity: RECOMMENDED properties";
     sh:description """A `File` Data Entity SHOULD have detailed descriptions encodings through the `encodingFormat` property""" ;
     sh:property [

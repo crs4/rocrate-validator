@@ -1,15 +1,12 @@
 @prefix ro: <./> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+@prefix workflow-ro-crate: <https://github.com/crs4/rocrate-validator/profiles/workflow-ro-crate/> .
 @prefix dct: <http://purl.org/dc/terms/> .
-@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix bioschemas: <https://bioschemas.org/> .
 @prefix schema: <http://schema.org/> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
-@prefix xml1: <http://www.w3.org/2001/XMLSchema#> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-@prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
-@prefix bioschemas: <https://bioschemas.org/> .
 
-
-ro:DescriptorProperties a sh:NodeShape ;
+workflow-ro-crate:DescriptorProperties a sh:NodeShape ;
     sh:name "WROC Metadata File Descriptor properties" ;
     sh:description "Properties of the WROC Metadata File Descriptor" ;
     sh:targetNode ro:ro-crate-metadata.json ;
@@ -24,7 +21,7 @@ ro:DescriptorProperties a sh:NodeShape ;
         sh:message "The Metadata File Descriptor conformsTo SHOULD contain https://w3id.org/ro/crate/1.1 and https://w3id.org/workflowhub/workflow-ro-crate/1.0" ;
     ] .
 
-ro:FindReadme a sh:NodeShape ;
+workflow-ro-crate:FindReadme a sh:NodeShape ;
     sh:name "README.md properties" ;
     sh:description "README file for the Workflow RO-Crate" ;
     sh:targetNode ro:README.md ;
@@ -33,7 +30,7 @@ ro:FindReadme a sh:NodeShape ;
         sh:name "README.md about" ;
         sh:description "The README.md SHOULD be about the crate" ;
         sh:path schema:about ;
-        sh:class rocrate:RootDataEntity ;
+        sh:class ro-crate:RootDataEntity ;
         sh:minCount 1 ;
         sh:message "The README.md SHOULD be about the crate" ;
     ] ;

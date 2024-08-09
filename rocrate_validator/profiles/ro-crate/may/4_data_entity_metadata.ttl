@@ -1,24 +1,20 @@
 @prefix ro: <./> .
-@prefix dct: <http://purl.org/dc/terms/> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
-@prefix schema_org: <http://schema.org/> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
-@prefix xml1: <http://www.w3.org/2001/XMLSchema#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
 @prefix schema: <http://schema.org/> .
+@prefix validator: <https://github.com/crs4/rocrate-validator/> .
 
-
-rocrate:FileDataEntityWebOptionalProperties a sh:NodeShape ;
+ro-crate:FileDataEntityWebOptionalProperties a sh:NodeShape ;
     sh:name "File Data Entity with web presence: OPTIONAL properties" ;
     sh:description """A File Data Entity which have a corresponding web presence,
     for instance a landing page that describes the file, including persistence identifiers (e.g. DOI),
     resolving to an intermediate HTML page instead of the downloadable file directly.
     These can included for File Data Entities as additional metadata by using the properties:
     `ìdentifier`, `url`, `subjectOf`and `mainEntityOfPage`""" ;
-    sh:targetClass rocrate:File ;
+    sh:targetClass ro-crate:File ;
     # Check if the Web-based Data Entity has a contentSize property
     sh:property [
         a sh:PropertyShape ;
@@ -62,10 +58,10 @@ rocrate:FileDataEntityWebOptionalProperties a sh:NodeShape ;
     ] .
 
 
-rocrate:DirectoryDataEntityWebOptionalDistribution a sh:NodeShape ;
+ro-crate:DirectoryDataEntityWebOptionalDistribution a sh:NodeShape ;
     sh:name "Directory Data Entity: OPTIONAL `distribution` property" ;
     sh:description """A Directory Data Entity MAY have a `distribution` property to denote the distribution of the files within the directory""" ;
-    sh:targetClass rocrate:File ;
+    sh:targetClass ro-crate:File ;
     # Check if the Web-based Data Entity has a contentSize property
     sh:property [
         a sh:PropertyShape ;

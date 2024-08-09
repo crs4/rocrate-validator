@@ -1,23 +1,21 @@
 @prefix ro: <./> .
-@prefix dct: <http://purl.org/dc/terms/> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix dct: <http://purl.org/dc/terms/> .
 @prefix schema_org: <http://schema.org/> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
-@prefix xml1: <http://www.w3.org/2001/XMLSchema#> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix validator: <https://github.com/crs4/rocrate-validator/> .
 
 
-ro:WebBasedDataEntity a sh:NodeShape, validator:HiddenShape ;
+ro-crate:WebBasedDataEntity a sh:NodeShape, validator:HiddenShape ;
     sh:name "Web-based Data Entity: REQUIRED properties" ;
     sh:description """A Web-based Data Entity is a `File` identified by an absolute URL""" ;
     
     sh:target [
         a sh:SPARQLTarget ;
-        sh:prefixes ro:sparqlPrefixes ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
         sh:select """
             SELECT ?this
             WHERE {
@@ -33,15 +31,15 @@ ro:WebBasedDataEntity a sh:NodeShape, validator:HiddenShape ;
         a sh:TripleRule ;
         sh:subject sh:this ;
         sh:predicate rdf:type ;
-        sh:object rocrate:WebDataEntity ;
+        sh:object ro-crate:WebDataEntity ;
     ] .
 
 
-ro:WebBasedDataEntityRequiredValueRestriction a sh:NodeShape ;
+ro-crate:WebBasedDataEntityRequiredValueRestriction a sh:NodeShape ;
     sh:name "Web-based Data Entity: RECOMMENDED properties" ;
     sh:description """A Web-based Data Entity MUST be identified by an absolute URL and 
     SHOULD have a `contentSize` and `sdDatePublished` property""" ;
-    sh:targetClass rocrate:WebDataEntity ;
+    sh:targetClass ro-crate:WebDataEntity ;
     # Check if the Web-based Data Entity has a contentSize property
     sh:property [
         a sh:PropertyShape ;

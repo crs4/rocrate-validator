@@ -1,18 +1,13 @@
 @prefix ro: <./> .
-@prefix dct: <http://purl.org/dc/terms/> .
-@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
 @prefix schema: <http://schema.org/> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
-@prefix xml1: <http://www.w3.org/2001/XMLSchema#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-@prefix owl: <http://www.w3.org/2002/07/owl#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
 
-rocrate:CreativeWorkAuthorMinimuRecommendedProperties a sh:NodeShape ;
+ro-crate:CreativeWorkAuthorMinimuRecommendedProperties a sh:NodeShape ;
     sh:name "CreativeWork Author: minimum RECOMMENDED properties" ;
     sh:description """The minimum recommended properties for a `CreativeWork Author` are `name` and `affiliation`.""" ;
-    sh:targetClass rocrate:CreativeWorkAuthor ;
+    sh:targetClass ro-crate:CreativeWorkAuthor ;
     sh:property [
         sh:path schema:name ;
         sh:minCount 1 ;
@@ -44,7 +39,7 @@ rocrate:CreativeWorkAuthorMinimuRecommendedProperties a sh:NodeShape ;
     ] .
 
 
-rocrate:OrganizationRecommendedProperties a sh:NodeShape ;
+ro-crate:OrganizationRecommendedProperties a sh:NodeShape ;
     sh:name "Organization: RECOMMENDED properties" ;
     sh:description """The recommended properties for an `Organization` are `name` and `url`.""" ;
     sh:targetClass schema:Organization ;

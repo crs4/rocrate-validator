@@ -1,19 +1,17 @@
 @prefix ro: <./> .
-@prefix dct: <http://purl.org/dc/terms/> .
-@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+@prefix process-run-crate: <https://github.com/crs4/rocrate-validator/profiles/process-run-crate/> .
 @prefix schema: <http://schema.org/> .
-@prefix sh: <http://www.w3.org/ns/shacl#> .
-@prefix xml1: <http://www.w3.org/2001/XMLSchema#> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-@prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
 @prefix bioschemas: <https://bioschemas.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix validator: <https://github.com/crs4/rocrate-validator/> .
 
-ro:ProcRCCollectionRecommended a sh:NodeShape ;
+process-run-crate:ProcRCCollectionRecommended a sh:NodeShape ;
     sh:name "Process Run Crate Collection SHOULD" ;
     sh:description "Recommended properties of the Process Run Crate Collection" ;
     sh:target [
         a sh:SPARQLTarget ;
-        sh:prefixes ro:sparqlPrefixes ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
         sh:select """
             SELECT ?this
             WHERE {
@@ -31,7 +29,7 @@ ro:ProcRCCollectionRecommended a sh:NodeShape ;
         sh:name "Collection SHOULD be referenced via mentions from root" ;
         sh:description "The Collection SHOULD be referenced from the Root Data Entity via mentions" ;
         sh:path [ sh:inversePath schema:mentions ] ;
-        sh:node rocrate:RootDataEntity ;
+        sh:node ro-crate:RootDataEntity ;
         sh:minCount 1 ;
         sh:message "The Collection SHOULD be referenced from the Root Data Entity via mentions" ;
     ] ;

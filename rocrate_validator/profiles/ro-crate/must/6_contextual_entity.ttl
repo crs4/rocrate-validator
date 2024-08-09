@@ -1,22 +1,19 @@
 @prefix ro: <./> .
-@prefix dct: <http://purl.org/dc/terms/> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix schema: <http://schema.org/> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
-@prefix xml1: <http://www.w3.org/2001/XMLSchema#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
 @prefix validator: <https://github.com/crs4/rocrate-validator/> .
 
 
-rocrate:FindLicenseEntity a sh:NodeShape, validator:HiddenShape ;
+ro-crate:FindLicenseEntity a sh:NodeShape, validator:HiddenShape ;
     sh:name "Identify License Entity" ;
     sh:description """Mark a license entity any Data Entity referenced by the `schema:licence` property.""" ;
     sh:target [
         a sh:SPARQLTarget ;
-        sh:prefixes ro:sparqlPrefixes ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
         sh:select """
             SELECT ?this
             WHERE {
@@ -30,11 +27,11 @@ rocrate:FindLicenseEntity a sh:NodeShape, validator:HiddenShape ;
         a sh:TripleRule ;
         sh:subject sh:this ;
         sh:predicate rdf:type ;
-        sh:object rocrate:ContextualEntity ;
+        sh:object ro-crate:ContextualEntity ;
     ] .
 
 
-rocrate:WebSiteRecommendedProperties a sh:NodeShape ;
+ro-crate:WebSiteRecommendedProperties a sh:NodeShape ;
     sh:name "WebSite RECOMMENDED Properties" ;
     sh:description """A `WebSite` MUST be identified by a valid IRI and MUST have a `name` property.""" ;
     sh:targetClass schema:WebSite ;
@@ -55,7 +52,7 @@ rocrate:WebSiteRecommendedProperties a sh:NodeShape ;
     ] .
 
 
-rocrate:CreativeWorkAuthorDefinition a sh:NodeShape, validator:HiddenShape ;
+ro-crate:CreativeWorkAuthorDefinition a sh:NodeShape, validator:HiddenShape ;
     sh:name "CreativeWork Author Definition" ;
     sh:description """Define the `CretiveWorkAuthor` as the `Person` object of the `schema:author` predicate.""" ;
     sh:targetObjectsOf schema:author ;
@@ -63,7 +60,7 @@ rocrate:CreativeWorkAuthorDefinition a sh:NodeShape, validator:HiddenShape ;
         a sh:TripleRule ;
         sh:subject sh:this ;
         sh:predicate rdf:type ;
-        sh:object rocrate:CreativeWorkAuthor ;
+        sh:object ro-crate:CreativeWorkAuthor ;
         sh:condition [
             sh:property [ sh:path rdf:type ; sh:hasValue schema:Person ; sh:minCount 1 ] ;
         ] ;

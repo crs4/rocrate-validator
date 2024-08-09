@@ -7,6 +7,7 @@
 @prefix schema: <http://schema.org/> .
 @prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
 @prefix bioschemas: <https://bioschemas.org/> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
 # @base <./.> .
 
 <urn:absolute:.> rdf:type owl:Ontology ;
@@ -17,7 +18,7 @@
 # # #################################################################
 
 # Declare the RootDataEntity class
-rocrate:RootDataEntity rdf:type owl:Class ;
+ro-crate:RootDataEntity rdf:type owl:Class ;
   rdfs:subClassOf schema:Dataset ;
   rdfs:label "RootDataEntity"@en .
 
@@ -27,7 +28,7 @@ schema:CreativeWork rdf:type owl:Class ;
 
 ###  http://schema.org/MediaObject
 schema:MediaObject rdf:type owl:Class ;
-                   owl:equivalentClass rocrate:File ;
+                   owl:equivalentClass ro-crate:File ;
                    rdfs:label "MediaObject"@en .
 
 
@@ -41,12 +42,12 @@ bioschemas:ComputationalWorkflow rdf:type owl:Class .
 
 
 ###  https://w3id.org/ro/crate/1.1/DataEntity
-rocrate:DataEntity rdf:type owl:Class ;
+ro-crate:DataEntity rdf:type owl:Class ;
                    rdfs:subClassOf schema:CreativeWork ;
                    rdfs:label "DataEntity"@en .
 
 
 # # ###  https://w3id.org/ro/crate/1.1/Directory
-rocrate:Directory rdf:type owl:Class ;
+ro-crate:Directory rdf:type owl:Class ;
                 rdfs:subClassOf schema:Dataset ;
                 rdfs:label "Directory"@en .

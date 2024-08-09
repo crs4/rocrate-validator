@@ -1,21 +1,18 @@
 @prefix ro: <./> .
-@prefix dct: <http://purl.org/dc/terms/> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix schema_org: <http://schema.org/> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
-@prefix xml1: <http://www.w3.org/2001/XMLSchema#> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-@prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
 @prefix validator: <https://github.com/crs4/rocrate-validator/> .
 
 
-ro:RootDataEntityType
+ro-crate:RootDataEntityType
     a sh:NodeShape ;
     sh:name "RO-Crate Root Data Entity type" ;
     sh:description "The Root Data Entity MUST be a `Dataset` (as per `schema.org`)" ;
     sh:target [
         a sh:SPARQLTarget ;
-        sh:prefixes ro:sparqlPrefixes ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
         sh:select """
             SELECT ?this
             WHERE {
@@ -47,7 +44,7 @@ ro:RootDataEntityType
     ] .
 
 
-rocrate:FindRootDataEntity a sh:NodeShape, validator:HiddenShape;
+ro-crate:FindRootDataEntity a sh:NodeShape, validator:HiddenShape;
     sh:name "Identify the Root Data Entity of the RO-Crate" ;
     sh:description """The Root Data Entity is the top-level Data Entity in the RO-Crate and serves as the starting point for the description of the RO-Crate.
         It is a schema:Dataset and is indirectly identified by the about property of the resource ro-crate-metadata.json in the RO-Crate 
@@ -55,7 +52,7 @@ rocrate:FindRootDataEntity a sh:NodeShape, validator:HiddenShape;
     """ ;
     sh:target [
         a sh:SPARQLTarget ;
-        sh:prefixes ro:sparqlPrefixes ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
         sh:select """
             SELECT ?this
             WHERE {
@@ -71,15 +68,15 @@ rocrate:FindRootDataEntity a sh:NodeShape, validator:HiddenShape;
         a sh:TripleRule ;
         sh:subject sh:this ;
         sh:predicate rdf:type ;
-        sh:object rocrate:RootDataEntity ;
+        sh:object ro-crate:RootDataEntity ;
     ] .
 
 
-ro:RootDataEntityValueRestriction
+ro-crate:RootDataEntityValueRestriction
     a sh:NodeShape ;
     sh:name "RO-Crate Root Data Entity value restriction" ;
     sh:description "The Root Data Entity MUST end with `/`" ;
-    sh:targetNode rocrate:RootDataEntity ;
+    sh:targetNode ro-crate:RootDataEntity ;
     sh:property [
         a sh:PropertyShape ;
         sh:name "Root Data Entity URI value" ;
@@ -90,20 +87,20 @@ ro:RootDataEntityValueRestriction
         sh:pattern "/$" ;
     ] .
 
-ro:RootDataEntityHasPartValueRestriction
+ro-crate:RootDataEntityHasPartValueRestriction
     a sh:NodeShape ;
     sh:name "RO-Crate Root Data Entity: `hasPart` value restriction" ;
     sh:description "The Root Data Entity MUST be linked to the declared `File`, `Directory` and other types of instances through the `hasPart` property" ;
-    sh:targetClass rocrate:RootDataEntity ;
+    sh:targetClass ro-crate:RootDataEntity ;
     sh:property [
         a sh:PropertyShape ;
         sh:name "RO-Crate Root Data Entity: `hasPart` value restriction" ;
         sh:description "Check if the Root Data Entity is linked to the declared `File`, `Directory` and other types of instances through the `hasPart` property" ;
         sh:path schema_org:hasPart ;
         sh:or (
-            [ sh:class rocrate:File ]
-            [ sh:class rocrate:Directory ]
-            [ sh:class rocrate:GenericDataEntity ]
+            [ sh:class ro-crate:File ]
+            [ sh:class ro-crate:Directory ]
+            [ sh:class ro-crate:GenericDataEntity ]
         ) ;
         # sh:message """The Root Data Entity MUST be linked to either File or Directory instances, nothing else""" ;
     ] .
