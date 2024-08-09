@@ -13,7 +13,7 @@
 @prefix process-run-crate: <https://github.com/crs4/rocrate-validator/profiles/process-run-crate/> .
 
 
-ro:ProcRCCollectionRecommended a sh:NodeShape ;
+process-run-crate:ProcRCCollectionRecommended a sh:NodeShape ;
     sh:name "Process Run Crate Collection SHOULD" ;
     sh:description "Recommended properties of the Process Run Crate Collection" ;
     sh:target [

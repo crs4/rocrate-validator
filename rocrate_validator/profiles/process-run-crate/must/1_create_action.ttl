@@ -12,7 +12,7 @@
 @prefix process-run-crate: <https://github.com/crs4/rocrate-validator/profiles/process-run-crate/> .
 
 
-ro:ProcRCActionRequired a sh:NodeShape ;
+process-run-crate:ProcRCActionRequired a sh:NodeShape ;
     sh:name "Process Run Crate Action" ;
     sh:description "Properties of the Process Run Crate Action" ;
     sh:targetClass schema:CreateAction ,

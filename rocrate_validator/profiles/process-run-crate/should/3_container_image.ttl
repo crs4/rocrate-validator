@@ -14,7 +14,7 @@
 @prefix process-run-crate: <https://github.com/crs4/rocrate-validator/profiles/process-run-crate/> .
 
 
-ro:ProcRCContainerImageRecommended a sh:NodeShape ;
+process-run-crate:ProcRCContainerImageRecommended a sh:NodeShape ;
     sh:name "Process Run Crate ContainerImage SHOULD" ;
     sh:description "Recommended properties of the Process Run Crate ContainerImage" ;
     sh:targetClass wfrun:ContainerImage ;

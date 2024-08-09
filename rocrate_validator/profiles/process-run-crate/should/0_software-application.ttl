@@ -14,7 +14,7 @@
 
 
 
-ro:ProcRCApplication a sh:NodeShape ;
+process-run-crate:ProcRCApplication a sh:NodeShape ;
     sh:name "ProcRC Application" ;
     sh:description "Properties of a Process Run Crate Application" ;
     sh:targetClass schema:SoftwareApplication,
@@ -38,7 +38,7 @@ ro:ProcRCApplication a sh:NodeShape ;
     ] .
 
 
-ro:ProcRCSoftwareSourceCodeComputationalWorkflow a sh:NodeShape ;
+process-run-crate:ProcRCSoftwareSourceCodeComputationalWorkflow a sh:NodeShape ;
     sh:name "ProcRC SoftwareSourceCode or ComputationalWorkflow" ;
     sh:description "Properties of a Process Run Crate SoftwareSourceCode or ComputationalWorkflow" ;
     sh:targetClass schema:SoftwareSourceCode,
@@ -53,7 +53,7 @@ ro:ProcRCSoftwareSourceCodeComputationalWorkflow a sh:NodeShape ;
     ] .
 
 
-ro:ProcRCSoftwareApplication a sh:NodeShape ;
+process-run-crate:ProcRCSoftwareApplication a sh:NodeShape ;
     sh:name "ProcRC SoftwareApplication" ;
     sh:description "Properties of a Process Run Crate SoftwareApplication" ;
     sh:targetClass schema:SoftwareApplication ;
@@ -70,7 +70,7 @@ ro:ProcRCSoftwareApplication a sh:NodeShape ;
     ] .
 
 
-ro:ProcRCSoftwareApplicationSingleVersion a sh:NodeShape ;
+process-run-crate:ProcRCSoftwareApplicationSingleVersion a sh:NodeShape ;
     sh:name "ProcRC SoftwareApplication SingleVersion" ;
     sh:description "Process Run Crate SoftwareApplication should not have both version and softwareVersion" ;
     sh:message "Process Run Crate SoftwareApplication should not have both version and softwareVersion" ;
@@ -91,7 +91,7 @@ ro:ProcRCSoftwareApplicationSingleVersion a sh:NodeShape ;
     ] .
 
 
-ro:ProcRCSoftwareApplicationID a sh:NodeShape ;
+process-run-crate:ProcRCSoftwareApplicationID a sh:NodeShape ;
     sh:name "ProcRC SoftwareApplication ID" ;
     sh:description "Process Run Crate SoftwareApplication ID" ;
     sh:targetNode schema:SoftwareApplication ,

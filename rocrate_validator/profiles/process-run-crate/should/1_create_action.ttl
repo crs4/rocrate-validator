@@ -14,7 +14,7 @@
 @prefix process-run-crate: <https://github.com/crs4/rocrate-validator/profiles/process-run-crate/> .
 
 
-ro:ProcRCActionRecommended a sh:NodeShape ;
+process-run-crate:ProcRCActionRecommended a sh:NodeShape ;
     sh:name "Process Run Crate Action SHOULD" ;
     sh:description "Recommended properties of the Process Run Crate Action" ;
     sh:targetClass schema:CreateAction ,
@@ -106,7 +106,7 @@ ro:ProcRCActionRecommended a sh:NodeShape ;
     ] .
 
 
-ro:ProcRCCreateUpdateActionRecommended a sh:NodeShape ;
+process-run-crate:ProcRCCreateUpdateActionRecommended a sh:NodeShape ;
     sh:name "Process Run Crate CreateAction UpdateAction SHOULD" ;
     sh:description "Recommended properties of the Process Run Crate CreateAction or UpdateAction" ;
     sh:targetClass schema:CreateAction ,
@@ -121,7 +121,7 @@ ro:ProcRCCreateUpdateActionRecommended a sh:NodeShape ;
     ] .
 
 
-ro:ProcRCActionError a sh:NodeShape ;
+process-run-crate:ProcRCActionError a sh:NodeShape ;
     sh:name "Process Run Crate Action error" ;
     sh:description "error SHOULD NOT be specified unless actionStatus is set to FailedActionStatus" ;
     sh:message "error SHOULD NOT be specified unless actionStatus is set to FailedActionStatus" ;
@@ -147,7 +147,7 @@ ro:ProcRCActionError a sh:NodeShape ;
     ] .
 
 
-ro:ProcRCActionObjectResultType a sh:NodeShape ;
+process-run-crate:ProcRCActionObjectResultType a sh:NodeShape ;
     sh:name "Process Run Crate Action object and result types" ;
     sh:description "object and result SHOULD point to entities of type MediaObject, Dataset, Collection, CreativeWork or PropertyValue" ;
     sh:targetClass schema:CreateAction ,

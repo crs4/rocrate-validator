@@ -9,7 +9,13 @@
 @prefix bioschemas: <https://bioschemas.org/> .
 @prefix wfrun: <https://w3id.org/ro/terms/workflow-run#> .
 
-ro:ProcRCContainerImageOptional a sh:NodeShape ;
+
+@prefix validator: <https://github.com/crs4/rocrate-validator/> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+@prefix process-run-crate: <https://github.com/crs4/rocrate-validator/profiles/process-run-crate/> .
+
+
+process-run-crate:ProcRCContainerImageOptional a sh:NodeShape ;
     sh:name "Process Run Crate ContainerImage MAY" ;
     sh:description "Optional properties of the Process Run Crate ContainerImage" ;
     sh:targetClass wfrun:ContainerImage ;
