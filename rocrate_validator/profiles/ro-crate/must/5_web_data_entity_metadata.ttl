@@ -15,7 +15,7 @@ ro-crate:WebBasedDataEntity a sh:NodeShape, validator:HiddenShape ;
     
     sh:target [
         a sh:SPARQLTarget ;
-        sh:prefixes ro:sparqlPrefixes ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
         sh:select """
             SELECT ?this
             WHERE {

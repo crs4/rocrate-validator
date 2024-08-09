@@ -119,7 +119,7 @@ process-run-crate:ProcRCActionError a sh:NodeShape ;
     sh:message "error SHOULD NOT be specified unless actionStatus is set to FailedActionStatus" ;
     sh:target [
         a sh:SPARQLTarget ;
-        sh:prefixes ro:sparqlPrefixes ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
         sh:select """
             SELECT ?this
             WHERE {

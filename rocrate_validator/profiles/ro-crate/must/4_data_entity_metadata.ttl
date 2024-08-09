@@ -29,7 +29,7 @@ ro-crate:FileDataEntity a sh:NodeShape ;
     """ ;
     sh:target [
         a sh:SPARQLTarget ;
-        sh:prefixes ro:sparqlPrefixes ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
         sh:select """
             SELECT ?this
             WHERE {
@@ -66,7 +66,7 @@ ro-crate:DirectoryDataEntity a sh:NodeShape ;
     """ ;
     sh:target [
         a sh:SPARQLTarget ;
-        sh:prefixes ro:sparqlPrefixes ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
         sh:select """
             SELECT ?this
             WHERE {
@@ -145,7 +145,7 @@ ro-crate:GenericDataEntityRequiredProperties a sh:NodeShape ;
     sh:description """A Data Entity other than a File or a Directory MUST be a `DataEntity`""" ;
     sh:target [
         a sh:SPARQLTarget ;
-        sh:prefixes ro:sparqlPrefixes ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
         sh:select """
             SELECT ?this
             WHERE {

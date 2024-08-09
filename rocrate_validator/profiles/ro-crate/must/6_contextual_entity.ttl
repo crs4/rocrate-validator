@@ -13,7 +13,7 @@ ro-crate:FindLicenseEntity a sh:NodeShape, validator:HiddenShape ;
     sh:description """Mark a license entity any Data Entity referenced by the `schema:licence` property.""" ;
     sh:target [
         a sh:SPARQLTarget ;
-        sh:prefixes ro:sparqlPrefixes ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
         sh:select """
             SELECT ?this
             WHERE {

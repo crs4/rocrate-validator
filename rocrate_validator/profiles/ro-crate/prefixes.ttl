@@ -1,10 +1,10 @@
 @prefix ro: <./> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
 
 # Define the prefixes used in the SPARQL queries
-ro:sparqlPrefixes
+ro-crate:sparqlPrefixes
     sh:declare [
         sh:prefix "schema" ;
         sh:namespace "http://schema.org/"^^xsd:anyURI ;

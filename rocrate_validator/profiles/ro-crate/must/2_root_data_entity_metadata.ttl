@@ -12,7 +12,7 @@ ro-crate:RootDataEntityType
     sh:description "The Root Data Entity MUST be a `Dataset` (as per `schema.org`)" ;
     sh:target [
         a sh:SPARQLTarget ;
-        sh:prefixes ro:sparqlPrefixes ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
         sh:select """
             SELECT ?this
             WHERE {
@@ -52,7 +52,7 @@ ro-crate:FindRootDataEntity a sh:NodeShape, validator:HiddenShape;
     """ ;
     sh:target [
         a sh:SPARQLTarget ;
-        sh:prefixes ro:sparqlPrefixes ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
         sh:select """
             SELECT ?this
             WHERE {

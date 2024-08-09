@@ -14,7 +14,7 @@ ro-crate:FindROCrateMetadataFileDescriptorEntity a sh:NodeShape, validator:Hidde
         available at [Finding RO-Crate Root in RDF triple stores](https://www.researchobject.org/ro-crate/1.1/appendix/relative-uris.html#finding-ro-crate-root-in-rdf-triple-stores).""" ;
     sh:target [
         a sh:SPARQLTarget ;
-        sh:prefixes ro:sparqlPrefixes ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
         sh:select """
             SELECT ?this
             WHERE {

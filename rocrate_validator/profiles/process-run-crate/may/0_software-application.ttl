@@ -11,7 +11,7 @@ process-run-crate:ProcRCSoftwareApplicationOptional a sh:NodeShape ;
     # Avoid performing checks on dependencies
     sh:target [
         a sh:SPARQLTarget ;
-        sh:prefixes ro:sparqlPrefixes ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
         sh:select """
             SELECT ?this
             WHERE {

@@ -24,7 +24,7 @@ workflow-ro-crate:FindMainWorkflow a sh:NodeShape, validator:HiddenShape ;
     sh:description "Identify the Main Workflow" ;
     sh:target [
         a sh:SPARQLTarget ;
-        sh:prefixes ro:sparqlPrefixes ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
         sh:select """
             SELECT ?this
             WHERE {
