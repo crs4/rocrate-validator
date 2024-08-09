@@ -2,7 +2,7 @@
 name = "rocrate-validator"
 version = "0.1.0"
 description = ""
-authors = ["Marco Enrico Piras <kikkomep@crs4.it>", "Luca Pireddu <luca.pireddu@crs4.it>"]
+authors = ["Marco Enrico Piras <kikkomep@crs4.it>", "Luca Pireddu <luca.pireddu@crs4.it>", "Simone Leo <simleo@crs4.it>"]
 readme = "README.md"
 packages = [{ include = "rocrate_validator", from = "." }]
 include = [
