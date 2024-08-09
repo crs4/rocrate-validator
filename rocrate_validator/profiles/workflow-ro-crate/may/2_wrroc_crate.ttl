@@ -8,7 +8,14 @@
 @prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
 @prefix bioschemas: <https://bioschemas.org/> .
 
-ro:FindTestDir a sh:NodeShape ;
+
+@prefix validator: <https://github.com/crs4/rocrate-validator/> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+@prefix workflow-ro-crate: <https://github.com/crs4/rocrate-validator/profiles/workflow-ro-crate/> .
+
+
+
+workflow-ro-crate:FindTestDir a sh:NodeShape ;
     sh:name "test directory" ;
     sh:description "Dataset data entity to hold tests" ;
     sh:targetNode ro:test\/ ;
@@ -22,7 +29,7 @@ ro:FindTestDir a sh:NodeShape ;
         sh:message "The test/ dir should be a Dataset" ;
     ] .
 
-ro:FindExamplesDir a sh:NodeShape ;
+workflow-ro-crate:FindExamplesDir a sh:NodeShape ;
     sh:name "examples directory" ;
     sh:description "Dataset data entity to hold examples" ;
     sh:targetNode ro:examples\/ ;

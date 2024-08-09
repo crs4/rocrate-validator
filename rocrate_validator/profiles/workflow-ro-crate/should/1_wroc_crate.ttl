@@ -13,7 +13,7 @@
 @prefix workflow-ro-crate: <https://github.com/crs4/rocrate-validator/profiles/workflow-ro-crate/> .
 
 
-ro:DescriptorProperties a sh:NodeShape ;
+workflow-ro-crate:DescriptorProperties a sh:NodeShape ;
     sh:name "WROC Metadata File Descriptor properties" ;
     sh:description "Properties of the WROC Metadata File Descriptor" ;
     sh:targetNode ro:ro-crate-metadata.json ;
@@ -28,7 +28,7 @@ ro:DescriptorProperties a sh:NodeShape ;
         sh:message "The Metadata File Descriptor conformsTo SHOULD contain https://w3id.org/ro/crate/1.1 and https://w3id.org/workflowhub/workflow-ro-crate/1.0" ;
     ] .
 
-ro:FindReadme a sh:NodeShape ;
+workflow-ro-crate:FindReadme a sh:NodeShape ;
     sh:name "README.md properties" ;
     sh:description "README file for the Workflow RO-Crate" ;
     sh:targetNode ro:README.md ;

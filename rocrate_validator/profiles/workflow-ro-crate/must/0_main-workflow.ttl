@@ -13,7 +13,7 @@
 @prefix workflow-ro-crate: <https://github.com/crs4/rocrate-validator/profiles/workflow-ro-crate/> .
 
 
-ro:MainEntityProperyMustExist a sh:NodeShape ;
+workflow-ro-crate:MainEntityProperyMustExist a sh:NodeShape ;
     sh:name "Main Workflow entity existence" ;
     sh:description "The Main Workflow must be specified through a `mainEntity` property in the root data entity" ;
     sh:targetClass ro-crate:RootDataEntity ;
@@ -26,7 +26,7 @@ ro:MainEntityProperyMustExist a sh:NodeShape ;
     ] .
 
 
-ro:FindMainWorkflow a sh:NodeShape, validator:HiddenShape ;
+workflow-ro-crate:FindMainWorkflow a sh:NodeShape, validator:HiddenShape ;
     sh:name "Identify Main Workflow" ;
     sh:description "Identify the Main Workflow" ;
     sh:target [
@@ -49,7 +49,7 @@ ro:FindMainWorkflow a sh:NodeShape, validator:HiddenShape ;
         sh:object workflow-ro-crate:MainWorkflow ;
     ] .
 
-ro:MainWorkflowRequiredProperties a sh:NodeShape ;
+workflow-ro-crate:MainWorkflowRequiredProperties a sh:NodeShape ;
     sh:name "Main Workflow definition" ;
     sh:description """Main Workflow properties defined as MUST""";
     sh:targetClass workflow-ro-crate:MainWorkflow ;

@@ -14,7 +14,7 @@
 
 
 
-ro:MainWorkflowRecommendedProperties a sh:NodeShape ;
+workflow-ro-crate:MainWorkflowRecommendedProperties a sh:NodeShape ;
     sh:name "Main Workflow recommended properties" ;
     sh:description """Main Workflow properties defined as SHOULD""";
     sh:targetClass workflow-ro-crate:MainWorkflow ;

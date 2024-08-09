@@ -13,7 +13,7 @@
 @prefix workflow-ro-crate: <https://github.com/crs4/rocrate-validator/profiles/workflow-ro-crate/> .
 
 
-ro:WROCRootDataEntityRequiredProperties a sh:NodeShape ;
+workflow-ro-crate:WROCRootDataEntityRequiredProperties a sh:NodeShape ;
     sh:name "WROC Root Data Entity Required Properties" ;
     sh:description """Root Data Entity properties defined as MUST""" ;
     sh:targetClass ro-crate:RootDataEntity ;
