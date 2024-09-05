@@ -21,9 +21,9 @@ from typing import Union
 from rdflib import RDF, BNode, Graph, Namespace
 from rdflib.term import Node
 
+import rocrate_validator.log as logging
 from rocrate_validator.constants import RDF_SYNTAX_NS, SHACL_NS
 from rocrate_validator.errors import BadSyntaxError
-import rocrate_validator.log as logging
 from rocrate_validator.models import Severity
 
 # set up logging
@@ -233,14 +233,17 @@ def __extract_related_triples__(graph, subject_node):
     """
     Recursively extract all triples related to a given shape.
     """
+
     related_triples = []
+
     # Directly related triples
     related_triples.extend((_, p, o) for (_, p, o) in graph.triples((subject_node, None, None)))
 
     # Recursively find triples related to nested shapes
     for _, _, object_node in related_triples:
         if isinstance(object_node, Node):
-            related_triples.extend(__extract_related_triples__(graph, object_node))
+            if str(object_node) != str(subject_node):
+                related_triples.extend(__extract_related_triples__(graph, object_node))
 
     return related_triples
 
