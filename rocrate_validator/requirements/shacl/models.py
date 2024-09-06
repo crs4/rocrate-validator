@@ -364,7 +364,7 @@ class ShapesRegistry:
                     property_shape, property_graph, shape)
                 shape.add_property(p_shape)
                 group = __process_property_group__(property_groups, p_shape)
-                if group and not group in shapes:
+                if group and group not in shapes:
                     grouped = True
                     shapes.append(group)
                 if not group:
