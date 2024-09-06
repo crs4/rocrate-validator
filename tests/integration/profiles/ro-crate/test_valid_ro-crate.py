@@ -14,8 +14,6 @@
 
 import logging
 
-import pytest
-
 from rocrate_validator.models import Severity
 from tests.ro_crates import ValidROC
 from tests.shared import do_entity_test
