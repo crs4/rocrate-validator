@@ -161,7 +161,8 @@ def __initialise_validator__(settings: Union[dict, ValidationSettings],
 def get_profiles(profiles_path: Path = DEFAULT_PROFILES_PATH,
                  publicID: str = None,
                  severity=Severity.OPTIONAL,
-                 allow_requirement_check_override: bool = ValidationSettings.allow_requirement_check_override) -> list[Profile]:
+                 allow_requirement_check_override: bool =
+                 ValidationSettings.allow_requirement_check_override) -> list[Profile]:
     """
     Load the profiles from the given path
     """
@@ -175,7 +176,8 @@ def get_profiles(profiles_path: Path = DEFAULT_PROFILES_PATH,
 def get_profile(profiles_path: Path = DEFAULT_PROFILES_PATH,
                 profile_identifier: str = DEFAULT_PROFILE_IDENTIFIER,
                 publicID: str = None,
-                allow_requirement_check_override: bool = ValidationSettings.allow_requirement_check_override) -> Profile:
+                allow_requirement_check_override: bool =
+                ValidationSettings.allow_requirement_check_override) -> Profile:
     """
     Load the profiles from the given path
     """

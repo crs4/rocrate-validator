@@ -172,6 +172,7 @@ def test_versioned_profiles_loading(fake_versioned_profiles_path):
 def test_conflicting_versioned_profiles_loading(fake_conflicting_versioned_profiles_path):
     """Test the loaded profiles from the validator context."""
     with pytest.raises(ProfileSpecificationError) as excinfo:
+        logger.debug("result: %r", excinfo)
         # Load the profiles
         Profile.load_profiles(profiles_path=fake_conflicting_versioned_profiles_path)
     # Check that the conflicting versions are found
@@ -205,7 +206,8 @@ def test_loaded_valid_profile_with_inheritance_from_validator_context(fake_profi
 
         # The number of profiles should be 1
         profiles_names = [_.token for _ in profile.inherited_profiles]
-        assert profiles_names == expected_inherited_profiles, f"The number of profiles should be {expected_inherited_profiles}"
+        assert profiles_names == expected_inherited_profiles, \
+            f"The number of profiles should be {expected_inherited_profiles}"
 
     # Test the inheritance mode with 1 profile
     __perform_test__("a", [])

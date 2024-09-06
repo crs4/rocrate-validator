@@ -263,7 +263,8 @@ def __verbose_describe_profile__(profile):
             # Uncomment the following lines to show the overridden checks
             # if check.overridden_by:
             #     severity_color = get_severity_color(check.overridden_by.severity)
-            #     override = f"[overridden by: [bold][magenta]{check.overridden_by.requirement.profile.identifier}[/magenta] "\
+            #     override = "[overridden by: " \
+            #         f"[bold][magenta]{check.overridden_by.requirement.profile.identifier}[/magenta] "\
             #         f"[{severity_color}]{check.overridden_by.relative_identifier}[/{severity_color}][/bold]]"
             if check.override:
                 severity_color = get_severity_color(check.override.severity)

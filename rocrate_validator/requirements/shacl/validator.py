@@ -113,7 +113,7 @@ class SHACLValidationContext(ValidationContext):
         self._ontology_graph: Graph = Graph()
 
     def __set_current_validation_profile__(self, profile: Profile) -> bool:
-        if not profile.identifier in self._processed_profiles:
+        if profile.identifier not in self._processed_profiles:
             # augment the ontology graph with the profile ontology
             ontology_graph = self.__load_ontology_graph__(profile.path)
             if ontology_graph:
@@ -195,7 +195,8 @@ class SHACLValidationContext(ValidationContext):
             self._ontology_path = Path(supported_path)
         return self._ontology_path
 
-    def __load_ontology_graph__(self, profile_path: Path, ontology_filename: Optional[str] = DEFAULT_ONTOLOGY_FILE) -> Graph:
+    def __load_ontology_graph__(self, profile_path: Path,
+                                ontology_filename: Optional[str] = DEFAULT_ONTOLOGY_FILE) -> Graph:
         # load the graph of ontologies
         ontology_graph = None
         ontology_path = self.__get_ontology_path__(profile_path, ontology_filename)
@@ -211,7 +212,7 @@ class SHACLValidationContext(ValidationContext):
     def ontology_graph(self) -> Graph:
         return self._ontology_graph
 
-    @ classmethod
+    @classmethod
     def get_instance(cls, context: ValidationContext) -> SHACLValidationContext:
         instance = getattr(context, "_shacl_validation_context", None)
         if not instance:
@@ -283,7 +284,8 @@ class SHACLViolation:
         if not self._source_constraint_component:
             self._source_constraint_component = self.graph.value(
                 self._violation_node, URIRef(f"{SHACL_NS}sourceConstraintComponent"))
-            assert self._source_constraint_component is not None, f"Unable to get source constraint component from violation node {self._violation_node}"
+            assert self._source_constraint_component is not None, \
+                f"Unable to get source constraint component from violation node {self._violation_node}"
         return self._source_constraint_component
 
     def get_result_message(self, ro_crate_path: Union[Path, str]) -> str:
@@ -297,7 +299,8 @@ class SHACLViolation:
     def sourceShape(self) -> Union[URIRef, BNode]:
         if not self._source_shape_node:
             self._source_shape_node = self.graph.value(self._violation_node, URIRef(f"{SHACL_NS}sourceShape"))
-            assert self._source_shape_node is not None, f"Unable to get source shape node from violation node {self._violation_node}"
+            assert self._source_shape_node is not None, \
+                f"Unable to get source shape node from violation node {self._violation_node}"
         return self._source_shape_node
 
 

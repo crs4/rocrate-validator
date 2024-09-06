@@ -24,13 +24,14 @@ logger = logging.getLogger(__name__)
 @requirement(name="Web-based Data Entity: RECOMMENDED resource availability")
 class WebDataEntityRecommendedChecker(PyFunctionCheck):
     """
-    Web-based Data Entity instances SHOULD be available at the URIs specified in the `@id` property of the Web-based Data Entity.
+    Web-based Data Entity instances SHOULD be available
+    at the URIs specified in the `@id` property of the Web-based Data Entity.
     """
 
     @check(name="Web-based Data Entity: resource availability")
     def check_availability(self, context: ValidationContext) -> bool:
         """
-        Check if the Web-based Data Entity is directly downloadable 
+        Check if the Web-based Data Entity is directly downloadable
         by a simple retrieval (e.g. HTTP GET) permitting redirection and HTTP/HTTPS URIs
         """
         result = True
@@ -62,7 +63,8 @@ class WebDataEntityRecommendedChecker(PyFunctionCheck):
                 content_size = entity.get_property("contentSize")
                 if content_size and int(content_size) != context.ro_crate.get_external_file_size(entity.id):
                     context.result.add_check_issue(
-                        f'The property contentSize={content_size} of the Web-based Data Entity {entity.id} does not match the actual size of '
+                        f'The property contentSize={content_size} of the Web-based Data Entity '
+                        f'{entity.id} does not match the actual size of '
                         f'the downloadable content, i.e., {entity.content_size} (bytes)', self,
                         focusNode=entity.id, resultPath='contentSize', value=content_size)
                     result = False

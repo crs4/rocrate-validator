@@ -16,14 +16,14 @@ from __future__ import annotations
 
 import hashlib
 from pathlib import Path
-from typing import Union
+from typing import Optional, Union
 
 from rdflib import RDF, BNode, Graph, Namespace
 from rdflib.term import Node
 
+import rocrate_validator.log as logging
 from rocrate_validator.constants import RDF_SYNTAX_NS, SHACL_NS
 from rocrate_validator.errors import BadSyntaxError
-import rocrate_validator.log as logging
 from rocrate_validator.models import Severity
 
 # set up logging
@@ -70,10 +70,10 @@ def make_uris_relative(text: str, ro_crate_path: Union[Path, str]) -> str:
     return text.replace(str(ro_crate_path), './')
 
 
-def inject_attributes(obj: object, node_graph: Graph, node: Node) -> object:
+def inject_attributes(obj: object, node_graph: Graph, node: Node, exclude: Optional[list] = None) -> object:
     # inject attributes of the shape property
     # logger.debug("Injecting attributes of node %s", node)
-    skip_properties = ["node"]
+    skip_properties = ["node"] if exclude is None else exclude + ["node"]
     triples = node_graph.triples((node, None, None))
     for node, p, o in triples:
         predicate_as_string = p.toPython()
@@ -229,18 +229,29 @@ class ShapesList:
         return load_shapes_from_graph(graph)
 
 
-def __extract_related_triples__(graph, subject_node):
+def __extract_related_triples__(graph, subject_node, processed_nodes=None):
     """
     Recursively extract all triples related to a given shape.
     """
+
     related_triples = []
+
+    processed_nodes = processed_nodes if processed_nodes is not None else set()
+
+    # Skip the current node if it has already been processed
+    if subject_node in processed_nodes:
+        return related_triples
+
+    # Add the current node to the processed nodes
+    processed_nodes.add(subject_node)
+
     # Directly related triples
     related_triples.extend((_, p, o) for (_, p, o) in graph.triples((subject_node, None, None)))
 
     # Recursively find triples related to nested shapes
     for _, _, object_node in related_triples:
         if isinstance(object_node, Node):
-            related_triples.extend(__extract_related_triples__(graph, object_node))
+            related_triples.extend(__extract_related_triples__(graph, object_node, processed_nodes))
 
     return related_triples
 
