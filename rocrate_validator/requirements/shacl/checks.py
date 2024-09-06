@@ -73,6 +73,8 @@ class SHACLCheck(RequirementCheck):
                 return ctx.current_validation_result
         except SHACLValidationAlreadyProcessed as e:
             logger.debug("SHACL Validation of profile %s already processed", self.requirement.profile.identifier)
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.exception(e)
             # The check belongs to a profile which has already been processed
             # so we can skip the validation and return the specific result for the check
             return self not in [i.check for i in context.result.get_issues()]

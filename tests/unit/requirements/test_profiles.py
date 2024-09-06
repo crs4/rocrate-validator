@@ -172,6 +172,7 @@ def test_versioned_profiles_loading(fake_versioned_profiles_path):
 def test_conflicting_versioned_profiles_loading(fake_conflicting_versioned_profiles_path):
     """Test the loaded profiles from the validator context."""
     with pytest.raises(ProfileSpecificationError) as excinfo:
+        logger.debug("result: %r", excinfo)
         # Load the profiles
         Profile.load_profiles(profiles_path=fake_conflicting_versioned_profiles_path)
     # Check that the conflicting versions are found
