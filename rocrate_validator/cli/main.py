@@ -86,7 +86,7 @@ def cli(ctx: click.Context, debug: bool, version: bool, disable_color: bool, no_
     except Exception as e:
         console.print(
             f"\n\n[bold][[red]FAILED[/red]] Unexpected error: {e} !!![/bold]\n", style="white")
-        console.print("""This error may be due to a bug. 
+        console.print("""This error may be due to a bug.
                       Please report it to the issue tracker
             along with the following stack trace:
             """)

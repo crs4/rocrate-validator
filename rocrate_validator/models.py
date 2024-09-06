@@ -1240,7 +1240,7 @@ class ValidationSettings:
 
 
 class ValidationEvent(Event):
-    def __init__(self, event_type: EventType, 
+    def __init__(self, event_type: EventType,
                  validation_result: Optional[ValidationResult] = None, message: Optional[str] = None):
         super().__init__(event_type, message)
         self._validation_result = validation_result
