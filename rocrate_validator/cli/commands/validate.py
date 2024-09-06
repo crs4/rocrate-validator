@@ -394,7 +394,6 @@ def multiple_choice(console: Console,
     ]
     console.print("\n")
     selected = prompt(question, style={"questionmark": "#ff9d00 bold",
-                                       "questionmark": "#e5c07b",
                                        "question": "bold",
                                        "checkbox": "magenta",
                                        "answer": "magenta"},
