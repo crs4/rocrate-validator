@@ -97,7 +97,7 @@ class ProfileSpecificationNotFound(ROCValidatorError):
         return msg
 
     def __repr__(self):
-        return f"ProfileSpecificationNotFound()"
+        return "ProfileSpecificationNotFound()"
 
 
 class ProfileSpecificationError(ROCValidatorError):

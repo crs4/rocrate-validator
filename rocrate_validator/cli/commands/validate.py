@@ -97,7 +97,7 @@ def get_single_char(console: Optional[Console] = None, end: str = "\n",
                 console.print(char, end=end if choices and char in choices else "")
         if choices and char not in choices:
             if console:
-                console.print(f" [bold red]INVALID CHOICE[/bold red]", end=end)
+                console.print(" [bold red]INVALID CHOICE[/bold red]", end=end)
     return char
 
 
@@ -576,12 +576,12 @@ class ValidationReportLayout(Layout):
 
         # Create the main layout
         self.checks_stats_layout = Layout(
-            Panel(report_container_layout, title=f"[bold]- Validation Report -[/bold]",
+            Panel(report_container_layout, title="[bold]- Validation Report -[/bold]",
                   border_style="cyan", title_align="center", padding=(1, 2)))
 
         # Create the overall result layout
         self.overall_result = Layout(
-            Padding(Rule(f"\n[italic][cyan]Validating ROCrate...[/cyan][/italic]"), (1, 1)), size=3)
+            Padding(Rule("\n[italic][cyan]Validating ROCrate...[/cyan][/italic]"), (1, 1)), size=3)
 
         group_layout = Layout()
         group_layout.add_split(self.checks_stats_layout)

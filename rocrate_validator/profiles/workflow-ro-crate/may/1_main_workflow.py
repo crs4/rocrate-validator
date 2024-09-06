@@ -33,7 +33,7 @@ class WorkflowFilesExistence(PyFunctionCheck):
             image = main_workflow.get_property("image")
             diagram_relpath = image.id if image else None
             if not diagram_relpath:
-                context.result.add_error(f"main workflow does not have an 'image' property", self)
+                context.result.add_error("main workflow does not have an 'image' property", self)
                 return False
             if not image.is_available():
                 context.result.add_error(f"Workflow diagram '{image.id}' not found in crate", self)
