@@ -205,7 +205,8 @@ def test_loaded_valid_profile_with_inheritance_from_validator_context(fake_profi
 
         # The number of profiles should be 1
         profiles_names = [_.token for _ in profile.inherited_profiles]
-        assert profiles_names == expected_inherited_profiles, f"The number of profiles should be {expected_inherited_profiles}"
+        assert profiles_names == expected_inherited_profiles, \
+            f"The number of profiles should be {expected_inherited_profiles}"
 
     # Test the inheritance mode with 1 profile
     __perform_test__("a", [])

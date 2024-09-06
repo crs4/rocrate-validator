@@ -275,11 +275,24 @@ def validate(ctx,
                 logger.info("Auto-detection of the profiles to use for validation is disabled")
 
             # Prompt the user to select the profile to use for validation if the interactive mode is enabled
-            # and no profile is autodetected or multiple profiles are detected
-            if interactive and (not candidate_profiles or len(candidate_profiles) == 0 or len(candidate_profiles) == len(available_profiles)):
+            # and no profile is auto-detected or multiple profiles are detected
+            if interactive and (
+                not candidate_profiles or
+                len(candidate_profiles) == 0 or
+                len(candidate_profiles) == len(available_profiles)
+            ):
                 # Define the list of choices
-                console.print(Padding(Rule("[bold yellow]WARNING: [/bold yellow]"
-                                           "[bold]Unable to automatically detect the profile to use for validation[/bold]\n", align="center", style="bold yellow"), (2, 2, 0, 2)))
+                console.print(
+                    Padding(
+                        Rule(
+                            "[bold yellow]WARNING: [/bold yellow]"
+                            "[bold]Unable to automatically detect the profile to use for validation[/bold]\n",
+                            align="center",
+                            style="bold yellow"
+                        ),
+                        (2, 2, 0, 2)
+                    )
+                )
                 selected_options = multiple_choice(console, available_profiles)
                 profile_identifier = [available_profiles[int(
                     selected_option)].identifier for selected_option in selected_options]
@@ -331,7 +344,10 @@ def validate(ctx,
                 verbose_choice = "n"
                 if interactive and not verbose and enable_pager:
                     verbose_choice = get_single_char(console, choices=['y', 'n'],
-                                                     message="[bold] > Do you want to see the validation details? ([magenta]y/n[/magenta]): [/bold]")
+                                                     message=(
+                                                         "[bold] > Do you want to see the validation details? "
+                                                         "([magenta]y/n[/magenta]): [/bold]"
+                                                     ))
                 if verbose_choice == "y" or verbose:
                     report_layout.show_validation_details(pager, enable_pager=enable_pager)
 
@@ -508,8 +524,11 @@ class ValidationReportLayout(Layout):
         base_info_layout = Layout(
             Align(
                 f"\n[bold cyan]RO-Crate:[/bold cyan] [bold]{URI(settings['data_path']).uri}[/bold]"
-                f"\n[bold cyan]Target Profile:[/bold cyan][bold magenta] {settings['profile_identifier']}[/bold magenta] { '[italic](autodetected)[/italic]' if settings['profile_autodetected'] else ''}"
-                f"\n[bold cyan]Validation Severity:[/bold cyan] [bold {severity_color}]{settings['requirement_severity']}[/bold {severity_color}]",
+                "\n[bold cyan]Target Profile:[/bold cyan][bold magenta] "
+                f"{settings['profile_identifier']}[/bold magenta] "
+                f"{ '[italic](autodetected)[/italic]' if settings['profile_autodetected'] else ''}"
+                f"\n[bold cyan]Validation Severity:[/bold cyan] "
+                f"[bold {severity_color}]{settings['requirement_severity']}[/bold {severity_color}]",
                 style="white", align="left"),
             name="Base Info", size=5)
         #
@@ -641,11 +660,13 @@ class ValidationReportLayout(Layout):
         self.result = result
         if result.passed():
             self.overall_result.update(
-                Padding(Rule(f"[bold][[green]OK[/green]] RO-Crate is a [green]valid[/green] [magenta]{result.context.target_profile.identifier}[/magenta] !!![/bold]\n\n",
+                Padding(Rule("[bold][[green]OK[/green]] RO-Crate is a [green]valid[/green] "
+                             f"[magenta]{result.context.target_profile.identifier}[/magenta] !!![/bold]\n\n",
                              style="bold green"), (1, 1)))
         else:
             self.overall_result.update(
-                Padding(Rule(f"[bold][[red]FAILED[/red]] RO-Crate is [red]not[/red] a [red]valid[/red] [magenta]{result.context.target_profile.identifier}[/magenta] !!![/bold]\n",
+                Padding(Rule("[bold][[red]FAILED[/red]] RO-Crate is [red]not[/red] a [red]valid[/red] "
+                             f"[magenta]{result.context.target_profile.identifier}[/magenta] !!![/bold]\n",
                              style="bold red"), (1, 1)))
 
     def show_validation_details(self, pager: Pager, enable_pager: bool = True):
@@ -674,7 +695,8 @@ class ValidationReportLayout(Layout):
                           f"profile: [magenta bold]{requirement.profile.name }[/magenta bold]]", align="right")
                 )
                 console.print(
-                    f"  [bold][cyan][{requirement.order_number}] [u]{Markdown(requirement.name).markup}[/u][/cyan][/bold]",
+                    f"  [bold][cyan][{requirement.order_number}] "
+                    "[u]{Markdown(requirement.name).markup}[/u][/cyan][/bold]",
                     style="white",
                 )
                 console.print(Padding(Markdown(requirement.description), (1, 7)))
@@ -685,7 +707,10 @@ class ValidationReportLayout(Layout):
                                     key=lambda x: (-x.severity.value, x)):
                     issue_color = get_severity_color(check.level.severity)
                     console.print(
-                        Padding(f"[bold][{issue_color}][{check.relative_identifier.center(16)}][/{issue_color}]  [magenta]{check.name}[/magenta][/bold]:", (0, 7)), style="white bold")
+                        Padding(
+                            f"[bold][{issue_color}][{check.relative_identifier.center(16)}][/{issue_color}]  "
+                            f"[magenta]{check.name}[/magenta][/bold]:", (0, 7)),
+                        style="white bold")
                     console.print(Padding(Markdown(check.description), (0, 27)))
                     console.print(Padding("[u] Detected issues [/u]", (0, 8)), style="white bold")
                     for issue in sorted(result.get_issues_by_check(check),
@@ -743,7 +768,8 @@ def __compute_profile_stats__(validation_settings: dict):
                 check_count_by_severity[severity] = 0
             if severity_validation <= severity:
                 num_checks = len(
-                    [_ for _ in requirement.get_checks_by_level(LevelCollection.get(severity.name)) if not _.overridden])
+                    [_ for _ in requirement.get_checks_by_level(LevelCollection.get(severity.name))
+                     if not _.overridden])
                 check_count_by_severity[severity] += num_checks
                 total_checks += num_checks
 

@@ -150,8 +150,10 @@ class LevelCollection:
 class Profile:
 
     # store the map of profiles: profile URI -> Profile instance
-    __profiles_map: MultiIndexMap = MultiIndexMap("uri",
-                                                  indexes=[MapIndex("name"), MapIndex("token", unique=False), MapIndex("identifier", unique=True)])
+    __profiles_map: MultiIndexMap = \
+        MultiIndexMap("uri", indexes=[
+            MapIndex("name"), MapIndex("token", unique=False), MapIndex("identifier", unique=True)
+        ])
 
     def __init__(self,
                  profiles_base_path: Path,
@@ -191,13 +193,17 @@ class Profile:
             self._token, self._version = self.__init_token_version__()
             # add the profile to the profiles map
             self.__profiles_map.add(
-                self._profile_node.toPython(), self, token=self.token, name=self.name, identifier=self.identifier)  # add the profile to the profiles map
+                self._profile_node.toPython(),
+                self, token=self.token,
+                name=self.name, identifier=self.identifier
+            )  # add the profile to the profiles map
         else:
             raise ProfileSpecificationError(
                 message=f"Profile specification file {spec_file} must contain exactly one profile")
 
-    def __get_specification_property__(self, property: str, namespace: Namespace,
-                                       pop_first: bool = True, as_Python_object: bool = True) -> Union[str, list[Union[str, URIRef]]]:
+    def __get_specification_property__(
+            self, property: str, namespace: Namespace,
+            pop_first: bool = True, as_Python_object: bool = True) -> Union[str, list[Union[str, URIRef]]]:
         assert self._profile_specification_graph is not None, "Profile specification graph not loaded"
         values = list(self._profile_specification_graph.objects(self._profile_node, namespace[property]))
         if values and as_Python_object:
@@ -1234,7 +1240,8 @@ class ValidationSettings:
 
 
 class ValidationEvent(Event):
-    def __init__(self, event_type: EventType, validation_result: Optional[ValidationResult] = None, message: Optional[str] = None):
+    def __init__(self, event_type: EventType, 
+                 validation_result: Optional[ValidationResult] = None, message: Optional[str] = None):
         super().__init__(event_type, message)
         self._validation_result = validation_result
 
@@ -1275,7 +1282,9 @@ class RequirementValidationEvent(Event):
 
 
 class RequirementCheckValidationEvent(Event):
-    def __init__(self, event_type: EventType, requirement_check: RequirementCheck, validation_result: Optional[bool] = None, message: Optional[str] = None):
+    def __init__(self, event_type: EventType,
+                 requirement_check: RequirementCheck,
+                 validation_result: Optional[bool] = None, message: Optional[str] = None):
         assert event_type in (EventType.REQUIREMENT_CHECK_VALIDATION_START, EventType.REQUIREMENT_CHECK_VALIDATION_END)
         super().__init__(event_type, message)
         self._requirement_check = requirement_check
@@ -1545,8 +1554,9 @@ class ValidationContext:
                 # raised when the profile is not found
                 if logger.isEnabledFor(logging.DEBUG):
                     logger.exception(e)
-                raise ProfileNotFound(self.profile_identifier,
-                                      message=f"Profile '{self.profile_identifier}' not found in '{self.profiles_path}'") from e
+                raise ProfileNotFound(
+                    self.profile_identifier,
+                    message=f"Profile '{self.profile_identifier}' not found in '{self.profiles_path}'") from e
 
         # Set the profiles to validate against as the target profile and its inherited profiles
         profiles = profile.inherited_profiles + [profile]

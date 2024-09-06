@@ -261,7 +261,8 @@ def test_procrc_action_bad_actionstatus():
         Severity.RECOMMENDED,
         False,
         ["Process Run Crate Action SHOULD"],
-        ["If the Action has an actionStatus, it should be http://schema.org/CompletedActionStatus or http://schema.org/FailedActionStatus"],
+        ["If the Action has an actionStatus, it should be "
+         "http://schema.org/CompletedActionStatus or http://schema.org/FailedActionStatus"],
         profile_identifier="process-run-crate"
     )
 
@@ -291,7 +292,8 @@ def test_procrc_action_obj_res_bad_type():
         Severity.RECOMMENDED,
         False,
         ["Process Run Crate Action object and result types"],
-        ["object and result SHOULD point to entities of type MediaObject, Dataset, Collection, CreativeWork or PropertyValue"],
+        ["object and result SHOULD point to entities of type "
+         "MediaObject, Dataset, Collection, CreativeWork or PropertyValue"],
         profile_identifier="process-run-crate"
     )
 

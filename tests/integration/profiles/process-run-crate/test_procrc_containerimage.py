@@ -31,7 +31,9 @@ def test_procrc_containerimage_no_additionaltype():
         Severity.RECOMMENDED,
         False,
         ["Process Run Crate ContainerImage SHOULD"],
-        ["The ContainerImage SHOULD have an additionalType pointing to <https://w3id.org/ro/terms/workflow-run#DockerImage> or <https://w3id.org/ro/terms/workflow-run#SIFImage>"],
+        ["The ContainerImage SHOULD have an additionalType pointing "
+         "to <https://w3id.org/ro/terms/workflow-run#DockerImage> or "
+         "<https://w3id.org/ro/terms/workflow-run#SIFImage>"],
         profile_identifier="process-run-crate"
     )
 
@@ -46,7 +48,9 @@ def test_procrc_containerimage_bad_additionaltype():
         Severity.RECOMMENDED,
         False,
         ["Process Run Crate ContainerImage SHOULD"],
-        ["The ContainerImage SHOULD have an additionalType pointing to <https://w3id.org/ro/terms/workflow-run#DockerImage> or <https://w3id.org/ro/terms/workflow-run#SIFImage>"],
+        ["The ContainerImage SHOULD have an additionalType pointing "
+         "to <https://w3id.org/ro/terms/workflow-run#DockerImage> or "
+         "<https://w3id.org/ro/terms/workflow-run#SIFImage>"],
         profile_identifier="process-run-crate"
     )
 

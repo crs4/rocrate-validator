@@ -50,7 +50,8 @@ def handle_error(e: Exception, console: Console) -> None:
         if logger.isEnabledFor(logging.DEBUG):
             console.print_exception()
         console.print(textwrap.indent("This error may be due to a bug.\n"
-                                      "Please report it to the issue tracker along with the following stack trace:\n", ' ' * 9))
+                                      "Please report it to the issue tracker "
+                                      "along with the following stack trace:\n", ' ' * 9))
         console.print_exception()
 
     console.print(f"\n\n[bold][[red]ERROR[/red]] {error_message}[/bold]\n", style="white")

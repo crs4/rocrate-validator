@@ -17,7 +17,14 @@ import pytest
 
 from rocrate_validator import log as logging
 from rocrate_validator.errors import ROCrateInvalidURIError
-from rocrate_validator.rocrate import ROCrate, ROCrateEntity, ROCrateLocalFolder, ROCrateLocalZip, ROCrateMetadata, ROCrateRemoteZip
+from rocrate_validator.rocrate import (
+    ROCrate,
+    ROCrateEntity,
+    ROCrateLocalFolder,
+    ROCrateLocalZip,
+    ROCrateMetadata,
+    ROCrateRemoteZip,
+)
 from tests.ro_crates import ValidROC
 
 # set up logging
@@ -83,7 +90,8 @@ def test_valid_local_rocrate():
     assert isinstance(root_data_entity, ROCrateEntity), "Entity should be ROCrateEntity"
     assert root_data_entity.id == "./", "Id should be ./"
     assert root_data_entity.type == "Dataset", "Type should be Dataset"
-    assert root_data_entity.name == "Recording provenance of workflow runs with RO-Crate (RO-Crate and mapping)", "Name should be wrroc-paper"
+    assert root_data_entity.name == "Recording provenance of workflow runs with RO-Crate (RO-Crate and mapping)", \
+        "Name should be wrroc-paper"
 
     # check metadata consistency
     assert root_data_entity.metadata == metadata, "Metadata should be the same"
