@@ -113,7 +113,7 @@ class SHACLValidationContext(ValidationContext):
         self._ontology_graph: Graph = Graph()
 
     def __set_current_validation_profile__(self, profile: Profile) -> bool:
-        if not profile.identifier in self._processed_profiles:
+        if profile.identifier not in self._processed_profiles:
             # augment the ontology graph with the profile ontology
             ontology_graph = self.__load_ontology_graph__(profile.path)
             if ontology_graph:
@@ -211,7 +211,7 @@ class SHACLValidationContext(ValidationContext):
     def ontology_graph(self) -> Graph:
         return self._ontology_graph
 
-    @ classmethod
+    @classmethod
     def get_instance(cls, context: ValidationContext) -> SHACLValidationContext:
         instance = getattr(context, "_shacl_validation_context", None)
         if not instance:

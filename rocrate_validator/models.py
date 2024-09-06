@@ -306,15 +306,15 @@ class Profile:
         queue = [source]
         while len(queue) > 0:
             p = queue.pop()
-            if not p in visited:
+            if p not in visited:
                 visited.append(p)
                 profile = cls.__profiles_map.get_by_key(p)
                 inherited_profiles = profile.is_profile_of
                 if inherited_profiles:
                     for p in sorted(inherited_profiles, reverse=True):
-                        if not p in visited:
+                        if p not in visited:
                             queue.append(p)
-                        if not p in result:
+                        if p not in result:
                             result.insert(0, p)
         return result
 
