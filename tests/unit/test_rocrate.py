@@ -35,7 +35,7 @@ metadata_file_descriptor = Path(ROCrateMetadata.METADATA_FILE_DESCRIPTOR)
 
 
 ################################
-###### ROCrateLocalFolder ######
+#     ROCrateLocalFolder
 ################################
 
 
@@ -102,7 +102,7 @@ def test_valid_local_rocrate():
 
 
 ################################
-###### ROCrateLocalZip #########
+#      ROCrateLocalZip
 ################################
 def test_valid_zip_rocrate():
     roc = ROCrateLocalZip(ValidROC().sort_and_change_archive)
@@ -166,7 +166,7 @@ def test_valid_zip_rocrate():
 
 
 ################################
-###### ROCrateRemote ###########
+#      ROCrateRemoteZip
 ################################
 
 
