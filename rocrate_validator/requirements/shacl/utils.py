@@ -229,12 +229,21 @@ class ShapesList:
         return load_shapes_from_graph(graph)
 
 
-def __extract_related_triples__(graph, subject_node):
+def __extract_related_triples__(graph, subject_node, processed_nodes=None):
     """
     Recursively extract all triples related to a given shape.
     """
 
     related_triples = []
+
+    processed_nodes = processed_nodes if processed_nodes is not None else set()
+
+    # Skip the current node if it has already been processed
+    if subject_node in processed_nodes:
+        return related_triples
+
+    # Add the current node to the processed nodes
+    processed_nodes.add(subject_node)
 
     # Directly related triples
     related_triples.extend((_, p, o) for (_, p, o) in graph.triples((subject_node, None, None)))
@@ -242,8 +251,7 @@ def __extract_related_triples__(graph, subject_node):
     # Recursively find triples related to nested shapes
     for _, _, object_node in related_triples:
         if isinstance(object_node, Node):
-            if str(object_node) != str(subject_node):
-                related_triples.extend(__extract_related_triples__(graph, object_node))
+            related_triples.extend(__extract_related_triples__(graph, object_node, processed_nodes))
 
     return related_triples
 
