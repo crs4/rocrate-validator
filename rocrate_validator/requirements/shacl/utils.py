@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import hashlib
 from pathlib import Path
-from typing import Union
+from typing import Optional, Union
 
 from rdflib import RDF, BNode, Graph, Namespace
 from rdflib.term import Node
@@ -70,10 +70,10 @@ def make_uris_relative(text: str, ro_crate_path: Union[Path, str]) -> str:
     return text.replace(str(ro_crate_path), './')
 
 
-def inject_attributes(obj: object, node_graph: Graph, node: Node) -> object:
+def inject_attributes(obj: object, node_graph: Graph, node: Node, exclude: Optional[list] = None) -> object:
     # inject attributes of the shape property
     # logger.debug("Injecting attributes of node %s", node)
-    skip_properties = ["node"]
+    skip_properties = ["node"] if exclude is None else exclude + ["node"]
     triples = node_graph.triples((node, None, None))
     for node, p, o in triples:
         predicate_as_string = p.toPython()
