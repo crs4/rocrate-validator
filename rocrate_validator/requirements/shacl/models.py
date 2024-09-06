@@ -34,8 +34,8 @@ logger = logging.getLogger(__name__)
 class SHACLNode:
 
     # define default values
-    name: str = None
-    description: str = None
+    _name: str = None
+    _description: str = None
     severity: str = None
 
     def __init__(self, node: Node, graph: Graph, parent: Optional[SHACLNode] = None):
@@ -53,6 +53,28 @@ class SHACLNode:
 
         # inject attributes of the shape to the object
         inject_attributes(self, graph, node)
+
+    @property
+    def name(self) -> str:
+        """Return the name of the shape"""
+        if not self._name:
+            self._name = self._node.split("#")[-1] if "#" in self.node else self._node.split("/")[-1]
+        return self._name or self._node.split("/")[-1]
+
+    @name.setter
+    def name(self, value: str):
+        self._name = value
+
+    @property
+    def description(self) -> str:
+        """Return the description of the shape"""
+        if not self._description:
+            self._description = f"Check properties of the \"**{self.name}**\" entity"
+        return self._description
+
+    @description.setter
+    def description(self, value: str):
+        self._description = value
 
     @property
     def key(self) -> str:
@@ -168,8 +190,9 @@ class PropertyGroup(SHACLNodeCollection):
 class PropertyShape(Shape):
 
     # define default values
-    name: str = None
-    description: str = None
+    _name: str = None
+    _short_name: str = None
+    _description: str = None
     group: str = None
     defaultValue: str = None
     order: int = 0
@@ -184,6 +207,40 @@ class PropertyShape(Shape):
         super().__init__(node, graph)
         # store the parent shape
         self._parent = parent
+
+    @property
+    def name(self) -> str:
+        """Return the name of the shape property"""
+        if not self._name:
+            # get the object of the predicate sh:path
+            shacl_ns = Namespace(SHACL_NS)
+            path = self.graph.value(subject=self.node, predicate=shacl_ns.path)
+            if path:
+                self._short_name = path.split("#")[-1] if "#" in path else path.split("/")[-1]
+                if self.parent:
+                    self._name = f"{self._short_name} of {self.parent.name}"
+        return self._name
+
+    @name.setter
+    def name(self, value: str):
+        self._name = value
+
+    @property
+    def description(self) -> str:
+        """Return the description of the shape property"""
+        if not self._description:
+            # get the object of the predicate sh:description
+            property_name = self.name
+            if self._short_name:
+                property_name = self._short_name
+            self._description = f"Check the property \"**{property_name}**\""
+            if self.parent and self.parent.name not in property_name:
+                self._description += f" of the entity \"**{self.parent.name}**\""
+        return self._description
+
+    @description.setter
+    def description(self, value: str):
+        self._description = value
 
     @property
     def node(self) -> Node:
