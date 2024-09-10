@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "rocrate-validator"
-version = "0.1.0"
+version = "0.1.1"
 description = ""
 authors = [
     "Marco Enrico Piras <kikkomep@crs4.it>",
