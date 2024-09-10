@@ -66,7 +66,7 @@ class SystemPager(Pager):
 
 
 class Console(BaseConsole):
-    """Rich Console with optional color disabling."""
+    """Rich console that can be disabled."""
 
     def __init__(self, *args, disabled: bool = False,  **kwargs):
         super().__init__(*args, **kwargs)
