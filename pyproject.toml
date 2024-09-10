@@ -23,7 +23,7 @@ include = [
 [tool.poetry.dependencies]
 python = "^3.8.1"
 rdflib = "^7.0.0"
-pyshacl = "^0.25.0"
+pyshacl = "^0.26.0"
 click = "^8.1.7"
 rich = "^13.7.1"
 toml = "^0.10.2"
