@@ -24,7 +24,6 @@ from typing import Optional
 from InquirerPy import prompt
 from InquirerPy.base.control import Choice
 from rich.align import Align
-from rich.console import Console
 from rich.layout import Layout
 from rich.live import Live
 from rich.markdown import Markdown
@@ -38,7 +37,7 @@ import rocrate_validator.log as logging
 from rocrate_validator import services
 from rocrate_validator.cli.commands.errors import handle_error
 from rocrate_validator.cli.main import cli, click
-from rocrate_validator.cli.utils import get_app_header_rule
+from rocrate_validator.cli.utils import Console, get_app_header_rule
 from rocrate_validator.colors import get_severity_color
 from rocrate_validator.events import Event, EventType, Subscriber
 from rocrate_validator.models import (LevelCollection, Profile, Severity,
