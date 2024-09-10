@@ -1142,7 +1142,8 @@ class ValidationResult:
                               "profile_identifier", "inherit_profiles", "requirement_severity", "abort_on_first"]
         return {
             "rocrate": str(self.rocrate_path),
-            "validation_settings": {key: self.validation_settings[key] for key in allowed_properties if key in self.validation_settings},
+            "validation_settings": {key: self.validation_settings[key]
+                                    for key in allowed_properties if key in self.validation_settings},
             "passed": self.passed(self.context.settings["requirement_severity"]),
             "issues": [issue.to_dict() for issue in self.issues]
         }
