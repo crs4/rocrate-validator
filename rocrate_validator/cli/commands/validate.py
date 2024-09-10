@@ -357,6 +357,9 @@ def validate(ctx,
                 if verbose_choice == "y" or verbose:
                     report_layout.show_validation_details(pager, enable_pager=enable_pager)
 
+            if output_format == "json":
+                console.print(result.to_json())
+
             if output_file:
                 # Print the validation report to a file
                 if output_format == "json":
