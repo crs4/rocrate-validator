@@ -255,7 +255,8 @@ def validate(ctx,
         }
 
         # Print the application header
-        console.print(get_app_header_rule())
+        if output_format == "text":
+            console.print(get_app_header_rule())
 
         # Get the available profiles
         available_profiles = services.get_profiles(profiles_path)
@@ -328,12 +329,18 @@ def validate(ctx,
             report_layout = ValidationReportLayout(console, validation_settings, profile_stats, None)
 
             # Validate RO-Crate against the profile and get the validation result
-            result: ValidationResult = report_layout.live(
-                lambda: services.validate(
-                    validation_settings,
-                    subscribers=[report_layout.progress_monitor]
+            result: ValidationResult = None
+            if output_format == "text":
+                result: ValidationResult = report_layout.live(
+                    lambda: services.validate(
+                        validation_settings,
+                        subscribers=[report_layout.progress_monitor]
+                    )
                 )
-            )
+            else:
+                result: ValidationResult = services.validate(
+                    validation_settings
+                )
 
             # store the cumulative validation result
             is_valid = is_valid and result.passed(LevelCollection.get(requirement_severity).severity)
@@ -341,12 +348,12 @@ def validate(ctx,
             # Print the validation result
             if not result.passed():
                 verbose_choice = "n"
-                if interactive and not verbose and enable_pager:
+                if interactive and not verbose and enable_pager and not output_format == "json":
                     verbose_choice = get_single_char(console, choices=['y', 'n'],
                                                      message=(
                                                          "[bold] > Do you want to see the validation details? "
                                                          "([magenta]y/n[/magenta]): [/bold]"
-                                                     ))
+                    ))
                 if verbose_choice == "y" or verbose:
                     report_layout.show_validation_details(pager, enable_pager=enable_pager)
 
