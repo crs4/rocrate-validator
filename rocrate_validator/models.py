@@ -750,14 +750,16 @@ class RequirementLoader:
         files = sorted((p for p in profile.path.rglob('*.*') if ok_file(p)),
                        key=lambda x: (not x.suffix == '.py', x))
 
+        # set the requirement level corresponding to the severity
+        requirement_level = LevelCollection.get(severity.name)
+
         requirements = []
         for requirement_path in files:
-            requirement_level = None
             try:
-                requirement_level = LevelCollection.get(requirement_path.parent.name)
-                if requirement_level.severity < severity:
+                requirement_level_from_path = LevelCollection.get(requirement_path.parent.name)
+                if requirement_level_from_path < requirement_level:
                     continue
-            except AttributeError:
+            except ValueError:
                 logger.debug("The requirement level could not be determined from the path: %s", requirement_path)
             requirement_loader = RequirementLoader.__get_requirement_loader__(profile, requirement_path)
             for requirement in requirement_loader.load(
@@ -765,7 +767,9 @@ class RequirementLoader:
                     requirement_path, publicID=profile.publicID):
                 requirements.append(requirement)
         # sort the requirements by severity
-        requirements = sorted(requirements, key=lambda x: x.level.severity, reverse=True)
+        requirements = sorted(requirements,
+                              key=lambda x: (x.severity_from_path, x.name)
+                              if x.severity_from_path is not None else x.name, reverse=True)
         # assign order numbers to requirements
         for i, requirement in enumerate(requirements):
             requirement._order_number = i + 1
