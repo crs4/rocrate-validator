@@ -299,8 +299,8 @@ class Profile:
             self, severity: Severity = Severity.REQUIRED,
             exact_match: bool = False) -> list[Requirement]:
         return [requirement for requirement in self.requirements
-                if (not exact_match and requirement.severity >= severity) or
-                (exact_match and requirement.severity == severity)]
+                if (not exact_match and (not requirement.severity_from_path or requirement.severity >= severity)) or
+                (exact_match and requirement.severity_from_path == severity)]
 
     def get_requirement(self, name: str) -> Optional[Requirement]:
         for requirement in self.requirements:
