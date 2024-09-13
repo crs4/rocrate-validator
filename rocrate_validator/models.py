@@ -562,7 +562,7 @@ class Requirement(ABC):
 
     @property
     def relative_identifier(self) -> str:
-        return f"{self.level.name} {self.order_number}"
+        return f"{self.order_number}"
 
     @property
     def name(self) -> str:
