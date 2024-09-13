@@ -69,7 +69,7 @@ class SHACLNode:
     def description(self) -> str:
         """Return the description of the shape"""
         if not self._description:
-            self._description = f"Check properties of the \"**{self.name}**\" entity"
+            self._description = getattr(self, "description", None)
         return self._description
 
     @description.setter
@@ -243,12 +243,13 @@ class PropertyShape(Shape):
         """Return the description of the shape property"""
         if not self._description:
             # get the object of the predicate sh:description
-            property_name = self.name
-            if self._short_name:
-                property_name = self._short_name
-            self._description = f"Check the property \"**{property_name}**\""
-            if self.parent and self.parent.name not in property_name:
-                self._description += f" of the entity \"**{self.parent.name}**\""
+            if not self._description:
+                property_name = self.name
+                if self._short_name:
+                    property_name = self._short_name
+                self._description = f"Check the property \"**{property_name}**\""
+                if self.parent and self.parent.name not in property_name:
+                    self._description += f" of the entity \"**{self.parent.name}**\""
         return self._description
 
     @description.setter
