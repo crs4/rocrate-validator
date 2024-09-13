@@ -697,20 +697,16 @@ class ValidationReportLayout(Layout):
         with console.pager(pager=pager, styles=not console.no_color) if enable_pager else console:
             # Print the list of failed requirements
             console.print(
-                Padding("\n[bold]The following requirements have not meet: [/bold]", (0, 0)), style="white")
-            for requirement in sorted(result.failed_requirements,
-                                      key=lambda x: (-x.severity.value, x)):
-                issue_color = get_severity_color(requirement.severity)
+                Padding("\n[bold]The following requirements have not meet: [/bold]", (0, 2)), style="white")
+            for requirement in sorted(result.failed_requirements, key=lambda x: x.identifier):
                 console.print(
-                    Align(f"\n [severity: [{issue_color}]{requirement.severity.name}[/{issue_color}], "
-                          f"profile: [magenta bold]{requirement.profile.name }[/magenta bold]]", align="right")
+                    Align(f"\n[profile: [magenta bold]{requirement.profile.name }[/magenta bold]]", align="right")
                 )
                 console.print(
-                    f"  [bold][cyan][{requirement.order_number}] "
-                    "[u]{Markdown(requirement.name).markup}[/u][/cyan][/bold]",
-                    style="white",
-                )
-                console.print(Padding(Markdown(requirement.description), (1, 7)))
+                    Padding(
+                        f"[bold][cyan][u][ {requirement.identifier} ]: "
+                        f"{Markdown(requirement.name).markup}[/u][/cyan][/bold]", (0, 5)), style="white")
+                console.print(Padding(Markdown(requirement.description), (1, 6)))
                 console.print(Padding("[white bold u]  Failed checks  [/white bold u]\n",
                                       (0, 8)), style="white bold")
 
@@ -756,38 +752,56 @@ def __compute_profile_stats__(validation_settings: dict):
 
     total_requirements = 0
     total_checks = 0
-    requirement_count_by_severity = {}
+    # requirement_count_by_severity = {}
     check_count_by_severity = {}
+
+    # Initialize the counters
+    for severity in (Severity.REQUIRED, Severity.RECOMMENDED, Severity.OPTIONAL):
+        # requirement_count_by_severity[severity] = 0
+        check_count_by_severity[severity] = 0
 
     for profile in profiles:
         for requirement in profile.requirements:
             if requirement.hidden:
                 continue
 
-            severity = requirement.severity
+            requirement_checks_count = 0
+            for severity in (Severity.REQUIRED, Severity.RECOMMENDED, Severity.OPTIONAL):
+                if severity_validation > severity:
+                    continue
 
-            # Count the number of requirements by severity
-            if severity not in requirement_count_by_severity:
-                requirement_count_by_severity[severity] = 0
+                # severity = requirement.severity
 
-            if severity_validation <= severity:
-                requirement_count_by_severity[severity] += 1
-                total_requirements += 1
+                # Count the number of requirements by severity
+                # if severity not in requirement_count_by_severity:
+                #     requirement_count_by_severity[severity] = 0
 
-            # Count the number of checks by severity
-            if severity not in check_count_by_severity:
-                check_count_by_severity[severity] = 0
-            if severity_validation <= severity:
+                # if severity_validation <= severity:
+                #     # requirement_count_by_severity[severity] += 1
+                #     total_requirements += 1
+
+                # Count the number of checks by severity
+                # if severity not in check_count_by_severity:
+                #     check_count_by_severity[severity] = 0
+                # if severity_validation <= severity:
                 num_checks = len(
                     [_ for _ in requirement.get_checks_by_level(LevelCollection.get(severity.name))
                      if not _.overridden])
                 check_count_by_severity[severity] += num_checks
-                total_checks += num_checks
+                # total_checks += num_checks
+                requirement_checks_count += num_checks
+
+            if requirement_checks_count == 0:
+                logger.warning(f"No checks for requirement: {requirement}")
+            else:
+                logger.debug(f"Requirement: {requirement} checks count: {requirement_checks_count}")
+                total_requirements += 1
+                total_checks += requirement_checks_count
 
     return {
         "profile": profile,
         "profiles": profiles,
-        "requirement_count_by_severity": requirement_count_by_severity,
+        # "requirement_count_by_severity": requirement_count_by_severity,
         "check_count_by_severity": check_count_by_severity,
         "total_requirements": total_requirements,
         "total_checks": total_checks,
