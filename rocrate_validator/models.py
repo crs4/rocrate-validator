@@ -143,7 +143,10 @@ class LevelCollection:
 
     @staticmethod
     def get(name: str) -> RequirementLevel:
-        return getattr(LevelCollection, name.upper())
+        try:
+            return getattr(LevelCollection, name.upper())
+        except AttributeError:
+            raise ValueError(f"Invalid RequirementLevel: {name}")
 
 
 @total_ordering
