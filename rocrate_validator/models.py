@@ -523,7 +523,6 @@ class SkipRequirementCheck(Exception):
 class Requirement(ABC):
 
     def __init__(self,
-                 level: RequirementLevel,
                  profile: Profile,
                  name: str = "",
                  description: Optional[str] = None,
@@ -534,6 +533,7 @@ class Requirement(ABC):
         self._profile = profile
         self._description = description
         self._path = path  # path of code implementing the requirement
+        self._level_from_path = None
         self._checks: list[RequirementCheck] = []
 
         if not name and path:
@@ -665,26 +665,25 @@ class Requirement(ABC):
         if not isinstance(other, Requirement):
             raise TypeError(f"Cannot compare {type(self)} with {type(other)}")
         return self.name == other.name \
-            and self.severity == other.severity and self.description == other.description \
+            and self.description == other.description \
             and self.path == other.path
 
     def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
 
     def __hash__(self):
-        return hash((self.name, self.severity, self.description, self.path))
+        return hash((self.name, self.description, self.path))
 
     def __lt__(self, other: object) -> bool:
         if not isinstance(other, Requirement):
             raise ValueError(f"Cannot compare Requirement with {type(other)}")
-        return (self.level, self._order_number, self.name) < (other.level, other._order_number, other.name)
+        return (self._order_number, self.name) < (other._order_number, other.name)
 
     def __repr__(self):
         return (
             f'ProfileRequirement('
             f'_order_number={self._order_number}, '
             f'name={self.name}, '
-            f'level={self.level}, '
             f'description={self.description}'
             f', path={self.path}, ' if self.path else ''
             ')'

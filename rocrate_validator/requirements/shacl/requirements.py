@@ -32,12 +32,11 @@ logger = logging.getLogger(__name__)
 class SHACLRequirement(Requirement):
 
     def __init__(self,
-                 level: RequirementLevel,
                  shape: Shape,
                  profile: Profile,
                  path: Path):
         self._shape = shape
-        super().__init__(level, profile,
+        super().__init__(profile,
                          shape.name if shape.name else "",
                          shape.description if shape.description else "",
                          path)
@@ -66,13 +65,6 @@ class SHACLRequirement(Requirement):
     @property
     def shape(self) -> Shape:
         return self._shape
-
-    @property
-    def level(self) -> RequirementLevel:
-        level = super().level
-        if level is None:
-            return self.shape.level
-        return level
 
     @property
     def hidden(self) -> bool:

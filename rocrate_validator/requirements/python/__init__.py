@@ -60,14 +60,13 @@ class PyFunctionCheck(RequirementCheck):
 class PyRequirement(Requirement):
 
     def __init__(self,
-                 level: RequirementLevel,
                  profile: Profile,
                  requirement_check_class: Type[PyFunctionCheck],
                  name: str = "",
                  description: Optional[str] = None,
                  path: Optional[Path] = None):
         self.requirement_check_class = requirement_check_class
-        super().__init__(level, profile, name, description, path, initialize_checks=True)
+        super().__init__(profile, name, description, path, initialize_checks=True)
 
     def __init_checks__(self):
         # initialize the list of checks
@@ -160,7 +159,6 @@ class PyRequirementLoader(RequirementLoader):
                     pass
             logger.debug("Processing requirement: %r", requirement_name)
             r = PyRequirement(
-                requirement_level,
                 profile,
                 requirement_check_class=check_class,
                 name=rq["name"],
