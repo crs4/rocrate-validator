@@ -569,12 +569,17 @@ class Requirement(ABC):
         return self._name
 
     @property
-    def level(self) -> RequirementLevel:
-        return self._level
+    def severity_from_path(self) -> Severity:
+        return self.requirement_level_from_path.severity if self.requirement_level_from_path else None
 
     @property
-    def severity(self) -> Severity:
-        return self.level.severity
+    def requirement_level_from_path(self) -> RequirementLevel:
+        if not self._level_from_path:
+            try:
+                self._level_from_path = LevelCollection.get(self._path.parent.name)
+            except ValueError:
+                logger.debug("The requirement level could not be determined from the path: %s", self._path)
+        return self._level_from_path
 
     @property
     def profile(self) -> Profile:
