@@ -19,7 +19,8 @@ from typing import Optional
 import rocrate_validator.log as logging
 from rocrate_validator.errors import ROCrateMetadataNotFoundError
 from rocrate_validator.events import EventType
-from rocrate_validator.models import (Requirement, RequirementCheck,
+from rocrate_validator.models import (LevelCollection, Requirement,
+                                      RequirementCheck,
                                       RequirementCheckValidationEvent,
                                       SkipRequirementCheck, ValidationContext)
 from rocrate_validator.requirements.shacl.models import Shape
@@ -42,7 +43,7 @@ class SHACLCheck(RequirementCheck):
 
     def __init__(self,
                  requirement: Requirement,
-                 shape: Optional[Shape]) -> None:
+                 shape: Shape) -> None:
         self._shape = shape
         # init the check
         super().__init__(requirement,
@@ -55,9 +56,33 @@ class SHACLCheck(RequirementCheck):
         # store the instance
         SHACLCheck.__add_instance__(shape, self)
 
+        # set the check level
+        requirement_level_from_path = self.requirement.requirement_level_from_path
+        if requirement_level_from_path:
+            declared_level = shape.get_declared_level()
+            if declared_level:
+                if shape.level != requirement_level_from_path:
+                    logger.warning("Mismatch in requirement level for check \"%s\": "
+                                   "shape level %s does not match the level from the containing folder %s. "
+                                   "Consider moving the shape property or removing the severity property.",
+                                   self.name, shape.level, requirement_level_from_path)
+                    self._level = declared_level
+            else:
+                self._level = requirement_level_from_path
+        else:
+            self._level = shape.level
+
     @property
     def shape(self) -> Shape:
         return self._shape
+
+    @property
+    def level(self) -> str:
+        return self._shape.level if self._shape else LevelCollection.REQUIRED
+
+    @property
+    def severity(self) -> str:
+        return self.level.severity
 
     def execute_check(self, context: ValidationContext):
         logger.debug("Starting check %s", self)
@@ -71,10 +96,8 @@ class SHACLCheck(RequirementCheck):
                 result = self.__do_execute_check__(ctx)
                 ctx.current_validation_result = self not in result
                 return ctx.current_validation_result
-        except SHACLValidationAlreadyProcessed as e:
+        except SHACLValidationAlreadyProcessed:
             logger.debug("SHACL Validation of profile %s already processed", self.requirement.profile.identifier)
-            if logger.isEnabledFor(logging.DEBUG):
-                logger.exception(e)
             # The check belongs to a profile which has already been processed
             # so we can skip the validation and return the specific result for the check
             return self not in [i.check for i in context.result.get_issues()]
