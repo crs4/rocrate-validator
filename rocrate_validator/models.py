@@ -629,8 +629,7 @@ class Requirement(ABC):
         Internal method to perform the validation
         Returns whether all checks in this requirement passed.
         """
-        logger.debug("Validating Requirement %s (level=%s) with %s checks",
-                     self.name, self.level, len(self._checks))
+        logger.debug("Validating Requirement %s with %s checks", self.name, len(self._checks))
 
         logger.debug("Running %s checks for Requirement '%s'", len(self._checks), self.name)
         all_passed = True
