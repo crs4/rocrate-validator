@@ -1216,8 +1216,8 @@ class ValidationSettings:
     # Requirement severity settings
     requirement_severity: Union[str, Severity] = Severity.REQUIRED
     requirement_severity_only: bool = False
-    allow_infos: Optional[bool] = False
-    allow_warnings: Optional[bool] = False
+    allow_infos: Optional[bool] = True
+    allow_warnings: Optional[bool] = True
     # Output serialization settings
     serialization_output_path: Optional[Path] = None
     serialization_output_format: RDF_SERIALIZATION_FORMATS_TYPES = "turtle"
