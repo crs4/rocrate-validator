@@ -37,7 +37,7 @@ ro-crate:CreativeWorkAuthorMinimuRecommendedProperties a sh:NodeShape ;
             [ sh:dataType xsd:string ; ]
             [ sh:class schema:Organization ;]
         ) ;
-        sh:severity sh:Violation ;
+        sh:severity sh:Warning ;
         sh:name "CreativeWork Author: RECOMMENDED affiliation property" ;
         sh:description "Check if the author has an organizational affiliation." ;
         sh:message "The author SHOULD have an organizational affiliation." ;
