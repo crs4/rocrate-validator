@@ -831,7 +831,9 @@ class RequirementCheck(ABC):
 
     @property
     def level(self) -> RequirementLevel:
-        return self._level
+        return self._level or \
+            self.requirement.requirement_level_from_path or \
+            LevelCollection.REQUIRED
 
     @property
     def severity(self) -> Severity:
