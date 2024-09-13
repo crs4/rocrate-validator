@@ -210,14 +210,20 @@ def __compacted_describe_profile__(profile):
     requirements = [_ for _ in profile.requirements if not _.hidden]
     for requirement in requirements:
         # add the requirement to the list
-        color = get_severity_color(requirement.severity)
-        level_info = f"[{color}]{requirement.severity.name}[/{color}]"
-        levels_list.add(level_info)
+        levels = (LevelCollection.REQUIRED, LevelCollection.RECOMMENDED, LevelCollection.OPTIONAL)
+        levels_count = []
+        for level in levels:
+            count = len(requirement.get_checks_by_level(level))
+            levels_count.append(count)
+            if count > 0:
+                color = get_severity_color(level.severity)
+                level_info = f"[{color}]{level.severity.name}[/{color}]"
+                levels_list.add(level_info)
         table_rows.append((str(requirement.order_number), requirement.name,
                            Markdown(requirement.description.strip()),
-                           f"{len(requirement.get_checks_by_level(LevelCollection.REQUIRED))}",
-                           f"{len(requirement.get_checks_by_level(LevelCollection.RECOMMENDED))}",
-                           f"{len(requirement.get_checks_by_level(LevelCollection.OPTIONAL))}"))
+                           f"{levels_count[0]}",
+                           f"{levels_count[1]}",
+                           f"{levels_count[2]}"))
 
     table = Table(show_header=True,
                   #   renderer=renderer,
