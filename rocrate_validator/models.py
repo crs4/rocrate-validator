@@ -532,7 +532,6 @@ class Requirement(ABC):
                  path: Optional[Path] = None,
                  initialize_checks: bool = True):
         self._order_number: Optional[int] = None
-        self._level = level
         self._profile = profile
         self._description = description
         self._path = path  # path of code implementing the requirement
