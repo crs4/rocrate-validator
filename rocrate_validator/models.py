@@ -779,10 +779,12 @@ class RequirementCheck(ABC):
     def __init__(self,
                  requirement: Requirement,
                  name: str,
+                 level: Optional[RequirementLevel] = LevelCollection.REQUIRED,
                  description: Optional[str] = None):
         self._requirement: Requirement = requirement
         self._order_number = 0
         self._name = name
+        self._level = level
         self._description = description
         self._overridden_by: RequirementCheck = None
         self._override: RequirementCheck = None
@@ -803,7 +805,7 @@ class RequirementCheck(ABC):
 
     @property
     def relative_identifier(self) -> str:
-        return f"{self.requirement.relative_identifier}.{self.order_number}"
+        return f"{self.level.name} {self.requirement.relative_identifier}.{self.order_number}"
 
     @property
     def name(self) -> str:
@@ -823,11 +825,11 @@ class RequirementCheck(ABC):
 
     @property
     def level(self) -> RequirementLevel:
-        return self.requirement.level
+        return self._level
 
     @property
     def severity(self) -> Severity:
-        return self.requirement.level.severity
+        return self.level.severity
 
     @property
     def overridden_by(self) -> RequirementCheck:
