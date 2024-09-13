@@ -94,5 +94,6 @@ class SHACLRequirementLoader(RequirementLoader):
         logger.debug("Loaded %s shapes: %s", len(shapes), shapes)
         requirements = []
         for shape in shapes:
-            requirements.append(SHACLRequirement(requirement_level, shape, profile, file_path))
+            if shape is not None and shape.level >= requirement_level:
+                requirements.append(SHACLRequirement(shape, profile, file_path))
         return requirements
