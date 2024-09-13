@@ -41,7 +41,7 @@ class PyFunctionCheck(RequirementCheck):
         """
         check_function: a function that accepts an instance of PyFunctionCheck and a ValidationContext.
         """
-        super().__init__(requirement, name, description)
+        super().__init__(requirement, name, description=description)
 
         sig = inspect.signature(check_function)
         if len(sig.parameters) != 2:
