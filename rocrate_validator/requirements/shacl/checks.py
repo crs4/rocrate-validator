@@ -77,6 +77,10 @@ class SHACLCheck(RequirementCheck):
         return self._shape
 
     @property
+    def description(self) -> str:
+        return self._shape.description
+
+    @property
     def level(self) -> str:
         return self._shape.level if self._shape else LevelCollection.REQUIRED
 
