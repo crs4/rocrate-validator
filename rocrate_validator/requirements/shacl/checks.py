@@ -61,7 +61,7 @@ class SHACLCheck(RequirementCheck):
         if requirement_level_from_path:
             declared_level = shape.get_declared_level()
             if declared_level:
-                if shape.level != requirement_level_from_path:
+                if shape.level.severity != requirement_level_from_path.severity:
                     logger.warning("Mismatch in requirement level for check \"%s\": "
                                    "shape level %s does not match the level from the containing folder %s. "
                                    "Consider moving the shape property or removing the severity property.",
