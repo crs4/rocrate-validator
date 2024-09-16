@@ -26,7 +26,7 @@ from rocrate_validator.cli.main import cli, click
 from rocrate_validator.cli.utils import get_app_header_rule
 from rocrate_validator.colors import get_severity_color
 from rocrate_validator.constants import DEFAULT_PROFILE_IDENTIFIER
-from rocrate_validator.models import LevelCollection, RequirementLevel
+from rocrate_validator.models import LevelCollection, RequirementLevel, Severity
 from rocrate_validator.utils import get_profiles_path
 
 # set the default profiles path
@@ -89,7 +89,7 @@ def list_profiles(ctx, no_paging: bool = False):  # , profiles_path: Path = DEFA
                       border_style="bright_black",
                       show_footer=False,
                       caption_style="italic bold",
-                      caption="[cyan](*)[/cyan] Number of requirements by severity")
+                      caption="[cyan](*)[/cyan] Number of requirements checks by severity")
 
         # Define columns
         table.add_column("Identifier", style="magenta bold", justify="center")
@@ -98,27 +98,35 @@ def list_profiles(ctx, no_paging: bool = False):  # , profiles_path: Path = DEFA
         table.add_column("Name", style="white bold", justify="center")
         table.add_column("Description", style="white italic")
         table.add_column("Based on", style="white", justify="center")
-        table.add_column("Requirements (*)", style="white", justify="center")
+        table.add_column("Requirements Checks (*)", style="white", justify="center")
+
+        # Define levels
+        levels = (LevelCollection.REQUIRED, LevelCollection.RECOMMENDED, LevelCollection.OPTIONAL)
 
         # Add data to the table
         for profile in profiles:
             # Count requirements by severity
-            requirements = {}
-            logger.debug("Requirements: %s", requirements)
-            for req in profile.requirements:
-                if not requirements.get(req.severity.name, None):
-                    requirements[req.severity.name] = 0
-                requirements[req.severity.name] += 1
-            requirements = "\n".join(
-                [f"[bold][{get_severity_color(severity)}]{severity}: "
-                 f"{count}[/{get_severity_color(severity)}][/bold]"
-                 for severity, count in requirements.items() if count > 0])
+            checks_info = {}
+            for level in levels:
+                checks_info[level.severity.name] = {
+                    "count": 0,
+                    "color": get_severity_color(level.severity)
+                }
+
+            requirements = [_ for _ in profile.get_requirements(severity=Severity.OPTIONAL) if not _.hidden]
+            for requirement in requirements:
+                for level in levels:
+                    count = len(requirement.get_checks_by_level(level))
+                    checks_info[level.severity.name]["count"] += count
+
+            checks_summary = "\n".join(
+                [f"[{v['color']}]{k}[/{v['color']}]: {v['count']}" for k, v in checks_info.items()])
 
             # Add the row to the table
             table.add_row(profile.identifier, profile.uri, profile.version,
                           profile.name, Markdown(profile.description.strip()),
                           "\n".join([p.identifier for p in profile.inherited_profiles]),
-                          requirements)
+                          checks_summary)
             table.add_row()
 
         # Print the table
