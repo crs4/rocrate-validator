@@ -132,8 +132,11 @@ class SHACLCheck(RequirementCheck):
             end_time = timer()
             logger.debug(f"Execution time for getting data graph: {end_time - start_time} seconds")
         except json.decoder.JSONDecodeError as e:
-            logger.debug("Unable to perform metadata validation due to an error in the JSON-LD data file: %s", e)
-            return False
+            logger.debug("Unable to perform metadata validation due to one or more errors in the JSON-LD data file: %s", e)
+            shacl_context.result.add_error(
+                "Unable to perform metadata validation due to one or more errors in the JSON-LD data file", self)
+            raise ROCrateMetadataNotFoundError(
+                "Unable to perform metadata validation due to one or more errors in the JSON-LD data file")
 
         # Begin the timer
         start_time = timer()
