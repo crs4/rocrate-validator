@@ -82,7 +82,8 @@ class SHACLCheck(RequirementCheck):
 
     @property
     def level(self) -> str:
-        return self._shape.level if self._shape else LevelCollection.REQUIRED
+        return self.requirement.requirement_level_from_path or \
+            (self._shape.level if self._shape else LevelCollection.REQUIRED)
 
     @property
     def severity(self) -> str:
