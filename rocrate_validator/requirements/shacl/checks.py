@@ -167,24 +167,22 @@ class SHACLCheck(RequirementCheck):
 
         # store the validation result in the context
         start_time = timer()
-        result = shacl_result.conforms
         # if the validation fails, process the failed checks
         failed_requirements_checks = set()
         failed_requirements_checks_violations: dict[str, SHACLViolation] = {}
         failed_requirement_checks_notified = []
-        if not shacl_result.conforms:
-            logger.debug("Parsing Validation with result: %s", result)
-            # process the failed checks to extract the requirement checks involved
-            for violation in shacl_result.violations:
-                shape = shapes_registry.get_shape(Shape.compute_key(shapes_graph, violation.sourceShape))
-                assert shape is not None, "Unable to map the violation to a shape"
-                requirementCheck = SHACLCheck.get_instance(shape)
-                assert requirementCheck is not None, "The requirement check cannot be None"
-                failed_requirements_checks.add(requirementCheck)
-                violations = failed_requirements_checks_violations.get(requirementCheck.identifier, None)
-                if violations is None:
-                    failed_requirements_checks_violations[requirementCheck.identifier] = violations = []
-                violations.append(violation)
+        logger.debug("Parsing Validation with result: %s", shacl_result)
+        # process the failed checks to extract the requirement checks involved
+        for violation in shacl_result.violations:
+            shape = shapes_registry.get_shape(Shape.compute_key(shapes_graph, violation.sourceShape))
+            assert shape is not None, "Unable to map the violation to a shape"
+            requirementCheck = SHACLCheck.get_instance(shape)
+            assert requirementCheck is not None, "The requirement check cannot be None"
+            failed_requirements_checks.add(requirementCheck)
+            violations = failed_requirements_checks_violations.get(requirementCheck.identifier, None)
+            if violations is None:
+                failed_requirements_checks_violations[requirementCheck.identifier] = violations = []
+            violations.append(violation)
         # sort the failed checks by identifier and severity
         # to ensure a consistent order of the issues
         # and to make the fail fast mode deterministic
