@@ -741,67 +741,68 @@ def __compute_profile_stats__(validation_settings: dict):
     """
     Compute the statistics of the profile
     """
-    profiles = services.get_profiles(validation_settings.get("profiles_path"))
-    profile = services.get_profile(validation_settings.get("profiles_path"),
-                                   validation_settings.get("profile_identifier"))
+    # extract the validation settings
     severity_validation = Severity.get(validation_settings.get("requirement_severity"))
+    profiles = services.get_profiles(validation_settings.get("profiles_path"), severity=severity_validation)
+    profile = services.get_profile(validation_settings.get("profiles_path"),
+                                   validation_settings.get("profile_identifier"),
+                                   severity=severity_validation)
+    # initialize the profiles list
     profiles = [profile]
 
+    # add inherited profiles if enabled
     if validation_settings.get("inherit_profiles"):
         profiles.extend(profile.inherited_profiles)
+    logger.debug("Inherited profiles: %r", profile.inherited_profiles)
 
+    # Initialize the counters
     total_requirements = 0
     total_checks = 0
-    # requirement_count_by_severity = {}
     check_count_by_severity = {}
 
     # Initialize the counters
     for severity in (Severity.REQUIRED, Severity.RECOMMENDED, Severity.OPTIONAL):
-        # requirement_count_by_severity[severity] = 0
         check_count_by_severity[severity] = 0
 
+    # Process the requirements and checks
+    processed_requirements = []
     for profile in profiles:
         for requirement in profile.requirements:
+            processed_requirements.append(requirement)
             if requirement.hidden:
                 continue
 
             requirement_checks_count = 0
             for severity in (Severity.REQUIRED, Severity.RECOMMENDED, Severity.OPTIONAL):
-                if severity_validation > severity:
+                logger.debug(
+                    f"Checking requirement: {requirement} severity: {severity} {severity < severity_validation}")
+                # skip requirements with lower severity
+                if severity < severity_validation:
                     continue
-
-                # severity = requirement.severity
-
-                # Count the number of requirements by severity
-                # if severity not in requirement_count_by_severity:
-                #     requirement_count_by_severity[severity] = 0
-
-                # if severity_validation <= severity:
-                #     # requirement_count_by_severity[severity] += 1
-                #     total_requirements += 1
-
-                # Count the number of checks by severity
-                # if severity not in check_count_by_severity:
-                #     check_count_by_severity[severity] = 0
-                # if severity_validation <= severity:
+                # count the checks
                 num_checks = len(
                     [_ for _ in requirement.get_checks_by_level(LevelCollection.get(severity.name))
                      if not _.overridden])
                 check_count_by_severity[severity] += num_checks
-                # total_checks += num_checks
                 requirement_checks_count += num_checks
 
+            # count the requirements and checks
             if requirement_checks_count == 0:
-                logger.warning(f"No checks for requirement: {requirement}")
+                logger.debug(f"No checks for requirement: {requirement}")
             else:
                 logger.debug(f"Requirement: {requirement} checks count: {requirement_checks_count}")
+                assert not requirement.hidden, "Hidden requirements should not be counted"
                 total_requirements += 1
                 total_checks += requirement_checks_count
 
-    return {
+    # log processed requirements
+    logger.debug("Processed requirements %r: %r", len(processed_requirements), processed_requirements)
+
+    # Prepare the result
+    result = {
         "profile": profile,
         "profiles": profiles,
-        # "requirement_count_by_severity": requirement_count_by_severity,
+        "severity": severity_validation,
         "check_count_by_severity": check_count_by_severity,
         "total_requirements": total_requirements,
         "total_checks": total_checks,
@@ -810,3 +811,5 @@ def __compute_profile_stats__(validation_settings: dict):
         "passed_requirements": [],
         "passed_checks": []
     }
+    logger.debug(result)
+    return result
