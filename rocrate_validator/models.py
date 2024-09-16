@@ -1337,8 +1337,16 @@ class Validator(Publisher):
         try:
             # initialize the validation context
             context = ValidationContext(self, self.validation_settings.to_dict())
-            candidate_profiles_uris = set(context.ro_crate.metadata.get_conforms_to(
-            ) + context.ro_crate.metadata.get_root_data_entity_conforms_to())
+            candidate_profiles_uris = set()
+            try:
+                candidate_profiles_uris.add(context.ro_crate.metadata.get_conforms_to())
+            except Exception as e:
+                logger.debug("Error while getting candidate profiles URIs: %s", e)
+            try:
+                candidate_profiles_uris.add(context.ro_crate.metadata.get_root_data_entity_conforms_to())
+            except Exception as e:
+                logger.debug("Error while getting candidate profiles URIs: %s", e)
+
             logger.debug("Candidate profiles: %s", candidate_profiles_uris)
             if not candidate_profiles_uris:
                 logger.debug("Unable to determine the profile to validate against")
