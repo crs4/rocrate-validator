@@ -769,7 +769,7 @@ class RequirementLoader:
         # sort the requirements by severity
         requirements = sorted(requirements,
                               key=lambda x: (-x.severity_from_path.value, x.path.name, x.name)
-                              if x.severity_from_path is not None else (x.path.name, x.name),
+                              if x.severity_from_path is not None else (0, x.path.name, x.name),
                               reverse=False)
         # assign order numbers to requirements
         for i, requirement in enumerate(requirements):
