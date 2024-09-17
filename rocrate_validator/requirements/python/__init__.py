@@ -13,14 +13,13 @@
 # limitations under the License.
 
 import inspect
-
 import re
 from pathlib import Path
 from typing import Callable, Optional, Type
 
 import rocrate_validator.log as logging
 
-from ...models import (Profile, Requirement, RequirementCheck,
+from ...models import (LevelCollection, Profile, Requirement, RequirementCheck,
                        RequirementLevel, RequirementLoader, ValidationContext)
 from ...utils import get_classes_from_file
 
@@ -37,11 +36,12 @@ class PyFunctionCheck(RequirementCheck):
                  requirement: Requirement,
                  name: str,
                  check_function: Callable[[RequirementCheck, ValidationContext], bool],
-                 description: Optional[str] = None):
+                 description: Optional[str] = None,
+                 level: Optional[LevelCollection] = LevelCollection.REQUIRED):
         """
         check_function: a function that accepts an instance of PyFunctionCheck and a ValidationContext.
         """
-        super().__init__(requirement, name, description=description)
+        super().__init__(requirement, name, description=description, level=level)
 
         sig = inspect.signature(check_function)
         if len(sig.parameters) != 2:
@@ -80,10 +80,17 @@ class PyRequirement(Requirement):
                 except Exception:
                     check_name = name.strip()
                 check_description = member.__doc__.strip() if member.__doc__ else ""
-                check = self.requirement_check_class(requirement=self,
-                                                     name=check_name,
-                                                     check_function=member,
-                                                     description=check_description)
+                # init the check with the requirement level
+                check_level = None
+                try:
+                    check_level = member.level
+                except Exception:
+                    check_level = self.requirement_level_from_path or LevelCollection.REQUIRED
+                check = self.requirement_check_class(self,
+                                                     check_name,
+                                                     member,
+                                                     description=check_description,
+                                                     level=check_level)
                 self._checks.append(check)
                 logger.debug("Added check: %s %r", check_name, check)
 
@@ -109,7 +116,7 @@ def requirement(name: str, description: Optional[str] = None):
     return decorator
 
 
-def check(name: Optional[str] = None):
+def check(name: Optional[str] = None, level: Optional[LevelCollection] = None):
     """
     A decorator to mark functions as "checks" (by setting an attribute
     `check=True`) and optionally annotating them with a human-legible name.
@@ -125,6 +132,7 @@ def check(name: Optional[str] = None):
                                f"return bool but this only returns {sig.return_annotation}")
         func.check = True
         func.name = check_name
+        func.level = level
         return func
     return decorator
 
