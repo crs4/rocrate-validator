@@ -66,11 +66,7 @@ class SHACLCheck(RequirementCheck):
                                    "shape level %s does not match the level from the containing folder %s. "
                                    "Consider moving the shape property or removing the severity property.",
                                    self.name, shape.level, requirement_level_from_path)
-                    self._level = declared_level
-            else:
-                self._level = requirement_level_from_path
-        else:
-            self._level = shape.level
+        self._level = None
 
     @property
     def shape(self) -> Shape:
@@ -80,10 +76,18 @@ class SHACLCheck(RequirementCheck):
     def description(self) -> str:
         return self._shape.description
 
+    def __compute_requirement_level__(self) -> LevelCollection:
+        if self._shape and self._shape.get_declared_level():
+            return self._shape.get_declared_level()
+        if self.requirement and self.requirement.requirement_level_from_path:
+            return self.requirement.requirement_level_from_path
+        return LevelCollection.REQUIRED
+
     @property
     def level(self) -> str:
-        return self.requirement.requirement_level_from_path or \
-            (self._shape.level if self._shape else LevelCollection.REQUIRED)
+        if not self._level:
+            self._level = self.__compute_requirement_level__()
+        return self._level
 
     @property
     def severity(self) -> str:
