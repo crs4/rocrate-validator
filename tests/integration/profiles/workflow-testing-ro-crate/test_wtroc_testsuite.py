@@ -31,7 +31,7 @@ def test_wtroc_testsuite_not_mentioned():
         InvalidWTROC().testsuite_not_mentioned,
         Severity.REQUIRED,
         False,
-        ["Workflow Testing RO-Crate Action MUST"],
+        ["Workflow Testing RO-Crate TestSuite MUST"],
         ["The TestSuite MUST be referenced from the Root Data Entity via mentions"],
         profile_identifier="workflow-testing-ro-crate"
     )

@@ -21,7 +21,7 @@
 @prefix wftest: <https://w3id.org/ro/terms/test#> .
 
 workflow-testing-ro-crate:WTROCTestSuiteRequired a sh:NodeShape ;
-    sh:name "Workflow Testing RO-Crate Action MUST" ;
+    sh:name "Workflow Testing RO-Crate TestSuite MUST" ;
     sh:description "Required properties of the Workflow Testing RO-Crate TestSuite" ;
     sh:targetClass wftest:TestSuite ;
     sh:property [
