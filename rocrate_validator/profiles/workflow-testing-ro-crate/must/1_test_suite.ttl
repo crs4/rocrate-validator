@@ -33,3 +33,24 @@ workflow-testing-ro-crate:WTROCTestSuiteRequired a sh:NodeShape ;
         sh:minCount 1 ;
         sh:message "The TestSuite MUST be referenced from the Root Data Entity via mentions" ;
     ] .
+
+
+workflow-testing-ro-crate:WTROCTestSuiteInstanceOrDefinition a sh:NodeShape ;
+    sh:name "TestSuite instance or definition" ;
+    sh:description "The TestSuite MUST refer to a TestInstance or TestDefinition" ;
+    sh:message "The TestSuite MUST refer to a TestInstance or TestDefinition" ;
+    sh:targetClass wftest:TestSuite ;
+    sh:or (
+        [ sh:property [
+            a sh:PropertyShape ;
+            sh:path wftest:instance ;
+            sh:class wftest:TestInstance ;
+            sh:minCount 1 ;
+        ]]
+        [ sh:property [
+            a sh:PropertyShape ;
+            sh:path wftest:definition ;
+            sh:class wftest:TestDefinition ;
+            sh:minCount 1 ;
+        ]]
+    ) .

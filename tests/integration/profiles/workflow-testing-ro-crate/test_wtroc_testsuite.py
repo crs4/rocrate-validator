@@ -35,3 +35,18 @@ def test_wtroc_testsuite_not_mentioned():
         ["The TestSuite MUST be referenced from the Root Data Entity via mentions"],
         profile_identifier="workflow-testing-ro-crate"
     )
+
+
+def test_wtroc_testsuite_no_instance_no_def():
+    """\
+    Test a Workflow Testing RO-Crate where a TestSuite does not refer to either a
+    TestSuite or a TestDefinition.
+    """
+    do_entity_test(
+        InvalidWTROC().testsuite_no_instance_no_def,
+        Severity.REQUIRED,
+        False,
+        ["TestSuite instance or definition"],
+        ["The TestSuite MUST refer to a TestInstance or TestDefinition"],
+        profile_identifier="workflow-testing-ro-crate"
+    )
