@@ -66,6 +66,10 @@ class ValidROC:
     def process_run_crate_containerimage(self) -> Path:
         return VALID_CRATES_DATA_PATH / "process-run-crate-containerimage"
 
+    @property
+    def workflow_testing_ro_crate(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "workflow-testing-ro-crate"
+
 
 class InvalidFileDescriptor:
 
@@ -463,3 +467,12 @@ class InvalidProcRC:
     @property
     def softwareapplication_bad_softwarerequirements(self) -> Path:
         return self.base_path / "softwareapplication_bad_softwarerequirements"
+
+
+class InvalidWTROC:
+
+    base_path = INVALID_CRATES_DATA_PATH / "5_workflow_testing_ro_crate/"
+
+    @property
+    def testsuite_not_mentioned(self) -> Path:
+        return self.base_path / "testsuite_not_mentioned"

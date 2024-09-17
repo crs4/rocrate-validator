@@ -1,0 +1,8 @@
+- doc: test with a small input
+  job:
+    bed_input:
+      class: File
+      path: http://example.com/data/input.bed
+  outputs:
+    uppercase_bed:
+      path: http://example.com/data/output_exp.bed
