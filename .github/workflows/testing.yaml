@@ -68,7 +68,7 @@ jobs:
             - name: Check version
               run: |
                   if [ "${{ github.event_name }}" == "push" ] && [ "${{ github.ref_type }}" == "tag" ]; then
-                    TAG_NAME=$(rocrate-validator -v)
+                    TAG_NAME=$(poetry run rocrate-validator -v)
                     if [ "rocrate-validator ${{ github.ref }}" != "refs/tags/$TAG_NAME" ]; then
                       echo "Tag name does not match the version"
                       exit 1
