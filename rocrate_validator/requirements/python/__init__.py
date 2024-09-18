@@ -20,7 +20,7 @@ from typing import Callable, Optional, Type
 import rocrate_validator.log as logging
 
 from ...models import (LevelCollection, Profile, Requirement, RequirementCheck,
-                       RequirementLevel, RequirementLoader, ValidationContext)
+                       RequirementLevel, RequirementLoader, Severity, ValidationContext)
 from ...utils import get_classes_from_file
 
 # set up logging
@@ -81,16 +81,16 @@ class PyRequirement(Requirement):
                     check_name = name.strip()
                 check_description = member.__doc__.strip() if member.__doc__ else ""
                 # init the check with the requirement level
-                check_level = None
+                severity = None
                 try:
-                    check_level = member.level
+                    severity = member.severity
                 except Exception:
-                    check_level = self.requirement_level_from_path or LevelCollection.REQUIRED
+                    severity = self.severity_from_path or Severity.REQUIRED
                 check = self.requirement_check_class(self,
                                                      check_name,
                                                      member,
                                                      description=check_description,
-                                                     level=check_level)
+                                                     level=LevelCollection.get(severity.name) if severity else None)
                 self._checks.append(check)
                 logger.debug("Added check: %s %r", check_name, check)
 
@@ -116,7 +116,7 @@ def requirement(name: str, description: Optional[str] = None):
     return decorator
 
 
-def check(name: Optional[str] = None, level: Optional[LevelCollection] = None):
+def check(name: Optional[str] = None, severity: Optional[Severity] = None):
     """
     A decorator to mark functions as "checks" (by setting an attribute
     `check=True`) and optionally annotating them with a human-legible name.
@@ -132,7 +132,7 @@ def check(name: Optional[str] = None, level: Optional[LevelCollection] = None):
                                f"return bool but this only returns {sig.return_annotation}")
         func.check = True
         func.name = check_name
-        func.level = level
+        func.severity = severity
         return func
     return decorator
 

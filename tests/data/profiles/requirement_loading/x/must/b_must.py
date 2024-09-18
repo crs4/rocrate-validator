@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import rocrate_validator.log as logging
-from rocrate_validator.models import LevelCollection, ValidationContext
+from rocrate_validator.models import Severity, ValidationContext
 from rocrate_validator.requirements.python import (PyFunctionCheck, check,
                                                    requirement)
 
@@ -32,17 +32,17 @@ class B_MUST(PyFunctionCheck):
         """Check B_MUST_0: no requirement level"""
         return True
 
-    @check(name="B_MUST_1", level=LevelCollection.REQUIRED)
+    @check(name="B_MUST_1", severity=Severity.REQUIRED)
     def check_b1(self, context: ValidationContext) -> bool:
         """Check B_MUST_1: REQUIRED requirement level"""
         return True
 
-    @check(name="B_MUST_2", level=LevelCollection.RECOMMENDED)
+    @check(name="B_MUST_2", severity=Severity.RECOMMENDED)
     def check_b2(self, context: ValidationContext) -> bool:
         """Check B_MUST_2: RECOMMENDED requirement level"""
         return True
 
-    @check(name="B_MUST_3", level=LevelCollection.OPTIONAL)
+    @check(name="B_MUST_3", severity=Severity.OPTIONAL)
     def check_b3(self, context: ValidationContext) -> bool:
         """Check B_MUST_3: OPTIONAL requirement level"""
         return True

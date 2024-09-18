@@ -66,7 +66,7 @@ def test_requirements_loading(profiles_requirement_loading: str):
 
     # Check the requirements and their checks
     for requirement_name in requirements_names:
-        logger.error("The requirement: %r", requirement_name)
+        logger.debug("The requirement: %r", requirement_name)
         requirement = profile.get_requirement(requirement_name)
         assert requirement.name == requirement_name, "The name of the requirement is incorrect"
         if requirement_name in ["A", "B"]:
@@ -77,7 +77,7 @@ def test_requirements_loading(profiles_requirement_loading: str):
         assert len(requirement.get_checks()) == number_of_checks_per_requirement, "The number of requirement checks is incorrect"
 
         for i in range(number_of_checks_per_requirement):
-            logger.error("The requirement check: %r", f"{requirement_name}_{i}")
+            logger.debug("The requirement check: %r", f"{requirement_name}_{i}")
             check = requirement.get_checks()[i]
             assert check.name == f"{requirement_name}_{i}", "The name of the requirement check is incorrect"
             assert check.level.severity == levels[i].severity, "The level of the requirement check is incorrect"
