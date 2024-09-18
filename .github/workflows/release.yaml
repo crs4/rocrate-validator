@@ -1,18 +1,15 @@
-name: CI Testing Pipeline
+name: CI Release Pipeline
 
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the master branch
 on:
+    # workflow_run:
+    #     workflows: ["CI Testing Pipeline"]
+    #     types:
+    #         - completed
     push:
-        branches:
-            - "**"
         tags:
             - "*.*.*"
-        paths:
-            - "**"
-            - "!docs/**"
-            - "!examples/**"
-    pull_request:
         paths:
             - "**"
             - "!docs/**"
@@ -28,30 +25,11 @@ env:
     VENV_PATH: .venv
 
 jobs:
-    # Verifies pep8, pyflakes and circular complexity
-    flake8:
-        name: Lint Python Code (Flake8) (python ${{ matrix.python-version }})
+    # Verifies the declared version of the package
+    version:
+        name: Check Python package version
         runs-on: ubuntu-latest
-        strategy:
-            matrix:
-                python-version: ["3.11"]
-        steps:
-            # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-            - uses: actions/checkout@v4
-            - name: Set up Python v${{ matrix.python-version }}
-              uses: actions/setup-python@v5
-              with:
-                  python-version: ${{ matrix.python-version }}
-            - name: Install flake8
-              run: pip install flake8
-            - name: Run checks
-              run: flake8 -v rocrate_validator tests
-
-    # Runs the tests
-    test:
-        name: "Run tests"
-        runs-on: ubuntu-latest
-        needs: [flake8]
+        if: startsWith(github.ref, 'refs/tags/')
         steps:
             - name: Checkout
               uses: actions/checkout@v4
@@ -65,5 +43,15 @@ jobs:
               run: pip install poetry
             - name: Install dependencies
               run: poetry install --no-interaction --no-ansi
-            - name: Run tests
-              run: poetry run pytest
+            - name: Check version
+              run: |
+                  if [ "${{ github.event_name }}" == "push" ] && [ "${{ github.ref_type }}" == "tag" ]; then
+                    declared_version=$(poetry version -s)
+                    echo "Checking tag '${{ github.ref }}' against package version $declared_version"
+                    if [ "${{ github.ref }}" != "refs/tags/$declared_version" ]; then
+                      echo "Tag '${{ github.ref }}' does not match the declared package version '$declared_version'"
+                      exit 1
+                    else
+                      echo "Tag '${{ github.ref }}' matches the declared package version '$declared_version'"
+                    fi
+                  fi

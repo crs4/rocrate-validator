@@ -42,13 +42,98 @@ logger = logging.getLogger(__name__)
 config = toml.load(Path(CURRENT_DIR).parent / "pyproject.toml")
 
 
+def run_git_command(command: list[str]) -> Optional[str]:
+    """
+    Run a git command and return the output
+
+    :param command: The git command
+    :return: The output of the command
+    """
+    import subprocess
+
+    try:
+        output = subprocess.check_output(command).decode().strip()
+        return output
+    except Exception as e:
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug(e)
+        return None
+
+
+def get_git_commit() -> str:
+    """
+    Get the git commit hash
+
+    :return: The git commit hash
+    """
+    return run_git_command(['git', 'rev-parse', '--short', 'HEAD'])
+
+
+def is_release_tag(git_sha: str) -> bool:
+    """
+    Check whether a git sha corresponds to a release tag
+
+    :param git_sha: The git sha
+    :return: True if the sha corresponds to a release tag, False otherwise
+    """
+    tags = run_git_command(['git', 'tag', '--points-at', git_sha])
+    return bool(tags)
+
+
+def get_commit_distance(tag: Optional[str] = None) -> int:
+    """
+    Get the distance in commits between the current commit and the last tag
+
+    :return: The distance in commits
+    """
+    if not tag:
+        tag = get_last_tag()
+    return int(run_git_command(['git', 'rev-list', '--count', 'HEAD' if not tag else f"{tag}..HEAD"]))
+
+
+def get_last_tag() -> str:
+    """
+    Get the last tag in the git repository
+
+    :return: The last tag
+    """
+    return run_git_command(['git', 'describe', '--tags', '--abbrev=0'])
+
+# write  a function to checks whether the are any uncommitted changes in the repository
+
+
+def has_uncommitted_changes() -> bool:
+    """
+    Check whether there are any uncommitted changes in the repository
+
+    :return: True if there are uncommitted changes, False otherwise
+    """
+    return bool(run_git_command(['git', 'status', '--porcelain']))
+
+
 def get_version() -> str:
     """
     Get the version of the package
 
     :return: The version
     """
-    return config["tool"]["poetry"]["version"]
+    version = None
+    declared_version = config["tool"]["poetry"]["version"]
+    commit_sha = get_git_commit()
+    is_release = is_release_tag(commit_sha)
+    latest_tag = get_last_tag()
+    if is_release:
+        if declared_version != latest_tag:
+            logger.warning("The declared version %s is different from the last tag %s", declared_version, latest_tag)
+        version = latest_tag
+    else:
+        commit_distance = get_commit_distance(latest_tag)
+        if commit_sha:
+            version = f"{declared_version}_{commit_sha}+{commit_distance}"
+        else:
+            version = declared_version
+    dirty = has_uncommitted_changes()
+    return f"{version}-dirty" if dirty else version
 
 
 def get_config(property: Optional[str] = None) -> dict:
