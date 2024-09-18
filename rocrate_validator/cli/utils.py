@@ -18,6 +18,7 @@ import re
 import textwrap
 from typing import Any, Optional
 
+from rich.console import Console as BaseConsole
 from rich.padding import Padding
 from rich.pager import Pager
 from rich.rule import Rule
@@ -62,3 +63,15 @@ class SystemPager(Pager):
     def show(self, content: str) -> None:
         """Use the same pager used by pydoc."""
         self._pager(content)
+
+
+class Console(BaseConsole):
+    """Rich console that can be disabled."""
+
+    def __init__(self, *args, disabled: bool = False,  **kwargs):
+        super().__init__(*args, **kwargs)
+        self.disabled = disabled
+
+    def print(self, *args, **kwargs):
+        if not self.disabled:
+            super().print(*args, **kwargs)

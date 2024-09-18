@@ -24,7 +24,6 @@ from typing import Optional
 from InquirerPy import prompt
 from InquirerPy.base.control import Choice
 from rich.align import Align
-from rich.console import Console
 from rich.layout import Layout
 from rich.live import Live
 from rich.markdown import Markdown
@@ -38,7 +37,7 @@ import rocrate_validator.log as logging
 from rocrate_validator import services
 from rocrate_validator.cli.commands.errors import handle_error
 from rocrate_validator.cli.main import cli, click
-from rocrate_validator.cli.utils import get_app_header_rule
+from rocrate_validator.cli.utils import Console, get_app_header_rule
 from rocrate_validator.colors import get_severity_color
 from rocrate_validator.events import Event, EventType, Subscriber
 from rocrate_validator.models import (LevelCollection, Profile, Severity,
@@ -256,7 +255,8 @@ def validate(ctx,
         }
 
         # Print the application header
-        console.print(get_app_header_rule())
+        if output_format == "text" and output_file is None:
+            console.print(get_app_header_rule())
 
         # Get the available profiles
         available_profiles = services.get_profiles(profiles_path)
@@ -329,27 +329,39 @@ def validate(ctx,
             report_layout = ValidationReportLayout(console, validation_settings, profile_stats, None)
 
             # Validate RO-Crate against the profile and get the validation result
-            result: ValidationResult = report_layout.live(
-                lambda: services.validate(
-                    validation_settings,
-                    subscribers=[report_layout.progress_monitor]
+            result: ValidationResult = None
+            if output_format == "text":
+                console.disabled = output_file is not None
+                result: ValidationResult = report_layout.live(
+                    lambda: services.validate(
+                        validation_settings,
+                        subscribers=[report_layout.progress_monitor]
+                    )
                 )
-            )
+                console.disabled = False
+            else:
+                result: ValidationResult = services.validate(
+                    validation_settings
+                )
 
             # store the cumulative validation result
             is_valid = is_valid and result.passed(LevelCollection.get(requirement_severity).severity)
 
             # Print the validation result
-            if not result.passed():
-                verbose_choice = "n"
-                if interactive and not verbose and enable_pager:
-                    verbose_choice = get_single_char(console, choices=['y', 'n'],
-                                                     message=(
-                                                         "[bold] > Do you want to see the validation details? "
-                                                         "([magenta]y/n[/magenta]): [/bold]"
-                                                     ))
-                if verbose_choice == "y" or verbose:
-                    report_layout.show_validation_details(pager, enable_pager=enable_pager)
+            if output_format == "text" and not output_file:
+                if not result.passed():
+                    verbose_choice = "n"
+                    if interactive and not verbose and enable_pager:
+                        verbose_choice = get_single_char(console, choices=['y', 'n'],
+                                                         message=(
+                            "[bold] > Do you want to see the validation details? "
+                            "([magenta]y/n[/magenta]): [/bold]"
+                        ))
+                    if verbose_choice == "y" or verbose:
+                        report_layout.show_validation_details(pager, enable_pager=enable_pager)
+
+            if output_format == "json" and not output_file:
+                console.print(result.to_json())
 
             if output_file:
                 # Print the validation report to a file
@@ -361,7 +373,7 @@ def validate(ctx,
                         c = Console(file=f, color_system=None, width=output_line_width, height=31)
                         c.print(report_layout.layout)
                         report_layout.console = c
-                        if not result.passed():
+                        if not result.passed() and verbose:
                             report_layout.show_validation_details(None, enable_pager=False)
 
             # Interrupt the validation if the fail fast mode is enabled

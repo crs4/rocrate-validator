@@ -15,10 +15,9 @@
 import sys
 
 import rich_click as click
-from rich.console import Console
 
 import rocrate_validator.log as logging
-from rocrate_validator.cli.utils import SystemPager
+from rocrate_validator.cli.utils import Console, SystemPager
 from rocrate_validator.utils import get_version
 
 # set up logging
