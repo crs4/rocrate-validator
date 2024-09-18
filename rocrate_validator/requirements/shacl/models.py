@@ -68,8 +68,6 @@ class SHACLNode:
     @property
     def description(self) -> str:
         """Return the description of the shape"""
-        if not self._description:
-            self._description = getattr(self, "description", None)
         return self._description
 
     @description.setter
