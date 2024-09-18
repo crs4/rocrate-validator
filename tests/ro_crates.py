@@ -484,3 +484,7 @@ class InvalidWTROC:
     @property
     def testsuite_no_mainentity(self) -> Path:
         return self.base_path / "testsuite_no_mainentity"
+
+    @property
+    def testinstance_no_service(self) -> Path:
+        return self.base_path / "testinstance_no_service"
