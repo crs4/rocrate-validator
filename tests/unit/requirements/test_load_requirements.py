@@ -105,7 +105,8 @@ def test_order_of_loaded_profile_requirements(profiles_path: str):
                      requirement.name, requirement.severity_from_path, requirement.path)
 
     # Sort requirements by their order
-    requirements = sorted(requirements, key=lambda x: (-x.severity_from_path.value, x.path.name, x.name))
+    requirements = sorted(requirements, key=lambda x: (-x.severity_from_path.value, x.path.name, x.name)
+                          if x.severity_from_path else (0, x.path.name, x.name))
 
     # Check the order of the requirements
     for i, requirement in enumerate(requirements):
