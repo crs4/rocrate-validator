@@ -46,8 +46,8 @@ jobs:
               run: pip install flake8
             - name: Run checks
               run: flake8 -v rocrate_validator tests
-    
-              # Verifies the declared version of the package
+
+    # Verifies the declared version of the package
     version:
         name: Check Python package version
         runs-on: ubuntu-latest
@@ -55,6 +55,16 @@ jobs:
         steps:
             - name: Checkout
               uses: actions/checkout@v4
+            - name: Upgrade pip
+              run: pip install --upgrade pip
+            - name: Initialise a virtual env
+              run: python -m venv ${VENV_PATH}
+            - name: Enable virtual env
+              run: source ${VENV_PATH}/bin/activate
+            - name: Install Poetry
+              run: pip install poetry
+            - name: Install dependencies
+              run: poetry install --no-interaction --no-ansi
             - name: Check version
               run: |
                   if [ "${{ github.event_name }}" == "push" ] && [ "${{ github.ref_type }}" == "tag" ]; then
