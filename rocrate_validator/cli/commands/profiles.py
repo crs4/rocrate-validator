@@ -38,7 +38,6 @@ logger = logging.getLogger(__name__)
 
 @cli.group("profiles")
 @click.option(
-    "-p",
     "--profiles-path",
     type=click.Path(exists=True),
     default=DEFAULT_PROFILES_PATH,
