@@ -56,8 +56,9 @@ def test_requirements_loading(profiles_requirement_loading: str):
     assert len(requirements) == len(requirements_names), "The number of requirements is incorrect"
 
     # Sort requirements by their order
-    sorted_requirements = sorted(requirements, key=lambda x: (-x.severity_from_path.value, x.path.name,
-                                                              x.name) if x.severity_from_path else (0, x.path.name, x.name))
+    sorted_requirements = sorted(
+        requirements, key=lambda x: (-x.severity_from_path.value, x.path.name, x.name)
+        if x.severity_from_path else (0, x.path.name, x.name))
 
     # Check the order of the requirements
     for i, requirement in enumerate(sorted_requirements):
@@ -72,9 +73,11 @@ def test_requirements_loading(profiles_requirement_loading: str):
         if requirement_name in ["A", "B"]:
             assert requirement.severity_from_path is None, "The severity of the requirement should be None"
         elif requirement_name in ["A_MUST", "B_MUST"]:
-            assert requirement.severity_from_path == Severity.REQUIRED, "The severity of the requirement should be REQUIRED"
+            assert requirement.severity_from_path == Severity.REQUIRED, \
+                "The severity of the requirement should be REQUIRED"
 
-        assert len(requirement.get_checks()) == number_of_checks_per_requirement, "The number of requirement checks is incorrect"
+        assert len(requirement.get_checks()) == number_of_checks_per_requirement, \
+            "The number of requirement checks is incorrect"
 
         for i in range(number_of_checks_per_requirement):
             logger.debug("The requirement check: %r", f"{requirement_name}_{i}")
@@ -126,6 +129,9 @@ def test_order_of_loaded_profile_requirements(profiles_path: str):
 
     # Inspect the first requirement check
     requirement_check = r_checks[0]
-    assert requirement_check.name == "Root Data Entity: RECOMMENDED value", "The name of the requirement check is incorrect"
-    assert requirement_check.description == "Check if the Root Data Entity is denoted by the string `./` in the file descriptor JSON-LD", "The description of the requirement check is incorrect"
+    assert requirement_check.name == "Root Data Entity: RECOMMENDED value", \
+        "The name of the requirement check is incorrect"
+    assert requirement_check.description == \
+        "Check if the Root Data Entity is denoted by the string `./` in the file descriptor JSON-LD", \
+        "The description of the requirement check is incorrect"
     assert requirement_check.severity == Severity.RECOMMENDED, "The severity of the requirement check is incorrect"
