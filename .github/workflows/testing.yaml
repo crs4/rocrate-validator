@@ -46,7 +46,26 @@ jobs:
               run: pip install flake8
             - name: Run checks
               run: flake8 -v rocrate_validator tests
+    
+              # Verifies the declared version of the package
+    version:
+        name: Check version
+        runs-on: ubuntu-latest
+        if: startsWith(github.ref, 'refs/tags/')
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+            - name: Check version
+              run: |
+                  if [ "${{ github.event_name }}" == "push" ] && [ "${{ github.ref_type }}" == "tag" ]; then
+                    TAG_NAME=$(rocrate-validator -v)
+                    if [ "rocrate-validator ${{ github.ref }}" != "refs/tags/$TAG_NAME" ]; then
+                      echo "Tag name does not match the version"
+                      exit 1
+                    fi
+                  fi
 
+    # Runs the tests
     test:
         name: "Tests"
         runs-on: ubuntu-latest
