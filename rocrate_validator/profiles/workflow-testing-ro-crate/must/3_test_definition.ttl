@@ -1,0 +1,56 @@
+# Copyright (c) 2024 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+@prefix ro: <./> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix workflow-testing-ro-crate: <https://github.com/crs4/rocrate-validator/profiles/workflow-testing-ro-crate/> .
+@prefix schema: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix wroc: <https://w3id.org/workflowhub/workflow-ro-crate#> .
+@prefix wftest: <https://w3id.org/ro/terms/test#> .
+
+workflow-testing-ro-crate:WTROCTestDefinitionRequired a sh:NodeShape ;
+    sh:name "Workflow Testing RO-Crate TestDefinition MUST" ;
+    sh:description "Required properties of the Workflow Testing RO-Crate TestDefinition" ;
+    sh:targetClass wftest:TestDefinition ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "TestDefinition type" ;
+        sh:description "The TestDefinition MUST have types TestDefinition and File" ;
+        sh:path rdf:type ;
+        sh:hasValue schema:MediaObject, wftest:TestDefinition ;
+        sh:minCount 1 ;
+        sh:message "The TestDefinition MUST have types TestDefinition and File" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "TestDefinition conformsTo" ;
+        sh:description "The TestDefinition MUST refer to the test engine it is written for via conformsTo" ;
+        sh:path dct:conformsTo ;
+        sh:class schema:SoftwareApplication ;
+        sh:minCount 1 ;
+        sh:message "The TestDefinition MUST refer to the test engine it is written for via conformsTo" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "TestDefinition engineVersion" ;
+        sh:description "The TestDefinition MUST refer to the test engine version via engineVersion" ;
+        sh:path wftest:engineVersion ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:message "The TestDefinition MUST refer to the test engine version via engineVersion" ;
+    ] .

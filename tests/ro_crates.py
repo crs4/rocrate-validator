@@ -496,3 +496,15 @@ class InvalidWTROC:
     @property
     def testinstance_no_resource(self) -> Path:
         return self.base_path / "testinstance_no_resource"
+
+    @property
+    def testdefinition_bad_type(self) -> Path:
+        return self.base_path / "testdefinition_bad_type"
+
+    @property
+    def testdefinition_no_engine(self) -> Path:
+        return self.base_path / "testdefinition_no_engine"
+
+    @property
+    def testdefinition_no_engineversion(self) -> Path:
+        return self.base_path / "testdefinition_no_engineversion"
