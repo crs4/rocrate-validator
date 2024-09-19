@@ -30,6 +30,8 @@ jobs:
         name: Check Python package version
         runs-on: ubuntu-latest
         if: startsWith(github.ref, 'refs/tags/')
+        env:
+          PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
         steps:
             - name: Checkout
               uses: actions/checkout@v4
@@ -55,3 +57,19 @@ jobs:
                       echo "Tag '${{ github.ref }}' matches the declared package version '$declared_version'"
                     fi
                   fi
+            - name: Build package
+              run: poetry build
+            - name: Publish artifact
+              uses: actions/upload-artifact@v4
+              with:
+                name: rocrate-validator-dist
+                path: |
+                  dist/*.whl
+                  dist/*.tar.gz
+            - name: Publish to PyPI
+              run: |
+                poetry config repositories.testpypi https://test.pypi.org/legacy/
+                poetry config pypi-token.testpypi $PYPI_TOKEN
+                poetry publish -r testpypi
+            - name: Deactivate virtual env
+              run: deactivate
