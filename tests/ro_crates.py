@@ -488,3 +488,11 @@ class InvalidWTROC:
     @property
     def testinstance_no_service(self) -> Path:
         return self.base_path / "testinstance_no_service"
+
+    @property
+    def testinstance_no_url(self) -> Path:
+        return self.base_path / "testinstance_no_url"
+
+    @property
+    def testinstance_no_resource(self) -> Path:
+        return self.base_path / "testinstance_no_resource"

@@ -35,3 +35,33 @@ def test_wtroc_testinstance_no_service():
         ["The TestInstance MUST refer to a TestService via runsOn"],
         profile_identifier="workflow-testing-ro-crate"
     )
+
+
+def test_wtroc_testinstance_no_url():
+    """\
+    Test a Workflow Testing RO-Crate where a TestInstance does not refer to
+    the test service base URL.
+    """
+    do_entity_test(
+        InvalidWTROC().testinstance_no_url,
+        Severity.REQUIRED,
+        False,
+        ["Workflow Testing RO-Crate TestInstance MUST"],
+        ["The TestInstance MUST refer to the test service base URL via url"],
+        profile_identifier="workflow-testing-ro-crate"
+    )
+
+
+def test_wtroc_testinstance_no_resource():
+    """\
+    Test a Workflow Testing RO-Crate where a TestInstance does not refer to
+    the relative URL of the test project via resource.
+    """
+    do_entity_test(
+        InvalidWTROC().testinstance_no_resource,
+        Severity.REQUIRED,
+        False,
+        ["Workflow Testing RO-Crate TestInstance MUST"],
+        ["The TestInstance MUST refer to the relative URL of the test project via resource"],
+        profile_identifier="workflow-testing-ro-crate"
+    )

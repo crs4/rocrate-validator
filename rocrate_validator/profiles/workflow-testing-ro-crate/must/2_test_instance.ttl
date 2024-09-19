@@ -51,9 +51,9 @@ workflow-testing-ro-crate:WTROCTestInstanceRequired a sh:NodeShape ;
     ] ; sh:property [
         a sh:PropertyShape ;
         sh:name "TestInstance resource" ;
-        sh:description "The TestInstance MUST refer to the relative URL of the test project base URL via resource" ;
+        sh:description "The TestInstance MUST refer to the relative URL of the test project via resource" ;
         sh:path wftest:resource ;
         sh:datatype xsd:string ;
         sh:minCount 1 ;
-        sh:message "The TestInstance MUST refer to the relative URL of the test project base URL via resource" ;
+        sh:message "The TestInstance MUST refer to the relative URL of the test project via resource" ;
     ] .
