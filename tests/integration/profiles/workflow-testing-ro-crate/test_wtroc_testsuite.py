@@ -65,3 +65,48 @@ def test_wtroc_testsuite_no_mainentity():
         ["The TestSuite SHOULD refer to the tested workflow via mainEntity"],
         profile_identifier="workflow-testing-ro-crate"
     )
+
+
+def test_wtroc_testsuite_bad_instance():
+    """\
+    Test a Workflow Testing RO-Crate where a TestSuite has an instance
+    property that does not refer to a TestInstance.
+    """
+    do_entity_test(
+        InvalidWTROC().testsuite_bad_instance,
+        Severity.REQUIRED,
+        False,
+        ["TestSuite instance or definition"],
+        ["The TestSuite MUST refer to a TestInstance or TestDefinition"],
+        profile_identifier="workflow-testing-ro-crate"
+    )
+
+
+def test_wtroc_testsuite_bad_definition():
+    """\
+    Test a Workflow Testing RO-Crate where a TestSuite has a definition
+    property that does not refer to a TestDefinition.
+    """
+    do_entity_test(
+        InvalidWTROC().testsuite_bad_definition,
+        Severity.REQUIRED,
+        False,
+        ["TestSuite instance or definition"],
+        ["The TestSuite MUST refer to a TestInstance or TestDefinition"],
+        profile_identifier="workflow-testing-ro-crate"
+    )
+
+
+def test_wtroc_testsuite_bad_mainentity():
+    """\
+    Test a Workflow Testing RO-Crate where a TestSuite has a mainEntity
+    property that does not refer to a workflow.
+    """
+    do_entity_test(
+        InvalidWTROC().testsuite_bad_mainentity,
+        Severity.RECOMMENDED,
+        False,
+        ["Workflow Testing RO-Crate TestSuite SHOULD"],
+        ["The TestSuite SHOULD refer to the tested workflow via mainEntity"],
+        profile_identifier="workflow-testing-ro-crate"
+    )

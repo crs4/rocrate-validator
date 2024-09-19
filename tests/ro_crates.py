@@ -508,3 +508,35 @@ class InvalidWTROC:
     @property
     def testdefinition_no_engineversion(self) -> Path:
         return self.base_path / "testdefinition_no_engineversion"
+
+    @property
+    def testsuite_bad_instance(self) -> Path:
+        return self.base_path / "testsuite_bad_instance"
+
+    @property
+    def testsuite_bad_definition(self) -> Path:
+        return self.base_path / "testsuite_bad_definition"
+
+    @property
+    def testsuite_bad_mainentity(self) -> Path:
+        return self.base_path / "testsuite_bad_mainentity"
+
+    @property
+    def testinstance_bad_runson(self) -> Path:
+        return self.base_path / "testinstance_bad_runson"
+
+    @property
+    def testinstance_bad_url(self) -> Path:
+        return self.base_path / "testinstance_bad_url"
+
+    @property
+    def testinstance_bad_resource(self) -> Path:
+        return self.base_path / "testinstance_bad_resource"
+
+    @property
+    def testdefinition_bad_conformsto(self) -> Path:
+        return self.base_path / "testdefinition_bad_conformsto"
+
+    @property
+    def testdefinition_bad_engineversion(self) -> Path:
+        return self.base_path / "testdefinition_bad_engineversion"

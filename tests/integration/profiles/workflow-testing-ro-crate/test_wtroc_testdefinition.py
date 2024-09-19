@@ -65,3 +65,33 @@ def test_wtroc_testdefinition_no_engineversion():
         ["The TestDefinition MUST refer to the test engine version via engineVersion"],
         profile_identifier="workflow-testing-ro-crate"
     )
+
+
+def test_wtroc_testdefinition_bad_conformsto():
+    """\
+    Test a Workflow Testing RO-Crate where a TestDefinition does not refer
+    to the test engine SoftwareApplication via conformsTo.
+    """
+    do_entity_test(
+        InvalidWTROC().testdefinition_bad_conformsto,
+        Severity.REQUIRED,
+        False,
+        ["Workflow Testing RO-Crate TestDefinition MUST"],
+        ["The TestDefinition MUST refer to the test engine it is written for via conformsTo"],
+        profile_identifier="workflow-testing-ro-crate"
+    )
+
+
+def test_wtroc_testdefinition_bad_engineversion():
+    """\
+    Test a Workflow Testing RO-Crate where a TestDefinition does not refer
+    to the test engine's version as a string.
+    """
+    do_entity_test(
+        InvalidWTROC().testdefinition_bad_engineversion,
+        Severity.REQUIRED,
+        False,
+        ["Workflow Testing RO-Crate TestDefinition MUST"],
+        ["The TestDefinition MUST refer to the test engine version via engineVersion"],
+        profile_identifier="workflow-testing-ro-crate"
+    )
