@@ -92,14 +92,6 @@
             "programmingLanguage": {
                 "@id": "https://w3id.org/workflowhub/workflow-ro-crate#galaxy"
             },
-            "input": [
-                {
-                    "@id": "#simple_input"
-                },
-                {
-                    "@id": "#verbose-param"
-                }
-            ],
             "output": [
                 {
                     "@id": "#reversed"
@@ -108,40 +100,6 @@
                     "@id": "#last_lines"
                 }
             ]
-        },
-        {
-            "@id": "#simple_input",
-            "@type": "FormalParameter",
-            "additionalType": "File",
-            "conformsTo": {
-                "@id": "https://bioschemas.org/profiles/FormalParameter/1.0-RELEASE"
-            },
-            "description": "A simple set of lines in a text file",
-            "encodingFormat": [
-                "text/plain",
-                {
-                    "@id": "http://edamontology.org/format_2330"
-                }
-            ],
-            "workExample": {
-                "@id": "inputs/abcdef.txt"
-            },
-            "name": "simple_input",
-            "valueRequired": "True"
-        },
-        {
-            "@id": "#verbose-param",
-            "@type": "FormalParameter",
-            "additionalType": "Boolean",
-            "conformsTo": {
-                "@id": "https://bioschemas.org/profiles/FormalParameter/1.0-RELEASE"
-            },
-            "description": "Increase logging output",
-            "workExample": {
-                "@id": "#verbose-pv"
-            },
-            "name": "verbose",
-            "valueRequired": "False"
         },
         {
             "@id": "#reversed",

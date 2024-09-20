@@ -99,14 +99,6 @@
                 {
                     "@id": "#verbose-param"
                 }
-            ],
-            "output": [
-                {
-                    "@id": "#reversed"
-                },
-                {
-                    "@id": "#last_lines"
-                }
             ]
         },
         {
@@ -142,44 +134,6 @@
             },
             "name": "verbose",
             "valueRequired": "False"
-        },
-        {
-            "@id": "#reversed",
-            "@type": "FormalParameter",
-            "additionalType": "File",
-            "conformsTo": {
-                "@id": "https://bioschemas.org/profiles/FormalParameter/1.0-RELEASE"
-            },
-            "description": "All the lines, reversed",
-            "encodingFormat": [
-                "text/plain",
-                {
-                    "@id": "http://edamontology.org/format_2330"
-                }
-            ],
-            "name": "reversed",
-            "workExample": {
-                "@id": "outputs/tac_on_data_360_1.txt"
-            }
-        },
-        {
-            "@id": "#last_lines",
-            "@type": "FormalParameter",
-            "additionalType": "File",
-            "conformsTo": {
-                "@id": "https://bioschemas.org/profiles/FormalParameter/1.0-RELEASE"
-            },
-            "description": "The last lines of workflow input are the first lines of the reversed input",
-            "encodingFormat": [
-                "text/plain",
-                {
-                    "@id": "http://edamontology.org/format_2330"
-                }
-            ],
-            "name": "last_lines",
-            "workExample": {
-                "@id": "outputs/Select_first_on_data_1_2.txt"
-            }
         },
         {
             "@id": "https://orcid.org/0000-0001-9842-9718",

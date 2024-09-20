@@ -561,3 +561,11 @@ class InvalidWfRC:
     @property
     def conformsto_no_procrc(self) -> Path:
         return self.base_path / "conformsto_no_procrc"
+
+    @property
+    def workflow_no_input(self) -> Path:
+        return self.base_path / "workflow_no_input"
+
+    @property
+    def workflow_no_output(self) -> Path:
+        return self.base_path / "workflow_no_output"
