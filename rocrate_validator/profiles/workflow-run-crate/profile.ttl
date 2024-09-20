@@ -24,7 +24,7 @@
     rdfs:label "Workflow Run Crate 0.5" ;
 
     # regular metadata, a basic description of the Profile
-    rdfs:comment """RO-Crate Metadata Specification."""@en ;
+    rdfs:comment """Workflow Run Crate Metadata Specification 0.5"""@en ;
 
     # URI of the publisher of the Metadata Specification
     dct:publisher <https://w3id.org/ro/wfrun> ;
@@ -33,7 +33,7 @@
     prof:isProfileOf <https://w3id.org/ro/wfrun/process/0.5> ,
                      <https://w3id.org/workflowhub/workflow-ro-crate/1.0> ;
 
-    # Explicitly state that this profile is a transitive profile of the RO-Crate Metadata Specification 1.1 profile
+    # This profile is a transitive profile of Process Run Crate, Workflow RO-Crate and the RO-Crate Metadata Specification
     prof:isTransitiveProfileOf <https://w3id.org/ro/crate/1.1> ,
                                <https://w3id.org/ro/wfrun/process/0.5> ,
                                <https://w3id.org/workflowhub/workflow-ro-crate/1.0>;
