@@ -66,6 +66,10 @@ class ValidROC:
     def process_run_crate_containerimage(self) -> Path:
         return VALID_CRATES_DATA_PATH / "process-run-crate-containerimage"
 
+    @property
+    def workflow_testing_ro_crate(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "workflow-testing-ro-crate"
+
 
 class InvalidFileDescriptor:
 
@@ -463,3 +467,76 @@ class InvalidProcRC:
     @property
     def softwareapplication_bad_softwarerequirements(self) -> Path:
         return self.base_path / "softwareapplication_bad_softwarerequirements"
+
+
+class InvalidWTROC:
+
+    base_path = INVALID_CRATES_DATA_PATH / "5_workflow_testing_ro_crate/"
+
+    @property
+    def testsuite_not_mentioned(self) -> Path:
+        return self.base_path / "testsuite_not_mentioned"
+
+    @property
+    def testsuite_no_instance_no_def(self) -> Path:
+        return self.base_path / "testsuite_no_instance_no_def"
+
+    @property
+    def testsuite_no_mainentity(self) -> Path:
+        return self.base_path / "testsuite_no_mainentity"
+
+    @property
+    def testinstance_no_service(self) -> Path:
+        return self.base_path / "testinstance_no_service"
+
+    @property
+    def testinstance_no_url(self) -> Path:
+        return self.base_path / "testinstance_no_url"
+
+    @property
+    def testinstance_no_resource(self) -> Path:
+        return self.base_path / "testinstance_no_resource"
+
+    @property
+    def testdefinition_bad_type(self) -> Path:
+        return self.base_path / "testdefinition_bad_type"
+
+    @property
+    def testdefinition_no_engine(self) -> Path:
+        return self.base_path / "testdefinition_no_engine"
+
+    @property
+    def testdefinition_no_engineversion(self) -> Path:
+        return self.base_path / "testdefinition_no_engineversion"
+
+    @property
+    def testsuite_bad_instance(self) -> Path:
+        return self.base_path / "testsuite_bad_instance"
+
+    @property
+    def testsuite_bad_definition(self) -> Path:
+        return self.base_path / "testsuite_bad_definition"
+
+    @property
+    def testsuite_bad_mainentity(self) -> Path:
+        return self.base_path / "testsuite_bad_mainentity"
+
+    @property
+    def testinstance_bad_runson(self) -> Path:
+        return self.base_path / "testinstance_bad_runson"
+
+    @property
+    def testinstance_bad_url(self) -> Path:
+        return self.base_path / "testinstance_bad_url"
+
+    @property
+    def testinstance_bad_resource(self) -> Path:
+        return self.base_path / "testinstance_bad_resource"
+
+    @property
+    def testdefinition_bad_conformsto(self) -> Path:
+        return self.base_path / "testdefinition_bad_conformsto"
+
+    @property
+    def testdefinition_bad_engineversion(self) -> Path:
+        return self.base_path / "testdefinition_bad_engineversion"

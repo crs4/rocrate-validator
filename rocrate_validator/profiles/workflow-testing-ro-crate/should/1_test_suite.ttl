@@ -1,0 +1,38 @@
+# Copyright (c) 2024 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+@prefix ro: <./> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+@prefix workflow-testing-ro-crate: <https://github.com/crs4/rocrate-validator/profiles/workflow-testing-ro-crate/> .
+@prefix schema: <http://schema.org/> .
+@prefix bioschemas: <https://bioschemas.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix wroc: <https://w3id.org/workflowhub/workflow-ro-crate#> .
+@prefix wftest: <https://w3id.org/ro/terms/test#> .
+
+workflow-testing-ro-crate:WTROCTestSuiteRecommended a sh:NodeShape ;
+    sh:name "Workflow Testing RO-Crate TestSuite SHOULD" ;
+    sh:description "Recommended properties of the Workflow Testing RO-Crate TestSuite" ;
+    sh:targetClass wftest:TestSuite ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "TestSuite mainEntity" ;
+        sh:description "The TestSuite SHOULD refer to the tested workflow via mainEntity" ;
+        sh:path schema:mainEntity ;
+        sh:class schema:MediaObject ,
+                 schema:SoftwareSourceCode ,
+                 bioschemas:ComputationalWorkflow ;
+        sh:minCount 1 ;
+        sh:message "The TestSuite SHOULD refer to the tested workflow via mainEntity" ;
+    ] .

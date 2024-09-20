@@ -1,0 +1,59 @@
+# Copyright (c) 2024 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+@prefix ro: <./> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix workflow-testing-ro-crate: <https://github.com/crs4/rocrate-validator/profiles/workflow-testing-ro-crate/> .
+@prefix schema: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix wroc: <https://w3id.org/workflowhub/workflow-ro-crate#> .
+@prefix wftest: <https://w3id.org/ro/terms/test#> .
+
+workflow-testing-ro-crate:WTROCTestInstanceRequired a sh:NodeShape ;
+    sh:name "Workflow Testing RO-Crate TestInstance MUST" ;
+    sh:description "Required properties of the Workflow Testing RO-Crate TestInstance" ;
+    sh:targetClass wftest:TestInstance ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "TestInstance runsOn" ;
+        sh:description "The TestInstance MUST refer to a TestService via runsOn" ;
+        sh:path wftest:runsOn ;
+        sh:class wftest:TestService ;
+        sh:or (
+            [ sh:hasValue wftest:GithubService ; ]
+            [ sh:hasValue wftest:TravisService ; ]
+            [ sh:hasValue wftest:JenkinsService ; ]
+        ) ;
+        sh:minCount 1 ;
+        sh:message "The TestInstance MUST refer to a TestService via runsOn" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "TestInstance url" ;
+        sh:description "The TestInstance MUST refer to the test service base URL via url" ;
+        sh:path schema:url ;
+        sh:datatype xsd:string ;
+        sh:pattern "^http.*" ;
+        sh:minCount 1 ;
+        sh:message "The TestInstance MUST refer to the test service base URL via url" ;
+    ] ; sh:property [
+        a sh:PropertyShape ;
+        sh:name "TestInstance resource" ;
+        sh:description "The TestInstance MUST refer to the relative URL of the test project via resource" ;
+        sh:path wftest:resource ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:message "The TestInstance MUST refer to the relative URL of the test project via resource" ;
+    ] .
