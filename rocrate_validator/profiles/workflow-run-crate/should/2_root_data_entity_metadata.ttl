@@ -29,10 +29,10 @@ workflow-run-crate:WfRCRootDataEntityMetadataRecommended a sh:NodeShape ;
         sh:description "The Root Data Entity SHOULD reference CreativeWork entities corresponding to the Process Run Crate and Workflow RO-Crate profiles" ;
         sh:path dct:conformsTo ;
         sh:class schema:CreativeWork;
-        # At least one value of conformsTo must match the pattern
         sh:qualifiedValueShape [
             sh:pattern "^https://w3id.org/(ro/wfrun/process|workflowhub/workflow-ro-crate)/.*" ;
         ] ;
+        # At least two values of conformsTo must match the pattern
         sh:qualifiedMinCount 2 ;
         sh:minCount 1 ;
         sh:message "The Root Data Entity SHOULD reference CreativeWork entities corresponding to the Process Run Crate and Workflow RO-Crate profiles" ;

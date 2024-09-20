@@ -22,7 +22,7 @@ from tests.shared import do_entity_test
 logger = logging.getLogger(__name__)
 
 
-def test_procrc_conformsto_no_wfrc():
+def test_wfrc_conformsto_no_wfrc():
     """\
     Test a Workflow Run Crate where the root data entity does not conformsTo
     the Workflow Run Crate profile.
@@ -38,13 +38,29 @@ def test_procrc_conformsto_no_wfrc():
     )
 
 
-def test_procrc_conformsto_no_wroc():
+def test_wfrc_conformsto_no_wroc():
     """\
     Test a Workflow Run Crate where the root data entity does not conformsTo
     the Workflow RO-Crate profile.
     """
     do_entity_test(
         InvalidWfRC().conformsto_no_wroc,
+        Severity.RECOMMENDED,
+        False,
+        ["Root Data Entity Metadata SHOULD"],
+        ["The Root Data Entity SHOULD reference CreativeWork entities "
+         "corresponding to the Process Run Crate and Workflow RO-Crate profiles"],
+        profile_identifier="workflow-run-crate"
+    )
+
+
+def test_wfrc_conformsto_no_procrc():
+    """\
+    Test a Workflow Run Crate where the root data entity does not conformsTo
+    the Process Run Crate profile.
+    """
+    do_entity_test(
+        InvalidWfRC().conformsto_no_procrc,
         Severity.RECOMMENDED,
         False,
         ["Root Data Entity Metadata SHOULD"],

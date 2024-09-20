@@ -557,3 +557,7 @@ class InvalidWfRC:
     @property
     def conformsto_no_wroc(self) -> Path:
         return self.base_path / "conformsto_no_wroc"
+
+    @property
+    def conformsto_no_procrc(self) -> Path:
+        return self.base_path / "conformsto_no_procrc"
