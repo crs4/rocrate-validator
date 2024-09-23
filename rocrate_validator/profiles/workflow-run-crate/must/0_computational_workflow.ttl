@@ -21,21 +21,10 @@
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix workflow-run-crate: <https://github.com/crs4/rocrate-validator/profiles/workflow-run-crate/> .
 
-workflow-run-crate:WfRCWorkflowWithInputOrOutput a sh:NodeShape ;
-    sh:name "Workflow Run Crate ComputationalWorkflow with input or output" ;
-    sh:description "Required properties of a Workflow Run Crate ComputationalWorkflow that has either the input or the output property" ;
-    sh:target [
-        a sh:SPARQLTarget ;
-        sh:prefixes ro-crate:sparqlPrefixes ;
-        sh:select """
-            SELECT ?this
-            WHERE {
-                ?this a bioschemas:ComputationalWorkflow .
-                { ?this bioschemas-cw:input ?formalparameter } UNION
-                { ?this bioschemas-cw:output ?formalparameter } .
-            }
-        """
-    ] ;
+workflow-run-crate:WfRCComputationalWorkflowRequired a sh:NodeShape ;
+    sh:name "Workflow Run Crate ComputationalWorkflow MUST" ;
+    sh:description "Required properties of the Workflow Run Crate ComputationalWorkflow" ;
+    sh:targetClass bioschemas:ComputationalWorkflow ;
     sh:property [
         a sh:PropertyShape ;
         sh:name "ComputationalWorkflow input and output" ;

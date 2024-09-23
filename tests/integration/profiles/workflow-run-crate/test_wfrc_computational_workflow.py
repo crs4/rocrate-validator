@@ -59,7 +59,7 @@ def test_wfrc_workflow_input_no_formalparam():
         InvalidWfRC().workflow_input_no_formalparam,
         Severity.REQUIRED,
         False,
-        ["Workflow Run Crate ComputationalWorkflow with input or output"],
+        ["Workflow Run Crate ComputationalWorkflow MUST"],
         ["ComputationalWorkflow input and output MUST point to FormalParameter entities"],
         profile_identifier="workflow-run-crate"
     )
@@ -74,7 +74,7 @@ def test_wfrc_workflow_output_no_formalparam():
         InvalidWfRC().workflow_output_no_formalparam,
         Severity.REQUIRED,
         False,
-        ["Workflow Run Crate ComputationalWorkflow with input or output"],
+        ["Workflow Run Crate ComputationalWorkflow MUST"],
         ["ComputationalWorkflow input and output MUST point to FormalParameter entities"],
         profile_identifier="workflow-run-crate"
     )
