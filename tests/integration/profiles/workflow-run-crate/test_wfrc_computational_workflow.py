@@ -48,3 +48,33 @@ def test_wfrc_workflow_no_output():
         ["A ComputationalWorkflow MAY have an output"],
         profile_identifier="workflow-run-crate"
     )
+
+
+def test_wfrc_workflow_input_no_formalparam():
+    """\
+    Test a Workflow Run Crate where a ComputationalWorkflow input does not
+    point to FormalParameter instances.
+    """
+    do_entity_test(
+        InvalidWfRC().workflow_input_no_formalparam,
+        Severity.REQUIRED,
+        False,
+        ["Workflow Run Crate ComputationalWorkflow with input or output"],
+        ["ComputationalWorkflow input and output MUST point to FormalParameter entities"],
+        profile_identifier="workflow-run-crate"
+    )
+
+
+def test_wfrc_workflow_output_no_formalparam():
+    """\
+    Test a Workflow Run Crate where a ComputationalWorkflow output does not
+    point to FormalParameter instances.
+    """
+    do_entity_test(
+        InvalidWfRC().workflow_output_no_formalparam,
+        Severity.REQUIRED,
+        False,
+        ["Workflow Run Crate ComputationalWorkflow with input or output"],
+        ["ComputationalWorkflow input and output MUST point to FormalParameter entities"],
+        profile_identifier="workflow-run-crate"
+    )

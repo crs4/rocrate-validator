@@ -569,3 +569,11 @@ class InvalidWfRC:
     @property
     def workflow_no_output(self) -> Path:
         return self.base_path / "workflow_no_output"
+
+    @property
+    def workflow_input_no_formalparam(self) -> Path:
+        return self.base_path / "workflow_input_no_formalparam"
+
+    @property
+    def workflow_output_no_formalparam(self) -> Path:
+        return self.base_path / "workflow_output_no_formalparam"

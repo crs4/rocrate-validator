@@ -21,23 +21,28 @@
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix workflow-run-crate: <https://github.com/crs4/rocrate-validator/profiles/workflow-run-crate/> .
 
-workflow-run-crate:WfRCComputationalWorkflowOptional a sh:NodeShape ;
-    sh:name "Workflow Run Crate ComputationalWorkflow MAY" ;
-    sh:description "Optional properties of the Workflow Run Crate ComputationalWorkflow" ;
-    sh:targetClass bioschemas:ComputationalWorkflow ;
-    sh:property [
-        a sh:PropertyShape ;
-        sh:name "ComputationalWorkflow input" ;
-        sh:description "A ComputationalWorkflow MAY have an input" ;
-        sh:path bioschemas-cw:input ;
-        sh:minCount 1 ;
-        sh:message "A ComputationalWorkflow MAY have an input" ;
+workflow-run-crate:WfRCWorkflowWithInputOrOutput a sh:NodeShape ;
+    sh:name "Workflow Run Crate ComputationalWorkflow with input or output" ;
+    sh:description "Required properties of a Workflow Run Crate ComputationalWorkflow that has either the input or the output property" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?this a bioschemas:ComputationalWorkflow .
+                { ?this bioschemas-cw:input ?formalparameter } UNION
+                { ?this bioschemas-cw:output ?formalparameter } .
+            }
+        """
     ] ;
     sh:property [
         a sh:PropertyShape ;
-        sh:name "ComputationalWorkflow output" ;
-        sh:description "A ComputationalWorkflow MAY have an output" ;
-        sh:path bioschemas-cw:output ;
-        sh:minCount 1 ;
-        sh:message "A ComputationalWorkflow MAY have an output" ;
+        sh:name "ComputationalWorkflow input and output" ;
+        sh:description "ComputationalWorkflow input and output MUST point to FormalParameter entities" ;
+        sh:path [
+            sh:alternativePath (bioschemas-cw:input bioschemas-cw:output) ;
+        ] ;
+        sh:class bioschemas:FormalParameter ;
+        sh:message "ComputationalWorkflow input and output MUST point to FormalParameter entities" ;
     ] .
