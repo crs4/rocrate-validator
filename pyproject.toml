@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "rocrate-validator"
 version = "0.1.2"
-description = ""
+description = "A Python package to validate RO-Crates"
 authors = [
     "Marco Enrico Piras <kikkomep@crs4.it>",
     "Luca Pireddu <luca.pireddu@crs4.it>",
