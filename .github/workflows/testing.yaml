@@ -1,4 +1,4 @@
-name: CI Testing Pipeline
+name: 🧪 CI Pipeline 1 -- Testing
 
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the master branch
@@ -20,50 +20,48 @@ on:
 
 env:
     TERM: xterm
-    # enable Docker push only if the required secrets are defined
-    # ENABLE_DOCKER_PUSH: ${{ secrets.DOCKERHUB_USER != null && secrets.DOCKERHUB_TOKEN != null }}
-    # Base Image
-    # IMAGE: python:3.12-slim
-    # Define the virtual environment path
     VENV_PATH: .venv
+    PYTHON_VERSION: "3.11"
 
 jobs:
     # Verifies pep8, pyflakes and circular complexity
     flake8:
-        name: Lint Python Code (Flake8) (python ${{ matrix.python-version }})
+        name: 🚨 Lint Python Code
         runs-on: ubuntu-latest
-        strategy:
-            matrix:
-                python-version: ["3.11"]
         steps:
             # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-            - uses: actions/checkout@v4
-            - name: Set up Python v${{ matrix.python-version }}
+            - name: ⬇️ Checkout code
+              uses: actions/checkout@v4
+            - name: 🐍 Set up Python v${{ env.PYTHON_VERSION }}
               uses: actions/setup-python@v5
               with:
-                  python-version: ${{ matrix.python-version }}
-            - name: Install flake8
+                  python-version: ${{ env.PYTHON_VERSION }}
+            - name: 🔽 Install flake8
               run: pip install flake8
-            - name: Run checks
+            - name: ✅ Run checks
               run: flake8 -v rocrate_validator tests
 
     # Runs the tests
     test:
-        name: "Run tests"
+        name: ✅ Run tests
         runs-on: ubuntu-latest
         needs: [flake8]
         steps:
-            - name: Checkout
+            - name: ⬇️ Checkout
               uses: actions/checkout@v4
-            - name: Upgrade pip
+            - name: 🐍 Set up Python v${{ env.PYTHON_VERSION }}
+              uses: actions/setup-python@v5
+              with:
+                  python-version: ${{ env.PYTHON_VERSION }}
+            - name: 🔄 Upgrade pip
               run: pip install --upgrade pip
-            - name: Initialise a virtual env
+            - name: 🐍 Initialise a virtual env
               run: python -m venv ${VENV_PATH}
-            - name: Enable virtual env
+            - name: 🐍 Enable virtual env
               run: source ${VENV_PATH}/bin/activate
-            - name: Install Poetry
+            - name: 🔽 Install Poetry
               run: pip install poetry
-            - name: Install dependencies
+            - name: 🔽 Install dependencies
               run: poetry install --no-interaction --no-ansi
-            - name: Run tests
+            - name: ✅ Run tests
               run: poetry run pytest
