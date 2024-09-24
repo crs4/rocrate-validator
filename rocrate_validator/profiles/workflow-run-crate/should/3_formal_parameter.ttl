@@ -31,7 +31,9 @@ workflow-run-crate:WfRCFormalParameterRecommended a sh:NodeShape ;
         sh:description "FormalParameter SHOULD be referenced from a data entity or PropertyValue via exampleOfWork" ;
         sh:path [ sh:inversePath schema:exampleOfWork ] ;
         sh:or (
-            [ sh:class ro-crate:DataEntity ; ]
+            [ sh:class schema:MediaObject ; ]
+            [ sh:class schema:Dataset ; ]
+            [ sh:class schema:Collection ; ]
             [ sh:class schema:PropertyValue ; ]
         ) ;
         sh:minCount 1 ;

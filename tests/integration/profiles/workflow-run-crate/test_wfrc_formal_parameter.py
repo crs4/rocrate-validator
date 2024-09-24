@@ -37,18 +37,16 @@ def test_formalparam_no_inv_exampleofwork():
     )
 
 
-# # This currently does not pass
-#
-# def test_formalparam_bad_inv_exampleofwork():
-#     """\
-#     Test a Workflow Run Crate where a FormalParameter is referenced via
-#     exampleOfWork by an entity that is not a data entity or PropertyValue.
-#     """
-#     do_entity_test(
-#         InvalidWfRC().formalparam_bad_inv_exampleofwork,
-#         Severity.RECOMMENDED,
-#         False,
-#         ["Workflow Run Crate FormalParameter SHOULD"],
-#         ["FormalParameter SHOULD be referenced from a data entity or PropertyValue via exampleOfWork"],
-#         profile_identifier="workflow-run-crate"
-#     )
+def test_formalparam_bad_inv_exampleofwork():
+    """\
+    Test a Workflow Run Crate where a FormalParameter is referenced via
+    exampleOfWork by an entity that is not a data entity or PropertyValue.
+    """
+    do_entity_test(
+        InvalidWfRC().formalparam_bad_inv_exampleofwork,
+        Severity.RECOMMENDED,
+        False,
+        ["Workflow Run Crate FormalParameter SHOULD"],
+        ["FormalParameter SHOULD be referenced from a data entity or PropertyValue via exampleOfWork"],
+        profile_identifier="workflow-run-crate"
+    )
