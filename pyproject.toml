@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "rocrate-validator"
+name = "roc-validator"
 version = "0.2.0"
 description = "A Python package to validate RO-Crates"
 authors = [
