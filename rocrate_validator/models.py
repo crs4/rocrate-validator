@@ -143,7 +143,10 @@ class LevelCollection:
 
     @staticmethod
     def get(name: str) -> RequirementLevel:
-        return getattr(LevelCollection, name.upper())
+        try:
+            return getattr(LevelCollection, name.upper())
+        except AttributeError:
+            raise ValueError(f"Invalid RequirementLevel: {name}")
 
 
 @total_ordering
@@ -296,8 +299,9 @@ class Profile:
             self, severity: Severity = Severity.REQUIRED,
             exact_match: bool = False) -> list[Requirement]:
         return [requirement for requirement in self.requirements
-                if (not exact_match and requirement.severity >= severity) or
-                (exact_match and requirement.severity == severity)]
+                if (not exact_match and
+                    (not requirement.severity_from_path or requirement.severity_from_path >= severity)) or
+                (exact_match and requirement.severity_from_path == severity)]
 
     def get_requirement(self, name: str) -> Optional[Requirement]:
         for requirement in self.requirements:
@@ -523,17 +527,16 @@ class SkipRequirementCheck(Exception):
 class Requirement(ABC):
 
     def __init__(self,
-                 level: RequirementLevel,
                  profile: Profile,
                  name: str = "",
                  description: Optional[str] = None,
                  path: Optional[Path] = None,
                  initialize_checks: bool = True):
         self._order_number: Optional[int] = None
-        self._level = level
         self._profile = profile
         self._description = description
         self._path = path  # path of code implementing the requirement
+        self._level_from_path = None
         self._checks: list[RequirementCheck] = []
 
         if not name and path:
@@ -562,19 +565,24 @@ class Requirement(ABC):
 
     @property
     def relative_identifier(self) -> str:
-        return f"{self.level.name} {self.order_number}"
+        return f"{self.order_number}"
 
     @property
     def name(self) -> str:
         return self._name
 
     @property
-    def level(self) -> RequirementLevel:
-        return self._level
+    def severity_from_path(self) -> Severity:
+        return self.requirement_level_from_path.severity if self.requirement_level_from_path else None
 
     @property
-    def severity(self) -> Severity:
-        return self.level.severity
+    def requirement_level_from_path(self) -> RequirementLevel:
+        if not self._level_from_path:
+            try:
+                self._level_from_path = LevelCollection.get(self._path.parent.name)
+            except ValueError:
+                logger.debug("The requirement level could not be determined from the path: %s", self._path)
+        return self._level_from_path
 
     @property
     def profile(self) -> Profile:
@@ -621,8 +629,7 @@ class Requirement(ABC):
         Internal method to perform the validation
         Returns whether all checks in this requirement passed.
         """
-        logger.debug("Validating Requirement %s (level=%s) with %s checks",
-                     self.name, self.level, len(self._checks))
+        logger.debug("Validating Requirement %s with %s checks", self.name, len(self._checks))
 
         logger.debug("Running %s checks for Requirement '%s'", len(self._checks), self.name)
         all_passed = True
@@ -665,26 +672,25 @@ class Requirement(ABC):
         if not isinstance(other, Requirement):
             raise TypeError(f"Cannot compare {type(self)} with {type(other)}")
         return self.name == other.name \
-            and self.severity == other.severity and self.description == other.description \
+            and self.description == other.description \
             and self.path == other.path
 
     def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
 
     def __hash__(self):
-        return hash((self.name, self.severity, self.description, self.path))
+        return hash((self.name, self.description, self.path))
 
     def __lt__(self, other: object) -> bool:
         if not isinstance(other, Requirement):
             raise ValueError(f"Cannot compare Requirement with {type(other)}")
-        return (self.level, self._order_number, self.name) < (other.level, other._order_number, other.name)
+        return (self._order_number, self.name) < (other._order_number, other.name)
 
     def __repr__(self):
         return (
             f'ProfileRequirement('
             f'_order_number={self._order_number}, '
             f'name={self.name}, '
-            f'level={self.level}, '
             f'description={self.description}'
             f', path={self.path}, ' if self.path else ''
             ')'
@@ -744,14 +750,16 @@ class RequirementLoader:
         files = sorted((p for p in profile.path.rglob('*.*') if ok_file(p)),
                        key=lambda x: (not x.suffix == '.py', x))
 
+        # set the requirement level corresponding to the severity
+        requirement_level = LevelCollection.get(severity.name)
+
         requirements = []
         for requirement_path in files:
-            requirement_level = None
             try:
-                requirement_level = LevelCollection.get(requirement_path.parent.name)
-                if requirement_level.severity < severity:
+                requirement_level_from_path = LevelCollection.get(requirement_path.parent.name)
+                if requirement_level_from_path < requirement_level:
                     continue
-            except AttributeError:
+            except ValueError:
                 logger.debug("The requirement level could not be determined from the path: %s", requirement_path)
             requirement_loader = RequirementLoader.__get_requirement_loader__(profile, requirement_path)
             for requirement in requirement_loader.load(
@@ -759,7 +767,10 @@ class RequirementLoader:
                     requirement_path, publicID=profile.publicID):
                 requirements.append(requirement)
         # sort the requirements by severity
-        requirements = sorted(requirements, key=lambda x: x.level.severity, reverse=True)
+        requirements = sorted(requirements,
+                              key=lambda x: (-x.severity_from_path.value, x.path.name, x.name)
+                              if x.severity_from_path is not None else (0, x.path.name, x.name),
+                              reverse=False)
         # assign order numbers to requirements
         for i, requirement in enumerate(requirements):
             requirement._order_number = i + 1
@@ -775,10 +786,12 @@ class RequirementCheck(ABC):
     def __init__(self,
                  requirement: Requirement,
                  name: str,
+                 level: Optional[RequirementLevel] = LevelCollection.REQUIRED,
                  description: Optional[str] = None):
         self._requirement: Requirement = requirement
         self._order_number = 0
         self._name = name
+        self._level = level
         self._description = description
         self._overridden_by: RequirementCheck = None
         self._override: RequirementCheck = None
@@ -799,7 +812,7 @@ class RequirementCheck(ABC):
 
     @property
     def relative_identifier(self) -> str:
-        return f"{self.requirement.relative_identifier}.{self.order_number}"
+        return f"{self.level.name} {self.requirement.relative_identifier}.{self.order_number}"
 
     @property
     def name(self) -> str:
@@ -819,11 +832,13 @@ class RequirementCheck(ABC):
 
     @property
     def level(self) -> RequirementLevel:
-        return self.requirement.level
+        return self._level or \
+            self.requirement.requirement_level_from_path or \
+            LevelCollection.REQUIRED
 
     @property
     def severity(self) -> Severity:
-        return self.requirement.level.severity
+        return self.level.severity
 
     @property
     def overridden_by(self) -> RequirementCheck:
@@ -1098,7 +1113,7 @@ class ValidationResult:
                         resultPath: Optional[str] = None,
                         focusNode: Optional[str] = None,
                         value: Optional[str] = None) -> CheckIssue:
-        sev_value = severity if severity is not None else check.requirement.severity
+        sev_value = severity if severity is not None else check.severity
         c = CheckIssue(sev_value, check, message, resultPath=resultPath, focusNode=focusNode, value=value)
         # self._issues.append(c)
         bisect.insort(self._issues, c)
@@ -1202,8 +1217,8 @@ class ValidationSettings:
     # Requirement severity settings
     requirement_severity: Union[str, Severity] = Severity.REQUIRED
     requirement_severity_only: bool = False
-    allow_infos: Optional[bool] = False
-    allow_warnings: Optional[bool] = False
+    allow_infos: Optional[bool] = True
+    allow_warnings: Optional[bool] = True
     # Output serialization settings
     serialization_output_path: Optional[Path] = None
     serialization_output_format: RDF_SERIALIZATION_FORMATS_TYPES = "turtle"
@@ -1323,8 +1338,16 @@ class Validator(Publisher):
         try:
             # initialize the validation context
             context = ValidationContext(self, self.validation_settings.to_dict())
-            candidate_profiles_uris = set(context.ro_crate.metadata.get_conforms_to(
-            ) + context.ro_crate.metadata.get_root_data_entity_conforms_to())
+            candidate_profiles_uris = set()
+            try:
+                candidate_profiles_uris.add(context.ro_crate.metadata.get_conforms_to())
+            except Exception as e:
+                logger.debug("Error while getting candidate profiles URIs: %s", e)
+            try:
+                candidate_profiles_uris.add(context.ro_crate.metadata.get_root_data_entity_conforms_to())
+            except Exception as e:
+                logger.debug("Error while getting candidate profiles URIs: %s", e)
+
             logger.debug("Candidate profiles: %s", candidate_profiles_uris)
             if not candidate_profiles_uris:
                 logger.debug("Unable to determine the profile to validate against")

@@ -307,7 +307,7 @@ class SHACLViolation:
 class SHACLValidationResult:
 
     def __init__(self, results_graph: Graph,
-                 conforms: Optional[bool] = None, results_text: str = None) -> None:
+                 results_text: str = None) -> None:
         # validate the results graph input
         assert results_graph is not None, "Invalid graph"
         assert isinstance(results_graph, Graph), "Invalid graph type"
@@ -320,17 +320,10 @@ class SHACLValidationResult:
         # parse the results graph
         self._violations = self._parse_results_graph(results_graph)
         # initialize the conforms property
-        if conforms is None:
-            self._conforms = len(self._violations) == 0
-        else:
-            self._conforms = conforms
+        self._conforms = len(self._violations) == 0
 
         logger.debug("Validation report. N. violations: %s, Conforms: %s; Text: %s",
                      len(self._violations), self._conforms, self._text)
-
-        # TODO: why allow setting conforms through an argument if the value is to be
-        # computed based on the presence of Violations?
-        assert self._conforms == (len(self._violations) == 0), "Invalid validation result"
 
     def _parse_results_graph(self, results_graph: Graph):
         # parse the violations from the results graph
@@ -486,7 +479,7 @@ class SHACLValidator:
                 serialization_output_path, format=serialization_output_format
             )
         # return the validation result
-        return SHACLValidationResult(results_graph, conforms, results_text)
+        return SHACLValidationResult(results_graph, results_text)
 
 
 __all__ = ["SHACLValidator", "SHACLValidationResult", "SHACLViolation"]

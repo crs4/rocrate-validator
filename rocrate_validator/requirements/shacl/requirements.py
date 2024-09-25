@@ -32,12 +32,11 @@ logger = logging.getLogger(__name__)
 class SHACLRequirement(Requirement):
 
     def __init__(self,
-                 level: RequirementLevel,
                  shape: Shape,
                  profile: Profile,
                  path: Path):
         self._shape = shape
-        super().__init__(level, profile,
+        super().__init__(profile,
                          shape.name if shape.name else "",
                          shape.description if shape.description else "",
                          path)
@@ -68,13 +67,6 @@ class SHACLRequirement(Requirement):
         return self._shape
 
     @property
-    def level(self) -> RequirementLevel:
-        level = super().level
-        if level is None:
-            return self.shape.level
-        return level
-
-    @property
     def hidden(self) -> bool:
         if self.shape.node is not None:
             if (self.shape.node, RDF.type, VALIDATOR_NS.HiddenShape) in self.shape.graph:
@@ -102,5 +94,6 @@ class SHACLRequirementLoader(RequirementLoader):
         logger.debug("Loaded %s shapes: %s", len(shapes), shapes)
         requirements = []
         for shape in shapes:
-            requirements.append(SHACLRequirement(requirement_level, shape, profile, file_path))
+            if shape is not None and shape.level >= requirement_level:
+                requirements.append(SHACLRequirement(shape, profile, file_path))
         return requirements

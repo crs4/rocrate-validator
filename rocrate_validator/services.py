@@ -176,12 +176,13 @@ def get_profiles(profiles_path: Path = DEFAULT_PROFILES_PATH,
 def get_profile(profiles_path: Path = DEFAULT_PROFILES_PATH,
                 profile_identifier: str = DEFAULT_PROFILE_IDENTIFIER,
                 publicID: str = None,
+                severity=Severity.OPTIONAL,
                 allow_requirement_check_override: bool =
                 ValidationSettings.allow_requirement_check_override) -> Profile:
     """
     Load the profiles from the given path
     """
-    profiles = get_profiles(profiles_path, publicID=publicID,
+    profiles = get_profiles(profiles_path, publicID=publicID, severity=severity,
                             allow_requirement_check_override=allow_requirement_check_override)
     profile = next((p for p in profiles if p.identifier == profile_identifier), None) or \
         next((p for p in profiles if str(p.identifier).replace(f"-{p.version}", '') == profile_identifier), None)

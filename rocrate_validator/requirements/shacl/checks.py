@@ -19,7 +19,8 @@ from typing import Optional
 import rocrate_validator.log as logging
 from rocrate_validator.errors import ROCrateMetadataNotFoundError
 from rocrate_validator.events import EventType
-from rocrate_validator.models import (Requirement, RequirementCheck,
+from rocrate_validator.models import (LevelCollection, Requirement,
+                                      RequirementCheck,
                                       RequirementCheckValidationEvent,
                                       SkipRequirementCheck, ValidationContext)
 from rocrate_validator.requirements.shacl.models import Shape
@@ -42,7 +43,7 @@ class SHACLCheck(RequirementCheck):
 
     def __init__(self,
                  requirement: Requirement,
-                 shape: Optional[Shape]) -> None:
+                 shape: Shape) -> None:
         self._shape = shape
         # init the check
         super().__init__(requirement,
@@ -55,9 +56,42 @@ class SHACLCheck(RequirementCheck):
         # store the instance
         SHACLCheck.__add_instance__(shape, self)
 
+        # set the check level
+        requirement_level_from_path = self.requirement.requirement_level_from_path
+        if requirement_level_from_path:
+            declared_level = shape.get_declared_level()
+            if declared_level:
+                if shape.level.severity != requirement_level_from_path.severity:
+                    logger.warning("Mismatch in requirement level for check \"%s\": "
+                                   "shape level %s does not match the level from the containing folder %s. "
+                                   "Consider moving the shape property or removing the severity property.",
+                                   self.name, shape.level, requirement_level_from_path)
+        self._level = None
+
     @property
     def shape(self) -> Shape:
         return self._shape
+
+    @property
+    def description(self) -> str:
+        return self._shape.description
+
+    def __compute_requirement_level__(self) -> LevelCollection:
+        if self._shape and self._shape.get_declared_level():
+            return self._shape.get_declared_level()
+        if self.requirement and self.requirement.requirement_level_from_path:
+            return self.requirement.requirement_level_from_path
+        return LevelCollection.REQUIRED
+
+    @property
+    def level(self) -> str:
+        if not self._level:
+            self._level = self.__compute_requirement_level__()
+        return self._level
+
+    @property
+    def severity(self) -> str:
+        return self.level.severity
 
     def execute_check(self, context: ValidationContext):
         logger.debug("Starting check %s", self)
@@ -71,10 +105,8 @@ class SHACLCheck(RequirementCheck):
                 result = self.__do_execute_check__(ctx)
                 ctx.current_validation_result = self not in result
                 return ctx.current_validation_result
-        except SHACLValidationAlreadyProcessed as e:
+        except SHACLValidationAlreadyProcessed:
             logger.debug("SHACL Validation of profile %s already processed", self.requirement.profile.identifier)
-            if logger.isEnabledFor(logging.DEBUG):
-                logger.exception(e)
             # The check belongs to a profile which has already been processed
             # so we can skip the validation and return the specific result for the check
             return self not in [i.check for i in context.result.get_issues()]
@@ -105,8 +137,12 @@ class SHACLCheck(RequirementCheck):
             end_time = timer()
             logger.debug(f"Execution time for getting data graph: {end_time - start_time} seconds")
         except json.decoder.JSONDecodeError as e:
-            logger.debug("Unable to perform metadata validation due to an error in the JSON-LD data file: %s", e)
-            return False
+            logger.debug("Unable to perform metadata validation "
+                         "due to one or more errors in the JSON-LD data file: %s", e)
+            shacl_context.result.add_error(
+                "Unable to perform metadata validation due to one or more errors in the JSON-LD data file", self)
+            raise ROCrateMetadataNotFoundError(
+                "Unable to perform metadata validation due to one or more errors in the JSON-LD data file")
 
         # Begin the timer
         start_time = timer()
@@ -136,24 +172,22 @@ class SHACLCheck(RequirementCheck):
 
         # store the validation result in the context
         start_time = timer()
-        result = shacl_result.conforms
         # if the validation fails, process the failed checks
         failed_requirements_checks = set()
         failed_requirements_checks_violations: dict[str, SHACLViolation] = {}
         failed_requirement_checks_notified = []
-        if not shacl_result.conforms:
-            logger.debug("Parsing Validation with result: %s", result)
-            # process the failed checks to extract the requirement checks involved
-            for violation in shacl_result.violations:
-                shape = shapes_registry.get_shape(Shape.compute_key(shapes_graph, violation.sourceShape))
-                assert shape is not None, "Unable to map the violation to a shape"
-                requirementCheck = SHACLCheck.get_instance(shape)
-                assert requirementCheck is not None, "The requirement check cannot be None"
-                failed_requirements_checks.add(requirementCheck)
-                violations = failed_requirements_checks_violations.get(requirementCheck.identifier, None)
-                if violations is None:
-                    failed_requirements_checks_violations[requirementCheck.identifier] = violations = []
-                violations.append(violation)
+        logger.debug("Parsing Validation with result: %s", shacl_result)
+        # process the failed checks to extract the requirement checks involved
+        for violation in shacl_result.violations:
+            shape = shapes_registry.get_shape(Shape.compute_key(shapes_graph, violation.sourceShape))
+            assert shape is not None, "Unable to map the violation to a shape"
+            requirementCheck = SHACLCheck.get_instance(shape)
+            assert requirementCheck is not None, "The requirement check cannot be None"
+            failed_requirements_checks.add(requirementCheck)
+            violations = failed_requirements_checks_violations.get(requirementCheck.identifier, None)
+            if violations is None:
+                failed_requirements_checks_violations[requirementCheck.identifier] = violations = []
+            violations.append(violation)
         # sort the failed checks by identifier and severity
         # to ensure a consistent order of the issues
         # and to make the fail fast mode deterministic

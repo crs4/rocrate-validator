@@ -53,6 +53,11 @@ def fake_profiles_path():
 
 
 @fixture
+def profiles_requirement_loading():
+    return f"{TEST_DATA_PATH}/profiles/requirement_loading"
+
+
+@fixture
 def profiles_with_free_folder_structure_path():
     return f"{TEST_DATA_PATH}/profiles/free_folder_structure"
 

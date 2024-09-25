@@ -13,15 +13,14 @@
 # limitations under the License.
 
 import inspect
-
 import re
 from pathlib import Path
 from typing import Callable, Optional, Type
 
 import rocrate_validator.log as logging
 
-from ...models import (Profile, Requirement, RequirementCheck,
-                       RequirementLevel, RequirementLoader, ValidationContext)
+from ...models import (LevelCollection, Profile, Requirement, RequirementCheck,
+                       RequirementLevel, RequirementLoader, Severity, ValidationContext)
 from ...utils import get_classes_from_file
 
 # set up logging
@@ -37,11 +36,12 @@ class PyFunctionCheck(RequirementCheck):
                  requirement: Requirement,
                  name: str,
                  check_function: Callable[[RequirementCheck, ValidationContext], bool],
-                 description: Optional[str] = None):
+                 description: Optional[str] = None,
+                 level: Optional[LevelCollection] = LevelCollection.REQUIRED):
         """
         check_function: a function that accepts an instance of PyFunctionCheck and a ValidationContext.
         """
-        super().__init__(requirement, name, description)
+        super().__init__(requirement, name, description=description, level=level)
 
         sig = inspect.signature(check_function)
         if len(sig.parameters) != 2:
@@ -60,14 +60,13 @@ class PyFunctionCheck(RequirementCheck):
 class PyRequirement(Requirement):
 
     def __init__(self,
-                 level: RequirementLevel,
                  profile: Profile,
                  requirement_check_class: Type[PyFunctionCheck],
                  name: str = "",
                  description: Optional[str] = None,
                  path: Optional[Path] = None):
         self.requirement_check_class = requirement_check_class
-        super().__init__(level, profile, name, description, path, initialize_checks=True)
+        super().__init__(profile, name, description, path, initialize_checks=True)
 
     def __init_checks__(self):
         # initialize the list of checks
@@ -81,10 +80,17 @@ class PyRequirement(Requirement):
                 except Exception:
                     check_name = name.strip()
                 check_description = member.__doc__.strip() if member.__doc__ else ""
-                check = self.requirement_check_class(requirement=self,
-                                                     name=check_name,
-                                                     check_function=member,
-                                                     description=check_description)
+                # init the check with the requirement level
+                severity = None
+                try:
+                    severity = member.severity
+                except Exception:
+                    severity = self.severity_from_path or Severity.REQUIRED
+                check = self.requirement_check_class(self,
+                                                     check_name,
+                                                     member,
+                                                     description=check_description,
+                                                     level=LevelCollection.get(severity.name) if severity else None)
                 self._checks.append(check)
                 logger.debug("Added check: %s %r", check_name, check)
 
@@ -110,7 +116,7 @@ def requirement(name: str, description: Optional[str] = None):
     return decorator
 
 
-def check(name: Optional[str] = None):
+def check(name: Optional[str] = None, severity: Optional[Severity] = None):
     """
     A decorator to mark functions as "checks" (by setting an attribute
     `check=True`) and optionally annotating them with a human-legible name.
@@ -126,6 +132,7 @@ def check(name: Optional[str] = None):
                                f"return bool but this only returns {sig.return_annotation}")
         func.check = True
         func.name = check_name
+        func.severity = severity
         return func
     return decorator
 
@@ -160,7 +167,6 @@ class PyRequirementLoader(RequirementLoader):
                     pass
             logger.debug("Processing requirement: %r", requirement_name)
             r = PyRequirement(
-                requirement_level,
                 profile,
                 requirement_check_class=check_class,
                 name=rq["name"],

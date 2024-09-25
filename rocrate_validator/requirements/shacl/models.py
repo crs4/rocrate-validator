@@ -22,7 +22,7 @@ from rdflib.term import Node
 
 from rocrate_validator.constants import SHACL_NS
 import rocrate_validator.log as logging
-from rocrate_validator.models import LevelCollection, RequirementLevel
+from rocrate_validator.models import LevelCollection, RequirementLevel, Severity
 from rocrate_validator.requirements.shacl.utils import (ShapesList,
                                                         compute_key,
                                                         inject_attributes)
@@ -68,8 +68,6 @@ class SHACLNode:
     @property
     def description(self) -> str:
         """Return the description of the shape"""
-        if not self._description:
-            self._description = f"Check properties of the \"**{self.name}**\" entity"
         return self._description
 
     @description.setter
@@ -101,15 +99,28 @@ class SHACLNode:
     @property
     def level(self) -> RequirementLevel:
         """Return the requirement level of the shape"""
+        return self.get_declared_level() or LevelCollection.REQUIRED
+
+    def get_declared_level(self) -> Optional[RequirementLevel]:
+        """Return the declared level of the shape"""
+        severity = self.get_declared_severity()
+        if severity:
+            try:
+                return LevelCollection.get(severity.name)
+            except ValueError:
+                pass
+        return None
+
+    def get_declared_severity(self) -> Optional[Severity]:
+        """Return the declared severity of the shape"""
         severity = getattr(self, "severity", None)
-        if not severity:
-            return LevelCollection.REQUIRED
         if severity == f"{SHACL_NS}Violation":
-            return LevelCollection.REQUIRED
+            return Severity.REQUIRED
         elif severity == f"{SHACL_NS}Warning":
-            return LevelCollection.RECOMMENDED
+            return Severity.RECOMMENDED
         elif severity == f"{SHACL_NS}Info":
-            return LevelCollection.OPTIONAL
+            return Severity.OPTIONAL
+        return None
 
     def __str__(self):
         class_name = self.__class__.__name__
@@ -230,12 +241,13 @@ class PropertyShape(Shape):
         """Return the description of the shape property"""
         if not self._description:
             # get the object of the predicate sh:description
-            property_name = self.name
-            if self._short_name:
-                property_name = self._short_name
-            self._description = f"Check the property \"**{property_name}**\""
-            if self.parent and self.parent.name not in property_name:
-                self._description += f" of the entity \"**{self.parent.name}**\""
+            if not self._description:
+                property_name = self.name
+                if self._short_name:
+                    property_name = self._short_name
+                self._description = f"Check the property \"**{property_name}**\""
+                if self.parent and self.parent.name not in property_name:
+                    self._description += f" of the entity \"**{self.parent.name}**\""
         return self._description
 
     @description.setter

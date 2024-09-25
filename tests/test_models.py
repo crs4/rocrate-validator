@@ -85,7 +85,7 @@ def test_sortability_requirements(validation_settings: ValidationSettings):
     failed_requirements = sorted(result.failed_requirements, reverse=True)
     assert len(failed_requirements) > 1
     assert failed_requirements[0] >= failed_requirements[1]
-    assert failed_requirements[0].level >= failed_requirements[1].level
+    assert failed_requirements[0].order_number >= failed_requirements[1].order_number
 
 
 def test_sortability_checks(validation_settings: ValidationSettings):
