@@ -52,7 +52,7 @@ def run_git_command(command: list[str]) -> Optional[str]:
     import subprocess
 
     try:
-        output = subprocess.check_output(command).decode().strip()
+        output = subprocess.check_output(command, stderr=subprocess.DEVNULL).decode().strip()
         return output
     except Exception as e:
         if logger.isEnabledFor(logging.DEBUG):
@@ -88,7 +88,13 @@ def get_commit_distance(tag: Optional[str] = None) -> int:
     """
     if not tag:
         tag = get_last_tag()
-    return int(run_git_command(['git', 'rev-list', '--count', 'HEAD' if not tag else f"{tag}..HEAD"]))
+    try:
+        return int(run_git_command(['git', 'rev-list', '--count', f"{tag}..HEAD"]))
+    except Exception as e:
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug(e)
+
+    return 0
 
 
 def get_last_tag() -> str:
