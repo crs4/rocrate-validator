@@ -1,0 +1,63 @@
+[tool.poetry]
+name = "roc-validator"
+version = "0.2.0"
+description = "A Python package to validate RO-Crates"
+authors = [
+    "Marco Enrico Piras <kikkomep@crs4.it>",
+    "Luca Pireddu <luca.pireddu@crs4.it>",
+    "Simone Leo <simleo@crs4.it>",
+]
+readme = "README.md"
+packages = [{ include = "rocrate_validator", from = "." }]
+include = [
+    { path = "pyproject.toml", format = [
+        "sdist",
+        "wheel",
+    ] },
+    { path = "README.md", format = [
+        "sdist",
+        "wheel",
+    ] },
+    { path = "LICENSE", format = [
+        "sdist",
+        "wheel",
+    ] }
+]
+
+[tool.poetry.dependencies]
+python = "^3.8.1"
+rdflib = "^7.0.0"
+pyshacl = "^0.26.0"
+click = "^8.1.7"
+rich = "^13.8.0"
+toml = "^0.10.2"
+rich-click = "^1.8.3"
+colorlog = "^6.8"
+requests = "^2.32.3"
+requests-cache = "^1.2.1"
+inquirerpy = "^0.3.4"
+
+[tool.poetry.group.dev.dependencies]
+pyproject-flake8 = "^6.1.0"
+pylint = "^3.1.0"
+ipykernel = "^6.29.3"
+
+[tool.poetry.group.test.dependencies]
+pytest-cov = "^5.0.0"
+pytest-xdist = "^3.6.1"
+
+[tool.flake8]
+max-line-length = 120
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+rocrate-validator = "rocrate_validator.cli:cli"
+
+[tool.rocrate_validator]
+skip_dirs = [".git", ".github", ".vscode"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

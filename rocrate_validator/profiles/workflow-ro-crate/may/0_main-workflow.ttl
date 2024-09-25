@@ -1,0 +1,70 @@
+# Copyright (c) 2024 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+@prefix ro: <./> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+@prefix workflow-ro-crate: <https://github.com/crs4/rocrate-validator/profiles/workflow-ro-crate/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema: <http://schema.org/> .
+@prefix bioschemas: <https://bioschemas.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix wroc: <https://w3id.org/workflowhub/workflow-ro-crate#> .
+
+workflow-ro-crate:MainWorkflowOptionalProperties a sh:NodeShape ;
+    sh:name "Main Workflow optional properties" ;
+    sh:description """Main Workflow properties defined as MAY""";
+    sh:targetClass workflow-ro-crate:MainWorkflow ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Main Workflow image" ;
+        sh:description "The Crate MAY contain a Main Workflow Diagram; if present it MUST be referred to via 'image'" ;
+        sh:path schema:image ;
+        sh:class schema:MediaObject, schema:ImageObject ;
+        sh:minCount 1 ;
+        sh:message "The Crate MAY contain a Main Workflow Diagram; if present it MUST be referred to via 'image'" ;
+         # sh:severity sh:Info ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Main Workflow subjectOf" ;
+        sh:description "The Crate MAY contain a Main Workflow CWL Description; if present it MUST be referred to via 'subjectOf'" ;
+        sh:path schema:subjectOf ;
+        sh:node workflow-ro-crate:CWLDescriptionProperties ;
+        sh:minCount 1 ;
+        sh:message "The Crate MAY contain a Main Workflow CWL Description; if present it MUST be referred to via 'subjectOf'" ;
+         # sh:severity sh:Info ;
+    ] .
+
+workflow-ro-crate:CWLDescriptionProperties a sh:NodeShape ;
+    sh:name "CWL Description properties" ;
+    sh:description "Main Workflow CWL Description properties" ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "CWL Description type" ;
+        sh:description "The CWL Description type must be File, SoftwareSourceCode, HowTo" ;
+        sh:path rdf:type ;
+        sh:hasValue schema:MediaObject, schema:SoftwareSourceCode, schema:HowTo ;
+        sh:message "The CWL Description type must be File, SoftwareSourceCode, HowTo" ;
+        # sh:severity sh:Info ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "CWL Description language" ;
+        sh:description "The CWL Description SHOULD have a language of https://w3id.org/workflowhub/workflow-ro-crate#cwl" ;
+        sh:path schema:programmingLanguage ;
+        sh:hasValue wroc:cwl ;
+        sh:class schema:ComputerLanguage ;
+        sh:message "The CWL Description SHOULD have a language of https://w3id.org/workflowhub/workflow-ro-crate#cwl" ;
+        # sh:severity sh:Info ;
+    ] .

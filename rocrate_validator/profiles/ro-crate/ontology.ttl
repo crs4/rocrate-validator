@@ -1,0 +1,67 @@
+# Copyright (c) 2024 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+@prefix ro: <./> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <http://schema.org/> .
+@prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
+@prefix bioschemas: <https://bioschemas.org/> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+# @base <./.> .
+
+<urn:absolute:.> rdf:type owl:Ontology ;
+                  owl:versionIRI <urn:absolute:1.0> .
+
+# # #################################################################
+# # #    Classes
+# # #################################################################
+
+# Declare the RootDataEntity class
+ro-crate:RootDataEntity rdf:type owl:Class ;
+  rdfs:subClassOf schema:Dataset ;
+  rdfs:label "RootDataEntity"@en .
+
+###  http://schema.org/CreativeWork
+schema:CreativeWork rdf:type owl:Class ;
+                    rdfs:label "CreativeWork"@en .
+
+###  http://schema.org/MediaObject
+schema:MediaObject rdf:type owl:Class ;
+                   owl:equivalentClass ro-crate:File ;
+                   rdfs:label "MediaObject"@en .
+
+
+###  http://schema.org/SoftwareSourceCode
+schema:SoftwareSourceCode rdf:type owl:Class ;
+                          rdfs:subClassOf schema:CreativeWork .
+
+
+###  https://bioschemas.org/ComputationalWorkflow
+bioschemas:ComputationalWorkflow rdf:type owl:Class .
+
+
+###  https://w3id.org/ro/crate/1.1/DataEntity
+ro-crate:DataEntity rdf:type owl:Class ;
+                   rdfs:subClassOf schema:CreativeWork ;
+                   rdfs:label "DataEntity"@en .
+
+
+# # ###  https://w3id.org/ro/crate/1.1/Directory
+ro-crate:Directory rdf:type owl:Class ;
+                rdfs:subClassOf schema:Dataset ;
+                rdfs:label "Directory"@en .

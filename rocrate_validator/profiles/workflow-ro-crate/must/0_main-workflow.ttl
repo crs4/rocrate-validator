@@ -1,0 +1,82 @@
+# Copyright (c) 2024 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+@prefix ro: <./> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+@prefix workflow-ro-crate: <https://github.com/crs4/rocrate-validator/profiles/workflow-ro-crate/> .
+@prefix bioschemas: <https://bioschemas.org/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix validator: <https://github.com/crs4/rocrate-validator/> .
+
+workflow-ro-crate:MainEntityProperyMustExist a sh:NodeShape ;
+    sh:name "Main Workflow entity existence" ;
+    sh:description "The Main Workflow must be specified through a `mainEntity` property in the root data entity" ;
+    sh:targetClass ro-crate:RootDataEntity ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:mainEntity ;
+        sh:minCount 1 ;
+        sh:description "Check if the Main Workflow is specified through a `mainEntity` property in the root data entity" ;
+        sh:message "The Main Workflow must be specified through a `mainEntity` property in the root data entity" ;
+    ] .
+
+workflow-ro-crate:FindMainWorkflow a sh:NodeShape, validator:HiddenShape ;
+    sh:name "Identify Main Workflow" ;
+    sh:description "Identify the Main Workflow" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?root schema:mainEntity ?this .
+                ?root a schema:Dataset .
+                ?metadatafile schema:about ?root .
+                FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
+            }
+        """
+    ] ;
+    sh:rule [
+        a sh:TripleRule ;
+        sh:subject sh:this ;
+        sh:predicate rdf:type ;
+        sh:object workflow-ro-crate:MainWorkflow ;
+    ] .
+
+workflow-ro-crate:MainWorkflowRequiredProperties a sh:NodeShape ;
+    sh:name "Main Workflow definition" ;
+    sh:description """Main Workflow properties defined as MUST""";
+    sh:targetClass workflow-ro-crate:MainWorkflow ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Main Workflow type" ;
+        sh:description "The Main Workflow must have types File, SoftwareSourceCode, ComputationalWorfklow" ;
+        sh:path rdf:type ;
+        sh:hasValue schema:MediaObject ,
+                    schema:SoftwareSourceCode ,
+                    bioschemas:ComputationalWorkflow ;
+        sh:minCount 1 ;
+        sh:message "The Main Workflow must have types File, SoftwareSourceCode, ComputationalWorfklow" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Main Workflow language" ;
+        sh:description "The Main Workflow must refer to its language via programmingLanguage" ;
+        sh:path schema:programmingLanguage ;
+        sh:class schema:ComputerLanguage ;
+        sh:minCount 1 ;
+        sh:message "The Main Workflow must refer to its language via programmingLanguage" ;
+    ] .

@@ -1,0 +1,75 @@
+# Copyright (c) 2024 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+@prefix ro: <./> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+@prefix schema: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+ro-crate:CreativeWorkAuthorMinimuRecommendedProperties a sh:NodeShape ;
+    sh:name "CreativeWork Author: minimum RECOMMENDED properties" ;
+    sh:description """The minimum recommended properties for a `CreativeWork Author` are `name` and `affiliation`.""" ;
+    sh:targetClass ro-crate:CreativeWorkAuthor ;
+    sh:property [
+        sh:path schema:name ;
+        sh:minCount 1 ;
+        sh:dataType xsd:string ;
+        sh:name "CreativeWork Author: RECOMMENDED name property" ;
+        sh:description "Check if the author has a name." ;
+        sh:message "The author SHOULD have a name." ;
+    ] ;
+    sh:property [
+        sh:path schema:affiliation ;
+        sh:minCount 1 ;
+        sh:or (
+            [ sh:dataType xsd:string ; ]
+            [ sh:class schema:Organization ;]
+        ) ;
+        sh:severity sh:Warning ;
+        sh:name "CreativeWork Author: RECOMMENDED affiliation property" ;
+        sh:description "Check if the author has an organizational affiliation." ;
+        sh:message "The author SHOULD have an organizational affiliation." ;
+    ] ;
+    sh:property [
+        sh:path schema:affiliation ;
+        sh:minCount 1 ;
+        sh:class schema:Organization ;
+        sh:severity sh:Warning ;
+        sh:name "CreativeWork Author: RECOMMENDED Contextual Entity linked for the organizational `affiliation` property" ;
+        sh:description "Check if the author has a Contextual Entity for the organizational `affiliation` property." ;
+        sh:message "The author SHOULD have a Contextual Entity which specifies the organizational `affiliation`." ;
+    ] .
+
+
+ro-crate:OrganizationRecommendedProperties a sh:NodeShape ;
+    sh:name "Organization: RECOMMENDED properties" ;
+    sh:description """The recommended properties for an `Organization` are `name` and `url`.""" ;
+    sh:targetClass schema:Organization ;
+    sh:property [
+        sh:path schema:name ;
+        sh:minCount 1 ;
+        sh:dataType xsd:string ;
+        sh:name "Organization: RECOMMENDED name property" ;
+        sh:description "Check if the `organization` has a name." ;
+        sh:message "The organization SHOULD have a name." ;
+    ] ;
+    sh:property [
+        sh:path schema:url ;
+        sh:minCount 1 ;
+        sh:dataType xsd:anyURI ;
+        sh:name "Organization: RECOMMENDED url property" ;
+        sh:description "Check if the `organization` has a URL." ;
+        sh:message "The organization SHOULD have a URL." ;
+    ] .

@@ -1,0 +1,10 @@
+name: sssom
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - python>3.8
+  - pip
+  - pip:
+    - sssom>0.3

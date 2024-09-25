@@ -1,0 +1,82 @@
+# Copyright (c) 2024 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+@prefix ro: <./> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix validator: <https://github.com/crs4/rocrate-validator/> .
+
+
+ro-crate:FindLicenseEntity a sh:NodeShape, validator:HiddenShape ;
+    sh:name "Identify License Entity" ;
+    sh:description """Mark a license entity any Data Entity referenced by the `schema:licence` property.""" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?subject schema:license ?this .
+            }
+        """
+    ] ;
+
+    # Expand data graph with triples from the file data entity
+    sh:rule [
+        a sh:TripleRule ;
+        sh:subject sh:this ;
+        sh:predicate rdf:type ;
+        sh:object ro-crate:ContextualEntity ;
+    ] .
+
+
+ro-crate:WebSiteRecommendedProperties a sh:NodeShape ;
+    sh:name "WebSite RECOMMENDED Properties" ;
+    sh:description """A `WebSite` MUST be identified by a valid IRI and MUST have a `name` property.""" ;
+    sh:targetClass schema:WebSite ;
+    sh:property [
+        sh:path [sh:inversePath rdf:type] ;
+        sh:datType sh:IRI ;
+        sh:name "WebSite: value restriction of its identifier" ;
+        sh:description "Check if the WebSite has a valid IRI" ;
+        sh:message "A WebSite MUST have a valid IRI" ;
+    ] ;
+    sh:property [
+        sh:path schema:name ;
+        sh:minCount 1 ;
+        sh:dataType xsd:string ;
+        sh:name "WebSite: REQUIRED `name` property" ;
+        sh:description "Check if the WebSite has a `name` property" ;
+        sh:message "A WebSite MUST have a `name` property" ;
+    ] .
+
+
+ro-crate:CreativeWorkAuthorDefinition a sh:NodeShape, validator:HiddenShape ;
+    sh:name "CreativeWork Author Definition" ;
+    sh:description """Define the `CretiveWorkAuthor` as the `Person` object of the `schema:author` predicate.""" ;
+    sh:targetObjectsOf schema:author ;
+    sh:rule [
+        a sh:TripleRule ;
+        sh:subject sh:this ;
+        sh:predicate rdf:type ;
+        sh:object ro-crate:CreativeWorkAuthor ;
+        sh:condition [
+            sh:property [ sh:path rdf:type ; sh:hasValue schema:Person ; sh:minCount 1 ] ;
+        ] ;
+    ] .
+

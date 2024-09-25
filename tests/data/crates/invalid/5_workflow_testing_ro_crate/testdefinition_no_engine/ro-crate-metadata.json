@@ -1,0 +1,122 @@
+{
+    "@context": [
+        "https://w3id.org/ro/crate/1.1/context",
+        "https://w3id.org/ro/terms/test"
+    ],
+    "@graph": [
+        {
+            "@id": "ro-crate-metadata.json",
+            "@type": "CreativeWork",
+            "about": {
+                "@id": "./"
+            },
+            "conformsTo": [
+                {
+                    "@id": "https://w3id.org/ro/crate/1.1"
+                },
+                {
+                    "@id": "https://w3id.org/workflowhub/workflow-ro-crate/1.0"
+                }
+            ]
+        },
+        {
+            "@id": "./",
+            "@type": "Dataset",
+            "datePublished": "2024-09-17T11:09:44+00:00",
+            "hasPart": [
+                {
+                    "@id": "sort-and-change-case.ga"
+                },
+                {
+                    "@id": "sort-and-change-case-tests.yml"
+                }
+            ],
+            "license": {
+                "@id": "https://spdx.org/licenses/Apache-2.0.html"
+            },
+            "mainEntity": {
+                "@id": "sort-and-change-case.ga"
+            },
+            "mentions": [
+                {
+                    "@id": "#test1"
+                }
+            ]
+        },
+        {
+            "@id": "https://spdx.org/licenses/Apache-2.0.html",
+            "@type": "CreativeWork",
+            "name": "Apache 2.0 license"
+        },
+        {
+            "@id": "sort-and-change-case.ga",
+            "@type": [
+                "File",
+                "SoftwareSourceCode",
+                "ComputationalWorkflow"
+            ],
+            "conformsTo": {
+                "@id": "https://bioschemas.org/profiles/ComputationalWorkflow/1.0-RELEASE"
+            },
+            "description": "sort lines and change text to upper case",
+            "license": "https://spdx.org/licenses/MIT.html",
+            "name": "sort-and-change-case",
+            "programmingLanguage": {
+                "@id": "https://w3id.org/workflowhub/workflow-ro-crate#galaxy"
+            }
+        },
+        {
+            "@id": "https://w3id.org/workflowhub/workflow-ro-crate#galaxy",
+            "@type": "ComputerLanguage",
+            "identifier": {
+                "@id": "https://galaxyproject.org/"
+            },
+            "name": "Galaxy",
+            "url": {
+                "@id": "https://galaxyproject.org/"
+            }
+        },
+        {
+            "@id": "#test1",
+            "name": "test1",
+            "@type": "TestSuite",
+            "mainEntity": {
+                "@id": "sort-and-change-case.ga"
+            },
+            "instance": [
+                {
+                    "@id": "#test1_1"
+                }
+            ],
+            "definition": {
+                "@id": "sort-and-change-case-tests.yml"
+            }
+        },
+        {
+            "@id": "#test1_1",
+            "name": "test1_1",
+            "@type": "TestInstance",
+            "runsOn": {
+                "@id": "https://w3id.org/ro/terms/test#JenkinsService"
+            },
+            "url": "http://example.org/jenkins",
+            "resource": "job/tests/"
+        },
+        {
+            "@id": "https://w3id.org/ro/terms/test#JenkinsService",
+            "@type": "TestService",
+            "name": "Jenkins",
+            "url": {
+                "@id": "https://www.jenkins.io"
+            }
+        },
+        {
+            "@id": "sort-and-change-case-tests.yml",
+            "@type": [
+                "File",
+                "TestDefinition"
+            ],
+            "engineVersion": ">=0.70"
+        }
+    ]
+}

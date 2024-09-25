@@ -1,0 +1,65 @@
+# Copyright (c) 2024 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+@prefix ro: <./> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+@prefix process-run-crate: <https://github.com/crs4/rocrate-validator/profiles/process-run-crate/> .
+@prefix schema: <http://schema.org/> .
+@prefix bioschemas: <https://bioschemas.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix validator: <https://github.com/crs4/rocrate-validator/> .
+
+process-run-crate:ProcRCCollectionRecommended a sh:NodeShape ;
+    sh:name "Process Run Crate Collection SHOULD" ;
+    sh:description "Recommended properties of the Process Run Crate Collection" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?this a schema:Collection .
+                { ?action schema:object ?this } UNION
+                { ?action schema:result ?this } .
+                { ?action a schema:CreateAction } UNION
+                { ?action a schema:ActivateAction } UNION
+                { ?action a schema:UpdateAction } .
+            }
+        """
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Collection SHOULD be referenced via mentions from root" ;
+        sh:description "The Collection SHOULD be referenced from the Root Data Entity via mentions" ;
+        sh:path [ sh:inversePath schema:mentions ] ;
+        sh:node ro-crate:RootDataEntity ;
+        sh:minCount 1 ;
+        sh:message "The Collection SHOULD be referenced from the Root Data Entity via mentions" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Collection hasPart" ;
+        sh:description "The Collection SHOULD have a hasPart" ;
+        sh:path schema:hasPart ;
+        sh:minCount 1 ;
+        sh:message "The Collection SHOULD have a hasPart" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Collection mainEntity" ;
+        sh:description "The Collection SHOULD have a mainEntity" ;
+        sh:path schema:mainEntity ;
+        sh:minCount 1 ;
+        sh:message "The Collection SHOULD have a mainEntity" ;
+    ] .

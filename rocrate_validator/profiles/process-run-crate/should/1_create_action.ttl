@@ -1,0 +1,175 @@
+# Copyright (c) 2024 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+@prefix ro: <./> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+@prefix process-run-crate: <https://github.com/crs4/rocrate-validator/profiles/process-run-crate/> .
+@prefix schema: <http://schema.org/> .
+@prefix bioschemas: <https://bioschemas.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix wfrun: <https://w3id.org/ro/terms/workflow-run#> .
+
+process-run-crate:ProcRCActionRecommended a sh:NodeShape ;
+    sh:name "Process Run Crate Action SHOULD" ;
+    sh:description "Recommended properties of the Process Run Crate Action" ;
+    sh:targetClass schema:CreateAction ,
+                   schema:ActivateAction ,
+                   schema:UpdateAction ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Action SHOULD be referenced via mentions from root" ;
+        sh:description "The Action SHOULD be referenced from the Root Data Entity via mentions" ;
+        sh:path [ sh:inversePath schema:mentions ] ;
+        sh:node ro-crate:RootDataEntity ;
+        sh:minCount 1 ;
+        sh:message "The Action SHOULD be referenced from the Root Data Entity via mentions" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Action name" ;
+        sh:description "The Action SHOULD have a name" ;
+        sh:path schema:name ;
+        sh:minCount 1 ;
+        sh:message "The Action SHOULD have a name" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Action description" ;
+        sh:description "The Action SHOULD have a description" ;
+        sh:path schema:description ;
+        sh:minCount 1 ;
+        sh:message "The Action SHOULD have a description" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Action endTime" ;
+        sh:description "The Action SHOULD have an endTime in ISO 8601 format" ;
+        sh:path schema:endTime ;
+        sh:pattern "^(\\d{4}-\\d{2}-\\d{2})(T\\d{2}:\\d{2}:\\d{2}(\\.\\d{3})?\\+\\d{2}:\\d{2})?$" ;
+        sh:minCount 1 ;
+        sh:message "The Action SHOULD have an endTime in ISO 8601 format" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Action startTime" ;
+        sh:description "If present, the Action startTime SHOULD be in ISO 8601 format" ;
+        sh:path schema:startTime ;
+        sh:pattern "^(\\d{4}-\\d{2}-\\d{2})(T\\d{2}:\\d{2}:\\d{2}(\\.\\d{3})?\\+\\d{2}:\\d{2})?$" ;
+        sh:message "If present, the Action startTime SHOULD be in ISO 8601 format" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Action agent" ;
+        sh:description "The Action SHOULD have an agent that is a Person or Organization" ;
+        sh:path schema:agent ;
+        sh:or (
+            [ sh:class schema:Person ; ]
+            [ sh:class schema:Organization ; ]
+        ) ;
+        sh:minCount 1 ;
+        sh:message "The Action SHOULD have an agent that is a Person or Organization" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Action actionStatus" ;
+        sh:description "If the Action has an actionStatus, it should be http://schema.org/CompletedActionStatus or http://schema.org/FailedActionStatus" ;
+        sh:path schema:actionStatus ;
+        sh:in (
+            "http://schema.org/CompletedActionStatus"
+            "http://schema.org/FailedActionStatus"
+        ) ;
+        sh:message "If the Action has an actionStatus, it should be http://schema.org/CompletedActionStatus or http://schema.org/FailedActionStatus" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Action environment" ;
+        sh:description "If the Action has an environment, it should point to entities of type PropertyValue" ;
+        sh:path wfrun:environment ;
+        sh:class schema:PropertyValue ;
+        sh:message "If the Action has an environment, it should point to entities of type PropertyValue" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Action containerImage" ;
+        sh:description "If the Action has a containerImage, it should point to a ContainerImage or a URL" ;
+        sh:path wfrun:containerImage ;
+        sh:or (
+            [ sh:class wfrun:ContainerImage ; ]
+            [ sh:pattern "^http.*" ; ]
+        ) ;
+        sh:message "If the Action has a containerImage, it should point to a ContainerImage or a URL" ;
+    ] .
+
+
+process-run-crate:ProcRCCreateUpdateActionRecommended a sh:NodeShape ;
+    sh:name "Process Run Crate CreateAction UpdateAction SHOULD" ;
+    sh:description "Recommended properties of the Process Run Crate CreateAction or UpdateAction" ;
+    sh:targetClass schema:CreateAction ,
+                   schema:UpdateAction ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Action result" ;
+        sh:description "The Action SHOULD have a result" ;
+        sh:path schema:result ;
+        sh:minCount 1 ;
+        sh:message "The Action SHOULD have a result" ;
+    ] .
+
+
+process-run-crate:ProcRCActionError a sh:NodeShape ;
+    sh:name "Process Run Crate Action error" ;
+    sh:description "error SHOULD NOT be specified unless actionStatus is set to FailedActionStatus" ;
+    sh:message "error SHOULD NOT be specified unless actionStatus is set to FailedActionStatus" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                { ?this a schema:CreateAction } UNION
+                { ?this a schema:ActivateAction } UNION
+                { ?this a schema:UpdateAction } .
+                { FILTER NOT EXISTS { ?this schema:actionStatus ?status } } UNION
+                { ?this schema:actionStatus ?status .
+                  FILTER(?status != "http://schema.org/FailedActionStatus") }
+            }
+        """
+    ] ;
+    sh:not [
+        a sh:PropertyShape ;
+        sh:path schema:error ;
+        sh:minCount 1 ;
+    ] .
+
+
+process-run-crate:ProcRCActionObjectResultType a sh:NodeShape ;
+    sh:name "Process Run Crate Action object and result types" ;
+    sh:description "object and result SHOULD point to entities of type MediaObject, Dataset, Collection, CreativeWork or PropertyValue" ;
+    sh:targetClass schema:CreateAction ,
+                   schema:ActivateAction ,
+                   schema:UpdateAction ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path [
+            sh:alternativePath (schema:object schema:result) ;
+        ] ;
+        sh:or (
+            [ sh:class schema:MediaObject ; ]
+            [ sh:class schema:Dataset ; ]
+            [ sh:class schema:Collection ; ]
+            [ sh:class schema:CreativeWork ; ]
+            [ sh:class schema:PropertyValue ; ]
+        );
+        sh:message "object and result SHOULD point to entities of type MediaObject, Dataset, Collection, CreativeWork or PropertyValue" ;
+    ] .

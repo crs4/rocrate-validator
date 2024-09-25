@@ -1,0 +1,93 @@
+# Copyright (c) 2024 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+@prefix ro: <./> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema_org: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix validator: <https://github.com/crs4/rocrate-validator/> .
+
+ro-crate:RootDataEntityDirectRecommendedProperties a sh:NodeShape ;
+    sh:name "RO-Crate Root Data Entity RECOMMENDED properties" ;
+    sh:description """The Root Data Entity SHOULD have 
+    the properties `name`, `description` and `license` defined as described
+    in the RO-Crate specification <https://www.researchobject.org/ro-crate/1.1/root-data-entity.html>""";
+    sh:targetClass ro-crate:RootDataEntity ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Root Data Entity: `name` property" ;
+        sh:description """Check if the Root Data Entity includes a `name` (as specified by schema.org) 
+        to clearly identify the dataset and distinguish it from other datasets.""" ;
+        sh:minCount 1 ;
+        sh:nodeKind sh:Literal ;
+        sh:path schema_org:name;
+        sh:message "The Root Data Entity SHOULD have a `name` property (as specified by schema.org)" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Root Data Entity: `description` property" ;
+        sh:description """Check if the Root Data Entity includes a `description` (as specified by schema.org)
+        to provide a human-readable description of the dataset.""" ;
+        sh:minCount 1 ;
+        sh:nodeKind sh:Literal ;
+        sh:path schema_org:description;
+        sh:message "The Root Data Entity SHOULD have a `description` property (as specified by schema.org)" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Root Data Entity: `licence` property" ;
+        sh:description """Check if the Root Data Entity includes a `license` (as specified by schema.org)
+        to provide information about the license of the dataset.""" ;
+        sh:nodeKind sh:BlankNodeOrIRI ;
+        sh:path schema_org:license;
+        sh:minCount 1 ;
+        sh:message """The Root Data Entity SHOULD have a link to a Contextual Entity representing the schema_org:license type""" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Root Data Entity: `datePublished` property" ;
+        sh:description """Check if the Root Data Entity includes a `datePublished` (as specified by schema.org)
+        to provide the date when the dataset was published. The datePublished MUST be a valid ISO 8601 date.
+        It SHOULD be specified to at least the day level, but MAY include a time component.""" ;
+        sh:minCount 1 ;
+        sh:nodeKind sh:Literal ;
+        sh:path schema_org:datePublished ;
+        sh:pattern "^(\\d{4}-\\d{2}-\\d{2})(T\\d{2}:\\d{2}:\\d{2}(\\.\\d{3})?\\+\\d{2}:\\d{2})?$" ;
+        sh:message "The Root Data Entity SHOULD have a `datePublished` property (as specified by schema.org) with a valid ISO 8601 date and the precision of at least the day level" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Root Data Entity: `author` property" ;
+        sh:description """Check if the Root Data Entity includes a `author` property (as specified by schema.org)
+        to provide information about its author.""" ;
+        sh:or (
+            [ sh:class schema_org:Person ;]
+            [ sh:class schema_org:Organization ;]
+        ) ;
+        sh:path schema_org:author;
+        sh:minCount 1 ;
+        sh:message """The Root Data Entity SHOULD have a link to a Contextual Entity representing the `author` of the RO-Crate""" ;
+    ] ;
+    sh:property [
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:path schema_org:publisher ;
+        sh:severity sh:Warning ;
+        sh:name "Root Data Entity: `publisher` property" ;
+        sh:description """Check if the Root Data Entity has a `publisher` property of type `Organization`.""" ;
+        sh:message "The `publisher` property of a `Root Data Entity` SHOULD be an `Organization`";
+        sh:nodeKind sh:IRI ;
+        sh:class schema_org:Organization ;
+    ] .

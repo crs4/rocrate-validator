@@ -1,0 +1,74 @@
+# Copyright (c) 2024 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix prof: <http://www.w3.org/ns/dx/prof/> .
+@prefix role: <http://www.w3.org/ns/dx/prof/role/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+
+
+<https://w3id.org/ro/crate/1.1>  # a Profile; it's identifying URI
+    a prof:Profile ;
+
+    # common metadata for the Profile
+
+    # the Profile's label
+    rdfs:label "RO-Crate Metadata Specification 1.1" ;
+
+    # regular metadata, a basic description of the Profile
+    rdfs:comment """RO-Crate Metadata Specification."""@en ;
+
+    # regular metadata, URI of publisher
+    dct:publisher <https://www.researchobject.org/> ;
+
+    # this profile has a JSON-LD context resource
+    prof:hasResource [
+        a prof:ResourceDescriptor ;
+
+        # it's in JSON-LD format
+        dct:format <https://w3id.org/mediatype/application/ld+json> ;
+
+        # it conforms to JSON-LD, here refered to by its namespace URI as a Profile
+        dct:conformsTo <https://www.w3.org/TR/json-ld11/> ;
+
+        # this profile resource plays the role of "Vocabulary"
+        # described in this ontology's accompanying Roles vocabulary
+        prof:hasRole role:Vocabulary ;
+
+        # this profile resource's actual file
+        prof:hasArtifact <https://w3id.org/ro/crate/1.1/context> ;
+    ] ;
+
+    # this profile has a human-readable documentation resource
+    prof:hasResource [
+        a prof:ResourceDescriptor ;
+
+        # it's in HTML format
+        dct:format <https://w3id.org/mediatype/text/html> ;
+
+        # it conforms to HTML, here refered to by its namespace URI as a Profile
+        dct:conformsTo <https://www.w3.org/TR/html/> ;
+
+        # this profile resource plays the role of "Specification"
+        # described in this ontology's accompanying Roles vocabulary
+        prof:hasRole role:Specification ;
+
+        # this profile resource's actual file
+        prof:hasArtifact <https://www.researchobject.org/ro-crate/specification/1.1/index.html> ;
+    ] ;
+
+    # a short code to refer to the Profile with when a URI can't be used
+    prof:hasToken "ro-crate" ;
+.

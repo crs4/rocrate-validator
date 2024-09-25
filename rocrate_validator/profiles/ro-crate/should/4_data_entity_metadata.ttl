@@ -1,0 +1,56 @@
+# Copyright (c) 2024 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+@prefix ro: <./> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema_org: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+ro-crate:FileRecommendedProperties a sh:NodeShape ;
+    sh:targetClass ro-crate:File ;
+    sh:name "File Data Entity: RECOMMENDED properties";
+    sh:description """A `File` Data Entity SHOULD have detailed descriptions encodings through the `encodingFormat` property""" ;
+    sh:property [
+        sh:minCount 1 ;
+        sh:maxCount 2 ;
+        sh:path schema_org:encodingFormat ;
+        sh:severity sh:Warning ;
+        sh:name "File Data Entity: RECOMMENDED `encodingFormat` property" ;
+        sh:description """Check if the File Data Entity has a detailed description of encodings through the `encodingFormat` property.
+        The `encodingFormat` property SHOULD be a PRONOM identifier (e.g., application/pdf) or,
+        to add more detail, SHOULD be linked using a `PRONOM` to  a `Contextual Entity` of type `WebSite`
+        (see [Adding detailed descriptions of encodings](https://www.researchobject.org/ro-crate/1.1/data-entities.html#adding-detailed-descriptions-of-encodings)).
+        """ ;
+        sh:message "Missing or invalid `encodingFormat` linked to the `File Data Entity`";
+        sh:or (
+            [
+                sh:datatype xsd:string ;
+                sh:pattern "^(\\w*)\\/(\\w[\\w\\.-]*)(?:\\+(\\w[\\w\\.-]*))?(?:;(\\w+=[^;]+))*$" ;
+                sh:name "File Data Entity: RECOMMENDED `PRONOM` for the `encodingFormat` property" ;
+                sh:description """Check if the File Data Entity is linked to its `encodingFormat` through a PRONOM identifier 
+                (e.g., application/pdf, application/text, image/svg+xml, image/svg;q=0.9,/;q=0.8,image/svg+xml;q=0.9,/;q=0.8, application/vnd.uplanet.listcmd-wbxml;charset=utf-8).
+                """ ;
+                sh:message "The `encodingFormat` SHOULD be linked using a PRONOM identifier (e.g., application/pdf).";
+            ]
+            [
+                sh:nodeKind sh:IRI ;
+                sh:class schema_org:WebSite ;
+                sh:name "File Data Entity: RECOMMENDED `Contextual Entity` linked to the `encodingFormat` property";
+                sh:description "Check if the File Data Entity `encodingFormat` is linked to a `Contextual Entity of type `WebSite`." ;
+                sh:message "The `encodingFormat` SHOULD be linked to a `Contextual Entity` of type `Web Site`." ;
+            ]
+        )
+    ] .

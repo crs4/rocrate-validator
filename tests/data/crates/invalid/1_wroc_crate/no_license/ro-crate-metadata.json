@@ -1,0 +1,112 @@
+{
+    "@context": "https://w3id.org/ro/crate/1.1/context",
+    "@graph": [
+        {
+            "@id": "./",
+            "@type": "Dataset",
+            "datePublished": "2024-04-17T13:39:44+00:00",
+            "hasPart": [
+                {
+                    "@id": "sort-and-change-case.ga"
+                },
+                {
+                    "@id": "sort-and-change-case.cwl"
+                },
+                {
+                    "@id": "blank.png"
+                },
+                {
+                    "@id": "README.md"
+                }
+            ],
+            "mainEntity": {
+                "@id": "sort-and-change-case.ga"
+            }
+        },
+        {
+            "@id": "ro-crate-metadata.json",
+            "@type": "CreativeWork",
+            "about": {
+                "@id": "./"
+            },
+            "conformsTo": [
+                {
+                    "@id": "https://w3id.org/ro/crate/1.1"
+                },
+                {
+                    "@id": "https://w3id.org/workflowhub/workflow-ro-crate/1.0"
+                }
+            ]
+        },
+        {
+            "@id": "sort-and-change-case.ga",
+            "@type": [
+                "File",
+                "SoftwareSourceCode",
+                "ComputationalWorkflow"
+            ],
+            "description": "sort lines and change text to upper case",
+            "image": {
+                "@id": "blank.png"
+            },
+            "license": "https://spdx.org/licenses/MIT.html",
+            "name": "sort-and-change-case",
+            "programmingLanguage": {
+                "@id": "https://w3id.org/workflowhub/workflow-ro-crate#galaxy"
+            },
+            "subjectOf": {
+                "@id": "sort-and-change-case.cwl"
+            }
+        },
+        {
+            "@id": "https://w3id.org/workflowhub/workflow-ro-crate#galaxy",
+            "@type": "ComputerLanguage",
+            "identifier": {
+                "@id": "https://galaxyproject.org/"
+            },
+            "name": "Galaxy",
+            "url": {
+                "@id": "https://galaxyproject.org/"
+            }
+        },
+        {
+            "@id": "sort-and-change-case.cwl",
+            "@type": [
+                "File",
+                "SoftwareSourceCode",
+                "HowTo"
+            ],
+            "name": "sort-and-change-case",
+            "programmingLanguage": {
+                "@id": "https://w3id.org/workflowhub/workflow-ro-crate#cwl"
+            }
+        },
+        {
+            "@id": "https://w3id.org/workflowhub/workflow-ro-crate#cwl",
+            "@type": "ComputerLanguage",
+            "alternateName": "CWL",
+            "identifier": {
+                "@id": "https://w3id.org/cwl/"
+            },
+            "name": "Common Workflow Language",
+            "url": {
+                "@id": "https://www.commonwl.org/"
+            }
+        },
+        {
+            "@id": "blank.png",
+            "@type": [
+                "File",
+                "ImageObject"
+            ]
+        },
+        {
+            "@id": "README.md",
+            "@type": "File",
+            "about": {
+                "@id": "./"
+            },
+            "encodingFormat": "text/markdown"
+        }
+    ]
+}

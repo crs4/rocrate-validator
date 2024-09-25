@@ -1,0 +1,101 @@
+# Copyright (c) 2024 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+@prefix ro: <./> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema_org: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix validator: <https://github.com/crs4/rocrate-validator/> .
+
+
+ro-crate:FindROCrateMetadataFileDescriptorEntity a sh:NodeShape, validator:HiddenShape;
+    sh:name "Identify the RO-Crate Metadata File Descriptor" ;
+    sh:description """The RO-Crate Metadata File Descriptor entity describes the RO-Crate itself, and it is named as `ro-crate-metadata.json`.
+        It can be identified by name according to the RO-Crate specification
+        available at [Finding RO-Crate Root in RDF triple stores](https://www.researchobject.org/ro-crate/1.1/appendix/relative-uris.html#finding-ro-crate-root-in-rdf-triple-stores).""" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?this a schema:CreativeWork ;
+                FILTER(contains(str(?this), "ro-crate-metadata.json"))
+            }
+        """
+    ] ;
+
+    # Expand data graph with triples from the file data entity
+    sh:rule [
+        a sh:TripleRule ;
+        sh:subject sh:this ;
+        sh:predicate rdf:type ;
+        sh:object ro-crate:ROCrateMetadataFileDescriptor ;
+    ] .
+
+ro-crate:ROCrateMetadataFileDescriptorExistence
+    a sh:NodeShape ;
+    sh:name "RO-Crate Metadata File Descriptor entity existence" ;
+    sh:description "The RO-Crate JSON-LD MUST contain a Metadata File Descriptor entity named `ro-crate-metadata.json` and typed as `schema:CreativeWork`" ;
+    sh:targetNode ro:ro-crate-metadata.json ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "RO-Crate Metadata File Descriptor entity existence" ;
+        sh:description """Check if the RO-Crate Metadata File Descriptor entity exists,
+            i.e., if there exists an entity with @id `ro-crate-metadata.json` and type `schema:CreativeWork`""" ;
+        sh:path rdf:type ;
+        sh:hasValue ro-crate:ROCrateMetadataFileDescriptor ;
+        sh:minCount 1 ;
+        sh:message "The root of the document MUST have an entity with @id `ro-crate-metadata.json`" ;
+    ] .
+
+ro-crate:ROCrateMetadataFileDescriptorRecommendedProperties a sh:NodeShape ;
+    sh:name "RO-Crate Metadata File Descriptor REQUIRED properties" ;
+    sh:description """RO-Crate Metadata Descriptor MUST be defined
+    according with the requirements details defined in
+    [RO-Crate Metadata File Descriptor](https://www.researchobject.org/ro-crate/1.1/root-data-entity.html#ro-crate-metadata-file-descriptor)""";
+    sh:targetNode ro:ro-crate-metadata.json ;
+    sh:property [ 
+        a sh:PropertyShape ;
+        sh:name "Metadata File Descriptor entity type" ;
+        sh:description "Check if the RO-Crate Metadata File Descriptor has `@type` CreativeWork, as per schema.org" ;
+        sh:minCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:path rdf:type ;
+        sh:hasValue schema_org:CreativeWork ;
+        sh:message "The RO-Crate metadata file MUST be a CreativeWork, as per schema.org" ;
+    ] ;
+    sh:property [ 
+        a sh:PropertyShape ;
+        sh:name "Metadata File Descriptor entity: `about` property" ;
+        sh:description """Check if the RO-Crate Metadata File Descriptor has an `about` property referencing the Root Data Entity""" ;
+        sh:maxCount 1;
+        sh:minCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:path schema_org:about ;
+        sh:class schema_org:Dataset ;
+        sh:message "The RO-Crate metadata file descriptor MUST have an `about` property referencing the Root Data Entity" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Metadata File Descriptor entity: `conformsTo` property" ;
+        sh:description """Check if the RO-Crate Metadata File Descriptor has a `conformsTo` property which points to the RO-Crate specification version""" ;
+        sh:minCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:path dct:conformsTo ;
+        sh:hasValue <https://w3id.org/ro/crate/1.1> ;
+        sh:message "The RO-Crate metadata file descriptor MUST have a `conformsTo` property with the RO-Crate specification version" ;
+    ] .

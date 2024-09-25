@@ -1,0 +1,15 @@
+curie_map:
+  prov: http://www.w3.org/ns/prov#
+  schema: http://schema.org/
+  wfrun: https://w3id.org/ro/terms/workflow-run
+  skos: http://www.w3.org/2004/02/skos/core#
+  bioschema:  https://bioschemas.org/
+  semapv: https://w3id.org/semapv/vocab/
+license: https://creativecommons.org/publicdomain/zero/1.0/
+mapping_set_group: researchobject.org
+mapping_set_id: prov_wfrun
+mapping_set_title: 'Mapping PROV to Workflow Run RO-Crate'
+object_source: https://w3id.org/ro/wfrun/provenance/0.3
+object_source_version: 0.3
+subject_source: http://www.w3.org/ns/prov-o#
+subject_source_version: 20130430

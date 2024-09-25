@@ -1,0 +1,111 @@
+# Copyright (c) 2024 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+@prefix ro: <./> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+@prefix process-run-crate: <https://github.com/crs4/rocrate-validator/profiles/process-run-crate/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema: <http://schema.org/> .
+@prefix bioschemas: <https://bioschemas.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+
+process-run-crate:ProcRCApplication a sh:NodeShape ;
+    sh:name "ProcRC Application" ;
+    sh:description "Properties of a Process Run Crate Application" ;
+    sh:targetClass schema:SoftwareApplication,
+                   schema:SoftwareSourceCode,
+                   bioschemas:ComputationalWorkflow;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Application name" ;
+        sh:description "The Application SHOULD have a name" ;
+        sh:path schema:name ;
+        sh:minCount 1 ;
+        sh:message "The Application SHOULD have a name" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Application url" ;
+        sh:description "The Application SHOULD have a url" ;
+        sh:path schema:url ;
+        sh:minCount 1 ;
+        sh:message "The Application SHOULD have a url" ;
+    ] .
+
+process-run-crate:ProcRCSoftwareSourceCodeComputationalWorkflow a sh:NodeShape ;
+    sh:name "ProcRC SoftwareSourceCode or ComputationalWorkflow" ;
+    sh:description "Properties of a Process Run Crate SoftwareSourceCode or ComputationalWorkflow" ;
+    sh:targetClass schema:SoftwareSourceCode,
+                   bioschemas:ComputationalWorkflow;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "version" ;
+        sh:description "The SoftwareSourceCode or ComputationalWorkflow SHOULD have a version" ;
+        sh:path schema:version ;
+        sh:minCount 1 ;
+        sh:message "The SoftwareSourceCode or ComputationalWorkflow SHOULD have a version" ;
+    ] .
+
+process-run-crate:ProcRCSoftwareApplication a sh:NodeShape ;
+    sh:name "ProcRC SoftwareApplication" ;
+    sh:description "Properties of a Process Run Crate SoftwareApplication" ;
+    sh:targetClass schema:SoftwareApplication ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "version or softwareVersion" ;
+        sh:description "The SoftwareApplication SHOULD have a version or softwareVersion" ;
+        sh:message "The SoftwareApplication SHOULD have a version or softwareVersion" ;
+        sh:path [
+            sh:alternativePath ( schema:version schema:softwareVersion ) ;
+        ] ;
+        sh:minLength 1 ;
+        sh:minCount 1 ;
+    ] .
+
+
+process-run-crate:ProcRCSoftwareApplicationSingleVersion a sh:NodeShape ;
+    sh:name "ProcRC SoftwareApplication SingleVersion" ;
+    sh:description "Process Run Crate SoftwareApplication should not have both version and softwareVersion" ;
+    sh:message "Process Run Crate SoftwareApplication should not have both version and softwareVersion" ;
+    sh:targetClass schema:SoftwareApplication ;
+    sh:not [
+        sh:and (
+            [ sh:property [
+                a sh:PropertyShape ;
+                sh:path schema:version ;
+                sh:minCount 1 ;
+            ]]
+            [ sh:property [
+                a sh:PropertyShape ;
+                sh:path schema:softwareVersion ;
+                sh:minCount 1 ;
+            ]]
+        ) ;
+    ] .
+
+
+process-run-crate:ProcRCSoftwareApplicationID a sh:NodeShape ;
+    sh:name "ProcRC SoftwareApplication ID" ;
+    sh:description "Process Run Crate SoftwareApplication ID" ;
+    sh:targetNode schema:SoftwareApplication ,
+                   schema:SoftwareSourceCode,
+                   bioschemas:ComputationalWorkflow;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "SoftwareApplication id" ;
+        sh:description "The SoftwareApplication id SHOULD be an absolute URI" ;
+        sh:path [ sh:inversePath rdf:type ] ;
+        sh:pattern "^http.*" ;
+        sh:message "The SoftwareApplication id SHOULD be an absolute URI" ;
+    ] .

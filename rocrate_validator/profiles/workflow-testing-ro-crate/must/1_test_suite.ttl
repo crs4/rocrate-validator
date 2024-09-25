@@ -1,0 +1,56 @@
+# Copyright (c) 2024 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+@prefix ro: <./> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+@prefix workflow-testing-ro-crate: <https://github.com/crs4/rocrate-validator/profiles/workflow-testing-ro-crate/> .
+@prefix schema: <http://schema.org/> .
+@prefix bioschemas: <https://bioschemas.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix wftest: <https://w3id.org/ro/terms/test#> .
+
+workflow-testing-ro-crate:WTROCTestSuiteRequired a sh:NodeShape ;
+    sh:name "Workflow Testing RO-Crate TestSuite MUST" ;
+    sh:description "Required properties of the Workflow Testing RO-Crate TestSuite" ;
+    sh:targetClass wftest:TestSuite ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "TestSuite MUST be referenced via mentions from root" ;
+        sh:description "The TestSuite MUST be referenced from the Root Data Entity via mentions" ;
+        sh:path [ sh:inversePath schema:mentions ] ;
+        sh:node ro-crate:RootDataEntity ;
+        sh:minCount 1 ;
+        sh:message "The TestSuite MUST be referenced from the Root Data Entity via mentions" ;
+    ] .
+
+
+workflow-testing-ro-crate:WTROCTestSuiteInstanceOrDefinition a sh:NodeShape ;
+    sh:name "TestSuite instance or definition" ;
+    sh:description "The TestSuite MUST refer to a TestInstance or TestDefinition" ;
+    sh:message "The TestSuite MUST refer to a TestInstance or TestDefinition" ;
+    sh:targetClass wftest:TestSuite ;
+    sh:or (
+        [ sh:property [
+            a sh:PropertyShape ;
+            sh:path wftest:instance ;
+            sh:class wftest:TestInstance ;
+            sh:minCount 1 ;
+        ]]
+        [ sh:property [
+            a sh:PropertyShape ;
+            sh:path wftest:definition ;
+            sh:class wftest:TestDefinition ;
+            sh:minCount 1 ;
+        ]]
+    ) .

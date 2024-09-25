@@ -1,0 +1,120 @@
+# Copyright (c) 2024 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+@prefix ro: <./> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema_org: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix validator: <https://github.com/crs4/rocrate-validator/> .
+
+
+ro-crate:RootDataEntityType
+    a sh:NodeShape ;
+    sh:name "RO-Crate Root Data Entity type" ;
+    sh:description "The Root Data Entity MUST be a `Dataset` (as per `schema.org`)" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?metadatafile schema:about ?this .
+                FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
+            }
+        """
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Root Data Entity type" ;
+        sh:description "Check if the Root Data Entity is a `Dataset` (as per `schema.org`)" ;
+        sh:path rdf:type ;
+        sh:hasValue schema_org:Dataset ;
+        sh:minCount 1 ;
+        sh:message """The Root Data Entity MUST be a `Dataset` (as per `schema.org`)""" ;
+    ] ;
+    # Validate that if the publisher is specified, it is an Organization or a Person
+    sh:property [
+        sh:path schema_org:publisher ;
+        sh:severity sh:Violation ;
+        sh:name "Root Data Entity: `publisher` property" ;
+        sh:description """Check if the Root Data Entity has a `publisher` property of type `Organization` or `Person`.""" ;
+        sh:or (
+            [ sh:class schema_org:Organization ]
+            [ sh:class schema_org:Person ]
+        ) ;
+        sh:message """The Root Data Entity MUST have a `publisher` property of type `Organization` or `Person`.""" ;
+    ] .
+
+
+ro-crate:FindRootDataEntity a sh:NodeShape, validator:HiddenShape;
+    sh:name "Identify the Root Data Entity of the RO-Crate" ;
+    sh:description """The Root Data Entity is the top-level Data Entity in the RO-Crate and serves as the starting point for the description of the RO-Crate.
+        It is a schema:Dataset and is indirectly identified by the about property of the resource ro-crate-metadata.json in the RO-Crate 
+        (see the definition at [Finding RO-Crate Root in RDF triple stores](https://www.researchobject.org/ro-crate/1.1/appendix/relative-uris.html#finding-ro-crate-root-in-rdf-triple-stores)).
+    """ ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?this a schema:Dataset .
+                ?metadatafile schema:about ?this .
+                FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
+            }
+        """
+    ] ;
+
+    # Expand data graph with triples from the file data entity
+    sh:rule [
+        a sh:TripleRule ;
+        sh:subject sh:this ;
+        sh:predicate rdf:type ;
+        sh:object ro-crate:RootDataEntity ;
+    ] .
+
+
+ro-crate:RootDataEntityValueRestriction
+    a sh:NodeShape ;
+    sh:name "RO-Crate Root Data Entity value restriction" ;
+    sh:description "The Root Data Entity MUST end with `/`" ;
+    sh:targetNode ro-crate:RootDataEntity ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Root Data Entity URI value" ;
+        sh:description "Check if the Root Data Entity URI ends with `/`" ;
+        sh:path [ sh:inversePath rdf:type ] ;
+        sh:minCount 1 ;
+        sh:message """The Root Data Entity URI MUST end with `/`""" ;
+        sh:pattern "/$" ;
+    ] .
+
+ro-crate:RootDataEntityHasPartValueRestriction
+    a sh:NodeShape ;
+    sh:name "RO-Crate Root Data Entity: `hasPart` value restriction" ;
+    sh:description "The Root Data Entity MUST be linked to the declared `File`, `Directory` and other types of instances through the `hasPart` property" ;
+    sh:targetClass ro-crate:RootDataEntity ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "RO-Crate Root Data Entity: `hasPart` value restriction" ;
+        sh:description "Check if the Root Data Entity is linked to the declared `File`, `Directory` and other types of instances through the `hasPart` property" ;
+        sh:path schema_org:hasPart ;
+        sh:or (
+            [ sh:class ro-crate:File ]
+            [ sh:class ro-crate:Directory ]
+            [ sh:class ro-crate:GenericDataEntity ]
+        ) ;
+        # sh:message """The Root Data Entity MUST be linked to either File or Directory instances, nothing else""" ;
+    ] .

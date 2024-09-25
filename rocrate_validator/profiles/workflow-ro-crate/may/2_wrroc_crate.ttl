@@ -1,0 +1,49 @@
+# Copyright (c) 2024 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+@prefix ro: <./> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+@prefix workflow-ro-crate: <https://github.com/crs4/rocrate-validator/profiles/workflow-ro-crate/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema: <http://schema.org/> .
+@prefix bioschemas: <https://bioschemas.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+
+workflow-ro-crate:FindTestDir a sh:NodeShape ;
+    sh:name "test directory" ;
+    sh:description "Dataset data entity to hold tests" ;
+    sh:targetNode ro:test\/ ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "test/ dir type" ;
+        sh:description "The test/ dir should be a Dataset" ;
+        sh:path rdf:type ;
+        sh:hasValue schema:Dataset ;
+        sh:minCount 1 ;
+        sh:message "The test/ dir should be a Dataset" ;
+    ] .
+
+workflow-ro-crate:FindExamplesDir a sh:NodeShape ;
+    sh:name "examples directory" ;
+    sh:description "Dataset data entity to hold examples" ;
+    sh:targetNode ro:examples\/ ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "examples/ dir type" ;
+        sh:description "The examples/ dir should be a Dataset" ;
+        sh:path rdf:type ;
+        sh:hasValue schema:Dataset ;
+        sh:minCount 1 ;
+        sh:message "The examples/ dir should be a Dataset" ;
+    ] .

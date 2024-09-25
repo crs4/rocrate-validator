@@ -1,0 +1,769 @@
+{
+    "@context": [
+        "https://w3id.org/ro/crate/1.1/context",
+        {
+            "Standard": "http://purl.org/dc/terms/Standard",
+            "Profile": "http://www.w3.org/ns/dx/prof/Profile",
+            "MappingSet": "https://w3id.org/sssom/schema/MappingSet"
+        },
+        {
+            "copyrightNotice": "http://schema.org/copyrightNotice",
+            "interpretedAsClaim": "http://schema.org/interpretedAsClaim",
+            "archivedAt": "http://schema.org/archivedAt",
+            "creditText": "http://schema.org/creditText"
+        }
+    ],
+    "@graph": [
+        {
+            "@id": "ro-crate-metadata.json",
+            "@type": "CreativeWork",
+            "conformsTo": {
+                "@id": "https://w3id.org/ro/crate/1.1"
+            },
+            "about": {
+                "@id": "./"
+            },
+            "author": {
+                "@id": "https://orcid.org/0000-0001-8271-5429"
+            },
+            "license": {
+                "@id": "https://creativecommons.org/publicdomain/zero/1.0/"
+            }
+        },
+        {
+            "@id": "./",
+            "identifier": {
+                "@id": "https://doi.org/10.5281/zenodo.10368990"
+            },
+            "url": "https://w3id.org/ro/doi/10.5281/zenodo.10368989",
+            "@type": "Dataset",
+            "about": {
+                "@id": "https://researchobject.org/workflow-run-crate/"
+            },
+            "author": [
+                {
+                    "@id": "https://orcid.org/0000-0001-8271-5429"
+                }
+            ],
+            "description": "RO-Crate for the manuscript that describes Workflow Run Crate, includes mapping to PROV using SKOS/SSSOM",
+            "hasPart": [
+                {
+                    "@id": "https://w3id.org/ro/wfrun/process/0.3"
+                },
+                {
+                    "@id": "https://w3id.org/ro/wfrun/workflow/0.3"
+                },
+                {
+                    "@id": "https://w3id.org/ro/wfrun/provenance/0.3"
+                },
+                {
+                    "@id": "mapping/"
+                }
+            ],
+            "name": "Recording provenance of workflow runs with RO-Crate (RO-Crate and mapping)",
+            "datePublished": "2023-12-12",
+            "license": {
+                "@id": "https://www.apache.org/licenses/LICENSE-2.0"
+            },
+            "creator": [],
+            "publisher": {
+                "@id": "https://crs4.it"
+            }
+        },
+        {
+            "@id": "https://doi.org/10.5281/zenodo.10368990",
+            "@type": "PropertyValue",
+            "name": "doi",
+            "propertyID": "https://registry.identifiers.org/registry/doi",
+            "value": "doi:10.5281/zenodo.10368990",
+            "url": "https://doi.org/10.5281/zenodo.10368990"
+        },
+        {
+            "@id": "https://orcid.org/0000-0001-9842-9718",
+            "@type": "Person",
+            "affiliation": [
+                "Department of Computer Science, The University of Manchester, Manchester, United Kingdom",
+                "Informatics Institute, University of Amsterdam, Amsterdam, The Netherlands"
+            ],
+            "name": "Stian Soiland-Reyes"
+        },
+        {
+            "@id": "https://researchobject.org/workflow-run-crate/",
+            "@type": "Project",
+            "member": [
+                {
+                    "@id": "https://orcid.org/0000-0001-8271-5429"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0003-4929-1219"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0001-9842-9718"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0002-5432-2748"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0002-4806-5140"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0003-3156-2105"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0002-6190-122X"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0003-0454-7145"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0002-8940-4946"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0003-0606-2512"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0002-3468-0652"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0002-2961-9670"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0003-3986-0510"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0002-0003-2024"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0002-9464-6640"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0001-5845-8880"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0003-4894-4660"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0002-4405-6802"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0001-9290-2017"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0003-0617-9219"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0001-9228-2882"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0003-3898-9451"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0003-3777-5945"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0003-2765-0049"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0001-9818-9320"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0002-8122-9522"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0002-8330-4071"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0003-4073-7456"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0003-1361-7301"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0002-5358-616X"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0002-5477-287X"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0001-8250-4074"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0003-0902-0086"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0001-8172-8981"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0001-6740-9212"
+                }
+            ],
+            "name": "Workflow Run Crate task force",
+            "parentOrganization": {
+                "@id": "https://www.researchobject.org/ro-crate/community"
+            }
+        },
+        {
+            "@id": "https://orcid.org/0000-0001-8271-5429",
+            "@type": "Person",
+            "affiliation": {
+                "@id": "https://crs4.it"
+            },
+            "name": "Simone Leo"
+        },
+        {
+            "@id": "https://crs4.it",
+            "@type": "Organization",
+            "name": "Center for Advanced Studies, Research, and Development in Sardinia (CRS4)",
+            "url": "https://crs4.it"
+        },
+        {
+            "@id": "https://orcid.org/0000-0002-2961-9670",
+            "@type": "Person",
+            "affiliation": [
+                "Vrije Universiteit Amsterdam, Amsterdam, The Netherlands",
+                "DTL Projects, The Netherlands",
+                "Forschungszentrum Jülich, Germany"
+            ],
+            "name": "Michael R Crusoe"
+        },
+        {
+            "@id": "https://orcid.org/0000-0003-4929-1219",
+            "@type": "Person",
+            "affiliation": "Barcelona Supercomputing Center, Barcelona, Spain",
+            "name": "Laura Rodríguez-Navas"
+        },
+        {
+            "@id": "https://orcid.org/0000-0003-0606-2512",
+            "@type": "Person",
+            "affiliation": "Barcelona Supercomputing Center, Barcelona, Spain",
+            "name": "Raül Sirvent"
+        },
+        {
+            "@id": "https://orcid.org/0000-0002-3468-0652",
+            "@type": "Person",
+            "affiliation": [
+                "Biozentrum, University of Basel, Basel, Switzerland",
+                "Swiss Institute of Bioinformatics, Lausanne, Switzerland"
+            ],
+            "name": "Alexander Kanitz"
+        },
+        {
+            "@id": "https://orcid.org/0000-0002-8940-4946",
+            "@type": "Person",
+            "affiliation": "VIB-UGent Center for Plant Systems Biology, Gent, Belgium",
+            "name": "Paul De Geest"
+        },
+        {
+            "@id": "https://orcid.org/0000-0002-0003-2024",
+            "@type": "Person",
+            "affiliation": [
+                "Faculty of Informatics, Masaryk Universit, Brno, Czech Republic",
+                "Institute of Computer Science, Masaryk University, Brno, Czech Republic",
+                "BBMRI-ERIC, Graz, Austria"
+            ],
+            "name": "Rudolf Wittner"
+        },
+        {
+            "@id": "https://orcid.org/0000-0002-4663-5613",
+            "@type": "Person",
+            "affiliation": "Center for Advanced Studies, Research, and Development in Sardinia (CRS4), Pula, Sardinia, Italy",
+            "name": "Luca Pireddu"
+        },
+        {
+            "@id": "https://orcid.org/0000-0003-0454-7145",
+            "@type": "Person",
+            "affiliation": "Ontology Engineering Group, Universidad Politécnica de Madrid, Madrid, Spain",
+            "name": "Daniel Garijo"
+        },
+        {
+            "@id": "https://orcid.org/0000-0002-4806-5140",
+            "@type": "Person",
+            "affiliation": "Barcelona Supercomputing Center, Barcelona, Spain",
+            "name": ["José María Fernández", "José M. Fernández"]
+        },
+        {
+            "@id": "https://orcid.org/0000-0001-9290-2017",
+            "@type": "Person",
+            "affiliation": "Computer Science Dept., Università degli Studi di Torino, Torino, Italy",
+            "name": "Iacopo Colonnelli"
+        },
+        {
+            "@id": "https://orcid.org/0000-0002-1119-1792",
+            "@type": "Person",
+            "affiliation": "Faculty of Informatics, Masaryk University, Brno, Czech Republic",
+            "name": "Matej Gallo"
+        },
+        {
+            "@id": "https://orcid.org/0000-0003-3777-5945",
+            "@type": "Person",
+            "affiliation": [
+                "Database Center for Life Science, Joint Support-Center for Data Science Research, Research Organization of Information and Systems, Shizuoka, Japan",
+                "Institute for Advanced Academic Research, Chiba University, Chiba, Japan"
+            ],
+            "name": "Tazro Ohta"
+        },
+        {
+            "@id": "https://orcid.org/0000-0003-2765-0049",
+            "@type": "Person",
+            "affiliation": "Sator Inc., Tokyo, Japan",
+            "name": "Hirotaka Suetake"
+        },
+        {
+            "@id": "https://orcid.org/0000-0002-0309-604X",
+            "@type": "Person",
+            "affiliation": "Barcelona Supercomputing Center, Barcelona, Spain",
+            "name": "Salvador Capella-Gutierrez"
+        },
+        {
+            "@id": "https://orcid.org/0000-0003-0902-0086",
+            "@type": "Person",
+            "affiliation": "Vrije Universiteit Amsterdam, Amsterdam, The Netherlands",
+            "name": "Renske de Wit"
+        },
+        {
+            "@id": "https://orcid.org/0000-0001-8250-4074",
+            "@type": "Person",
+            "affiliation": "Barcelona Supercomputing Center, Barcelona, Spain",
+            "name": ["Bruno P. Kinoshita", "Bruno de Paula Kinoshita"]
+        },
+        {
+            "@id": "https://w3id.org/ro/wfrun/process/0.3",
+            "@type": "Profile",
+            "author": {
+                "@id": "https://researchobject.org/workflow-run-crate/"
+            },
+            "name": "Process Run Crate",
+            "version": "0.3"
+        },
+        {
+            "@id": "https://w3id.org/ro/wfrun/workflow/0.3",
+            "@type": "Profile",
+            "author": {
+                "@id": "https://researchobject.org/workflow-run-crate/"
+            },
+            "name": "Workflow Run Crate",
+            "version": "0.3"
+        },
+        {
+            "@id": "https://w3id.org/ro/wfrun/provenance/0.3",
+            "@type": "Profile",
+            "author": {
+                "@id": "https://researchobject.org/workflow-run-crate/"
+            },
+            "name": "Provenance Run Crate",
+            "version": "0.3"
+        },
+        {
+            "@id": "mapping/environment.yml",
+            "@type": "File",
+            "conformsTo": {
+                "@id": "https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#create-env-file-manually"
+            },
+            "encodingFormat": [
+                "application/yaml",
+                {
+                    "@id": "https://www.nationalarchives.gov.uk/PRONOM/fmt/818"
+                }
+            ],
+            "name": "Conda environment for sssom"
+        },
+        {
+            "@id": "mapping/environment.lock.yml",
+            "@type": "File",
+            "conformsTo": {
+                "@id": "https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#create-env-file-manually"
+            },
+            "encodingFormat": [
+                "application/yaml",
+                {
+                    "@id": "https://www.nationalarchives.gov.uk/PRONOM/fmt/818"
+                }
+            ],
+            "name": "Conda environment for sssom, version-pinned"
+        },
+        {
+            "@id": "mapping/prov-mapping.tsv",
+            "@type": ["File", "MappingSet"],
+            "conformsTo": [
+                {
+                    "@id": "https://w3id.org/sssom/"
+                },
+                {
+                    "@id": "https://mapping-commons.github.io/sssom/spec/#tsv"
+                }
+            ],
+            "author": [
+                {
+                    "@id": "https://orcid.org/0000-0001-8271-5429"
+                }
+            ],
+            "creator": {
+                "@id": "https://orcid.org/0000-0001-9842-9718"
+            },
+            "encodingFormat": [
+                "text/tab-separated-values",
+                {
+                    "@id": "https://www.nationalarchives.gov.uk/PRONOM/x-fmt/13"
+                }
+            ],
+            "name": "PROV mapping to Workflow Run Crate (SSSOM TSV)"
+        },
+        {
+            "@id": "mapping/prov-mapping.yml",
+            "@type": ["File", "MappingSet"],
+            "conformsTo": {
+                "@id": "https://w3id.org/sssom/"
+            },
+            "encodingFormat": [
+                "text/yaml",
+                {
+                    "@id": "https://www.nationalarchives.gov.uk/PRONOM/fmt/818"
+                }
+            ],
+            "name": "PROV mapping to Workflow Run Crate (SSSOM metadata)"
+        },
+        {
+            "@id": "mapping/prov-mapping-w-metadata.tsv",
+            "@type": ["File", "MappingSet"],
+            "conformsTo": [
+                {
+                    "@id": "https://w3id.org/sssom/"
+                },
+                {
+                    "@id": "https://mapping-commons.github.io/sssom/spec/#tsv"
+                }
+            ],
+            "encodingFormat": "text/tab-separated-values",
+            "isBasedOn": [
+                {
+                    "@id": "mapping/prov-mapping.tsv"
+                },
+                {
+                    "@id": "mapping/prov-mapping.yml"
+                }
+            ],
+            "name": "PROV mapping to Workflow Run Crate (SSSOM TSV with metadata)"
+        },
+        {
+            "@id": "mapping/prov-mapping.ttl",
+            "@type": ["File", "MappingSet"],
+            "conformsTo": [
+                {
+                    "@id": "http://www.w3.org/TR/owl2-mapping-to-rdf/"
+                },
+                {
+                    "@id": "http://www.w3.org/TR/skos-reference"
+                }
+            ],
+            "encodingFormat": [
+                "text/turtle",
+                {
+                    "@id": "https://www.nationalarchives.gov.uk/PRONOM/fmt/874"
+                }
+            ],
+            "isBasedOn": {
+                "@id": "mapping/prov-mapping-w-metadata.tsv"
+            },
+            "name": "PROV to Workflow Run Crate (SKOS and SSSOM OWL axioms)"
+        },
+        {
+            "@id": "mapping/prov-mapping.rdf",
+            "@type": ["File", "MappingSet"],
+            "conformsTo": [
+                {
+                    "@id": "http://www.w3.org/TR/owl2-mapping-to-rdf/"
+                },
+                {
+                    "@id": "https://w3id.org/sssom/"
+                },
+                {
+                    "@id": "https://mapping-commons.github.io/sssom/spec/#rdfxml-serialised-re-ified-owl-axioms"
+                }
+            ],
+            "encodingFormat": [
+                "application/rdf+xml",
+                {
+                    "@id": "https://www.nationalarchives.gov.uk/PRONOM/fmt/875"
+                }
+            ],
+            "isBasedOn": {
+                "@id": "mapping/prov-mapping-w-metadata.tsv"
+            },
+            "name": "PROV mapping to Workflow Run Crate (SSSOM OWL axioms)"
+        },
+        {
+            "@id": "mapping/prov-mapping.json",
+            "@type": ["File", "MappingSet"],
+            "conformsTo": [
+                {
+                    "@id": "https://w3id.org/sssom/"
+                },
+                {
+                    "@id": "https://mapping-commons.github.io/sssom/spec/#json"
+                }
+            ],
+            "encodingFormat": [
+                "application/json",
+                {
+                    "@id": "https://www.nationalarchives.gov.uk/PRONOM/fmt/817"
+                }
+            ],
+            "isBasedOn": {
+                "@id": "mapping/prov-mapping-w-metadata.tsv"
+            },
+            "name": "PROV mapping to Workflow Run Crate (SSSOM JSON)"
+        },
+        {
+            "@id": "http://www.w3.org/TR/owl2-mapping-to-rdf/",
+            "@type": "CreativeWork",
+            "name": "OWL 2 (in RDF)"
+        },
+        {
+            "@id": "http://www.w3.org/TR/skos-reference",
+            "@type": "CreativeWork",
+            "alternateName": "SKOS Simple Knowledge Organization System Reference",
+            "name": "SKOS"
+        },
+        {
+            "@id": "http://www.w3.org/ns/dx/prof/Profile",
+            "@type": "DefinedTerm",
+            "name": "Profile",
+            "url": "https://www.w3.org/TR/dx-prof/"
+        },
+        {
+            "@id": "https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#create-env-file-manually",
+            "@type": "CreativeWork",
+            "name": "Conda environment file format"
+        },
+        {
+            "@id": "https://mapping-commons.github.io/sssom/spec/#json",
+            "@type": "WebPageElement",
+            "name": "SSSOM JSON"
+        },
+        {
+            "@id": "https://mapping-commons.github.io/sssom/spec/#rdfxml-serialised-re-ified-owl-axioms",
+            "@type": "WebPageElement",
+            "name": "SSSOM RDF/XML serialised re-ified OWL axioms"
+        },
+        {
+            "@id": "https://mapping-commons.github.io/sssom/spec/#tsv",
+            "@type": "WebPageElement",
+            "name": "SSSOM TSV"
+        },
+        {
+            "@id": "https://orcid.org/0000-0001-5845-8880",
+            "@type": "Person",
+            "name": "Sebastiaan Huber"
+        },
+        {
+            "@id": "https://orcid.org/0000-0001-6740-9212",
+            "@type": "Person",
+            "name": "Samuel Lampa"
+        },
+        {
+            "@id": "https://orcid.org/0000-0001-8172-8981",
+            "@type": "Person",
+            "name": "Jasper Koehorst"
+        },
+        {
+            "@id": "https://orcid.org/0000-0001-9228-2882",
+            "@type": "Person",
+            "name": "Abigail Miller"
+        },
+        {
+            "@id": "https://orcid.org/0000-0001-9818-9320",
+            "@type": "Person",
+            "name": "Johannes Köster"
+        },
+        {
+            "@id": "https://orcid.org/0000-0002-4405-6802",
+            "@type": "Person",
+            "name": "Haris Zafeiropoulos"
+        },
+        {
+            "@id": "https://orcid.org/0000-0002-5358-616X",
+            "@type": "Person",
+            "name": "Petr Holub"
+        },
+        {
+            "@id": "https://orcid.org/0000-0002-5432-2748",
+            "@type": "Person",
+            "name": "Paul Brack"
+        },
+        {
+            "@id": "https://orcid.org/0000-0002-5477-287X",
+            "@type": "Person",
+            "name": "Milan Markovic"
+        },
+        {
+            "@id": "https://orcid.org/0000-0002-6190-122X",
+            "@type": "Person",
+            "name": "Ignacio Eguinoa"
+        },
+        {
+            "@id": "https://orcid.org/0000-0002-8122-9522",
+            "@type": "Person",
+            "name": "Luiz Gadelha"
+        },
+        {
+            "@id": "https://orcid.org/0000-0002-8330-4071",
+            "@type": "Person",
+            "name": "Mahnoor Zulfiqar"
+        },
+        {
+            "@id": "https://orcid.org/0000-0002-9464-6640",
+            "@type": "Person",
+            "name": "Wolfgang Maier"
+        },
+        {
+            "@id": "https://orcid.org/0000-0003-0617-9219",
+            "@type": "Person",
+            "name": "Jake Emerson"
+        },
+        {
+            "@id": "https://orcid.org/0000-0003-1361-7301",
+            "@type": "Person",
+            "name": "Maciek Bąk"
+        },
+        {
+            "@id": "https://orcid.org/0000-0003-3156-2105",
+            "@type": "Person",
+            "name": "Alan R Williams"
+        },
+        {
+            "@id": "https://orcid.org/0000-0003-3898-9451",
+            "@type": "Person",
+            "name": "Stelios Ninidakis"
+        },
+        {
+            "@id": "https://orcid.org/0000-0003-3986-0510",
+            "@type": "Person",
+            "name": "LJ Garcia Castro"
+        },
+        {
+            "@id": "https://orcid.org/0000-0003-4073-7456",
+            "@type": "Person",
+            "name": "Romain David"
+        },
+        {
+            "@id": "https://orcid.org/0000-0003-4894-4660",
+            "@type": "Person",
+            "name": "Kevin Jablonka"
+        },
+        {
+            "@id": "https://www.researchobject.org/ro-crate/community",
+            "@type": "Project",
+            "name": "RO-Crate Community"
+        },
+        {
+            "@id": "https://w3id.org/sssom/",
+            "@type": ["WebPage", "Standard"],
+            "alternateName": "Simple Standard for Sharing Ontological Mappings",
+            "name": "SSSOM",
+            "version": "0.15.0"
+        },
+        {
+            "@id": "https://w3id.org/sssom/schema/MappingSet",
+            "@type": "DefinedTerm",
+            "url": "https://mapping-commons.github.io/sssom/MappingSet/"
+        },
+        {
+            "@id": "https://www.apache.org/licenses/LICENSE-2.0",
+            "@type": "CreativeWork",
+            "name": "Apache License, Version 2.0",
+            "version": "2.0",
+            "identifier": {
+                "@id": "http://spdx.org/licenses/Apache-2.0"
+            }
+        },
+        {
+            "@id": "https://creativecommons.org/publicdomain/zero/1.0/",
+            "@type": "CreativeWork",
+            "identifier": {
+                "@id": "http://spdx.org/licenses/CC0-1.0"
+            },
+            "name": "Creative Commons Zero v1.0 Universal",
+            "version": "1.0"
+        },
+        {
+            "@id": "https://creativecommons.org/licenses/by/4.0/",
+            "@type": "CreativeWork",
+            "identifier": {
+                "@id": "http://spdx.org/licenses/CC-BY-4.0"
+            },
+            "name": "Creative Commons Attribution 4.0 International",
+            "version": "4.0"
+        },
+        {
+            "@id": "http://spdx.org/licenses/Apache-2.0",
+            "@type": "PropertyValue",
+            "propertyID": "http://spdx.org/rdf/terms#licenseId",
+            "name": "spdx",
+            "value": "Apache-2.0"
+        },
+        {
+            "@id": "http://spdx.org/licenses/CC0-1.0",
+            "@type": "PropertyValue",
+            "propertyID": "http://spdx.org/rdf/terms#licenseId",
+            "name": "spdx",
+            "value": "CC0-1.0"
+        },
+        {
+            "@id": "https://www.nationalarchives.gov.uk/PRONOM/fmt/817",
+            "@type": "WebSite",
+            "name": "JSON"
+        },
+        {
+            "@id": "https://www.nationalarchives.gov.uk/PRONOM/x-fmt/13",
+            "@type": "WebSite",
+            "name": "Tab-separated Values"
+        },
+        {
+            "@id": "https://www.nationalarchives.gov.uk/PRONOM/fmt/874",
+            "@type": "WebSite",
+            "name": "Turtle"
+        },
+        {
+            "@id": "https://www.nationalarchives.gov.uk/PRONOM/fmt/875",
+            "@type": "WebSite",
+            "name": "RDF/XML"
+        },
+        {
+          "@id": "https://www.nationalarchives.gov.uk/PRONOM/fmt/818",
+          "@type": "WebSite",
+          "name": "YAML"
+      },
+        {
+            "@id": "mapping/",
+            "@type": "Dataset",
+            "name": "PROV mapping to Workflow Run Crate",
+            "description": "Mapping using SKOS and SSSOM",
+            "hasPart": [
+                {
+                    "@id": "mapping/environment.yml"
+                },
+                {
+                    "@id": "mapping/environment.lock.yml"
+                },
+                {
+                    "@id": "mapping/prov-mapping.tsv"
+                },
+                {
+                    "@id": "mapping/prov-mapping.yml"
+                },
+                {
+                    "@id": "mapping/prov-mapping-w-metadata.tsv"
+                },
+                {
+                    "@id": "mapping/prov-mapping.ttl"
+                },
+                {
+                    "@id": "mapping/prov-mapping.rdf"
+                },
+                {
+                    "@id": "mapping/prov-mapping.json"
+                }
+            ]
+        }
+    ]
+}

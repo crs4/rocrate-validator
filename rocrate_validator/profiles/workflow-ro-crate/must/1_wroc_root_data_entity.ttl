@@ -1,0 +1,39 @@
+# Copyright (c) 2024 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+@prefix ro: <./> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+@prefix workflow-ro-crate: <https://github.com/crs4/rocrate-validator/profiles/workflow-ro-crate/> .
+@prefix schema: <http://schema.org/> .
+@prefix bioschemas: <https://bioschemas.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix validator: <https://github.com/crs4/rocrate-validator/> .
+
+workflow-ro-crate:WROCRootDataEntityRequiredProperties a sh:NodeShape ;
+    sh:name "WROC Root Data Entity Required Properties" ;
+    sh:description """Root Data Entity properties defined as MUST""" ;
+    sh:targetClass ro-crate:RootDataEntity ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Crate license" ;
+        sh:description "The Crate must specify a license" ;
+        sh:path schema:license ;
+        sh:or (
+            [ sh:nodeKind sh:Literal; sh:datatype xsd:string ; ]
+            [ sh:nodeKind sh:IRI ; ]
+        ) ;
+        sh:minCount 1 ;
+        sh:message "The Crate (Root Data Entity) must specify a license, which should be a URL but can also be a string" ;
+    ] .
