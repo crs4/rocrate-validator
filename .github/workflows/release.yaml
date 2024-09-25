@@ -48,7 +48,7 @@ jobs:
         name: 🏗 Check and Build Distribution
         runs-on: ubuntu-latest
         needs: wait-for-testing
-        if: ${{ github.repository == 'kikkomep/test-py-pipelines' }}
+        if: ${{ github.repository == 'crs4/rocrate-validator' }}
         steps:
             # Access the tag from the first workflow's outputs
             - name: ⬇️ Checkout code
