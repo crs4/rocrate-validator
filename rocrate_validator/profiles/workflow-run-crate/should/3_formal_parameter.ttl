@@ -72,3 +72,75 @@ workflow-run-crate:WfRCFormalParameterMapsPropertyValue a sh:NodeShape ;
         sh:minCount 1 ;
         sh:message "A FormalParameter that maps to a PropertyValue SHOULD have PropertyValue or a subclass of DataType as its additionalType" ;
     ] .
+
+workflow-run-crate:WfRCFormalParameterMapsFile a sh:NodeShape ;
+    sh:name "Workflow Run Crate FormalParameter that maps to a File" ;
+    sh:description "A FormalParameter that maps to a File SHOULD have File as its additionalType" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?this a bioschemas:FormalParameter .
+                ?file schema:exampleOfWork ?this .
+                ?file a schema:MediaObject .
+            }
+        """
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:additionalType ;
+        sh:or (
+            [ sh:hasValue "File" ; ]
+            [ sh:hasValue "MediaObject" ; ]
+        ) ;
+        sh:minCount 1 ;
+        sh:message "A FormalParameter that maps to a File SHOULD have File as its additionalType" ;
+    ] .
+
+workflow-run-crate:WfRCFormalParameterMapsDataset a sh:NodeShape ;
+    sh:name "Workflow Run Crate FormalParameter that maps to a Dataset" ;
+    sh:description "A FormalParameter that maps to a Dataset SHOULD have Dataset as its additionalType" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?this a bioschemas:FormalParameter .
+                ?dataset schema:exampleOfWork ?this .
+                ?dataset a schema:Dataset .
+            }
+        """
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:additionalType ;
+        sh:hasValue "Dataset" ;
+        sh:minCount 1 ;
+        sh:message "A FormalParameter that maps to a Dataset SHOULD have Dataset as its additionalType" ;
+    ] .
+
+workflow-run-crate:WfRCFormalParameterMapsCollection a sh:NodeShape ;
+    sh:name "Workflow Run Crate FormalParameter that maps to a Collection" ;
+    sh:description "A FormalParameter that maps to a Collection SHOULD have Collection as its additionalType" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?this a bioschemas:FormalParameter .
+                ?collection schema:exampleOfWork ?this .
+                ?collection a schema:Collection .
+            }
+        """
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:additionalType ;
+        sh:hasValue "Collection" ;
+        sh:minCount 1 ;
+        sh:message "A FormalParameter that maps to a Collection SHOULD have Collection as its additionalType" ;
+    ] .

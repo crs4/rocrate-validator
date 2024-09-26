@@ -113,3 +113,48 @@ def test_formalparam_maps_pv_bad_additionaltype():
          "PropertyValue or a subclass of DataType as its additionalType"],
         profile_identifier="workflow-run-crate"
     )
+
+
+def test_formalparam_maps_file_bad_additionaltype():
+    """\
+    Test a Workflow Run Crate where a FormalParameter that maps to a File does
+    not have File as its additionalType.
+    """
+    do_entity_test(
+        InvalidWfRC().formalparam_maps_file_bad_additionaltype,
+        Severity.RECOMMENDED,
+        False,
+        ["Workflow Run Crate FormalParameter that maps to a File"],
+        ["A FormalParameter that maps to a File SHOULD have File as its additionalType"],
+        profile_identifier="workflow-run-crate"
+    )
+
+
+def test_formalparam_maps_dataset_bad_additionaltype():
+    """\
+    Test a Workflow Run Crate where a FormalParameter that maps to a Dataset
+    does not have Dataset as its additionalType.
+    """
+    do_entity_test(
+        InvalidWfRC().formalparam_maps_dataset_bad_additionaltype,
+        Severity.RECOMMENDED,
+        False,
+        ["Workflow Run Crate FormalParameter that maps to a Dataset"],
+        ["A FormalParameter that maps to a Dataset SHOULD have Dataset as its additionalType"],
+        profile_identifier="workflow-run-crate"
+    )
+
+
+def test_formalparam_maps_collection_bad_additionaltype():
+    """\
+    Test a Workflow Run Crate where a FormalParameter that maps to a Collection
+    does not have Collection as its additionalType.
+    """
+    do_entity_test(
+        InvalidWfRC().formalparam_maps_collection_bad_additionaltype,
+        Severity.RECOMMENDED,
+        False,
+        ["Workflow Run Crate FormalParameter that maps to a Collection"],
+        ["A FormalParameter that maps to a Collection SHOULD have Collection as its additionalType"],
+        profile_identifier="workflow-run-crate"
+    )

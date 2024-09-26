@@ -601,3 +601,15 @@ class InvalidWfRC:
     @property
     def formalparam_maps_pv_bad_additionaltype(self) -> Path:
         return self.base_path / "formalparam_maps_pv_bad_additionaltype"
+
+    @property
+    def formalparam_maps_file_bad_additionaltype(self) -> Path:
+        return self.base_path / "formalparam_maps_file_bad_additionaltype"
+
+    @property
+    def formalparam_maps_dataset_bad_additionaltype(self) -> Path:
+        return self.base_path / "formalparam_maps_dataset_bad_additionaltype"
+
+    @property
+    def formalparam_maps_collection_bad_additionaltype(self) -> Path:
+        return self.base_path / "formalparam_maps_collection_bad_additionaltype"
