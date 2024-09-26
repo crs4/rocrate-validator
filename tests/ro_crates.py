@@ -593,3 +593,11 @@ class InvalidWfRC:
     @property
     def formalparam_bad_workexample(self) -> Path:
         return self.base_path / "formalparam_bad_workexample"
+
+    @property
+    def formalparam_maps_pv_no_additionaltype(self) -> Path:
+        return self.base_path / "formalparam_maps_pv_no_additionaltype"
+
+    @property
+    def formalparam_maps_pv_bad_additionaltype(self) -> Path:
+        return self.base_path / "formalparam_maps_pv_bad_additionaltype"

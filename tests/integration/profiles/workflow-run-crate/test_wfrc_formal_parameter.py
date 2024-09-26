@@ -80,3 +80,36 @@ def test_formalparam_bad_workexample():
         ["FormalParameter MAY refer to a data entity or PropertyValue via workExample"],
         profile_identifier="workflow-run-crate"
     )
+
+
+def test_formalparam_maps_pv_no_additionaltype():
+    """\
+    Test a Workflow Run Crate where a FormalParameter that maps to a
+    PropertyValue does not have an additionalType.
+    """
+    do_entity_test(
+        InvalidWfRC().formalparam_maps_pv_no_additionaltype,
+        Severity.RECOMMENDED,
+        False,
+        ["Workflow Run Crate FormalParameter that maps to a PropertyValue"],
+        ["A FormalParameter that maps to a PropertyValue SHOULD have "
+         "PropertyValue or a subclass of DataType as its additionalType"],
+        profile_identifier="workflow-run-crate"
+    )
+
+
+def test_formalparam_maps_pv_bad_additionaltype():
+    """\
+    Test a Workflow Run Crate where a FormalParameter that maps to a
+    PropertyValue does not have PropertyValue or a subclass of DataType as its
+    additionalType.
+    """
+    do_entity_test(
+        InvalidWfRC().formalparam_maps_pv_bad_additionaltype,
+        Severity.RECOMMENDED,
+        False,
+        ["Workflow Run Crate FormalParameter that maps to a PropertyValue"],
+        ["A FormalParameter that maps to a PropertyValue SHOULD have "
+         "PropertyValue or a subclass of DataType as its additionalType"],
+        profile_identifier="workflow-run-crate"
+    )

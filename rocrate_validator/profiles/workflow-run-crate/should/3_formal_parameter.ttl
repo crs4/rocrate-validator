@@ -39,3 +39,36 @@ workflow-run-crate:WfRCFormalParameterRecommended a sh:NodeShape ;
         sh:minCount 1 ;
         sh:message "FormalParameter SHOULD be referenced from a data entity or PropertyValue via exampleOfWork" ;
     ] .
+
+workflow-run-crate:WfRCFormalParameterMapsPropertyValue a sh:NodeShape ;
+    sh:name "Workflow Run Crate FormalParameter that maps to a PropertyValue" ;
+    sh:description "A FormalParameter that maps to a PropertyValue SHOULD have PropertyValue or a subclass of DataType as its additionalType" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?this a bioschemas:FormalParameter .
+                ?pv schema:exampleOfWork ?this .
+                ?pv a schema:PropertyValue .
+            }
+        """
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:additionalType ;
+        sh:or (
+            [ sh:hasValue "PropertyValue" ; ]
+            [ sh:hasValue "DateTime" ; ]
+            [ sh:hasValue "Number" ; ]
+            [ sh:hasValue "Float" ; ]
+            [ sh:hasValue "Integer" ; ]
+            [ sh:hasValue "Text" ; ]
+            [ sh:hasValue "Date" ; ]
+            [ sh:hasValue "Boolean" ; ]
+            [ sh:hasValue "Time" ; ]
+        ) ;
+        sh:minCount 1 ;
+        sh:message "A FormalParameter that maps to a PropertyValue SHOULD have PropertyValue or a subclass of DataType as its additionalType" ;
+    ] .
