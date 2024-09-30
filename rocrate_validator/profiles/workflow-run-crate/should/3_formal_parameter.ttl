@@ -38,6 +38,14 @@ workflow-run-crate:WfRCFormalParameterRecommended a sh:NodeShape ;
         ) ;
         sh:minCount 1 ;
         sh:message "FormalParameter SHOULD be referenced from a data entity or PropertyValue via exampleOfWork" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "FormalParameter name" ;
+        sh:description "FormalParameter SHOULD have a name" ;
+        sh:path schema:name ;
+        sh:minCount 1 ;
+        sh:message "FormalParameter SHOULD have a name" ;
     ] .
 
 workflow-run-crate:WfRCFormalParameterMapsPropertyValue a sh:NodeShape ;

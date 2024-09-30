@@ -157,3 +157,33 @@ def test_formalparam_maps_collection_bad_additionaltype():
         ["A FormalParameter that maps to a Collection SHOULD have Collection as its additionalType"],
         profile_identifier="workflow-run-crate"
     )
+
+
+def test_formalparam_no_name():
+    """\
+    Test a Workflow Run Crate where a FormalParameter does not have a
+    name property.
+    """
+    do_entity_test(
+        InvalidWfRC().formalparam_no_name,
+        Severity.RECOMMENDED,
+        False,
+        ["Workflow Run Crate FormalParameter SHOULD"],
+        ["FormalParameter SHOULD have a name"],
+        profile_identifier="workflow-run-crate"
+    )
+
+
+def test_formalparam_no_description():
+    """\
+    Test a Workflow Run Crate where a FormalParameter does not have a
+    description property.
+    """
+    do_entity_test(
+        InvalidWfRC().formalparam_no_description,
+        Severity.OPTIONAL,
+        False,
+        ["Workflow Run Crate FormalParameter MAY"],
+        ["FormalParameter MAY have a description"],
+        profile_identifier="workflow-run-crate"
+    )

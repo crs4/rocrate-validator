@@ -613,3 +613,11 @@ class InvalidWfRC:
     @property
     def formalparam_maps_collection_bad_additionaltype(self) -> Path:
         return self.base_path / "formalparam_maps_collection_bad_additionaltype"
+
+    @property
+    def formalparam_no_name(self) -> Path:
+        return self.base_path / "formalparam_no_name"
+
+    @property
+    def formalparam_no_description(self) -> Path:
+        return self.base_path / "formalparam_no_description"
