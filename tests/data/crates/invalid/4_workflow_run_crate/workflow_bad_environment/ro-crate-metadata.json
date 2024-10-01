@@ -116,7 +116,7 @@
         },
         {
             "@id": "#env_var",
-            "@type": "FormalParameter",
+            "@type": "Person",
             "additionalType": "Integer",
             "workExample": {
                 "@id": "#env_var-pv"

@@ -78,3 +78,33 @@ def test_wfrc_workflow_output_no_formalparam():
         ["ComputationalWorkflow input and output MUST point to FormalParameter entities"],
         profile_identifier="workflow-run-crate"
     )
+
+
+def test_wfrc_workflow_no_environment():
+    """\
+    Test a Workflow Run Crate where a ComputationalWorkflow does not
+    have an environment.
+    """
+    do_entity_test(
+        InvalidWfRC().workflow_no_environment,
+        Severity.OPTIONAL,
+        False,
+        ["Workflow Run Crate ComputationalWorkflow MAY"],
+        ["The Workflow MAY have an environment"],
+        profile_identifier="workflow-run-crate"
+    )
+
+
+def test_wfrc_workflow_bad_environment():
+    """\
+    Test a Workflow Run Crate where a ComputationalWorkflow has an
+    environment that does not point to FormalParameter entities.
+    """
+    do_entity_test(
+        InvalidWfRC().workflow_bad_environment,
+        Severity.OPTIONAL,
+        False,
+        ["Workflow Run Crate ComputationalWorkflow SHOULD"],
+        ["If the Workflow has an environment, it SHOULD point to entities of type FormalParameter"],
+        profile_identifier="workflow-run-crate"
+    )

@@ -621,3 +621,11 @@ class InvalidWfRC:
     @property
     def formalparam_no_description(self) -> Path:
         return self.base_path / "formalparam_no_description"
+
+    @property
+    def workflow_no_environment(self) -> Path:
+        return self.base_path / "workflow_no_environment"
+
+    @property
+    def workflow_bad_environment(self) -> Path:
+        return self.base_path / "workflow_bad_environment"
