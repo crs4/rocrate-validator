@@ -187,3 +187,20 @@ def test_formalparam_no_description():
         ["FormalParameter MAY have a description"],
         profile_identifier="workflow-run-crate"
     )
+
+
+def test_formalparam_env_bad_exampleofwork():
+    """\
+    Test a Workflow Run Crate where a FormalParameter referenced from a
+    ComputationalWorkflow via environment is not referenced from a
+    PropertyValue via exampleOfWork
+    """
+    do_entity_test(
+        InvalidWfRC().formalparam_env_bad_exampleofwork,
+        Severity.RECOMMENDED,
+        False,
+        ["Workflow Run Crate FormalParameter referenced from a ComputationalWorkflow environment"],
+        ["A FormalParameter referenced from a ComputationalWorkflow via "
+         "environment SHOULD be referenced from a PropertyValue via exampleOfWork"],
+        profile_identifier="workflow-run-crate"
+    )

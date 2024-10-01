@@ -152,3 +152,28 @@ workflow-run-crate:WfRCFormalParameterMapsCollection a sh:NodeShape ;
         sh:minCount 1 ;
         sh:message "A FormalParameter that maps to a Collection SHOULD have Collection as its additionalType" ;
     ] .
+
+workflow-run-crate:WfRCFormalParameterRefFromWorkflowEnvironment a sh:NodeShape ;
+    sh:name "Workflow Run Crate FormalParameter referenced from a ComputationalWorkflow environment" ;
+    sh:description "Recommended properties of a Workflow Run Crate FormalParameter that is referenced from a ComputationalWorkflow via environment" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?this a bioschemas:FormalParameter .
+                ?workflow a bioschemas:ComputationalWorkflow .
+                ?workflow wfrun:environment ?this .
+            }
+        """
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "environment FormalParameter inverse exampleOfWork" ;
+        sh:description "A FormalParameter referenced from a ComputationalWorkflow via environment SHOULD be referenced from a PropertyValue via exampleOfWork" ;
+        sh:path [ sh:inversePath schema:exampleOfWork ] ;
+        sh:class schema:PropertyValue ;
+        sh:minCount 1 ;
+        sh:message "A FormalParameter referenced from a ComputationalWorkflow via environment SHOULD be referenced from a PropertyValue via exampleOfWork" ;
+    ] .
