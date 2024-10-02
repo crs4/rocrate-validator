@@ -74,6 +74,10 @@ class ValidROC:
     def workflow_run_crate(self) -> Path:
         return VALID_CRATES_DATA_PATH / "workflow-run-crate"
 
+    @property
+    def provenance_run_crate(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "provenance-run-crate"
+
 
 class InvalidFileDescriptor:
 
