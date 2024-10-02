@@ -92,19 +92,6 @@
             "programmingLanguage": {
                 "@id": "https://w3id.org/workflowhub/workflow-ro-crate#galaxy"
             },
-            "environment": [
-                {
-                    "@id": "#env_var"
-                }
-            ],
-            "input": [
-                {
-                    "@id": "#simple_input"
-                },
-                {
-                    "@id": "#verbose-param"
-                }
-            ],
             "output": [
                 {
                     "@id": "#reversed"
@@ -113,50 +100,6 @@
                     "@id": "#last_lines"
                 }
             ]
-        },
-        {
-            "@id": "#env_var",
-            "@type": "FormalParameter",
-            "additionalType": "Integer",
-            "workExample": {
-                "@id": "#env_var-pv"
-            },
-            "description": "An environment variable",
-            "name": "ENV_VAR"
-        },
-        {
-            "@id": "#simple_input",
-            "@type": "FormalParameter",
-            "additionalType": "File",
-            "conformsTo": {
-                "@id": "https://bioschemas.org/profiles/FormalParameter/1.0-RELEASE"
-            },
-            "description": "A simple set of lines in a text file",
-            "encodingFormat": [
-                "text/plain",
-                {
-                    "@id": "http://edamontology.org/format_2330"
-                }
-            ],
-            "workExample": {
-                "@id": "inputs/abcdef.txt"
-            },
-            "name": "simple_input",
-            "valueRequired": "True"
-        },
-        {
-            "@id": "#verbose-param",
-            "@type": "FormalParameter",
-            "additionalType": "Boolean",
-            "conformsTo": {
-                "@id": "https://bioschemas.org/profiles/FormalParameter/1.0-RELEASE"
-            },
-            "description": "Increase logging output",
-            "workExample": {
-                "@id": "#verbose-pv"
-            },
-            "name": "verbose",
-            "valueRequired": "False"
         },
         {
             "@id": "#reversed",
@@ -219,9 +162,6 @@
             "subjectOf": {
                 "@id": "https://usegalaxy.eu/u/5dbf7f05329e49c98b31243b5f35045c/p/invocation-report-a3a1d27edb703e5c"
             },
-            "environment": {
-                "@id": "#env_var-pv"
-            },
             "object": [
                 {
                     "@id": "inputs/abcdef.txt"
@@ -238,15 +178,6 @@
                     "@id": "outputs/tac_on_data_360_1.txt"
                 }
             ]
-        },
-        {
-            "@id": "#env_var-pv",
-            "@type": "PropertyValue",
-            "exampleOfWork": {
-                "@id": "#env_var"
-            },
-            "name": "ENV_VAR",
-            "value": "42"
         },
         {
             "@id": "inputs/abcdef.txt",

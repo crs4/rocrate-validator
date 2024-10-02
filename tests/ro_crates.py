@@ -70,6 +70,10 @@ class ValidROC:
     def workflow_testing_ro_crate(self) -> Path:
         return VALID_CRATES_DATA_PATH / "workflow-testing-ro-crate"
 
+    @property
+    def workflow_run_crate(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "workflow-run-crate"
+
 
 class InvalidFileDescriptor:
 
@@ -540,3 +544,92 @@ class InvalidWTROC:
     @property
     def testdefinition_bad_engineversion(self) -> Path:
         return self.base_path / "testdefinition_bad_engineversion"
+
+
+class InvalidWfRC:
+
+    base_path = INVALID_CRATES_DATA_PATH / "4_workflow_run_crate/"
+
+    @property
+    def conformsto_no_wfrc(self) -> Path:
+        return self.base_path / "conformsto_no_wfrc"
+
+    @property
+    def conformsto_no_wroc(self) -> Path:
+        return self.base_path / "conformsto_no_wroc"
+
+    @property
+    def conformsto_no_procrc(self) -> Path:
+        return self.base_path / "conformsto_no_procrc"
+
+    @property
+    def workflow_no_input(self) -> Path:
+        return self.base_path / "workflow_no_input"
+
+    @property
+    def workflow_no_output(self) -> Path:
+        return self.base_path / "workflow_no_output"
+
+    @property
+    def workflow_input_no_formalparam(self) -> Path:
+        return self.base_path / "workflow_input_no_formalparam"
+
+    @property
+    def workflow_output_no_formalparam(self) -> Path:
+        return self.base_path / "workflow_output_no_formalparam"
+
+    @property
+    def formalparam_no_inv_exampleofwork(self) -> Path:
+        return self.base_path / "formalparam_no_inv_exampleofwork"
+
+    @property
+    def formalparam_bad_inv_exampleofwork(self) -> Path:
+        return self.base_path / "formalparam_bad_inv_exampleofwork"
+
+    @property
+    def formalparam_no_workexample(self) -> Path:
+        return self.base_path / "formalparam_no_workexample"
+
+    @property
+    def formalparam_bad_workexample(self) -> Path:
+        return self.base_path / "formalparam_bad_workexample"
+
+    @property
+    def formalparam_no_additionaltype(self) -> Path:
+        return self.base_path / "formalparam_no_additionaltype"
+
+    @property
+    def formalparam_maps_pv_bad_additionaltype(self) -> Path:
+        return self.base_path / "formalparam_maps_pv_bad_additionaltype"
+
+    @property
+    def formalparam_maps_file_bad_additionaltype(self) -> Path:
+        return self.base_path / "formalparam_maps_file_bad_additionaltype"
+
+    @property
+    def formalparam_maps_dataset_bad_additionaltype(self) -> Path:
+        return self.base_path / "formalparam_maps_dataset_bad_additionaltype"
+
+    @property
+    def formalparam_maps_collection_bad_additionaltype(self) -> Path:
+        return self.base_path / "formalparam_maps_collection_bad_additionaltype"
+
+    @property
+    def formalparam_no_name(self) -> Path:
+        return self.base_path / "formalparam_no_name"
+
+    @property
+    def formalparam_no_description(self) -> Path:
+        return self.base_path / "formalparam_no_description"
+
+    @property
+    def workflow_no_environment(self) -> Path:
+        return self.base_path / "workflow_no_environment"
+
+    @property
+    def workflow_bad_environment(self) -> Path:
+        return self.base_path / "workflow_bad_environment"
+
+    @property
+    def formalparam_env_bad_exampleofwork(self) -> Path:
+        return self.base_path / "formalparam_env_bad_exampleofwork"

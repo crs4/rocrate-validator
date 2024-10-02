@@ -45,6 +45,9 @@
                 },
                 {
                     "@id": "outputs/tac_on_data_360_1.txt"
+                },
+                {
+                    "@id": "outputs/logs/"
                 }
             ],
             "license": {
@@ -92,11 +95,6 @@
             "programmingLanguage": {
                 "@id": "https://w3id.org/workflowhub/workflow-ro-crate#galaxy"
             },
-            "environment": [
-                {
-                    "@id": "#env_var"
-                }
-            ],
             "input": [
                 {
                     "@id": "#simple_input"
@@ -111,18 +109,11 @@
                 },
                 {
                     "@id": "#last_lines"
+                },
+                {
+                    "@id": "#logs"
                 }
             ]
-        },
-        {
-            "@id": "#env_var",
-            "@type": "FormalParameter",
-            "additionalType": "Integer",
-            "workExample": {
-                "@id": "#env_var-pv"
-            },
-            "description": "An environment variable",
-            "name": "ENV_VAR"
         },
         {
             "@id": "#simple_input",
@@ -197,6 +188,19 @@
             }
         },
         {
+            "@id": "#logs",
+            "@type": "FormalParameter",
+            "additionalType": "Person",
+            "conformsTo": {
+                "@id": "https://bioschemas.org/profiles/FormalParameter/1.0-RELEASE"
+            },
+            "description": "Logs directory",
+            "name": "logs",
+            "workExample": {
+                "@id": "outputs/logs/"
+            }
+        },
+        {
             "@id": "https://orcid.org/0000-0001-9842-9718",
             "@type": "Person",
             "name": "Stian Soiland-Reyes"
@@ -219,9 +223,6 @@
             "subjectOf": {
                 "@id": "https://usegalaxy.eu/u/5dbf7f05329e49c98b31243b5f35045c/p/invocation-report-a3a1d27edb703e5c"
             },
-            "environment": {
-                "@id": "#env_var-pv"
-            },
             "object": [
                 {
                     "@id": "inputs/abcdef.txt"
@@ -236,17 +237,11 @@
                 },
                 {
                     "@id": "outputs/tac_on_data_360_1.txt"
+                },
+                {
+                    "@id": "outputs/logs/"
                 }
             ]
-        },
-        {
-            "@id": "#env_var-pv",
-            "@type": "PropertyValue",
-            "exampleOfWork": {
-                "@id": "#env_var"
-            },
-            "name": "ENV_VAR",
-            "value": "42"
         },
         {
             "@id": "inputs/abcdef.txt",
@@ -284,6 +279,15 @@
             "encodingFormat": "text/plain",
             "exampleOfWork": {
                 "@id": "#reversed"
+            }
+        },
+        {
+            "@id": "outputs/logs/",
+            "@type": "Dataset",
+            "name": "logs",
+            "description": "Logs directory",
+            "exampleOfWork": {
+                "@id": "#logs"
             }
         },
         {

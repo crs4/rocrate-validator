@@ -92,11 +92,6 @@
             "programmingLanguage": {
                 "@id": "https://w3id.org/workflowhub/workflow-ro-crate#galaxy"
             },
-            "environment": [
-                {
-                    "@id": "#env_var"
-                }
-            ],
             "input": [
                 {
                     "@id": "#simple_input"
@@ -113,16 +108,6 @@
                     "@id": "#last_lines"
                 }
             ]
-        },
-        {
-            "@id": "#env_var",
-            "@type": "FormalParameter",
-            "additionalType": "Integer",
-            "workExample": {
-                "@id": "#env_var-pv"
-            },
-            "description": "An environment variable",
-            "name": "ENV_VAR"
         },
         {
             "@id": "#simple_input",
@@ -219,9 +204,6 @@
             "subjectOf": {
                 "@id": "https://usegalaxy.eu/u/5dbf7f05329e49c98b31243b5f35045c/p/invocation-report-a3a1d27edb703e5c"
             },
-            "environment": {
-                "@id": "#env_var-pv"
-            },
             "object": [
                 {
                     "@id": "inputs/abcdef.txt"
@@ -240,17 +222,8 @@
             ]
         },
         {
-            "@id": "#env_var-pv",
-            "@type": "PropertyValue",
-            "exampleOfWork": {
-                "@id": "#env_var"
-            },
-            "name": "ENV_VAR",
-            "value": "42"
-        },
-        {
             "@id": "inputs/abcdef.txt",
-            "@type": "File",
+            "@type": "Person",
             "description": "Example input, a simple text file",
             "encodingFormat": "text/plain",
             "exampleOfWork": {

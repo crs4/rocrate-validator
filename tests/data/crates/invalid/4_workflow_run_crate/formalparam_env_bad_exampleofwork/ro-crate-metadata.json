@@ -45,6 +45,9 @@
                 },
                 {
                     "@id": "outputs/tac_on_data_360_1.txt"
+                },
+                {
+                    "@id": "foo.txt"
                 }
             ],
             "license": {
@@ -95,6 +98,9 @@
             "environment": [
                 {
                     "@id": "#env_var"
+                },
+                {
+                    "@id": "#bad_env_var"
                 }
             ],
             "input": [
@@ -123,6 +129,16 @@
             },
             "description": "An environment variable",
             "name": "ENV_VAR"
+        },
+        {
+            "@id": "#bad_env_var",
+            "@type": "FormalParameter",
+            "additionalType": "File",
+            "workExample": {
+                "@id": "foo.txt"
+            },
+            "description": "An env formal param that does not map to a pv",
+            "name": "BAD_ENV_VAR"
         },
         {
             "@id": "#simple_input",
@@ -238,6 +254,13 @@
                     "@id": "outputs/tac_on_data_360_1.txt"
                 }
             ]
+        },
+        {
+            "@id": "foo.txt",
+            "@type": "File",
+            "exampleOfWork": {
+                "@id": "#bad_env_var"
+            }
         },
         {
             "@id": "#env_var-pv",

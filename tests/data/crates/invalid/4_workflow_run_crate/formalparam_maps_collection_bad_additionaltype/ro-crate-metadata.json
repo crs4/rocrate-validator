@@ -54,7 +54,8 @@
                 "@id": "Galaxy-Workflow-Hello_World.ga"
             },
             "mentions": {
-                "@id": "#wfrun-5a5970ab-4375-444d-9a87-a764a66e3a47"
+                "@id": "#wfrun-5a5970ab-4375-444d-9a87-a764a66e3a47",
+                "@id": "#logs-collection"
             }
         },
         {
@@ -92,11 +93,6 @@
             "programmingLanguage": {
                 "@id": "https://w3id.org/workflowhub/workflow-ro-crate#galaxy"
             },
-            "environment": [
-                {
-                    "@id": "#env_var"
-                }
-            ],
             "input": [
                 {
                     "@id": "#simple_input"
@@ -111,18 +107,11 @@
                 },
                 {
                     "@id": "#last_lines"
+                },
+                {
+                    "@id": "#logs"
                 }
             ]
-        },
-        {
-            "@id": "#env_var",
-            "@type": "FormalParameter",
-            "additionalType": "Integer",
-            "workExample": {
-                "@id": "#env_var-pv"
-            },
-            "description": "An environment variable",
-            "name": "ENV_VAR"
         },
         {
             "@id": "#simple_input",
@@ -197,6 +186,19 @@
             }
         },
         {
+            "@id": "#logs",
+            "@type": "FormalParameter",
+            "additionalType": "Person",
+            "conformsTo": {
+                "@id": "https://bioschemas.org/profiles/FormalParameter/1.0-RELEASE"
+            },
+            "description": "Logs collection",
+            "name": "logs",
+            "workExample": {
+                "@id": "#logs-collection"
+            }
+        },
+        {
             "@id": "https://orcid.org/0000-0001-9842-9718",
             "@type": "Person",
             "name": "Stian Soiland-Reyes"
@@ -219,9 +221,6 @@
             "subjectOf": {
                 "@id": "https://usegalaxy.eu/u/5dbf7f05329e49c98b31243b5f35045c/p/invocation-report-a3a1d27edb703e5c"
             },
-            "environment": {
-                "@id": "#env_var-pv"
-            },
             "object": [
                 {
                     "@id": "inputs/abcdef.txt"
@@ -236,17 +235,11 @@
                 },
                 {
                     "@id": "outputs/tac_on_data_360_1.txt"
+                },
+                {
+                    "@id": "#logs-collection"
                 }
             ]
-        },
-        {
-            "@id": "#env_var-pv",
-            "@type": "PropertyValue",
-            "exampleOfWork": {
-                "@id": "#env_var"
-            },
-            "name": "ENV_VAR",
-            "value": "42"
         },
         {
             "@id": "inputs/abcdef.txt",
@@ -285,6 +278,30 @@
             "exampleOfWork": {
                 "@id": "#reversed"
             }
+        },
+        {
+            "@id": "#logs-collection",
+            "@type": "Collection",
+            "hasPart": {
+                "@id": "log1.txt",
+                "@id": "log2.txt"
+            },
+            "mainEntity": {
+                "@id": "log1.txt"
+            },
+            "name": "logs",
+            "description": "Logs collection",
+            "exampleOfWork": {
+                "@id": "#logs"
+            }
+        },
+        {
+            "@id": "log1.txt",
+            "@type": "File"
+        },
+        {
+            "@id": "log2.txt",
+            "@type": "File"
         },
         {
             "@id": "https://usegalaxy.eu/u/5dbf7f05329e49c98b31243b5f35045c/p/invocation-report-a3a1d27edb703e5c",

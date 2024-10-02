@@ -92,11 +92,6 @@
             "programmingLanguage": {
                 "@id": "https://w3id.org/workflowhub/workflow-ro-crate#galaxy"
             },
-            "environment": [
-                {
-                    "@id": "#env_var"
-                }
-            ],
             "input": [
                 {
                     "@id": "#simple_input"
@@ -104,25 +99,7 @@
                 {
                     "@id": "#verbose-param"
                 }
-            ],
-            "output": [
-                {
-                    "@id": "#reversed"
-                },
-                {
-                    "@id": "#last_lines"
-                }
             ]
-        },
-        {
-            "@id": "#env_var",
-            "@type": "FormalParameter",
-            "additionalType": "Integer",
-            "workExample": {
-                "@id": "#env_var-pv"
-            },
-            "description": "An environment variable",
-            "name": "ENV_VAR"
         },
         {
             "@id": "#simple_input",
@@ -159,44 +136,6 @@
             "valueRequired": "False"
         },
         {
-            "@id": "#reversed",
-            "@type": "FormalParameter",
-            "additionalType": "File",
-            "conformsTo": {
-                "@id": "https://bioschemas.org/profiles/FormalParameter/1.0-RELEASE"
-            },
-            "description": "All the lines, reversed",
-            "encodingFormat": [
-                "text/plain",
-                {
-                    "@id": "http://edamontology.org/format_2330"
-                }
-            ],
-            "name": "reversed",
-            "workExample": {
-                "@id": "outputs/tac_on_data_360_1.txt"
-            }
-        },
-        {
-            "@id": "#last_lines",
-            "@type": "FormalParameter",
-            "additionalType": "File",
-            "conformsTo": {
-                "@id": "https://bioschemas.org/profiles/FormalParameter/1.0-RELEASE"
-            },
-            "description": "The last lines of workflow input are the first lines of the reversed input",
-            "encodingFormat": [
-                "text/plain",
-                {
-                    "@id": "http://edamontology.org/format_2330"
-                }
-            ],
-            "name": "last_lines",
-            "workExample": {
-                "@id": "outputs/Select_first_on_data_1_2.txt"
-            }
-        },
-        {
             "@id": "https://orcid.org/0000-0001-9842-9718",
             "@type": "Person",
             "name": "Stian Soiland-Reyes"
@@ -219,9 +158,6 @@
             "subjectOf": {
                 "@id": "https://usegalaxy.eu/u/5dbf7f05329e49c98b31243b5f35045c/p/invocation-report-a3a1d27edb703e5c"
             },
-            "environment": {
-                "@id": "#env_var-pv"
-            },
             "object": [
                 {
                     "@id": "inputs/abcdef.txt"
@@ -238,15 +174,6 @@
                     "@id": "outputs/tac_on_data_360_1.txt"
                 }
             ]
-        },
-        {
-            "@id": "#env_var-pv",
-            "@type": "PropertyValue",
-            "exampleOfWork": {
-                "@id": "#env_var"
-            },
-            "name": "ENV_VAR",
-            "value": "42"
         },
         {
             "@id": "inputs/abcdef.txt",
