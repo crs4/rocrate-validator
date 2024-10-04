@@ -251,20 +251,6 @@ class SHACLCheck(RequirementCheck):
 
         return failed_requirements_checks
 
-    def __str__(self) -> str:
-        return super().__str__() + (f" - {self._shape}" if self._shape else "")
-
-    def __repr__(self) -> str:
-        return super().__repr__() + (f" - {self._shape}" if self._shape else "")
-
-    def __eq__(self, __value: object) -> bool:
-        if not isinstance(__value, type(self)):
-            return NotImplemented
-        return super().__eq__(__value) and self._shape == getattr(__value, '_shape', None)
-
-    def __hash__(self) -> int:
-        return super().__hash__() + (hash(self._shape) if self._shape else 0)
-
     @classmethod
     def get_instance(cls, shape: Shape) -> Optional["SHACLCheck"]:
         return cls.__instances__.get(hash(shape), None)
