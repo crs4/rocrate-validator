@@ -652,13 +652,11 @@ class Requirement(ABC):
         all_passed = True
         for check in self._checks:
             try:
-                logger.debug("Running check '%s' - Desc: %s - overridden: %s.%s",
-                             check.name, check.description, check.overridden_by,
-                             check.overridden_by.requirement.profile if check.overridden_by else None)
+                logger.debug("Running check '%s' - Desc: %s - overridden: %s",
+                             check.name, check.description, [_.identifier for _ in check.overridden_by])
                 if check.overridden:
-                    logger.debug("Skipping check '%s' (req. %s) because overridden by '%s' (req. %s)",
-                                 check.name, check.requirement.name, check.overridden_by.name,
-                                 check.overridden_by.requirement.name)
+                    logger.debug("Skipping check '%s' because overridden by '%r'",
+                                 check.identifier, [_.identifier for _ in check.overridden_by])
                     continue
                 context.validator.notify(RequirementCheckValidationEvent(
                     EventType.REQUIREMENT_CHECK_VALIDATION_START, check))
