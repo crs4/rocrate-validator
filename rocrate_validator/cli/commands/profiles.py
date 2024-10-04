@@ -276,14 +276,25 @@ def __verbose_describe_profile__(profile):
             override = None
             # Uncomment the following lines to show the overridden checks
             # if check.overridden_by:
-            #     severity_color = get_severity_color(check.overridden_by.severity)
-            #     override = "[overridden by: " \
-            #         f"[bold][magenta]{check.overridden_by.requirement.profile.identifier}[/magenta] "\
-            #         f"[{severity_color}]{check.overridden_by.relative_identifier}[/{severity_color}][/bold]]"
+            #     logger.debug("Check %s is overridden by: %s", check.identifier, check.overridden_by)
+            #     override = "[overridden by: "
+            #     for co in check.overridden_by:
+            #         severity_color = get_severity_color(co.severity)
+            #         override += f"[bold][magenta]{co.requirement.profile.identifier}[/magenta] "\
+            #             f"[{severity_color}]{co.relative_identifier}[/{severity_color}][/bold]"
+            #         if co != check.overridden_by[-1]:
+            #             override += ", "
+            #     override += "]"
             if check.override:
-                severity_color = get_severity_color(check.override.severity)
-                override = f"[override: [bold][magenta]{check.override.requirement.profile.identifier}[/magenta] "\
-                    f"[{severity_color}]{check.override.relative_identifier}[/{severity_color}][/bold]]"
+                logger.debug("Check %s overrides: %s", check.identifier, check.override)
+                override = "[" + "override: "
+                for co in check.override:
+                    severity_color = get_severity_color(co.severity)
+                    override += f"[bold][magenta]{co.requirement.profile.identifier}[/magenta] "\
+                        f"[{severity_color}]{co.relative_identifier}[/{severity_color}][/bold]"
+                    if co != check.override[-1]:
+                        override += ", "
+                override += "]"
             from rich.align import Align
             description_table = Table(show_header=False, show_footer=False, show_lines=False, show_edge=False)
             if override:
