@@ -609,7 +609,7 @@ class Requirement(ABC):
         # Check if the requirement has been overridden.
         # The requirement can be considered overridden if all its checks have been overridden
         if self._overridden is None:
-            self._overridden = len([_ for _ in self._checks if not _.overridden_by]) == 0
+            self._overridden = len([_ for _ in self._checks if not _.overridden]) == 0
         return self._overridden
 
     @property
@@ -813,8 +813,8 @@ class RequirementCheck(ABC):
         self._name = name
         self._level = level
         self._description = description
-        self._overridden_by: RequirementCheck = None
-        self._override: RequirementCheck = None
+        self._overridden_by: list[RequirementCheck] = []
+        self._override: list[RequirementCheck] = []
 
     @property
     def order_number(self) -> int:
@@ -861,23 +861,20 @@ class RequirementCheck(ABC):
         return self.level.severity
 
     @property
-    def overridden_by(self) -> RequirementCheck:
+    def overridden_by(self) -> list[RequirementCheck]:
         return self._overridden_by
 
-    @overridden_by.setter
-    def overridden_by(self, value: RequirementCheck) -> None:
-        assert value is None or isinstance(value, RequirementCheck) and value != self, \
-            f"Invalid value for overridden_by: {value}"
-        self._overridden_by = value
-        value._override = self
+    def add_override(self, check: RequirementCheck) -> None:
+        check._overridden_by.append(self)
+        self._override.append(check)
 
     @property
-    def override(self) -> RequirementCheck:
+    def override(self) -> list[RequirementCheck]:
         return self._override
 
     @property
     def overridden(self) -> bool:
-        return self._overridden_by is not None
+        return len(self._overridden_by) > 0
 
     @abstractmethod
     def execute_check(self, context: ValidationContext) -> bool:
