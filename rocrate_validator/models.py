@@ -480,11 +480,20 @@ class Profile:
                 #  mark overridden checks
                 check_chain = profiles_checks.get(check.name, None)
                 if not check_chain:
-                    profiles_checks[check.name] = [check]
+                    profiles_checks[check.name] = {check}
                 elif allow_requirement_check_override:
-                    check.overridden_by = check_chain[-1]
-                    check_chain.append(check)
-                    logger.debug("Check %s overridden by %s", check.identifier, check.overridden_by.identifier)
+                    logger.debug("Check chain: %s", [_.name for _ in check_chain])
+                    for c in sorted(check_chain, reverse=True):
+                        logger.debug("Profile: %s inherits from %r CheckInheritance %r", profile.identifier,
+                                     c.requirement.profile.inherited_profiles,
+                                     profile in c.requirement.profile.inherited_profiles)
+                        if profile in c.requirement.profile.inherited_profiles:
+                            check.overridden_by = c
+                            check_chain.add(check)
+                            logger.debug("Check %s overridden by %s", check.identifier,
+                                         check.overridden_by.identifier)
+                    #  add the check to the chain
+                    check_chain.add(check)
                 else:
                     raise DuplicateRequirementCheck(check.name, profile.identifier)
 
