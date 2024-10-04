@@ -596,6 +596,14 @@ class Requirement(ABC):
         return self._description
 
     @property
+    def overridden(self) -> bool:
+        # Check if the requirement has been overridden.
+        # The requirement can be considered overridden if all its checks have been overridden
+        if self._overridden is None:
+            self._overridden = len([_ for _ in self._checks if not _.overridden_by]) == 0
+        return self._overridden
+
+    @property
     @abstractmethod
     def hidden(self) -> bool:
         pass
