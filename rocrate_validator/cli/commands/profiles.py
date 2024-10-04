@@ -166,6 +166,7 @@ def describe_profile(ctx,
     console = ctx.obj['console']
     pager = ctx.obj['pager']
     interactive = ctx.obj['interactive']
+    profiles_path = ctx.obj['profiles_path']
     # Get the no_paging flag
     enable_pager = not no_paging
     # override the enable_pager flag if the interactive flag is False
