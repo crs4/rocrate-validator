@@ -637,3 +637,12 @@ class InvalidWfRC:
     @property
     def formalparam_env_bad_exampleofwork(self) -> Path:
         return self.base_path / "formalparam_env_bad_exampleofwork"
+
+
+class InvalidProvRC:
+
+    base_path = INVALID_CRATES_DATA_PATH / "5_provenance_run_crate/"
+
+    @property
+    def conformsto_no_provrc(self) -> Path:
+        return self.base_path / "conformsto_no_provrc"
