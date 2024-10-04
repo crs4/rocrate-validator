@@ -656,11 +656,14 @@ class Requirement(ABC):
                              check.name, check.description, check.overridden_by,
                              check.overridden_by.requirement.profile if check.overridden_by else None)
                 if check.overridden:
-                    logger.debug("Skipping check '%s' because overridden by '%s'", check.name, check.overridden_by.name)
+                    logger.debug("Skipping check '%s' (req. %s) because overridden by '%s' (req. %s)",
+                                 check.name, check.requirement.name, check.overridden_by.name,
+                                 check.overridden_by.requirement.name)
                     continue
                 context.validator.notify(RequirementCheckValidationEvent(
                     EventType.REQUIREMENT_CHECK_VALIDATION_START, check))
                 check_result = check.execute_check(context)
+                logger.debug("Result of check %s: %s", check.identifier, check_result)
                 context.result.add_executed_check(check, check_result)
                 context.validator.notify(RequirementCheckValidationEvent(
                     EventType.REQUIREMENT_CHECK_VALIDATION_END, check, validation_result=check_result))
