@@ -646,3 +646,15 @@ class InvalidProvRC:
     @property
     def conformsto_no_provrc(self) -> Path:
         return self.base_path / "conformsto_no_provrc"
+
+    @property
+    def conformsto_no_wfrc(self) -> Path:
+        return self.base_path / "conformsto_no_wfrc"
+
+    @property
+    def conformsto_no_wroc(self) -> Path:
+        return self.base_path / "conformsto_no_wroc"
+
+    @property
+    def conformsto_no_procrc(self) -> Path:
+        return self.base_path / "conformsto_no_procrc"

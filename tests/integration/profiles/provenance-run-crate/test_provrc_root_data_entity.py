@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 def test_provrc_conformsto_no_provrc():
     """\
     Test a Workflow Run Crate where the root data entity does not conformsTo
-    the Workflow Run Crate profile.
+    the Provenance Run Crate profile.
     """
     do_entity_test(
         InvalidProvRC().conformsto_no_provrc,
@@ -35,5 +35,56 @@ def test_provrc_conformsto_no_provrc():
         ["The Root Data Entity MUST reference a CreativeWork entity with an "
          "@id URI that is consistent with the versioned permalink of the "
          "Provenance Run Crate profile"],
+        profile_identifier="provenance-run-crate"
+    )
+
+
+def test_provrc_conformsto_no_wfrc():
+    """\
+    Test a Workflow Run Crate where the root data entity does not conformsTo
+    the Workflow Run Crate profile.
+    """
+    do_entity_test(
+        InvalidProvRC().conformsto_no_wfrc,
+        Severity.RECOMMENDED,
+        False,
+        ["Provenance Run Crate Root Data Entity SHOULD"],
+        ["The Root Data Entity SHOULD reference CreativeWork entities "
+         "corresponding to the Process Run Crate, Workflow Run Crate and "
+         "Workflow RO-Crate profiles"],
+        profile_identifier="provenance-run-crate"
+    )
+
+
+def test_provrc_conformsto_no_wroc():
+    """\
+    Test a Workflow Run Crate where the root data entity does not conformsTo
+    the Workflow RO-Crate profile.
+    """
+    do_entity_test(
+        InvalidProvRC().conformsto_no_wroc,
+        Severity.RECOMMENDED,
+        False,
+        ["Provenance Run Crate Root Data Entity SHOULD"],
+        ["The Root Data Entity SHOULD reference CreativeWork entities "
+         "corresponding to the Process Run Crate, Workflow Run Crate and "
+         "Workflow RO-Crate profiles"],
+        profile_identifier="provenance-run-crate"
+    )
+
+
+def test_provrc_conformsto_no_procrc():
+    """\
+    Test a Workflow Run Crate where the root data entity does not conformsTo
+    the Process Run Crate profile.
+    """
+    do_entity_test(
+        InvalidProvRC().conformsto_no_procrc,
+        Severity.RECOMMENDED,
+        False,
+        ["Provenance Run Crate Root Data Entity SHOULD"],
+        ["The Root Data Entity SHOULD reference CreativeWork entities "
+         "corresponding to the Process Run Crate, Workflow Run Crate and "
+         "Workflow RO-Crate profiles"],
         profile_identifier="provenance-run-crate"
     )
