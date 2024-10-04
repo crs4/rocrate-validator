@@ -547,6 +547,7 @@ class Requirement(ABC):
         self._path = path  # path of code implementing the requirement
         self._level_from_path = None
         self._checks: list[RequirementCheck] = []
+        self._overridden = None
 
         if not name and path:
             self._name = get_requirement_name_from_file(path)
@@ -1424,11 +1425,14 @@ class Validator(Publisher):
                          profile.identifier, len(requirements), requirements)
             terminate = False
             for requirement in requirements:
-                self.notify(RequirementValidationEvent(
-                    EventType.REQUIREMENT_VALIDATION_START, requirement=requirement))
+                if not requirement.overridden:
+                    self.notify(RequirementValidationEvent(
+                        EventType.REQUIREMENT_VALIDATION_START, requirement=requirement))
                 passed = requirement.__do_validate__(context)
-                self.notify(RequirementValidationEvent(
-                    EventType.REQUIREMENT_VALIDATION_END, requirement=requirement, validation_result=passed))
+                logger.debug("Requirement %s passed: %s", requirement, passed)
+                if not requirement.overridden:
+                    self.notify(RequirementValidationEvent(
+                        EventType.REQUIREMENT_VALIDATION_END, requirement=requirement, validation_result=passed))
                 if passed:
                     logger.debug("Validation Requirement passed")
                 else:
