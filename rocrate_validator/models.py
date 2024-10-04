@@ -345,8 +345,7 @@ class Profile:
     def __eq__(self, other: object) -> bool:
         return isinstance(other, Profile) \
             and self.identifier == other.identifier \
-            and self.path == other.path \
-            and self.requirements == other.requirements
+            and self.path == other.path
 
     def __lt__(self, other: object) -> bool:
         if not isinstance(other, Profile):
@@ -354,7 +353,7 @@ class Profile:
         return self.identifier < other.identifier
 
     def __hash__(self) -> int:
-        return hash((self.identifier, self.path, self.requirements))
+        return hash((self.identifier, self.path))
 
     def __repr__(self) -> str:
         return (
