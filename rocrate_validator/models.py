@@ -822,8 +822,6 @@ class RequirementCheck(ABC):
         self._name = name
         self._level = level
         self._description = description
-        self._overridden_by: list[RequirementCheck] = []
-        self._override: list[RequirementCheck] = []
 
     @property
     def order_number(self) -> int:
@@ -871,19 +869,25 @@ class RequirementCheck(ABC):
 
     @property
     def overridden_by(self) -> list[RequirementCheck]:
-        return self._overridden_by
-
-    def add_override(self, check: RequirementCheck) -> None:
-        check._overridden_by.append(self)
-        self._override.append(check)
+        overridden_by = []
+        for sibling_profile in self.requirement.profile.siblings:
+            check = sibling_profile.get_requirement_check(self.name)
+            if check:
+                overridden_by.append(check)
+        return overridden_by
 
     @property
     def override(self) -> list[RequirementCheck]:
-        return self._override
+        overrides = []
+        for parent in self.requirement.profile.parents:
+            check = parent.get_requirement_check(self.name)
+            if check:
+                overrides.append(check)
+        return overrides
 
     @property
     def overridden(self) -> bool:
-        return len(self._overridden_by) > 0
+        return len(self.overridden_by) > 0
 
     @abstractmethod
     def execute_check(self, context: ValidationContext) -> bool:
