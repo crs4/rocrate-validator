@@ -18,7 +18,7 @@
     dct:publisher <https://publisherA> ;
 
     # # This profile is an extension of the RO-Crate Metadata Specification 1.1 profile <https://w3id.org/ro/crate/1.1>
-    prof:isProfileOf <https://w3id.org/e> ;
+    prof:isProfileOf <https://w3id.org/e>, <https://w3id.org/f> ;
 
     # # Explicitly state that this profile is a transitive profile of the RO-Crate Metadata Specification 1.1 profile
     prof:isTransitiveProfileOf <https://w3id.org/e>, <https://w3id.org/f>, <https://w3id.org/c>, <https://w3id.org/b>, <https://w3id.org/a> ;
