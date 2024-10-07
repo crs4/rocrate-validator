@@ -457,8 +457,8 @@ class Profile:
         logger.debug("Loaded profile: %s", profile)
         return profile
 
-    @staticmethod
-    def load_profiles(profiles_path: Union[str, Path],
+    @classmethod
+    def load_profiles(cls, profiles_path: Union[str, Path],
                       publicID: Optional[str] = None,
                       severity:  Severity = Severity.REQUIRED,
                       allow_requirement_check_override: bool = True) -> list[Profile]:
