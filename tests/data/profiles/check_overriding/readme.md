@@ -1,4 +1,4 @@
-# Profiles to test requirement checks overriding
+# Profiles for testing the overriding of requirement check
 
 
 The profile hierarchy is as follows:
@@ -13,4 +13,4 @@ The profile hierarchy is as follows:
             X   Y
 ```
 
-Every profile contains the single `ShapeS`
+Each profile contains a single `ShapeS`.
