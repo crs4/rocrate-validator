@@ -317,6 +317,16 @@ class Profile:
                 return requirement
         return None
 
+    def get_requirement_check(self, check_name: str) -> Optional[RequirementCheck]:
+        """
+        Get the requirement check with the given name
+        """
+        for requirement in self.requirements:
+            check = requirement.get_check(check_name)
+            if check:
+                return check
+        return None
+
     @classmethod
     def __get_nested_profiles__(cls, source: str) -> list[str]:
         result = []
