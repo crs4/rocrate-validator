@@ -164,6 +164,7 @@ class SHACLCheck(RequirementCheck):
         shacl_validator = SHACLValidator(shapes_graph=shapes_graph, ont_graph=ontology_graph)
         shacl_result = shacl_validator.validate(
             data_graph=data_graph, ontology_graph=ontology_graph, **shacl_context.settings)
+        # shacl_result.results_graph.serialize("logs/validation_results.ttl", format="turtle")
         # parse the validation result
         end_time = timer()
         logger.debug("Validation '%s' conforms: %s", self.name, shacl_result.conforms)
