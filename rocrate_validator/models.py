@@ -263,6 +263,14 @@ class Profile:
         return self.__get_specification_property__("isTransitiveProfileOf", PROF_NS, pop_first=False)
 
     @property
+    def parents(self) -> list[Profile]:
+        return [self.__profiles_map.get_by_key(_) for _ in self.is_profile_of]
+
+    @property
+    def siblings(self) -> list[Profile]:
+        return self.get_sibling_profiles(self)
+
+    @property
     def readme_file_path(self) -> Path:
         return self.path / DEFAULT_PROFILE_README_FILE
 
