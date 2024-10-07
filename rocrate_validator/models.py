@@ -358,6 +358,10 @@ class Profile:
     def __lt__(self, other: object) -> bool:
         if not isinstance(other, Profile):
             raise TypeError(f"Cannot compare {type(self)} with {type(other)}")
+        # If one profile is a parent of the other, the parent is greater
+        if other in self.parents:
+            return False
+        # If the number of inherited profiles is the same, compare based on identifier
         return self.identifier < other.identifier
 
     def __hash__(self) -> int:
