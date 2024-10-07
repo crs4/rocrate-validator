@@ -546,6 +546,10 @@ class Profile:
         return cls.__profiles_map.get_by_index("token", token)
 
     @classmethod
+    def get_sibling_profiles(cls, profile: Profile) -> list[Profile]:
+        return [p for p in cls.__profiles_map.values() if profile in p.parents]
+
+    @classmethod
     def all(cls) -> list[Profile]:
         return cls.__profiles_map.values()
 
