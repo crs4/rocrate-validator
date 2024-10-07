@@ -482,70 +482,27 @@ class Profile:
                 profile = Profile.load(profiles_path, profile_path, publicID=publicID, severity=severity)
                 profiles.append(profile)
 
-        # Navigate the profiles to check for overridden checks.
-        # If the override is enabled in the settings,
-        # overridden checks should be marked as such.
-        # Otherwise, raise an error.
-        profiles_checks = {}
-        # Traverse the profiles in reverse order
-        # (this ensures that the most specific profiles are visited first)
-        for profile in sorted(profiles, reverse=True):
-            profile_checks = [_ for r in profile.get_requirements() for _ in r.get_checks()]
-            profile_check_names = []
-            for check in profile_checks:
-                # If the check is already present in the list of checks,
-                # raise an error if the override is not enabled.
-                if not allow_requirement_check_override and check.name in profile_check_names:
-                    raise DuplicateRequirementCheck(check.name, profile.identifier)
-                # Add the check to the list of checks
-                profile_check_names.append(check.name)
-                check_chain = profiles_checks.get(check.name, None)
-                if not check_chain:
-                    profiles_checks[check.name] = {check}
-                elif allow_requirement_check_override:
-                    logger.debug("Check chain: %s", [_.name for _ in check_chain])
-                    check_chain.add(check)
-                else:
-                    raise DuplicateRequirementCheck(check.name, profile.identifier)
+        # order profiles based on the inheritance hierarchy,
+        # from the most specific to the most general
+        # (i.e., from the leaves of the graph to the root)
+        profiles = sorted(profiles, reverse=True)
 
-        # Traverse the list check duplicates to set the overridden checks
-        for check_name, checks_chain in profiles_checks.items():
-            logger.debug("Check %s against chain %s", check_name, [_.identifier for _ in checks_chain])
-            for check in checks_chain:
-                # keep track of the visited profiles
-                visited_profiles = set()
-                logger.debug("Analyzing check %s", check.identifier)
-                # Traverse the inherited profiles of the requirement check
-                # to find the checks that overridden by the current check
-                for p in check.requirement.profile.inherited_profiles:
-                    # A flag to skip the current 'p' profile
-                    skip_profile = False
-                    # Check if the profile belongs to the parent profiles
-                    # of the visited profiles, which means that the profile
-                    # belongs to the same inheritance chain
-                    for vp in visited_profiles:
-                        logger.debug("vp %r, p inherited: %r", vp.identifier,
-                                     [_.name for _ in p.inherited_profiles])
-                        if p in vp.inherited_profiles:
-                            # if the profile belongs to the parent profiles
-                            # of the visited profiles, skip the profile
-                            logger.debug("Skipping profile %s", p.identifier)
-                            skip_profile = True
-                            break
-                    # If the profile is not skipped,
-                    # identify the profile check that overrides the current check
-                    # and mark the current check as overridden
-                    if not skip_profile:
-                        logger.debug("Visiting profile %s", p.identifier)
-                        cp = next((c for c in checks_chain if c.requirement.profile == p and c != check), None)
-                        if cp is not None:
-                            check.add_override(cp)
-                            logger.debug("Check %s overridden by %s", check.identifier, cp.identifier)
-                    # add the current profile to the visited profiles
-                    visited_profiles.add(p)
-                # log the overridden checks
-                logger.debug("Check %s overridden by %s", check.identifier,
-                             [_.identifier for _ in check.overridden_by])
+        # Check for overridden checks
+        if not allow_requirement_check_override:
+            # Navigate the profiles to check for overridden checks.
+            # If the override is not enabled in the settings raise an error.
+            profiles_checks = set()
+            # Search for duplicated checks in the profiles
+            for profile in profiles:
+                profile_checks = [_ for r in profile.get_requirements() for _ in r.get_checks()]
+                for check in profile_checks:
+                    # If the check is already present in the list of checks,
+                    # raise an error if the override is not enabled.
+                    if check in profiles_checks:
+                        raise DuplicateRequirementCheck(check.name, profile.identifier)
+                    # Add the check to the list of checks
+                    profiles_checks.add(check)
+
         #  order profiles according to the number of profiles they depend on:
         # i.e, first the profiles that do not depend on any other profile
         # then the profiles that depend on the previous ones, and so on
