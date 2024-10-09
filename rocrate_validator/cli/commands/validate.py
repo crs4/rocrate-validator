@@ -205,7 +205,8 @@ def get_single_char(console: Optional[Console] = None, end: str = "\n",
     is_flag=True,
     help="Disable pagination of the validation details",
     default=False,
-    show_default=True
+    show_default=True,
+    hidden=True if sys.platform == "win32" else False
 )
 @click.option(
     '-f',
@@ -256,7 +257,7 @@ def validate(ctx,
     # Get the no_paging flag
     enable_pager = not no_paging
     # override the enable_pager flag if the interactive flag is False
-    if not interactive:
+    if not interactive or sys.platform == "win32":
         enable_pager = False
     # Log the input parameters for debugging
     logger.debug("profiles_path: %s", os.path.abspath(profiles_path))
@@ -385,7 +386,7 @@ def validate(ctx,
             if output_format == "text" and not output_file:
                 if not result.passed():
                     verbose_choice = "n"
-                    if interactive and not verbose and enable_pager:
+                    if interactive and not verbose:
                         verbose_choice = get_single_char(console, choices=['y', 'n'],
                                                          message=(
                             "[bold] > Do you want to see the validation details? "
