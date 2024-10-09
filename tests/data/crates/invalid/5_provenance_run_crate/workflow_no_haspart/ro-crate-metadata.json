@@ -7,6 +7,8 @@
         {
             "@id": "./",
             "@type": "Dataset",
+            "name": "revsort run",
+            "description": "execution of the revsort workflow",
             "conformsTo": [
                 {
                     "@id": "https://w3id.org/ro/wfrun/process/0.5"
