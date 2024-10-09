@@ -108,6 +108,50 @@ ro-crate:RootDataEntityHasPartValueRestriction
     sh:targetClass ro-crate:RootDataEntity ;
     sh:property [
         a sh:PropertyShape ;
+        sh:name "Root Data Entity: `name` property" ;
+        sh:description """Check if the Root Data Entity includes a `name` (as specified by schema.org) 
+        to clearly identify the dataset and distinguish it from other datasets.""" ;
+        sh:minCount 1 ;
+        sh:nodeKind sh:Literal ;
+        sh:path schema_org:name;
+        sh:message "The Root Data Entity SHOULD have a `name` property (as specified by schema.org)" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Root Data Entity: `description` property" ;
+        sh:description """Check if the Root Data Entity includes a `description` (as specified by schema.org)
+        to provide a human-readable description of the dataset.""" ;
+        sh:minCount 1 ;
+        sh:nodeKind sh:Literal ;
+        sh:path schema_org:description;
+        sh:message "The Root Data Entity SHOULD have a `description` property (as specified by schema.org)" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Root Data Entity: `licence` property" ;
+        sh:description """Check if the Root Data Entity includes a `license` property (as specified by schema.org)
+        to provide information about the license of the dataset.""" ;
+        sh:path schema_org:license;
+        sh:minCount 1 ;
+        sh:message """The Root Data Entity MUST have a `license` property (as specified by schema.org).
+        SHOULD link to a Contextual Entity in the RO-Crate Metadata File with a name and description.
+        MAY have a URI (eg for Creative Commons or Open Source licenses).
+        MAY, if necessary be a textual description of how the RO-Crate may be used.""" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Root Data Entity: `datePublished` property" ;
+        sh:description """Check if the Root Data Entity includes a `datePublished` (as specified by schema.org)
+        to provide the date when the dataset was published. The datePublished MUST be a valid ISO 8601 date.
+        It SHOULD be specified to at least the day level, but MAY include a time component.""" ;
+        sh:minCount 1 ;
+        sh:nodeKind sh:Literal ;
+        sh:path schema_org:datePublished ;
+        sh:pattern "^(\\d{4}-\\d{2}-\\d{2})(T\\d{2}:\\d{2}:\\d{2}(\\.\\d{3})?\\+\\d{2}:\\d{2})?$" ;
+        sh:message "The Root Data Entity SHOULD have a `datePublished` property (as specified by schema.org) with a valid ISO 8601 date and the precision of at least the day level" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
         sh:name "RO-Crate Root Data Entity: `hasPart` value restriction" ;
         sh:description "Check if the Root Data Entity is linked to the declared `File`, `Directory` and other types of instances through the `hasPart` property" ;
         sh:path schema_org:hasPart ;

@@ -17,6 +17,27 @@
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix schema_org: <http://schema.org/> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+
+ro-crate:LicenseOptionalAllowedValues a sh:NodeShape ;
+    sh:name "Root Data Entity: optional properties" ;
+    sh:description """Define the optional properties for the Root Data Entity (e.g., license)""" ;
+    sh:targetClass ro-crate:RootDataEntity ;
+    sh:property [ 
+        a sh:PropertyShape ;
+        sh:name "License" ;
+        sh:description """Check if the RO-Crate has a license property with a URI or a textual description""" ;
+        sh:message """MAY have a URI (eg for Creative Commons or Open Source licenses). 
+        MAY, if necessary be a textual description of how the RO-Crate may be used.""" ;
+        sh:minCount 1 ;
+        sh:nodeKind sh:Literal ;
+        sh:path schema_org:license ;
+        sh:or (
+            [ sh:dataType xsd:string ]
+            [ sh:dataType xsd:anyURI ]
+        ) ;
+    ].
 
 ro-crate:LicenseDefinition a sh:NodeShape ;
     sh:name "License definition" ;
