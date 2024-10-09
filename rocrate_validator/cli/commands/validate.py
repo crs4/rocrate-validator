@@ -572,7 +572,7 @@ class ValidationReportLayout(Layout):
                 f"\n[bold cyan]RO-Crate:[/bold cyan] [bold]{URI(settings['data_path']).uri}[/bold]"
                 "\n[bold cyan]Target Profile:[/bold cyan][bold magenta] "
                 f"{settings['profile_identifier']}[/bold magenta] "
-                f"{ '[italic](autodetected)[/italic]' if settings['profile_autodetected'] else ''}"
+                f"{'[italic](autodetected)[/italic]' if settings['profile_autodetected'] else ''}"
                 f"\n[bold cyan]Validation Severity:[/bold cyan] "
                 f"[bold {severity_color}]{settings['requirement_severity']}[/bold {severity_color}]",
                 style="white", align="left"),
