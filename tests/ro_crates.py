@@ -666,3 +666,11 @@ class InvalidProvRC:
     @property
     def workflow_bad_haspart(self) -> Path:
         return self.base_path / "workflow_bad_haspart"
+
+    @property
+    def tool_no_input(self) -> Path:
+        return self.base_path / "tool_no_input"
+
+    @property
+    def tool_no_output(self) -> Path:
+        return self.base_path / "tool_no_output"
