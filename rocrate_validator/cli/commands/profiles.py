@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
 from pathlib import Path
 
 from rich.markdown import Markdown
@@ -26,7 +27,8 @@ from rocrate_validator.cli.main import cli, click
 from rocrate_validator.cli.utils import get_app_header_rule
 from rocrate_validator.colors import get_severity_color
 from rocrate_validator.constants import DEFAULT_PROFILE_IDENTIFIER
-from rocrate_validator.models import LevelCollection, RequirementLevel, Severity
+from rocrate_validator.models import (LevelCollection, RequirementLevel,
+                                      Severity)
 from rocrate_validator.utils import get_profiles_path
 
 # set the default profiles path
@@ -59,7 +61,8 @@ def profiles(ctx, profiles_path: Path = DEFAULT_PROFILES_PATH):
     is_flag=True,
     help="Disable paging",
     default=False,
-    show_default=True
+    show_default=True,
+    hidden=True if sys.platform == "win32" else False
 )
 @click.pass_context
 def list_profiles(ctx, no_paging: bool = False):  # , profiles_path: Path = DEFAULT_PROFILES_PATH):
@@ -73,7 +76,7 @@ def list_profiles(ctx, no_paging: bool = False):  # , profiles_path: Path = DEFA
     # Get the no_paging flag
     enable_pager = not no_paging
     # override the enable_pager flag if the interactive flag is False
-    if not interactive:
+    if not interactive or sys.platform == "win32":
         enable_pager = False
 
     try:
@@ -152,7 +155,8 @@ def list_profiles(ctx, no_paging: bool = False):  # , profiles_path: Path = DEFA
     is_flag=True,
     help="Disable paging",
     default=False,
-    show_default=True
+    show_default=True,
+    hidden=True if sys.platform == "win32" else False
 )
 @click.pass_context
 def describe_profile(ctx,
@@ -170,7 +174,7 @@ def describe_profile(ctx,
     # Get the no_paging flag
     enable_pager = not no_paging
     # override the enable_pager flag if the interactive flag is False
-    if not interactive:
+    if not interactive or sys.platform == "win32":
         enable_pager = False
 
     try:

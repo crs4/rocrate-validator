@@ -17,7 +17,7 @@ import sys
 import threading
 from io import StringIO
 from logging import (CRITICAL, DEBUG, ERROR, INFO, WARNING, Logger,
-                     StreamHandler)
+                     StreamHandler, basicConfig as logging_basicConfig)
 from typing import Optional
 
 import colorlog
@@ -156,6 +156,11 @@ def __create_logger__(name: str) -> Logger:
 def basicConfig(level: int, modules_config: Optional[dict] = None):
     """Set the log level and format for the logger"""
     _acquireLock()
+
+    # set the default log level to ERROR for loggers of other modules
+    logging_basicConfig(level=ERROR)
+
+    # set the default log level and format
     try:
         if not isinstance(level, int):
             level = getattr(__module__, level.upper(), None)
