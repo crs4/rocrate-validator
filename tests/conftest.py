@@ -53,6 +53,11 @@ def fake_profiles_path():
 
 
 @fixture
+def check_overriding_profiles_path():
+    return f"{TEST_DATA_PATH}/profiles/check_overriding"
+
+
+@fixture
 def profiles_requirement_loading():
     return f"{TEST_DATA_PATH}/profiles/requirement_loading"
 

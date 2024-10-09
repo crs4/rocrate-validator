@@ -263,6 +263,14 @@ class Profile:
         return self.__get_specification_property__("isTransitiveProfileOf", PROF_NS, pop_first=False)
 
     @property
+    def parents(self) -> list[Profile]:
+        return [self.__profiles_map.get_by_key(_) for _ in self.is_profile_of]
+
+    @property
+    def siblings(self) -> list[Profile]:
+        return self.get_sibling_profiles(self)
+
+    @property
     def readme_file_path(self) -> Path:
         return self.path / DEFAULT_PROFILE_README_FILE
 
@@ -309,6 +317,16 @@ class Profile:
                 return requirement
         return None
 
+    def get_requirement_check(self, check_name: str) -> Optional[RequirementCheck]:
+        """
+        Get the requirement check with the given name
+        """
+        for requirement in self.requirements:
+            check = requirement.get_check(check_name)
+            if check:
+                return check
+        return None
+
     @classmethod
     def __get_nested_profiles__(cls, source: str) -> list[str]:
         result = []
@@ -345,16 +363,19 @@ class Profile:
     def __eq__(self, other: object) -> bool:
         return isinstance(other, Profile) \
             and self.identifier == other.identifier \
-            and self.path == other.path \
-            and self.requirements == other.requirements
+            and self.path == other.path
 
     def __lt__(self, other: object) -> bool:
         if not isinstance(other, Profile):
             raise TypeError(f"Cannot compare {type(self)} with {type(other)}")
+        # If one profile is a parent of the other, the parent is greater
+        if other in self.parents:
+            return False
+        # If the number of inherited profiles is the same, compare based on identifier
         return self.identifier < other.identifier
 
     def __hash__(self) -> int:
-        return hash((self.identifier, self.path, self.requirements))
+        return hash((self.identifier, self.path))
 
     def __repr__(self) -> str:
         return (
@@ -436,8 +457,8 @@ class Profile:
         logger.debug("Loaded profile: %s", profile)
         return profile
 
-    @staticmethod
-    def load_profiles(profiles_path: Union[str, Path],
+    @classmethod
+    def load_profiles(cls, profiles_path: Union[str, Path],
                       publicID: Optional[str] = None,
                       severity:  Severity = Severity.REQUIRED,
                       allow_requirement_check_override: bool = True) -> list[Profile]:
@@ -461,32 +482,26 @@ class Profile:
                 profile = Profile.load(profiles_path, profile_path, publicID=publicID, severity=severity)
                 profiles.append(profile)
 
-        # navigate the profiles and check for overridden checks
-        # if the override is enabled in the settings
-        # overridden checks should be marked as such
-        # otherwise, raise an error
-        profiles_checks = {}
-        # visit the profiles in reverse order
-        # (the order is important to visit the most specific profiles first)
-        for profile in sorted(profiles, reverse=True):
-            profile_checks = [_ for r in profile.get_requirements() for _ in r.get_checks()]
-            profile_check_names = []
-            for check in profile_checks:
-                #  find duplicated checks and raise an error
-                if check.name in profile_check_names and not allow_requirement_check_override:
-                    raise DuplicateRequirementCheck(check.name, profile.identifier)
-                #  add check to the list
-                profile_check_names.append(check.name)
-                #  mark overridden checks
-                check_chain = profiles_checks.get(check.name, None)
-                if not check_chain:
-                    profiles_checks[check.name] = [check]
-                elif allow_requirement_check_override:
-                    check.overridden_by = check_chain[-1]
-                    check_chain.append(check)
-                    logger.debug("Check %s overridden by %s", check.identifier, check.overridden_by.identifier)
-                else:
-                    raise DuplicateRequirementCheck(check.name, profile.identifier)
+        # order profiles based on the inheritance hierarchy,
+        # from the most specific to the most general
+        # (i.e., from the leaves of the graph to the root)
+        profiles = sorted(profiles, reverse=True)
+
+        # Check for overridden checks
+        if not allow_requirement_check_override:
+            # Navigate the profiles to check for overridden checks.
+            # If the override is not enabled in the settings raise an error.
+            profiles_checks = set()
+            # Search for duplicated checks in the profiles
+            for profile in profiles:
+                profile_checks = [_ for r in profile.get_requirements() for _ in r.get_checks()]
+                for check in profile_checks:
+                    # If the check is already present in the list of checks,
+                    # raise an error if the override is not enabled.
+                    if check in profiles_checks:
+                        raise DuplicateRequirementCheck(check.name, profile.identifier)
+                    # Add the check to the list of checks
+                    profiles_checks.add(check)
 
         #  order profiles according to the number of profiles they depend on:
         # i.e, first the profiles that do not depend on any other profile
@@ -508,6 +523,10 @@ class Profile:
     @classmethod
     def get_by_token(cls, token: str) -> Profile:
         return cls.__profiles_map.get_by_index("token", token)
+
+    @classmethod
+    def get_sibling_profiles(cls, profile: Profile) -> list[Profile]:
+        return [p for p in cls.__profiles_map.values() if profile in p.parents]
 
     @classmethod
     def all(cls) -> list[Profile]:
@@ -538,6 +557,7 @@ class Requirement(ABC):
         self._path = path  # path of code implementing the requirement
         self._level_from_path = None
         self._checks: list[RequirementCheck] = []
+        self._overridden = None
 
         if not name and path:
             self._name = get_requirement_name_from_file(path)
@@ -596,6 +616,14 @@ class Requirement(ABC):
         return self._description
 
     @property
+    def overridden(self) -> bool:
+        # Check if the requirement has been overridden.
+        # The requirement can be considered overridden if all its checks have been overridden
+        if self._overridden is None:
+            self._overridden = len([_ for _ in self._checks if not _.overridden]) == 0
+        return self._overridden
+
+    @property
     @abstractmethod
     def hidden(self) -> bool:
         pass
@@ -635,15 +663,16 @@ class Requirement(ABC):
         all_passed = True
         for check in self._checks:
             try:
-                logger.debug("Running check '%s' - Desc: %s - overridden: %s.%s",
-                             check.name, check.description, check.overridden_by,
-                             check.overridden_by.requirement.profile if check.overridden_by else None)
+                logger.debug("Running check '%s' - Desc: %s - overridden: %s",
+                             check.name, check.description, [_.identifier for _ in check.overridden_by])
                 if check.overridden:
-                    logger.debug("Skipping check '%s' because overridden by '%s'", check.name, check.overridden_by.name)
+                    logger.debug("Skipping check '%s' because overridden by '%r'",
+                                 check.identifier, [_.identifier for _ in check.overridden_by])
                     continue
                 context.validator.notify(RequirementCheckValidationEvent(
                     EventType.REQUIREMENT_CHECK_VALIDATION_START, check))
                 check_result = check.execute_check(context)
+                logger.debug("Result of check %s: %s", check.identifier, check_result)
                 context.result.add_executed_check(check, check_result)
                 context.validator.notify(RequirementCheckValidationEvent(
                     EventType.REQUIREMENT_CHECK_VALIDATION_END, check, validation_result=check_result))
@@ -793,8 +822,6 @@ class RequirementCheck(ABC):
         self._name = name
         self._level = level
         self._description = description
-        self._overridden_by: RequirementCheck = None
-        self._override: RequirementCheck = None
 
     @property
     def order_number(self) -> int:
@@ -841,23 +868,26 @@ class RequirementCheck(ABC):
         return self.level.severity
 
     @property
-    def overridden_by(self) -> RequirementCheck:
-        return self._overridden_by
-
-    @overridden_by.setter
-    def overridden_by(self, value: RequirementCheck) -> None:
-        assert value is None or isinstance(value, RequirementCheck) and value != self, \
-            f"Invalid value for overridden_by: {value}"
-        self._overridden_by = value
-        value._override = self
+    def overridden_by(self) -> list[RequirementCheck]:
+        overridden_by = []
+        for sibling_profile in self.requirement.profile.siblings:
+            check = sibling_profile.get_requirement_check(self.name)
+            if check:
+                overridden_by.append(check)
+        return overridden_by
 
     @property
-    def override(self) -> RequirementCheck:
-        return self._override
+    def override(self) -> list[RequirementCheck]:
+        overrides = []
+        for parent in self.requirement.profile.parents:
+            check = parent.get_requirement_check(self.name)
+            if check:
+                overrides.append(check)
+        return overrides
 
     @property
     def overridden(self) -> bool:
-        return self._overridden_by is not None
+        return len(self.overridden_by) > 0
 
     @abstractmethod
     def execute_check(self, context: ValidationContext) -> bool:
@@ -1404,11 +1434,14 @@ class Validator(Publisher):
                          profile.identifier, len(requirements), requirements)
             terminate = False
             for requirement in requirements:
-                self.notify(RequirementValidationEvent(
-                    EventType.REQUIREMENT_VALIDATION_START, requirement=requirement))
+                if not requirement.overridden:
+                    self.notify(RequirementValidationEvent(
+                        EventType.REQUIREMENT_VALIDATION_START, requirement=requirement))
                 passed = requirement.__do_validate__(context)
-                self.notify(RequirementValidationEvent(
-                    EventType.REQUIREMENT_VALIDATION_END, requirement=requirement, validation_result=passed))
+                logger.debug("Requirement %s passed: %s", requirement, passed)
+                if not requirement.overridden:
+                    self.notify(RequirementValidationEvent(
+                        EventType.REQUIREMENT_VALIDATION_END, requirement=requirement, validation_result=passed))
                 if passed:
                     logger.debug("Validation Requirement passed")
                 else:

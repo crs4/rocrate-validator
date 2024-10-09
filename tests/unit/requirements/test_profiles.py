@@ -131,7 +131,7 @@ def test_profile_spec_properties(fake_profiles_path: str):
         "https://w3id.org/a"], "The transitiveProfileOf property should be ['a']"
 
 
-def test_profiles_loading_free_folder_structure(profiles_with_free_folder_structure_path):
+def test_profiles_loading_free_folder_structure(profiles_with_free_folder_structure_path: str):
     """Test the loaded profiles from the validator context."""
     profiles = Profile.load_profiles(profiles_path=profiles_with_free_folder_structure_path)
     logger.debug("The profiles: %r", profiles)
@@ -147,7 +147,7 @@ def test_profiles_loading_free_folder_structure(profiles_with_free_folder_struct
     assert profiles[2].token == "c", "The profile name should be 'c'"
 
 
-def test_versioned_profiles_loading(fake_versioned_profiles_path):
+def test_versioned_profiles_loading(fake_versioned_profiles_path: str):
     """Test the loaded profiles from the validator context."""
     profiles = Profile.load_profiles(profiles_path=fake_versioned_profiles_path)
     logger.debug("The profiles: %r", profiles)
@@ -169,7 +169,7 @@ def test_versioned_profiles_loading(fake_versioned_profiles_path):
     assert profiles[2].version == "3.2.1", "The profile version should be 3.2.1"
 
 
-def test_conflicting_versioned_profiles_loading(fake_conflicting_versioned_profiles_path):
+def test_conflicting_versioned_profiles_loading(fake_conflicting_versioned_profiles_path: str):
     """Test the loaded profiles from the validator context."""
     with pytest.raises(ProfileSpecificationError) as excinfo:
         logger.debug("result: %r", excinfo)
@@ -295,3 +295,146 @@ def test_load_valid_profile_with_override_on_inherited_profile(fake_profiles_pat
     # the number of checks should be 2
     requirements_checks = [requirement for profile in profiles for requirement in profile.requirements]
     assert len(requirements_checks) == 3, "The number of requirements should be 2"
+
+
+def test_profile_parents(check_overriding_profiles_path: str):
+    """Test the order of the loaded profiles."""
+    logger.debug("The profiles path: %r", check_overriding_profiles_path)
+    assert os.path.exists(check_overriding_profiles_path)
+    # Load the profiles
+    profiles = Profile.load_profiles(profiles_path=check_overriding_profiles_path)
+    # The number of profiles should be greater than 0
+    assert len(profiles) > 0
+
+    # Extract the profile names
+    profile_names = sorted([profile.token for profile in profiles])
+    logger.debug("The profile names: %r", profile_names)
+
+    # Check the number of loaded profiles
+    assert len(profile_names) == 8, "The number of profiles should be 8"
+
+    # Check the number of parents of each profile
+    for profile in profiles:
+        if profile.token == "a":
+            assert len(profile.parents) == 0, "The number of parents should be 0"
+
+        elif profile.token == "b":
+            assert len(profile.parents) == 1, "The number of parents should be 1"
+            assert profile.parents[0].token == "a", "The parent should be 'a'"
+
+        elif profile.token == "c":
+            assert len(profile.parents) == 1, "The number of parents should be 1"
+            assert profile.parents[0].token == "a", "The parent should be 'a'"
+
+        elif profile.token == "d":
+            assert len(profile.parents) == 1, "The number of parents should be 1"
+            assert profile.parents[0].token == "b", "The parent should be 'b'"
+
+        elif profile.token == "e":
+            assert len(profile.parents) == 1, "The number of parents should be 1"
+            assert profile.parents[0].token == "b", "The parent should be 'b'"
+
+        elif profile.token == "f":
+            assert len(profile.parents) == 1, "The number of parents should be 1"
+            assert profile.parents[0].token == "c", "The parent should be 'c'"
+
+        elif profile.token == "x":
+            assert len(profile.parents) == 1, "The number of parents should be 1"
+            assert profile.parents[0].token == "d", "The parent should be 'd'"
+
+        elif profile.token == "y":
+            assert len(profile.parents) == 2, "The number of parents should be 2"
+            assert profile.parents[0].token == "e", "The parent should be 'e'"
+            assert profile.parents[1].token == "f", "The parent should be 'f'"
+
+
+def test_profile_check_overriding(check_overriding_profiles_path: str):
+    """Test the order of the loaded profiles."""
+    logger.debug("The profiles path: %r", check_overriding_profiles_path)
+    assert os.path.exists(check_overriding_profiles_path)
+    # Load the profiles
+    profiles = Profile.load_profiles(profiles_path=check_overriding_profiles_path)
+    # The number of profiles should be greater than 0
+    assert len(profiles) > 0
+
+    # Extract the profile names
+    profile_names = sorted([profile.token for profile in profiles])
+    logger.debug("The profile names: %r", profile_names)
+
+    # Check the number of loaded profiles
+    assert len(profile_names) == 8, "The number of profiles should be 8"
+
+    def check_profile(profile, check, inherited_profiles, overridden_by, override):
+        # Check inherited profiles
+        assert len(profile.inherited_profiles) == len(inherited_profiles), \
+            f"The number of inherited profiles should be {len(inherited_profiles)}"
+        inherited_profiles_tokens = [_.token for _ in profile.inherited_profiles]
+        assert set(inherited_profiles_tokens) == set(inherited_profiles), \
+            f"The inherited profiles should be {inherited_profiles}"
+
+        # Check overridden status
+        logger.error("%r overridden by: %r", check.identifier, [
+                     _.requirement.profile.identifier for _ in check.overridden_by])
+        assert check.overridden == (len(overridden_by) > 0), \
+            f"The check overridden status should be {len(overridden_by) > 0}"
+        assert len(check.overridden_by) == len(overridden_by), \
+            f"The number of overridden checks should be {len(overridden_by)}"
+        overridden_by_tokens = [_.requirement.profile.identifier for _ in check.overridden_by]
+        assert set(overridden_by_tokens) == set(overridden_by), \
+            f"The overridden checks should be {overridden_by}"
+
+        # Check override status
+        assert len(check.override) == len(override), \
+            f"The number of overridden checks should be {len(override)}"
+        override_tokens = [_.requirement.profile.identifier for _ in check.override]
+        assert set(override_tokens) == set(override), \
+            f"The overridden checks should be {override}"
+
+    # Check the number of requirements and checks of each profile
+    for profile in profiles:
+        logger.debug("The profile: %r", profile)
+        # Check the number of requirements
+        logger.debug("The number of requirements: %r", len(profile.requirements))
+        assert len(profile.requirements) == 1, "The number of requirements should be 1"
+        # Get the requirement
+        requirement = profile.requirements[0]
+        logger.debug("The requirement: %r of the profile %r", requirement, profile.token)
+        # The number of checks should be 1
+        logger.debug("The number of checks: %r", len(requirement.get_checks()))
+        assert len(requirement.get_checks()) == 1, "The number of checks should be 1"
+
+        # Get the check
+        check = requirement.get_checks()[0]
+        logger.debug("The check: %r of requirement %r of the profiles %f", check, requirement, profile.token)
+
+        # Check the profile 'a'
+        if profile.token == "a":
+            check_profile(profile, check, [], ["b", "c"], [])
+
+        # Check the profile 'b'
+        elif profile.token == "b":
+            check_profile(profile, check, ["a"], ["d", "e"], ["a"])
+
+        # Check the profile 'c'
+        elif profile.token == "c":
+            check_profile(profile, check, ["a"], ["f"], ["a"])
+
+        # Check the profile 'd'
+        elif profile.token == "d":
+            check_profile(profile, check, ["a", "b"], ["x"], ["b"])
+
+        # Check the profile 'e'
+        elif profile.token == "e":
+            check_profile(profile, check, ["a", "b"], ["y"], ["b"])
+
+        # Check the profile 'f'
+        elif profile.token == "f":
+            check_profile(profile, check, ["a", "c"], ["y"], ["c"])
+
+        # Check the profile 'y'
+        elif profile.token == "y":
+            check_profile(profile, check, ["a", "b", "c", "e", "f"], [], ["e", "f"])
+
+        # Check the profile 'x'
+        elif profile.token == "x":
+            check_profile(profile, check, ["a", "b", "d"], [], ["d"])
