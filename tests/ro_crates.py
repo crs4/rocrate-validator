@@ -658,3 +658,11 @@ class InvalidProvRC:
     @property
     def conformsto_no_procrc(self) -> Path:
         return self.base_path / "conformsto_no_procrc"
+
+    @property
+    def workflow_no_haspart(self) -> Path:
+        return self.base_path / "workflow_no_haspart"
+
+    @property
+    def workflow_bad_haspart(self) -> Path:
+        return self.base_path / "workflow_bad_haspart"
