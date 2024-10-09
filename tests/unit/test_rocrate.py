@@ -111,17 +111,17 @@ def test_valid_zip_rocrate():
     # test list files
     files = roc.list_files()
     logger.debug(f"Files: {files}")
-    assert len(files) == 9, "Should have 5 files"
+    assert len(files) == 11, "Should have 11 files"
 
     # test is_file
     assert roc.has_file(metadata_file_descriptor), "Should be a file"
 
     # test file size
     size = roc.get_file_size(metadata_file_descriptor)
-    assert size == 3882, "Size should be 26788"
+    assert size == 3935, "Size should be 3935"
 
     # test crate size
-    assert roc.size == 136267, "Size should be 136267"
+    assert roc.size == 137039, "Size should be 136267"
 
     # test get_file_content binary mode
     content = roc.get_file_content(metadata_file_descriptor)
@@ -177,17 +177,17 @@ def test_valid_remote_zip_rocrate():
     # # test list files
     files = roc.list_files()
     logger.debug(f"Files: {files}")
-    assert len(files) == 9, "Should have 5 files"
+    assert len(files) == 11, "Should have 11 files"
 
     # test crate size
-    assert roc.size == 136267, "Size should be 136267"
+    assert roc.size == 137039, "Size should be 136267"
 
     # test is_file
     assert roc.has_file(metadata_file_descriptor), "Should be a file"
 
     # test file size
     size = roc.get_file_size(metadata_file_descriptor)
-    assert size == 3882, "Size should be 1097"
+    assert size == 3935, "Size should be 3935"
 
     # test get_file_content binary mode
     content = roc.get_file_content(metadata_file_descriptor)
@@ -236,4 +236,4 @@ def test_external_file():
     assert isinstance(content, bytes), "Content should be bytes"
 
     size = ROCrate.get_external_file_size(ValidROC().sort_and_change_remote)
-    assert size == 136267, "Size should be 136267"
+    assert size == 137039, "Size should be 137039"

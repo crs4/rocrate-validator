@@ -109,6 +109,6 @@
             },
             "encodingFormat": ["text/markdown"]
         },
-        { "@id": "https://spdx.org/licenses/MIT.html", "@type": "license" }
+        { "@id": "https://spdx.org/licenses/MIT.html", "@type": "CreativeWork" }
     ]
 }

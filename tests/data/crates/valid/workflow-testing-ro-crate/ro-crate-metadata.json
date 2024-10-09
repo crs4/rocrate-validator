@@ -22,6 +22,8 @@
         {
             "@id": "./",
             "@type": "Dataset",
+            "name": "Valid Workflow Testing RO-Crate",
+            "description": "This RO Crate is valid and is used for testing the Workflow RO-Crate profile.",
             "datePublished": "2024-09-17T11:09:44+00:00",
             "hasPart": [
                 {
