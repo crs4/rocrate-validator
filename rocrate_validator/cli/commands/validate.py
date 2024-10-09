@@ -16,8 +16,6 @@ from __future__ import annotations
 
 import os
 import sys
-import termios
-import tty
 from pathlib import Path
 from typing import Optional
 
@@ -74,15 +72,40 @@ def validate_uri(ctx, param, value):
     return value
 
 
-def get_single_char(console: Optional[Console] = None, end: str = "\n",
-                    message: Optional[str] = None,
-                    choices: Optional[list[str]] = None) -> str:
+def __get_single_char_win32__(console: Optional[Console] = None, end: str = "\n",
+                              message: Optional[str] = None,
+                              choices: Optional[list[str]] = None) -> str:
     """
     Get a single character from the console
     """
+    import msvcrt
+
+    char = None
+    while char is None or (choices and char not in choices):
+        if console and message:
+            console.print(f"\n{message}", end="")
+        try:
+            char = msvcrt.getch().decode()
+        finally:
+            if console:
+                console.print(char, end=end if choices and char in choices else "")
+        if choices and char not in choices:
+            if console:
+                console.print(" [bold red]INVALID CHOICE[/bold red]", end=end)
+    return char
+
+
+def __get_single_char_unix__(console: Optional[Console] = None, end: str = "\n",
+                             message: Optional[str] = None,
+                             choices: Optional[list[str]] = None) -> str:
+    """
+    Get a single character from the console
+    """
+    import termios
+    import tty
+
     fd = sys.stdin.fileno()
     old_settings = termios.tcgetattr(fd)
-
     char = None
     while char is None or (choices and char not in choices):
         if console and message:
@@ -98,6 +121,17 @@ def get_single_char(console: Optional[Console] = None, end: str = "\n",
             if console:
                 console.print(" [bold red]INVALID CHOICE[/bold red]", end=end)
     return char
+
+
+def get_single_char(console: Optional[Console] = None, end: str = "\n",
+                    message: Optional[str] = None,
+                    choices: Optional[list[str]] = None) -> str:
+    """
+    Get a single character from the console
+    """
+    if sys.platform == "win32":
+        return __get_single_char_win32__(console, end, message, choices)
+    return __get_single_char_unix__(console, end, message, choices)
 
 
 @cli.command("validate")
