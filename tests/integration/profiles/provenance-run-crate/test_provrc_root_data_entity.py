@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 def test_provrc_conformsto_no_provrc():
     """\
-    Test a Workflow Run Crate where the root data entity does not conformsTo
+    Test a Provenance Run Crate where the root data entity does not conformsTo
     the Provenance Run Crate profile.
     """
     do_entity_test(
@@ -41,7 +41,7 @@ def test_provrc_conformsto_no_provrc():
 
 def test_provrc_conformsto_no_wfrc():
     """\
-    Test a Workflow Run Crate where the root data entity does not conformsTo
+    Test a Provenance Run Crate where the root data entity does not conformsTo
     the Workflow Run Crate profile.
     """
     do_entity_test(
@@ -58,7 +58,7 @@ def test_provrc_conformsto_no_wfrc():
 
 def test_provrc_conformsto_no_wroc():
     """\
-    Test a Workflow Run Crate where the root data entity does not conformsTo
+    Test a Provenance Run Crate where the root data entity does not conformsTo
     the Workflow RO-Crate profile.
     """
     do_entity_test(
@@ -75,7 +75,7 @@ def test_provrc_conformsto_no_wroc():
 
 def test_provrc_conformsto_no_procrc():
     """\
-    Test a Workflow Run Crate where the root data entity does not conformsTo
+    Test a Provenance Run Crate where the root data entity does not conformsTo
     the Process Run Crate profile.
     """
     do_entity_test(
