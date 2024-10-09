@@ -22,6 +22,8 @@
         {
             "@id": "./",
             "@type": "Dataset",
+            "name": "A valid Workflow Run Crate",
+            "description": "A RO-Crate describing a workflow run",
             "conformsTo": [
                 {
                     "@id": "https://w3id.org/ro/wfrun/process/0.5"
@@ -50,6 +52,7 @@
             "license": {
                 "@id": "http://spdx.org/licenses/CC0-1.0"
             },
+            "datePublished": "2024-05-17T01:04:52+01:00",
             "mainEntity": {
                 "@id": "Galaxy-Workflow-Hello_World.ga"
             },

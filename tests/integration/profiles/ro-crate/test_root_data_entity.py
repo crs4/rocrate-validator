@@ -48,6 +48,39 @@ def test_invalid_root_data_entity_value():
     )
 
 
+def test_missing_root_data_entity_name():
+    """Test a RO-Crate without a root data entity name."""
+    do_entity_test(
+        paths.missing_root_name,
+        models.Severity.REQUIRED,
+        False,
+        ["RO-Crate Root Data Entity REQUIRED properties"],
+        ["The Root Data Entity MUST have a `name` property (as specified by schema.org)"]
+    )
+
+
+def test_missing_root_data_entity_description():
+    """Test a RO-Crate without a root data entity description."""
+    do_entity_test(
+        paths.missing_root_description,
+        models.Severity.REQUIRED,
+        False,
+        ["RO-Crate Root Data Entity REQUIRED properties"],
+        ["The Root Data Entity MUST have a `description` property (as specified by schema.org)"]
+    )
+
+
+def test_missing_root_data_entity_license():
+    """Test a RO-Crate without a root data entity license."""
+    do_entity_test(
+        paths.missing_root_license,
+        models.Severity.REQUIRED,
+        False,
+        ["RO-Crate Root Data Entity REQUIRED properties"],
+        ["The Root Data Entity MUST have a `license` property (as specified by schema.org)"]
+    )
+
+
 def test_recommended_root_data_entity_value():
     """Test a RO-Crate with an invalid root data entity value."""
     do_entity_test(
@@ -71,28 +104,6 @@ def test_invalid_root_date():
     )
 
 
-def test_missing_root_name():
-    """Test a RO-Crate without a root data entity name."""
-    do_entity_test(
-        paths.missing_root_name,
-        models.Severity.RECOMMENDED,
-        False,
-        ["RO-Crate Root Data Entity RECOMMENDED properties"],
-        ["The Root Data Entity SHOULD have a `name` property (as specified by schema.org)"]
-    )
-
-
-def test_missing_root_description():
-    """Test a RO-Crate without a root data entity description."""
-    do_entity_test(
-        paths.missing_root_description,
-        models.Severity.RECOMMENDED,
-        False,
-        ["RO-Crate Root Data Entity RECOMMENDED properties"],
-        ["The Root Data Entity SHOULD have a `description` property (as specified by schema.org)"]
-    )
-
-
 def test_valid_referenced_generic_data_entities():
     """Test a RO-Crate with invalid referenced data entities."""
     do_entity_test(
@@ -102,7 +113,7 @@ def test_valid_referenced_generic_data_entities():
     )
 
 
-def test_missing_root_license():
+def test_missing_root_license_contextual_entity():
     """Test a RO-Crate without a root data entity license."""
     do_entity_test(
         paths.missing_root_license,

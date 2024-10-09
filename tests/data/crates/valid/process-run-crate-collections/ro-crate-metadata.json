@@ -53,7 +53,9 @@
                     "@id": "#OutCollection"
                 }
             ],
-            "name": "Test Collections"
+            "name": "Test Collections",
+            "description": "A collection of test images",
+            "datePublished": "2024-05-17T01:04:52+01:00"
         },
         {
             "@id": "https://w3id.org/ro/wfrun/process/0.5",
