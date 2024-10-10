@@ -202,11 +202,6 @@
                 {
                     "@id": "packed.cwl#revtool.cwl/output"
                 }
-            ],
-            "environment": [
-                {
-                    "@id": "#revtool_env_var"
-                }
             ]
         },
         {
@@ -220,16 +215,6 @@
             "@type": "FormalParameter",
             "additionalType": "File",
             "name": "output"
-        },
-        {
-            "@id": "#revtool_env_var",
-            "@type": "FormalParameter",
-            "additionalType": "Integer",
-            "workExample": {
-                "@id": "#revtool_env_var-pv"
-            },
-            "description": "An environment variable",
-            "name": "REVTOOL_ENV_VAR"
         },
         {
             "@id": "packed.cwl#main/sorted",
@@ -264,11 +249,6 @@
                 {
                     "@id": "packed.cwl#sorttool.cwl/output"
                 }
-            ],
-            "environment": [
-                {
-                    "@id": "#sorttool_env_var"
-                }
             ]
         },
         {
@@ -288,16 +268,6 @@
             "@type": "FormalParameter",
             "additionalType": "File",
             "name": "output"
-        },
-        {
-            "@id": "#sorttool_env_var",
-            "@type": "FormalParameter",
-            "additionalType": "Integer",
-            "workExample": {
-                "@id": "#sorttool_env_var-pv"
-            },
-            "description": "An environment variable",
-            "name": "SORTTOOL_ENV_VAR"
         },
         {
             "@id": "#a7e8c871-3e4b-49d9-8b7c-2ca8b96bc9de",
@@ -457,9 +427,6 @@
                     "@id": "97fe1b50b4582cebc7d853796ebd62e3e163aa3f"
                 }
             ],
-            "environment": {
-                "@id": "#revtool_env_var-pv"
-            },
             "startTime": "2018-10-25T15:46:35.314101"
         },
         {
@@ -472,15 +439,6 @@
             "object": {
                 "@id": "#9b6dc9de-26fb-45ff-a972-4cc8045cd048"
             }
-        },
-        {
-            "@id": "#revtool_env_var-pv",
-            "@type": "PropertyValue",
-            "exampleOfWork": {
-                "@id": "#revtool_env_var"
-            },
-            "name": "REVTOOL_ENV_VAR",
-            "value": "42"
         },
         {
             "@id": "97fe1b50b4582cebc7d853796ebd62e3e163aa3f",
@@ -532,9 +490,6 @@
                     "@id": "b9214658cc453331b62c2282b772a5c063dbd284"
                 }
             ],
-            "environment": {
-                "@id": "#sorttool_env_var-pv"
-            },
             "startTime": "2018-10-25T15:46:36.975235"
         },
         {
@@ -556,15 +511,6 @@
             },
             "name": "reverse",
             "value": "True"
-        },
-        {
-            "@id": "#sorttool_env_var-pv",
-            "@type": "PropertyValue",
-            "exampleOfWork": {
-                "@id": "#sorttool_env_var"
-            },
-            "name": "SORTTOOL_ENV_VAR",
-            "value": "42"
         },
         {
             "@id": "#bea7d7e2-5948-4319-b850-b4741e3fe734",

@@ -48,3 +48,17 @@ def test_provrc_tool_no_output():
         ["A tool MAY have an output"],
         profile_identifier="provenance-run-crate"
     )
+
+
+def test_provrc_tool_no_environment():
+    """\
+    Test a Provenance Run Crate where a tool does not have an environment.
+    """
+    do_entity_test(
+        InvalidProvRC().tool_no_environment,
+        Severity.OPTIONAL,
+        False,
+        ["ProvRC tool MAY"],
+        ["A tool MAY have an environment"],
+        profile_identifier="provenance-run-crate"
+    )

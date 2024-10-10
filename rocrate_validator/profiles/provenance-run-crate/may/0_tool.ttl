@@ -20,6 +20,7 @@
 @prefix bioschemas: <https://bioschemas.org/> .
 @prefix bioschemas-cw: <https://bioschemas.org/ComputationalWorkflow#> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix wfrun: <https://w3id.org/ro/terms/workflow-run#> .
 
 provenance-run-crate:ProvRCToolOptional a sh:NodeShape ;
     sh:name "ProvRC tool MAY" ;
@@ -53,4 +54,12 @@ provenance-run-crate:ProvRCToolOptional a sh:NodeShape ;
         sh:path bioschemas-cw:output ;
         sh:minCount 1 ;
         sh:message "A tool MAY have an output" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "tool environment" ;
+        sh:description "A tool MAY have an environment" ;
+        sh:path wfrun:environment ;
+        sh:minCount 1 ;
+        sh:message "A tool MAY have an environment" ;
     ] .
