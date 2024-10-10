@@ -99,7 +99,7 @@ def test_invalid_root_date():
         models.Severity.RECOMMENDED,
         False,
         ["RO-Crate Root Data Entity RECOMMENDED properties"],
-        ["The Root Data Entity SHOULD have a `datePublished` property (as specified by schema.org) "
+        ["The Root Data Entity MUST have a `datePublished` property (as specified by schema.org) "
          "with a valid ISO 8601 date and the precision of at least the day level"]
     )
 
