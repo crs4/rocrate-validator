@@ -8,6 +8,39 @@ authors = [
     "Simone Leo <simleo@crs4.it>",
 ]
 readme = "README.md"
+license = "Apache-2.0"
+# Links to the GitHub repository and the project homepage/documentation
+repository = "https://github.com/crs4/rocrate-validator"
+homepage = "https://github.com/crs4/rocrate-validator"
+documentation = "https://github.com/crs4/rocrate-validator"
+# Keywords and classifiers
+keywords = [
+    "RO-Crate",
+    "validation",
+    "metadata",
+    "research object",
+    "data management",
+    "scientific data",
+    "Python"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Natural Language :: English",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Software Development :: Testing",
+    "Topic :: Software Development :: Quality Assurance",
+    "Topic :: Utilities",
+    "Environment :: Console",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS :: MacOS X",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: Apache Software License",
+]
+# Package Settings
 packages = [{ include = "rocrate_validator", from = "." }]
 include = [
     { path = "pyproject.toml", format = [
