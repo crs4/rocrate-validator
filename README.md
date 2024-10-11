@@ -1,6 +1,7 @@
 # rocrate-validator
 
-[![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/crs4/rocrate-validator/testing.yaml)](https://github.com/crs4/rocrate-validator/actions/workflows/testing.yaml) [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Testing Pipeline Status](https://img.shields.io/github/actions/workflow/status/crs4/rocrate-validator/testing.yaml?label=Tests&logo=pytest)](https://github.com/crs4/rocrate-validator/actions/workflows/testing.yaml) [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg?logo=apache)](https://opensource.org/licenses/Apache-2.0)
+
 
 <!-- [![Build Status](https://repolab.crs4.it/lifemonitor/rocrate-validator/badges/develop/pipeline.svg)](https://repolab.crs4.it/lifemonitor/rocrate-validator/-/pipelines?page=1&scope=branches&ref=develop) -->
 
