@@ -62,3 +62,48 @@ def test_provrc_tool_no_environment():
         ["A tool MAY have an environment"],
         profile_identifier="provenance-run-crate"
     )
+
+
+def test_provrc_tool_bad_input():
+    """\
+    Test a Provenance Run Crate where a tool has an input that does not point
+    to a FormalParameter.
+    """
+    do_entity_test(
+        InvalidProvRC().tool_bad_input,
+        Severity.REQUIRED,
+        False,
+        ["ProvRC tool MUST"],
+        ["Tool input and output MUST point to FormalParameter entities"],
+        profile_identifier="provenance-run-crate"
+    )
+
+
+def test_provrc_tool_bad_output():
+    """\
+    Test a Provenance Run Crate where a tool has an output that does not point
+    to a FormalParameter.
+    """
+    do_entity_test(
+        InvalidProvRC().tool_bad_output,
+        Severity.REQUIRED,
+        False,
+        ["ProvRC tool MUST"],
+        ["Tool input and output MUST point to FormalParameter entities"],
+        profile_identifier="provenance-run-crate"
+    )
+
+
+def test_provrc_tool_bad_environment():
+    """\
+    Test a Provenance Run Crate where a tool has an environment that does not
+    point to a FormalParameter.
+    """
+    do_entity_test(
+        InvalidProvRC().tool_bad_environment,
+        Severity.RECOMMENDED,
+        False,
+        ["ProvRC tool SHOULD"],
+        ["If the tool has an environment, it SHOULD point to entities of type FormalParameter"],
+        profile_identifier="provenance-run-crate"
+    )

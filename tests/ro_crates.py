@@ -678,3 +678,15 @@ class InvalidProvRC:
     @property
     def tool_no_environment(self) -> Path:
         return self.base_path / "tool_no_environment"
+
+    @property
+    def tool_bad_input(self) -> Path:
+        return self.base_path / "tool_bad_input"
+
+    @property
+    def tool_bad_output(self) -> Path:
+        return self.base_path / "tool_bad_output"
+
+    @property
+    def tool_bad_environment(self) -> Path:
+        return self.base_path / "tool_bad_environment"
