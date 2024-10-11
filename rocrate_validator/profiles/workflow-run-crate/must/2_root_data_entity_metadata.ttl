@@ -1,0 +1,39 @@
+# Copyright (c) 2024 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+@prefix ro: <./> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+@prefix schema: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix workflow-run-crate: <https://github.com/crs4/rocrate-validator/profiles/workflow-run-crate/> .
+
+workflow-run-crate:WfRCRootDataEntityMetadata a sh:NodeShape ;
+    sh:name "Root Data Entity Metadata" ;
+    sh:description "Properties of the Root Data Entity" ;
+    sh:targetClass ro-crate:RootDataEntity ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Root Data Entity conformsTo" ;
+        sh:description "The Root Data Entity MUST reference a CreativeWork entity with an @id URI that is consistent with the versioned permalink of the Workflow Run Crate profile" ;
+        sh:path dct:conformsTo ;
+        sh:class schema:CreativeWork;
+        # At least one value of conformsTo must match the pattern
+        sh:qualifiedValueShape [
+            sh:pattern "^https://w3id.org/ro/wfrun/workflow/.*" ;
+        ] ;
+        sh:qualifiedMinCount 1 ;
+        sh:minCount 1 ;
+        sh:message "The Root Data Entity MUST reference a CreativeWork entity with an @id URI that is consistent with the versioned permalink of the Workflow Run Crate profile" ;
+    ] .

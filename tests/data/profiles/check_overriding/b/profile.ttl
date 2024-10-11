@@ -1,0 +1,28 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix prof: <http://www.w3.org/ns/dx/prof/> .
+@prefix role: <http://www.w3.org/ns/dx/prof/role/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+
+
+<https://w3id.org/b>
+    a prof:Profile ;
+
+    # the Profile's label
+    rdfs:label "Profile B" ;
+
+    # regular metadata, a basic description of the Profile
+    rdfs:comment """Comment for the Profile B."""@en ;
+
+    # URI of the publisher of the Workflow RO-Crate Metadata Specification
+    dct:publisher <https://publisherA> ;
+
+    # # This profile is an extension of the RO-Crate Metadata Specification 1.1 profile <https://w3id.org/ro/crate/1.1>
+    prof:isProfileOf <https://w3id.org/a> ;
+
+    # # Explicitly state that this profile is a transitive profile of the RO-Crate Metadata Specification 1.1 profile
+    prof:isTransitiveProfileOf <https://w3id.org/a> ;
+
+    # a short code to refer to the Profile with when a URI can't be used
+    prof:hasToken "b" ;
+.

@@ -1,0 +1,83 @@
+# Copyright (c) 2024 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix prof: <http://www.w3.org/ns/dx/prof/> .
+@prefix role: <http://www.w3.org/ns/dx/prof/role/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+<https://w3id.org/ro/wfrun/workflow/0.5>
+    a prof:Profile ;
+
+    # the Profile's label
+    rdfs:label "Workflow Run Crate 0.5" ;
+
+    # regular metadata, a basic description of the Profile
+    rdfs:comment """Workflow Run Crate Metadata Specification 0.5"""@en ;
+
+    # URI of the publisher of the Metadata Specification
+    dct:publisher <https://w3id.org/ro/wfrun> ;
+
+    # This profile is an extension of Process Run Crate and Workflow RO-Crate
+    prof:isProfileOf <https://w3id.org/ro/wfrun/process/0.5> ,
+                     <https://w3id.org/workflowhub/workflow-ro-crate/1.0> ;
+
+    # This profile is a transitive profile of Process Run Crate, Workflow RO-Crate and the RO-Crate Metadata Specification
+    prof:isTransitiveProfileOf <https://w3id.org/ro/crate/1.1> ,
+                               <https://w3id.org/ro/wfrun/process/0.5> ,
+                               <https://w3id.org/workflowhub/workflow-ro-crate/1.0>;
+
+    # this profile has a JSON-LD context resource
+    prof:hasResource [
+        a prof:ResourceDescriptor ;
+
+        # it's in JSON-LD format
+        dct:format <https://w3id.org/mediatype/application/ld+json> ;
+
+        # it conforms to JSON-LD, here refered to by its namespace URI as a Profile
+        dct:conformsTo <https://www.w3.org/TR/json-ld11/> ;
+
+        # this profile resource plays the role of "Vocabulary"
+        # described in this ontology's accompanying Roles vocabulary
+        prof:hasRole role:Vocabulary ;
+
+        # this profile resource's actual file
+        prof:hasArtifact <https://w3id.org/ro/terms/workflow-run/context> ;
+    ] ;
+
+    # this profile has a human-readable documentation resource
+    prof:hasResource [
+        a prof:ResourceDescriptor ;
+
+        # it's in HTML format
+        dct:format <https://w3id.org/mediatype/text/html> ;
+
+        # it conforms to HTML, here refered to by its namespace URI as a Profile
+        dct:conformsTo <https://www.w3.org/TR/html/> ;
+
+        # this profile resource plays the role of "Specification"
+        # described in this ontology's accompanying Roles vocabulary
+        prof:hasRole role:Specification ;
+
+        # this profile resource's actual file
+        prof:hasArtifact <https://www.researchobject.org/workflow-run-crate/profiles/0.5/workflow_run_crate/> ;
+
+        # this profile is inherited from Process Run Crate and Workflow RO-Crate
+        prof:isInheritedFrom <https://w3id.org/ro/wfrun/process/0.5> ,
+                             <https://w3id.org/workflowhub/workflow-ro-crate/1.0> ;
+    ] ;
+
+    # a short code to refer to the Profile with when a URI can't be used
+    prof:hasToken "workflow-run-crate" ;
+.

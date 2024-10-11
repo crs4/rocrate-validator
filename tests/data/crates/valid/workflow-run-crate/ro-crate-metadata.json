@@ -22,12 +22,14 @@
         {
             "@id": "./",
             "@type": "Dataset",
+            "name": "A valid Workflow Run Crate",
+            "description": "A RO-Crate describing a workflow run",
             "conformsTo": [
                 {
-                    "@id": "https://w3id.org/ro/wfrun/process/0.1"
+                    "@id": "https://w3id.org/ro/wfrun/process/0.5"
                 },
                 {
-                    "@id": "https://w3id.org/ro/wfrun/workflow/0.1"
+                    "@id": "https://w3id.org/ro/wfrun/workflow/0.5"
                 },
                 {
                     "@id": "https://w3id.org/workflowhub/workflow-ro-crate/1.0"
@@ -50,6 +52,7 @@
             "license": {
                 "@id": "http://spdx.org/licenses/CC0-1.0"
             },
+            "datePublished": "2024-05-17T01:04:52+01:00",
             "mainEntity": {
                 "@id": "Galaxy-Workflow-Hello_World.ga"
             },
@@ -58,13 +61,13 @@
             }
         },
         {
-            "@id": "https://w3id.org/ro/wfrun/process/0.1",
+            "@id": "https://w3id.org/ro/wfrun/process/0.5",
             "@type": "CreativeWork",
             "name": "Process Run Crate",
             "version": "0.1"
         },
         {
-            "@id": "https://w3id.org/ro/wfrun/workflow/0.1",
+            "@id": "https://w3id.org/ro/wfrun/workflow/0.5",
             "@type": "CreativeWork",
             "name": "Workflow Run Crate",
             "version": "0.1"
@@ -92,6 +95,11 @@
             "programmingLanguage": {
                 "@id": "https://w3id.org/workflowhub/workflow-ro-crate#galaxy"
             },
+            "environment": [
+                {
+                    "@id": "#env_var"
+                }
+            ],
             "input": [
                 {
                     "@id": "#simple_input"
@@ -108,6 +116,16 @@
                     "@id": "#last_lines"
                 }
             ]
+        },
+        {
+            "@id": "#env_var",
+            "@type": "FormalParameter",
+            "additionalType": "Integer",
+            "workExample": {
+                "@id": "#env_var-pv"
+            },
+            "description": "An environment variable",
+            "name": "ENV_VAR"
         },
         {
             "@id": "#simple_input",
@@ -204,6 +222,9 @@
             "subjectOf": {
                 "@id": "https://usegalaxy.eu/u/5dbf7f05329e49c98b31243b5f35045c/p/invocation-report-a3a1d27edb703e5c"
             },
+            "environment": {
+                "@id": "#env_var-pv"
+            },
             "object": [
                 {
                     "@id": "inputs/abcdef.txt"
@@ -220,6 +241,15 @@
                     "@id": "outputs/tac_on_data_360_1.txt"
                 }
             ]
+        },
+        {
+            "@id": "#env_var-pv",
+            "@type": "PropertyValue",
+            "exampleOfWork": {
+                "@id": "#env_var"
+            },
+            "name": "ENV_VAR",
+            "value": "42"
         },
         {
             "@id": "inputs/abcdef.txt",

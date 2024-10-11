@@ -1,14 +1,12 @@
 # rocrate-validator
 
-[![main workflow](https://github.com/crs4/rocrate-validator/actions/workflows/testing.yaml/badge.svg)](https://github.com/crs4/rocrate-validator/actions/workflows/testing.yaml) [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Testing Pipeline Status](https://img.shields.io/github/actions/workflow/status/crs4/rocrate-validator/testing.yaml?label=Tests&logo=pytest)](https://github.com/crs4/rocrate-validator/actions/workflows/testing.yaml) [![Release Pipeline Status](https://img.shields.io/github/actions/workflow/status/crs4/rocrate-validator/release.yaml?label=Build&logo=python&logoColor=yellow)](https://github.com/crs4/rocrate-validator/actions/workflows/release.yaml) [![PyPI - Version](https://img.shields.io/pypi/v/roc-validator?logo=pypi&logoColor=green&label=PyPI)](https://pypi.org/project/roc-validator/) [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg?logo=apache&logoColor=red)](https://opensource.org/licenses/Apache-2.0)
 
 <!-- [![Build Status](https://repolab.crs4.it/lifemonitor/rocrate-validator/badges/develop/pipeline.svg)](https://repolab.crs4.it/lifemonitor/rocrate-validator/-/pipelines?page=1&scope=branches&ref=develop) -->
 
-<!-- [![PyPI version](https://badge.fury.io/py/rocrate-validator.svg)](https://badge.fury.io/py/rocrate-validator) -->
-
 <!-- [![codecov](https://codecov.io/gh/crs4/rocrate-validator/branch/main/graph/badge.svg?token=3ZQZQZQZQZ)](https://codecov.io/gh/crs4/rocrate-validator) -->
 
-A Python package to validate [RO-Crate](https://researchobject.github.io/ro-crate/) packages.
+A Python package to validate [RO-Crate](https://researchobject.github.io/ro-crate/)s.
 
 * Supports CLI-based validation as well as programmatic validation (so it can
   easily be used by Python code).
@@ -27,76 +25,97 @@ Issue) before starting to develop patches you would like to contribute.  The
 implementation of validation code for additional RO-Crate profiles would be
 particularly welcome.
 
-## Setup
 
-Follow these steps to set up the project:
+## Installation
 
-1. **Clone the repository**
+You can install the package using `pip` or `poetry`. The following instructions assume you have Python 3.8 or later installed.
 
-```bash
-git clone https://github.com/crs4/rocrate-validator.git
-cd rocrate-validator
-```
+#### [Optional Step: Create a Virtual Environment](#optional-step-create-a-virtual-environment)
 
-2. **Set up a Python virtual environment (optional)**
-
-Set up a Python virtual environment using `venv`:
+It’s recommended to create a virtual environment before installing the package to avoid dependency conflicts. You can create one using the following command:
 
 ```bash
 python3 -m venv .venv
-source .venv/bin/activate
-```
+````
 
-Or using `virtualenv`:
+Then, activate the virtual environment:
+
+* On **Unix** or **macOS**:
 
 ```bash
-virtualenv .venv
 source .venv/bin/activate
 ```
 
-This step, while optional, is recommended for isolating your project dependencies. If skipped, Poetry will automatically create a virtual environment for you.
+* On **Windows** (Command Prompt):
 
-3. **Install the project using Poetry**
+```bash
+.venv\Scripts\activate
+```
 
-Ensure you have Poetry installed. If not, follow the instructions [here](https://python-poetry.org/docs/#installation). Then, install the project:
+* On **Windows** (PowerShell):
+
+```powershell
+.venv\Scripts\Activate.ps1
+```
+
+### 1. Using `pip` (from PyPI)
+
+You can install the package using `pip`:
+
+```bash
+pip install roc-validator
+```
+
+### 2. Using `poetry` (from source)
+
+Clone the repository:
+
+```bash
+git clone https://github.com/kikkomep/rocrate-validator.git
+```
+
+Navigate to the project directory:
+
+```bash
+cd rocrate-validator
+```
+
+Ensure you have Poetry installed. If not, follow the instructions [here](https://python-poetry.org/docs/#installation). Then, install the package using `poetry`:
 
 ```bash
 poetry install
 ```
 
+
 ## Usage
 
-After installation, you can use the main command `rocrate-validator` to validate ROCrates.
+After installation, use the `rocrate-validator` command to validate RO-Crates. You can run this in a virtual activated environment (if created in the [optional step](#optional-step-create-a-virtual-environment) above) or without a virtual environment if none was created.
 
-### Using Poetry
+### 1. Using the installed package
+
+Run the validator using the following command:
+
+```bash
+rocrate-validator validate <path_to_rocrate>
+```
+where `<path_to_rocrate>` is the path to the RO-Crate you want to validate.
+
+Type `rocrate-validator --help` for more information.
+
+
+
+### 2. Using `poetry`
 
 Run the validator using the following command:
 
 ```bash
 poetry run rocrate-validator validate <path_to_rocrate>
 ```
-
-Replace `<path_to_rocrate>` with the path to the RO-Crate you want to validate.
-
-Type `poetry run rocrate-validator --help` for more information.
-
-### Using the installed package on your virtual environment
-
-Activate the virtual environment:
-
-```bash
-source .venv/bin/activate
-```
-
-Then, run the validator using the following command:
-
-```bash
-rocrate-validator validate <path_to_rocrate>
-```
-
-Replace `<path_to_rocrate>` with the path to the RO-Crate you want to validate.
+where `<path_to_rocrate>` is the path to the RO-Crate you want to validate.
 
 Type `rocrate-validator --help` for more information.
+
+
 
 ## Running the tests
 

@@ -1,0 +1,21 @@
+@prefix ro: <./> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema_org: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xml1: <http://www.w3.org/2001/XMLSchema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+ro:ShapeS
+    a sh:NodeShape ;
+    sh:name "S" ;
+    sh:description "This is the Shape S" ;
+    sh:targetNode ro:root ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema_org:name ;
+        sh:name "Check the name of the entity" ;
+        sh:description "Check if the entity has the `name` property" ;
+        sh:message "The entity MUST have a `name` property" ;
+        sh:minCount 1 ;
+    ] .

@@ -5,7 +5,8 @@
             "@id": "./",
             "@type": "Dataset",
             "datePublished": "2024-04-17T13:39:44+00:00",
-            "name": "Invalid RO Crate: referenced entities should be files of directories",
+            "name": "Valid RO Crate with foo/ Dataset directly referenced",
+            "description": "This RO Crate is valid, but it directly references a Dataset entity, foo/, which is not defined in the RO Crate.",
             "hasPart": [
                 {
                     "@id": "sort-and-change-case.ga"

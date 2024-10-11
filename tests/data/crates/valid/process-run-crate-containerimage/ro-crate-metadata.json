@@ -42,7 +42,9 @@
             "mentions": {
                 "@id": "#SepiaConversion_1"
             },
-            "name": "My Pictures"
+            "name": "My Pictures",
+            "description": "A collection of my pictures",
+            "datePublished": "2024-05-17T01:04:52+01:00"
         },
         {
             "@id": "https://w3id.org/ro/wfrun/process/0.5",

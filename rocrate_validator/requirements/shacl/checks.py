@@ -164,6 +164,7 @@ class SHACLCheck(RequirementCheck):
         shacl_validator = SHACLValidator(shapes_graph=shapes_graph, ont_graph=ontology_graph)
         shacl_result = shacl_validator.validate(
             data_graph=data_graph, ontology_graph=ontology_graph, **shacl_context.settings)
+        # shacl_result.results_graph.serialize("logs/validation_results.ttl", format="turtle")
         # parse the validation result
         end_time = timer()
         logger.debug("Validation '%s' conforms: %s", self.name, shacl_result.conforms)
@@ -250,20 +251,6 @@ class SHACLCheck(RequirementCheck):
         logger.debug(f"Execution time for parsing the validation result: {end_time - start_time} seconds")
 
         return failed_requirements_checks
-
-    def __str__(self) -> str:
-        return super().__str__() + (f" - {self._shape}" if self._shape else "")
-
-    def __repr__(self) -> str:
-        return super().__repr__() + (f" - {self._shape}" if self._shape else "")
-
-    def __eq__(self, __value: object) -> bool:
-        if not isinstance(__value, type(self)):
-            return NotImplemented
-        return super().__eq__(__value) and self._shape == getattr(__value, '_shape', None)
-
-    def __hash__(self) -> int:
-        return super().__hash__() + (hash(self._shape) if self._shape else 0)
 
     @classmethod
     def get_instance(cls, shape: Shape) -> Optional["SHACLCheck"]:

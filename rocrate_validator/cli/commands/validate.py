@@ -16,8 +16,6 @@ from __future__ import annotations
 
 import os
 import sys
-import termios
-import tty
 from pathlib import Path
 from typing import Optional
 
@@ -74,15 +72,40 @@ def validate_uri(ctx, param, value):
     return value
 
 
-def get_single_char(console: Optional[Console] = None, end: str = "\n",
-                    message: Optional[str] = None,
-                    choices: Optional[list[str]] = None) -> str:
+def __get_single_char_win32__(console: Optional[Console] = None, end: str = "\n",
+                              message: Optional[str] = None,
+                              choices: Optional[list[str]] = None) -> str:
     """
     Get a single character from the console
     """
+    import msvcrt
+
+    char = None
+    while char is None or (choices and char not in choices):
+        if console and message:
+            console.print(f"\n{message}", end="")
+        try:
+            char = msvcrt.getch().decode()
+        finally:
+            if console:
+                console.print(char, end=end if choices and char in choices else "")
+        if choices and char not in choices:
+            if console:
+                console.print(" [bold red]INVALID CHOICE[/bold red]", end=end)
+    return char
+
+
+def __get_single_char_unix__(console: Optional[Console] = None, end: str = "\n",
+                             message: Optional[str] = None,
+                             choices: Optional[list[str]] = None) -> str:
+    """
+    Get a single character from the console
+    """
+    import termios
+    import tty
+
     fd = sys.stdin.fileno()
     old_settings = termios.tcgetattr(fd)
-
     char = None
     while char is None or (choices and char not in choices):
         if console and message:
@@ -98,6 +121,17 @@ def get_single_char(console: Optional[Console] = None, end: str = "\n",
             if console:
                 console.print(" [bold red]INVALID CHOICE[/bold red]", end=end)
     return char
+
+
+def get_single_char(console: Optional[Console] = None, end: str = "\n",
+                    message: Optional[str] = None,
+                    choices: Optional[list[str]] = None) -> str:
+    """
+    Get a single character from the console
+    """
+    if sys.platform == "win32":
+        return __get_single_char_win32__(console, end, message, choices)
+    return __get_single_char_unix__(console, end, message, choices)
 
 
 @cli.command("validate")
@@ -171,7 +205,8 @@ def get_single_char(console: Optional[Console] = None, end: str = "\n",
     is_flag=True,
     help="Disable pagination of the validation details",
     default=False,
-    show_default=True
+    show_default=True,
+    hidden=True if sys.platform == "win32" else False
 )
 @click.option(
     '-f',
@@ -222,7 +257,7 @@ def validate(ctx,
     # Get the no_paging flag
     enable_pager = not no_paging
     # override the enable_pager flag if the interactive flag is False
-    if not interactive:
+    if not interactive or sys.platform == "win32":
         enable_pager = False
     # Log the input parameters for debugging
     logger.debug("profiles_path: %s", os.path.abspath(profiles_path))
@@ -351,7 +386,7 @@ def validate(ctx,
             if output_format == "text" and not output_file:
                 if not result.passed():
                     verbose_choice = "n"
-                    if interactive and not verbose and enable_pager:
+                    if interactive and not verbose:
                         verbose_choice = get_single_char(console, choices=['y', 'n'],
                                                          message=(
                             "[bold] > Do you want to see the validation details? "
@@ -537,7 +572,7 @@ class ValidationReportLayout(Layout):
                 f"\n[bold cyan]RO-Crate:[/bold cyan] [bold]{URI(settings['data_path']).uri}[/bold]"
                 "\n[bold cyan]Target Profile:[/bold cyan][bold magenta] "
                 f"{settings['profile_identifier']}[/bold magenta] "
-                f"{ '[italic](autodetected)[/italic]' if settings['profile_autodetected'] else ''}"
+                f"{'[italic](autodetected)[/italic]' if settings['profile_autodetected'] else ''}"
                 f"\n[bold cyan]Validation Severity:[/bold cyan] "
                 f"[bold {severity_color}]{settings['requirement_severity']}[/bold {severity_color}]",
                 style="white", align="left"),
