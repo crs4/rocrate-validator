@@ -107,3 +107,33 @@ def test_provrc_tool_bad_environment():
         ["If the tool has an environment, it SHOULD point to entities of type FormalParameter"],
         profile_identifier="provenance-run-crate"
     )
+
+
+def test_provrc_tool_no_inv_instrument():
+    """\
+    Test a Provenance Run Crate where a tool is not referred to from an
+    action via instrument.
+    """
+    do_entity_test(
+        InvalidProvRC().tool_no_inv_instrument,
+        Severity.REQUIRED,
+        False,
+        ["ProvRC tool MUST"],
+        ["A tool must be referred to from an action via instrument"],
+        profile_identifier="provenance-run-crate"
+    )
+
+
+def test_provrc_tool_bad_inv_instrument():
+    """\
+    Test a Provenance Run Crate where a tool is referred to via instrument by
+    an entity that is not an action.
+    """
+    do_entity_test(
+        InvalidProvRC().tool_bad_inv_instrument,
+        Severity.REQUIRED,
+        False,
+        ["ProvRC tool MUST"],
+        ["A tool must be referred to from an action via instrument"],
+        profile_identifier="provenance-run-crate"
+    )

@@ -690,3 +690,11 @@ class InvalidProvRC:
     @property
     def tool_bad_environment(self) -> Path:
         return self.base_path / "tool_bad_environment"
+
+    @property
+    def tool_no_inv_instrument(self) -> Path:
+        return self.base_path / "tool_no_inv_instrument"
+
+    @property
+    def tool_bad_inv_instrument(self) -> Path:
+        return self.base_path / "tool_bad_inv_instrument"

@@ -48,4 +48,17 @@ provenance-run-crate:ProvRCToolRequired a sh:NodeShape ;
         ] ;
         sh:class bioschemas:FormalParameter ;
         sh:message "Tool input and output MUST point to FormalParameter entities" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Tool inverse instrument" ;
+        sh:description "A tool must be referred to from an action via instrument" ;
+        sh:path [ sh:inversePath schema:instrument ] ;
+        sh:or (
+            [ sh:class schema:CreateAction ; ]
+            [ sh:class schema:ActivateAction ; ]
+            [ sh:class schema:UpdateAction ; ]
+        ) ;
+        sh:minCount 1 ;
+        sh:message "A tool must be referred to from an action via instrument" ;
     ] .
