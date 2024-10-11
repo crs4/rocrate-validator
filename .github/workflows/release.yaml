@@ -92,7 +92,7 @@ jobs:
         needs: build
         environment:
             name: testpypi
-            url: https://test.pypi.org/p/test-py-pipelines
+            url: https://test.pypi.org/p/roc-validator
         permissions:
             id-token: write # IMPORTANT: mandatory for trusted publishing
         steps:
@@ -113,7 +113,7 @@ jobs:
         needs: [build, publish-to-testpypi]
         environment:
           name: pypi
-          url: https://pypi.org/p/test-py-pipelines
+          url: https://pypi.org/p/roc-validator
         permissions:
           id-token: write  # IMPORTANT: mandatory for trusted publishing
         steps:
