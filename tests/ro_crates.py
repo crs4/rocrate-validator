@@ -710,3 +710,23 @@ class InvalidProvRC:
     @property
     def workflow_bad_step(self) -> Path:
         return self.base_path / "workflow_bad_step"
+
+    @property
+    def howtostep_no_inv_step(self) -> Path:
+        return self.base_path / "howtostep_no_inv_step"
+
+    @property
+    def howtostep_bad_inv_step(self) -> Path:
+        return self.base_path / "howtostep_bad_inv_step"
+
+    @property
+    def howtostep_no_workexample(self) -> Path:
+        return self.base_path / "howtostep_no_workexample"
+
+    @property
+    def howtostep_bad_workexample(self) -> Path:
+        return self.base_path / "howtostep_bad_workexample"
+
+    @property
+    def howtostep_no_position(self) -> Path:
+        return self.base_path / "howtostep_no_position"
