@@ -702,3 +702,11 @@ class InvalidProvRC:
     @property
     def workflow_type_no_howto(self) -> Path:
         return self.base_path / "workflow_type_no_howto"
+
+    @property
+    def workflow_no_step(self) -> Path:
+        return self.base_path / "workflow_no_step"
+
+    @property
+    def workflow_bad_step(self) -> Path:
+        return self.base_path / "workflow_bad_step"

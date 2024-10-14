@@ -65,3 +65,33 @@ def test_provrc_workflow_type_no_howto():
         ["A ComputationalWorkflow that links to steps MUST have the HowTo type"],
         profile_identifier="provenance-run-crate"
     )
+
+
+def test_provrc_workflow_no_step():
+    """\
+    Test a Provenance Run Crate where a ComputationalWorkflow does not have
+    the step property.
+    """
+    do_entity_test(
+        InvalidProvRC().workflow_no_step,
+        Severity.RECOMMENDED,
+        False,
+        ["Provenance Run Crate ComputationalWorkflow SHOULD"],
+        ["ComputationalWorkflow SHOULD refer to HowToStep instances via step"],
+        profile_identifier="provenance-run-crate"
+    )
+
+
+def test_provrc_workflow_bad_step():
+    """\
+    Test a Provenance Run Crate where a ComputationalWorkflow does not have
+    the step property.
+    """
+    do_entity_test(
+        InvalidProvRC().workflow_bad_step,
+        Severity.RECOMMENDED,
+        False,
+        ["Provenance Run Crate ComputationalWorkflow SHOULD"],
+        ["ComputationalWorkflow SHOULD refer to HowToStep instances via step"],
+        profile_identifier="provenance-run-crate"
+    )
