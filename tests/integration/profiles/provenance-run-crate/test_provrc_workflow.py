@@ -50,3 +50,18 @@ def test_provrc_workflow_bad_haspart():
         ["ComputationalWorkflow MUST refer to orchestrated tools via hasPart"],
         profile_identifier="provenance-run-crate"
     )
+
+
+def test_provrc_workflow_type_no_howto():
+    """\
+    Test a Provenance Run Crate where a ComputationalWorkflow that points to
+    steps does not have the HowTo type.
+    """
+    do_entity_test(
+        InvalidProvRC().workflow_type_no_howto,
+        Severity.REQUIRED,
+        False,
+        ["Provenance Run Crate ComputationalWorkflow with steps MUST"],
+        ["A ComputationalWorkflow that links to steps MUST have the HowTo type"],
+        profile_identifier="provenance-run-crate"
+    )

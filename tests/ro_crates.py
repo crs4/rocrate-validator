@@ -698,3 +698,7 @@ class InvalidProvRC:
     @property
     def tool_bad_inv_instrument(self) -> Path:
         return self.base_path / "tool_bad_inv_instrument"
+
+    @property
+    def workflow_type_no_howto(self) -> Path:
+        return self.base_path / "workflow_type_no_howto"
