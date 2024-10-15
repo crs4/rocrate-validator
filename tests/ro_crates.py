@@ -730,3 +730,19 @@ class InvalidProvRC:
     @property
     def howtostep_no_position(self) -> Path:
         return self.base_path / "howtostep_no_position"
+
+    @property
+    def controlaction_no_instrument(self) -> Path:
+        return self.base_path / "controlaction_no_instrument"
+
+    @property
+    def controlaction_bad_instrument(self) -> Path:
+        return self.base_path / "controlaction_bad_instrument"
+
+    @property
+    def controlaction_no_object(self) -> Path:
+        return self.base_path / "controlaction_no_object"
+
+    @property
+    def controlaction_bad_object(self) -> Path:
+        return self.base_path / "controlaction_bad_object"
