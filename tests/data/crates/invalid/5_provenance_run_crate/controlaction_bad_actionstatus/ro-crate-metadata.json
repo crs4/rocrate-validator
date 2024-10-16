@@ -550,7 +550,7 @@
                 "@id": "packed.cwl#main/sorted"
             },
             "name": "orchestrate sorttool.cwl",
-            "actionStatus": "http://schema.org/CompletedActionStatus",
+            "actionStatus": "http://example.org/FooActionStatus",
             "object": {
                 "@id": "#ba5b82a1-ce69-410f-a846-4a1d042233e7"
             }

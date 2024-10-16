@@ -365,7 +365,7 @@
             "result": {
                 "@id": "#8a058e09-e8c3-47ed-836d-d630fe659c91"
             },
-            "actionStatus": "http://schema.org/CompletedActionStatus",
+            "actionStatus": "http://example.org/FooActionStatus",
             "startTime": "2018-10-25T15:46:35.210973"
         },
         {

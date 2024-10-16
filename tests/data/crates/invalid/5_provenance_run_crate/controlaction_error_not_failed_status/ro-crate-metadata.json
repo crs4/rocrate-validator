@@ -551,6 +551,7 @@
             },
             "name": "orchestrate sorttool.cwl",
             "actionStatus": "http://schema.org/CompletedActionStatus",
+            "error": "this action should not have an error",
             "object": {
                 "@id": "#ba5b82a1-ce69-410f-a846-4a1d042233e7"
             }

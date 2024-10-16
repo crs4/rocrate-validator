@@ -473,7 +473,6 @@
             },
             "name": "orchestrate revtool.cwl",
             "actionStatus": "http://schema.org/FailedActionStatus",
-            "error": "this is just to test the error property",
             "object": {
                 "@id": "#9b6dc9de-26fb-45ff-a972-4cc8045cd048"
             }
