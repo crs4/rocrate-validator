@@ -80,3 +80,64 @@ def test_provrc_controlaction_bad_object():
         ["A ControlAction must reference the action representing the corresponding tool run via object"],
         profile_identifier="provenance-run-crate"
     )
+
+
+def test_provrc_controlaction_no_actionstatus():
+    """\
+    Test a Provenance Run Crate where a ControlAction has no actionStatus.
+    """
+    do_entity_test(
+        InvalidProvRC().controlaction_no_actionstatus,
+        Severity.OPTIONAL,
+        False,
+        ["ProvRC ControlAction and OrganizeAction MAY"],
+        ["The Action MAY have an actionStatus"],
+        profile_identifier="provenance-run-crate"
+    )
+
+
+def test_provrc_controlaction_bad_actionstatus():
+    """\
+    Test a Provenance Run Crate where a ControlAction has an invalid
+    actionStatus.
+    """
+    do_entity_test(
+        InvalidProvRC().controlaction_bad_actionstatus,
+        Severity.RECOMMENDED,
+        False,
+        ["ProvRC ControlAction and OrganizeAction SHOULD"],
+        ["If the action has an actionStatus, it should be "
+         "http://schema.org/CompletedActionStatus or "
+         "http://schema.org/FailedActionStatus"],
+        profile_identifier="provenance-run-crate"
+    )
+
+
+def test_provrc_controlaction_no_error():
+    """\
+    Test a Provenance Run Crate where a ControlAction with an actionStatus
+    set to FailedActionStatus has no error.
+    """
+    do_entity_test(
+        InvalidProvRC().controlaction_no_error,
+        Severity.OPTIONAL,
+        False,
+        ["ProvRC ControlAction and OrganizeAction error"],
+        ["error MAY be specified if actionStatus is set to FailedActionStatus"],
+        profile_identifier="provenance-run-crate"
+    )
+
+
+def test_provrc_controlaction_error_not_failed_status():
+    """\
+    Test a Provenance Run Crate where a ControlAction with an actionStatus
+    different from FailedActionStatus sets the error property
+    """
+    do_entity_test(
+        InvalidProvRC().controlaction_error_not_failed_status,
+        Severity.RECOMMENDED,
+        False,
+        ["Provenance Run Crate ControlAction and OrganizeAction error"],
+        ["error SHOULD NOT be specified unless actionStatus is set to FailedActionStatus"],
+        profile_identifier="provenance-run-crate"
+    )

@@ -770,3 +770,35 @@ class InvalidProvRC:
     @property
     def organizeaction_bad_object(self) -> Path:
         return self.base_path / "organizeaction_bad_object"
+
+    @property
+    def controlaction_no_actionstatus(self) -> Path:
+        return self.base_path / "controlaction_no_actionstatus"
+
+    @property
+    def controlaction_bad_actionstatus(self) -> Path:
+        return self.base_path / "controlaction_bad_actionstatus"
+
+    @property
+    def controlaction_no_error(self) -> Path:
+        return self.base_path / "controlaction_no_error"
+
+    @property
+    def controlaction_error_not_failed_status(self) -> Path:
+        return self.base_path / "controlaction_error_not_failed_status"
+
+    @property
+    def organizeaction_no_actionstatus(self) -> Path:
+        return self.base_path / "organizeaction_no_actionstatus"
+
+    @property
+    def organizeaction_bad_actionstatus(self) -> Path:
+        return self.base_path / "organizeaction_bad_actionstatus"
+
+    @property
+    def organizeaction_no_error(self) -> Path:
+        return self.base_path / "organizeaction_no_error"
+
+    @property
+    def organizeaction_error_not_failed_status(self) -> Path:
+        return self.base_path / "organizeaction_error_not_failed_status"
