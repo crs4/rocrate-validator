@@ -20,6 +20,7 @@
 @prefix bioschemas: <https://bioschemas.org/> .
 @prefix bioschemas-cw: <https://bioschemas.org/ComputationalWorkflow#> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix wfrun: <https://w3id.org/ro/terms/workflow-run#> .
 
 provenance-run-crate:ProvRCHowToStepRequired a sh:NodeShape ;
@@ -47,4 +48,13 @@ provenance-run-crate:ProvRCHowToStepRequired a sh:NodeShape ;
         ) ;
         sh:minCount 1 ;
         sh:message "A HowToStep must refer to its corresponding tool via workExample" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "HowToStep position type" ;
+        sh:description "If specified, position must be a string representing an integer" ;
+        sh:path schema:position ;
+        sh:datatype xsd:string ;
+        sh:pattern "\\d+" ;
+        sh:message "If specified, position must be a string representing an integer" ;
     ] .

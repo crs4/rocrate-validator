@@ -92,3 +92,18 @@ def test_provrc_howtostep_no_position():
         ["A HowToStep may indicate its position in the execution order via position"],
         profile_identifier="provenance-run-crate"
     )
+
+
+def test_provrc_howtostep_bad_position():
+    """\
+    Test a Provenance Run Crate where a HowToStep has a position that is not
+    a string representing an integer.
+    """
+    do_entity_test(
+        InvalidProvRC().howtostep_bad_position,
+        Severity.REQUIRED,
+        False,
+        ["ProvRC HowToStep MUST"],
+        ["If specified, position must be a string representing an integer"],
+        profile_identifier="provenance-run-crate"
+    )
