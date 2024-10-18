@@ -822,3 +822,19 @@ class InvalidProvRC:
     @property
     def organizeaction_error_not_failed_status(self) -> Path:
         return self.base_path / "organizeaction_error_not_failed_status"
+
+    @property
+    def parameterconnection_no_sourceparameter(self) -> Path:
+        return self.base_path / "parameterconnection_no_sourceparameter"
+
+    @property
+    def parameterconnection_bad_sourceparameter(self) -> Path:
+        return self.base_path / "parameterconnection_bad_sourceparameter"
+
+    @property
+    def parameterconnection_no_targetparameter(self) -> Path:
+        return self.base_path / "parameterconnection_no_targetparameter"
+
+    @property
+    def parameterconnection_bad_targetparameter(self) -> Path:
+        return self.base_path / "parameterconnection_bad_targetparameter"
