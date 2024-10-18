@@ -57,4 +57,12 @@ provenance-run-crate:ProvRCHowToStepRequired a sh:NodeShape ;
         sh:datatype xsd:string ;
         sh:pattern "\\d+" ;
         sh:message "If specified, position must be a string representing an integer" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "HowToStep connection" ;
+        sh:description "If the HowToStep has a connection, it must point to a ParameterConnection" ;
+        sh:path wfrun:connection ;
+        sh:class wfrun:ParameterConnection ;
+        sh:message "If the HowToStep has a connection, it must point to a ParameterConnection" ;
     ] .

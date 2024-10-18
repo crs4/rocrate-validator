@@ -33,4 +33,12 @@ provenance-run-crate:ProvRCHowToStepOptional a sh:NodeShape ;
         sh:path schema:position ;
         sh:minCount 1 ;
         sh:message "A HowToStep may indicate its position in the execution order via position" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "HowToStep connection" ;
+        sh:description "HowToStep may have a connection property" ;
+        sh:path wfrun:connection ;
+        sh:minCount 1 ;
+        sh:message "HowToStep may have a connection property" ;
     ] .

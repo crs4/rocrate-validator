@@ -107,3 +107,32 @@ def test_provrc_howtostep_bad_position():
         ["If specified, position must be a string representing an integer"],
         profile_identifier="provenance-run-crate"
     )
+
+
+def test_provrc_howtostep_no_connection():
+    """\
+    Test a Provenance Run Crate where a HowToStep has no connection.
+    """
+    do_entity_test(
+        InvalidProvRC().howtostep_no_connection,
+        Severity.OPTIONAL,
+        False,
+        ["ProvRC HowToStep MAY"],
+        ["HowToStep may have a connection property"],
+        profile_identifier="provenance-run-crate"
+    )
+
+
+def test_provrc_howtostep_bad_connection():
+    """\
+    Test a Provenance Run Crate where a HowToStep has a connection that does
+    not point to a ParameterConnection.
+    """
+    do_entity_test(
+        InvalidProvRC().howtostep_bad_connection,
+        Severity.REQUIRED,
+        False,
+        ["ProvRC HowToStep MUST"],
+        ["If the HowToStep has a connection, it must point to a ParameterConnection"],
+        profile_identifier="provenance-run-crate"
+    )
