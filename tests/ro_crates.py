@@ -712,6 +712,14 @@ class InvalidProvRC:
         return self.base_path / "workflow_bad_step"
 
     @property
+    def workflow_no_connection(self) -> Path:
+        return self.base_path / "workflow_no_connection"
+
+    @property
+    def workflow_bad_connection(self) -> Path:
+        return self.base_path / "workflow_bad_connection"
+
+    @property
     def howtostep_no_inv_step(self) -> Path:
         return self.base_path / "howtostep_no_inv_step"
 

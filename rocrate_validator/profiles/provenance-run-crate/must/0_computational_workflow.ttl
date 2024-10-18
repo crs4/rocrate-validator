@@ -20,6 +20,7 @@
 @prefix bioschemas: <https://bioschemas.org/> .
 @prefix bioschemas-cw: <https://bioschemas.org/ComputationalWorkflow#> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix wfrun: <https://w3id.org/ro/terms/workflow-run#> .
 @prefix provenance-run-crate: <https://github.com/crs4/rocrate-validator/profiles/provenance-run-crate/> .
 
 provenance-run-crate:ProvRCComputationalWorkflowRequired a sh:NodeShape ;
@@ -38,7 +39,16 @@ provenance-run-crate:ProvRCComputationalWorkflowRequired a sh:NodeShape ;
         ) ;
         sh:minCount 1 ;
         sh:message "ComputationalWorkflow MUST refer to orchestrated tools via hasPart" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "ComputationalWorkflow connection" ;
+        sh:description "If the ComputationalWorkflow has a connection, it must point to a ParameterConnection" ;
+        sh:path wfrun:connection ;
+        sh:class wfrun:ParameterConnection ;
+        sh:message "If the ComputationalWorkflow has a connection, it must point to a ParameterConnection" ;
     ] .
+
 
 provenance-run-crate:ProvRCComputationalWorkflowWithSteps a sh:NodeShape ;
     sh:name "Provenance Run Crate ComputationalWorkflow with steps MUST" ;

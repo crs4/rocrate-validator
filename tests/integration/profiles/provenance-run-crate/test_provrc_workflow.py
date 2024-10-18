@@ -95,3 +95,33 @@ def test_provrc_workflow_bad_step():
         ["ComputationalWorkflow SHOULD refer to HowToStep instances via step"],
         profile_identifier="provenance-run-crate"
     )
+
+
+def test_provrc_workflow_no_connection():
+    """\
+    Test a Provenance Run Crate where a ComputationalWorkflow does not have
+    the connection property.
+    """
+    do_entity_test(
+        InvalidProvRC().workflow_no_connection,
+        Severity.OPTIONAL,
+        False,
+        ["Provenance Run Crate ComputationalWorkflow MAY"],
+        ["ComputationalWorkflow may have a connection property"],
+        profile_identifier="provenance-run-crate"
+    )
+
+
+def test_provrc_workflow_bad_connection():
+    """\
+    Test a Provenance Run Crate where a ComputationalWorkflow has a connection
+    that does not point to a ParameterConnection.
+    """
+    do_entity_test(
+        InvalidProvRC().workflow_bad_connection,
+        Severity.REQUIRED,
+        False,
+        ["Provenance Run Crate ComputationalWorkflow MUST"],
+        ["If the ComputationalWorkflow has a connection, it must point to a ParameterConnection"],
+        profile_identifier="provenance-run-crate"
+    )
