@@ -838,3 +838,20 @@ class InvalidProvRC:
     @property
     def parameterconnection_bad_targetparameter(self) -> Path:
         return self.base_path / "parameterconnection_bad_targetparameter"
+
+    @property
+    def tool_no_softwarerequirements(self) -> Path:
+        return self.base_path / "tool_no_softwarerequirements"
+
+    @property
+    def tool_bad_softwarerequirements(self) -> Path:
+        return self.base_path / "tool_bad_softwarerequirements"
+
+    @property
+    def tool_no_mainentity(self) -> Path:
+        return self.base_path / "tool_no_mainentity"
+
+    @property
+    def tool_bad_mainentity(self) -> Path:
+        # bad softwareRequirements can also be used for bad mainEntity
+        return self.base_path / "tool_bad_softwarerequirements"

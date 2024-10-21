@@ -62,4 +62,22 @@ provenance-run-crate:ProvRCToolOptional a sh:NodeShape ;
         sh:path wfrun:environment ;
         sh:minCount 1 ;
         sh:message "A tool MAY have an environment" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "tool softwareRequirements" ;
+        sh:description "The tool MAY have a softwareRequirements that points to a SoftwareApplication" ;
+        sh:message "The tool MAY have a softwareRequirements that points to a SoftwareApplication" ;
+        sh:path schema:softwareRequirements ;
+        sh:class schema:SoftwareApplication ;
+        sh:minCount 1 ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "tool mainEntity" ;
+        sh:description "The tool MAY have a mainEntity that points to a SoftwareApplication" ;
+        sh:message "The tool MAY have a mainEntity that points to a SoftwareApplication" ;
+        sh:path schema:mainEntity ;
+        sh:class schema:SoftwareApplication ;
+        sh:minCount 1 ;
     ] .

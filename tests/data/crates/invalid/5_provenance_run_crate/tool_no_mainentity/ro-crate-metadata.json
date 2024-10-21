@@ -211,10 +211,7 @@
             "softwareRequirements": [
                 { "@id": "actually/nonexistent/revtool.sh" },
                 { "@id": "https://example.com/foobar/1.0.0/" }
-            ],
-            "mainEntity": {
-                "@id": "actually/nonexistent/revtool.sh"
-            }
+            ]
         },
         {
             "@id": "actually/nonexistent/revtool.sh",

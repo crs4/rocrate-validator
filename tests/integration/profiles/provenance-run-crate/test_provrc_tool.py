@@ -137,3 +137,63 @@ def test_provrc_tool_bad_inv_instrument():
         ["A tool must be referred to from an action via instrument"],
         profile_identifier="provenance-run-crate"
     )
+
+
+def test_provrc_tool_no_softwarerequirements():
+    """\
+    Test a Provenance Run Crate where a tool does not have a
+    softwarerequirements.
+    """
+    do_entity_test(
+        InvalidProvRC().tool_no_softwarerequirements,
+        Severity.OPTIONAL,
+        False,
+        ["ProvRC tool MAY"],
+        ["The tool MAY have a softwareRequirements that points to a SoftwareApplication"],
+        profile_identifier="provenance-run-crate"
+    )
+
+
+def test_provrc_tool_bad_softwarerequirements():
+    """\
+    Test a Provenance Run Crate where a tool has a softwarerequirements that
+    does not point to a SoftwareApplication.
+    """
+    do_entity_test(
+        InvalidProvRC().tool_bad_softwarerequirements,
+        Severity.OPTIONAL,
+        False,
+        ["ProvRC tool MAY"],
+        ["The tool MAY have a softwareRequirements that points to a SoftwareApplication"],
+        profile_identifier="provenance-run-crate"
+    )
+
+
+def test_provrc_tool_no_mainentity():
+    """\
+    Test a Provenance Run Crate where a tool does not have a
+    mainEntity.
+    """
+    do_entity_test(
+        InvalidProvRC().tool_no_mainentity,
+        Severity.OPTIONAL,
+        False,
+        ["ProvRC tool MAY"],
+        ["The tool MAY have a mainEntity that points to a SoftwareApplication"],
+        profile_identifier="provenance-run-crate"
+    )
+
+
+def test_provrc_tool_bad_mainentity():
+    """\
+    Test a Provenance Run Crate where a tool has a mainEntity that does not
+    point to a SoftwareApplication.
+    """
+    do_entity_test(
+        InvalidProvRC().tool_bad_mainentity,
+        Severity.OPTIONAL,
+        False,
+        ["ProvRC tool MAY"],
+        ["The tool MAY have a mainEntity that points to a SoftwareApplication"],
+        profile_identifier="provenance-run-crate"
+    )

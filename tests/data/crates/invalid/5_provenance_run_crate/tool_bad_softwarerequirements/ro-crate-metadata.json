@@ -218,7 +218,7 @@
         },
         {
             "@id": "actually/nonexistent/revtool.sh",
-            "@type": "SoftwareApplication",
+            "@type": "Person",
             "name": "revtool.sh",
             "softwareVersion": "0.1"
         },
