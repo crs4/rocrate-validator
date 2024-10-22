@@ -125,3 +125,33 @@ def test_provrc_workflow_bad_connection():
         ["If the ComputationalWorkflow has a connection, it must point to a ParameterConnection"],
         profile_identifier="provenance-run-crate"
     )
+
+
+def test_provrc_workflow_no_buildinstructions():
+    """\
+    Test a Provenance Run Crate where a ComputationalWorkflow / HowTo does not
+    have the buildInstructions property.
+    """
+    do_entity_test(
+        InvalidProvRC().workflow_no_buildinstructions,
+        Severity.OPTIONAL,
+        False,
+        ["Provenance Run Crate ComputationalWorkflow / HowTo MAY"],
+        ["A ComputationalWorkflow / HowTo MAY have a buildInstructions pointing to a File"],
+        profile_identifier="provenance-run-crate"
+    )
+
+
+def test_provrc_workflow_bad_buildinstructions():
+    """\
+    Test a Provenance Run Crate where a ComputationalWorkflow / HowTo has a
+    buildInstructions that does not point to a File.
+    """
+    do_entity_test(
+        InvalidProvRC().workflow_bad_buildinstructions,
+        Severity.OPTIONAL,
+        False,
+        ["Provenance Run Crate ComputationalWorkflow / HowTo MAY"],
+        ["A ComputationalWorkflow / HowTo MAY have a buildInstructions pointing to a File"],
+        profile_identifier="provenance-run-crate"
+    )

@@ -47,9 +47,6 @@
                     "@id": "revsort_env.yml"
                 },
                 {
-                    "@id": "rev_env.yml"
-                },
-                {
                     "@id": "sort_env.yml"
                 }
             ],
@@ -208,20 +205,8 @@
                 }
             ],
             "position": "0",
-            "buildInstructions": {
-                "@id": "rev_env.yml"
-            },
             "workExample": {
                 "@id": "packed.cwl#revtool.cwl"
-            }
-        },
-        {
-            "@id": "rev_env.yml",
-            "@type": "File",
-            "name": "rev conda environment",
-            "encodingFormat": "application/yaml",
-            "conformsTo": {
-                "@id": "https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#create-env-file-manually"
             }
         },
         {

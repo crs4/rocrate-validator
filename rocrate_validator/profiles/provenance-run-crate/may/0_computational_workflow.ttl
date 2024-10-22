@@ -21,6 +21,7 @@
 @prefix bioschemas-cw: <https://bioschemas.org/ComputationalWorkflow#> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix wfrun: <https://w3id.org/ro/terms/workflow-run#> .
+@prefix codemeta: <https://codemeta.github.io/terms/> .
 @prefix provenance-run-crate: <https://github.com/crs4/rocrate-validator/profiles/provenance-run-crate/> .
 
 provenance-run-crate:ProvRCComputationalWorkflowOptional a sh:NodeShape ;
@@ -34,4 +35,29 @@ provenance-run-crate:ProvRCComputationalWorkflowOptional a sh:NodeShape ;
         sh:path wfrun:connection ;
         sh:minCount 1 ;
         sh:message "ComputationalWorkflow may have a connection property" ;
+    ] .
+
+
+provenance-run-crate:ProvRCComputationalWorkflowHowToOptional a sh:NodeShape ;
+    sh:name "Provenance Run Crate ComputationalWorkflow / HowTo MAY" ;
+    sh:description "Optional properties of a Provenance Run Crate ComputationalWorkflow that is also a HowTo" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?this a bioschemas:ComputationalWorkflow .
+                ?this a schema:HowTo .
+            }
+        """
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "ComputationalWorkflow buildInstructions" ;
+        sh:description "A ComputationalWorkflow / HowTo MAY have a buildInstructions pointing to a File" ;
+        sh:path codemeta:buildInstructions ;
+        sh:class schema:MediaObject ;
+        sh:minCount 1 ;
+        sh:message "A ComputationalWorkflow / HowTo MAY have a buildInstructions pointing to a File" ;
     ] .

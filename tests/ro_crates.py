@@ -720,6 +720,14 @@ class InvalidProvRC:
         return self.base_path / "workflow_bad_connection"
 
     @property
+    def workflow_no_buildinstructions(self) -> Path:
+        return self.base_path / "workflow_no_buildinstructions"
+
+    @property
+    def workflow_bad_buildinstructions(self) -> Path:
+        return self.base_path / "workflow_bad_buildinstructions"
+
+    @property
     def howtostep_no_inv_step(self) -> Path:
         return self.base_path / "howtostep_no_inv_step"
 
@@ -750,6 +758,14 @@ class InvalidProvRC:
     @property
     def howtostep_bad_connection(self) -> Path:
         return self.base_path / "howtostep_bad_connection"
+
+    @property
+    def howtostep_no_buildinstructions(self) -> Path:
+        return self.base_path / "howtostep_no_buildinstructions"
+
+    @property
+    def howtostep_bad_buildinstructions(self) -> Path:
+        return self.base_path / "howtostep_bad_buildinstructions"
 
     @property
     def controlaction_no_instrument(self) -> Path:

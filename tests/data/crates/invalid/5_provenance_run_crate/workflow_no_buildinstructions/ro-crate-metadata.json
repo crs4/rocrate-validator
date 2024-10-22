@@ -44,9 +44,6 @@
                     "@id": "primary-job.json"
                 },
                 {
-                    "@id": "revsort_env.yml"
-                },
-                {
                     "@id": "rev_env.yml"
                 },
                 {
@@ -141,9 +138,6 @@
             "programmingLanguage": {
                 "@id": "https://w3id.org/workflowhub/workflow-ro-crate#cwl"
             },
-            "buildInstructions": {
-                "@id": "revsort_env.yml"
-            },
             "step": [
                 {
                     "@id": "packed.cwl#main/rev"
@@ -189,15 +183,6 @@
             "additionalType": "File",
             "description": "The output with the lines reversed and sorted.",
             "name": "output"
-        },
-        {
-            "@id": "revsort_env.yml",
-            "@type": "File",
-            "name": "revsort conda environment",
-            "encodingFormat": "application/yaml",
-            "conformsTo": {
-                "@id": "https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#create-env-file-manually"
-            }
         },
         {
             "@id": "packed.cwl#main/rev",

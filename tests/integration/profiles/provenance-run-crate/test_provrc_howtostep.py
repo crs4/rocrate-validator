@@ -136,3 +136,32 @@ def test_provrc_howtostep_bad_connection():
         ["If the HowToStep has a connection, it must point to a ParameterConnection"],
         profile_identifier="provenance-run-crate"
     )
+
+
+def test_provrc_howtostep_no_buildinstructions():
+    """\
+    Test a Provenance Run Crate where a HowToStep has no buildInstructions.
+    """
+    do_entity_test(
+        InvalidProvRC().howtostep_no_buildinstructions,
+        Severity.OPTIONAL,
+        False,
+        ["ProvRC HowToStep MAY"],
+        ["A HowToStep MAY have a buildInstructions pointing to a File"],
+        profile_identifier="provenance-run-crate"
+    )
+
+
+def test_provrc_howtostep_bad_buildinstructions():
+    """\
+    Test a Provenance Run Crate where a HowToStep has a buildInstructions
+    that does not point to a File.
+    """
+    do_entity_test(
+        InvalidProvRC().howtostep_bad_buildinstructions,
+        Severity.OPTIONAL,
+        False,
+        ["ProvRC HowToStep MAY"],
+        ["A HowToStep MAY have a buildInstructions pointing to a File"],
+        profile_identifier="provenance-run-crate"
+    )

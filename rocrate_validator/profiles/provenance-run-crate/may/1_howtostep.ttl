@@ -21,6 +21,7 @@
 @prefix bioschemas-cw: <https://bioschemas.org/ComputationalWorkflow#> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix wfrun: <https://w3id.org/ro/terms/workflow-run#> .
+@prefix codemeta: <https://codemeta.github.io/terms/> .
 
 provenance-run-crate:ProvRCHowToStepOptional a sh:NodeShape ;
     sh:name "ProvRC HowToStep MAY" ;
@@ -41,4 +42,13 @@ provenance-run-crate:ProvRCHowToStepOptional a sh:NodeShape ;
         sh:path wfrun:connection ;
         sh:minCount 1 ;
         sh:message "HowToStep may have a connection property" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "HowToStep buildInstructions" ;
+        sh:description "A HowToStep MAY have a buildInstructions pointing to a File" ;
+        sh:path codemeta:buildInstructions ;
+        sh:class schema:MediaObject ;
+        sh:minCount 1 ;
+        sh:message "A HowToStep MAY have a buildInstructions pointing to a File" ;
     ] .

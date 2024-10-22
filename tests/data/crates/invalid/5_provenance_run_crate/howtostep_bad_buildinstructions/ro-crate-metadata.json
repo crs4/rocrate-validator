@@ -209,7 +209,7 @@
             ],
             "position": "0",
             "buildInstructions": {
-                "@id": "rev_env.yml"
+                "@id": "#pv-main/reverse_sort"
             },
             "workExample": {
                 "@id": "packed.cwl#revtool.cwl"

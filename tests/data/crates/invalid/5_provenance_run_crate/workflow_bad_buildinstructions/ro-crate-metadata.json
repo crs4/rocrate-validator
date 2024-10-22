@@ -142,7 +142,7 @@
                 "@id": "https://w3id.org/workflowhub/workflow-ro-crate#cwl"
             },
             "buildInstructions": {
-                "@id": "revsort_env.yml"
+                "@id": "#pv-main/reverse_sort"
             },
             "step": [
                 {
