@@ -871,3 +871,11 @@ class InvalidProvRC:
     def tool_bad_mainentity(self) -> Path:
         # bad softwareRequirements can also be used for bad mainEntity
         return self.base_path / "tool_bad_softwarerequirements"
+
+    @property
+    def environment_file_no_encodingformat(self) -> Path:
+        return self.base_path / "environment_file_no_encodingformat"
+
+    @property
+    def environment_file_no_conformsto(self) -> Path:
+        return self.base_path / "environment_file_no_conformsto"
