@@ -879,3 +879,11 @@ class InvalidProvRC:
     @property
     def environment_file_no_conformsto(self) -> Path:
         return self.base_path / "environment_file_no_conformsto"
+
+    @property
+    def action_no_resourceusage(self) -> Path:
+        return self.base_path / "action_no_resourceusage"
+
+    @property
+    def action_bad_resourceusage(self) -> Path:
+        return self.base_path / "action_bad_resourceusage"

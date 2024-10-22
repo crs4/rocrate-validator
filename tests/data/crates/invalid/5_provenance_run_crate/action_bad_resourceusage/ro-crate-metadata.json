@@ -545,7 +545,7 @@
             "actionStatus": "http://schema.org/CompletedActionStatus",
             "resourceUsage": [
                 {
-                    "@id": "#rev-run-realTime"
+                    "@id": "packed.cwl"
                 },
                 {
                     "@id": "#rev-run-percentCPU"

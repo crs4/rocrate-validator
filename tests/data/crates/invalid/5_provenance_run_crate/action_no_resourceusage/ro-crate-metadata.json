@@ -543,30 +543,7 @@
                 "@id": "#revtool_env_var-pv"
             },
             "actionStatus": "http://schema.org/CompletedActionStatus",
-            "resourceUsage": [
-                {
-                    "@id": "#rev-run-realTime"
-                },
-                {
-                    "@id": "#rev-run-percentCPU"
-                }
-            ],
             "startTime": "2018-10-25T15:46:35.314101"
-        },
-        {
-            "@id": "#rev-run-realTime",
-            "@type": "PropertyValue",
-            "name": "realTime",
-            "propertyID": "https://example.org/terms/ru#realTime",
-            "unitCode": "https://qudt.org/vocab/unit/MilliSEC",
-            "value": "12"
-        },
-        {
-            "@id": "#rev-run-percentCPU",
-            "@type": "PropertyValue",
-            "name": "percentCPU",
-            "propertyID": "https://example.org/terms/ru#percentCPU",
-            "value": "80.0"
         },
         {
             "@id": "#547745c6-afb0-4352-bc66-0d4377bb022a",
