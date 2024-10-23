@@ -548,7 +548,7 @@
                     "@id": "#rev-run-realTime"
                 },
                 {
-                    "@id": "#rev-run-peakVMEM"
+                    "@id": "#rev-run-percentCPU"
                 }
             ],
             "startTime": "2018-10-25T15:46:35.314101"
@@ -557,17 +557,15 @@
             "@id": "#rev-run-realTime",
             "@type": "PropertyValue",
             "name": "realTime",
-            "propertyID": "https://example.org/terms/ru#realTime",
             "unitCode": "https://qudt.org/vocab/unit/MilliSEC",
             "value": "12"
         },
         {
-            "@id": "#rev-run-peakVMEM",
+            "@id": "#rev-run-percentCPU",
             "@type": "PropertyValue",
-            "name": "peakVMEM",
-            "propertyID": "https://example.org/terms/ru#peakVMEM",
-            "unitCode": "https://qudt.org/vocab/unit/BYTE",
-            "value": "110901"
+            "name": "percentCPU",
+            "propertyID": "https://example.org/terms/ru#percentCPU",
+            "value": "80.0"
         },
         {
             "@id": "#547745c6-afb0-4352-bc66-0d4377bb022a",
@@ -650,7 +648,7 @@
                     "@id": "#sort-run-realTime"
                 },
                 {
-                    "@id": "#sort-run-peakVMEM"
+                    "@id": "#sort-run-percentCPU"
                 }
             ],
             "startTime": "2018-10-25T15:46:36.975235"
@@ -664,12 +662,11 @@
             "value": "15"
         },
         {
-            "@id": "#sort-run-peakVMEM",
+            "@id": "#sort-run-percentCPU",
             "@type": "PropertyValue",
-            "name": "peakVMEM",
-            "propertyID": "https://example.org/terms/ru#peakVMEM",
-            "unitCode": "https://qudt.org/vocab/unit/BYTE",
-            "value": "123680"
+            "name": "percentCPU",
+            "propertyID": "https://example.org/terms/ru#percentCPU",
+            "value": "86.0"
         },
         {
             "@id": "#29365b8d-cf76-4c62-a97d-fa8c2061e5cf",

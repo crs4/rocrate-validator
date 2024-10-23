@@ -887,3 +887,11 @@ class InvalidProvRC:
     @property
     def action_bad_resourceusage(self) -> Path:
         return self.base_path / "action_bad_resourceusage"
+
+    @property
+    def propertyvalue_no_propertyid(self) -> Path:
+        return self.base_path / "propertyvalue_no_propertyid"
+
+    @property
+    def propertyvalue_no_unitcode(self) -> Path:
+        return self.base_path / "propertyvalue_no_unitcode"

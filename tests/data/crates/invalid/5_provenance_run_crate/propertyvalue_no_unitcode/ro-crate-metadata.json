@@ -558,7 +558,6 @@
             "@type": "PropertyValue",
             "name": "realTime",
             "propertyID": "https://example.org/terms/ru#realTime",
-            "unitCode": "https://qudt.org/vocab/unit/MilliSEC",
             "value": "12"
         },
         {
