@@ -68,21 +68,29 @@ provenance-run-crate:ProvRCWorkflowParameterConnectionRecommended a sh:NodeShape
     sh:message """Missing connection to this `ParameterConnection` entity""" ;
 .
 
-    sh:property [
-        a sh:PropertyShape ;
-        sh:name "ParameterConnection inverse connection" ;
-        sh:description "A ParameterConnection that links to a workflow output parameter should be referenced by the workflow via connection" ;
-        sh:path wfrun:targetParameter ;
-        sh:sparql [
-            sh:prefixes ro-crate:sparqlPrefixes ;
-            sh:select """
-                SELECT ?this
-                WHERE {
-                    ?this wfrun:targetParameter ?param .
-                    ?workflow bioschemas-cw:output ?param .
-                    ?param a bioschemas:FormalParameter .
+provenance-run-crate:ProvRCHowToStepParameterConnectionRecommended a sh:NodeShape ;
+    sh:name "ParamenterConnection references on HowToStep instances" ;
+    sh:description """RECOMMENDED references to ParameterConnection instances
+    SHOULD follow the CWL convention,
+    i.e., there SHOULD be a HowToStep that defines a `connection` to the `ParameterConnection` entity
+    which links the `input` of the HowToStep's `workExample` through its `targetParameter`""" ;
+    sh:targetClass wfrun:ParameterConnection ;
+    sh:sparql [
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?step (wfrun:connection as ?path) ?this # this is the workflow
+            WHERE {
+                ?this a wfrun:ParameterConnection .
+                ?param a bioschemas:FormalParameter .
+                ?this wfrun:targetParameter ?param .
+                ?step a schema:HowToStep .
+                ?tool bioschemas-cw:input ?param .
+                ?step schema:workExample ?tool .
+                FILTER NOT EXISTS {
+                    ?step wfrun:connection ?this .
                 }
-            """ ;
-        ] ;
-        # sh:message "A ParameterConnection that links to a workflow output parameter should be referenced by the workflow via connection" ;
-    ] .
+            }
+        """ ;
+    ] ;
+    sh:message "Missing connection to this `ParameterConnection` entity" ;
+.
