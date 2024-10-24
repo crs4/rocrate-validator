@@ -25,7 +25,7 @@
 
 
 provenance-run-crate:ProvRCParameterConnectionReferencesRecommended a sh:NodeShape ;
-    sh:name "ParamenterConnection references" ;
+    sh:name "ParameterConnection references" ;
     sh:description "Recommended references for ParameterConnection entities" ;
     sh:targetClass wfrun:ParameterConnection ;
     sh:property [
@@ -44,7 +44,7 @@ provenance-run-crate:ProvRCParameterConnectionReferencesRecommended a sh:NodeSha
     ] .
 
 provenance-run-crate:ProvRCWorkflowParameterConnectionRecommended a sh:NodeShape ;
-    sh:name "ParamenterConnection references on computational workflows" ;
+    sh:name "ParameterConnection references on computational workflows" ;
     sh:description """RECOMMENDED references to ParameterConnection instances 
     SHOULD follow the CWL convention,
     i.e., there SHOULD be a workflow that defines a `connection` to the `ParameterConnection` entity
@@ -65,11 +65,11 @@ provenance-run-crate:ProvRCWorkflowParameterConnectionRecommended a sh:NodeShape
             }
         """ ;
     ] ;
-    sh:message """Missing connection to this `ParameterConnection` entity""" ;
+    sh:message """Missing `ComputationalWorkflow` connection to this `ParameterConnection` entity""" ;
 .
 
 provenance-run-crate:ProvRCHowToStepParameterConnectionRecommended a sh:NodeShape ;
-    sh:name "ParamenterConnection references on HowToStep instances" ;
+    sh:name "ParameterConnection references on HowToStep instances" ;
     sh:description """RECOMMENDED references to ParameterConnection instances
     SHOULD follow the CWL convention,
     i.e., there SHOULD be a HowToStep that defines a `connection` to the `ParameterConnection` entity
@@ -92,5 +92,5 @@ provenance-run-crate:ProvRCHowToStepParameterConnectionRecommended a sh:NodeShap
             }
         """ ;
     ] ;
-    sh:message "Missing connection to this `ParameterConnection` entity" ;
+    sh:message "Missing `HowToStep` connection to this `ParameterConnection` entity" ;
 .
