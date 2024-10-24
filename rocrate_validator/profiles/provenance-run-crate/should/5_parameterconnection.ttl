@@ -42,16 +42,31 @@ provenance-run-crate:ProvRCParameterConnectionReferencesRecommended a sh:NodeSha
         sh:minCount 1 ;
         sh:message """Missing `connection` to this `ParameterConnection` entity""" ;
     ] .
+
+provenance-run-crate:ProvRCWorkflowParameterConnectionRecommended a sh:NodeShape ;
+    sh:name "ParamenterConnection references on computational workflows" ;
+    sh:description """RECOMMENDED references to ParameterConnection instances 
+    SHOULD follow the CWL convention,
+    i.e., there SHOULD be a workflow that defines a `connection` to the `ParameterConnection` entity
+    which links the workflow's `output` through its `targetParameter`""" ;
+    sh:targetClass wfrun:ParameterConnection ;
+    sh:sparql [
         sh:prefixes ro-crate:sparqlPrefixes ;
         sh:select """
-            SELECT ?this
+            SELECT ?workflow (wfrun:connection as ?path) ?this # this is the workflow
             WHERE {
                 ?this a wfrun:ParameterConnection .
-                ?workflow wfrun:connection ?this .
-                ?workflow a bioschemas:ComputationalWorkflow .
+                ?workflow bioschemas-cw:output ?param .
+                ?param a bioschemas:FormalParameter .
+                ?this wfrun:targetParameter ?param .
+                FILTER NOT EXISTS {
+                    ?workflow wfrun:connection ?this .
+                }
             }
-        """
+        """ ;
     ] ;
+    sh:message """Missing connection to this `ParameterConnection` entity""" ;
+.
 
     sh:property [
         a sh:PropertyShape ;
