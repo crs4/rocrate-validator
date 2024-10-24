@@ -74,6 +74,10 @@ class ValidROC:
     def workflow_run_crate(self) -> Path:
         return VALID_CRATES_DATA_PATH / "workflow-run-crate"
 
+    @property
+    def provenance_run_crate(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "provenance-run-crate"
+
 
 class InvalidFileDescriptor:
 
@@ -633,3 +637,273 @@ class InvalidWfRC:
     @property
     def formalparam_env_bad_exampleofwork(self) -> Path:
         return self.base_path / "formalparam_env_bad_exampleofwork"
+
+
+class InvalidProvRC:
+
+    base_path = INVALID_CRATES_DATA_PATH / "5_provenance_run_crate/"
+
+    @property
+    def conformsto_no_provrc(self) -> Path:
+        return self.base_path / "conformsto_no_provrc"
+
+    @property
+    def conformsto_no_wfrc(self) -> Path:
+        return self.base_path / "conformsto_no_wfrc"
+
+    @property
+    def conformsto_no_wroc(self) -> Path:
+        return self.base_path / "conformsto_no_wroc"
+
+    @property
+    def conformsto_no_procrc(self) -> Path:
+        return self.base_path / "conformsto_no_procrc"
+
+    @property
+    def workflow_no_haspart(self) -> Path:
+        return self.base_path / "workflow_no_haspart"
+
+    @property
+    def workflow_bad_haspart(self) -> Path:
+        return self.base_path / "workflow_bad_haspart"
+
+    @property
+    def tool_no_input(self) -> Path:
+        return self.base_path / "tool_no_input"
+
+    @property
+    def tool_no_output(self) -> Path:
+        return self.base_path / "tool_no_output"
+
+    @property
+    def tool_no_environment(self) -> Path:
+        return self.base_path / "tool_no_environment"
+
+    @property
+    def tool_bad_input(self) -> Path:
+        return self.base_path / "tool_bad_input"
+
+    @property
+    def tool_bad_output(self) -> Path:
+        return self.base_path / "tool_bad_output"
+
+    @property
+    def tool_bad_environment(self) -> Path:
+        return self.base_path / "tool_bad_environment"
+
+    @property
+    def tool_no_inv_instrument(self) -> Path:
+        return self.base_path / "tool_no_inv_instrument"
+
+    @property
+    def tool_bad_inv_instrument(self) -> Path:
+        return self.base_path / "tool_bad_inv_instrument"
+
+    @property
+    def workflow_type_no_howto(self) -> Path:
+        return self.base_path / "workflow_type_no_howto"
+
+    @property
+    def workflow_no_step(self) -> Path:
+        return self.base_path / "workflow_no_step"
+
+    @property
+    def workflow_bad_step(self) -> Path:
+        return self.base_path / "workflow_bad_step"
+
+    @property
+    def workflow_no_connection(self) -> Path:
+        return self.base_path / "workflow_no_connection"
+
+    @property
+    def workflow_bad_connection(self) -> Path:
+        return self.base_path / "workflow_bad_connection"
+
+    @property
+    def workflow_no_buildinstructions(self) -> Path:
+        return self.base_path / "workflow_no_buildinstructions"
+
+    @property
+    def workflow_bad_buildinstructions(self) -> Path:
+        return self.base_path / "workflow_bad_buildinstructions"
+
+    @property
+    def howtostep_no_inv_step(self) -> Path:
+        return self.base_path / "howtostep_no_inv_step"
+
+    @property
+    def howtostep_bad_inv_step(self) -> Path:
+        return self.base_path / "howtostep_bad_inv_step"
+
+    @property
+    def howtostep_no_workexample(self) -> Path:
+        return self.base_path / "howtostep_no_workexample"
+
+    @property
+    def howtostep_bad_workexample(self) -> Path:
+        return self.base_path / "howtostep_bad_workexample"
+
+    @property
+    def howtostep_no_position(self) -> Path:
+        return self.base_path / "howtostep_no_position"
+
+    @property
+    def howtostep_bad_position(self) -> Path:
+        return self.base_path / "howtostep_bad_position"
+
+    @property
+    def howtostep_no_connection(self) -> Path:
+        return self.base_path / "howtostep_no_connection"
+
+    @property
+    def howtostep_bad_connection(self) -> Path:
+        return self.base_path / "howtostep_bad_connection"
+
+    @property
+    def howtostep_no_buildinstructions(self) -> Path:
+        return self.base_path / "howtostep_no_buildinstructions"
+
+    @property
+    def howtostep_bad_buildinstructions(self) -> Path:
+        return self.base_path / "howtostep_bad_buildinstructions"
+
+    @property
+    def controlaction_no_instrument(self) -> Path:
+        return self.base_path / "controlaction_no_instrument"
+
+    @property
+    def controlaction_bad_instrument(self) -> Path:
+        return self.base_path / "controlaction_bad_instrument"
+
+    @property
+    def controlaction_no_object(self) -> Path:
+        return self.base_path / "controlaction_no_object"
+
+    @property
+    def controlaction_bad_object(self) -> Path:
+        return self.base_path / "controlaction_bad_object"
+
+    @property
+    def organizeaction_no_instrument(self) -> Path:
+        return self.base_path / "organizeaction_no_instrument"
+
+    @property
+    def organizeaction_bad_instrument(self) -> Path:
+        return self.base_path / "organizeaction_bad_instrument"
+
+    @property
+    def organizeaction_no_result(self) -> Path:
+        return self.base_path / "organizeaction_no_result"
+
+    @property
+    def organizeaction_bad_result(self) -> Path:
+        return self.base_path / "organizeaction_bad_result"
+
+    @property
+    def organizeaction_no_object(self) -> Path:
+        return self.base_path / "organizeaction_no_object"
+
+    @property
+    def organizeaction_bad_object(self) -> Path:
+        return self.base_path / "organizeaction_bad_object"
+
+    @property
+    def controlaction_no_actionstatus(self) -> Path:
+        return self.base_path / "controlaction_no_actionstatus"
+
+    @property
+    def controlaction_bad_actionstatus(self) -> Path:
+        return self.base_path / "controlaction_bad_actionstatus"
+
+    @property
+    def controlaction_no_error(self) -> Path:
+        return self.base_path / "controlaction_no_error"
+
+    @property
+    def controlaction_error_not_failed_status(self) -> Path:
+        return self.base_path / "controlaction_error_not_failed_status"
+
+    @property
+    def organizeaction_no_actionstatus(self) -> Path:
+        return self.base_path / "organizeaction_no_actionstatus"
+
+    @property
+    def organizeaction_bad_actionstatus(self) -> Path:
+        return self.base_path / "organizeaction_bad_actionstatus"
+
+    @property
+    def organizeaction_no_error(self) -> Path:
+        return self.base_path / "organizeaction_no_error"
+
+    @property
+    def organizeaction_error_not_failed_status(self) -> Path:
+        return self.base_path / "organizeaction_error_not_failed_status"
+
+    @property
+    def parameterconnection_no_sourceparameter(self) -> Path:
+        return self.base_path / "parameterconnection_no_sourceparameter"
+
+    @property
+    def parameterconnection_bad_sourceparameter(self) -> Path:
+        return self.base_path / "parameterconnection_bad_sourceparameter"
+
+    @property
+    def parameterconnection_no_targetparameter(self) -> Path:
+        return self.base_path / "parameterconnection_no_targetparameter"
+
+    @property
+    def parameterconnection_bad_targetparameter(self) -> Path:
+        return self.base_path / "parameterconnection_bad_targetparameter"
+
+    @property
+    def parameterconnection_not_referenced(self) -> Path:
+        return self.base_path / "parameterconnection_not_referenced"
+
+    @property
+    def parameterconnection_not_workflow_referenced(self) -> Path:
+        return self.base_path / "parameterconnection_not_workflow_referenced"
+
+    @property
+    def parameterconnection_not_step_referenced(self) -> Path:
+        return self.base_path / "parameterconnection_not_step_referenced"
+
+    @property
+    def tool_no_softwarerequirements(self) -> Path:
+        return self.base_path / "tool_no_softwarerequirements"
+
+    @property
+    def tool_bad_softwarerequirements(self) -> Path:
+        return self.base_path / "tool_bad_softwarerequirements"
+
+    @property
+    def tool_no_mainentity(self) -> Path:
+        return self.base_path / "tool_no_mainentity"
+
+    @property
+    def tool_bad_mainentity(self) -> Path:
+        # bad softwareRequirements can also be used for bad mainEntity
+        return self.base_path / "tool_bad_softwarerequirements"
+
+    @property
+    def environment_file_no_encodingformat(self) -> Path:
+        return self.base_path / "environment_file_no_encodingformat"
+
+    @property
+    def environment_file_no_conformsto(self) -> Path:
+        return self.base_path / "environment_file_no_conformsto"
+
+    @property
+    def action_no_resourceusage(self) -> Path:
+        return self.base_path / "action_no_resourceusage"
+
+    @property
+    def action_bad_resourceusage(self) -> Path:
+        return self.base_path / "action_bad_resourceusage"
+
+    @property
+    def propertyvalue_no_propertyid(self) -> Path:
+        return self.base_path / "propertyvalue_no_propertyid"
+
+    @property
+    def propertyvalue_no_unitcode(self) -> Path:
+        return self.base_path / "propertyvalue_no_unitcode"

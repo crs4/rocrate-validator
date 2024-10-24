@@ -1,0 +1,594 @@
+{
+    "@context": [
+        "https://w3id.org/ro/crate/1.1/context",
+        "https://w3id.org/ro/terms/workflow-run"
+    ],
+    "@graph": [
+        {
+            "@id": "./",
+            "@type": "Dataset",
+            "name": "revsort run",
+            "description": "execution of the revsort workflow",
+            "conformsTo": [
+                {
+                    "@id": "https://w3id.org/ro/wfrun/process/0.5"
+                },
+                {
+                    "@id": "https://w3id.org/ro/wfrun/workflow/0.5"
+                },
+                {
+                    "@id": "https://w3id.org/ro/wfrun/provenance/0.5"
+                },
+                {
+                    "@id": "https://w3id.org/workflowhub/workflow-ro-crate/1.0"
+                }
+            ],
+            "datePublished": "2024-10-02T10:11:09+00:00",
+            "hasPart": [
+                {
+                    "@id": "packed.cwl"
+                },
+                {
+                    "@id": "327fc7aedf4f6b69a42a7c8b808dc5a7aff61376"
+                },
+                {
+                    "@id": "b9214658cc453331b62c2282b772a5c063dbd284"
+                },
+                {
+                    "@id": "97fe1b50b4582cebc7d853796ebd62e3e163aa3f"
+                },
+                {
+                    "@id": "primary-job.json"
+                }
+            ],
+            "license": "Apache-2.0",
+            "mainEntity": {
+                "@id": "packed.cwl"
+            },
+            "mentions": [
+                {
+                    "@id": "#8a058e09-e8c3-47ed-836d-d630fe659c91"
+                }
+            ]
+        },
+        {
+            "@id": "ro-crate-metadata.json",
+            "@type": "CreativeWork",
+            "about": {
+                "@id": "./"
+            },
+            "conformsTo": [
+                {
+                    "@id": "https://w3id.org/ro/crate/1.1"
+                },
+                {
+                    "@id": "https://w3id.org/workflowhub/workflow-ro-crate/1.0"
+                }
+            ]
+        },
+        {
+            "@id": "https://w3id.org/ro/wfrun/process/0.5",
+            "@type": "CreativeWork",
+            "name": "Process Run Crate",
+            "version": "0.5"
+        },
+        {
+            "@id": "https://w3id.org/ro/wfrun/workflow/0.5",
+            "@type": "CreativeWork",
+            "name": "Workflow Run Crate",
+            "version": "0.5"
+        },
+        {
+            "@id": "https://w3id.org/ro/wfrun/provenance/0.5",
+            "@type": "CreativeWork",
+            "name": "Provenance Run Crate",
+            "version": "0.5"
+        },
+        {
+            "@id": "https://w3id.org/workflowhub/workflow-ro-crate/1.0",
+            "@type": "CreativeWork",
+            "name": "Workflow RO-Crate",
+            "version": "1.0"
+        },
+        {
+            "@id": "packed.cwl",
+            "@type": [
+                "File",
+                "SoftwareSourceCode",
+                "ComputationalWorkflow",
+                "HowTo"
+            ],
+            "connection": [
+                {
+                    "@id": "#b768302e-95a9-4c0d-80db-8e4c48f9e65a"
+                }
+            ],
+            "description": "Reverse the lines in a document, then sort those lines.",
+            "hasPart": [
+                {
+                    "@id": "packed.cwl#revtool.cwl"
+                },
+                {
+                    "@id": "packed.cwl#sorttool.cwl"
+                }
+            ],
+            "input": [
+                {
+                    "@id": "packed.cwl#main/input"
+                },
+                {
+                    "@id": "packed.cwl#main/reverse_sort"
+                }
+            ],
+            "name": "packed.cwl",
+            "output": [
+                {
+                    "@id": "packed.cwl#main/output"
+                }
+            ],
+            "programmingLanguage": {
+                "@id": "https://w3id.org/workflowhub/workflow-ro-crate#cwl"
+            },
+            "step": [
+                {
+                    "@id": "packed.cwl#main/rev"
+                },
+                {
+                    "@id": "packed.cwl#main/sorted"
+                }
+            ]
+        },
+        {
+            "@id": "https://w3id.org/workflowhub/workflow-ro-crate#cwl",
+            "@type": "ComputerLanguage",
+            "alternateName": "CWL",
+            "identifier": {
+                "@id": "https://w3id.org/cwl/v1.0/"
+            },
+            "name": "Common Workflow Language",
+            "url": {
+                "@id": "https://www.commonwl.org/"
+            },
+            "version": "v1.0"
+        },
+        {
+            "@id": "packed.cwl#main/input",
+            "@type": "FormalParameter",
+            "additionalType": "File",
+            "defaultValue": "file:///home/stain/src/cwltool/tests/wf/hello.txt",
+            "description": "The input file to be processed.",
+            "encodingFormat": "https://www.iana.org/assignments/media-types/text/plain",
+            "name": "input"
+        },
+        {
+            "@id": "packed.cwl#main/reverse_sort",
+            "@type": "FormalParameter",
+            "additionalType": "Boolean",
+            "defaultValue": "True",
+            "description": "If true, reverse (decending) sort",
+            "name": "reverse_sort"
+        },
+        {
+            "@id": "packed.cwl#main/output",
+            "@type": "FormalParameter",
+            "additionalType": "File",
+            "description": "The output with the lines reversed and sorted.",
+            "name": "output"
+        },
+        {
+            "@id": "packed.cwl#main/rev",
+            "@type": "HowToStep",
+            "connection": [
+                {
+                    "@id": "#a7e8c871-3e4b-49d9-8b7c-2ca8b96bc9de"
+                }
+            ],
+            "position": "0",
+            "workExample": {
+                "@id": "packed.cwl#revtool.cwl"
+            }
+        },
+        {
+            "@id": "packed.cwl#revtool.cwl",
+            "@type": "SoftwareApplication",
+            "description": "Reverse each line using the `rev` command",
+            "input": [
+                {
+                    "@id": "packed.cwl#revtool.cwl/input"
+                }
+            ],
+            "name": "revtool.cwl",
+            "output": [
+                {
+                    "@id": "packed.cwl#revtool.cwl/output"
+                }
+            ],
+            "environment": [
+                {
+                    "@id": "#revtool_env_var"
+                }
+            ]
+        },
+        {
+            "@id": "packed.cwl#revtool.cwl/input",
+            "@type": "FormalParameter",
+            "additionalType": "File",
+            "name": "input"
+        },
+        {
+            "@id": "packed.cwl#revtool.cwl/output",
+            "@type": "FormalParameter",
+            "additionalType": "File",
+            "name": "output"
+        },
+        {
+            "@id": "#revtool_env_var",
+            "@type": "FormalParameter",
+            "additionalType": "Integer",
+            "workExample": {
+                "@id": "#revtool_env_var-pv"
+            },
+            "description": "An environment variable",
+            "name": "REVTOOL_ENV_VAR"
+        },
+        {
+            "@id": "packed.cwl#main/sorted",
+            "@type": "HowToStep",
+            "connection": [
+                {
+                    "@id": "#7835f386-2ae7-447e-8403-ee98d506c1e2"
+                },
+                {
+                    "@id": "#bffeb46f-c0bf-4814-8472-a368b45f8040"
+                }
+            ],
+            "position": "1",
+            "workExample": {
+                "@id": "packed.cwl#sorttool.cwl"
+            }
+        },
+        {
+            "@id": "packed.cwl#sorttool.cwl",
+            "@type": "SoftwareApplication",
+            "description": "Sort lines using the `sort` command",
+            "input": [
+                {
+                    "@id": "packed.cwl#sorttool.cwl/reverse"
+                },
+                {
+                    "@id": "packed.cwl#sorttool.cwl/input"
+                }
+            ],
+            "name": "sorttool.cwl",
+            "output": [
+                {
+                    "@id": "packed.cwl#sorttool.cwl/output"
+                }
+            ],
+            "environment": [
+                {
+                    "@id": "#sorttool_env_var"
+                }
+            ]
+        },
+        {
+            "@id": "packed.cwl#sorttool.cwl/reverse",
+            "@type": "FormalParameter",
+            "additionalType": "Boolean",
+            "name": "reverse"
+        },
+        {
+            "@id": "packed.cwl#sorttool.cwl/input",
+            "@type": "FormalParameter",
+            "additionalType": "File",
+            "name": "input"
+        },
+        {
+            "@id": "packed.cwl#sorttool.cwl/output",
+            "@type": "FormalParameter",
+            "additionalType": "File",
+            "name": "output"
+        },
+        {
+            "@id": "#sorttool_env_var",
+            "@type": "FormalParameter",
+            "additionalType": "Integer",
+            "workExample": {
+                "@id": "#sorttool_env_var-pv"
+            },
+            "description": "An environment variable",
+            "name": "SORTTOOL_ENV_VAR"
+        },
+        {
+            "@id": "#a7e8c871-3e4b-49d9-8b7c-2ca8b96bc9de",
+            "@type": "ParameterConnection",
+            "sourceParameter": {
+                "@id": "packed.cwl#main/input"
+            },
+            "targetParameter": {
+                "@id": "packed.cwl#revtool.cwl/input"
+            }
+        },
+        {
+            "@id": "#7835f386-2ae7-447e-8403-ee98d506c1e2",
+            "@type": "ParameterConnection",
+            "sourceParameter": {
+                "@id": "packed.cwl#revtool.cwl/output"
+            },
+            "targetParameter": {
+                "@id": "packed.cwl#sorttool.cwl/input"
+            }
+        },
+        {
+            "@id": "#bffeb46f-c0bf-4814-8472-a368b45f8040",
+            "@type": "ParameterConnection",
+            "sourceParameter": {
+                "@id": "packed.cwl#main/reverse_sort"
+            },
+            "targetParameter": {
+                "@id": "packed.cwl#sorttool.cwl/reverse"
+            }
+        },
+        {
+            "@id": "#b768302e-95a9-4c0d-80db-8e4c48f9e65a",
+            "@type": "ParameterConnection",
+            "sourceParameter": {
+                "@id": "packed.cwl#sorttool.cwl/output"
+            },
+            "targetParameter": {
+                "@id": "packed.cwl#main/output"
+            }
+        },
+        {
+            "@id": "#59d43342-19b6-47cf-ba0e-a8ffa8a52f4d",
+            "@type": "SoftwareApplication",
+            "name": "cwltool 1.0.20181012180214"
+        },
+        {
+            "@id": "#0e462147-3d98-4131-814f-6e082b83455e",
+            "@type": "OrganizeAction",
+            "agent": {
+                "@id": "https://orcid.org/0000-0001-9842-9718"
+            },
+            "instrument": {
+                "@id": "#59d43342-19b6-47cf-ba0e-a8ffa8a52f4d"
+            },
+            "name": "Run of cwltool 1.0.20181012180214",
+            "object": [
+                {
+                    "@id": "#547745c6-afb0-4352-bc66-0d4377bb022a"
+                },
+                {
+                    "@id": "#29365b8d-cf76-4c62-a97d-fa8c2061e5cf"
+                }
+            ],
+            "result": {
+                "@id": "#8a058e09-e8c3-47ed-836d-d630fe659c91"
+            },
+            "actionStatus": "http://schema.org/CompletedActionStatus",
+            "error": "this action should not have an error",
+            "startTime": "2018-10-25T15:46:35.210973"
+        },
+        {
+            "@id": "https://orcid.org/0000-0001-9842-9718",
+            "@type": "Person",
+            "name": "Stian Soiland-Reyes"
+        },
+        {
+            "@id": "#8a058e09-e8c3-47ed-836d-d630fe659c91",
+            "@type": "CreateAction",
+            "endTime": "2018-10-25T15:46:43.020168",
+            "instrument": {
+                "@id": "packed.cwl"
+            },
+            "name": "Run of workflow/packed.cwl#main",
+            "object": [
+                {
+                    "@id": "327fc7aedf4f6b69a42a7c8b808dc5a7aff61376"
+                },
+                {
+                    "@id": "#pv-main/reverse_sort"
+                }
+            ],
+            "result": [
+                {
+                    "@id": "b9214658cc453331b62c2282b772a5c063dbd284"
+                }
+            ],
+            "actionStatus": "http://schema.org/CompletedActionStatus",
+            "startTime": "2018-10-25T15:46:35.211153"
+        },
+        {
+            "@id": "327fc7aedf4f6b69a42a7c8b808dc5a7aff61376",
+            "@type": "File",
+            "alternateName": "whale.txt",
+            "contentSize": "1111",
+            "encodingFormat": "https://www.iana.org/assignments/media-types/text/plain",
+            "exampleOfWork": [
+                {
+                    "@id": "packed.cwl#revtool.cwl/input"
+                },
+                {
+                    "@id": "packed.cwl#main/input"
+                }
+            ],
+            "sha1": "327fc7aedf4f6b69a42a7c8b808dc5a7aff61376"
+        },
+        {
+            "@id": "#pv-main/reverse_sort",
+            "@type": "PropertyValue",
+            "exampleOfWork": {
+                "@id": "packed.cwl#main/reverse_sort"
+            },
+            "name": "reverse_sort",
+            "value": "True"
+        },
+        {
+            "@id": "b9214658cc453331b62c2282b772a5c063dbd284",
+            "@type": "File",
+            "alternateName": "output.txt",
+            "contentSize": "1111",
+            "dateCreated": "2018-10-25T15:46:38.058365",
+            "exampleOfWork": [
+                {
+                    "@id": "packed.cwl#sorttool.cwl/output"
+                },
+                {
+                    "@id": "packed.cwl#main/output"
+                }
+            ],
+            "sha1": "b9214658cc453331b62c2282b772a5c063dbd284"
+        },
+        {
+            "@id": "#9b6dc9de-26fb-45ff-a972-4cc8045cd048",
+            "@type": "CreateAction",
+            "containerImage": {
+                "@id": "#a76054fd-3abf-478f-aa1f-2ea1dc0c1ca3"
+            },
+            "endTime": "2018-10-25T15:46:36.967359",
+            "instrument": {
+                "@id": "packed.cwl#revtool.cwl"
+            },
+            "name": "Run of workflow/packed.cwl#main/rev",
+            "object": [
+                {
+                    "@id": "327fc7aedf4f6b69a42a7c8b808dc5a7aff61376"
+                }
+            ],
+            "result": [
+                {
+                    "@id": "97fe1b50b4582cebc7d853796ebd62e3e163aa3f"
+                }
+            ],
+            "environment": {
+                "@id": "#revtool_env_var-pv"
+            },
+            "actionStatus": "http://schema.org/CompletedActionStatus",
+            "startTime": "2018-10-25T15:46:35.314101"
+        },
+        {
+            "@id": "#547745c6-afb0-4352-bc66-0d4377bb022a",
+            "@type": "ControlAction",
+            "instrument": {
+                "@id": "packed.cwl#main/rev"
+            },
+            "name": "orchestrate revtool.cwl",
+            "actionStatus": "http://schema.org/FailedActionStatus",
+            "error": "this is just to test the error property",
+            "object": {
+                "@id": "#9b6dc9de-26fb-45ff-a972-4cc8045cd048"
+            }
+        },
+        {
+            "@id": "#revtool_env_var-pv",
+            "@type": "PropertyValue",
+            "exampleOfWork": {
+                "@id": "#revtool_env_var"
+            },
+            "name": "REVTOOL_ENV_VAR",
+            "value": "42"
+        },
+        {
+            "@id": "97fe1b50b4582cebc7d853796ebd62e3e163aa3f",
+            "@type": "File",
+            "alternateName": "output.txt",
+            "contentSize": "1111",
+            "dateCreated": "2018-10-25T15:46:36.963254",
+            "exampleOfWork": [
+                {
+                    "@id": "packed.cwl#revtool.cwl/output"
+                },
+                {
+                    "@id": "packed.cwl#sorttool.cwl/input"
+                }
+            ],
+            "sha1": "97fe1b50b4582cebc7d853796ebd62e3e163aa3f"
+        },
+        {
+            "@id": "#a76054fd-3abf-478f-aa1f-2ea1dc0c1ca3",
+            "@type": "ContainerImage",
+            "additionalType": {
+                "@id": "https://w3id.org/ro/terms/workflow-run#DockerImage"
+            },
+            "name": "debian",
+            "registry": "docker.io",
+            "tag": "8"
+        },
+        {
+            "@id": "#ba5b82a1-ce69-410f-a846-4a1d042233e7",
+            "@type": "CreateAction",
+            "containerImage": {
+                "@id": "#bea7d7e2-5948-4319-b850-b4741e3fe734"
+            },
+            "endTime": "2018-10-25T15:46:38.069110",
+            "instrument": {
+                "@id": "packed.cwl#sorttool.cwl"
+            },
+            "name": "Run of workflow/packed.cwl#main/sorted",
+            "object": [
+                {
+                    "@id": "97fe1b50b4582cebc7d853796ebd62e3e163aa3f"
+                },
+                {
+                    "@id": "#pv-main/sorted/reverse"
+                }
+            ],
+            "result": [
+                {
+                    "@id": "b9214658cc453331b62c2282b772a5c063dbd284"
+                }
+            ],
+            "actionStatus": "http://schema.org/CompletedActionStatus",
+            "environment": {
+                "@id": "#sorttool_env_var-pv"
+            },
+            "startTime": "2018-10-25T15:46:36.975235"
+        },
+        {
+            "@id": "#29365b8d-cf76-4c62-a97d-fa8c2061e5cf",
+            "@type": "ControlAction",
+            "instrument": {
+                "@id": "packed.cwl#main/sorted"
+            },
+            "name": "orchestrate sorttool.cwl",
+            "actionStatus": "http://schema.org/CompletedActionStatus",
+            "object": {
+                "@id": "#ba5b82a1-ce69-410f-a846-4a1d042233e7"
+            }
+        },
+        {
+            "@id": "#pv-main/sorted/reverse",
+            "@type": "PropertyValue",
+            "exampleOfWork": {
+                "@id": "packed.cwl#sorttool.cwl/reverse"
+            },
+            "name": "reverse",
+            "value": "True"
+        },
+        {
+            "@id": "#sorttool_env_var-pv",
+            "@type": "PropertyValue",
+            "exampleOfWork": {
+                "@id": "#sorttool_env_var"
+            },
+            "name": "SORTTOOL_ENV_VAR",
+            "value": "42"
+        },
+        {
+            "@id": "#bea7d7e2-5948-4319-b850-b4741e3fe734",
+            "@type": "ContainerImage",
+            "additionalType": {
+                "@id": "https://w3id.org/ro/terms/workflow-run#DockerImage"
+            },
+            "name": "debian",
+            "registry": "docker.io",
+            "tag": "8"
+        },
+        {
+            "@id": "primary-job.json",
+            "@type": "File",
+            "encodingFormat": "application/json",
+            "name": "input object document"
+        }
+    ]
+}

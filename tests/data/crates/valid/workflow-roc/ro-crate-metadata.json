@@ -4,8 +4,8 @@
         {
             "@id": "./",
             "@type": "Dataset",
-            "name": "Valid RO Crate with foo/ Dataset directly referenced",
-            "description": "This RO Crate is valid, but it directly references a Dataset entity, foo/, which is not defined in the RO Crate.",
+            "name": "sort-and-change-case Workflow RO-Crate",
+            "description": "sort-and-change-case Workflow RO-Crate",
             "datePublished": "2024-04-17T13:39:44+00:00",
             "hasPart": [
                 {

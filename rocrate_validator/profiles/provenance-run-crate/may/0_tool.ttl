@@ -1,0 +1,83 @@
+# Copyright (c) 2024 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+@prefix ro: <./> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+@prefix provenance-run-crate: <https://github.com/crs4/rocrate-validator/profiles/provenance-run-crate/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema: <http://schema.org/> .
+@prefix bioschemas: <https://bioschemas.org/> .
+@prefix bioschemas-cw: <https://bioschemas.org/ComputationalWorkflow#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix wfrun: <https://w3id.org/ro/terms/workflow-run#> .
+
+provenance-run-crate:ProvRCToolOptional a sh:NodeShape ;
+    sh:name "ProvRC tool MAY" ;
+    sh:description "Optional properties of a Provenance Run Crate tool" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                { ?this a schema:SoftwareApplication } UNION
+                { ?this a schema:SoftwareSourceCode } UNION
+                { ?this a bioschemas:ComputationalWorkflow } .
+                ?workflow schema:hasPart ?this .
+                ?workflow a bioschemas:ComputationalWorkflow .
+            }
+        """
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "tool input" ;
+        sh:description "A tool MAY have an input" ;
+        sh:path bioschemas-cw:input ;
+        sh:minCount 1 ;
+        sh:message "A tool MAY have an input" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "tool output" ;
+        sh:description "A tool MAY have an output" ;
+        sh:path bioschemas-cw:output ;
+        sh:minCount 1 ;
+        sh:message "A tool MAY have an output" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "tool environment" ;
+        sh:description "A tool MAY have an environment" ;
+        sh:path wfrun:environment ;
+        sh:minCount 1 ;
+        sh:message "A tool MAY have an environment" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "tool softwareRequirements" ;
+        sh:description "The tool MAY have a softwareRequirements that points to a SoftwareApplication" ;
+        sh:message "The tool MAY have a softwareRequirements that points to a SoftwareApplication" ;
+        sh:path schema:softwareRequirements ;
+        sh:class schema:SoftwareApplication ;
+        sh:minCount 1 ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "tool mainEntity" ;
+        sh:description "The tool MAY have a mainEntity that points to a SoftwareApplication" ;
+        sh:message "The tool MAY have a mainEntity that points to a SoftwareApplication" ;
+        sh:path schema:mainEntity ;
+        sh:class schema:SoftwareApplication ;
+        sh:minCount 1 ;
+    ] .

@@ -28,12 +28,20 @@ ro-crate:sparqlPrefixes
         sh:namespace "https://bioschemas.org/"^^xsd:anyURI ;
     ] ;
     sh:declare [
+        sh:prefix "bioschemas-cw" ;
+        sh:namespace "https://bioschemas.org/ComputationalWorkflow#"^^xsd:anyURI ;
+    ] ;
+    sh:declare [
         sh:prefix "rocrate" ;
         sh:namespace "https://w3id.org/ro/crate/1.1/"^^xsd:anyURI ;
     ] ;
     sh:declare [
         sh:prefix "wfrun" ;
         sh:namespace "https://w3id.org/ro/terms/workflow-run#"^^xsd:anyURI ;
+    ] ;
+    sh:declare [
+        sh:prefix "codemeta" ;
+        sh:namespace "https://codemeta.github.io/terms/"^^xsd:anyURI ;
     ] ;
     sh:declare [
         sh:prefix "ro" ;

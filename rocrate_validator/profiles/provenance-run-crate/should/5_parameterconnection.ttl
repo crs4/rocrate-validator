@@ -1,0 +1,96 @@
+# Copyright (c) 2024 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+@prefix ro: <./> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+@prefix provenance-run-crate: <https://github.com/crs4/rocrate-validator/profiles/provenance-run-crate/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema: <http://schema.org/> .
+@prefix bioschemas: <https://bioschemas.org/> .
+@prefix bioschemas-cw: <https://bioschemas.org/ComputationalWorkflow#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix wfrun: <https://w3id.org/ro/terms/workflow-run#> .
+
+
+provenance-run-crate:ProvRCParameterConnectionReferencesRecommended a sh:NodeShape ;
+    sh:name "ParameterConnection references" ;
+    sh:description "Recommended references for ParameterConnection entities" ;
+    sh:targetClass wfrun:ParameterConnection ;
+    sh:property [
+        sh:name "ParamenterConnection references" ;
+        sh:description """References to `ParameterConnection` instances
+        SHOULD follow the CWL convention,
+        where connections to workflow output parameters are referenced by the workflow
+        while other connections are referenced by the receiving step
+        """ ;
+        sh:path [
+            sh:inversePath wfrun:connection ;
+        ] ;
+        sh:nodeKind sh:IRI ;
+        sh:minCount 1 ;
+        sh:message """Missing `connection` to this `ParameterConnection` entity""" ;
+    ] .
+
+provenance-run-crate:ProvRCWorkflowParameterConnectionRecommended a sh:NodeShape ;
+    sh:name "ParameterConnection references on computational workflows" ;
+    sh:description """RECOMMENDED references to ParameterConnection instances
+    SHOULD follow the CWL convention,
+    i.e., there SHOULD be a workflow that defines a `connection` to the `ParameterConnection` entity
+    which links the workflow's `output` through its `targetParameter`""" ;
+    sh:targetClass wfrun:ParameterConnection ;
+    sh:sparql [
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?workflow (wfrun:connection as ?path) ?this
+            WHERE {
+                ?this a wfrun:ParameterConnection .
+                ?workflow bioschemas-cw:output ?param .
+                ?param a bioschemas:FormalParameter .
+                ?this wfrun:targetParameter ?param .
+                FILTER NOT EXISTS {
+                    ?workflow wfrun:connection ?this .
+                }
+            }
+        """ ;
+    ] ;
+    sh:message """Missing `ComputationalWorkflow` connection to this `ParameterConnection` entity""" ;
+.
+
+provenance-run-crate:ProvRCHowToStepParameterConnectionRecommended a sh:NodeShape ;
+    sh:name "ParameterConnection references on HowToStep instances" ;
+    sh:description """RECOMMENDED references to ParameterConnection instances
+    SHOULD follow the CWL convention,
+    i.e., there SHOULD be a HowToStep that defines a `connection` to the `ParameterConnection` entity
+    which links the `input` of the HowToStep's `workExample` through its `targetParameter`""" ;
+    sh:targetClass wfrun:ParameterConnection ;
+    sh:sparql [
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?step (wfrun:connection as ?path) ?this
+            WHERE {
+                ?this a wfrun:ParameterConnection .
+                ?param a bioschemas:FormalParameter .
+                ?this wfrun:targetParameter ?param .
+                ?step a schema:HowToStep .
+                ?tool bioschemas-cw:input ?param .
+                ?step schema:workExample ?tool .
+                FILTER NOT EXISTS {
+                    ?step wfrun:connection ?this .
+                }
+            }
+        """ ;
+    ] ;
+    sh:message "Missing `HowToStep` connection to this `ParameterConnection` entity" ;
+.
