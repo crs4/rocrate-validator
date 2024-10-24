@@ -856,6 +856,18 @@ class InvalidProvRC:
         return self.base_path / "parameterconnection_bad_targetparameter"
 
     @property
+    def parameterconnection_not_referenced(self) -> Path:
+        return self.base_path / "parameterconnection_not_referenced"
+
+    @property
+    def parameterconnection_not_workflow_referenced(self) -> Path:
+        return self.base_path / "parameterconnection_not_workflow_referenced"
+
+    @property
+    def parameterconnection_not_step_referenced(self) -> Path:
+        return self.base_path / "parameterconnection_not_step_referenced"
+
+    @property
     def tool_no_softwarerequirements(self) -> Path:
         return self.base_path / "tool_no_softwarerequirements"
 
