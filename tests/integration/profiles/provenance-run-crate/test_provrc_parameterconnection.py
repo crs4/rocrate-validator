@@ -80,3 +80,48 @@ def test_parameterconnection_bad_targetparameter():
         ["ParameterConnection must have a targetParameter that references a FormalParameter"],
         profile_identifier="provenance-run-crate"
     )
+
+
+def test_parameterconnection_not_referenced():
+    """\
+    Test a Provenance Run Crate where a ParameterConnection is not referenced
+    by any other entity through the connection property.
+    """
+    do_entity_test(
+        InvalidProvRC().parameterconnection_not_referenced,
+        Severity.RECOMMENDED,
+        False,
+        ["ParameterConnection references"],
+        ["Missing `connection` to this `ParameterConnection` entity"],
+        profile_identifier="provenance-run-crate"
+    )
+
+
+def test_parameterconnection_not_workflow_referenced():
+    """\
+    Test a Provenance Run Crate where a ParameterConnection is not referenced
+    by any Workflow through the connection property.
+    """
+    do_entity_test(
+        InvalidProvRC().parameterconnection_not_workflow_referenced,
+        Severity.RECOMMENDED,
+        False,
+        ["ParameterConnection references on computational workflows"],
+        ["Missing `ComputationalWorkflow` connection to this `ParameterConnection` entity"],
+        profile_identifier="provenance-run-crate"
+    )
+
+
+def test_parameterconnection_not_step_referenced():
+    """\
+    Test a Provenance Run Crate where a ParameterConnection is not referenced
+    by any HowToStep through the connection property.
+    """
+    do_entity_test(
+        InvalidProvRC().parameterconnection_not_step_referenced,
+        Severity.RECOMMENDED,
+        False,
+        ["ParameterConnection references on HowToStep instances"],
+        ["Missing `HowToStep` connection to this `ParameterConnection` entity"],
+        profile_identifier="provenance-run-crate"
+    )
