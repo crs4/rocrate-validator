@@ -61,6 +61,14 @@
                 {
                     "@id": "#8a058e09-e8c3-47ed-836d-d630fe659c91"
                 }
+            ],
+            "connection": [
+                {
+                    "@id": "#7835f386-2ae7-447e-8403-ee98d506c1e2"
+                },
+                {
+                    "@id": "#bffeb46f-c0bf-4814-8472-a368b45f8040"
+                }
             ]
         },
         {
@@ -289,14 +297,6 @@
         {
             "@id": "packed.cwl#main/sorted",
             "@type": "HowToStep",
-            "xconnection": [
-                {
-                    "@id": "#7835f386-2ae7-447e-8403-ee98d506c1e2"
-                },
-                {
-                    "@id": "#bffeb46f-c0bf-4814-8472-a368b45f8040"
-                }
-            ],
             "position": "1",
             "buildInstructions": {
                 "@id": "sort_env.yml"

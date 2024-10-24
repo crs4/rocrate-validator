@@ -61,6 +61,11 @@
                 {
                     "@id": "#8a058e09-e8c3-47ed-836d-d630fe659c91"
                 }
+            ],
+            "connection": [
+                {
+                    "@id": "#b768302e-95a9-4c0d-80db-8e4c48f9e65a"
+                }
             ]
         },
         {
@@ -109,11 +114,6 @@
                 "SoftwareSourceCode",
                 "ComputationalWorkflow",
                 "HowTo"
-            ],
-            "xconnection": [
-                {
-                    "@id": "#b768302e-95a9-4c0d-80db-8e4c48f9e65a"
-                }
             ],
             "description": "Reverse the lines in a document, then sort those lines.",
             "hasPart": [
