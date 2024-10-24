@@ -23,11 +23,25 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix wfrun: <https://w3id.org/ro/terms/workflow-run#> .
 
-provenance-run-crate:ProvRCParameterConnectionRequired a sh:NodeShape ;
-    sh:name "ProvRC ParameterConnection MUST" ;
-    sh:description "Required properties of a Provenance Run Crate ParameterConnection" ;
-    sh:target [
-        a sh:SPARQLTarget ;
+
+provenance-run-crate:ProvRCParameterConnectionReferencesRecommended a sh:NodeShape ;
+    sh:name "ParamenterConnection references" ;
+    sh:description "Recommended references for ParameterConnection entities" ;
+    sh:targetClass wfrun:ParameterConnection ;
+    sh:property [
+        sh:name "ParamenterConnection references" ;
+        sh:description """References to `ParameterConnection` instances 
+        SHOULD follow the CWL convention,
+        where connections to workflow output parameters are referenced by the workflow
+        while other connections are referenced by the receiving step
+        """ ;
+        sh:path [
+            sh:inversePath wfrun:connection ;
+        ] ;
+        sh:nodeKind sh:IRI ;
+        sh:minCount 1 ;
+        sh:message """Missing `connection` to this `ParameterConnection` entity""" ;
+    ] .
         sh:prefixes ro-crate:sparqlPrefixes ;
         sh:select """
             SELECT ?this
