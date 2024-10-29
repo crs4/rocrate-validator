@@ -942,18 +942,12 @@ class CheckIssue:
         check (RequirementCheck): The check that generated the issue
     """
 
-    # TODO:
-    # 2. CheckIssue has the check, so it is able to determine the level and the Severity
-    #    without having it provided through an additional argument.
-    def __init__(self, severity: Severity,
+    def __init__(self,
                  check: RequirementCheck,
                  message: Optional[str] = None,
                  resultPath: Optional[str] = None,
                  focusNode: Optional[str] = None,
                  value: Optional[str] = None):
-        if not isinstance(severity, Severity):
-            raise TypeError(f"CheckIssue constructed with a severity '{severity}' of type {type(severity)}")
-        self._severity = severity
         self._message = message
         self._check: RequirementCheck = check
         self._resultPath = resultPath
@@ -973,7 +967,7 @@ class CheckIssue:
     @property
     def severity(self) -> Severity:
         """Severity of the RequirementLevel associated with this check."""
-        return self._severity
+        return self._check.severity
 
     @property
     def level_name(self) -> str:
@@ -999,16 +993,15 @@ class CheckIssue:
     def __eq__(self, other: object) -> bool:
         return isinstance(other, CheckIssue) and \
             self._check == other._check and \
-            self._severity == other._severity and \
             self._message == other._message
 
     def __lt__(self, other: object) -> bool:
         if not isinstance(other, CheckIssue):
             raise TypeError(f"Cannot compare {type(self)} with {type(other)}")
-        return (self._check, self._severity, self._message) < (other._check, other._severity, other._message)
+        return (self._check, self._message) < (other._check, other._message)
 
     def __hash__(self) -> int:
-        return hash((self._check, self._severity, self._message))
+        return hash((self._check, self._message))
 
     def __repr__(self) -> str:
         return f'CheckIssue(severity={self.severity}, check={self.check}, message={self.message})'
@@ -1139,18 +1132,15 @@ class ValidationResult:
     def add_check_issue(self,
                         message: str,
                         check: RequirementCheck,
-                        severity: Optional[Severity] = None,
                         resultPath: Optional[str] = None,
                         focusNode: Optional[str] = None,
                         value: Optional[str] = None) -> CheckIssue:
-        sev_value = severity if severity is not None else check.severity
-        c = CheckIssue(sev_value, check, message, resultPath=resultPath, focusNode=focusNode, value=value)
-        # self._issues.append(c)
+        c = CheckIssue(check, message, resultPath=resultPath, focusNode=focusNode, value=value)
         bisect.insort(self._issues, c)
         return c
 
     def add_error(self, message: str, check: RequirementCheck) -> CheckIssue:
-        return self.add_check_issue(message, check, Severity.REQUIRED)
+        return self.add_check_issue(message, check)
 
     #  --- Requirements ---
     @property
