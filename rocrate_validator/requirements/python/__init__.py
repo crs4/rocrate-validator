@@ -91,7 +91,7 @@ class PyRequirement(Requirement):
                     logger.debug(f"No explicit severity set for check '{check_name}' from decorator."
                                  f"Getting severity from path: {self.severity_from_path}")
                     severity = self.severity_from_path or Severity.REQUIRED
-                logger.error("Severity log: %r", severity)
+                logger.debug("Severity log: %r", severity)
                 check = self.requirement_check_class(self,
                                                      check_name,
                                                      member,
