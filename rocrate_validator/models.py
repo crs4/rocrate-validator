@@ -388,6 +388,14 @@ class Profile:
     def __str__(self) -> str:
         return f"{self.name} ({self.identifier})"
 
+    def to_dict(self) -> dict:
+        return {
+            "identifier": self.identifier,
+            "uri": self.uri,
+            "name": self.name,
+            "description": self.description
+        }
+
     @staticmethod
     def __extract_version_from_token__(token: str) -> Optional[str]:
         if not token:
@@ -892,6 +900,16 @@ class RequirementCheck(ABC):
     @abstractmethod
     def execute_check(self, context: ValidationContext) -> bool:
         raise NotImplementedError()
+
+    def to_dict(self) -> dict:
+        return {
+            "identifier": self.relative_identifier,
+            "name": self.name,
+            "description": self.description,
+            "level": self.level.name,
+            "severity": self.severity.name,
+            "profile": self.requirement.profile.to_dict()
+        }
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, RequirementCheck):
