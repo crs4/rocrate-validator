@@ -34,7 +34,7 @@ class MainWorkflowFileExistence(PyFunctionCheck):
                 context.result.add_check_issue("main workflow does not exist in metadata file", self)
                 return False
             if not main_workflow.is_available():
-                context.result.add_check_issue("Main Workflow {main_workflow.id} not found in crate", self)
+                context.result.add_check_issue(f"Main Workflow {main_workflow.id} not found in crate", self)
                 return False
             return True
         except ValueError as e:
