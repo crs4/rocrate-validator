@@ -1031,7 +1031,7 @@ class CheckIssue:
         return {
             "severity": self.severity.name,
             "message": self.message,
-            "check": self.check.name,
+            "check": self.check.to_dict(),
             "resultPath": self.resultPath,
             "focusNode": self.focusNode,
             "value": self.value
