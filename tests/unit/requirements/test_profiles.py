@@ -405,7 +405,7 @@ def test_profile_check_overriding(check_overriding_profiles_path: str):
 
         # Get the check
         check = requirement.get_checks()[0]
-        logger.debug("The check: %r of requirement %r of the profiles %f", check, requirement, profile.token)
+        logger.debug("The check: %r of requirement %r of the profiles %s", check, requirement, profile.token)
 
         # Check the profile 'a'
         if profile.token == "a":
