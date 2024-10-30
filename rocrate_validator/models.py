@@ -1226,7 +1226,7 @@ class ValidationResult:
             "issues": [issue.to_dict() for issue in self.issues]
         }
         # add validator version to the settings
-        result["validation_settings"]["rocrate-validator-version"] = __version__
+        result["validation_settings"]["rocrate_validator_version"] = __version__
         return result
 
     def to_json(self, path: Optional[Path] = None) -> str:
