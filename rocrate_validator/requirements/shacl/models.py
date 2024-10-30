@@ -58,7 +58,7 @@ class SHACLNode:
     def name(self) -> str:
         """Return the name of the shape"""
         if not self._name:
-            self._name = self._node.split("#")[-1] if "#" in self.node else self._node.split("/")[-1]
+            self._name = self.node_name
         return self._name or self._node.split("/")[-1]
 
     @name.setter
@@ -85,6 +85,11 @@ class SHACLNode:
     def node(self):
         """Return the node of the shape"""
         return self._node
+
+    @property
+    def node_name(self):
+        """Return the name of the node"""
+        return self._node.split("#")[-1] if "#" in self.node else self._node.split("/")[-1]
 
     @property
     def graph(self):
