@@ -33,7 +33,8 @@ from rocrate_validator import __version__
 from rocrate_validator.constants import (DEFAULT_ONTOLOGY_FILE,
                                          DEFAULT_PROFILE_IDENTIFIER,
                                          DEFAULT_PROFILE_README_FILE,
-                                         IGNORED_PROFILE_DIRECTORIES, PROF_NS,
+                                         IGNORED_PROFILE_DIRECTORIES,
+                                         JSON_OUTPUT_FORMAT_VERSION, PROF_NS,
                                          PROFILE_FILE_EXTENSIONS,
                                          PROFILE_SPECIFICATION_FILE,
                                          RDF_SERIALIZATION_FORMATS_TYPES,
@@ -1220,13 +1221,16 @@ class ValidationResult:
     def to_dict(self) -> dict:
         allowed_properties = ["profile_identifier", "inherit_profiles", "requirement_severity", "abort_on_first"]
         result = {
+            "meta": {
+                "version": JSON_OUTPUT_FORMAT_VERSION
+            },
             "validation_settings": {key: self.validation_settings[key]
                                     for key in allowed_properties if key in self.validation_settings},
             "passed": self.passed(self.context.settings["requirement_severity"]),
             "issues": [issue.to_dict() for issue in self.issues]
         }
         # add validator version to the settings
-        result["validation_settings"]["rocrate-validator-version"] = __version__
+        result["validation_settings"]["rocrate_validator_version"] = __version__
         return result
 
     def to_json(self, path: Optional[Path] = None) -> str:
