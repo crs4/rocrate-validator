@@ -1217,8 +1217,7 @@ class ValidationResult:
         return self._issues == other._issues
 
     def to_dict(self) -> dict:
-        allowed_properties = ["data_path", "profiles_path",
-                              "profile_identifier", "inherit_profiles", "requirement_severity", "abort_on_first"]
+        allowed_properties = ["profile_identifier", "inherit_profiles", "requirement_severity", "abort_on_first"]
         return {
             "rocrate": str(self.rocrate_path),
             "validation_settings": {key: self.validation_settings[key]
