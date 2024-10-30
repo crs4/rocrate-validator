@@ -29,6 +29,7 @@ from typing import Optional, Tuple, Union
 from rdflib import RDF, RDFS, Graph, Namespace, URIRef
 
 import rocrate_validator.log as logging
+from rocrate_validator import __version__
 from rocrate_validator.constants import (DEFAULT_ONTOLOGY_FILE,
                                          DEFAULT_PROFILE_IDENTIFIER,
                                          DEFAULT_PROFILE_README_FILE,
@@ -388,6 +389,14 @@ class Profile:
     def __str__(self) -> str:
         return f"{self.name} ({self.identifier})"
 
+    def to_dict(self) -> dict:
+        return {
+            "identifier": self.identifier,
+            "uri": self.uri,
+            "name": self.name,
+            "description": self.description
+        }
+
     @staticmethod
     def __extract_version_from_token__(token: str) -> Optional[str]:
         if not token:
@@ -728,6 +737,19 @@ class Requirement(ABC):
     def __str__(self) -> str:
         return self.name
 
+    def to_dict(self, with_profile: bool = True, with_checks: bool = True) -> dict:
+        result = {
+            "identifier": self.identifier,
+            "name": self.name,
+            "description": self.description,
+            "order": self.order_number
+        }
+        if with_profile:
+            result["profile"] = self.profile.to_dict()
+        if with_checks:
+            result["checks"] = [_.to_dict(with_requirement=False, with_profile=False) for _ in self._checks]
+        return result
+
 
 class RequirementLoader:
 
@@ -893,6 +915,19 @@ class RequirementCheck(ABC):
     def execute_check(self, context: ValidationContext) -> bool:
         raise NotImplementedError()
 
+    def to_dict(self, with_requirement: bool = True, with_profile: bool = True) -> dict:
+        result = {
+            "identifier": self.identifier,
+            "label": self.relative_identifier,
+            "order": self.order_number,
+            "name": self.name,
+            "description": self.description,
+            "severity": self.severity.name
+        }
+        if with_requirement:
+            result["requirement"] = self.requirement.to_dict(with_profile=with_profile, with_checks=False)
+        return result
+
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, RequirementCheck):
             raise ValueError(f"Cannot compare RequirementCheck with {type(other)}")
@@ -942,18 +977,12 @@ class CheckIssue:
         check (RequirementCheck): The check that generated the issue
     """
 
-    # TODO:
-    # 2. CheckIssue has the check, so it is able to determine the level and the Severity
-    #    without having it provided through an additional argument.
-    def __init__(self, severity: Severity,
+    def __init__(self,
                  check: RequirementCheck,
                  message: Optional[str] = None,
                  resultPath: Optional[str] = None,
                  focusNode: Optional[str] = None,
                  value: Optional[str] = None):
-        if not isinstance(severity, Severity):
-            raise TypeError(f"CheckIssue constructed with a severity '{severity}' of type {type(severity)}")
-        self._severity = severity
         self._message = message
         self._check: RequirementCheck = check
         self._resultPath = resultPath
@@ -973,7 +1002,7 @@ class CheckIssue:
     @property
     def severity(self) -> Severity:
         """Severity of the RequirementLevel associated with this check."""
-        return self._severity
+        return self._check.severity
 
     @property
     def level_name(self) -> str:
@@ -999,16 +1028,15 @@ class CheckIssue:
     def __eq__(self, other: object) -> bool:
         return isinstance(other, CheckIssue) and \
             self._check == other._check and \
-            self._severity == other._severity and \
             self._message == other._message
 
     def __lt__(self, other: object) -> bool:
         if not isinstance(other, CheckIssue):
             raise TypeError(f"Cannot compare {type(self)} with {type(other)}")
-        return (self._check, self._severity, self._message) < (other._check, other._severity, other._message)
+        return (self._check, self._message) < (other._check, other._message)
 
     def __hash__(self) -> int:
-        return hash((self._check, self._severity, self._message))
+        return hash((self._check, self._message))
 
     def __repr__(self) -> str:
         return f'CheckIssue(severity={self.severity}, check={self.check}, message={self.message})'
@@ -1016,18 +1044,28 @@ class CheckIssue:
     def __str__(self) -> str:
         return f"{self.severity}: {self.message} ({self.check})"
 
-    def to_dict(self) -> dict:
-        return {
+    def to_dict(self, with_check: bool = True,
+                with_requirement: bool = True, with_profile: bool = True) -> dict:
+        result = {
             "severity": self.severity.name,
             "message": self.message,
-            "check": self.check.name,
-            "resultPath": self.resultPath,
             "focusNode": self.focusNode,
             "value": self.value
         }
+        if with_check:
+            result["check"] = self.check.to_dict(with_requirement=with_requirement, with_profile=with_profile)
+        return result
 
-    def to_json(self) -> str:
-        return json.dumps(self.to_dict(), indent=4, cls=CustomEncoder)
+    def to_json(self,
+                with_checks: bool = True,
+                with_requirements: bool = True,
+                with_profile: bool = True) -> str:
+        return json.dumps(
+            self.to_dict(
+                with_check=with_checks,
+                with_requirement=with_requirements,
+                with_profile=with_profile
+            ), indent=4, cls=CustomEncoder)
 
     # @property
     # def code(self) -> int:
@@ -1139,18 +1177,15 @@ class ValidationResult:
     def add_check_issue(self,
                         message: str,
                         check: RequirementCheck,
-                        severity: Optional[Severity] = None,
                         resultPath: Optional[str] = None,
                         focusNode: Optional[str] = None,
                         value: Optional[str] = None) -> CheckIssue:
-        sev_value = severity if severity is not None else check.severity
-        c = CheckIssue(sev_value, check, message, resultPath=resultPath, focusNode=focusNode, value=value)
-        # self._issues.append(c)
+        c = CheckIssue(check, message, resultPath=resultPath, focusNode=focusNode, value=value)
         bisect.insort(self._issues, c)
         return c
 
     def add_error(self, message: str, check: RequirementCheck) -> CheckIssue:
-        return self.add_check_issue(message, check, Severity.REQUIRED)
+        return self.add_check_issue(message, check)
 
     #  --- Requirements ---
     @property
@@ -1183,15 +1218,16 @@ class ValidationResult:
         return self._issues == other._issues
 
     def to_dict(self) -> dict:
-        allowed_properties = ["data_path", "profiles_path",
-                              "profile_identifier", "inherit_profiles", "requirement_severity", "abort_on_first"]
-        return {
-            "rocrate": str(self.rocrate_path),
+        allowed_properties = ["profile_identifier", "inherit_profiles", "requirement_severity", "abort_on_first"]
+        result = {
             "validation_settings": {key: self.validation_settings[key]
                                     for key in allowed_properties if key in self.validation_settings},
             "passed": self.passed(self.context.settings["requirement_severity"]),
             "issues": [issue.to_dict() for issue in self.issues]
         }
+        # add validator version to the settings
+        result["validation_settings"]["rocrate-validator-version"] = __version__
+        return result
 
     def to_json(self, path: Optional[Path] = None) -> str:
 
