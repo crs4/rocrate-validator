@@ -29,6 +29,7 @@ from typing import Optional, Tuple, Union
 from rdflib import RDF, RDFS, Graph, Namespace, URIRef
 
 import rocrate_validator.log as logging
+from rocrate_validator import __version__
 from rocrate_validator.constants import (DEFAULT_ONTOLOGY_FILE,
                                          DEFAULT_PROFILE_IDENTIFIER,
                                          DEFAULT_PROFILE_README_FILE,
@@ -1224,6 +1225,9 @@ class ValidationResult:
             "passed": self.passed(self.context.settings["requirement_severity"]),
             "issues": [issue.to_dict() for issue in self.issues]
         }
+        # add validator version to the settings
+        result["validation_settings"]["rocrate-validator-version"] = __version__
+        return result
 
     def to_json(self, path: Optional[Path] = None) -> str:
 
