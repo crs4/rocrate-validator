@@ -1220,6 +1220,9 @@ class ValidationResult:
     def to_dict(self) -> dict:
         allowed_properties = ["profile_identifier", "inherit_profiles", "requirement_severity", "abort_on_first"]
         result = {
+            "meta": {
+                "version": JSON_OUTPUT_FORMAT_VERSION
+            },
             "validation_settings": {key: self.validation_settings[key]
                                     for key in allowed_properties if key in self.validation_settings},
             "passed": self.passed(self.context.settings["requirement_severity"]),
