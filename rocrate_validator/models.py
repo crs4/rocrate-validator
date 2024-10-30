@@ -736,6 +736,19 @@ class Requirement(ABC):
     def __str__(self) -> str:
         return self.name
 
+    def to_dict(self, with_profile: bool = True, with_checks: bool = True) -> dict:
+        result = {
+            "identifier": self.identifier,
+            "name": self.name,
+            "description": self.description,
+            "order": self.order_number
+        }
+        if with_profile:
+            result["profile"] = self.profile.to_dict()
+        if with_checks:
+            result["checks"] = [_.to_dict(with_requirement=False, with_profile=False) for _ in self._checks]
+        return result
+
 
 class RequirementLoader:
 
@@ -901,15 +914,18 @@ class RequirementCheck(ABC):
     def execute_check(self, context: ValidationContext) -> bool:
         raise NotImplementedError()
 
-    def to_dict(self) -> dict:
-        return {
-            "identifier": self.relative_identifier,
+    def to_dict(self, with_requirement: bool = True, with_profile: bool = True) -> dict:
+        result = {
+            "identifier": self.identifier,
+            "label": self.relative_identifier,
+            "order": self.order_number,
             "name": self.name,
             "description": self.description,
-            "level": self.level.name,
-            "severity": self.severity.name,
-            "profile": self.requirement.profile.to_dict()
+            "severity": self.severity.name
         }
+        if with_requirement:
+            result["requirement"] = self.requirement.to_dict(with_profile=with_profile, with_checks=False)
+        return result
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, RequirementCheck):
@@ -1027,18 +1043,29 @@ class CheckIssue:
     def __str__(self) -> str:
         return f"{self.severity}: {self.message} ({self.check})"
 
-    def to_dict(self) -> dict:
-        return {
+    def to_dict(self, with_check: bool = True,
+                with_requirement: bool = True, with_profile: bool = True) -> dict:
+        result = {
             "severity": self.severity.name,
             "message": self.message,
-            "check": self.check.to_dict(),
             "resultPath": self.resultPath,
             "focusNode": self.focusNode,
             "value": self.value
         }
+        if with_check:
+            result["check"] = self.check.to_dict(with_requirement=with_requirement, with_profile=with_profile)
+        return result
 
-    def to_json(self) -> str:
-        return json.dumps(self.to_dict(), indent=4, cls=CustomEncoder)
+    def to_json(self,
+                with_checks: bool = True,
+                with_requirements: bool = True,
+                with_profile: bool = True) -> str:
+        return json.dumps(
+            self.to_dict(
+                with_check=with_checks,
+                with_requirement=with_requirements,
+                with_profile=with_profile
+            ), indent=4, cls=CustomEncoder)
 
     # @property
     # def code(self) -> int:
