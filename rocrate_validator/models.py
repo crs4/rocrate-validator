@@ -1048,7 +1048,6 @@ class CheckIssue:
         result = {
             "severity": self.severity.name,
             "message": self.message,
-            "resultPath": self.resultPath,
             "focusNode": self.focusNode,
             "value": self.value
         }
