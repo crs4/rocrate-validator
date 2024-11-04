@@ -43,7 +43,7 @@ class SHACLCheck(RequirementCheck):
 
     def __init__(self,
                  requirement: Requirement,
-                 shape: Shape) -> None:
+                 hidden: Optional[bool] = None,
         self._shape = shape
         # init the check
         super().__init__(requirement,
@@ -52,7 +52,7 @@ class SHACLCheck(RequirementCheck):
                          else None,
                          shape.description if shape and shape.description
                          else shape.parent.description if shape.parent
-                         else None)
+                         hidden=hidden)
         # store the instance
         SHACLCheck.__add_instance__(shape, self)
 
