@@ -43,8 +43,10 @@ class SHACLCheck(RequirementCheck):
 
     def __init__(self,
                  requirement: Requirement,
+                 root: bool = False,
                  hidden: Optional[bool] = None,
         self._shape = shape
+        self._root = root
         # init the check
         super().__init__(requirement,
                          shape.name if shape and shape.name
@@ -71,6 +73,10 @@ class SHACLCheck(RequirementCheck):
     @property
     def shape(self) -> Shape:
         return self._shape
+
+    @property
+    def root(self) -> bool:
+        return self._root
 
     @property
     def description(self) -> str:
