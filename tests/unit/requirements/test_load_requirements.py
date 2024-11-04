@@ -17,6 +17,7 @@ import os
 
 from rocrate_validator.constants import DEFAULT_PROFILE_IDENTIFIER
 from rocrate_validator.models import LevelCollection, Profile, Severity
+from rocrate_validator.requirements.shacl.requirements import SHACLRequirement
 from tests.ro_crates import InvalidFileDescriptorEntity
 
 # set up logging
@@ -76,12 +77,13 @@ def test_requirements_loading(profiles_requirement_loading: str):
             assert requirement.severity_from_path == Severity.REQUIRED, \
                 "The severity of the requirement should be REQUIRED"
 
-        assert len(requirement.get_checks()) == number_of_checks_per_requirement, \
+        offset = 1 if isinstance(requirement, SHACLRequirement) else 0
+        assert len(requirement.get_checks()) == number_of_checks_per_requirement + offset, \
             "The number of requirement checks is incorrect"
 
         for i in range(number_of_checks_per_requirement):
             logger.debug("The requirement check: %r", f"{requirement_name}_{i}")
-            check = requirement.get_checks()[i]
+            check = requirement.get_checks()[i+offset]
             assert check.name == f"{requirement_name}_{i}", "The name of the requirement check is incorrect"
             assert check.level.severity == levels[i].severity, "The level of the requirement check is incorrect"
 
