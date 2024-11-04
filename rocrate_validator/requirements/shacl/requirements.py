@@ -45,6 +45,12 @@ class SHACLRequirement(Requirement):
         # assign check IDs
         self.__reorder_checks__()
 
+    def __reorder_checks__(self) -> None:
+        i = 0
+        for check in self._checks:
+            check.order_number = i
+            i += 1
+
     def __init_checks__(self) -> list[RequirementCheck]:
         # assign a check to each property of the shape
         checks = []
