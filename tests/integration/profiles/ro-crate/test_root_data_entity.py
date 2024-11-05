@@ -92,10 +92,28 @@ def test_recommended_root_data_entity_value():
     )
 
 
-def test_invalid_root_date():
+def test_invalid_required_root_date(invalid_datetime):
     """Test a RO-Crate with an invalid root data entity date."""
     do_entity_test(
         paths.invalid_root_date,
+        models.Severity.REQUIRED,
+        False,
+        ["RO-Crate Root Data Entity REQUIRED properties"],
+        ["The Root Data Entity MUST have a `datePublished` property (as specified by schema.org) "
+            "with a valid ISO 8601 date"],
+        rocrate_entity_patch={"./": {"datePublished": invalid_datetime}}
+    )
+
+
+def test_valid_required_root_date(valid_datetime):
+    """Test a RO-Crate with a valid root data entity date."""
+    do_entity_test(
+        ValidROC().wrroc_paper,
+        models.Severity.REQUIRED,
+        True,
+        rocrate_entity_patch={"./": {"datePublished": valid_datetime}}
+    )
+
         models.Severity.RECOMMENDED,
         False,
         ["RO-Crate Root Data Entity RECOMMENDED properties"],
