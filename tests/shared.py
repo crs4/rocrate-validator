@@ -16,7 +16,10 @@
 Library of shared functions for testing RO-Crate profiles
 """
 
+import json
 import logging
+import shutil
+import tempfile
 from collections.abc import Collection
 from pathlib import Path
 from typing import Optional, TypeVar, Union
