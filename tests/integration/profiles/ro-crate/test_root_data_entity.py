@@ -15,7 +15,7 @@
 import logging
 
 from rocrate_validator import models
-from tests.ro_crates import InvalidRootDataEntity
+from tests.ro_crates import InvalidRootDataEntity, ValidROC
 from tests.shared import do_entity_test
 
 # set up logging
@@ -114,11 +114,16 @@ def test_valid_required_root_date(valid_datetime):
         rocrate_entity_patch={"./": {"datePublished": valid_datetime}}
     )
 
+
+def test_invalid_recommended_root_date():
+    """Test a RO-Crate with an invalid root data entity date."""
+    do_entity_test(
+        paths.invalid_recommended_root_date,
         models.Severity.RECOMMENDED,
         False,
         ["RO-Crate Root Data Entity RECOMMENDED properties"],
         ["The Root Data Entity MUST have a `datePublished` property (as specified by schema.org) "
-         "with a valid ISO 8601 date and the precision of at least the day level"]
+            "with a valid ISO 8601 date and the precision of at least the day level"]
     )
 
 
