@@ -142,6 +142,29 @@ def get_version() -> str:
     return f"{version}-dirty" if dirty else version
 
 
+def get_min_python_version() -> tuple[int, int, Optional[int]]:
+    """
+    Get the minimum Python version required by the package
+
+    :return: The minimum Python version
+    """
+    min_version_str = config["tool"]["poetry"]["dependencies"]["python"]
+    assert min_version_str, "The minimum Python version is required"
+    # remove any non-digit characters
+    min_version_str = re.sub(r'[^\d.]+', '', min_version_str)
+    # convert the version string to a tuple
+    min_version = tuple(map(int, min_version_str.split(".")))
+    logger.debug(f"Minimum Python version: {min_version}")
+    return min_version
+
+
+def check_python_version() -> bool:
+    """
+    Check if the current Python version meets the minimum requirements
+    """
+    return sys.version_info >= get_min_python_version()
+
+
 def get_config(property: Optional[str] = None) -> dict:
     """
     Get the configuration for the package or a specific property

@@ -58,7 +58,7 @@ include = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.8.1"
+python = "^3.9.20"
 rdflib = "^7.0.0"
 pyshacl = "^0.26.0"
 click = "^8.1.7"
