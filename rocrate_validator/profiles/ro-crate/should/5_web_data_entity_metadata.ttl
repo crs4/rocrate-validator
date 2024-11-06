@@ -58,8 +58,6 @@ ro-crate:WebBasedDataEntityRequiredValueRestriction a sh:NodeShape ;
         sh:name "Web-based Data Entity: `sdDatePublished` property" ;
         sh:description """Check if the Web-based Data Entity has a `sdDatePublished` property""" ;
         sh:path schema_org:sdDatePublished ;
-        # sh:datatype xsd:dateTime ;
-        sh:pattern "^(\\d{4}-\\d{2}-\\d{2})(T\\d{2}:\\d{2}:\\d{2}(\\.\\d{3})?\\+\\d{2}:\\d{2})?$" ;
-        sh:severity sh:Warning ;
-        sh:message """Web-based Data Entities SHOULD have a `sdDatePublished` property""" ;
+        sh:pattern "^([\\+-]?\\d{4})((-?)((0[1-9]|1[0-2])(\\3([12]\\d|0[1-9]|3[01]))|W([0-4]\\d|5[0-2])(-?[1-7])|(00[1-9]|0[1-9]\\d|[12]\\d{2}|3([0-5]\\d|6[1-6])))([T\\s]((([01]\\d|2[0-3])((:?)?[0-5]\\d)?|24:?00)([\\.,]\\d+(?!:))?)?(\\17[0-5]\\d([\\.,]\\d+)?)?([zZ]|([\\+-])([01]\\d|2[0-3]):?([0-5]\\d)?)?)?)$" ;
+        sh:message """Web-based Data Entities SHOULD have a `sdDatePublished` property to indicate when the absolute URL was accessed""" ;
     ] .

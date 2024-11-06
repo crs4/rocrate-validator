@@ -59,4 +59,16 @@ ro-crate:RootDataEntityDirectRecommendedProperties a sh:NodeShape ;
         sh:message "The `publisher` property of a `Root Data Entity` SHOULD be an `Organization`";
         sh:nodeKind sh:IRI ;
         sh:class schema_org:Organization ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Root Data Entity: RECOMMENDED `datePublished` property" ;
+        sh:description """Check if the Root Data Entity includes a `datePublished` (as specified by schema.org)
+        to provide the date when the dataset was published. The datePublished MUST be a valid ISO 8601 date.
+        It SHOULD be specified to at least the day level, but MAY include a time component.""" ;
+        sh:minCount 1 ;
+        sh:nodeKind sh:Literal ;
+        sh:path schema_org:datePublished ;
+        sh:pattern "^([\\+-]?\\d{4})((-?)((0[1-9]|1[0-2])(\\3([12]\\d|0[1-9]|3[01]))|W([0-4]\\d|5[0-2])(-?[1-7])|(00[1-9]|0[1-9]\\d|[12]\\d{2}|3([0-5]\\d|6[1-6])))([T\\s]((([01]\\d|2[0-3])((:?)?[0-5]\\d)?|24:?00)([\\.,]\\d+(?!:))?)?(\\17[0-5]\\d([\\.,]\\d+)?)?([zZ]|([\\+-])([01]\\d|2[0-3]):?([0-5]\\d)?)?)?)$" ;
+        sh:message "The Root Data Entity MUST have a `datePublished` property (as specified by schema.org) with a valid ISO 8601 date and the precision of at least the day level" ;
     ] .

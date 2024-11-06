@@ -121,6 +121,10 @@ class InvalidRootDataEntity:
         return self.base_path / "invalid_root_date"
 
     @property
+    def invalid_recommended_root_date(self) -> Path:
+        return self.base_path / "invalid_recommended_root_date"
+
+    @property
     def missing_root_name(self) -> Path:
         return self.base_path / "missing_root_name"
 
@@ -221,6 +225,14 @@ class InvalidDataEntity:
     @property
     def valid_encoding_format_pronom(self) -> Path:
         return self.base_path / "valid_encoding_format_pronom"
+
+    @property
+    def no_sdDatePublished(self) -> Path:
+        return self.base_path / "no_sdDatePublished"
+
+    @property
+    def invalid_sdDatePublished(self) -> Path:
+        return self.base_path / "invalid_sdDatePublished"
 
 
 class InvalidMainWorkflow:
