@@ -27,7 +27,7 @@ from rdflib import Graph
 
 from rocrate_validator import log as logging
 from rocrate_validator.errors import ROCrateInvalidURIError
-from rocrate_validator.utils import URI
+from rocrate_validator.utils import URI, validate_rocrate_uri
 
 # set up logging
 logger = logging.getLogger(__name__)
