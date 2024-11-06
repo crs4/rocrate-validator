@@ -18,8 +18,7 @@ import rich_click as click
 
 import rocrate_validator.log as logging
 from rocrate_validator.cli.utils import Console, SystemPager
-from rocrate_validator.utils import (check_python_version,
-                                     get_min_python_version, get_version)
+from rocrate_validator.utils import get_version
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -70,11 +69,12 @@ def cli(ctx: click.Context, debug: bool, version: bool, disable_color: bool, no_
 
     try:
         # Check the python version
-        if not check_python_version():
-            console.print(
-                "\n[bold][red]ERROR:[/red] A Python version "
-                f"{'.'.join([str(_) for _ in get_min_python_version()])} or newer is required ! [/bold]")
-            sys.exit(1)
+        # from rocrate_validator.utils import check_python_version, get_min_python_version
+        # if not check_python_version():
+        #     console.print(
+        #         "\n[bold][red]ERROR:[/red] A Python version "
+        #         f"{'.'.join([str(_) for _ in get_min_python_version()])} or newer is required ! [/bold]")
+        #     sys.exit(1)
 
         # If the version flag is set, print the version and exit
         if version:
