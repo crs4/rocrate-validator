@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Any
 import rocrate_validator.log as logging
 from rocrate_validator.models import ValidationContext
 from rocrate_validator.requirements.python import (PyFunctionCheck, check,
@@ -87,6 +88,43 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
                     f'RO-Crate file descriptor "{context.rel_fd_path}" '
                     "does not contain a context", self)
                 return False
+            return True
+        except Exception as e:
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.exception(e)
+        return False
+
+    @check(name="File Descriptor JSON-LD must be flattened")
+    def check_flattened(self, context: ValidationContext) -> bool:
+        """ Check if the file descriptor is flattened """
+
+        def is_entity_flat_recursive(entity: Any, is_first: bool = True) -> bool:
+            """ Recursively check if the given data corresponds to a flattened JSON-LD object
+            and returns False if it does not and is not a root element
+            """
+            if isinstance(entity, dict):
+                if is_first:
+                    for _, elem in entity.items():
+                        if not is_entity_flat_recursive(elem, False):
+                            return False
+                # if this is not the root element, it must not contain more properties than @id
+                else:
+                    if "@id" in entity and len(entity) > 1:
+                        return False
+            if isinstance(entity, list):
+                for element in entity:
+                    if not is_entity_flat_recursive(element, False):
+                        return False
+            return True
+
+        try:
+            json_dict = context.ro_crate.metadata.as_dict()
+            for entity in json_dict["@graph"]:
+                if not is_entity_flat_recursive(entity):
+                    context.result.add_error(
+                        f'RO-Crate file descriptor "{context.rel_fd_path}" '
+                        f'is not fully flattened at entity "{entity.get("@id", entity)}"', self)
+                    return False
             return True
         except Exception as e:
             if logger.isEnabledFor(logging.DEBUG):

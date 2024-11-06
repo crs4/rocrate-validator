@@ -95,6 +95,10 @@ class InvalidFileDescriptor:
     def invalid_jsonld_format(self) -> Path:
         return self.base_path / "invalid_jsonld_format"
 
+    @property
+    def invalid_not_flattened(self) -> Path:
+        return self.base_path / "invalid_not_flattened"
+
 
 class InvalidRootDataEntity:
 
