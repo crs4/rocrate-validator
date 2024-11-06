@@ -362,8 +362,8 @@ class ROCrate(ABC):
     @staticmethod
     def new_instance(uri: Union[str, Path, URI]) -> 'ROCrate':
         # check if the URI is valid
-        if not uri:
-            raise ValueError("Invalid URI")
+        validate_rocrate_uri(uri, silent=False)
+        # create a new instance based on the URI
         if not isinstance(uri, URI):
             uri = URI(uri)
         # check if the URI is a local directory
@@ -376,7 +376,7 @@ class ROCrate(ABC):
         if uri.is_remote_resource():
             return ROCrateRemoteZip(uri)
         # if the URI is not supported, raise an error
-        raise ROCrateInvalidURIError(uri=uri, message="Unsupported URI")
+        raise ROCrateInvalidURIError(uri=uri, message="Unsupported RO-Crate URI")
 
 
 class ROCrateLocalFolder(ROCrate):
