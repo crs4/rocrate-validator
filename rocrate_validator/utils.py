@@ -375,7 +375,7 @@ class URI:
         except Exception as e:
             if logger.isEnabledFor(logging.DEBUG):
                 logger.debug(e)
-            raise ValueError("Invalid URI: %s", uri)
+            raise ValueError("Invalid URI: %s" % uri)
 
     @property
     def uri(self) -> str:
