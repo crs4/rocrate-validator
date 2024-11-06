@@ -480,7 +480,7 @@ def validate_rocrate_uri(uri: Union[str, URI], silent: bool = False) -> bool:
                 raise errors.ROCrateInvalidURIError(uri)
             # check if the resource is available
             if not uri.is_available():
-                raise errors.ROCrateInvalidURIError(uri, message=f"RO-crate URI \"{uri}\" not available")
+                raise errors.ROCrateInvalidURIError(uri, message=f"The RO-crate at the URI \"{uri}\" is not available")
             return True
         except ValueError as e:
             logger.error(e)
