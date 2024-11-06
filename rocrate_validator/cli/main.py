@@ -68,6 +68,14 @@ def cli(ctx: click.Context, debug: bool, version: bool, disable_color: bool, no_
     ctx.obj['interactive'] = interactive
 
     try:
+        # Check the python version
+        # from rocrate_validator.utils import check_python_version, get_min_python_version
+        # if not check_python_version():
+        #     console.print(
+        #         "\n[bold][red]ERROR:[/red] A Python version "
+        #         f"{'.'.join([str(_) for _ in get_min_python_version()])} or newer is required ! [/bold]")
+        #     sys.exit(1)
+
         # If the version flag is set, print the version and exit
         if version:
             console.print(

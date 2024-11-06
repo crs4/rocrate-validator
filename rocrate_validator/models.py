@@ -839,12 +839,14 @@ class RequirementCheck(ABC):
                  requirement: Requirement,
                  name: str,
                  level: Optional[RequirementLevel] = LevelCollection.REQUIRED,
-                 description: Optional[str] = None):
+                 description: Optional[str] = None,
+                 hidden: Optional[bool] = None):
         self._requirement: Requirement = requirement
         self._order_number = 0
         self._name = name
         self._level = level
         self._description = description
+        self._hidden = hidden
 
     @property
     def order_number(self) -> int:
@@ -911,6 +913,12 @@ class RequirementCheck(ABC):
     @property
     def overridden(self) -> bool:
         return len(self.overridden_by) > 0
+
+    @property
+    def hidden(self) -> bool:
+        if self._hidden is not None:
+            return self._hidden
+        return self.requirement.hidden
 
     @abstractmethod
     def execute_check(self, context: ValidationContext) -> bool:

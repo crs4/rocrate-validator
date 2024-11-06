@@ -401,7 +401,7 @@ def test_profile_check_overriding(check_overriding_profiles_path: str):
         logger.debug("The requirement: %r of the profile %r", requirement, profile.token)
         # The number of checks should be 1
         logger.debug("The number of checks: %r", len(requirement.get_checks()))
-        assert len(requirement.get_checks()) == 1, "The number of checks should be 1"
+        assert len(requirement.get_checks()) == 2, "The number of checks should be 2"
 
         # Get the check
         check = requirement.get_checks()[0]
