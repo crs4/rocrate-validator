@@ -45,21 +45,31 @@ class SHACLRequirement(Requirement):
         # assign check IDs
         self.__reorder_checks__()
 
+    def __reorder_checks__(self) -> None:
+        i = 0
+        for check in self._checks:
+            check.order_number = i
+            i += 1
+
     def __init_checks__(self) -> list[RequirementCheck]:
+        # check if the shape is not None before creating checks
+        assert self.shape is not None, "The shape cannot be None"
+        assert self.shape.node is not None, "The shape node cannot be None"
         # assign a check to each property of the shape
         checks = []
+        # check if the shape has nested properties
+        has_properties = hasattr(self.shape, "properties") and len(self.shape.properties) > 0
+        # create a check for the shape itself, hidden if the shape has nested properties
+        checks.append(SHACLCheck(self, self.shape, name=f"Check {self.shape.name}" if has_properties else None,
+                                 hidden=has_properties, root=True))
         # create a check for each property if the shape has nested properties
-        if hasattr(self.shape, "properties"):
+        if has_properties:
             for prop in self.shape.properties:
                 logger.debug("Creating check for property %s %s", prop.name, prop.description)
                 property_check = SHACLCheck(self, prop)
                 logger.debug("Property check %s: %s", property_check.name, property_check.description)
                 checks.append(property_check)
 
-        # if no property checks, add a generic one
-        assert self.shape is not None, "The shape cannot be None"
-        if len(checks) == 0 and self.shape is not None and self.shape.node is not None:
-            checks.append(SHACLCheck(self, self.shape))
         return checks
 
     @property

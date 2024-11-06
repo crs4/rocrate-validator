@@ -43,16 +43,23 @@ class SHACLCheck(RequirementCheck):
 
     def __init__(self,
                  requirement: Requirement,
-                 shape: Shape) -> None:
+                 shape: Shape,
+                 name: Optional[str] = None,
+                 root: bool = False,
+                 hidden: Optional[bool] = None,
+                 level: Optional[bool] = None) -> None:
         self._shape = shape
+        self._root = root
         # init the check
         super().__init__(requirement,
-                         shape.name if shape and shape.name
+                         name or shape.name if shape and shape.name
                          else shape.parent.name if shape.parent
                          else None,
-                         shape.description if shape and shape.description
+                         description=shape.description if shape and shape.description
                          else shape.parent.description if shape.parent
-                         else None)
+                         else None,
+                         level=level,
+                         hidden=hidden)
         # store the instance
         SHACLCheck.__add_instance__(shape, self)
 
@@ -66,11 +73,15 @@ class SHACLCheck(RequirementCheck):
                                    "shape level %s does not match the level from the containing folder %s. "
                                    "Consider moving the shape property or removing the severity property.",
                                    self.name, shape.level, requirement_level_from_path)
-        self._level = None
+        self._level = level
 
     @property
     def shape(self) -> Shape:
         return self._shape
+
+    @property
+    def root(self) -> bool:
+        return self._root
 
     @property
     def description(self) -> str:
