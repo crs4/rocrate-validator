@@ -5,14 +5,14 @@
 
 
 
-<https://w3id.org/x>
+<https://w3id.org/xh>
     a prof:Profile ;
 
     # the Profile's label
-    rdfs:label "Profile X" ;
+    rdfs:label "Profile XH" ;
 
     # regular metadata, a basic description of the Profile
-    rdfs:comment """Comment for the Profile A."""@en ;
+    rdfs:comment """Comment for the Profile XH."""@en ;
 
     # URI of the publisher of the Workflow RO-Crate Metadata Specification
     dct:publisher <https://publisherA> ;
@@ -24,5 +24,5 @@
     # prof:isTransitiveProfileOf <https://w3id.org/ro/crate/1.0>, <https://w3id.org/ro/crate/1.1> ;
 
     # a short code to refer to the Profile with when a URI can't be used
-    prof:hasToken "x" ;
+    prof:hasToken "xh" ;
 .

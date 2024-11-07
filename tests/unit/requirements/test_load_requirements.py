@@ -156,7 +156,7 @@ def test_hidden_requirements(profiles_loading_hidden_requirements: str):
 
     # Get the first profile
     profile = profiles[0]
-    assert profile.identifier == "x", "The profile identifier is incorrect"
+    assert profile.identifier == "xh", "The profile identifier is incorrect"
 
     # The first profile should have the following requirements
     requirements = profile.get_requirements(severity=Severity.OPTIONAL)

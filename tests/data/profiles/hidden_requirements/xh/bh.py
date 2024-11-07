@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 
 @requirement(name="B", hidden=True)
-class B(PyFunctionCheck):
+class BH(PyFunctionCheck):
     """
     Test requirement outside requirement level folder
     """
