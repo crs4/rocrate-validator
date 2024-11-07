@@ -137,3 +137,43 @@ def test_order_of_loaded_profile_requirements(profiles_path: str):
         "Check if the Root Data Entity is denoted by the string `./` in the file descriptor JSON-LD", \
         "The description of the requirement check is incorrect"
     assert requirement_check.severity == Severity.RECOMMENDED, "The severity of the requirement check is incorrect"
+
+
+def test_hidden_requirements(profiles_loading_hidden_requirements: str):
+
+    # Define the list of requirements names
+    requirements_names = ["A", "B", "A_MUST", "B_MUST"]
+
+    # Define the settings
+    settings = {
+        "profiles_path": profiles_loading_hidden_requirements,
+        "severity": Severity.OPTIONAL
+    }
+
+    # Load the profiles
+    profiles = Profile.load_profiles(**settings)
+    assert len(profiles) == 1
+
+    # Get the first profile
+    profile = profiles[0]
+    assert profile.identifier == "xh", "The profile identifier is incorrect"
+
+    # The first profile should have the following requirements
+    requirements = profile.get_requirements(severity=Severity.OPTIONAL)
+    assert len(requirements) == len(requirements_names), "The number of requirements is incorrect"
+
+    # Check if the requirement A is hidden
+    requirement_a = profile.get_requirement("A")
+    assert requirement_a.hidden, "The requirement A should be hidden"
+
+    # Check if the requirement B is hidden
+    requirement_b = profile.get_requirement("B")
+    assert requirement_b.hidden, "The requirement B should be hidden"
+
+    # Check if the requirement A_MUST is not hidden
+    requirement_a_must = profile.get_requirement("A_MUST")
+    assert not requirement_a_must.hidden, "The requirement A_MUST should not be hidden"
+
+    # Check if the requirement B_MUST is not hidden
+    requirement_b_must = profile.get_requirement("B_MUST")
+    assert not requirement_b_must.hidden, "The requirement B_MUST should not be hidden"

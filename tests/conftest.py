@@ -63,6 +63,11 @@ def profiles_requirement_loading():
 
 
 @fixture
+def profiles_loading_hidden_requirements():
+    return f"{TEST_DATA_PATH}/profiles/hidden_requirements"
+
+
+@fixture
 def profiles_with_free_folder_structure_path():
     return f"{TEST_DATA_PATH}/profiles/free_folder_structure"
 
