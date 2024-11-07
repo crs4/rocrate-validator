@@ -1,0 +1,46 @@
+@prefix ro: <./> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema_org: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xml1: <http://www.w3.org/2001/XMLSchema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+
+ro:A_MUST
+    a sh:NodeShape ;
+    sh:name "A_MUST" ;
+    sh:description "This is the requirement A_MUST" ;
+    sh:targetNode ro:ro-crate-metadata.json ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "A_MUST_0" ;
+        sh:description "Check A_MUST_0: no sh:severity declared" ;
+        sh:path rdf:type ;
+        sh:minCount 1 ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "A_MUST_1" ;
+        sh:description "Check A_MUST_1: sh:severity set to sh:Violation" ;
+        sh:path rdf:type ;
+        sh:minCount 1 ;
+        sh:severity sh:Violation ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "A_MUST_2" ;
+        sh:description "Check A_MUST_2: sh:severity set to sh:Warning" ;
+        sh:path rdf:type ;
+        sh:minCount 1 ;
+        sh:severity sh:Warning ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "A_MUST_3" ;
+        sh:description "Check A_MUST_3: sh:severity set to sh:Info" ;
+        sh:path rdf:type ;
+        sh:minCount 1 ;
+        sh:severity sh:Info ;
+    ] .
+
