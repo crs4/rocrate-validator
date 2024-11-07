@@ -1,0 +1,2 @@
+<p><strong>LC/MS:</strong></p><p>The target compounds were obtained from prior experiments, including comparison to authentic standards (MSI level 1) and additional putative identifications (MSI levels 2 and 3).</p><p><br></p><p><strong>GC/MS:</strong></p><p>Metabolites were identified according to matching mass spectra using the Golm Metabolome Database (http://gmd.mpimp-golm.mpg.de/) and the NIST2012.</p>
+

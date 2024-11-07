@@ -1,0 +1,4 @@
+arc_specification: 2.0.0-draft
+validation_packages:
+  - name: invenio
+    version: 2.1.0
