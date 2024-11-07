@@ -373,7 +373,7 @@ def test_profile_check_overriding(check_overriding_profiles_path: str):
             f"The inherited profiles should be {inherited_profiles}"
 
         # Check overridden status
-        logger.error("%r overridden by: %r", check.identifier, [
+        logger.debug("%r overridden by: %r", check.identifier, [
                      _.requirement.profile.identifier for _ in check.overridden_by])
         assert check.overridden == (len(overridden_by) > 0), \
             f"The check overridden status should be {len(overridden_by) > 0}"

@@ -375,7 +375,7 @@ class URI:
         except Exception as e:
             if logger.isEnabledFor(logging.DEBUG):
                 logger.debug(e)
-            raise ValueError("Invalid URI: %s", uri)
+            raise ValueError("Invalid URI: %s" % uri)
 
     @property
     def uri(self) -> str:
@@ -456,6 +456,41 @@ class URI:
 
     def __hash__(self):
         return hash(self._uri)
+
+
+def validate_rocrate_uri(uri: Union[str, URI], silent: bool = False) -> bool:
+    """
+    Validate the RO-Crate URI
+
+    :param uri: The RO-Crate URI
+    :param silent: If True, do not raise an exception
+    :return: True if the URI is valid, False otherwise
+    """
+    try:
+        assert uri, "The RO-Crate URI is required"
+        assert isinstance(uri, (str, URI)), "The RO-Crate URI must be a string or URI object"
+        try:
+            # parse the value to extract the scheme
+            uri = URI(uri) if isinstance(uri, str) else uri
+            # check if the URI is a remote resource or local directory or local file
+            if not uri.is_remote_resource() and not uri.is_local_directory() and not uri.is_local_file():
+                raise errors.ROCrateInvalidURIError(uri)
+            # check if the local file is a ZIP file
+            if uri.is_local_file() and uri.as_path().suffix != ".zip":
+                raise errors.ROCrateInvalidURIError(uri)
+            # check if the resource is available
+            if not uri.is_available():
+                raise errors.ROCrateInvalidURIError(uri, message=f"The RO-crate at the URI \"{uri}\" is not available")
+            return True
+        except ValueError as e:
+            logger.error(e)
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.exception(e)
+            raise errors.ROCrateInvalidURIError(uri)
+    except Exception as e:
+        if not silent:
+            raise e
+        return False
 
 
 class MapIndex:

@@ -16,7 +16,9 @@ import unittest
 
 import pytest
 
-from rocrate_validator.utils import URI
+from rocrate_validator.errors import ROCrateInvalidURIError
+from rocrate_validator.utils import URI, validate_rocrate_uri
+from tests.ro_crates import ValidROC
 
 
 def test_valid_url():
@@ -80,6 +82,69 @@ def test_path_with_fragment():
 def test_path_without_fragment():
     uri = URI("/path/to/file.txt")
     assert uri.fragment is None
+
+
+def test_rocrate_uri_local_folder_valid():
+    uri = URI(ValidROC().workflow_roc)
+    assert validate_rocrate_uri(uri), f"The URI {uri} should be valid"
+
+
+def test_rocrate_uri_local_folder_invalid():
+    # Test with a non-existent folder
+    uri = URI("path/to/folder")
+    # Use silent mode to avoid printing the error message
+    assert not validate_rocrate_uri(uri, silent=True), f"The URI {uri} should be invalid"
+
+    # Use verbose mode to print the error message
+    with pytest.raises(ROCrateInvalidURIError) as excinfo:
+        validate_rocrate_uri(uri, silent=False)
+    assert str(
+        excinfo.value) == f"\"{uri}\" is not a valid RO-Crate URI. "\
+        "It MUST be either a local path to the RO-Crate root directory "\
+        "or a local/remote RO-Crate ZIP file."
+
+
+def test_rocrate_uri_local_zip_valid():
+    uri = URI(ValidROC().sort_and_change_archive)
+    assert validate_rocrate_uri(uri), f"The URI {uri} should be valid"
+
+
+def test_rocrate_uri_local_zip_invalid():
+    # Test with a non-existent zip file
+    uri = URI("path/to/zipfile.zip")
+    # Use silent mode to avoid printing the error message
+    assert not validate_rocrate_uri(uri, silent=True), f"The URI {uri} should be invalid"
+
+    # Use verbose mode to print the error message
+    with pytest.raises(ROCrateInvalidURIError) as excinfo:
+        validate_rocrate_uri(uri, silent=False)
+    assert str(
+        excinfo.value) == f"\"{uri}\" is not a valid RO-Crate URI. "\
+        "It MUST be either a local path to the RO-Crate root directory "\
+        "or a local/remote RO-Crate ZIP file."
+
+
+def test_rocrate_uri_remote_valid():
+    uri = URI(ValidROC().sort_and_change_remote)
+    assert validate_rocrate_uri(uri), f"The URI {uri} should be valid"
+
+
+def test_rocrate_uri_remote_invalid():
+
+    with pytest.raises(ValueError) as excinfo:
+        URI("httpx:///example.com")
+    assert str(excinfo.value) == "Invalid URI: httpx:///example.com"
+
+    # Test with an invalid remote URL
+    uri = URI("https:///example.com")
+    # Use silent mode to avoid printing the error message
+    assert not validate_rocrate_uri(uri, silent=True), f"The URI {uri} should be invalid"
+
+    # Use verbose mode to print the error message
+    with pytest.raises(ROCrateInvalidURIError) as excinfo:
+        validate_rocrate_uri(uri, silent=False)
+    assert str(
+        excinfo.value) == f"The RO-crate at the URI \"{uri}\" is not available"
 
 
 if __name__ == '__main__':

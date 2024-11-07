@@ -59,6 +59,19 @@ def test_not_valid_jsonld_format_missing_context():
     )
 
 
+def test_not_valid_jsonld_format_not_flattened():
+    """Test a RO-Crate with an invalid JSON-LD file descriptor format.
+    One or more entities in the file descriptor are not flattened.
+    """
+    do_entity_test(
+        f"{paths.invalid_jsonld_format}/not_flattened",
+        models.Severity.REQUIRED,
+        False,
+        ["File Descriptor JSON-LD format"],
+        ["RO-Crate file descriptor \"ro-crate-metadata.json\" is not fully flattened"]
+    )
+
+
 def test_not_valid_jsonld_format_missing_ids():
     """
     Test a RO-Crate with an invalid JSON-LD file descriptor format.

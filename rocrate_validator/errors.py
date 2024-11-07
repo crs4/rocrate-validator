@@ -243,9 +243,9 @@ class CheckValidationError(ValidationError):
 class ROCrateInvalidURIError(ROCValidatorError):
     """Raised when an invalid URI is provided."""
 
-    def __init__(self, uri: Optional[str] = None, message: Optional[str] = None):
+    def __init__(self, uri: str, message: Optional[str] = None):
         self._uri = uri
-        self._message = message
+        self._message = message or self.default_error_message(uri)
 
     @property
     def uri(self) -> Optional[str]:
@@ -258,13 +258,15 @@ class ROCrateInvalidURIError(ROCValidatorError):
         return self._message
 
     def __str__(self) -> str:
-        if self._message:
-            return f"Invalid URI \"{self._uri!r}\": {self._message!r}"
-        else:
-            return f"Invalid URI \"{self._uri!r}\""
+        return self._message
 
     def __repr__(self):
         return f"ROCrateInvalidURIError({self._uri!r})"
+
+    @classmethod
+    def default_error_message(cls, uri: str) -> str:
+        return f"\"{uri}\" is not a valid RO-Crate URI. "\
+            "It MUST be either a local path to the RO-Crate root directory or a local/remote RO-Crate ZIP file."
 
 
 class ROCrateMetadataNotFoundError(ROCValidatorError):

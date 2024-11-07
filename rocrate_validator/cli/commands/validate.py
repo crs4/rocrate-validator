@@ -37,10 +37,12 @@ from rocrate_validator.cli.commands.errors import handle_error
 from rocrate_validator.cli.main import cli, click
 from rocrate_validator.cli.utils import Console, get_app_header_rule
 from rocrate_validator.colors import get_severity_color
+from rocrate_validator.errors import ROCrateInvalidURIError
 from rocrate_validator.events import Event, EventType, Subscriber
 from rocrate_validator.models import (LevelCollection, Profile, Severity,
                                       ValidationResult)
-from rocrate_validator.utils import URI, get_profiles_path
+from rocrate_validator.utils import (URI, get_profiles_path,
+                                     validate_rocrate_uri)
 
 # from rich.markdown import Markdown
 # from rich.table import Table
@@ -58,17 +60,11 @@ def validate_uri(ctx, param, value):
     """
     if value:
         try:
-            # parse the value to extract the scheme
-            uri = URI(value)
-            if not uri.is_remote_resource() and not uri.is_local_directory() and not uri.is_local_file():
-                raise click.BadParameter(f"Invalid RO-Crate URI \"{value}\": "
-                                         "it MUST be a local directory or a ZIP file (local or remote).", param=param)
-            if not uri.is_available():
-                raise click.BadParameter("RO-crate URI not available", param=param)
-        except ValueError as e:
-            logger.debug(e)
-            raise click.BadParameter("Invalid RO-crate path or URI", param=param)
-
+            validate_rocrate_uri(value)
+        except ROCrateInvalidURIError as e:
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.exception(e)
+            raise click.BadParameter(e.message, param=param)
     return value
 
 
