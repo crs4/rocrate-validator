@@ -1,0 +1,30 @@
+id: https://github.com/crs4/rocrate-validator/profiles/isa-ro-crate
+name: isa_ro_crate_1_study
+prefixes:
+  linkml: https://w3id.org/linkml/
+  schema: http://schema.org/
+  ORCID: https://orcid.org/
+  bioschemas: https://bioschemas.org/
+  roterms: http://purl.org/ro/roterms#
+  rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns#
+  sh: http://www.w3.org/ns/shacl#
+  ro-crate: https://github.com/crs4/rocrate-validator/profiles/ro-crate/
+imports:
+  - linkml:types
+default_range: string
+
+classes:
+  Study:
+    class_uri: schema:Dataset
+    slots:
+      - additional_type
+      
+
+slots:
+  additional_type:
+    required: true
+    slot_uri: schema:additionalType
+    any_of:
+      - range: string
+        value: "Study"
+      - range: uriorcurie
