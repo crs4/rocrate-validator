@@ -109,6 +109,8 @@ def __get_single_char_unix__(console: Optional[Console] = None, end: str = "\n",
         try:
             tty.setraw(sys.stdin.fileno())
             char = sys.stdin.read(1)
+            if char == "\x03":
+                raise KeyboardInterrupt
         finally:
             termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
             if console:
