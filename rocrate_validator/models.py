@@ -1277,29 +1277,19 @@ class ValidationSettings:
     profiles_path: Path = DEFAULT_PROFILES_PATH
     profile_identifier: str = DEFAULT_PROFILE_IDENTIFIER
     inherit_profiles: bool = True
-    allow_requirement_check_override: bool = True
-    disable_check_for_duplicates: bool = False
     # Ontology and inference settings
     ontology_path: Optional[Path] = None
-    inference: Optional[VALID_INFERENCE_OPTIONS_TYPES] = None
     # Validation strategy settings
-    advanced: bool = True  # enable SHACL Advanced Validation
-    inplace: Optional[bool] = False
     abort_on_first: Optional[bool] = True
-    inplace: Optional[bool] = False
-    meta_shacl: bool = False
-    iterate_rules: bool = True
     target_only_validation: bool = True
     remote_validation: bool = True
     http_cache_timeout: int = 60
     # Requirement severity settings
     requirement_severity: Union[str, Severity] = Severity.REQUIRED
     requirement_severity_only: bool = False
-    allow_infos: Optional[bool] = True
-    allow_warnings: Optional[bool] = True
-    # Output serialization settings
-    serialization_output_path: Optional[Path] = None
-    serialization_output_format: RDF_SERIALIZATION_FORMATS_TYPES = "turtle"
+    # Requirement check settings
+    allow_requirement_check_override: bool = True
+    disable_check_for_duplicates: bool = False
 
     def __init__(self, **kwargs):
         for key, value in kwargs.items():

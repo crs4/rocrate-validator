@@ -388,8 +388,8 @@ class SHACLValidator:
         meta_shacl: bool = False,
         iterate_rules: bool = True,
         # SHACL validation severity
-        allow_infos: Optional[bool] = False,
-        allow_warnings: Optional[bool] = False,
+        allow_infos: Optional[bool] = True,
+        allow_warnings: Optional[bool] = True,
         # serialization settings
         serialization_output_path: Optional[str] = None,
         serialization_output_format:

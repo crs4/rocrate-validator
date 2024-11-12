@@ -45,7 +45,6 @@ def test_validation_settings_parse_object():
     assert settings.data_path == "/path/to/data"
     assert settings.profiles_path == "/path/to/profiles"
     assert settings.requirement_severity == Severity.RECOMMENDED
-    assert settings.allow_infos is True
     assert settings.inherit_profiles is False
 
 
@@ -66,7 +65,6 @@ def test_validation_settings_to_dict():
     assert settings_dict["data_path"] == "/path/to/data"
     assert settings_dict["profiles_path"] == "/path/to/profiles"
     assert settings_dict["requirement_severity"] == Severity.RECOMMENDED
-    assert settings_dict["allow_infos"] is True
     assert settings_dict["inherit_profiles"] is False
 
 
