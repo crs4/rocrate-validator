@@ -282,7 +282,7 @@ def validate(ctx,
             "requirement_severity_only": requirement_severity_only,
             "inherit_profiles": not disable_profile_inheritance,
             "verbose": verbose,
-            "data_path": rocrate_uri,
+            "rocrate_uri": rocrate_uri,
             "ontology_path": Path(ontologies_path).absolute() if ontologies_path else None,
             "abort_on_first": not no_fail_fast
         }
@@ -567,7 +567,7 @@ class ValidationReportLayout(Layout):
         severity_color = get_severity_color(Severity.get(settings["requirement_severity"]))
         base_info_layout = Layout(
             Align(
-                f"\n[bold cyan]RO-Crate:[/bold cyan] [bold]{URI(settings['data_path']).uri}[/bold]"
+                f"\n[bold cyan]RO-Crate:[/bold cyan] [bold]{URI(settings['rocrate_uri']).uri}[/bold]"
                 "\n[bold cyan]Target Profile:[/bold cyan][bold magenta] "
                 f"{settings['profile_identifier']}[/bold magenta] "
                 f"{'[italic](autodetected)[/italic]' if settings['profile_autodetected'] else ''}"

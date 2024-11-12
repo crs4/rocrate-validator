@@ -1105,7 +1105,7 @@ class ValidationResult:
         # reference to the validation context
         self._context = context
         # reference to the ro-crate path
-        self._rocrate_path = context.rocrate_path
+        self._rocrate_path = context.rocrate_uri
         # reference to the validation settings
         self._validation_settings: dict[str, BaseTypes] = context.settings
         # keep track of the issues found during the validation
@@ -1272,7 +1272,7 @@ class CustomEncoder(json.JSONEncoder):
 class ValidationSettings:
 
     # Data settings
-    data_path: Path
+    rocrate_uri: Path
     # Profile settings
     profiles_path: Path = DEFAULT_PROFILES_PATH
     profile_identifier: str = DEFAULT_PROFILE_IDENTIFIER
@@ -1514,11 +1514,11 @@ class ValidationContext:
         self._properties = {}
 
         # parse the rocrate path
-        rocrate_path: URI = URI(settings.get("data_path"))
-        logger.debug("Validating RO-Crate: %s", rocrate_path)
+        rocrate_uri: URI = URI(settings.get("rocrate_uri"))
+        logger.debug("Validating RO-Crate: %s", rocrate_uri)
 
         # initialize the ROCrate object
-        self._rocrate = ROCrate.new_instance(rocrate_path)
+        self._rocrate = ROCrate.new_instance(rocrate_uri)
         assert isinstance(self._rocrate, ROCrate), "Invalid RO-Crate instance"
 
     @property
@@ -1567,8 +1567,8 @@ class ValidationContext:
         return self.settings.get("requirement_severity_only", False)
 
     @property
-    def rocrate_path(self) -> Path:
-        return self.settings.get("data_path")
+    def rocrate_uri(self) -> Path:
+        return self.settings.get("rocrate_uri")
 
     @property
     def fail_fast(self) -> bool:
@@ -1594,7 +1594,7 @@ class ValidationContext:
             return self._data_graph
         except FileNotFoundError as e:
             logger.debug("Error loading data graph: %s", e)
-            raise ROCrateMetadataNotFoundError(self.rocrate_path)
+            raise ROCrateMetadataNotFoundError(self.rocrate_uri)
 
     @property
     def data_graph(self) -> Graph:

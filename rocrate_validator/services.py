@@ -67,7 +67,7 @@ def __initialise_validator__(settings: Union[dict, ValidationSettings],
     settings = ValidationSettings.parse(settings)
 
     # parse the rocrate path
-    rocrate_path: URI = URI(settings.data_path)
+    rocrate_path: URI = URI(settings.rocrate_uri)
     logger.debug("Validating RO-Crate: %s", rocrate_path)
 
     # check if the RO-Crate exists
@@ -108,7 +108,7 @@ def __initialise_validator__(settings: Union[dict, ValidationSettings],
 
     def __extract_and_validate_rocrate__(rocrate_path: Path):
         # store the original data path
-        original_data_path = settings.data_path
+        original_data_path = settings.rocrate_uri
 
         with tempfile.TemporaryDirectory() as tmp_dir:
             try:
@@ -117,12 +117,12 @@ def __initialise_validator__(settings: Union[dict, ValidationSettings],
                     zip_ref.extractall(tmp_dir)
                     logger.debug("RO-Crate extracted to temporary directory: %s", tmp_dir)
                 # update the data path to point to the temporary directory
-                settings.data_path = Path(tmp_dir)
+                settings.rocrate_uri = Path(tmp_dir)
                 # continue with the validation process
                 return __init_validator__(settings)
             finally:
                 # restore the original data path
-                settings.data_path = original_data_path
+                settings.rocrate_uri = original_data_path
                 logger.debug("Original data path restored: %s", original_data_path)
 
     # check if the RO-Crate is a remote RO-Crate,
@@ -150,7 +150,7 @@ def __initialise_validator__(settings: Union[dict, ValidationSettings],
     # if the RO-Crate is not a ZIP file, directly validate the RO-Crate
     elif rocrate_path.is_local_directory():
         logger.debug("RO-Crate is a local directory")
-        settings.data_path = rocrate_path.as_path()
+        settings.rocrate_uri = rocrate_path.as_path()
         return __init_validator__(settings)
     else:
         raise ValueError(

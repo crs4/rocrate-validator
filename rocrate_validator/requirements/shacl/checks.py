@@ -210,7 +210,7 @@ class SHACLCheck(RequirementCheck):
                     shacl_context.settings.get("target_only_validation", False):
                 for violation in failed_requirements_checks_violations[requirementCheck.identifier]:
                     c = shacl_context.result.add_check_issue(
-                        message=violation.get_result_message(shacl_context.rocrate_path),
+                        message=violation.get_result_message(shacl_context.rocrate_uri),
                         check=requirementCheck,
                         resultPath=violation.resultPath.toPython() if violation.resultPath else None,
                         focusNode=make_uris_relative(
