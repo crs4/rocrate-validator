@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "roc-validator"
-version = "0.4.5"
+version = "0.4.6"
 description = "A Python package to validate RO-Crates"
 authors = [
     "Marco Enrico Piras <kikkomep@crs4.it>",
