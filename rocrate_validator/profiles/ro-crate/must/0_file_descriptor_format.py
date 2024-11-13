@@ -109,7 +109,7 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
                             return False
                 # if this is not the root element, it must not contain more properties than @id
                 else:
-                    if "@id" in entity and len(entity) > 1:
+                    if "@id" not in entity or len(entity) > 1:
                         return False
             if isinstance(entity, list):
                 for element in entity:
