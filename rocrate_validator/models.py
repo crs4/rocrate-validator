@@ -1270,7 +1270,29 @@ class CustomEncoder(json.JSONEncoder):
 
 @dataclass
 class ValidationSettings:
+    """
+    A class to represent the settings for RO-Crate validation
 
+    Attributes:
+        rocrate_uri (URI): The URI of the RO-Crate to validate
+        profiles_path (Path): The path to the profiles directory (default: {DEFAULT_PROFILES_PATH})
+        profile_identifier (str): The identifier of the profile to use (default: {DEFAULT_PROFILE_IDENTIFIER})
+        enable_profile_inheritance (bool): Whether to enable profile inheritance (default: True)
+        abort_on_first (Optional[bool]): Whether to abort on the first validation error (default: True)
+        disable_inherited_profiles_reporting (bool): Whether to disable reporting of inherited profiles (default: False)
+        disable_remote_crate_download (bool): Whether to disable downloading of remote crates (default: True)
+        requirement_severity (Union[str, Severity]): The severity level for requirements (default: Severity.REQUIRED)
+        requirement_severity_only (bool): Whether to only consider the severity of requirements (default: False)
+        allow_requirement_check_override (bool): Whether to allow overriding requirement checks (default: True)
+        disable_check_for_duplicates (bool): Whether to disable checking for duplicate entries (default: False)
+
+    Methods:
+        __init__(**kwargs): Initializes the ValidationSettings with the given keyword arguments
+        to_dict(): Converts the ValidationSettings instance to a dictionary
+        rocrate_uri(): Gets the RO-Crate URI
+        rocrate_uri(value): Sets the RO-Crate URI
+        parse(settings): Parses the settings into a ValidationSettings object
+    """
     # Data settings
     rocrate_uri: URI
     # Profile settings
