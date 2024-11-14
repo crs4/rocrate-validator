@@ -1281,7 +1281,7 @@ class ValidationSettings:
     ontology_path: Optional[Path] = None
     # Validation strategy settings
     abort_on_first: Optional[bool] = True
-    target_only_validation: bool = False
+    disable_inherited_profiles_reporting: bool = False
     remote_validation: bool = True
     http_cache_timeout: int = 60
     # Requirement severity settings

@@ -64,7 +64,7 @@ class SHACLValidationContextManager:
             raise SHACLValidationAlreadyProcessed(
                 self._profile.identifier, self._shacl_context.get_validation_result(self._profile))
         logger.debug("Processing profile: %s (id: %s)", self._profile.name,  self._profile.identifier)
-        if self._context.settings.target_only_validation and \
+        if self._context.settings.disable_inherited_profiles_reporting and \
                 self._profile.identifier != self._context.settings.profile_identifier:
             logger.debug("Skipping validation of profile %s", self._profile.identifier)
             self.context.result.add_skipped_check(self._check)

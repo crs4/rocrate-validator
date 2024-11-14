@@ -204,9 +204,9 @@ class SHACLCheck(RequirementCheck):
         # to ensure a consistent order of the issues
         # and to make the fail fast mode deterministic
         for requirementCheck in sorted(failed_requirements_checks, key=lambda x: (x.identifier, x.severity)):
-            # if the check is not in the current profile and the target_only_validation is enabled, skip it
+            # if the check is not in the current profile and the disable_inherited_profiles_reporting is enabled, skip it
             if requirementCheck.requirement.profile != shacl_context.current_validation_profile and \
-                    shacl_context.settings.target_only_validation:
+                    shacl_context.settings.disable_inherited_profiles_reporting:
                 continue
             for violation in failed_requirements_checks_violations[requirementCheck.identifier]:
                 c = shacl_context.result.add_check_issue(
