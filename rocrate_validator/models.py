@@ -1281,7 +1281,6 @@ class ValidationSettings:
     abort_on_first: Optional[bool] = True
     disable_inherited_profiles_reporting: bool = False
     disable_remote_crate_download: bool = True
-    http_cache_timeout: int = 60
     # Requirement severity settings
     requirement_severity: Union[str, Severity] = Severity.REQUIRED
     requirement_severity_only: bool = False

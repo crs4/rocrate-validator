@@ -22,7 +22,8 @@ import requests
 import requests_cache
 
 import rocrate_validator.log as logging
-from rocrate_validator.constants import DEFAULT_PROFILE_IDENTIFIER
+from rocrate_validator.constants import (DEFAULT_HTTP_CACHE_TIMEOUT,
+                                         DEFAULT_PROFILE_IDENTIFIER)
 from rocrate_validator.errors import ProfileNotFound
 from rocrate_validator.events import Subscriber
 from rocrate_validator.models import (Profile, Severity, ValidationResult,
@@ -75,11 +76,11 @@ def __initialise_validator__(settings: Union[dict, ValidationSettings],
         raise FileNotFoundError(f"RO-Crate not found: {rocrate_path}")
 
     # check if the requests cache is enabled
-    if settings.http_cache_timeout > 0:
+    if DEFAULT_HTTP_CACHE_TIMEOUT > 0:
         # Set up requests cache
         requests_cache.install_cache(
             '/tmp/rocrate_validator_cache',
-            expire_after=settings.http_cache_timeout,  # Cache expiration time in seconds
+            expire_after=DEFAULT_HTTP_CACHE_TIMEOUT,  # Cache expiration time in seconds
             backend='sqlite',  # Use SQLite backend
             allowable_methods=('GET',),  # Cache GET
             allowable_codes=(200, 302, 404)  # Cache responses with these status codes
