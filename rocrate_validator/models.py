@@ -37,9 +37,7 @@ from rocrate_validator.constants import (DEFAULT_ONTOLOGY_FILE,
                                          JSON_OUTPUT_FORMAT_VERSION, PROF_NS,
                                          PROFILE_FILE_EXTENSIONS,
                                          PROFILE_SPECIFICATION_FILE,
-                                         RDF_SERIALIZATION_FORMATS_TYPES,
-                                         ROCRATE_METADATA_FILE, SCHEMA_ORG_NS,
-                                         VALID_INFERENCE_OPTIONS_TYPES)
+                                         ROCRATE_METADATA_FILE, SCHEMA_ORG_NS)
 from rocrate_validator.errors import (DuplicateRequirementCheck,
                                       InvalidProfilePath, ProfileNotFound,
                                       ProfileSpecificationError,
