@@ -240,7 +240,6 @@ def validate(ctx,
              requirement_severity_only: bool = False,
              rocrate_uri: Path = ".",
              no_fail_fast: bool = False,
-             ontologies_path: Optional[Path] = None,
              no_paging: bool = False,
              verbose: bool = False,
              output_format: str = "text",
@@ -268,8 +267,6 @@ def validate(ctx,
     logger.debug("no_fail_fast: %s", no_fail_fast)
     logger.debug("fail fast: %s", not no_fail_fast)
 
-    if ontologies_path:
-        logger.debug("ontologies_path: %s", os.path.abspath(ontologies_path))
     if rocrate_uri:
         logger.debug("rocrate_path: %s", os.path.abspath(rocrate_uri))
 
@@ -283,7 +280,6 @@ def validate(ctx,
             "enable_profile_inheritance": not disable_profile_inheritance,
             "verbose": verbose,
             "rocrate_uri": rocrate_uri,
-            "ontology_path": Path(ontologies_path).absolute() if ontologies_path else None,
             "abort_on_first": not no_fail_fast
         }
 

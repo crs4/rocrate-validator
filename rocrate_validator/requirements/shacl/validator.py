@@ -187,12 +187,7 @@ class SHACLValidationContext(ValidationContext):
 
     def __get_ontology_path__(self, profile_path: Path, ontology_filename: str = DEFAULT_ONTOLOGY_FILE) -> Path:
         if not self._ontology_path:
-            supported_path = f"{profile_path}/{ontology_filename}"
-            if self.settings.ontology_path:
-                logger.warning("Detected an ontology path. Custom ontology file is not yet supported."
-                               f"Use {supported_path} to provide an ontology for your profile.")
-            # overwrite the ontology path if the custom ontology file is provided
-            self._ontology_path = Path(supported_path)
+            self._ontology_path = Path(f"{profile_path}/{ontology_filename}")
         return self._ontology_path
 
     def __load_ontology_graph__(self, profile_path: Path,

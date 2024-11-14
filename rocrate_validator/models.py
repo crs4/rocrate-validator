@@ -1277,8 +1277,6 @@ class ValidationSettings:
     profiles_path: Path = DEFAULT_PROFILES_PATH
     profile_identifier: str = DEFAULT_PROFILE_IDENTIFIER
     enable_profile_inheritance: bool = True
-    # Ontology and inference settings
-    ontology_path: Optional[Path] = None
     # Validation strategy settings
     abort_on_first: Optional[bool] = True
     disable_inherited_profiles_reporting: bool = False
