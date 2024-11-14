@@ -1424,8 +1424,23 @@ class RequirementCheckValidationEvent(Event):
 
 class Validator(Publisher):
     """
-    Can validate conformance to a single Profile (including any requirements
-    inherited by parent profiles).
+    Validator class for validating Research Object Crates (RO-Crate)
+    against specified profiles according to the validation settings.
+
+    Attributes:
+        validation_settings (ValidationSettings): The settings used for validation.
+
+    Methods:
+        __init__(settings: Union[str, ValidationSettings]):
+            Initializes the Validator with the given settings.
+        validation_settings() -> ValidationSettings:
+            Returns the validation settings.
+        detect_rocrate_profiles() -> list[Profile]:
+            Detects the profiles to validate against.
+        validate() -> ValidationResult:
+            Validate the RO-Crate against the detected profiles according to the validation settings
+        validate_requirements(requirements: list[Requirement]) -> ValidationResult:
+            Validates the RO-Crate against the specified subset of the profile requirements.
     """
 
     def __init__(self, settings: Union[str, ValidationSettings]):
@@ -1479,10 +1494,15 @@ class Validator(Publisher):
             return None
 
     def validate(self) -> ValidationResult:
+        """
+        Validate the RO-Crate against the detected profiles according to the validation settings
+        """
         return self.__do_validate__()
 
     def validate_requirements(self, requirements: list[Requirement]) -> ValidationResult:
-        # check if requirement is an instance of Requirement
+        """
+        Validates the RO-Crate against the specified subset of the profile requirements
+        """
         assert all(isinstance(requirement, Requirement) for requirement in requirements), \
             "Invalid requirement type"
         # perform the requirements validation
