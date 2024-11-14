@@ -1105,7 +1105,7 @@ class ValidationResult:
         # reference to the ro-crate path
         self._rocrate_path = context.rocrate_uri
         # reference to the validation settings
-        self._validation_settings: dict[str, BaseTypes] = context.settings
+        self._validation_settings: ValidationSettings = context.settings
         # keep track of the issues found during the validation
         self._issues: list[CheckIssue] = []
         # keep track of the checks that have been executed
@@ -1226,13 +1226,14 @@ class ValidationResult:
 
     def to_dict(self) -> dict:
         allowed_properties = ["profile_identifier", "inherit_profiles", "requirement_severity", "abort_on_first"]
+        validation_settings = {key: value for key, value in self.validation_settings.to_dict().items()
+                               if key in allowed_properties}
         result = {
             "meta": {
                 "version": JSON_OUTPUT_FORMAT_VERSION
             },
-            "validation_settings": {key: self.validation_settings[key]
-                                    for key in allowed_properties if key in self.validation_settings},
-            "passed": self.passed(self.context.settings["requirement_severity"]),
+            "validation_settings": validation_settings,
+            "passed": self.passed(self.context.settings.requirement_severity),
             "issues": [issue.to_dict() for issue in self.issues]
         }
         # add validator version to the settings
@@ -1421,7 +1422,7 @@ class Validator(Publisher):
         """
         try:
             # initialize the validation context
-            context = ValidationContext(self, self.validation_settings.to_dict())
+            context = ValidationContext(self, self.validation_settings)
             candidate_profiles_uris = set()
             try:
                 candidate_profiles_uris.add(context.ro_crate.metadata.get_conforms_to())
@@ -1471,7 +1472,7 @@ class Validator(Publisher):
                         requirements: Optional[list[Requirement]] = None) -> ValidationResult:
 
         # initialize the validation context
-        context = ValidationContext(self, self.validation_settings.to_dict())
+        context = ValidationContext(self, self.validation_settings)
 
         # set the profiles to validate against
         profiles = context.profiles
@@ -1515,7 +1516,7 @@ class Validator(Publisher):
 
 class ValidationContext:
 
-    def __init__(self, validator: Validator, settings: dict[str, object]):
+    def __init__(self, validator: Validator, settings: ValidationSettings):
         # reference to the validator
         self._validator = validator
         # reference to the settings
@@ -1529,12 +1530,8 @@ class ValidationContext:
         # additional properties for the context
         self._properties = {}
 
-        # parse the rocrate path
-        rocrate_uri: URI = URI(settings.get("rocrate_uri"))
-        logger.debug("Validating RO-Crate: %s", rocrate_uri)
-
         # initialize the ROCrate object
-        self._rocrate = ROCrate.new_instance(rocrate_uri)
+        self._rocrate = ROCrate.new_instance(settings.rocrate_uri)
         assert isinstance(self._rocrate, ROCrate), "Invalid RO-Crate instance"
 
     @property
@@ -1552,7 +1549,7 @@ class ValidationContext:
         return self._result
 
     @property
-    def settings(self) -> dict[str, object]:
+    def settings(self) -> ValidationSettings:
         return self._settings
 
     @property
@@ -1564,14 +1561,14 @@ class ValidationContext:
 
     @property
     def profiles_path(self) -> Path:
-        profiles_path = self.settings.get("profiles_path")
+        profiles_path = self.settings.profiles_path
         if isinstance(profiles_path, str):
             profiles_path = Path(profiles_path)
         return profiles_path
 
     @property
     def requirement_severity(self) -> Severity:
-        severity = self.settings.get("requirement_severity", Severity.REQUIRED)
+        severity = self.settings.requirement_severity
         if isinstance(severity, str):
             severity = Severity[severity]
         elif not isinstance(severity, Severity):
@@ -1580,15 +1577,15 @@ class ValidationContext:
 
     @property
     def requirement_severity_only(self) -> bool:
-        return self.settings.get("requirement_severity_only", False)
+        return self.settings.requirement_severity_only
 
     @property
     def rocrate_uri(self) -> Path:
-        return self.settings.get("rocrate_uri")
+        return self.settings.rocrate_uri
 
     @property
     def fail_fast(self) -> bool:
-        return self.settings.get("abort_on_first", True)
+        return self.settings.abort_on_first
 
     @property
     def rel_fd_path(self) -> Path:
@@ -1618,19 +1615,19 @@ class ValidationContext:
 
     @property
     def inheritance_enabled(self) -> bool:
-        return self.settings.get("inherit_profiles", False)
+        return self.settings.inherit_profiles
 
     @property
     def profile_identifier(self) -> str:
-        return self.settings.get("profile_identifier")
+        return self.settings.profile_identifier
 
     @property
     def allow_requirement_check_override(self) -> bool:
-        return self.settings.get("allow_requirement_check_override", True)
+        return self.settings.allow_requirement_check_override
 
     @property
     def disable_check_for_duplicates(self) -> bool:
-        return self.settings.get("disable_check_for_duplicates", False)
+        return self.settings.disable_check_for_duplicates
 
     def __load_profiles__(self) -> list[Profile]:
 
@@ -1659,10 +1656,10 @@ class ValidationContext:
                 if candidate_profiles:
                     # Find the profile with the highest version number
                     profile = max(candidate_profiles, key=lambda p: p.version)
-                    self.settings["profile_identifier"] = profile.identifier
+                    self.settings.profile_identifier = profile.identifier
                     logger.debug("Profile with the highest version number: %s", profile)
                 # if the profile is found by token, set the profile name to the identifier
-                self.settings["profile_identifier"] = profile.identifier
+                self.settings.profile_identifier = profile.identifier
             except AttributeError as e:
                 # raised when the profile is not found
                 if logger.isEnabledFor(logging.DEBUG):

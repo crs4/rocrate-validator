@@ -174,7 +174,7 @@ class SHACLCheck(RequirementCheck):
         start_time = timer()
         shacl_validator = SHACLValidator(shapes_graph=shapes_graph, ont_graph=ontology_graph)
         shacl_result = shacl_validator.validate(
-            data_graph=data_graph, ontology_graph=ontology_graph, **shacl_context.settings)
+            data_graph=data_graph, ontology_graph=ontology_graph, **shacl_context.settings.to_dict())
         # shacl_result.results_graph.serialize("logs/validation_results.ttl", format="turtle")
         # parse the validation result
         end_time = timer()
@@ -206,7 +206,7 @@ class SHACLCheck(RequirementCheck):
         for requirementCheck in sorted(failed_requirements_checks, key=lambda x: (x.identifier, x.severity)):
             # if the check is not in the current profile and the target_only_validation is enabled, skip it
             if requirementCheck.requirement.profile != shacl_context.current_validation_profile and \
-                    shacl_context.settings.get("target_only_validation", False):
+                    shacl_context.settings.target_only_validation:
                 continue
             for violation in failed_requirements_checks_violations[requirementCheck.identifier]:
                 c = shacl_context.result.add_check_issue(
