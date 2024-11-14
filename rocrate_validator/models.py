@@ -1225,7 +1225,8 @@ class ValidationResult:
         return self._issues == other._issues
 
     def to_dict(self) -> dict:
-        allowed_properties = ["profile_identifier", "inherit_profiles", "requirement_severity", "abort_on_first"]
+        allowed_properties = ["profile_identifier", "enable_profile_inheritance",
+                              "requirement_severity", "abort_on_first"]
         validation_settings = {key: value for key, value in self.validation_settings.to_dict().items()
                                if key in allowed_properties}
         result = {
@@ -1275,7 +1276,7 @@ class ValidationSettings:
     # Profile settings
     profiles_path: Path = DEFAULT_PROFILES_PATH
     profile_identifier: str = DEFAULT_PROFILE_IDENTIFIER
-    inherit_profiles: bool = True
+    enable_profile_inheritance: bool = True
     # Ontology and inference settings
     ontology_path: Optional[Path] = None
     # Validation strategy settings
@@ -1615,7 +1616,7 @@ class ValidationContext:
 
     @property
     def inheritance_enabled(self) -> bool:
-        return self.settings.inherit_profiles
+        return self.settings.enable_profile_inheritance
 
     @property
     def profile_identifier(self) -> str:

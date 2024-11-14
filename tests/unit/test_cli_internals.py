@@ -29,7 +29,7 @@ def test_compute_stats(fake_profiles_path):
         "fail_fast": False,
         "profiles_path": fake_profiles_path,
         "profile_identifier": "a",
-        "inherit_profiles": True,
+        "enable_profile_inheritance": True,
         "allow_requirement_check_override": True,
         "requirement_severity": "REQUIRED",
     }

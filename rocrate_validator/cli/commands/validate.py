@@ -280,7 +280,7 @@ def validate(ctx,
             "profile_identifier": profile_identifier,
             "requirement_severity": requirement_severity,
             "requirement_severity_only": requirement_severity_only,
-            "inherit_profiles": not disable_profile_inheritance,
+            "enable_profile_inheritance": not disable_profile_inheritance,
             "verbose": verbose,
             "rocrate_uri": rocrate_uri,
             "ontology_path": Path(ontologies_path).absolute() if ontologies_path else None,
@@ -784,7 +784,7 @@ def __compute_profile_stats__(validation_settings: dict):
     profiles = [profile]
 
     # add inherited profiles if enabled
-    if validation_settings.get("inherit_profiles"):
+    if validation_settings.get("enable_profile_inheritance"):
         profiles.extend(profile.inherited_profiles)
     logger.debug("Inherited profiles: %r", profile.inherited_profiles)
 

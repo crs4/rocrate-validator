@@ -57,11 +57,11 @@ def test_load_invalid_profile_from_validation_context(fake_profiles_path: str):
         "profiles_path": "/tmp/random_path_xxx",
         "profile_identifier": DEFAULT_PROFILE_IDENTIFIER,
         "rocrate_uri": ValidROC().wrroc_paper,
-        "inherit_profiles": False
+        "enable_profile_inheritance": False
     }
 
     settings = ValidationSettings(**settings)
-    assert not settings.inherit_profiles, "The inheritance mode should be set to False"
+    assert not settings.enable_profile_inheritance, "The inheritance mode should be set to False"
 
     validator = Validator(settings)
     # initialize the validation context
@@ -79,11 +79,11 @@ def test_load_valid_profile_without_inheritance_from_validation_context(fake_pro
         "profiles_path": fake_profiles_path,
         "profile_identifier": "c",
         "rocrate_uri": ValidROC().wrroc_paper,
-        "inherit_profiles": False
+        "enable_profile_inheritance": False
     }
 
     settings = ValidationSettings(**settings)
-    assert not settings.inherit_profiles, "The inheritance mode should be set to False"
+    assert not settings.enable_profile_inheritance, "The inheritance mode should be set to False"
 
     validator = Validator(settings)
     # initialize the validation context
@@ -103,12 +103,12 @@ def test_profile_spec_properties(fake_profiles_path: str):
         "profiles_path": fake_profiles_path,
         "profile_identifier": "c",
         "rocrate_uri": ValidROC().wrroc_paper,
-        "inherit_profiles": True,
+        "enable_profile_inheritance": True,
         "disable_check_for_duplicates": True,
     }
 
     settings = ValidationSettings(**settings)
-    assert settings.inherit_profiles, "The inheritance mode should be set to True"
+    assert settings.enable_profile_inheritance, "The inheritance mode should be set to True"
 
     validator = Validator(settings)
     # initialize the validation context
@@ -227,12 +227,12 @@ def test_load_invalid_profile_no_override_enabled(fake_profiles_path: str):
         "profiles_path": fake_profiles_path,
         "profile_identifier": "invalid-duplicated-shapes",
         "rocrate_uri": ValidROC().wrroc_paper,
-        "inherit_profiles": True,
+        "enable_profile_inheritance": True,
         "allow_requirement_check_override": False,
     }
 
     settings = ValidationSettings(**settings)
-    assert settings.inherit_profiles, "The inheritance mode should be set to True"
+    assert settings.enable_profile_inheritance, "The inheritance mode should be set to True"
     assert not settings.allow_requirement_check_override, "The override mode should be set to False"
 
     validator = Validator(settings)
@@ -251,12 +251,12 @@ def test_load_invalid_profile_with_override_on_same_profile(fake_profiles_path: 
         "profiles_path": fake_profiles_path,
         "profile_identifier": "invalid-duplicated-shapes",
         "rocrate_uri": ValidROC().wrroc_paper,
-        "inherit_profiles": True,
+        "enable_profile_inheritance": True,
         "allow_requirement_check_override": False
     }
 
     settings = ValidationSettings(**settings)
-    assert settings.inherit_profiles, "The inheritance mode should be set to True"
+    assert settings.enable_profile_inheritance, "The inheritance mode should be set to True"
     assert not settings.allow_requirement_check_override, "The override mode should be set to `True`"
     validator = Validator(settings)
     # initialize the validation context
@@ -274,12 +274,12 @@ def test_load_valid_profile_with_override_on_inherited_profile(fake_profiles_pat
         "profiles_path": fake_profiles_path,
         "profile_identifier": "c-overridden",
         "rocrate_uri": ValidROC().wrroc_paper,
-        "inherit_profiles": True,
+        "enable_profile_inheritance": True,
         "allow_requirement_check_override": True
     }
 
     settings = ValidationSettings(**settings)
-    assert settings.inherit_profiles, "The inheritance mode should be set to True"
+    assert settings.enable_profile_inheritance, "The inheritance mode should be set to True"
     assert settings.allow_requirement_check_override, "The override mode should be set to `True`"
     validator = Validator(settings)
     # initialize the validation context
