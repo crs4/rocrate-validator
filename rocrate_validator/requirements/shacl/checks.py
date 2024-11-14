@@ -204,21 +204,21 @@ class SHACLCheck(RequirementCheck):
         # to ensure a consistent order of the issues
         # and to make the fail fast mode deterministic
         for requirementCheck in sorted(failed_requirements_checks, key=lambda x: (x.identifier, x.severity)):
-            # add only the issues for the current profile when the `target_profile_only` mode is disabled
-            # (issues related to other profiles will be added by the corresponding profile validation)
-            if requirementCheck.requirement.profile == shacl_context.current_validation_profile or \
+            # if the check is not in the current profile and the target_only_validation is enabled, skip it
+            if requirementCheck.requirement.profile != shacl_context.current_validation_profile and \
                     shacl_context.settings.get("target_only_validation", False):
-                for violation in failed_requirements_checks_violations[requirementCheck.identifier]:
-                    c = shacl_context.result.add_check_issue(
-                        message=violation.get_result_message(shacl_context.rocrate_uri),
-                        check=requirementCheck,
-                        resultPath=violation.resultPath.toPython() if violation.resultPath else None,
-                        focusNode=make_uris_relative(
-                            violation.focusNode.toPython(), shacl_context.publicID),
-                        value=violation.value)
-                    # if the fail fast mode is enabled, stop the validation after the first issue
-                    if shacl_context.fail_fast:
-                        break
+                continue
+            for violation in failed_requirements_checks_violations[requirementCheck.identifier]:
+                c = shacl_context.result.add_check_issue(
+                    message=violation.get_result_message(shacl_context.rocrate_uri),
+                    check=requirementCheck,
+                    resultPath=violation.resultPath.toPython() if violation.resultPath else None,
+                    focusNode=make_uris_relative(
+                        violation.focusNode.toPython(), shacl_context.publicID),
+                    value=violation.value)
+                # if the fail fast mode is enabled, stop the validation after the first issue
+                if shacl_context.fail_fast:
+                    break
 
             # If the fail fast mode is disabled, notify all the validation issues
             # related to profiles other than the current one.
