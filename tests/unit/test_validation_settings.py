@@ -26,7 +26,7 @@ def test_validation_settings_parse_dict():
         "inherit_profiles": False,
     }
     settings = ValidationSettings.parse(settings_dict)
-    assert settings.rocrate_uri == "/path/to/data"
+    assert str(settings.rocrate_uri) == "/path/to/data"
     assert settings.profiles_path == "/path/to/profiles"
     assert settings.requirement_severity == Severity.RECOMMENDED
     assert settings.allow_infos is True
@@ -42,7 +42,7 @@ def test_validation_settings_parse_object():
         inherit_profiles=False
     )
     settings = ValidationSettings.parse(existing_settings)
-    assert settings.rocrate_uri == "/path/to/data"
+    assert str(settings.rocrate_uri) == "/path/to/data"
     assert settings.profiles_path == "/path/to/profiles"
     assert settings.requirement_severity == Severity.RECOMMENDED
     assert settings.inherit_profiles is False
@@ -78,7 +78,7 @@ def test_validation_settings_inherit_profiles():
 
 def test_validation_settings_data_path():
     settings = ValidationSettings(rocrate_uri="/path/to/data")
-    assert settings.rocrate_uri == "/path/to/data"
+    assert str(settings.rocrate_uri) == "/path/to/data"
 
 
 def test_validation_settings_profiles_path():

@@ -65,7 +65,7 @@ def test_load_invalid_profile_from_validation_context(fake_profiles_path: str):
 
     validator = Validator(settings)
     # initialize the validation context
-    context = ValidationContext(validator, validator.validation_settings.to_dict())
+    context = ValidationContext(validator, validator.validation_settings)
 
     # Check if the InvalidProfilePath exception is raised
     with pytest.raises(InvalidProfilePath):
@@ -87,7 +87,7 @@ def test_load_valid_profile_without_inheritance_from_validation_context(fake_pro
 
     validator = Validator(settings)
     # initialize the validation context
-    context = ValidationContext(validator, validator.validation_settings.to_dict())
+    context = ValidationContext(validator, validator.validation_settings)
 
     # Load the profiles
     profiles = context.profiles
@@ -112,7 +112,7 @@ def test_profile_spec_properties(fake_profiles_path: str):
 
     validator = Validator(settings)
     # initialize the validation context
-    context = ValidationContext(validator, validator.validation_settings.to_dict())
+    context = ValidationContext(validator, validator.validation_settings)
 
     # Load the profiles
     profiles = context.profiles
@@ -192,7 +192,7 @@ def test_loaded_valid_profile_with_inheritance_from_validator_context(fake_profi
 
         validator = Validator(settings)
         # initialize the validation context
-        context = ValidationContext(validator, validator.validation_settings.to_dict())
+        context = ValidationContext(validator, validator.validation_settings)
 
         # Check if the inheritance mode is set to True
         assert context.inheritance_enabled
@@ -237,7 +237,7 @@ def test_load_invalid_profile_no_override_enabled(fake_profiles_path: str):
 
     validator = Validator(settings)
     # initialize the validation context
-    context = ValidationContext(validator, validator.validation_settings.to_dict())
+    context = ValidationContext(validator, validator.validation_settings)
 
     with pytest.raises(DuplicateRequirementCheck):
         # Load the profiles
@@ -260,7 +260,7 @@ def test_load_invalid_profile_with_override_on_same_profile(fake_profiles_path: 
     assert not settings.allow_requirement_check_override, "The override mode should be set to `True`"
     validator = Validator(settings)
     # initialize the validation context
-    context = ValidationContext(validator, validator.validation_settings.to_dict())
+    context = ValidationContext(validator, validator.validation_settings)
 
     with pytest.raises(DuplicateRequirementCheck):
         # Load the profiles
@@ -283,7 +283,7 @@ def test_load_valid_profile_with_override_on_inherited_profile(fake_profiles_pat
     assert settings.allow_requirement_check_override, "The override mode should be set to `True`"
     validator = Validator(settings)
     # initialize the validation context
-    context = ValidationContext(validator, validator.validation_settings.to_dict())
+    context = ValidationContext(validator, validator.validation_settings)
 
     # Load the profiles
     profiles = context.profiles
