@@ -1270,7 +1270,7 @@ class CustomEncoder(json.JSONEncoder):
 class ValidationSettings:
 
     # Data settings
-    rocrate_uri: Path
+    rocrate_uri: URI
     # Profile settings
     profiles_path: Path = DEFAULT_PROFILES_PATH
     profile_identifier: str = DEFAULT_PROFILE_IDENTIFIER
@@ -1298,8 +1298,26 @@ class ValidationSettings:
         if isinstance(severity, str):
             setattr(self, "requirement_severity", Severity[severity])
 
+        # parse and set the rocrate URI
+        self._rocrate_uri = None
+        if "rocrate_uri" in kwargs:
+            self.rocrate_uri = kwargs["rocrate_uri"]
+        logger.debug("Validating RO-Crate: %s", self.rocrate_uri)
+
     def to_dict(self):
-        return asdict(self)
+        result = asdict(self)
+        result['rocrate_uri'] = str(self.rocrate_uri)
+        return result
+
+    @property
+    def rocrate_uri(self) -> Optional[URI]:
+        return self._rocrate_uri
+
+    @rocrate_uri.setter
+    def rocrate_uri(self, value: URI):
+        if not value:
+            raise ValueError("Invalid RO-Crate URI")
+        self._rocrate_uri: URI = URI(value)
 
     @classmethod
     def parse(cls, settings: Union[dict, ValidationSettings]) -> ValidationSettings:
