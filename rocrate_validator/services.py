@@ -86,9 +86,9 @@ def __initialise_validator__(settings: Union[dict, ValidationSettings],
         )
 
     # check if remote validation is enabled
-    remote_validation = settings.remote_validation
-    logger.debug("Remote validation: %s", remote_validation)
-    if remote_validation:
+    disable_remote_crate_download = settings.disable_remote_crate_download
+    logger.debug("Remote validation: %s", disable_remote_crate_download)
+    if disable_remote_crate_download:
         # create a validator
         validator = Validator(settings)
         logger.debug("Validator created. Starting validation...")
