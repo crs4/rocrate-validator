@@ -1102,8 +1102,8 @@ class ValidationResult:
     def __init__(self, context: ValidationContext):
         # reference to the validation context
         self._context = context
-        # reference to the ro-crate path
-        self._rocrate_path = context.rocrate_uri
+        # reference to the ro-crate URI
+        self._rocrate_uri = context.rocrate_uri
         # reference to the validation settings
         self._validation_settings: ValidationSettings = context.settings
         # keep track of the issues found during the validation
@@ -1119,8 +1119,8 @@ class ValidationResult:
         return self._context
 
     @property
-    def rocrate_path(self):
-        return self._rocrate_path
+    def rocrate_uri(self):
+        return self._rocrate_uri
 
     @property
     def validation_settings(self):
