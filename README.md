@@ -143,7 +143,13 @@ else:
   print("RO-Crate is invalid!")
   # Explore the issues
   for issue in result.get_issues():
-    print(f"Detected issue: {issue}")
+    # Every issue object has a reference to the check that failed, the severity of the issue, and a message describing the issue.
+    print(f"Detected issue of severity {issue.severity.name} with check \"{issue.check.identifier}\": {issue.message}")
+```
+... that leads to the following output:
+```bash
+$> RO-Crate is invalid!
+$> Detected issue of severity REQUIRED with check "ro-crate-1.1:root_entity_exists: The RO-Crate must contain a root entity.
 ```
 
 ## Running the tests
