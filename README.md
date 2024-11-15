@@ -7,9 +7,7 @@
 <!-- [![codecov](https://codecov.io/gh/crs4/rocrate-validator/branch/main/graph/badge.svg?token=3ZQZQZQZQZ)](https://codecov.io/gh/crs4/rocrate-validator) -->
 
 A Python package to validate [RO-Crate](https://researchobject.github.io/ro-crate/)s.
-
-* Supports CLI-based validation as well as programmatic validation (so it can
-  easily be used by Python code).
+* Supports [CLI-based validation](#cli-based-validation) as well as [programmatic validation](#programmatic-usage) (so it can easily be used by Python code).
 * Implements an extensible validation framework to which new RO-Crate profiles
   can be added.  Validation is based on SHACL shapes and Python code.
 * Currently, validations for the following profiles are implemented: RO-Crate
@@ -87,7 +85,7 @@ poetry install
 ```
 
 
-## Usage
+## CLI-based Validation
 
 After installation, use the `rocrate-validator` command to validate RO-Crates. You can run this in a virtual activated environment (if created in the [optional step](#optional-step-create-a-virtual-environment) above) or without a virtual environment if none was created.
 
@@ -116,6 +114,37 @@ where `<path_to_rocrate>` is the path to the RO-Crate you want to validate.
 Type `rocrate-validator --help` for more information.
 
 
+## Programmatic Validation
+
+You can also integrate the package programmatically in your Python code. Here's an example:
+
+```python
+
+# Import the `services` and `models` module from the rocrate_validator package
+from rocrate_validator import services, models
+
+# Create an instance of `ValidationSettings` class to configure the validation
+settings = services.ValidationSettings(
+    # Set the path to the RO-Crate root directory
+    rocrate_uri='../tests/data/crates/invalid/2_root_data_entity_metadata/missing_root_entity',
+    # Set the identifier of the RO-Crate profile to use for validation
+    profile_identifier='ro-crate-1.1',
+    # Set the requirement level for the validation
+    requirement_severity=models.Severity.REQUIRED,
+)
+
+# Call the validation service with the settings
+result = services.validate(settings)
+
+# Check if the validation was successful
+if result.is_valid():
+    print("RO-Crate is valid!")
+else:
+  print("RO-Crate is invalid!")
+  # Explore the issues
+  for issue in result.get_issues():
+    print(f"Detected issue: {issue}")
+```
 
 ## Running the tests
 
