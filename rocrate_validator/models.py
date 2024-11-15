@@ -589,7 +589,7 @@ class Requirement(ABC):
 
     @property
     def identifier(self) -> str:
-        return f"{self.profile.identifier}.{self.relative_identifier}"
+        return f"{self.profile.identifier}_{self.relative_identifier}"
 
     @property
     def relative_identifier(self) -> str:
