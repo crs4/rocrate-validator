@@ -22,8 +22,7 @@ import requests
 import requests_cache
 
 import rocrate_validator.log as logging
-from rocrate_validator.constants import (DEFAULT_HTTP_CACHE_TIMEOUT,
-                                         DEFAULT_PROFILE_IDENTIFIER)
+from rocrate_validator.constants import DEFAULT_HTTP_CACHE_TIMEOUT
 from rocrate_validator.errors import ProfileNotFound
 from rocrate_validator.events import Subscriber
 from rocrate_validator.models import (Profile, Severity, ValidationResult,

@@ -1207,7 +1207,7 @@ class ValidationResult:
                             check: RequirementCheck,
                             min_severity: Severity = None) -> list[CheckIssue]:
         """
-        Get the issues found during the validation for a specific check 
+        Get the issues found during the validation for a specific check
         with a severity greater than or equal to min_severity
         """
         min_severity = min_severity or self.context.requirement_severity
