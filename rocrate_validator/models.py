@@ -1098,6 +1098,15 @@ class CheckIssue:
 
 
 class ValidationResult:
+    """
+    Class to store the result of the validation
+
+    Attributes:
+        context (ValidationContext): The validation context
+        rocrate_uri (str): The URI of the RO-Crate
+        validation_settings (ValidationSettings): The validation settings
+        issues (list[CheckIssue]): The issues found during the validation
+    """
 
     def __init__(self, context: ValidationContext):
         # reference to the validation context
@@ -1116,19 +1125,31 @@ class ValidationResult:
 
     @property
     def context(self) -> ValidationContext:
+        """"
+        The validation context
+        """
         return self._context
 
     @property
     def rocrate_uri(self):
+        """
+        The URI of the RO-Crate
+        """
         return self._rocrate_uri
 
     @property
     def validation_settings(self):
+        """
+        The validation settings
+        """
         return self._validation_settings
 
     # --- Checks ---
     @property
     def executed_checks(self) -> set[RequirementCheck]:
+        """
+        The checks that have been executed
+        """
         return self._executed_checks
 
     def _add_executed_check(self, check: RequirementCheck, result: bool):
@@ -1143,10 +1164,16 @@ class ValidationResult:
             logger.debug("Removing check '%s' from skipped checks", check.name)
 
     def get_executed_check_result(self, check: RequirementCheck) -> Optional[bool]:
+        """
+        Get the result of an executed check
+        """
         return self._executed_checks_results.get(check.identifier)
 
     @property
     def skipped_checks(self) -> set[RequirementCheck]:
+        """
+        The checks that have been skipped
+        """
         return self._skipped_checks
 
     def _add_skipped_check(self, check: RequirementCheck):
@@ -1164,15 +1191,25 @@ class ValidationResult:
     #  --- Issues ---
     @property
     def issues(self) -> list[CheckIssue]:
-        return self._issues
+        """
+        The issues found during the validation
+        """
+        return self._issues.copy()
 
     def get_issues(self, min_severity: Optional[Severity] = None) -> list[CheckIssue]:
+        """
+        Get the issues found during the validation with a severity greater than or equal to min_severity
+        """
         min_severity = min_severity or self.context.requirement_severity
         return [issue for issue in self._issues if issue.severity >= min_severity]
 
     def get_issues_by_check(self,
                             check: RequirementCheck,
                             min_severity: Severity = None) -> list[CheckIssue]:
+        """
+        Get the issues found during the validation for a specific check 
+        with a severity greater than or equal to min_severity
+        """
         min_severity = min_severity or self.context.requirement_severity
         return [issue for issue in self._issues if issue.check == check and issue.severity >= min_severity]
 
@@ -1180,14 +1217,26 @@ class ValidationResult:
     #     return [issue for issue in self.issues if issue.check == check and issue.severity == severity]
 
     def has_issues(self, severity: Optional[Severity] = None) -> bool:
+        """
+        Check if there are issues with a severity greater than or equal to the given severity
+        """
         severity = severity or self.context.requirement_severity
         return any(issue.severity >= severity for issue in self._issues)
 
     def passed(self, severity: Optional[Severity] = None) -> bool:
+        """"
+        Check if all checks passed with a severity greater than or equal to the given severity
+        """
         severity = severity or self.context.requirement_severity
         return not any(issue.severity >= severity for issue in self._issues)
 
     def add_issue(self, issue: CheckIssue):
+        """
+        Add an issue to the validation result
+
+        Parameters:
+            issue (CheckIssue): The issue to add to the validation result
+        """
         bisect.insort(self._issues, issue)
 
     def add_check_issue(self,
@@ -1196,28 +1245,53 @@ class ValidationResult:
                         resultPath: Optional[str] = None,
                         focusNode: Optional[str] = None,
                         value: Optional[str] = None) -> CheckIssue:
+        """"
+        Add an issue to the validation result
+
+        Parameters:
+            message (str): The message of the issue
+            check (RequirementCheck): The check that generated the issue
+            resultPath (Optional[str]): The result path (i.e., the predicate) of the issue
+            focusNode (Optional[str]): The focus node (i.e., the subject) of the issue
+            value (Optional[str]): The value of the result path which caused the issue (if any)
+        """
         c = CheckIssue(check, message, resultPath=resultPath, focusNode=focusNode, value=value)
         bisect.insort(self._issues, c)
         return c
 
     def add_error(self, message: str, check: RequirementCheck) -> CheckIssue:
+        """"
+        Add an error to the validation result
+        """
         return self.add_check_issue(message, check)
 
     #  --- Requirements ---
     @property
     def failed_requirements(self) -> Collection[Requirement]:
+        """"
+        Get the requirements that failed
+        """
         return set(issue.check.requirement for issue in self._issues)
 
     #  --- Checks ---
     @property
     def failed_checks(self) -> Collection[RequirementCheck]:
+        """"
+        Get the checks that failed
+        """
         return set(issue.check for issue in self._issues)
 
     def get_failed_checks_by_requirement(self, requirement: Requirement) -> Collection[RequirementCheck]:
+        """"
+        Get the checks that failed for a specific requirement
+        """
         return [check for check in self.failed_checks if check.requirement == requirement]
 
     def get_failed_checks_by_requirement_and_severity(
             self, requirement: Requirement, severity: Severity) -> Collection[RequirementCheck]:
+        """"
+        Get the checks that failed for a specific requirement and severity
+        """
         return [check for check in self.failed_checks
                 if check.requirement == requirement
                 and check.severity == severity]
@@ -1234,6 +1308,9 @@ class ValidationResult:
         return self._issues == other._issues
 
     def to_dict(self) -> dict:
+        """
+        Convert the ValidationResult to a dictionary
+        """
         allowed_properties = ["profile_identifier", "enable_profile_inheritance",
                               "requirement_severity", "abort_on_first"]
         validation_settings = {key: value for key, value in self.validation_settings.to_dict().items()
@@ -1251,7 +1328,9 @@ class ValidationResult:
         return result
 
     def to_json(self, path: Optional[Path] = None) -> str:
-
+        """"
+        Convert the ValidationResult to a JSON string
+        """
         result = json.dumps(self.to_dict(), indent=4, cls=CustomEncoder)
         if path:
             with open(path, "w") as f:
