@@ -681,7 +681,7 @@ class Requirement(ABC):
                     EventType.REQUIREMENT_CHECK_VALIDATION_START, check))
                 check_result = check.execute_check(context)
                 logger.debug("Result of check %s: %s", check.identifier, check_result)
-                context.result.add_executed_check(check, check_result)
+                context.result._add_executed_check(check, check_result)
                 context.validator.notify(RequirementCheckValidationEvent(
                     EventType.REQUIREMENT_CHECK_VALIDATION_END, check, validation_result=check_result))
                 logger.debug("Ran check '%s'. Got result %s", check.name, check_result)
@@ -693,7 +693,7 @@ class Requirement(ABC):
                     break
             except SkipRequirementCheck as e:
                 logger.debug("Skipping check '%s' because: %s", check.name, e)
-                context.result.add_skipped_check(check)
+                context.result._add_skipped_check(check)
                 continue
             except Exception as e:
                 # Ignore the fact that the check failed as far as the validation result is concerned.
@@ -1131,7 +1131,10 @@ class ValidationResult:
     def executed_checks(self) -> set[RequirementCheck]:
         return self._executed_checks
 
-    def add_executed_check(self, check: RequirementCheck, result: bool):
+    def _add_executed_check(self, check: RequirementCheck, result: bool):
+        """"
+        Internal method to add a check to the executed checks
+        """
         self._executed_checks.add(check)
         self._executed_checks_results[check.identifier] = result
         # remove the check from the skipped checks if it was skipped
@@ -1146,10 +1149,16 @@ class ValidationResult:
     def skipped_checks(self) -> set[RequirementCheck]:
         return self._skipped_checks
 
-    def add_skipped_check(self, check: RequirementCheck):
+    def _add_skipped_check(self, check: RequirementCheck):
+        """
+        Internal method to add a check to the skipped checks
+        """
         self._skipped_checks.add(check)
 
-    def remove_skipped_check(self, check: RequirementCheck):
+    def _remove_skipped_check(self, check: RequirementCheck):
+        """
+        Internal method to remove a check from the skipped checks
+        """
         self._skipped_checks.remove(check)
 
     #  --- Issues ---

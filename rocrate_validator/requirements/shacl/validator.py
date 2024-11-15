@@ -67,7 +67,7 @@ class SHACLValidationContextManager:
         if self._context.settings.disable_inherited_profiles_reporting and \
                 self._profile.identifier != self._context.settings.profile_identifier:
             logger.debug("Skipping validation of profile %s", self._profile.identifier)
-            self.context.result.add_skipped_check(self._check)
+            self.context.result._add_skipped_check(self._check)
             raise SHACLValidationSkip(f"Skipping validation of profile {self._profile.identifier}")
         logger.debug("ValidationContext of profile %s initialized", self._profile.identifier)
         return self._shacl_context

@@ -204,7 +204,8 @@ class SHACLCheck(RequirementCheck):
         # to ensure a consistent order of the issues
         # and to make the fail fast mode deterministic
         for requirementCheck in sorted(failed_requirements_checks, key=lambda x: (x.identifier, x.severity)):
-            # if the check is not in the current profile and the disable_inherited_profiles_reporting is enabled, skip it
+            # if the check is not in the current profile
+            # and the disable_inherited_profiles_reporting is enabled, skip it
             if requirementCheck.requirement.profile != shacl_context.current_validation_profile and \
                     shacl_context.settings.disable_inherited_profiles_reporting:
                 continue
@@ -229,7 +230,7 @@ class SHACLCheck(RequirementCheck):
                 #
                 if requirementCheck.requirement.profile != shacl_context.current_validation_profile:
                     failed_requirement_checks_notified.append(requirementCheck.identifier)
-                    shacl_context.result.add_executed_check(requirementCheck, False)
+                    shacl_context.result._add_executed_check(requirementCheck, False)
                     shacl_context.validator.notify(RequirementCheckValidationEvent(
                         EventType.REQUIREMENT_CHECK_VALIDATION_END, requirementCheck, validation_result=False))
                     logger.debug("Added validation issue to the context: %s", c)
@@ -249,7 +250,7 @@ class SHACLCheck(RequirementCheck):
                     requirementCheck not in failed_requirements_checks and \
                     requirementCheck.identifier not in failed_requirement_checks_notified:
                 failed_requirement_checks_notified.append(requirementCheck.identifier)
-                shacl_context.result.add_executed_check(requirementCheck, True)
+                shacl_context.result._add_executed_check(requirementCheck, True)
                 shacl_context.validator.notify(RequirementCheckValidationEvent(
                     EventType.REQUIREMENT_CHECK_VALIDATION_END, requirementCheck, validation_result=True))
                 logger.debug("Added skipped check to the context: %s", requirementCheck.identifier)
