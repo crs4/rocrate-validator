@@ -1001,12 +1001,29 @@ class CheckIssue:
         return self._check
 
     @property
-    def resultPath(self) -> Optional[str]:
-        return self._resultPath
+    def violatingItem(self) -> Optional[str]:
+        """
+        It represents the specific element being evaluated that fails
+        to meet the defined rules or constraints within a validation process.
+        Also referred to as `focusNode` in SHACL terminology
+        in the context of an RDF graph, it is the subject of a triple
+        that violates a given constraint on the subject’s property/predicate,
+        represented by the violatingProperty.
+        """
+        return self._focusNode
 
     @property
-    def focusNode(self) -> Optional[str]:
-        return self._focusNode
+    def violatingProperty(self) -> Optional[str]:
+        """
+        It refers to the specific property or relationship within an item
+        that leads to a validation failure.
+        It identifies the part of the data structure that is causing the issue.
+        Also referred to as `resultPath` in SHACL terminology,
+        in the context of an RDF graph, it is the predicate of a triple
+        that violates a given constraint on the subject’s property/predicate,
+        represented by the violatingProperty.
+        """
+        return self._resultPath
 
     @property
     def value(self) -> Optional[str]:
@@ -1036,7 +1053,7 @@ class CheckIssue:
         result = {
             "severity": self.severity.name,
             "message": self.message,
-            "focusNode": self.focusNode,
+            "focusNode": self.violatingItem,
             "value": self.value
         }
         if with_check:
