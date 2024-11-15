@@ -1049,7 +1049,7 @@ class CheckIssue:
         return f'CheckIssue(severity={self.severity}, check={self.check}, message={self.message})'
 
     def __str__(self) -> str:
-        return f"{self.severity}: {self.message} ({self.check})"
+        return f"Issue of severity {self.severity.name} with check \"{self.check.identifier}\": {self.message}"
 
     def to_dict(self, with_check: bool = True,
                 with_requirement: bool = True, with_profile: bool = True) -> dict:
