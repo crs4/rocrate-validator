@@ -951,26 +951,6 @@ class RequirementCheck(ABC):
     def __hash__(self) -> int:
         return hash((self.requirement, self.name or ""))
 
-    # TODO: delete these?
-    #
-    # @property
-    # def issues(self) -> list[CheckIssue]:
-    #    """Return the issues found during the check"""
-    #    assert self.result, "Issues not set before the check"
-    #    return self.result.get_issues_by_check(self, Severity.OPTIONAL)
-
-    # def get_issues_by_severity(self, severity: Severity = Severity.RECOMMENDED) -> list[CheckIssue]:
-    #    return self.result.get_issues_by_check_and_severity(self, severity)
-
-
-# TODO: delete this?
-
-# def issue_types(issues: list[Type[CheckIssue]]) -> Type[RequirementCheck]:
-#     def class_decorator(cls):
-#         cls.issue_types = issues
-#         return cls
-#     return class_decorator
-
 
 @total_ordering
 class CheckIssue:
@@ -1073,28 +1053,6 @@ class CheckIssue:
                 with_requirement=with_requirements,
                 with_profile=with_profile
             ), indent=4, cls=CustomEncoder)
-
-    # @property
-    # def code(self) -> int:
-    #     breakpoint()
-    #     # If the code has not been set, calculate it
-    #     if not self._code:
-    #         """
-    #         Calculate the code based on the severity, the class name and the message.
-    #         - All issues with the same severity, class name and message will have the same code.
-    #         - All issues with the same severity and class name but different message will have different codes.
-    #         - All issues with the same severity but different class name and message will have different codes.
-    #         - All issues with the same severity should start with the same number.
-    #         - All codes should be positive numbers.
-    #         """
-    #         # Concatenate the level, class name and message into a single string
-    #         issue_string = self.level.name + self.__class__.__name__ + str(self.message)
-    #
-    #         # Use the built-in hash function to generate a unique code for this string
-    #         # The modulo operation ensures that the code is a positive number
-    #         self._code = hash(issue_string) % ((1 << 31) - 1)
-    #     # Return the code
-    #     return self._code
 
 
 class ValidationResult:
