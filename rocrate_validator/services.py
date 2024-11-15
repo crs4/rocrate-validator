@@ -174,8 +174,8 @@ def get_profiles(profiles_path: Path = DEFAULT_PROFILES_PATH,
     return profiles
 
 
-def get_profile(profiles_path: Path = DEFAULT_PROFILES_PATH,
-                profile_identifier: str = DEFAULT_PROFILE_IDENTIFIER,
+def get_profile(profile_identifier: str,
+                profiles_path: Path = DEFAULT_PROFILES_PATH,
                 publicID: str = None,
                 severity=Severity.OPTIONAL,
                 allow_requirement_check_override: bool =

@@ -773,8 +773,8 @@ def __compute_profile_stats__(validation_settings: dict):
     # extract the validation settings
     severity_validation = Severity.get(validation_settings.get("requirement_severity"))
     profiles = services.get_profiles(validation_settings.get("profiles_path"), severity=severity_validation)
-    profile = services.get_profile(validation_settings.get("profiles_path"),
-                                   validation_settings.get("profile_identifier"),
+    profile = services.get_profile(validation_settings.get("profile_identifier"),
+                                   validation_settings.get("profiles_path"),
                                    severity=severity_validation)
     # initialize the profiles list
     profiles = [profile]

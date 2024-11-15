@@ -111,7 +111,7 @@ def test_sortability_issues(validation_settings: ValidationSettings):
 
 
 def test_hidden_shape():
-    rocrate_profile = services.get_profile(profile_identifier="ro-crate-1.1")
+    rocrate_profile = services.get_profile("ro-crate-1.1")
     assert rocrate_profile is not None, "Profile should not be None"
     # get the hidden requirement
     hidden_requirement = rocrate_profile.get_requirement("Identify the Root Data Entity of the RO-Crate")
