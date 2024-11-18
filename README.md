@@ -11,12 +11,14 @@ A Python package to validate [RO-Crate](https://researchobject.github.io/ro-crat
 -   Supports [CLI-based validation](#cli-based-validation) as well as [programmatic validation](#programmatic-validation) (so it can easily be used by Python code).
 -   Implements an extensible validation framework to which new RO-Crate profiles
     can be added. Validation is based on SHACL shapes and Python code.
--   Currently, validations for the following profiles are implemented: RO-Crate
+-   Currently, validation for the following profiles is implemented: RO-Crate
     (base profile), [Workflow
-    RO-Crate](https://www.researchobject.org/ro-crate/specification/1.1/workflows.html),
+    RO-Crate](https://w3id.org/workflowhub/workflow-ro-crate),
     [Process Run
-    Crate](https://www.researchobject.org/workflow-run-crate/profiles/0.1/process_run_crate.html).
-    More are being implemented.
+    Crate](https://w3id.org/ro/wfrun/process).
+    [Workflow Run Crate](https://w3id.org/ro/wfrun/workflow),
+    [Provenance Run Crate](https://w3id.org/ro/wfrun/provenance),
+    [Workflow Testing RO-Crate](https://w3id.org/ro/wftest).
 
 **Note**: this software is still work in progress. Feel free to try it out,
 report positive and negative feedback. Do send a note (e.g., by opening an
