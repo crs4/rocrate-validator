@@ -137,14 +137,14 @@ settings = services.ValidationSettings(
 result = services.validate(settings)
 
 # Check if the validation was successful
-if result.is_valid():
+if not result.has_issues():
     print("RO-Crate is valid!")
 else:
-  print("RO-Crate is invalid!")
-  # Explore the issues
-  for issue in result.get_issues():
-    # Every issue object has a reference to the check that failed, the severity of the issue, and a message describing the issue.
-    print(f"Detected issue of severity {issue.severity.name} with check \"{issue.check.identifier}\": {issue.message}")
+    print("RO-Crate is invalid!")
+    # Explore the issues
+    for issue in result.get_issues():
+        # Every issue object has a reference to the check that failed, the severity of the issue, and a message describing the issue.
+        print(f"Detected issue of severity {issue.severity.name} with check \"{issue.check.identifier}\": {issue.message}")
 ```
 
 ... that leads to the following output:
