@@ -159,14 +159,13 @@ def __initialise_validator__(settings: Union[dict, ValidationSettings],
 
 
 def get_profiles(profiles_path: Path = DEFAULT_PROFILES_PATH,
-                 publicID: str = None,
                  severity=Severity.OPTIONAL,
                  allow_requirement_check_override: bool =
                  ValidationSettings.allow_requirement_check_override) -> list[Profile]:
     """
     Load the profiles from the given path
     """
-    profiles = Profile.load_profiles(profiles_path, publicID=publicID,
+    profiles = Profile.load_profiles(profiles_path,
                                      severity=severity,
                                      allow_requirement_check_override=allow_requirement_check_override)
     logger.debug("Profiles loaded: %s", profiles)
@@ -175,14 +174,13 @@ def get_profiles(profiles_path: Path = DEFAULT_PROFILES_PATH,
 
 def get_profile(profile_identifier: str,
                 profiles_path: Path = DEFAULT_PROFILES_PATH,
-                publicID: str = None,
                 severity=Severity.OPTIONAL,
                 allow_requirement_check_override: bool =
                 ValidationSettings.allow_requirement_check_override) -> Profile:
     """
     Load the profiles from the given path
     """
-    profiles = get_profiles(profiles_path, publicID=publicID, severity=severity,
+    profiles = get_profiles(profiles_path, severity=severity,
                             allow_requirement_check_override=allow_requirement_check_override)
     profile = next((p for p in profiles if p.identifier == profile_identifier), None) or \
         next((p for p in profiles if str(p.identifier).replace(f"-{p.version}", '') == profile_identifier), None)
