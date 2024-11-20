@@ -967,13 +967,13 @@ class CheckIssue:
     def __init__(self,
                  check: RequirementCheck,
                  message: Optional[str] = None,
-                 resultPath: Optional[str] = None,
-                 focusNode: Optional[str] = None,
+                 violatingProperty: Optional[str] = None,
+                 violatingItem: Optional[str] = None,
                  value: Optional[str] = None):
         self._message = message
         self._check: RequirementCheck = check
-        self._resultPath = resultPath
-        self._focusNode = focusNode
+        self._violatingProperty = violatingProperty
+        self._violatingItem = violatingItem
         self._value = value
 
     @property
@@ -1010,7 +1010,7 @@ class CheckIssue:
         that violates a given constraint on the subject’s property/predicate,
         represented by the violatingProperty.
         """
-        return self._focusNode
+        return self._violatingItem
 
     @property
     def violatingProperty(self) -> Optional[str]:
@@ -1023,7 +1023,7 @@ class CheckIssue:
         that violates a given constraint on the subject’s property/predicate,
         represented by the violatingProperty.
         """
-        return self._resultPath
+        return self._violatingProperty
 
     @property
     def value(self) -> Optional[str]:
@@ -1230,7 +1230,7 @@ class ValidationResult:
             focusNode (Optional[str]): The focus node (i.e., the subject) of the issue
             value (Optional[str]): The value of the result path which caused the issue (if any)
         """
-        c = CheckIssue(check, message, resultPath=resultPath, focusNode=focusNode, value=value)
+        c = CheckIssue(check, message, violatingProperty=resultPath, violatingItem=focusNode, value=value)
         bisect.insort(self._issues, c)
         return c
 
