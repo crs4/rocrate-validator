@@ -275,10 +275,10 @@ class ROCrateMetadata:
 
 class ROCrate(ABC):
 
-    def __init__(self, path: Union[str, Path, URI]):
+    def __init__(self, uri: Union[str, Path, URI]):
 
         # store the path to the crate
-        self._uri = URI(path)
+        self._uri = URI(uri)
 
         # cache the list of files
         self._files = None
