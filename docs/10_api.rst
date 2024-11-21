@@ -34,7 +34,6 @@ The API is divided into several sections:
 - **Core Services**: Functions for validating RO-Crate metadata and managing profiles.
 - **Core Models**: Classes representing the main entities used in the validation process.
 - **Python Check API**: Classes and decorators for defining custom validation requirements and checks in Python.
-- **Errors**: Module containing custom exceptions used throughout the package.
 
 Each section includes detailed information about the available functions, classes, and their members, making it easier for developers to integrate and use the `rocrate_validator` package in their projects.
 
