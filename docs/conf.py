@@ -91,11 +91,14 @@ autodoc_default_options = {
     # 'show-inheritance': True,
 }
 
+# Determine the current git branch
+branch = os.popen("git rev-parse --abbrev-ref HEAD").read().strip()
+
 # -- Options for HTML output -------------------------------------------------
 html_context = {
     "display_github": True,  # Integrate GitHub
     "github_user": "crs4",  # Username
     "github_repo": "rocrate-validator",  # Repo name
-    "github_version": "develop",  # Version
+    "github_version": branch,  # Version
     "conf_py_path": "/docs/",  # Path in the checkout to the docs root
 }
