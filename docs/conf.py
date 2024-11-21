@@ -23,6 +23,8 @@ copyright = '2024, CRS4'
 author = 'Marco Enrico Piras, Luca Pireddu, Simone Leo'
 release = __version__
 
+github_url = "https://github.com/crs4/rocrate-validator"
+
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
@@ -87,4 +89,13 @@ autodoc_default_options = {
     # Does now show base classes otherwise... why such bad defaults?
     # But with this it does show useless bases like `object`. What is one to do?
     # 'show-inheritance': True,
+}
+
+# -- Options for HTML output -------------------------------------------------
+html_context = {
+    "display_github": True,  # Integrate GitHub
+    "github_user": "crs4",  # Username
+    "github_repo": "rocrate-validator",  # Repo name
+    "github_version": "develop",  # Version
+    "conf_py_path": "/docs/",  # Path in the checkout to the docs root
 }
