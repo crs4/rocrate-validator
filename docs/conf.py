@@ -6,12 +6,22 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-import sys
 import os
+import sys
+
+from rocrate_validator import __version__
+
+# update PYTHONPATH
+sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, os.path.abspath('..'))
+
+# import rocrate_validator
+
+# Set project metadata
 project = 'rocrate-validator'
 copyright = '2024, CRS4'
 author = 'Marco Enrico Piras, Luca Pireddu, Simone Leo'
-release = '0.4.7'
+release = __version__
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -20,13 +30,7 @@ release = '0.4.7'
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-#
-# import os
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
 
-# update PYTHONPATH
-sys.path.insert(0, os.path.abspath('..'))
 
 # Logo
 # html_logo = '_static/logo.png'
