@@ -9,7 +9,7 @@
 import sys
 import os
 project = 'rocrate-validator'
-copyright = '2024, Marco Enrico Piras, Luca Pireddu, Simone Leo'
+copyright = '2024, CRS4'
 author = 'Marco Enrico Piras, Luca Pireddu, Simone Leo'
 release = '0.4.7'
 
