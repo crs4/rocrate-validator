@@ -126,7 +126,7 @@ from rocrate_validator import services, models
 # Create an instance of `ValidationSettings` class to configure the validation
 settings = services.ValidationSettings(
     # Set the path to the RO-Crate root directory
-    rocrate_uri='../tests/data/crates/invalid/2_root_data_entity_metadata/missing_root_entity',
+    rocrate_uri='/path/to/ro-crate',
     # Set the identifier of the RO-Crate profile to use for validation
     profile_identifier='ro-crate-1.1',
     # Set the requirement level for the validation
