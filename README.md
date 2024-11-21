@@ -6,19 +6,24 @@
 
 <!-- [![codecov](https://codecov.io/gh/crs4/rocrate-validator/branch/main/graph/badge.svg?token=3ZQZQZQZQZ)](https://codecov.io/gh/crs4/rocrate-validator) -->
 
-A Python package to validate [RO-Crate](https://researchobject.github.io/ro-crate/)s.
+`rocrate-validator` (available as `roc-validator` on PyPI) is a Python package designed to validate [RO-Crate](https://researchobject.github.io/ro-crate/)s
+against different profiles, including the base RO-Crate profile and other profiles that extend the base profile.
 
--   Supports [CLI-based validation](#cli-based-validation) as well as [programmatic validation](#programmatic-validation) (so it can easily be used by Python code).
--   Implements an extensible validation framework to which new RO-Crate profiles
-    can be added. Validation is based on SHACL shapes and Python code.
--   Currently, validation for the following profiles is implemented: RO-Crate
-    (base profile), [Workflow
-    RO-Crate](https://w3id.org/workflowhub/workflow-ro-crate),
-    [Process Run
-    Crate](https://w3id.org/ro/wfrun/process).
-    [Workflow Run Crate](https://w3id.org/ro/wfrun/workflow),
-    [Provenance Run Crate](https://w3id.org/ro/wfrun/provenance),
-    [Workflow Testing RO-Crate](https://w3id.org/ro/wftest).
+## Features
+
+-   Validates RO-Crates against different profiles, including the base RO-Crate profile and other profiles that extend the base profile. 
+    Currently, validations for the following profiles are implemented (more profiles can be added): 
+    - [RO-Crate](https://w3id.org/ro/crate/1.1) *(base profile)*
+    - [Workflow RO-Crate](https://w3id.org/workflowhub/workflow-ro-crate/1.0)
+    - [Workflow Testing RO-Crate](https://w3id.org/ro/wftest)
+    - [Workflow Run Crate](https://w3id.org/ro/wfrun/workflow)
+    - [Process Run Crate](https://w3id.org/ro/wfrun/process)
+    - [Provenance Run Crate](https://w3id.org/ro/wfrun/provenance)
+-   Validates RO-Crates against different requirement levels (e.g., `REQUIRED`, `RECOMMENDED`, `OPTIONAL`)
+-   Provides detailed information about the issues found during validation
+-   Supports validation of RO-Crates stored locally as directories or as ZIP archives (`.zip` files) or remotely as URLs (e.g., `http://example.com/ro-crate.zip`)
+-   Supports [CLI-based validation](#cli-based-validation) as well as [programmatic validation](#programmatic-validation) (so it can easily be used by Python code)
+-   Implements an extensible validation framework to which new RO-Crate profiles can be added, implementing profile requirements as SHACL shapes and/or Python code
 
 **Note**: this software is still work in progress. Feel free to try it out,
 report positive and negative feedback. Do send a note (e.g., by opening an
