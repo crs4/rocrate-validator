@@ -4,3 +4,4 @@ nbsphinx==0.9.5
 enum-tools==0.12.0
 sphinx-toolbox==3.8.1
 myst-parser==4.0.0
+sphinx_rtd_theme==3
