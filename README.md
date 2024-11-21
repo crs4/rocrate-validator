@@ -120,7 +120,9 @@ Type `rocrate-validator --help` for more information.
 
 ## Programmatic Validation
 
-You can also integrate the package programmatically in your Python code. Here's an example:
+You can also integrate the package programmatically in your Python code. 
+
+Here's an example:
 
 ```python
 
