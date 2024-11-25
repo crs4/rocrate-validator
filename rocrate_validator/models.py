@@ -1245,6 +1245,10 @@ class CheckIssue:
 
     @property
     def violatingPropertyValue(self) -> Optional[str]:
+        """
+        It represents the value of the violatingProperty
+        that leads to a validation failure.
+        """
         return self._propertyValue
 
     def __eq__(self, other: object) -> bool:
