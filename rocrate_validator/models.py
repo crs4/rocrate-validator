@@ -37,9 +37,7 @@ from rocrate_validator.constants import (DEFAULT_ONTOLOGY_FILE,
                                          JSON_OUTPUT_FORMAT_VERSION, PROF_NS,
                                          PROFILE_FILE_EXTENSIONS,
                                          PROFILE_SPECIFICATION_FILE,
-                                         RDF_SERIALIZATION_FORMATS_TYPES,
-                                         ROCRATE_METADATA_FILE, SCHEMA_ORG_NS,
-                                         VALID_INFERENCE_OPTIONS_TYPES)
+                                         ROCRATE_METADATA_FILE, SCHEMA_ORG_NS)
 from rocrate_validator.errors import (DuplicateRequirementCheck,
                                       InvalidProfilePath, ProfileNotFound,
                                       ProfileSpecificationError,
@@ -591,7 +589,7 @@ class Requirement(ABC):
 
     @property
     def identifier(self) -> str:
-        return f"{self.profile.identifier}.{self.relative_identifier}"
+        return f"{self.profile.identifier}_{self.relative_identifier}"
 
     @property
     def relative_identifier(self) -> str:
@@ -683,7 +681,7 @@ class Requirement(ABC):
                     EventType.REQUIREMENT_CHECK_VALIDATION_START, check))
                 check_result = check.execute_check(context)
                 logger.debug("Result of check %s: %s", check.identifier, check_result)
-                context.result.add_executed_check(check, check_result)
+                context.result._add_executed_check(check, check_result)
                 context.validator.notify(RequirementCheckValidationEvent(
                     EventType.REQUIREMENT_CHECK_VALIDATION_END, check, validation_result=check_result))
                 logger.debug("Ran check '%s'. Got result %s", check.name, check_result)
@@ -695,7 +693,7 @@ class Requirement(ABC):
                     break
             except SkipRequirementCheck as e:
                 logger.debug("Skipping check '%s' because: %s", check.name, e)
-                context.result.add_skipped_check(check)
+                context.result._add_skipped_check(check)
                 continue
             except Exception as e:
                 # Ignore the fact that the check failed as far as the validation result is concerned.
@@ -953,26 +951,6 @@ class RequirementCheck(ABC):
     def __hash__(self) -> int:
         return hash((self.requirement, self.name or ""))
 
-    # TODO: delete these?
-    #
-    # @property
-    # def issues(self) -> list[CheckIssue]:
-    #    """Return the issues found during the check"""
-    #    assert self.result, "Issues not set before the check"
-    #    return self.result.get_issues_by_check(self, Severity.OPTIONAL)
-
-    # def get_issues_by_severity(self, severity: Severity = Severity.RECOMMENDED) -> list[CheckIssue]:
-    #    return self.result.get_issues_by_check_and_severity(self, severity)
-
-
-# TODO: delete this?
-
-# def issue_types(issues: list[Type[CheckIssue]]) -> Type[RequirementCheck]:
-#     def class_decorator(cls):
-#         cls.issue_types = issues
-#         return cls
-#     return class_decorator
-
 
 @total_ordering
 class CheckIssue:
@@ -989,14 +967,14 @@ class CheckIssue:
     def __init__(self,
                  check: RequirementCheck,
                  message: Optional[str] = None,
-                 resultPath: Optional[str] = None,
-                 focusNode: Optional[str] = None,
+                 violatingProperty: Optional[str] = None,
+                 violatingEntity: Optional[str] = None,
                  value: Optional[str] = None):
         self._message = message
         self._check: RequirementCheck = check
-        self._resultPath = resultPath
-        self._focusNode = focusNode
-        self._value = value
+        self._violatingProperty = violatingProperty
+        self._violatingEntity = violatingEntity
+        self._propertyValue = value
 
     @property
     def message(self) -> Optional[str]:
@@ -1023,16 +1001,33 @@ class CheckIssue:
         return self._check
 
     @property
-    def resultPath(self) -> Optional[str]:
-        return self._resultPath
+    def violatingEntity(self) -> Optional[str]:
+        """
+        It represents the specific element being evaluated that fails
+        to meet the defined rules or constraints within a validation process.
+        Also referred to as `focusNode` in SHACL terminology
+        in the context of an RDF graph, it is the subject of a triple
+        that violates a given constraint on the subject’s property/predicate,
+        represented by the violatingProperty.
+        """
+        return self._violatingEntity
 
     @property
-    def focusNode(self) -> Optional[str]:
-        return self._focusNode
+    def violatingProperty(self) -> Optional[str]:
+        """
+        It refers to the specific property or relationship within an item
+        that leads to a validation failure.
+        It identifies the part of the data structure that is causing the issue.
+        Also referred to as `resultPath` in SHACL terminology,
+        in the context of an RDF graph, it is the predicate of a triple
+        that violates a given constraint on the subject’s property/predicate,
+        represented by the violatingProperty.
+        """
+        return self._violatingProperty
 
     @property
-    def value(self) -> Optional[str]:
-        return self._value
+    def violatingPropertyValue(self) -> Optional[str]:
+        return self._propertyValue
 
     def __eq__(self, other: object) -> bool:
         return isinstance(other, CheckIssue) and \
@@ -1051,15 +1046,16 @@ class CheckIssue:
         return f'CheckIssue(severity={self.severity}, check={self.check}, message={self.message})'
 
     def __str__(self) -> str:
-        return f"{self.severity}: {self.message} ({self.check})"
+        return f"Issue of severity {self.severity.name} with check \"{self.check.identifier}\": {self.message}"
 
     def to_dict(self, with_check: bool = True,
                 with_requirement: bool = True, with_profile: bool = True) -> dict:
         result = {
             "severity": self.severity.name,
             "message": self.message,
-            "focusNode": self.focusNode,
-            "value": self.value
+            "violatingEntity": self.violatingEntity,
+            "violatingProperty": self.violatingProperty,
+            "violatingPropertyValue": self.violatingPropertyValue
         }
         if with_check:
             result["check"] = self.check.to_dict(with_requirement=with_requirement, with_profile=with_profile)
@@ -1076,38 +1072,25 @@ class CheckIssue:
                 with_profile=with_profile
             ), indent=4, cls=CustomEncoder)
 
-    # @property
-    # def code(self) -> int:
-    #     breakpoint()
-    #     # If the code has not been set, calculate it
-    #     if not self._code:
-    #         """
-    #         Calculate the code based on the severity, the class name and the message.
-    #         - All issues with the same severity, class name and message will have the same code.
-    #         - All issues with the same severity and class name but different message will have different codes.
-    #         - All issues with the same severity but different class name and message will have different codes.
-    #         - All issues with the same severity should start with the same number.
-    #         - All codes should be positive numbers.
-    #         """
-    #         # Concatenate the level, class name and message into a single string
-    #         issue_string = self.level.name + self.__class__.__name__ + str(self.message)
-    #
-    #         # Use the built-in hash function to generate a unique code for this string
-    #         # The modulo operation ensures that the code is a positive number
-    #         self._code = hash(issue_string) % ((1 << 31) - 1)
-    #     # Return the code
-    #     return self._code
-
 
 class ValidationResult:
+    """
+    Class to store the result of the validation
+
+    Attributes:
+        context (ValidationContext): The validation context
+        rocrate_uri (str): The URI of the RO-Crate
+        validation_settings (ValidationSettings): The validation settings
+        issues (list[CheckIssue]): The issues found during the validation
+    """
 
     def __init__(self, context: ValidationContext):
         # reference to the validation context
         self._context = context
-        # reference to the ro-crate path
-        self._rocrate_path = context.rocrate_path
+        # reference to the ro-crate URI
+        self._rocrate_uri = context.rocrate_uri
         # reference to the validation settings
-        self._validation_settings: dict[str, BaseTypes] = context.settings
+        self._validation_settings: ValidationSettings = context.settings
         # keep track of the issues found during the validation
         self._issues: list[CheckIssue] = []
         # keep track of the checks that have been executed
@@ -1118,22 +1101,37 @@ class ValidationResult:
 
     @property
     def context(self) -> ValidationContext:
+        """"
+        The validation context
+        """
         return self._context
 
     @property
-    def rocrate_path(self):
-        return self._rocrate_path
+    def rocrate_uri(self):
+        """
+        The URI of the RO-Crate
+        """
+        return self._rocrate_uri
 
     @property
     def validation_settings(self):
+        """
+        The validation settings
+        """
         return self._validation_settings
 
     # --- Checks ---
     @property
     def executed_checks(self) -> set[RequirementCheck]:
+        """
+        The checks that have been executed
+        """
         return self._executed_checks
 
-    def add_executed_check(self, check: RequirementCheck, result: bool):
+    def _add_executed_check(self, check: RequirementCheck, result: bool):
+        """"
+        Internal method to add a check to the executed checks
+        """
         self._executed_checks.add(check)
         self._executed_checks_results[check.identifier] = result
         # remove the check from the skipped checks if it was skipped
@@ -1142,30 +1140,52 @@ class ValidationResult:
             logger.debug("Removing check '%s' from skipped checks", check.name)
 
     def get_executed_check_result(self, check: RequirementCheck) -> Optional[bool]:
+        """
+        Get the result of an executed check
+        """
         return self._executed_checks_results.get(check.identifier)
 
     @property
     def skipped_checks(self) -> set[RequirementCheck]:
+        """
+        The checks that have been skipped
+        """
         return self._skipped_checks
 
-    def add_skipped_check(self, check: RequirementCheck):
+    def _add_skipped_check(self, check: RequirementCheck):
+        """
+        Internal method to add a check to the skipped checks
+        """
         self._skipped_checks.add(check)
 
-    def remove_skipped_check(self, check: RequirementCheck):
+    def _remove_skipped_check(self, check: RequirementCheck):
+        """
+        Internal method to remove a check from the skipped checks
+        """
         self._skipped_checks.remove(check)
 
     #  --- Issues ---
     @property
     def issues(self) -> list[CheckIssue]:
-        return self._issues
+        """
+        The issues found during the validation
+        """
+        return self._issues.copy()
 
     def get_issues(self, min_severity: Optional[Severity] = None) -> list[CheckIssue]:
+        """
+        Get the issues found during the validation with a severity greater than or equal to min_severity
+        """
         min_severity = min_severity or self.context.requirement_severity
         return [issue for issue in self._issues if issue.severity >= min_severity]
 
     def get_issues_by_check(self,
                             check: RequirementCheck,
                             min_severity: Severity = None) -> list[CheckIssue]:
+        """
+        Get the issues found during the validation for a specific check
+        with a severity greater than or equal to min_severity
+        """
         min_severity = min_severity or self.context.requirement_severity
         return [issue for issue in self._issues if issue.check == check and issue.severity >= min_severity]
 
@@ -1173,14 +1193,26 @@ class ValidationResult:
     #     return [issue for issue in self.issues if issue.check == check and issue.severity == severity]
 
     def has_issues(self, severity: Optional[Severity] = None) -> bool:
+        """
+        Check if there are issues with a severity greater than or equal to the given severity
+        """
         severity = severity or self.context.requirement_severity
         return any(issue.severity >= severity for issue in self._issues)
 
     def passed(self, severity: Optional[Severity] = None) -> bool:
+        """"
+        Check if all checks passed with a severity greater than or equal to the given severity
+        """
         severity = severity or self.context.requirement_severity
         return not any(issue.severity >= severity for issue in self._issues)
 
     def add_issue(self, issue: CheckIssue):
+        """
+        Add an issue to the validation result
+
+        Parameters:
+            issue (CheckIssue): The issue to add to the validation result
+        """
         bisect.insort(self._issues, issue)
 
     def add_check_issue(self,
@@ -1189,37 +1221,62 @@ class ValidationResult:
                         resultPath: Optional[str] = None,
                         focusNode: Optional[str] = None,
                         value: Optional[str] = None) -> CheckIssue:
-        c = CheckIssue(check, message, resultPath=resultPath, focusNode=focusNode, value=value)
+        """"
+        Add an issue to the validation result
+
+        Parameters:
+            message (str): The message of the issue
+            check (RequirementCheck): The check that generated the issue
+            resultPath (Optional[str]): The result path (i.e., the predicate) of the issue
+            focusNode (Optional[str]): The focus node (i.e., the subject) of the issue
+            value (Optional[str]): The value of the result path which caused the issue (if any)
+        """
+        c = CheckIssue(check, message, violatingProperty=resultPath, violatingEntity=focusNode, value=value)
         bisect.insort(self._issues, c)
         return c
 
     def add_error(self, message: str, check: RequirementCheck) -> CheckIssue:
+        """"
+        Add an error to the validation result
+        """
         return self.add_check_issue(message, check)
 
     #  --- Requirements ---
     @property
     def failed_requirements(self) -> Collection[Requirement]:
+        """"
+        Get the requirements that failed
+        """
         return set(issue.check.requirement for issue in self._issues)
 
     #  --- Checks ---
     @property
     def failed_checks(self) -> Collection[RequirementCheck]:
+        """"
+        Get the checks that failed
+        """
         return set(issue.check for issue in self._issues)
 
     def get_failed_checks_by_requirement(self, requirement: Requirement) -> Collection[RequirementCheck]:
+        """"
+        Get the checks that failed for a specific requirement
+        """
         return [check for check in self.failed_checks if check.requirement == requirement]
 
     def get_failed_checks_by_requirement_and_severity(
             self, requirement: Requirement, severity: Severity) -> Collection[RequirementCheck]:
+        """"
+        Get the checks that failed for a specific requirement and severity
+        """
         return [check for check in self.failed_checks
                 if check.requirement == requirement
                 and check.severity == severity]
 
     def __str__(self) -> str:
-        return f"Validation result: {len(self._issues)} issues"
+        return f"Validation result: passed={len(self.failed_checks)==0}, {len(self._issues)} issues"
 
     def __repr__(self):
-        return f"ValidationResult(issues={self._issues})"
+        return f"ValidationResult(passed={len(self.failed_checks)==0},issues={self._issues})"
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, ValidationResult):
@@ -1227,14 +1284,19 @@ class ValidationResult:
         return self._issues == other._issues
 
     def to_dict(self) -> dict:
-        allowed_properties = ["profile_identifier", "inherit_profiles", "requirement_severity", "abort_on_first"]
+        """
+        Convert the ValidationResult to a dictionary
+        """
+        allowed_properties = ["profile_identifier", "enable_profile_inheritance",
+                              "requirement_severity", "abort_on_first"]
+        validation_settings = {key: value for key, value in self.validation_settings.to_dict().items()
+                               if key in allowed_properties}
         result = {
             "meta": {
                 "version": JSON_OUTPUT_FORMAT_VERSION
             },
-            "validation_settings": {key: self.validation_settings[key]
-                                    for key in allowed_properties if key in self.validation_settings},
-            "passed": self.passed(self.context.settings["requirement_severity"]),
+            "validation_settings": validation_settings,
+            "passed": self.passed(self.context.settings.requirement_severity),
             "issues": [issue.to_dict() for issue in self.issues]
         }
         # add validator version to the settings
@@ -1242,7 +1304,9 @@ class ValidationResult:
         return result
 
     def to_json(self, path: Optional[Path] = None) -> str:
-
+        """"
+        Convert the ValidationResult to a JSON string
+        """
         result = json.dumps(self.to_dict(), indent=4, cls=CustomEncoder)
         if path:
             with open(path, "w") as f:
@@ -1270,36 +1334,45 @@ class CustomEncoder(json.JSONEncoder):
 
 @dataclass
 class ValidationSettings:
+    """
+    A class to represent the settings for RO-Crate validation
 
+    Attributes:
+        rocrate_uri (URI): The URI of the RO-Crate to validate
+        profiles_path (Path): The path to the profiles directory (default: {DEFAULT_PROFILES_PATH})
+        profile_identifier (str): The identifier of the profile to use (default: {DEFAULT_PROFILE_IDENTIFIER})
+        enable_profile_inheritance (bool): Whether to enable profile inheritance (default: True)
+        abort_on_first (Optional[bool]): Whether to abort on the first validation error (default: True)
+        disable_inherited_profiles_reporting (bool): Whether to disable reporting of inherited profiles (default: False)
+        disable_remote_crate_download (bool): Whether to disable downloading of remote crates (default: True)
+        requirement_severity (Union[str, Severity]): The severity level for requirements (default: Severity.REQUIRED)
+        requirement_severity_only (bool): Whether to only consider the severity of requirements (default: False)
+        allow_requirement_check_override (bool): Whether to allow overriding requirement checks (default: True)
+        disable_check_for_duplicates (bool): Whether to disable checking for duplicate entries (default: False)
+
+    Methods:
+        __init__(**kwargs): Initializes the ValidationSettings with the given keyword arguments
+        to_dict(): Converts the ValidationSettings instance to a dictionary
+        rocrate_uri(): Gets the RO-Crate URI
+        rocrate_uri(value): Sets the RO-Crate URI
+        parse(settings): Parses the settings into a ValidationSettings object
+    """
     # Data settings
-    data_path: Path
+    rocrate_uri: URI
     # Profile settings
     profiles_path: Path = DEFAULT_PROFILES_PATH
     profile_identifier: str = DEFAULT_PROFILE_IDENTIFIER
-    inherit_profiles: bool = True
-    allow_requirement_check_override: bool = True
-    disable_check_for_duplicates: bool = False
-    # Ontology and inference settings
-    ontology_path: Optional[Path] = None
-    inference: Optional[VALID_INFERENCE_OPTIONS_TYPES] = None
+    enable_profile_inheritance: bool = True
     # Validation strategy settings
-    advanced: bool = True  # enable SHACL Advanced Validation
-    inplace: Optional[bool] = False
     abort_on_first: Optional[bool] = True
-    inplace: Optional[bool] = False
-    meta_shacl: bool = False
-    iterate_rules: bool = True
-    target_only_validation: bool = True
-    remote_validation: bool = True
-    http_cache_timeout: int = 60
+    disable_inherited_profiles_reporting: bool = False
+    disable_remote_crate_download: bool = True
     # Requirement severity settings
     requirement_severity: Union[str, Severity] = Severity.REQUIRED
     requirement_severity_only: bool = False
-    allow_infos: Optional[bool] = True
-    allow_warnings: Optional[bool] = True
-    # Output serialization settings
-    serialization_output_path: Optional[Path] = None
-    serialization_output_format: RDF_SERIALIZATION_FORMATS_TYPES = "turtle"
+    # Requirement check settings
+    allow_requirement_check_override: bool = True
+    disable_check_for_duplicates: bool = False
 
     def __init__(self, **kwargs):
         for key, value in kwargs.items():
@@ -1310,8 +1383,26 @@ class ValidationSettings:
         if isinstance(severity, str):
             setattr(self, "requirement_severity", Severity[severity])
 
+        # parse and set the rocrate URI
+        self._rocrate_uri = None
+        if "rocrate_uri" in kwargs:
+            self.rocrate_uri = kwargs["rocrate_uri"]
+        logger.debug("Validating RO-Crate: %s", self.rocrate_uri)
+
     def to_dict(self):
-        return asdict(self)
+        result = asdict(self)
+        result['rocrate_uri'] = str(self.rocrate_uri)
+        return result
+
+    @property
+    def rocrate_uri(self) -> Optional[URI]:
+        return self._rocrate_uri
+
+    @rocrate_uri.setter
+    def rocrate_uri(self, value: URI):
+        if not value:
+            raise ValueError("Invalid RO-Crate URI")
+        self._rocrate_uri: URI = URI(value)
 
     @classmethod
     def parse(cls, settings: Union[dict, ValidationSettings]) -> ValidationSettings:
@@ -1397,8 +1488,23 @@ class RequirementCheckValidationEvent(Event):
 
 class Validator(Publisher):
     """
-    Can validate conformance to a single Profile (including any requirements
-    inherited by parent profiles).
+    Validator class for validating Research Object Crates (RO-Crate)
+    against specified profiles according to the validation settings.
+
+    Attributes:
+        validation_settings (ValidationSettings): The settings used for validation.
+
+    Methods:
+        __init__(settings: Union[str, ValidationSettings]):
+            Initializes the Validator with the given settings.
+        validation_settings() -> ValidationSettings:
+            Returns the validation settings.
+        detect_rocrate_profiles() -> list[Profile]:
+            Detects the profiles to validate against.
+        validate() -> ValidationResult:
+            Validate the RO-Crate against the detected profiles according to the validation settings
+        validate_requirements(requirements: list[Requirement]) -> ValidationResult:
+            Validates the RO-Crate against the specified subset of the profile requirements.
     """
 
     def __init__(self, settings: Union[str, ValidationSettings]):
@@ -1415,7 +1521,7 @@ class Validator(Publisher):
         """
         try:
             # initialize the validation context
-            context = ValidationContext(self, self.validation_settings.to_dict())
+            context = ValidationContext(self, self.validation_settings)
             candidate_profiles_uris = set()
             try:
                 candidate_profiles_uris.add(context.ro_crate.metadata.get_conforms_to())
@@ -1452,10 +1558,15 @@ class Validator(Publisher):
             return None
 
     def validate(self) -> ValidationResult:
+        """
+        Validate the RO-Crate against the detected profiles according to the validation settings
+        """
         return self.__do_validate__()
 
     def validate_requirements(self, requirements: list[Requirement]) -> ValidationResult:
-        # check if requirement is an instance of Requirement
+        """
+        Validates the RO-Crate against the specified subset of the profile requirements
+        """
         assert all(isinstance(requirement, Requirement) for requirement in requirements), \
             "Invalid requirement type"
         # perform the requirements validation
@@ -1465,7 +1576,7 @@ class Validator(Publisher):
                         requirements: Optional[list[Requirement]] = None) -> ValidationResult:
 
         # initialize the validation context
-        context = ValidationContext(self, self.validation_settings.to_dict())
+        context = ValidationContext(self, self.validation_settings)
 
         # set the profiles to validate against
         profiles = context.profiles
@@ -1509,7 +1620,7 @@ class Validator(Publisher):
 
 class ValidationContext:
 
-    def __init__(self, validator: Validator, settings: dict[str, object]):
+    def __init__(self, validator: Validator, settings: ValidationSettings):
         # reference to the validator
         self._validator = validator
         # reference to the settings
@@ -1523,12 +1634,8 @@ class ValidationContext:
         # additional properties for the context
         self._properties = {}
 
-        # parse the rocrate path
-        rocrate_path: URI = URI(settings.get("data_path"))
-        logger.debug("Validating RO-Crate: %s", rocrate_path)
-
         # initialize the ROCrate object
-        self._rocrate = ROCrate.new_instance(rocrate_path)
+        self._rocrate = ROCrate.new_instance(settings.rocrate_uri)
         assert isinstance(self._rocrate, ROCrate), "Invalid RO-Crate instance"
 
     @property
@@ -1546,7 +1653,7 @@ class ValidationContext:
         return self._result
 
     @property
-    def settings(self) -> dict[str, object]:
+    def settings(self) -> ValidationSettings:
         return self._settings
 
     @property
@@ -1558,14 +1665,14 @@ class ValidationContext:
 
     @property
     def profiles_path(self) -> Path:
-        profiles_path = self.settings.get("profiles_path")
+        profiles_path = self.settings.profiles_path
         if isinstance(profiles_path, str):
             profiles_path = Path(profiles_path)
         return profiles_path
 
     @property
     def requirement_severity(self) -> Severity:
-        severity = self.settings.get("requirement_severity", Severity.REQUIRED)
+        severity = self.settings.requirement_severity
         if isinstance(severity, str):
             severity = Severity[severity]
         elif not isinstance(severity, Severity):
@@ -1574,15 +1681,15 @@ class ValidationContext:
 
     @property
     def requirement_severity_only(self) -> bool:
-        return self.settings.get("requirement_severity_only", False)
+        return self.settings.requirement_severity_only
 
     @property
-    def rocrate_path(self) -> Path:
-        return self.settings.get("data_path")
+    def rocrate_uri(self) -> Path:
+        return self.settings.rocrate_uri
 
     @property
     def fail_fast(self) -> bool:
-        return self.settings.get("abort_on_first", True)
+        return self.settings.abort_on_first
 
     @property
     def rel_fd_path(self) -> Path:
@@ -1604,7 +1711,7 @@ class ValidationContext:
             return self._data_graph
         except FileNotFoundError as e:
             logger.debug("Error loading data graph: %s", e)
-            raise ROCrateMetadataNotFoundError(self.rocrate_path)
+            raise ROCrateMetadataNotFoundError(self.rocrate_uri)
 
     @property
     def data_graph(self) -> Graph:
@@ -1612,19 +1719,19 @@ class ValidationContext:
 
     @property
     def inheritance_enabled(self) -> bool:
-        return self.settings.get("inherit_profiles", False)
+        return self.settings.enable_profile_inheritance
 
     @property
     def profile_identifier(self) -> str:
-        return self.settings.get("profile_identifier")
+        return self.settings.profile_identifier
 
     @property
     def allow_requirement_check_override(self) -> bool:
-        return self.settings.get("allow_requirement_check_override", True)
+        return self.settings.allow_requirement_check_override
 
     @property
     def disable_check_for_duplicates(self) -> bool:
-        return self.settings.get("disable_check_for_duplicates", False)
+        return self.settings.disable_check_for_duplicates
 
     def __load_profiles__(self) -> list[Profile]:
 
@@ -1653,10 +1760,10 @@ class ValidationContext:
                 if candidate_profiles:
                     # Find the profile with the highest version number
                     profile = max(candidate_profiles, key=lambda p: p.version)
-                    self.settings["profile_identifier"] = profile.identifier
+                    self.settings.profile_identifier = profile.identifier
                     logger.debug("Profile with the highest version number: %s", profile)
                 # if the profile is found by token, set the profile name to the identifier
-                self.settings["profile_identifier"] = profile.identifier
+                self.settings.profile_identifier = profile.identifier
             except AttributeError as e:
                 # raised when the profile is not found
                 if logger.isEnabledFor(logging.DEBUG):

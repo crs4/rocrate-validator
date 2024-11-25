@@ -240,7 +240,6 @@ def validate(ctx,
              requirement_severity_only: bool = False,
              rocrate_uri: Path = ".",
              no_fail_fast: bool = False,
-             ontologies_path: Optional[Path] = None,
              no_paging: bool = False,
              verbose: bool = False,
              output_format: str = "text",
@@ -268,8 +267,6 @@ def validate(ctx,
     logger.debug("no_fail_fast: %s", no_fail_fast)
     logger.debug("fail fast: %s", not no_fail_fast)
 
-    if ontologies_path:
-        logger.debug("ontologies_path: %s", os.path.abspath(ontologies_path))
     if rocrate_uri:
         logger.debug("rocrate_path: %s", os.path.abspath(rocrate_uri))
 
@@ -280,10 +277,9 @@ def validate(ctx,
             "profile_identifier": profile_identifier,
             "requirement_severity": requirement_severity,
             "requirement_severity_only": requirement_severity_only,
-            "inherit_profiles": not disable_profile_inheritance,
+            "enable_profile_inheritance": not disable_profile_inheritance,
             "verbose": verbose,
-            "data_path": rocrate_uri,
-            "ontology_path": Path(ontologies_path).absolute() if ontologies_path else None,
+            "rocrate_uri": rocrate_uri,
             "abort_on_first": not no_fail_fast
         }
 
@@ -567,7 +563,7 @@ class ValidationReportLayout(Layout):
         severity_color = get_severity_color(Severity.get(settings["requirement_severity"]))
         base_info_layout = Layout(
             Align(
-                f"\n[bold cyan]RO-Crate:[/bold cyan] [bold]{URI(settings['data_path']).uri}[/bold]"
+                f"\n[bold cyan]RO-Crate:[/bold cyan] [bold]{URI(settings['rocrate_uri']).uri}[/bold]"
                 "\n[bold cyan]Target Profile:[/bold cyan][bold magenta] "
                 f"{settings['profile_identifier']}[/bold magenta] "
                 f"{'[italic](autodetected)[/italic]' if settings['profile_autodetected'] else ''}"
@@ -756,14 +752,14 @@ class ValidationReportLayout(Layout):
                     for issue in sorted(result.get_issues_by_check(check),
                                         key=lambda x: (-x.severity.value, x)):
                         path = ""
-                        if issue.resultPath and issue.value:
-                            path = f" of [yellow]{issue.resultPath}[/yellow]"
-                        if issue.value:
-                            if issue.resultPath:
+                        if issue.violatingProperty and issue.violatingPropertyValue:
+                            path = f" of [yellow]{issue.violatingProperty}[/yellow]"
+                        if issue.violatingPropertyValue:
+                            if issue.violatingProperty:
                                 path += "="
-                            path += f"\"[green]{issue.value}[/green]\" "  # keep the ending space
-                        if issue.focusNode:
-                            path = f"{path} on [cyan]<{issue.focusNode}>[/cyan]"
+                            path += f"\"[green]{issue.violatingPropertyValue}[/green]\" "  # keep the ending space
+                        if issue.violatingEntity:
+                            path = f"{path} on [cyan]<{issue.violatingEntity}>[/cyan]"
                         console.print(
                             Padding(f"- [[red]Violation[/red]{path}]: "
                                     f"{Markdown(issue.message).markup}", (0, 9)), style="white")
@@ -777,14 +773,14 @@ def __compute_profile_stats__(validation_settings: dict):
     # extract the validation settings
     severity_validation = Severity.get(validation_settings.get("requirement_severity"))
     profiles = services.get_profiles(validation_settings.get("profiles_path"), severity=severity_validation)
-    profile = services.get_profile(validation_settings.get("profiles_path"),
-                                   validation_settings.get("profile_identifier"),
+    profile = services.get_profile(validation_settings.get("profile_identifier"),
+                                   validation_settings.get("profiles_path"),
                                    severity=severity_validation)
     # initialize the profiles list
     profiles = [profile]
 
     # add inherited profiles if enabled
-    if validation_settings.get("inherit_profiles"):
+    if validation_settings.get("enable_profile_inheritance"):
         profiles.extend(profile.inherited_profiles)
     logger.debug("Inherited profiles: %r", profile.inherited_profiles)
 

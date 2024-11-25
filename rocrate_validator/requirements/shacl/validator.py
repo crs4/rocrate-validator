@@ -64,10 +64,9 @@ class SHACLValidationContextManager:
             raise SHACLValidationAlreadyProcessed(
                 self._profile.identifier, self._shacl_context.get_validation_result(self._profile))
         logger.debug("Processing profile: %s (id: %s)", self._profile.name,  self._profile.identifier)
-        if self._context.settings.get("target_only_validation", False) and \
-                self._profile.identifier != self._context.settings.get("profile_identifier", None):
+        if self._profile.identifier != self._context.settings.profile_identifier:
             logger.debug("Skipping validation of profile %s", self._profile.identifier)
-            self.context.result.add_skipped_check(self._check)
+            self.context.result._add_skipped_check(self._check)
             raise SHACLValidationSkip(f"Skipping validation of profile {self._profile.identifier}")
         logger.debug("ValidationContext of profile %s initialized", self._profile.identifier)
         return self._shacl_context
@@ -125,7 +124,7 @@ class SHACLValidationContext(ValidationContext):
             logger.debug("Loaded shapes: %s", profile_shapes)
 
             # enable overriding of checks
-            if self.settings.get("allow_requirement_check_override", True):
+            if self.settings.allow_requirement_check_override:
                 from rocrate_validator.requirements.shacl.requirements import \
                     SHACLRequirement
                 for requirement in [_ for _ in profile.requirements if isinstance(_, SHACLRequirement)]:
@@ -187,12 +186,7 @@ class SHACLValidationContext(ValidationContext):
 
     def __get_ontology_path__(self, profile_path: Path, ontology_filename: str = DEFAULT_ONTOLOGY_FILE) -> Path:
         if not self._ontology_path:
-            supported_path = f"{profile_path}/{ontology_filename}"
-            if self.settings.get("ontology_path", None):
-                logger.warning("Detected an ontology path. Custom ontology file is not yet supported."
-                               f"Use {supported_path} to provide an ontology for your profile.")
-            # overwrite the ontology path if the custom ontology file is provided
-            self._ontology_path = Path(supported_path)
+            self._ontology_path = Path(f"{profile_path}/{ontology_filename}")
         return self._ontology_path
 
     def __load_ontology_graph__(self, profile_path: Path,
@@ -388,8 +382,8 @@ class SHACLValidator:
         meta_shacl: bool = False,
         iterate_rules: bool = True,
         # SHACL validation severity
-        allow_infos: Optional[bool] = False,
-        allow_warnings: Optional[bool] = False,
+        allow_infos: Optional[bool] = True,
+        allow_warnings: Optional[bool] = True,
         # serialization settings
         serialization_output_path: Optional[str] = None,
         serialization_output_format:

@@ -179,7 +179,7 @@ def describe_profile(ctx,
 
     try:
         # Get the profile
-        profile = services.get_profile(profiles_path=profiles_path, profile_identifier=profile_identifier)
+        profile = services.get_profile(profile_identifier, profiles_path=profiles_path)
 
         # Set the subheader title
         subheader_title = f"[bold][cyan]Profile:[/cyan] [magenta italic]{profile.identifier}[/magenta italic][/bold]"

@@ -92,7 +92,7 @@ def do_entity_test(
         # validate RO-Crate
         result: models.ValidationResult = \
             services.validate(models.ValidationSettings(**{
-                "data_path": rocrate_path,
+                "rocrate_uri": rocrate_path,
                 "requirement_severity": requirement_severity,
                 "abort_on_first": abort_on_first,
                 "profile_identifier": profile_identifier

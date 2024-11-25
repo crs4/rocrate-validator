@@ -22,7 +22,7 @@ import requests
 import requests_cache
 
 import rocrate_validator.log as logging
-from rocrate_validator.constants import DEFAULT_PROFILE_IDENTIFIER
+from rocrate_validator.constants import DEFAULT_HTTP_CACHE_TIMEOUT
 from rocrate_validator.errors import ProfileNotFound
 from rocrate_validator.events import Subscriber
 from rocrate_validator.models import (Profile, Severity, ValidationResult,
@@ -67,7 +67,7 @@ def __initialise_validator__(settings: Union[dict, ValidationSettings],
     settings = ValidationSettings.parse(settings)
 
     # parse the rocrate path
-    rocrate_path: URI = URI(settings.data_path)
+    rocrate_path: URI = URI(settings.rocrate_uri)
     logger.debug("Validating RO-Crate: %s", rocrate_path)
 
     # check if the RO-Crate exists
@@ -75,20 +75,20 @@ def __initialise_validator__(settings: Union[dict, ValidationSettings],
         raise FileNotFoundError(f"RO-Crate not found: {rocrate_path}")
 
     # check if the requests cache is enabled
-    if settings.http_cache_timeout > 0:
+    if DEFAULT_HTTP_CACHE_TIMEOUT > 0:
         # Set up requests cache
         requests_cache.install_cache(
             '/tmp/rocrate_validator_cache',
-            expire_after=settings.http_cache_timeout,  # Cache expiration time in seconds
+            expire_after=DEFAULT_HTTP_CACHE_TIMEOUT,  # Cache expiration time in seconds
             backend='sqlite',  # Use SQLite backend
             allowable_methods=('GET',),  # Cache GET
             allowable_codes=(200, 302, 404)  # Cache responses with these status codes
         )
 
     # check if remote validation is enabled
-    remote_validation = settings.remote_validation
-    logger.debug("Remote validation: %s", remote_validation)
-    if remote_validation:
+    disable_remote_crate_download = settings.disable_remote_crate_download
+    logger.debug("Remote validation: %s", disable_remote_crate_download)
+    if disable_remote_crate_download:
         # create a validator
         validator = Validator(settings)
         logger.debug("Validator created. Starting validation...")
@@ -108,7 +108,7 @@ def __initialise_validator__(settings: Union[dict, ValidationSettings],
 
     def __extract_and_validate_rocrate__(rocrate_path: Path):
         # store the original data path
-        original_data_path = settings.data_path
+        original_data_path = settings.rocrate_uri
 
         with tempfile.TemporaryDirectory() as tmp_dir:
             try:
@@ -117,12 +117,12 @@ def __initialise_validator__(settings: Union[dict, ValidationSettings],
                     zip_ref.extractall(tmp_dir)
                     logger.debug("RO-Crate extracted to temporary directory: %s", tmp_dir)
                 # update the data path to point to the temporary directory
-                settings.data_path = Path(tmp_dir)
+                settings.rocrate_uri = Path(tmp_dir)
                 # continue with the validation process
                 return __init_validator__(settings)
             finally:
                 # restore the original data path
-                settings.data_path = original_data_path
+                settings.rocrate_uri = original_data_path
                 logger.debug("Original data path restored: %s", original_data_path)
 
     # check if the RO-Crate is a remote RO-Crate,
@@ -150,7 +150,7 @@ def __initialise_validator__(settings: Union[dict, ValidationSettings],
     # if the RO-Crate is not a ZIP file, directly validate the RO-Crate
     elif rocrate_path.is_local_directory():
         logger.debug("RO-Crate is a local directory")
-        settings.data_path = rocrate_path.as_path()
+        settings.rocrate_uri = rocrate_path.as_path()
         return __init_validator__(settings)
     else:
         raise ValueError(
@@ -159,30 +159,28 @@ def __initialise_validator__(settings: Union[dict, ValidationSettings],
 
 
 def get_profiles(profiles_path: Path = DEFAULT_PROFILES_PATH,
-                 publicID: str = None,
                  severity=Severity.OPTIONAL,
                  allow_requirement_check_override: bool =
                  ValidationSettings.allow_requirement_check_override) -> list[Profile]:
     """
     Load the profiles from the given path
     """
-    profiles = Profile.load_profiles(profiles_path, publicID=publicID,
+    profiles = Profile.load_profiles(profiles_path,
                                      severity=severity,
                                      allow_requirement_check_override=allow_requirement_check_override)
     logger.debug("Profiles loaded: %s", profiles)
     return profiles
 
 
-def get_profile(profiles_path: Path = DEFAULT_PROFILES_PATH,
-                profile_identifier: str = DEFAULT_PROFILE_IDENTIFIER,
-                publicID: str = None,
+def get_profile(profile_identifier: str,
+                profiles_path: Path = DEFAULT_PROFILES_PATH,
                 severity=Severity.OPTIONAL,
                 allow_requirement_check_override: bool =
                 ValidationSettings.allow_requirement_check_override) -> Profile:
     """
     Load the profiles from the given path
     """
-    profiles = get_profiles(profiles_path, publicID=publicID, severity=severity,
+    profiles = get_profiles(profiles_path, severity=severity,
                             allow_requirement_check_override=allow_requirement_check_override)
     profile = next((p for p in profiles if p.identifier == profile_identifier), None) or \
         next((p for p in profiles if str(p.identifier).replace(f"-{p.version}", '') == profile_identifier), None)
