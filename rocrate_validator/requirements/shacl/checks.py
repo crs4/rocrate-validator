@@ -210,13 +210,21 @@ class SHACLCheck(RequirementCheck):
                     shacl_context.settings.disable_inherited_profiles_reporting:
                 continue
             for violation in failed_requirements_checks_violations[requirementCheck.identifier]:
-                c = shacl_context.result.add_check_issue(
-                    message=violation.get_result_message(shacl_context.rocrate_uri),
-                    check=requirementCheck,
-                    resultPath=violation.resultPath.toPython() if violation.resultPath else None,
-                    focusNode=make_uris_relative(
-                        violation.focusNode.toPython(), shacl_context.publicID),
-                    value=violation.value)
+                violation_message = violation.get_result_message(shacl_context.rocrate_uri)
+                registered_check_issues = shacl_context.result.get_issues_by_check(requirementCheck)
+                skip_requirement_check = False
+                for check_issue in registered_check_issues:
+                    if check_issue.message == violation_message:
+                        skip_requirement_check = True
+                        break
+                if not skip_requirement_check:
+                    c = shacl_context.result.add_check_issue(
+                        message=violation.get_result_message(shacl_context.rocrate_uri),
+                        check=requirementCheck,
+                        resultPath=violation.resultPath.toPython() if violation.resultPath else None,
+                        focusNode=make_uris_relative(
+                            violation.focusNode.toPython(), shacl_context.publicID),
+                        value=violation.value)
                 # if the fail fast mode is enabled, stop the validation after the first issue
                 if shacl_context.fail_fast:
                     break
