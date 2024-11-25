@@ -752,14 +752,14 @@ class ValidationReportLayout(Layout):
                     for issue in sorted(result.get_issues_by_check(check),
                                         key=lambda x: (-x.severity.value, x)):
                         path = ""
-                        if issue.violatingProperty and issue.value:
+                        if issue.violatingProperty and issue.violatingPropertyValue:
                             path = f" of [yellow]{issue.violatingProperty}[/yellow]"
-                        if issue.value:
+                        if issue.violatingPropertyValue:
                             if issue.violatingProperty:
                                 path += "="
-                            path += f"\"[green]{issue.value}[/green]\" "  # keep the ending space
-                        if issue.violatingItem:
-                            path = f"{path} on [cyan]<{issue.violatingItem}>[/cyan]"
+                            path += f"\"[green]{issue.violatingPropertyValue}[/green]\" "  # keep the ending space
+                        if issue.violatingEntity:
+                            path = f"{path} on [cyan]<{issue.violatingEntity}>[/cyan]"
                         console.print(
                             Padding(f"- [[red]Violation[/red]{path}]: "
                                     f"{Markdown(issue.message).markup}", (0, 9)), style="white")

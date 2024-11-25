@@ -968,13 +968,13 @@ class CheckIssue:
                  check: RequirementCheck,
                  message: Optional[str] = None,
                  violatingProperty: Optional[str] = None,
-                 violatingItem: Optional[str] = None,
+                 violatingEntity: Optional[str] = None,
                  value: Optional[str] = None):
         self._message = message
         self._check: RequirementCheck = check
         self._violatingProperty = violatingProperty
-        self._violatingItem = violatingItem
-        self._value = value
+        self._violatingEntity = violatingEntity
+        self._propertyValue = value
 
     @property
     def message(self) -> Optional[str]:
@@ -1001,7 +1001,7 @@ class CheckIssue:
         return self._check
 
     @property
-    def violatingItem(self) -> Optional[str]:
+    def violatingEntity(self) -> Optional[str]:
         """
         It represents the specific element being evaluated that fails
         to meet the defined rules or constraints within a validation process.
@@ -1010,7 +1010,7 @@ class CheckIssue:
         that violates a given constraint on the subject’s property/predicate,
         represented by the violatingProperty.
         """
-        return self._violatingItem
+        return self._violatingEntity
 
     @property
     def violatingProperty(self) -> Optional[str]:
@@ -1026,8 +1026,8 @@ class CheckIssue:
         return self._violatingProperty
 
     @property
-    def value(self) -> Optional[str]:
-        return self._value
+    def violatingPropertyValue(self) -> Optional[str]:
+        return self._propertyValue
 
     def __eq__(self, other: object) -> bool:
         return isinstance(other, CheckIssue) and \
@@ -1053,8 +1053,9 @@ class CheckIssue:
         result = {
             "severity": self.severity.name,
             "message": self.message,
-            "focusNode": self.violatingItem,
-            "value": self.value
+            "violatingEntity": self.violatingEntity,
+            "violatingProperty": self.violatingProperty,
+            "violatingPropertyValue": self.violatingPropertyValue
         }
         if with_check:
             result["check"] = self.check.to_dict(with_requirement=with_requirement, with_profile=with_profile)
@@ -1230,7 +1231,7 @@ class ValidationResult:
             focusNode (Optional[str]): The focus node (i.e., the subject) of the issue
             value (Optional[str]): The value of the result path which caused the issue (if any)
         """
-        c = CheckIssue(check, message, violatingProperty=resultPath, violatingItem=focusNode, value=value)
+        c = CheckIssue(check, message, violatingProperty=resultPath, violatingEntity=focusNode, value=value)
         bisect.insort(self._issues, c)
         return c
 
