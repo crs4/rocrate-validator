@@ -6,28 +6,28 @@
 
 <!-- [![codecov](https://codecov.io/gh/crs4/rocrate-validator/branch/main/graph/badge.svg?token=3ZQZQZQZQZ)](https://codecov.io/gh/crs4/rocrate-validator) -->
 
-`rocrate-validator` (available as `roc-validator` on PyPI) is a Python package designed to validate [RO-Crate](https://researchobject.github.io/ro-crate/)s
-against different profiles, including the base RO-Crate profile and other profiles that extend the base profile.
+`rocrate-validator` (available as `roc-validator` on PyPI) is a Python package to validate [RO-Crate](https://researchobject.github.io/ro-crate/)s
+against different profiles, including the base RO-Crate profile and various extensions.
 
 ## Features
 
--   Validates RO-Crates against different profiles, including the base RO-Crate profile and other profiles that extend the base profile. 
-    Currently, validations for the following profiles are implemented (more profiles can be added): 
+-   Validates RO-Crates against the profiles they declare to conform to.
+    Currently, validation for the following profiles is implemented:
     - [RO-Crate](https://w3id.org/ro/crate/1.1) *(base profile)*
     - [Workflow RO-Crate](https://w3id.org/workflowhub/workflow-ro-crate/1.0)
     - [Workflow Testing RO-Crate](https://w3id.org/ro/wftest)
     - [Workflow Run Crate](https://w3id.org/ro/wfrun/workflow)
     - [Process Run Crate](https://w3id.org/ro/wfrun/process)
     - [Provenance Run Crate](https://w3id.org/ro/wfrun/provenance)
--   Validates RO-Crates against different requirement levels (e.g., `REQUIRED`, `RECOMMENDED`, `OPTIONAL`)
--   Provides detailed information about the issues found during validation
--   Supports validation of RO-Crates stored locally as directories or as ZIP archives (`.zip` files) or remotely as URLs (e.g., `http://example.com/ro-crate.zip`)
--   Supports [CLI-based validation](#cli-based-validation) as well as [programmatic validation](#programmatic-validation) (so it can easily be used by Python code)
--   Implements an extensible validation framework to which new RO-Crate profiles can be added, implementing profile requirements as SHACL shapes and/or Python code
+-   Filters profile validation rules by requirement level (i.e., `REQUIRED`, `RECOMMENDED`, `OPTIONAL`).
+-   Provides detailed information about the issues found during validation.
+-   Supports validation of RO-Crates stored locally as directories or as ZIP archives (`.zip` files) or remotely accessible via HTTP or HTTPS (e.g., `http://example.com/ro-crate.zip`).
+-   Supports [CLI-based validation](#cli-based-validation) as well as [programmatic validation](#programmatic-validation) (so it can easily be used by Python code).
+-   Extensible framework: new RO-Crate profiles can be added, implementing profile requirements as SHACL shapes and/or Python code.
 
 <div style="background: #F0F8FF; border-left: 4px solid #007ACC; text-indent: -43px; padding: 20px 60px; border-radius: 8px; margin-bottom: 40px; height: auto; font-weight: lighter;">
 <b>Note:</b> <span class="disabled font-light">this software is still work in progress. Feel free to try it out,
-report positive and negative feedback. Do send a note (e.g., by opening an Issue) before starting to develop patches you would like to contribute. The implementation of validation code for additional RO-Crate profiles would be particularly welcome.
+report positive and negative feedback. We also welcome contributions, but we suggest you send us a note (e.g., by opening an Issue) before starting to develop any code. The implementation of validation code for additional RO-Crate profiles would be particularly welcome.
 </div>
 
 ## Installation
@@ -92,7 +92,7 @@ poetry install
 
 ## CLI-based Validation
 
-After installation, use the `rocrate-validator` command to validate RO-Crates. You can run this in a virtual activated environment (if created in the [optional step](#optional-step-create-a-virtual-environment) above) or without a virtual environment if none was created.
+After installation, use the `rocrate-validator` command to validate RO-Crates. You can run this in an active virtual environment (if created in the [optional step](#optional-step-create-a-virtual-environment) above) or without a virtual environment if none was created.
 
 ### 1. Using the installed package
 
@@ -120,7 +120,7 @@ Type `rocrate-validator --help` for more information.
 
 ## Programmatic Validation
 
-You can also integrate the package programmatically in your Python code. 
+You can also integrate the package programmatically in your Python code.
 
 Here's an example:
 
@@ -133,7 +133,7 @@ from rocrate_validator import services, models
 settings = services.ValidationSettings(
     # Set the path to the RO-Crate root directory
     rocrate_uri='/path/to/ro-crate',
-    # Set the identifier of the RO-Crate profile to use for validation. 
+    # Set the identifier of the RO-Crate profile to use for validation.
     # If not set, the system will attempt to automatically determine the appropriate validation profile.
     profile_identifier='ro-crate-1.1',
     # Set the requirement level for the validation
@@ -154,7 +154,7 @@ else:
         print(f"Detected issue of severity {issue.severity.name} with check \"{issue.check.identifier}\": {issue.message}")
 ```
 
-... that leads to the following output:
+... which leads to the following output:
 
 ```bash
 RO-Crate is invalid!
@@ -163,7 +163,7 @@ Detected issue of severity REQUIRED with check "ro-crate-1.1:root_entity_exists:
 
 ## Running the tests
 
-To run the tests, use the following command:
+To run the `rocrate-validator` tests, use the following command:
 
 ```bash
 poetry run pytest

@@ -16,7 +16,7 @@
 .. toctree::
     :maxdepth: 5
     :caption: Getting Started
-    
+
     1_installation
     2_usage_cli
     3_usage_api
@@ -27,4 +27,3 @@
 
     10_api
     genindex
-

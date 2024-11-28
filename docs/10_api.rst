@@ -27,15 +27,19 @@
 API documentation
 ###################################################
 
-This section provides detailed documentation of the `rocrate_validator` package's API. The `rocrate_validator` package offers tools for validating RO-Crate metadata, managing profiles, and performing various checks and validations. Below, you will find descriptions and usage examples for the core services, models, and other components provided by the package.
+This section documents the `rocrate_validator` package's API. The
+`rocrate_validator` package offers tools for managing validation profiles,
+using them to validate RO-Crate metadata, and interpreting the results. Below,
+you will find descriptions and usage examples for the core services, models,
+and other components provided by the package.
 
-The API is divided into several sections:
+The Python API is structured in three main parts.
 
 - **Core Services**: Functions for validating RO-Crate metadata and managing profiles.
 - **Core Models**: Classes representing the main entities used in the validation process.
-- **Python Check API**: Classes and decorators for defining custom validation requirements and checks in Python.
+- **Python Check API**: Classes and decorators for defining Python-based validation checks.
 
-Each section includes detailed information about the available functions, classes, and their members, making it easier for developers to integrate and use the `rocrate_validator` package in their projects.
+Each section includes detailed information about the available functions, classes, and their members.
 
 ================
 Core Services
@@ -126,4 +130,3 @@ Decorators
 ----------
 .. autofunction:: rocrate_validator.requirements.python.requirement
 .. autofunction:: rocrate_validator.requirements.python.check
-
