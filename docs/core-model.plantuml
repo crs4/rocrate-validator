@@ -1,0 +1,23 @@
+@startuml
+class "models.CheckIssue"
+abstract class "models.RequirementCheck"
+class "models.Profile"
+abstract class "models.Requirement"
+class "models.ValidationContext"
+class "models.ValidationSettings"
+class "models.ValidationResult"
+class "models.Validator"
+class "rocrate.ROCrate"
+
+"models.ValidationSettings" -- "rocrate.ROCrate"
+
+"models.ValidationContext" o-- "models.Validator"
+"models.ValidationContext" o-- "models.ValidationSettings"
+"models.ValidationContext" o--* "models.ValidationResult"
+
+"models.Validator" *-- "models.ValidationSettings"
+
+"models.Profile" *-- "models.Requirement"
+"models.Requirement" *-- "models.RequirementCheck"
+"models.RequirementCheck" *-- "models.CheckIssue"
+@enduml
