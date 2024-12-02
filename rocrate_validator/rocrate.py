@@ -311,7 +311,7 @@ class ROCrate(ABC):
     @property
     def metadata(self) -> ROCrateMetadata:
         """
-        A metadata object representing the RO-Crate metadata.
+        An ROCrateMetadata object representing the RO-Crate metadata.
 
         :return: the metadata object
         :rtype: ROCrateMetadata
@@ -417,7 +417,7 @@ class ROCrate(ABC):
         :param path: the path to the file
         :type path: Path
 
-        :param binary_mode: the binary mode flag
+        :param binary_mode: if `True`, return the file as a `bytes` object; otherwise, return it as a `str`
         :type binary_mode: bool
 
         :return: the content of the file
@@ -428,12 +428,12 @@ class ROCrate(ABC):
     @staticmethod
     def get_external_file_content(uri: str, binary_mode: bool = True) -> Union[str, bytes]:
         """
-        Utility method to get the content of an external file.
+        Get the content of an external file.
 
         :param uri: the URI of the file
         :type uri: str
 
-        :param binary_mode: the binary mode flag
+        :param binary_mode: if `True`, return the file as a `bytes` object; otherwise, return it as a `str`
         :type binary_mode: bool
 
         :return: the content of the file
@@ -446,7 +446,7 @@ class ROCrate(ABC):
     @staticmethod
     def get_external_file_size(uri: str) -> int:
         """
-        Utility method to get the size of an external file.
+        Get the size of an external file.
 
         :param uri: the URI of the file
         :type uri: str

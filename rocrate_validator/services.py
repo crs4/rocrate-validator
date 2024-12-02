@@ -174,7 +174,7 @@ def get_profiles(profiles_path: Path = DEFAULT_PROFILES_PATH,
                  ValidationSettings.allow_requirement_check_override) -> list[Profile]:
     """
     Get the list of profiles supported by the package.
-    The profile source path can be overridden by specifying the `profiles_path`.
+    The profile source path can be overridden by specifying ``profiles_path``.
 
     :param profiles_path: the path to the profiles directory
     :type profiles_path: Path
@@ -202,7 +202,7 @@ def get_profile(profile_identifier: str,
                 ValidationSettings.allow_requirement_check_override) -> Profile:
     """
     Get the profile with the given identifier.
-    The profile source path can be overridden through the `profiles_path`.
+    The profile source path can be overridden through ``profiles_path``.
     The profile is loaded based on the given severity level and the requirement check override flag.
 
     :param profile_identifier: the profile identifier

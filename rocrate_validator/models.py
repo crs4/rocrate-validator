@@ -185,10 +185,9 @@ class LevelCollection:
 class Profile:
 
     """
-    Class which represents a RO-Crate Validator profile.
+    RO-Crate Validator profile.
 
-    A profile is a named set of requirements that can be used to validate a RO-Crate.
-
+    A profile is a named set of requirements that can be used to validate an RO-Crate.
     """
 
     # store the map of profiles: profile URI -> Profile instance
@@ -441,7 +440,7 @@ class Profile:
         """
         Get the requirements of the profile with the given severity level.
         If the exact_match flag is set to `True`, only the requirements with the exact severity level
-        are returned, otherwise, the requirements with the severity level greater than or equal to
+        are returned; otherwise, the requirements with severity level greater than or equal to
         the given severity level are returned.
         """
         return [requirement for requirement in self.requirements
@@ -746,7 +745,7 @@ class SkipRequirementCheck(Exception):
 class Requirement(ABC):
     """
     Abstract class representing a requirement of a profile.
-    A requirement is a named set of checks that can be used to validate a RO-Crate.
+    A requirement is a named set of checks that can be used to validate an RO-Crate.
     """
 
     def __init__(self,
