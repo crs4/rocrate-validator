@@ -27,8 +27,8 @@
 API documentation
 ###################################################
 
-This section documents the `rocrate_validator` package's API. The
-`rocrate_validator` package offers tools for managing validation profiles,
+This section documents the ``rocrate_validator`` package's API. The
+``rocrate_validator`` package offers tools for managing validation profiles,
 using them to validate RO-Crate metadata, and interpreting the results. Below,
 you will find descriptions and usage examples for the core services, models,
 and other components provided by the package.
