@@ -135,10 +135,10 @@ def get_single_char(console: Optional[Console] = None, end: str = "\n",
 @cli.command("validate")
 @click.argument("rocrate-uri", callback=validate_uri, default=".")
 @click.option(
-    '-nff',
-    '--no-fail-fast',
+    '-ff',
+    '--fail-fast',
     is_flag=True,
-    help="Disable fail fast validation mode",
+    help="Fail fast validation mode",
     default=False,
     show_default=True
 )
@@ -239,7 +239,7 @@ def validate(ctx,
              requirement_severity: str = Severity.REQUIRED.name,
              requirement_severity_only: bool = False,
              rocrate_uri: Path = ".",
-             no_fail_fast: bool = False,
+             fail_fast: bool = False,
              no_paging: bool = False,
              verbose: bool = False,
              output_format: str = "text",
@@ -264,8 +264,8 @@ def validate(ctx,
 
     logger.debug("disable_inheritance: %s", disable_profile_inheritance)
     logger.debug("rocrate_uri: %s", rocrate_uri)
-    logger.debug("no_fail_fast: %s", no_fail_fast)
-    logger.debug("fail fast: %s", not no_fail_fast)
+    logger.debug("fail_fast: %s", fail_fast)
+    logger.debug("no fail fast: %s", not fail_fast)
 
     if rocrate_uri:
         logger.debug("rocrate_path: %s", os.path.abspath(rocrate_uri))
@@ -280,7 +280,7 @@ def validate(ctx,
             "enable_profile_inheritance": not disable_profile_inheritance,
             "verbose": verbose,
             "rocrate_uri": rocrate_uri,
-            "abort_on_first": not no_fail_fast
+            "abort_on_first": fail_fast
         }
 
         # Print the application header
@@ -406,7 +406,7 @@ def validate(ctx,
                             report_layout.show_validation_details(None, enable_pager=False)
 
             # Interrupt the validation if the fail fast mode is enabled
-            if no_fail_fast and not is_valid:
+            if fail_fast and not is_valid:
                 break
 
         # using ctx.exit seems to raise an Exception that gets caught below,
