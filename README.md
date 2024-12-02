@@ -75,7 +75,7 @@ pip install roc-validator
 Clone the repository:
 
 ```bash
-git clone https://github.com/kikkomep/rocrate-validator.git
+git clone https://github.com/crs4/rocrate-validator.git
 ```
 
 Navigate to the project directory:
@@ -154,7 +154,7 @@ else:
         print(f"Detected issue of severity {issue.severity.name} with check \"{issue.check.identifier}\": {issue.message}")
 ```
 
-... which leads to the following output:
+The following is a possible output:
 
 ```bash
 RO-Crate is invalid!
