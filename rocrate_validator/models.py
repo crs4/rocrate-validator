@@ -1342,7 +1342,7 @@ class ValidationSettings:
         profiles_path (Path): The path to the profiles directory (default: {DEFAULT_PROFILES_PATH})
         profile_identifier (str): The identifier of the profile to use (default: {DEFAULT_PROFILE_IDENTIFIER})
         enable_profile_inheritance (bool): Whether to enable profile inheritance (default: True)
-        abort_on_first (Optional[bool]): Whether to abort on the first validation error (default: True)
+        abort_on_first (Optional[bool]): Whether to abort on the first validation error (default: False)
         disable_inherited_profiles_reporting (bool): Whether to disable reporting of inherited profiles (default: False)
         disable_remote_crate_download (bool): Whether to disable downloading of remote crates (default: True)
         requirement_severity (Union[str, Severity]): The severity level for requirements (default: Severity.REQUIRED)
@@ -1364,7 +1364,7 @@ class ValidationSettings:
     profile_identifier: str = DEFAULT_PROFILE_IDENTIFIER
     enable_profile_inheritance: bool = True
     # Validation strategy settings
-    abort_on_first: Optional[bool] = True
+    abort_on_first: Optional[bool] = False
     disable_inherited_profiles_reporting: bool = False
     disable_remote_crate_download: bool = True
     # Requirement severity settings
