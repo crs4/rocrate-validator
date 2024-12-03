@@ -63,7 +63,7 @@ class PyRequirement(Requirement):
 
     This class is used to define a requirement that is implemented as a Python class.
 
-    The class is a subclass of :py:class:`rocrate_validator.models.RequirementCheck`.
+    The class is a subclass of :py:class:`rocrate_validator.models.Requirement`.
 
     Class instances are automatically initialized by the validator
     providing the profile, the requirement class,

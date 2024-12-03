@@ -89,7 +89,7 @@ class Severity(enum.Enum):
 class RequirementLevel:
 
     """
-    Class which represents a requirement level.
+    Represents a requirement level.
 
     A requirement has a name and a severity level of type :class:`.Severity`.
     It implements the comparison operators to allow ordering of the requirement levels.
@@ -131,7 +131,7 @@ class LevelCollection:
     """
     Collection of :class:`.RequirementLevel` instances.
 
-    The class provides a set of predefined RequirementLevel instances
+    Provides a set of predefined RequirementLevel instances
     that can be used to define the severity of a requirement.
     They map the keywords defined in **RFC 2119** to the corresponding severity levels.
 
@@ -142,11 +142,11 @@ class LevelCollection:
         are to be interpreted as described in **RFC 2119**.
 
     """
-    #: The requirement level OPTIONAL
+    #: The requirement level OPTIONAL is mapped to the OPTIONAL severity level
     OPTIONAL = RequirementLevel('OPTIONAL', Severity.OPTIONAL)
     #: The requirement level MAY is mapped to the OPTIONAL severity level
     MAY = RequirementLevel('MAY', Severity.OPTIONAL)
-    #: The requirement level SHOULD is mapped to the RECOMMENDED severity level
+    #: The requirement level REQUIRED is mapped to the REQUIRED severity level
     REQUIRED = RequirementLevel('REQUIRED', Severity.REQUIRED)
     #: The requirement level SHOULD is mapped to the RECOMMENDED severity level
     SHOULD = RequirementLevel('SHOULD', Severity.RECOMMENDED)
@@ -1177,7 +1177,7 @@ class RequirementCheck(ABC):
 @total_ordering
 class CheckIssue:
     """
-    Class that represents an issue with a check that has been executed
+    Represents an issue with a check that has been executed
     during the validation process.
     """
 
@@ -1296,7 +1296,7 @@ class CheckIssue:
 
 class ValidationResult:
     """
-    Class that represents the result of a validation.
+    Represents the result of a validation.
 
     :param context: The validation context
     :type context: ValidationContext
@@ -1559,7 +1559,7 @@ class CustomEncoder(json.JSONEncoder):
 @dataclass
 class ValidationSettings:
     """
-    A class to represent the settings for RO-Crate validation.
+    Represents the settings for RO-Crate validation.
 
     It includes the following attributes:
     """
@@ -1587,7 +1587,7 @@ class ValidationSettings:
     # Requirement check settings
     #: Flag to allow requirement check override
     allow_requirement_check_override: bool = True
-    #: Flag to allow requirement check skip
+    #: Flag to disable the check for duplicates
     disable_check_for_duplicates: bool = False
 
     def __init__(self, **kwargs):
@@ -1646,7 +1646,7 @@ class ValidationSettings:
         :return: The parsed settings.
         :rtype: ValidationSettings
 
-        : raise ValueError: If the settings type is invalid.
+        :raises ValueError: If the settings type is invalid.
         """
         if isinstance(settings, dict):
             return cls(**settings)
@@ -2010,7 +2010,7 @@ class ValidationContext:
         :return: The data graph of the RO-Crate
         :rtype: :py:class:rdflib.Graph
 
-        : raise ROCrateMetadataNotFoundError: If the RO-Crate metadata is not found
+        :raises ROCrateMetadataNotFoundError: If the RO-Crate metadata is not found
         """
         # load the data graph
         try:
