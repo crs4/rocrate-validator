@@ -47,6 +47,10 @@ Core Services
 
 RO-Crate validation
 ----------------------------------------------
+
+.. raw:: html
+    :file: ./diagrams/core-services.validate.svg
+
 .. autofunction:: rocrate_validator.services.validate
 
 
