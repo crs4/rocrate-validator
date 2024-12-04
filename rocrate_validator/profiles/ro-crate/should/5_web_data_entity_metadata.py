@@ -39,11 +39,11 @@ class WebDataEntityRecommendedChecker(PyFunctionCheck):
             assert entity.id is not None, "Entity has no @id"
             try:
                 if not entity.is_available():
-                    context.result.add_error(
+                    context.result.add_check_issue(
                         f'Web-based Data Entity {entity.id} is not available', self)
                     result = False
             except Exception as e:
-                context.result.add_error(
+                context.result.add_check_issue(
                     f'Web-based Data Entity {entity.id} is not available: {e}', self)
                 result = False
             if not result and context.fail_fast:

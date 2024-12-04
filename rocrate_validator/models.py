@@ -1459,12 +1459,6 @@ class ValidationResult:
         bisect.insort(self._issues, c)
         return c
 
-    def add_error(self, message: str, check: RequirementCheck) -> CheckIssue:
-        """
-        Add an error to the validation result
-        """
-        return self.add_check_issue(message, check)
-
     #  --- Requirements ---
     @property
     def failed_requirements(self) -> Collection[Requirement]:
