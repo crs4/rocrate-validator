@@ -1416,19 +1416,19 @@ class ValidationResult:
     # def get_issues_by_check_and_severity(self, check: RequirementCheck, severity: Severity) -> list[CheckIssue]:
     #     return [issue for issue in self.issues if issue.check == check and issue.severity == severity]
 
-    def has_issues(self, severity: Optional[Severity] = None) -> bool:
+    def has_issues(self, min_severity: Optional[Severity] = None) -> bool:
         """
         Check if there are issues with a severity greater than or equal to the given `severity`
         """
-        severity = severity or self.context.requirement_severity
-        return any(issue.severity >= severity for issue in self._issues)
+        min_severity = min_severity or self.context.requirement_severity
+        return any(issue.severity >= min_severity for issue in self._issues)
 
-    def passed(self, severity: Optional[Severity] = None) -> bool:
+    def passed(self, min_severity: Optional[Severity] = None) -> bool:
         """
         Check if all checks passed with a severity greater than or equal to the given `severity`
         """
-        severity = severity or self.context.requirement_severity
-        return not any(issue.severity >= severity for issue in self._issues)
+        min_severity = min_severity or self.context.requirement_severity
+        return not any(issue.severity >= min_severity for issue in self._issues)
 
     def add_issue(self, issue: CheckIssue):
         """
