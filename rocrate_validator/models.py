@@ -1430,12 +1430,12 @@ class ValidationResult:
         min_severity = min_severity or self.context.requirement_severity
         return not any(issue.severity >= min_severity for issue in self._issues)
 
-    def add_check_issue(self,
-                        message: str,
-                        check: RequirementCheck,
-                        resultPath: Optional[str] = None,
-                        focusNode: Optional[str] = None,
-                        value: Optional[str] = None) -> CheckIssue:
+    def add_issue(self,
+                  message: str,
+                  check: RequirementCheck,
+                  resultPath: Optional[str] = None,
+                  focusNode: Optional[str] = None,
+                  value: Optional[str] = None) -> CheckIssue:
         """
         Add an issue to the validation result
 
