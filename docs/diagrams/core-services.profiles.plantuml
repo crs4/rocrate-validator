@@ -6,20 +6,22 @@ hide fields
 ' Define the services in the core package
 package "rocrate_validator" {
 
-    interface services {
-        + get_profile(profile: str) -> rocrate_validator.models.Profile
-        + get_profiles() -> list[rocrate_validator.models.Profile]
+    interface services [[#rocrate_validator.services.get_profiles]] {
+        + get_profile(profiles_path: Optional[Path], profile_identifier: str, severity: rocrate_validator.models.Severity) -> rocrate_validator.models.Profile
+        + get_profiles(profiles_path: Optional[Path], severity: rocrate_validator.models.Severity) -> list[rocrate_validator.models.Profile]
     }
 
     show services members
 
     services ..> rocrate_validator.models.Profile : " instantiates"
+    services ..> rocrate_validator.models.Severity : " filters"
 }
 
 package "rocrate_validator.models" {
 
-    class Profile {
+    class Profile [[#rocrate_validator.models.Profile]] {}
+
+    class Severity [[#rocrate_validator.models.Severity]] {
     }
-}
 
 @enduml
