@@ -1122,7 +1122,7 @@ class RequirementCheck(ABC):
         return overridden_by
 
     @property
-    def override(self) -> list[RequirementCheck]:
+    def overrides(self) -> list[RequirementCheck]:
         overrides = []
         for parent in self.requirement.profile.parents:
             check = parent.get_requirement_check(self.name)
