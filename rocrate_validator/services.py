@@ -182,7 +182,11 @@ def get_profiles(profiles_path: Path = DEFAULT_PROFILES_PATH,
     :param severity: the severity level
     :type severity: Severity
 
-    :param allow_requirement_check_override: the requirement check override flag
+    :param allow_requirement_check_override: flag to enable/disable
+        requirement check override (default: ``True``).
+        When enabled, a requirement check of a profile can be overridden
+        by a requirement check of a profile extension
+        (i.e., a profile that extends the profile) with the same `name` property.
     :type allow_requirement_check_override: bool
 
     :return: the list of profiles
@@ -214,7 +218,11 @@ def get_profile(profile_identifier: str,
     :param severity: the severity level
     :type severity: Severity
 
-    :param allow_requirement_check_override: the requirement check override flag
+    :param allow_requirement_check_override: flag to enable/disable
+        requirement check override (default: ``True``).
+        When enabled, a requirement check of a profile can be overridden
+        by a requirement check of a profile extension
+        (i.e., a profile that extends the profile) with the same `name` property.
     :type allow_requirement_check_override: bool
 
     :return: the profile
