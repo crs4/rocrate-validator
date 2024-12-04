@@ -880,15 +880,12 @@ class Requirement(ABC):
         for i, check in enumerate(self._checks):
             check.order_number = i + 1
 
-    def __do_validate__(self, context: ValidationContext) -> bool:
+    def _do_validate_(self, context: ValidationContext) -> bool:
         """
-        :noindex:
-
         Internal method to perform the validation
         Returns whether all checks in this requirement passed.
 
         :meta private:
-
         """
         logger.debug("Validating Requirement %s with %s checks", self.name, len(self._checks))
 
@@ -1815,7 +1812,7 @@ class Validator(Publisher):
                 if not requirement.overridden:
                     self.notify(RequirementValidationEvent(
                         EventType.REQUIREMENT_VALIDATION_START, requirement=requirement))
-                passed = requirement.__do_validate__(context)
+                passed = requirement._do_validate_(context)
                 logger.debug("Requirement %s passed: %s", requirement, passed)
                 if not requirement.overridden:
                     self.notify(RequirementValidationEvent(
