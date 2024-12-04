@@ -104,6 +104,8 @@ package "rocrate_validator.models" {
     hide RequirementCheck members
     hide RequirementCheck methods
 
+    class ValidationSettings [[#rocrate_validator.models.ValidationSettings]] {}
+
     ' Define the ValidationContext class
     class ValidationContext [[#rocrate_validator.models.ValidationContext]] {
         + profile: Profile
