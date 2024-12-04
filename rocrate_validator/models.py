@@ -1433,8 +1433,8 @@ class ValidationResult:
     def add_issue(self,
                   message: str,
                   check: RequirementCheck,
-                  violatingProperty: Optional[str] = None,
                   violatingEntity: Optional[str] = None,
+                  violatingProperty: Optional[str] = None,
                   violatingPropertyValue: Optional[str] = None) -> CheckIssue:
         """
         Add an issue to the validation result
@@ -1442,8 +1442,8 @@ class ValidationResult:
         Parameters:
             message(str): The message of the issue
             check(RequirementCheck): The check that generated the issue
-            violatingProperty(Optional[str]): The property that caused the issue (if any)
             violatingEntity(Optional[str]): The entity that caused the issue (if any)
+            violatingProperty(Optional[str]): The property that caused the issue (if any)
             violatingPropertyValue(Optional[str]): The value of the violatingProperty (if any)
         """
         c = CheckIssue(check, message, violatingProperty=violatingProperty,
