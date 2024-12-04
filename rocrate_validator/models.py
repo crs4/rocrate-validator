@@ -1442,9 +1442,9 @@ class ValidationResult:
         Parameters:
             message(str): The message of the issue
             check(RequirementCheck): The check that generated the issue
-            resultPath(Optional[str]): The result path(i.e., the predicate) of the issue
-            focusNode(Optional[str]): The focus node(i.e., the subject) of the issue
-            value(Optional[str]): The value of the result path which caused the issue(if any)
+            violatingProperty(Optional[str]): The property that caused the issue (if any)
+            violatingEntity(Optional[str]): The entity that caused the issue (if any)
+            violatingPropertyValue(Optional[str]): The value of the violatingProperty (if any)
         """
         c = CheckIssue(check, message, violatingProperty=violatingProperty,
                        violatingEntity=violatingEntity, value=violatingPropertyValue)
