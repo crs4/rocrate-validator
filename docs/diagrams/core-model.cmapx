@@ -1,0 +1,13 @@
+<map id="core-model_map" name="core-model_map">
+<area shape="rect" id="id1" href="https://mep-validator.readthedocs.io/en/docs-extensions/10_api/#rocrate_validator.models.Profile" title="https://mep-validator.readthedocs.io/en/docs-extensions/10_api/#rocrate_validator.models.Profile" alt="" coords="243,398,320,430"/>
+<area shape="rect" id="id2" href="#rocrate_validator.rocrate.ROCrate" title="#rocrate_validator.rocrate.ROCrate" alt="" coords="570,398,661,430"/>
+<area shape="rect" id="id3" href="#rocrate_validator.models.Validator" title="#rocrate_validator.models.Validator" alt="" coords="400,84,495,116"/>
+<area shape="rect" id="id4" href="#rocrate_validator.models.CheckIssue" title="#rocrate_validator.models.CheckIssue" alt="" coords="164,303,275,335"/>
+<area shape="rect" id="id5" href="#rocrate_validator.models.Requirement" title="#rocrate_validator.models.Requirement" alt="" coords="243,523,366,555"/>
+<area shape="rect" id="id6" href="#rocrate_validator.models.LevelCollection" title="#rocrate_validator.models.LevelCollection" alt="" coords="45,84,184,116"/>
+<area shape="rect" id="id7" href="#rocrate_validator.models.ValidationResult" title="#rocrate_validator.models.ValidationResult" alt="" coords="218,84,365,116"/>
+<area shape="rect" id="id8" href="#rocrate_validator.models.ValidationContext" title="#rocrate_validator.models.ValidationContext" alt="" coords="348,217,505,249"/>
+<area shape="rect" id="id9" href="#rocrate_validator.models.RequirementCheck" title="#rocrate_validator.models.RequirementCheck" alt="" coords="150,616,317,648"/>
+<area shape="rect" id="id10" href="#rocrate_validator.models.Severity" title="#rocrate_validator.models.Severity" alt="" coords="46,365,171,462"/>
+<area shape="rect" id="id11" href="#rocrate_validator.models.RequirementLevel" title="#rocrate_validator.models.RequirementLevel" alt="" coords="45,193,206,273"/>
+</map>

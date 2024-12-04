@@ -47,7 +47,7 @@ package "rocrate_validator.models" {
     LevelCollection o--> "*" RequirementLevel
 
     ' Define the Profile class
-    class Profile [[#rocrate_validator.models.Profile]] {
+    class Profile [["https://mep-validator.readthedocs.io/en/docs-extensions/10_api/#rocrate_validator.models.Profile"]] {
         + identifier: str
         + uri: str
         + name: str
