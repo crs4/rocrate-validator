@@ -47,7 +47,6 @@ Core Services
 
 RO-Crate validation
 ----------------------------------------------
-
 .. raw:: html
     :file: ./diagrams/core-services.validate.svg
 
@@ -56,6 +55,9 @@ RO-Crate validation
 
 RO-Crate profiles
 ----------------------------------------------
+.. raw:: html
+    :file: ./diagrams/core-services.profiles.svg
+
 .. autofunction:: rocrate_validator.services.get_profiles
 .. autofunction:: rocrate_validator.services.get_profile
 

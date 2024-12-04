@@ -1,0 +1,25 @@
+@startuml
+
+hide members
+hide fields
+
+' Define the services in the core package
+package "rocrate_validator" {
+
+    interface services {
+        + get_profile(profile: str) -> rocrate_validator.models.Profile
+        + get_profiles() -> list[rocrate_validator.models.Profile]
+    }
+
+    show services members
+
+    services ..> rocrate_validator.models.Profile : " instantiates"
+}
+
+package "rocrate_validator.models" {
+
+    class Profile {
+    }
+}
+
+@enduml
