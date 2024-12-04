@@ -99,7 +99,7 @@ package "rocrate_validator.models" {
         + execute_check(context: ValidationContext) -> bool
     }
     
-    Requirement "1 " *-- "1...* " RequirementCheck
+    Requirement "1" *-- " 1...*" RequirementCheck
     
     hide RequirementCheck members
     hide RequirementCheck methods
@@ -142,8 +142,8 @@ package "rocrate_validator.models" {
         + to_json() -> str
     }
 
-    ValidationResult --> "1 " ValidationContext
-    ValidationResult o--> "* " CheckIssue
+    ValidationResult --> "1" ValidationContext
+    ValidationResult o--> "*" CheckIssue
 
     hide ValidationResult members
     hide ValidationContext methods
@@ -171,7 +171,7 @@ package "rocrate_validator.models" {
         + validate() -> bool
     }
 
-    Validator ..> "* " ValidationContext : " instantiates"
+    Validator ..> "*" ValidationContext : " instantiates"
 
 }
 
