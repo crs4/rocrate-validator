@@ -11,7 +11,7 @@ package "rocrate_validator.models" {
     enum Severity [[#rocrate_validator.models.Severity]] {
         OPTIONAL
         RECOMMENDED
-        MANDATORY
+        REQUIRED
     }
     
     show Severity members

@@ -62,7 +62,7 @@ Core Models
 
 The validator's core is built on the main set of classes shown in the following diagram:
 
-.. image:: img/core-model.png
+.. image:: diagrams/core-model.svg
 
 
 
