@@ -1430,15 +1430,6 @@ class ValidationResult:
         min_severity = min_severity or self.context.requirement_severity
         return not any(issue.severity >= min_severity for issue in self._issues)
 
-    def add_issue(self, issue: CheckIssue):
-        """
-        Add an issue to the validation result
-
-        Parameters:
-            issue(CheckIssue): The issue to add to the validation result
-        """
-        bisect.insort(self._issues, issue)
-
     def add_check_issue(self,
                         message: str,
                         check: RequirementCheck,
