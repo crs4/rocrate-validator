@@ -182,11 +182,14 @@ def get_profiles(profiles_path: Path = DEFAULT_PROFILES_PATH,
     :param severity: the severity level
     :type severity: Severity
 
-    :param allow_requirement_check_override: flag to enable/disable
-        requirement check override (default: ``True``).
-        When enabled, a requirement check of a profile can be overridden
-        by a requirement check of a profile extension
-        (i.e., a profile that extends the profile) with the same `name` property.
+    :param allow_requirement_check_override: a flag to enable or disable
+        the requirement check override (default: ``True``).
+        If ``True``, the requirement check of a profile ``A`` can be overridden
+        by the requirement check of a profile extension ``B`` (i.e., when ``B extends A``)
+        if they share the same name.
+        If ``False``, a profile extension ``B`` can only
+        add new requirements to the profile ``A`` (i.e., checks with name not present in ``A``)
+        and an error is raised if a check with the same name is found in both profiles.
     :type allow_requirement_check_override: bool
 
     :return: the list of profiles
@@ -218,11 +221,14 @@ def get_profile(profile_identifier: str,
     :param severity: the severity level
     :type severity: Severity
 
-    :param allow_requirement_check_override: flag to enable/disable
-        requirement check override (default: ``True``).
-        When enabled, a requirement check of a profile can be overridden
-        by a requirement check of a profile extension
-        (i.e., a profile that extends the profile) with the same `name` property.
+    verride: a flag to enable or disable
+        the requirement check override (default: ``True``).
+        If ``True``, the requirement check of a profile ``A`` can be overridden
+        by the requirement check of a profile extension ``B`` (i.e., when ``B extends A``)
+        if they share the same name.
+        If ``False``, a profile extension ``B`` can only
+        add new requirements to the profile ``A`` (i.e., checks with name not present in ``A``)
+        and an error is raised if a check with the same name is found in both profiles.
     :type allow_requirement_check_override: bool
 
     :return: the profile
