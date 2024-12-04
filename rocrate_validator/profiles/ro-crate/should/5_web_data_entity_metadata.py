@@ -66,7 +66,7 @@ class WebDataEntityRecommendedChecker(PyFunctionCheck):
                         f'The property contentSize={content_size} of the Web-based Data Entity '
                         f'{entity.id} does not match the actual size of '
                         f'the downloadable content, i.e., {entity.content_size} (bytes)', self,
-                        focusNode=entity.id, resultPath='contentSize', value=content_size)
+                        violatingEntity=entity.id, violatingProperty='contentSize', violatingPropertyValue=content_size)
                     result = False
             if not result and context.fail_fast:
                 return result

@@ -1433,9 +1433,9 @@ class ValidationResult:
     def add_issue(self,
                   message: str,
                   check: RequirementCheck,
-                  resultPath: Optional[str] = None,
-                  focusNode: Optional[str] = None,
-                  value: Optional[str] = None) -> CheckIssue:
+                  violatingProperty: Optional[str] = None,
+                  violatingEntity: Optional[str] = None,
+                  violatingPropertyValue: Optional[str] = None) -> CheckIssue:
         """
         Add an issue to the validation result
 
@@ -1446,7 +1446,8 @@ class ValidationResult:
             focusNode(Optional[str]): The focus node(i.e., the subject) of the issue
             value(Optional[str]): The value of the result path which caused the issue(if any)
         """
-        c = CheckIssue(check, message, violatingProperty=resultPath, violatingEntity=focusNode, value=value)
+        c = CheckIssue(check, message, violatingProperty=violatingProperty,
+                       violatingEntity=violatingEntity, value=violatingPropertyValue)
         bisect.insort(self._issues, c)
         return c
 

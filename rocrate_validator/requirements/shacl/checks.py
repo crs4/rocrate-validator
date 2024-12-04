@@ -221,10 +221,10 @@ class SHACLCheck(RequirementCheck):
                     c = shacl_context.result.add_issue(
                         message=violation.get_result_message(shacl_context.rocrate_uri),
                         check=requirementCheck,
-                        resultPath=violation.resultPath.toPython() if violation.resultPath else None,
-                        focusNode=make_uris_relative(
+                        violatingProperty=violation.resultPath.toPython() if violation.resultPath else None,
+                        violatingEntity=make_uris_relative(
                             violation.focusNode.toPython(), shacl_context.publicID),
-                        value=violation.value)
+                        violatingPropertyValue=violation.value)
                 # if the fail fast mode is enabled, stop the validation after the first issue
                 if shacl_context.fail_fast:
                     break
