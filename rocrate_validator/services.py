@@ -221,7 +221,7 @@ def get_profile(profile_identifier: str,
     :param severity: the severity level
     :type severity: Severity
 
-    verride: a flag to enable or disable
+    :param allow_requirement_check_override: a flag to enable or disable
         the requirement check override (default: ``True``).
         If ``True``, the requirement check of a profile ``A`` can be overridden
         by the requirement check of a profile extension ``B`` (i.e., when ``B extends A``)
