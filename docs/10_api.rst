@@ -35,9 +35,9 @@ and other components provided by the package.
 
 The Python API is structured in three main parts.
 
-- **Core Services**: Functions for validating RO-Crate metadata and managing profiles.
-- **Core Models**: Classes representing the main entities used in the validation process.
-- **Python Check API**: Classes and decorators for defining Python-based validation checks.
+- **Core Services**: functions for validating RO-Crate metadata and managing profiles.
+- **Core Models**: classes representing the main entities used in the validation process.
+- **Python Check API**: classes and decorators for defining Python-based validation checks.
 
 Each section includes detailed information about the available functions, classes, and their members.
 
