@@ -1,0 +1,40 @@
+@startuml
+
+hide members
+hide fields
+
+' Define the services in the core package
+package "rocrate_validator" {
+
+    interface services [[#rocrate_validator.services.validate]] {
+        + validate(settings: Union[dict, ValidationSettings], subscribers: Optional[list[Subscriber]]) -> rocrate_validator.models.ValidationResult
+    }
+
+    show services members
+
+    services ..> rocrate_validator.models.ValidationSettings : " receives"
+    services ..> "*" rocrate_validator.events.Subscriber: " updates"
+    services ..> rocrate_validator.models.ValidationResult: " returns"
+}
+
+package "rocrate_validator.models" {
+
+    class ValidationResult [[#rocrate_validator.models.ValidationResult]] {
+    }
+}
+
+package "rocrate_validator.events" {
+
+    class Event [[#rocrate_validator.events.Event]] {
+        + type: str
+        + message: str
+    }
+
+    abstract class Subscriber [[#rocrate_validator.events.Subscriber]] {
+        + update(event: Event)
+    }
+
+    Subscriber ..> Event : " receives"
+}
+
+@enduml

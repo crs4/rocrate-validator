@@ -384,9 +384,9 @@ def test_profile_check_overriding(check_overriding_profiles_path: str):
             f"The overridden checks should be {overridden_by}"
 
         # Check override status
-        assert len(check.override) == len(override), \
+        assert len(check.overrides) == len(override), \
             f"The number of overridden checks should be {len(override)}"
-        override_tokens = [_.requirement.profile.identifier for _ in check.override]
+        override_tokens = [_.requirement.profile.identifier for _ in check.overrides]
         assert set(override_tokens) == set(override), \
             f"The overridden checks should be {override}"
 
