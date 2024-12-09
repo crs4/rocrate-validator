@@ -1560,7 +1560,7 @@ class ValidationSettings:
     enable_profile_inheritance: bool = True
     # Validation settings
     #: Flag to abort on first error
-    abort_on_first: Optional[bool] = True
+    abort_on_first: Optional[bool] = False
     #: Flag to disable inherited profiles reporting
     disable_inherited_profiles_reporting: bool = False
     #: Flag to disable remote crate download

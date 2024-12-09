@@ -14,7 +14,7 @@ package "rocrate_validator" {
     show services members
 
     services ..> rocrate_validator.models.Profile : " instantiates"
-    services ..> rocrate_validator.models.Severity : " filters"
+    services ..> rocrate_validator.models.Severity : " filters by"
 }
 
 package "rocrate_validator.models" {
