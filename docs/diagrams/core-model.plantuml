@@ -2,6 +2,24 @@
 
 skinparam wrapWidth 600
 
+' Add caption notes
+caption
+    == <u>**Core Model Diagram**</u>==
+    UML class diagram of main validation components.
+
+    <u>**Legend:**</u>
+    **C**: Class
+    **A**: Abstract Class
+    **I**: Interface
+    **E**: Enumeration
+    **→** : the source object contains a reference to the target object as part of its state
+    **♦―** : the source object contains the target object as part of its state 
+    and the target object cannot exist without the source object
+    **♢➞** : the source object references one or more target objects
+    **⇢** : the source object uses the target object
+end caption
+
+
 ' Define settings
 hide members
 hide fields
@@ -176,8 +194,9 @@ package "rocrate_validator.models" {
     }
 
     Validator ..> "*" ValidationContext : " instantiates"
-
 }
+
+
 
 package "rocrate_validator.rocrate" {
     class ROCrate [[#rocrate_validator.rocrate.ROCrate]] {
