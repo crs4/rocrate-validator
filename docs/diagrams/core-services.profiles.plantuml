@@ -1,5 +1,7 @@
 @startuml
 
+skinparam wrapWidth 600
+
 hide members
 hide fields
 
