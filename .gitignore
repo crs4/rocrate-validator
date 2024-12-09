@@ -4,7 +4,10 @@
 **/.pytest_cache
 
 # ignore virtualenv
-.venv
+/.venv
+
+# ignore the build docs
+docs/_build
 
 # ignore coverage files
 **/.coverage

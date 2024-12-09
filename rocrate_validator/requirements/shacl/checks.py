@@ -150,7 +150,7 @@ class SHACLCheck(RequirementCheck):
         except json.decoder.JSONDecodeError as e:
             logger.debug("Unable to perform metadata validation "
                          "due to one or more errors in the JSON-LD data file: %s", e)
-            shacl_context.result.add_error(
+            shacl_context.result.add_issue(
                 "Unable to perform metadata validation due to one or more errors in the JSON-LD data file", self)
             raise ROCrateMetadataNotFoundError(
                 "Unable to perform metadata validation due to one or more errors in the JSON-LD data file")
@@ -218,13 +218,13 @@ class SHACLCheck(RequirementCheck):
                         skip_requirement_check = True
                         break
                 if not skip_requirement_check:
-                    c = shacl_context.result.add_check_issue(
+                    c = shacl_context.result.add_issue(
                         message=violation.get_result_message(shacl_context.rocrate_uri),
                         check=requirementCheck,
-                        resultPath=violation.resultPath.toPython() if violation.resultPath else None,
-                        focusNode=make_uris_relative(
+                        violatingProperty=violation.resultPath.toPython() if violation.resultPath else None,
+                        violatingEntity=make_uris_relative(
                             violation.focusNode.toPython(), shacl_context.publicID),
-                        value=violation.value)
+                        violatingPropertyValue=violation.value)
                 # if the fail fast mode is enabled, stop the validation after the first issue
                 if shacl_context.fail_fast:
                     break

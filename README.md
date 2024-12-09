@@ -1,30 +1,34 @@
 # rocrate-validator
 
-[![Testing Pipeline Status](https://img.shields.io/github/actions/workflow/status/crs4/rocrate-validator/testing.yaml?label=Tests&logo=pytest)](https://github.com/crs4/rocrate-validator/actions/workflows/testing.yaml) [![Release Pipeline Status](https://img.shields.io/github/actions/workflow/status/crs4/rocrate-validator/release.yaml?label=Build&logo=python&logoColor=yellow)](https://github.com/crs4/rocrate-validator/actions/workflows/release.yaml) [![PyPI - Version](https://img.shields.io/pypi/v/roc-validator?logo=pypi&logoColor=green&label=PyPI)](https://pypi.org/project/roc-validator/) [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg?logo=apache&logoColor=red)](https://opensource.org/licenses/Apache-2.0)
+[![Testing Pipeline Status](https://img.shields.io/github/actions/workflow/status/crs4/rocrate-validator/testing.yaml?label=Tests&logo=pytest)](https://github.com/crs4/rocrate-validator/actions/workflows/testing.yaml) [![Release Pipeline Status](https://img.shields.io/github/actions/workflow/status/crs4/rocrate-validator/release.yaml?label=Build&logo=python&logoColor=yellow)](https://github.com/crs4/rocrate-validator/actions/workflows/release.yaml) [![PyPI - Version](https://img.shields.io/pypi/v/roc-validator?logo=pypi&logoColor=green&label=PyPI)](https://pypi.org/project/roc-validator/) [![Documentation Status](https://img.shields.io/readthedocs/rocrate-validator?logo=readthedocs&logoColor=white&label=Docs)](https://rocrate-validator.readthedocs.io/en/latest/) [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg?logo=apache&logoColor=red)](https://opensource.org/licenses/Apache-2.0)
 
 <!-- [![Build Status](https://repolab.crs4.it/lifemonitor/rocrate-validator/badges/develop/pipeline.svg)](https://repolab.crs4.it/lifemonitor/rocrate-validator/-/pipelines?page=1&scope=branches&ref=develop) -->
 
 <!-- [![codecov](https://codecov.io/gh/crs4/rocrate-validator/branch/main/graph/badge.svg?token=3ZQZQZQZQZ)](https://codecov.io/gh/crs4/rocrate-validator) -->
 
-A Python package to validate [RO-Crate](https://researchobject.github.io/ro-crate/)s.
+`rocrate-validator` (available as `roc-validator` on PyPI) is a Python package to validate [RO-Crate](https://researchobject.github.io/ro-crate/)s
+against different profiles, including the base RO-Crate profile and various extensions.
 
+## Features
+
+-   Validates RO-Crates against the profiles they declare to conform to.
+    Currently, validation for the following profiles is implemented:
+    - [RO-Crate](https://w3id.org/ro/crate/1.1) *(base profile)*
+    - [Workflow RO-Crate](https://w3id.org/workflowhub/workflow-ro-crate/1.0)
+    - [Workflow Testing RO-Crate](https://w3id.org/ro/wftest)
+    - [Workflow Run Crate](https://w3id.org/ro/wfrun/workflow)
+    - [Process Run Crate](https://w3id.org/ro/wfrun/process)
+    - [Provenance Run Crate](https://w3id.org/ro/wfrun/provenance)
+-   Filters profile validation rules by requirement level (i.e., `REQUIRED`, `RECOMMENDED`, `OPTIONAL`).
+-   Provides detailed information about the issues found during validation.
+-   Supports validation of RO-Crates stored locally as directories or as ZIP archives (`.zip` files) or remotely accessible via HTTP or HTTPS (e.g., `http://example.com/ro-crate.zip`).
 -   Supports [CLI-based validation](#cli-based-validation) as well as [programmatic validation](#programmatic-validation) (so it can easily be used by Python code).
--   Implements an extensible validation framework to which new RO-Crate profiles
-    can be added. Validation is based on SHACL shapes and Python code.
--   Currently, validation for the following profiles is implemented: RO-Crate
-    (base profile), [Workflow
-    RO-Crate](https://w3id.org/workflowhub/workflow-ro-crate),
-    [Process Run
-    Crate](https://w3id.org/ro/wfrun/process).
-    [Workflow Run Crate](https://w3id.org/ro/wfrun/workflow),
-    [Provenance Run Crate](https://w3id.org/ro/wfrun/provenance),
-    [Workflow Testing RO-Crate](https://w3id.org/ro/wftest).
+-   Extensible framework: new RO-Crate profiles can be added, implementing profile requirements as SHACL shapes and/or Python code.
 
-**Note**: this software is still work in progress. Feel free to try it out,
-report positive and negative feedback. Do send a note (e.g., by opening an
-Issue) before starting to develop patches you would like to contribute. The
-implementation of validation code for additional RO-Crate profiles would be
-particularly welcome.
+<div style="background: #F0F8FF; border-left: 4px solid #007ACC; text-indent: -43px; padding: 20px 60px; border-radius: 8px; margin-bottom: 40px; height: auto; font-weight: lighter;">
+<b>Note:</b> <span class="disabled font-light">this software is still work in progress. Feel free to try it out,
+report positive and negative feedback. We also welcome contributions, but we suggest you send us a note (e.g., by opening an Issue) before starting to develop any code. The implementation of validation code for additional RO-Crate profiles would be particularly welcome.
+</div>
 
 ## Installation
 
@@ -71,7 +75,7 @@ pip install roc-validator
 Clone the repository:
 
 ```bash
-git clone https://github.com/kikkomep/rocrate-validator.git
+git clone https://github.com/crs4/rocrate-validator.git
 ```
 
 Navigate to the project directory:
@@ -88,7 +92,7 @@ poetry install
 
 ## CLI-based Validation
 
-After installation, use the `rocrate-validator` command to validate RO-Crates. You can run this in a virtual activated environment (if created in the [optional step](#optional-step-create-a-virtual-environment) above) or without a virtual environment if none was created.
+After installation, use the `rocrate-validator` command to validate RO-Crates. You can run this in an active virtual environment (if created in the [optional step](#optional-step-create-a-virtual-environment) above) or without a virtual environment if none was created.
 
 ### 1. Using the installed package
 
@@ -116,7 +120,9 @@ Type `rocrate-validator --help` for more information.
 
 ## Programmatic Validation
 
-You can also integrate the package programmatically in your Python code. Here's an example:
+You can also integrate the package programmatically in your Python code.
+
+Here's an example:
 
 ```python
 
@@ -127,7 +133,7 @@ from rocrate_validator import services, models
 settings = services.ValidationSettings(
     # Set the path to the RO-Crate root directory
     rocrate_uri='/path/to/ro-crate',
-    # Set the identifier of the RO-Crate profile to use for validation. 
+    # Set the identifier of the RO-Crate profile to use for validation.
     # If not set, the system will attempt to automatically determine the appropriate validation profile.
     profile_identifier='ro-crate-1.1',
     # Set the requirement level for the validation
@@ -148,7 +154,7 @@ else:
         print(f"Detected issue of severity {issue.severity.name} with check \"{issue.check.identifier}\": {issue.message}")
 ```
 
-... that leads to the following output:
+The following is a possible output:
 
 ```bash
 RO-Crate is invalid!
@@ -157,7 +163,7 @@ Detected issue of severity REQUIRED with check "ro-crate-1.1:root_entity_exists:
 
 ## Running the tests
 
-To run the tests, use the following command:
+To run the `rocrate-validator` tests, use the following command:
 
 ```bash
 poetry run pytest
