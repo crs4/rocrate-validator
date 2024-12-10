@@ -126,7 +126,7 @@ from rocrate_validator import services, models
 # Create an instance of `ValidationSettings` class to configure the validation
 settings = services.ValidationSettings(
     # Set the path to the RO-Crate root directory
-    rocrate_uri='/path/to/ro-crate',
+    data_path='/path/to/ro-crate',
     # Set the identifier of the RO-Crate profile to use for validation. 
     # If not set, the system will attempt to automatically determine the appropriate validation profile.
     profile_identifier='ro-crate-1.1',
