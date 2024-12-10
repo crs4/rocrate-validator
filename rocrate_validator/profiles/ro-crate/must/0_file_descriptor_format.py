@@ -33,7 +33,7 @@ class FileDescriptorExistence(PyFunctionCheck):
         """
         if not context.ro_crate.has_descriptor():
             message = f'file descriptor "{context.rel_fd_path}" is not present'
-            context.result.add_error(message, self)
+            context.result.add_issue(message, self)
             return False
         return True
 
@@ -44,10 +44,10 @@ class FileDescriptorExistence(PyFunctionCheck):
         """
         if not context.ro_crate.has_descriptor():
             message = f'file descriptor {context.rel_fd_path} is empty'
-            context.result.add_error(message, self)
+            context.result.add_issue(message, self)
             return False
         if context.ro_crate.metadata.size == 0:
-            context.result.add_error(f'RO-Crate "{context.rel_fd_path}" file descriptor is empty', self)
+            context.result.add_issue(f'RO-Crate "{context.rel_fd_path}" file descriptor is empty', self)
             return False
         return True
 
@@ -65,7 +65,7 @@ class FileDescriptorJsonFormat(PyFunctionCheck):
             context.ro_crate.metadata.as_dict()
             return True
         except Exception as e:
-            context.result.add_error(
+            context.result.add_issue(
                 f'RO-Crate file descriptor "{context.rel_fd_path}" is not in the correct format', self)
             if logger.isEnabledFor(logging.DEBUG):
                 logger.exception(e)
@@ -84,7 +84,7 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
         try:
             json_dict = context.ro_crate.metadata.as_dict()
             if "@context" not in json_dict:
-                context.result.add_error(
+                context.result.add_issue(
                     f'RO-Crate file descriptor "{context.rel_fd_path}" '
                     "does not contain a context", self)
                 return False
@@ -121,7 +121,7 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
             json_dict = context.ro_crate.metadata.as_dict()
             for entity in json_dict["@graph"]:
                 if not is_entity_flat_recursive(entity):
-                    context.result.add_error(
+                    context.result.add_issue(
                         f'RO-Crate file descriptor "{context.rel_fd_path}" '
                         f'is not fully flattened at entity "{entity.get("@id", entity)}"', self)
                     return False
@@ -138,7 +138,7 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
             json_dict = context.ro_crate.metadata.as_dict()
             for entity in json_dict["@graph"]:
                 if "@id" not in entity:
-                    context.result.add_error(
+                    context.result.add_issue(
                         f"Entity \"{entity.get('name', None) or entity}\" "
                         f"of RO-Crate \"{context.rel_fd_path}\" "
                         "file descriptor does not contain the @id attribute", self)
@@ -156,7 +156,7 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
             json_dict = context.ro_crate.metadata.as_dict()
             for entity in json_dict["@graph"]:
                 if "@type" not in entity:
-                    context.result.add_error(
+                    context.result.add_issue(
                         f"Entity \"{entity.get('name', None) or entity}\" "
                         f"of RO-Crate \"{context.rel_fd_path}\" "
                         "file descriptor does not contain the @type attribute", self)

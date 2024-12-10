@@ -275,7 +275,19 @@ class ROCrateMetadata:
 
 class ROCrate(ABC):
 
+    """
+    Base class for representing and interacting with a Research Object Crate (RO-Crate).
+    """
+
     def __init__(self, uri: Union[str, Path, URI]):
+        """
+        Initialize the RO-Crate.
+
+        :param uri: the URI of the RO-Crate
+        :type uri: Union[str, Path, URI]
+
+        :raises ROCrateInvalidURIError: if the URI is invalid
+        """
 
         # store the path to the crate
         self._uri = URI(uri)
@@ -291,21 +303,42 @@ class ROCrate(ABC):
 
     @property
     def uri(self) -> URI:
+        """
+        The URI of the RO-Crate.
+        """
         return self._uri
 
     @property
     def metadata(self) -> ROCrateMetadata:
+        """
+        An ROCrateMetadata object representing the RO-Crate metadata.
+
+        :return: the metadata object
+        :rtype: ROCrateMetadata
+        """
         if not self._metadata:
             self._metadata = ROCrateMetadata(self)
         return self._metadata
 
     @abstractmethod
     def size(self) -> int:
+        """
+        The size of the RO-Crate.
+
+        :return: the size of the RO-Crate
+        :rtype: int
+        """
         pass
 
     @property
     @abstractmethod
     def list_files(self) -> list[Path]:
+        """
+        List all the files in the RO-Crate.
+
+        :return: a list of file paths
+        :rtype: list[Path]
+        """
         pass
 
     def __parse_path__(self, path: Path) -> Path:
@@ -321,9 +354,24 @@ class ROCrate(ABC):
             return self.uri.as_path().absolute() / path
 
     def has_descriptor(self) -> bool:
+        """
+        Check if the RO-Crate has a metadata descriptor file.
+
+        :return: `True` if the RO-Crate has a metadata descriptor file, `False` otherwise
+        :rtype: bool
+        """
         return (self.uri.as_path().absolute() / self.metadata.METADATA_FILE_DESCRIPTOR).is_file()
 
     def has_file(self, path: Path) -> bool:
+        """
+        Check if the RO-Crate has a file.
+
+        :param path: the path to the file
+        :type path: Path
+
+        :return: `True` if the RO-Crate has the file, `False` otherwise
+        :rtype: bool
+        """
         try:
             return self.__parse_path__(path).is_file()
         except Exception as e:
@@ -332,6 +380,15 @@ class ROCrate(ABC):
             return False
 
     def has_directory(self, path: Path) -> bool:
+        """
+        Check if the RO-Crate has a directory.
+
+        :param path: the path to the directory
+        :type path: Path
+
+        :return: `True` if the RO-Crate has the directory, `False` otherwise
+        :rtype: bool
+        """
         try:
             return self.__parse_path__(path).is_dir()
         except Exception as e:
@@ -341,26 +398,81 @@ class ROCrate(ABC):
 
     @abstractmethod
     def get_file_size(self, path: Path) -> int:
+        """
+        Get the size of a file in the RO-Crate.
+
+        :param path: the path to the file
+        :type path: Path
+
+        :return: the size of the file
+        :rtype: int
+        """
         pass
 
     @abstractmethod
     def get_file_content(self, path: Path, binary_mode: bool = True) -> Union[str, bytes]:
+        """
+        Get the content of a file in the RO-Crate.
+
+        :param path: the path to the file
+        :type path: Path
+
+        :param binary_mode: if `True`, return the file as a `bytes` object; otherwise, return it as a `str`
+        :type binary_mode: bool
+
+        :return: the content of the file
+        :rtype: Union[str, bytes]
+        """
         pass
 
     @staticmethod
     def get_external_file_content(uri: str, binary_mode: bool = True) -> Union[str, bytes]:
+        """
+        Get the content of an external file.
+
+        :param uri: the URI of the file
+        :type uri: str
+
+        :param binary_mode: if `True`, return the file as a `bytes` object; otherwise, return it as a `str`
+        :type binary_mode: bool
+
+        :return: the content of the file
+        :rtype: Union[str, bytes]
+        """
         response = requests.get(str(uri))
         response.raise_for_status()
         return response.content if binary_mode else response.text
 
     @staticmethod
     def get_external_file_size(uri: str) -> int:
+        """
+        Get the size of an external file.
+
+        :param uri: the URI of the file
+        :type uri: str
+
+        :return: the size of the file
+        :rtype: int
+
+        :raises requests.HTTPError: if the request fails
+        """
         response = requests.head(str(uri))
         response.raise_for_status()
         return int(response.headers.get('Content-Length'))
 
     @staticmethod
     def new_instance(uri: Union[str, Path, URI]) -> 'ROCrate':
+        """
+        Create a new instance of the RO-Crate based on the URI.
+
+        :param uri: the URI of the RO-Crate
+        :type uri: Union[str, Path, URI]
+
+        :return: a new instance of the RO-Crate
+        :rtype: ROCrate
+
+        :raises ROCrateInvalidURIError: if the URI is invalid
+        """
         # check if the URI is valid
         validate_rocrate_uri(uri, silent=False)
         # create a new instance based on the URI

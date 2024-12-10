@@ -201,7 +201,7 @@ def getLogger(name: str) -> Logger:
 
 class LoggerProxy:
 
-    """"Define a proxy class for the logger to allow lazy initialization of the logger instance"""
+    """Define a proxy class for the logger to allow lazy initialization of the logger instance"""
 
     def __init__(self, name: str):
         self.name = name

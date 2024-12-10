@@ -128,11 +128,11 @@ class SHACLValidationContext(ValidationContext):
                 from rocrate_validator.requirements.shacl.requirements import \
                     SHACLRequirement
                 for requirement in [_ for _ in profile.requirements if isinstance(_, SHACLRequirement)]:
-                    logger.debug("Processing requirement: %s", requirement.name)
+                    # logger.debug("Processing requirement: %s", requirement.name)
                     for check in requirement.get_checks():
-                        logger.debug("Processing check: %s", check)
+                        # logger.debug("Processing check: %s", check)
                         if check.overridden and check.requirement.profile != self.target_profile:
-                            logger.debug("Overridden check: %s", check)
+                            # logger.debug("Overridden check: %s", check)
                             profile_shapes_graph -= check.shape.graph
                             profile_shapes.pop(check.shape.key)
 

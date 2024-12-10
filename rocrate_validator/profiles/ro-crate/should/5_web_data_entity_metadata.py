@@ -39,11 +39,11 @@ class WebDataEntityRecommendedChecker(PyFunctionCheck):
             assert entity.id is not None, "Entity has no @id"
             try:
                 if not entity.is_available():
-                    context.result.add_error(
+                    context.result.add_issue(
                         f'Web-based Data Entity {entity.id} is not available', self)
                     result = False
             except Exception as e:
-                context.result.add_error(
+                context.result.add_issue(
                     f'Web-based Data Entity {entity.id} is not available: {e}', self)
                 result = False
             if not result and context.fail_fast:
@@ -62,11 +62,11 @@ class WebDataEntityRecommendedChecker(PyFunctionCheck):
             if entity.is_available():
                 content_size = entity.get_property("contentSize")
                 if content_size and int(content_size) != context.ro_crate.get_external_file_size(entity.id):
-                    context.result.add_check_issue(
+                    context.result.add_issue(
                         f'The property contentSize={content_size} of the Web-based Data Entity '
                         f'{entity.id} does not match the actual size of '
                         f'the downloadable content, i.e., {entity.content_size} (bytes)', self,
-                        focusNode=entity.id, resultPath='contentSize', value=content_size)
+                        violatingEntity=entity.id, violatingProperty='contentSize', violatingPropertyValue=content_size)
                     result = False
             if not result and context.fail_fast:
                 return result

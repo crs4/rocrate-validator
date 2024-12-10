@@ -48,7 +48,17 @@ def detect_profiles(settings: Union[dict, ValidationSettings]) -> list[Profile]:
 def validate(settings: Union[dict, ValidationSettings],
              subscribers: Optional[list[Subscriber]] = None) -> ValidationResult:
     """
-    Validate a RO-Crate against a profile
+    Validate a RO-Crate against a profile and return the validation result
+
+    :param settings: the validation settings
+    :type settings: Union[dict, ValidationSettings]
+
+    :param subscribers: the list of subscribers
+    :type subscribers: Optional[list[Subscriber]]
+
+    :return: the validation result
+    :rtype: ValidationResult
+
     """
     # initialize the validator
     validator = __initialise_validator__(settings, subscribers)
@@ -163,7 +173,27 @@ def get_profiles(profiles_path: Path = DEFAULT_PROFILES_PATH,
                  allow_requirement_check_override: bool =
                  ValidationSettings.allow_requirement_check_override) -> list[Profile]:
     """
-    Load the profiles from the given path
+    Get the list of profiles supported by the package.
+    The profile source path can be overridden by specifying ``profiles_path``.
+
+    :param profiles_path: the path to the profiles directory
+    :type profiles_path: Path
+
+    :param severity: the severity level
+    :type severity: Severity
+
+    :param allow_requirement_check_override: a flag to enable or disable
+        the requirement check override (default: ``True``).
+        If ``True``, the requirement check of a profile ``A`` can be overridden
+        by the requirement check of a profile extension ``B`` (i.e., when ``B extends A``)
+        if they share the same name.
+        If ``False``, a profile extension ``B`` can only
+        add new requirements to the profile ``A`` (i.e., checks with name not present in ``A``)
+        and an error is raised if a check with the same name is found in both profiles.
+    :type allow_requirement_check_override: bool
+
+    :return: the list of profiles
+    :rtype: list[Profile]
     """
     profiles = Profile.load_profiles(profiles_path,
                                      severity=severity,
@@ -178,7 +208,32 @@ def get_profile(profile_identifier: str,
                 allow_requirement_check_override: bool =
                 ValidationSettings.allow_requirement_check_override) -> Profile:
     """
-    Load the profiles from the given path
+    Get the profile with the given identifier.
+    The profile source path can be overridden through ``profiles_path``.
+    The profile is loaded based on the given severity level and the requirement check override flag.
+
+    :param profile_identifier: the profile identifier
+    :type profile_identifier: str
+
+    :param profiles_path: the path to the profiles directory
+    :type profiles_path: Path
+
+    :param severity: the severity level
+    :type severity: Severity
+
+    :param allow_requirement_check_override: a flag to enable or disable
+        the requirement check override (default: ``True``).
+        If ``True``, the requirement check of a profile ``A`` can be overridden
+        by the requirement check of a profile extension ``B`` (i.e., when ``B extends A``)
+        if they share the same name.
+        If ``False``, a profile extension ``B`` can only
+        add new requirements to the profile ``A`` (i.e., checks with name not present in ``A``)
+        and an error is raised if a check with the same name is found in both profiles.
+    :type allow_requirement_check_override: bool
+
+    :return: the profile
+    :rtype: Profile
+
     """
     profiles = get_profiles(profiles_path, severity=severity,
                             allow_requirement_check_override=allow_requirement_check_override)
