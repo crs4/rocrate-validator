@@ -210,20 +210,24 @@ class SHACLCheck(RequirementCheck):
                     shacl_context.settings.disable_inherited_profiles_reporting:
                 continue
             for violation in failed_requirements_checks_violations[requirementCheck.identifier]:
+                violating_entity = make_uris_relative(violation.focusNode.toPython(), shacl_context.publicID)
+                violating_property = violation.resultPath.toPython() if violation.resultPath else None
                 violation_message = violation.get_result_message(shacl_context.rocrate_uri)
                 registered_check_issues = shacl_context.result.get_issues_by_check(requirementCheck)
                 skip_requirement_check = False
                 for check_issue in registered_check_issues:
-                    if check_issue.message == violation_message:
+                    if check_issue.message == violation_message and \
+                            check_issue.violatingProperty == violating_property and \
+                            check_issue.violatingEntity == violating_entity and \
+                            check_issue.violatingPropertyValue == violation.value:
                         skip_requirement_check = True
                         break
                 if not skip_requirement_check:
                     c = shacl_context.result.add_issue(
                         message=violation.get_result_message(shacl_context.rocrate_uri),
                         check=requirementCheck,
-                        violatingProperty=violation.resultPath.toPython() if violation.resultPath else None,
-                        violatingEntity=make_uris_relative(
-                            violation.focusNode.toPython(), shacl_context.publicID),
+                        violatingProperty=violating_property,
+                        violatingEntity=violating_entity,
                         violatingPropertyValue=violation.value)
                 # if the fail fast mode is enabled, stop the validation after the first issue
                 if shacl_context.fail_fast:
