@@ -32,4 +32,17 @@ workflow-run-crate:WfRCFormalParameterRequired a sh:NodeShape ;
         sh:path schema:additionalType ;
         sh:minCount 1 ;
         sh:message "FormalParameter MUST have an additionalType" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "FormalParameter workExample" ;
+        sh:description "FormalParameter MUST refer to a data entity or PropertyValue via workExample" ;
+        sh:path schema:workExample ;
+        sh:or (
+            [ sh:class schema:MediaObject ; ]
+            [ sh:class schema:Dataset ; ]
+            [ sh:class schema:Collection ; ]
+            [ sh:class schema:PropertyValue ; ]
+        ) ;
+        sh:message "FormalParameter MUST refer to a data entity or PropertyValue via workExample" ;
     ] .

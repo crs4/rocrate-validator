@@ -28,16 +28,10 @@ workflow-run-crate:WfRCFormalParameterOptional a sh:NodeShape ;
     sh:property [
         a sh:PropertyShape ;
         sh:name "FormalParameter workExample" ;
-        sh:description "FormalParameter MAY refer to a data entity or PropertyValue via workExample" ;
+        sh:description "FormalParameter MAY have a workExample" ;
         sh:path schema:workExample ;
-        sh:or (
-            [ sh:class schema:MediaObject ; ]
-            [ sh:class schema:Dataset ; ]
-            [ sh:class schema:Collection ; ]
-            [ sh:class schema:PropertyValue ; ]
-        ) ;
         sh:minCount 1 ;
-        sh:message "FormalParameter MAY refer to a data entity or PropertyValue via workExample" ;
+        sh:message "FormalParameter MAY have a workExample" ;
     ] ;
     sh:property [
         a sh:PropertyShape ;

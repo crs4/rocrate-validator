@@ -62,22 +62,22 @@ def test_formalparam_no_workexample():
         Severity.OPTIONAL,
         False,
         ["Workflow Run Crate FormalParameter MAY"],
-        ["FormalParameter MAY refer to a data entity or PropertyValue via workExample"],
+        ["FormalParameter MAY have a workExample"],
         profile_identifier="workflow-run-crate"
     )
 
 
 def test_formalparam_bad_workexample():
     """\
-    Test a Workflow Run Crate where a FormalParameter is referenced via
-    exampleOfWork by an entity that is not a data entity or PropertyValue.
+    Test a Workflow Run Crate where a FormalParameter references via
+    workExample an entity that is not a data entity or PropertyValue.
     """
     do_entity_test(
         InvalidWfRC().formalparam_bad_workexample,
-        Severity.OPTIONAL,
+        Severity.REQUIRED,
         False,
-        ["Workflow Run Crate FormalParameter MAY"],
-        ["FormalParameter MAY refer to a data entity or PropertyValue via workExample"],
+        ["Workflow Run Crate FormalParameter MUST"],
+        ["FormalParameter MUST refer to a data entity or PropertyValue via workExample"],
         profile_identifier="workflow-run-crate"
     )
 
