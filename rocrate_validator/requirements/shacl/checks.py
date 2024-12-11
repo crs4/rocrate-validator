@@ -214,7 +214,11 @@ class SHACLCheck(RequirementCheck):
                 registered_check_issues = shacl_context.result.get_issues_by_check(requirementCheck)
                 skip_requirement_check = False
                 for check_issue in registered_check_issues:
-                    if check_issue.message == violation_message:
+                    if check_issue.message == violation_message and \
+                            check_issue.violatingProperty == violation.resultPath.toPython() and \
+                            check_issue.violatingEntity == make_uris_relative(
+                                violation.focusNode.toPython(), shacl_context.publicID) and \
+                            check_issue.violatingPropertyValue == violation.value:
                         skip_requirement_check = True
                         break
                 if not skip_requirement_check:
