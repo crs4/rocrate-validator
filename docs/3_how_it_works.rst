@@ -8,7 +8,8 @@ expected structure and content as defined by the selected profile.
 Validation Process
 ------------------
 
-1. **Profile Selection**: The user can always specify (via CLI or API) which profile to use
+1. **Profile Selection**: 
+    The user can always specify (via CLI or API) which profile to use
     for validation. If the user does not specify a profile, the system will attempt to detect
     the most appropriate profile based on the `conformsTo` property of the RO-Crate. This
     property indicates which profile the RO-Crate claims to conform to.
@@ -16,20 +17,21 @@ Validation Process
 2. **Profile Matching**:
     - If a precise match is found for the `conformsTo` property, that profile is selected
       for validation.
+
     - If no precise match is found, the system will:
-      - **Interactive Mode**: If interactive mode is enabled (available only via CLI), the system will prompt the
-         user to select a profile from the list of candidate profiles.
-      - **Non-Interactive Mode**: If interactive mode is not enabled, the system will use
-         all candidate profiles for validation.
+
+      - **(Interactive Mode)** The system will prompt the user to select a profile from the list of candidate profiles if interactive mode is enabled (available only through the CLI)
+
+      - **(Non-Interactive Mode)** the system will use all candidate profiles for validation if interactive mode is not enabled.
 
 3. **Profile Versioning**:
     - If the user does not specify a version of the profile, the validator will default to
       using the latest available version of the profile for validation.
 
-    .. note::
-        The version of a profile is encoded in the profile identifier. For example, for the
-        `ro-crate` profile version **1.0**, the identifier is `ro-crate-1.0`. The profile name
-        without the version identifier is simply `ro-crate`.
+.. note::
+    The version of a profile is encoded in the profile identifier. For example, for the
+    `ro-crate` profile version **1.0**, the identifier is `ro-crate-1.0`. The profile name
+    without the version identifier is simply `ro-crate`.
 
 By following this process, the `ro-crate-validator` ensures that the RO-Crate metadata is
 validated against the most suitable profile, providing flexibility and robustness in
