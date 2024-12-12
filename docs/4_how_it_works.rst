@@ -29,11 +29,11 @@ Validation Process
     - If the user does not specify a version of the profile, the validator will default to
       using the latest available version of the profile for validation.
 
-.. note::
-    The profile version is included in its identifier, allowing the validator to
-    accurately distinguish profiles and their versions. For instance, the identifier
-    for the `ro-crate` profile version **1.0** is `ro-crate-1.0`, while the profile name
-    without a version is simply `ro-crate`.
+  .. note::
+      The profile version is included in its identifier, allowing the validator to
+      accurately distinguish profiles and their versions. For instance, the identifier
+      for the `ro-crate` profile version **1.0** is `ro-crate-1.0`, while the profile name
+      without a version is simply `ro-crate`.
 
 By following this process, the `rocrate-validator` ensures that the RO-Crate metadata is
 validated against the most suitable profile, providing flexibility in
