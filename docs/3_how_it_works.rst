@@ -29,9 +29,10 @@ Validation Process
       using the latest available version of the profile for validation.
 
 .. note::
-    The version of a profile is encoded in the profile identifier. For example, for the
-    `ro-crate` profile version **1.0**, the identifier is `ro-crate-1.0`. The profile name
-    without the version identifier is simply `ro-crate`.
+    The profile version is included in its identifier, allowing the validator to
+    accurately distinguish profiles and their versions. For instance, the identifier
+    for the ro-crate profile version 1.0 is `ro-crate-1.0`, while the profile name
+    without a version is simply `ro-crate`.
 
 By following this process, the `ro-crate-validator` ensures that the RO-Crate metadata is
 validated against the most suitable profile, providing flexibility and robustness in
