@@ -16,41 +16,64 @@
 How It Works
 ============
 
-The `rocrate-validator` package is designed to validate RO-Crate metadata files against
-predefined profiles. The validation process ensures that the metadata conforms to the
-expected structure and content as defined by the selected profile.
+The `rocrate-validator` is designed to validate RO-Crates against predefined
+*validation profiles*. A validation profile is a set of validation rules, or
+*checks*, which are applied to the RO-Crate.  If the RO-Crate conforms to all
+the rules, then it is deemed *valid*; otherwise, errors will be generated for
+each rule that failed to validate.
 
-Validation Process
-------------------
+Non-conformance to a rule will result in an *issue*.  On the CLI, issues will
+be presented as error messages, with references to the specific rule which
+triggered the error. Note that multiple rules may have the same error message,
+which can result in output with apparently duplicate errors.
 
-1. **Profile Selection**: 
-    The user can always specify (via CLI or API) which profile to use
-    for validation. If the user does not specify a profile, the system will attempt to detect
-    the most appropriate profile based on the `conformsTo` property of the RO-Crate. This
-    property indicates which profile the RO-Crate claims to conform to.
+Naturally, `rocrate-validator` is limited to validating conformance to RO-Crate
+profiles for which validation rules have been implemented.  In the absence of
+any matching validation profiles, `rocrate-validator` may return an error or
+request the user to manually select a validation profile to apply.
 
-2. **Profile Matching**:
+Validation profiles can be related by inheritance -- i.e., where one validation
+profile extends another one. Normally this happens with profiles that validate
+conformance to RO-Crate profiles that themselves extend a base profile, such as
+Workflow Testing RO-Crate, which extends Workflow RO-Crate.
+
+
+
+Validation profile selection
+----------------------------
+
+* **Automatic Profile Matching** (default):
+  By default, `rocrate-validator` will attempt to select the correct validation
+  profiles for the input RO-Crate based on the `conformsTo` property.
 
     - If a precise match is found for the `conformsTo` property, that profile is selected
       for validation.
 
     - If no precise match is found, the system will:
 
-      - **Interactive Mode:** the system will prompt the user to select a profile from the list of candidate profiles if interactive mode is enabled (available only through the CLI)
+      - in **Interactive Mode:** (available only through the CLI) the system
+        will prompt the user to select a profile from the list of candidate
+        profiles;
 
-      - **Non-Interactive Mode:** the system will use all candidate profiles for validation if interactive mode is not enabled. If no suitable profile is found, the system will use the base `ro-crate` profile as a fallback.
+      - **Non-Interactive Mode:** the system will use all candidate profiles
+        for validation. If no suitable profile is found, the system will use
+        the base `ro-crate` profile as a fallback.
 
-3. **Profile Versioning**:
-    - If the user does not specify a version of the profile, the validator will default to
-      using the latest available version of the profile for validation.
+* **Profile Versions**:
+    - It may happen that the RO-Crate profile version to which the input
+      RO-Crate `conformsTo` does not match the version of the implemented
+      validation profile. In this case, the validator will validate against the
+      *highest available version* of the profile that is lower than the one
+      requested. Thus, the validator will avoid applying a validation profile
+      that is newer than the `conformsTo` profile.  This behaviour can be
+      overridden by manually selecting the desired validation profile (see below).
 
   .. note::
-      The profile version is included in its identifier, allowing the validator to
-      accurately distinguish profiles and their versions. For instance, the identifier
-      for the `ro-crate` profile version **1.0** is `ro-crate-1.0`, while the profile name
-      without a version is simply `ro-crate`.
+      Profile versions are identified by matching the trailing version number
+      in the profile identifier, if present. For instance, the identifier for
+      the `ro-crate` profile version **1.0** is `ro-crate-1.0`, while the
+      profile name without a version is simply `ro-crate`.
 
-By following this process, the `rocrate-validator` ensures that the RO-Crate metadata is
-validated against the most suitable profile, providing flexibility in
-handling different versions and profiles.
-
+* **Manual Profile Selection**:
+    The user can always override the automatic selection of validation profiles
+    by specifying (via CLI or API) which profile to use.
