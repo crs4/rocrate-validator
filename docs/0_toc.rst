@@ -19,8 +19,8 @@
 
     1_installation
     2_usage_cli
-    3_how_it_works
-    4_usage_api
+    3_usage_api
+    4_how_it_works
 
 .. toctree::
     :maxdepth: 5
