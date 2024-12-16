@@ -27,16 +27,13 @@ be presented as error messages, with references to the specific rule which
 triggered the error. Note that multiple rules may have the same error message,
 which can result in output with apparently duplicate errors.
 
-Naturally, `rocrate-validator` is limited to validating conformance to RO-Crate
+`rocrate-validator` is limited to validating conformance to RO-Crate
 profiles for which validation rules have been implemented.  In the absence of
 any matching validation profiles, `rocrate-validator` may return an error or
 request the user to manually select a validation profile to apply.
 
 Validation profiles can be related by inheritance -- i.e., where one validation
-profile extends another one. Normally this happens with profiles that validate
-conformance to RO-Crate profiles that themselves extend a base profile, such as
-Workflow Testing RO-Crate, which extends Workflow RO-Crate.
-
+profile extends another one. For instance, Workflow Testing RO-Crate extends Workflow RO-Crate.
 
 
 Validation profile selection
@@ -44,18 +41,18 @@ Validation profile selection
 
 * **Automatic Profile Matching** (default):
   By default, `rocrate-validator` will attempt to select the correct validation
-  profiles for the input RO-Crate based on the `conformsTo` property.
+  profiles for the input RO-Crate based on the `conformsTo` property of the Root Data Entity.
 
     - If a precise match is found for the `conformsTo` property, that profile is selected
       for validation.
 
-    - If no precise match is found, the system will:
+    - If no precise match is found:
 
       - in **Interactive Mode:** (available only through the CLI) the system
         will prompt the user to select a profile from the list of candidate
         profiles;
 
-      - **Non-Interactive Mode:** the system will use all candidate profiles
+      - in **Non-Interactive Mode:** the system will use all candidate profiles
         for validation. If no suitable profile is found, the system will use
         the base `ro-crate` profile as a fallback.
 
