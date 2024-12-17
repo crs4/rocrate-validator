@@ -49,12 +49,12 @@ Validation profile selection
     - If no precise match is found:
 
       - in **Interactive Mode:** (available only through the CLI) the system
-        will prompt the user to select a profile from the list of candidate
-        profiles;
+        will prompt the user to select a profile from the list of
+        profiles to which the RO-Crate conforms;
 
-      - in **Non-Interactive Mode:** the system will use all candidate profiles
-        for validation. If no suitable profile is found, the system will use
-        the base `ro-crate` profile as a fallback.
+      - in **Non-Interactive Mode:** the system will validate against all profiles
+        to which the RO-Crate conforms, and for which validation rules are available.
+        In all cases, input RO-Crates are validated against the base `ro-crate` profile.
 
 * **Profile Versions**:
     - It may happen that the RO-Crate profile version to which the input
