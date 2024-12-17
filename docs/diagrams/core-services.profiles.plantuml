@@ -1,0 +1,52 @@
+@startuml
+
+skinparam wrapWidth 600
+
+hide members
+hide fields
+
+' Define the services in the core package
+package "rocrate_validator" {
+
+    interface services [[#rocrate_validator.services.get_profiles]] {
+        + get_profile(profiles_path: Optional[Path], profile_identifier: str, severity: rocrate_validator.models.Severity) -> rocrate_validator.models.Profile
+        + get_profiles(profiles_path: Optional[Path], severity: rocrate_validator.models.Severity) -> list[rocrate_validator.models.Profile]
+    }
+
+    show services members
+
+    services ..> rocrate_validator.models.Profile : " instantiates"
+    services ..> rocrate_validator.models.Severity : " filters by"
+}
+
+note top of services
+    **I** ➠ **Interface**
+          Python module that exposes 
+          the main validation services 
+          provided by the RO-Crate validator
+end note
+
+package "rocrate_validator.models" {
+
+    class Profile [[#rocrate_validator.models.Profile]] {}
+
+    enum Severity [[#rocrate_validator.models.Severity]] {}
+}
+
+note bottom of Profile
+    **C** ➠ **Class**
+           The **Profile** class represents a
+           set of requirements and checks that
+           can be used to validate an RO-Crate
+end note
+
+note bottom of Severity
+    **E** ➠ **Enum**
+           The **Severity** enum represents the
+           different levels of severity that can
+           be used to filter requirements
+           and checks of a profile
+end note
+
+
+@enduml

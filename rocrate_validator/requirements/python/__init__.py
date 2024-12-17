@@ -58,6 +58,23 @@ class PyFunctionCheck(RequirementCheck):
 
 
 class PyRequirement(Requirement):
+    """
+    A base class for requirements that are implemented as Python classes.
+
+    This class is used to define a requirement that is implemented as a Python class.
+
+    The class is a subclass of :py:class:`rocrate_validator.models.Requirement`.
+
+    Class instances are automatically initialized by the validator
+    providing the profile, the requirement class,
+    the name, the description, and the path to the file that contains the requirement check class
+    within the profile directory.
+
+    The class is expected to have a docstring that provides a description of the requirement,
+    even if the description can be provided through the :py:func:`requirement` decorator.
+
+    The class should define one or more methods that are decorated with the :py:func:`check` decorator.
+    """
 
     def __init__(self,
                  profile: Profile,
@@ -109,8 +126,21 @@ class PyRequirement(Requirement):
 
 def requirement(name: str, description: Optional[str] = None, hidden: bool = False):
     """
-    A decorator to mark functions as "requirements" (by setting an attribute
-    `requirement=True`) and annotating them with a human-legible name.
+    A decorator to mark a class as a requirement class.
+
+    The decorator can be used to set the name and description of the requirement.
+
+    :param name: the name of the requirement
+    :type name: str
+
+    :param description: the description of the requirement
+    :type description: Optional[str]
+
+    :param hidden: a flag to indicate if the requirement
+                   should not be displayed in the list of requirements
+    :type hidden: bool
+
+    :return: the decorated class
     """
     def decorator(cls):
         if name:
@@ -125,8 +155,25 @@ def requirement(name: str, description: Optional[str] = None, hidden: bool = Fal
 
 def check(name: Optional[str] = None, severity: Optional[Severity] = None):
     """
-    A decorator to mark functions as "checks" (by setting an attribute
-    `check=True`) and optionally annotating them with a human-legible name.
+    A decorator to mark a function as a check.
+
+    The function should accept two arguments:
+
+    - a :py:class:`rocrate_validator.models.RequirementCheck` instance
+    - a :py:class:`rocrate_validator.models.ValidationContext` instance
+
+    The function should return a boolean value.
+
+    The decorator can be used to set the name of the check and the severity level.
+
+    :param name: the name of the check
+    :type name: Optional[str]
+
+    :param severity: the severity level
+    :type severity: Optional[Severity]
+
+    :return: the decorated function
+    :rtype: Callable
     """
     def decorator(func):
         check_name = name if name else func.__name__

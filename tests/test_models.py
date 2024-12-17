@@ -80,7 +80,7 @@ def validation_settings():
 
 # @pytest.mark.skip(reason="Temporarily disabled: we need an RO-Crate with multiple failed requirements to test this.")
 def test_sortability_requirements(validation_settings: ValidationSettings):
-    validation_settings.data_path = InvalidRootDataEntity().invalid_root_type
+    validation_settings.rocrate_uri = InvalidRootDataEntity().invalid_root_type
     result: models.ValidationResult = services.validate(validation_settings)
     failed_requirements = sorted(result.failed_requirements, reverse=True)
     assert len(failed_requirements) > 1
@@ -89,7 +89,7 @@ def test_sortability_requirements(validation_settings: ValidationSettings):
 
 
 def test_sortability_checks(validation_settings: ValidationSettings):
-    validation_settings.data_path = WROCInvalidReadme().wroc_readme_wrong_encoding_format
+    validation_settings.rocrate_uri = WROCInvalidReadme().wroc_readme_wrong_encoding_format
     result: models.ValidationResult = services.validate(validation_settings)
     failed_checks = sorted(result.failed_checks, reverse=True)
     assert len(failed_checks) > 1
@@ -100,7 +100,7 @@ def test_sortability_checks(validation_settings: ValidationSettings):
 
 
 def test_sortability_issues(validation_settings: ValidationSettings):
-    validation_settings.data_path = WROCInvalidReadme().wroc_readme_wrong_encoding_format
+    validation_settings.rocrate_uri = WROCInvalidReadme().wroc_readme_wrong_encoding_format
     result: models.ValidationResult = services.validate(validation_settings)
     issues = sorted(result.get_issues(min_severity=Severity.OPTIONAL), reverse=True)
     assert len(issues) > 1
@@ -111,7 +111,7 @@ def test_sortability_issues(validation_settings: ValidationSettings):
 
 
 def test_hidden_shape():
-    rocrate_profile = services.get_profile(profile_identifier="ro-crate-1.1")
+    rocrate_profile = services.get_profile("ro-crate-1.1")
     assert rocrate_profile is not None, "Profile should not be None"
     # get the hidden requirement
     hidden_requirement = rocrate_profile.get_requirement("Identify the Root Data Entity of the RO-Crate")

@@ -297,7 +297,7 @@
                     "@id": "#bffeb46f-c0bf-4814-8472-a368b45f8040"
                 }
             ],
-            "position": "1",
+            "position": 1,
             "buildInstructions": {
                 "@id": "sort_env.yml"
             },

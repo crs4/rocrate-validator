@@ -1,0 +1,206 @@
+@startuml
+
+skinparam wrapWidth 600
+
+' Add caption notes
+caption
+    == <u>**Core Model Diagram**</u>==
+    UML class diagram of main validation components.
+
+    <u>**Legend:**</u>
+    **C**: Class
+    **A**: Abstract Class
+    **I**: Interface
+    **E**: Enumeration
+    **→** : the source object contains a reference to the target object as part of its state
+    **♦―** : the source object contains the target object as part of its state 
+    and the target object cannot exist without the source object
+    **♢➞** : the source object references one or more target objects
+    **⇢** : the source object uses the target object
+end caption
+
+
+' Define settings
+hide members
+hide fields
+
+' Define the package
+package "rocrate_validator.models" {
+    
+    ' Define the Severity enumeration
+    enum Severity [[#rocrate_validator.models.Severity]] {
+        OPTIONAL
+        RECOMMENDED
+        REQUIRED
+    }
+    
+    show Severity members
+
+    ' Define the RequirementLevel class
+    class RequirementLevel [[#rocrate_validator.models.RequirementLevel]] {
+        + name: str
+        + severity: Severity
+    }
+    
+    RequirementLevel o--> "1 " Severity
+    
+    show RequirementLevel members
+
+    ' Define the LevelCollection class
+    class LevelCollection [[#rocrate_validator.models.LevelCollection]] {
+        {static} + OPTIONAL: RequirementLevel
+        {static} + MAY: RequirementLevel
+        {static} + REQUIRED: RequirementLevel
+        {static} + SHOULD: RequirementLevel
+        {static} + SHOULD_NOT: RequirementLevel
+        {static} + RECOMMENDED: RequirementLevel
+        {static} + MUST: RequirementLevel
+        {static} + MUST_NOT: RequirementLevel
+        {static} + SHALL: RequirementLevel
+        {static} + SHALL_NOT: RequirementLevel
+
+        ' Define the all() method
+        {static} + list<RequirementLevel> all()
+        {static} + RequirementLevel get(name: str)
+    }
+    
+    LevelCollection o--> "*" RequirementLevel
+
+    ' Define the Profile class
+    class Profile [[#rocrate_validator.models.Profile]] {
+        + identifier: str
+        + uri: str
+        + name: str
+        + description: str
+        + path: str
+        + version: str
+        + token: str
+        + comment: str
+        + requirements: list<Requirement>
+        + isProfileOf: list<str>
+        + isTransientProfileOf: list<str>
+        + parents: list<Profile>
+        + siblings: list<Profile>
+        + inheritedProfiles: list<Profile>
+        {static} + get_by_identifier(identifier: str): Profile
+        {static} + get_by_uri(uri: str): Profile
+        {static} + get_by_name(name: str): list<Profile>
+        {static} + get_by_token(token: str): Profile
+        {static} + get_siblings_profiles(cls, profile: Profile): list<Profile>
+        {static} + all(): list<Profile>
+    }
+
+    ' Define the Requirement class
+    abstract class Requirement [[#rocrate_validator.models.Requirement]] {
+        + identifier: str
+        + name: str
+        + description: str
+        + path: Path
+        + requirements: list<Requirement>
+        + overridden: bool
+        + get_checks(): list<RequirementCheck>
+        + get_check(name: str): RequirementCheck
+    }
+    
+    Profile "1 " *-- "1...* " Requirement
+    
+    hide Requirement members
+    hide Requirement methods
+
+    ' Define the RequirementCheck class
+    abstract class RequirementCheck [[#rocrate_validator.models.RequirementCheck]] {
+        + identifier: str
+        + name: str
+        + description: str
+        + severity: Severity
+        + requirement: Requirement
+        + overridden_by: list<RequirementCheck>
+        + overrides: list<RequirementCheck>
+        + execute_check(context: ValidationContext) -> bool
+    }
+    
+    Requirement "1" *-- " 1...*" RequirementCheck
+    
+    hide RequirementCheck members
+    hide RequirementCheck methods
+
+    class ValidationSettings [[#rocrate_validator.models.ValidationSettings]] {}
+
+    ' Define the ValidationContext class
+    class ValidationContext [[#rocrate_validator.models.ValidationContext]] {
+        + profile: Profile
+        + rocrate: dict
+        + rocrate_path: Path
+        + profile_path: Path
+    }
+    
+    ValidationContext --> "1 " ValidationSettings
+    ValidationContext ..> "1 " rocrate_validator.rocrate.ROCrate: instantiates
+    ValidationContext ..> "1 " Profile: " references"
+    ValidationContext ..> "1 " ValidationResult: instantiates
+
+    hide ValidationContext members
+    hide ValidationContext methods
+
+    ' Define the ValidationResult class
+    class ValidationResult [[#rocrate_validator.models.ValidationResult]] {
+        + context: ValidationContext
+        + validation_settings: ValidationSettings
+        + executed_checks: set<RequirementCheck>
+        + failed_checks: set<RequirementCheck>
+        + skipped_checks: set<RequirementCheck>
+        + issues: list<CheckIssue>
+        + get_issues(min_severity: Severity) -> list<CheckIssue>
+        + has_issues(min_severity: Severity) -> bool
+        + add_issue(message: str, check: RequirementCheck,
+                    violatingEntity: Optional[str], violatingProperty: Optional[str],
+                    violatingPropertyValue: Optional[str])
+        + passed(min_severity: Severity) -> bool
+        + failed_requirements() -> Collection<Requirement>
+        + failed_checks() -> Collection<RequirementCheck>
+        + get_failed_checks_by_requirement(requirement: Requirement) -> Collection<RequirementCheck>
+        + get_failed_checks_by_requirement_and_severity(requirement: Requirement, severity: Severity) -> Collection<RequirementCheck>
+        + to_dict() -> dict
+        + to_json() -> str
+    }
+
+    ValidationResult --> "1" ValidationContext
+    ValidationResult o--> "*" CheckIssue
+
+    hide ValidationResult members
+    hide ValidationContext methods
+
+    ' Define the CheckIssue class
+    class CheckIssue [[#rocrate_validator.models.CheckIssue]] {
+        + message: str
+        + check: RequirementCheck
+        + severity: Severity
+        + level: RequirementLevel
+        + violatingEntity: Optional[str]
+        + violatingProperty: Optional[str]
+        + violatingPropertyValue: Optional[str]
+    }
+
+    CheckIssue --> "1 " RequirementCheck
+
+    ' Define the Validator class
+    class Validator [[#rocrate_validator.models.Validator]] {
+        + profile: Profile
+        + rocrate: dict
+        + rocrate_path: Path
+        + profile_path: Path
+        + context: ValidationContext
+        + validate() -> bool
+    }
+
+    Validator ..> "*" ValidationContext : " instantiates"
+}
+
+
+
+package "rocrate_validator.rocrate" {
+    class ROCrate [[#rocrate_validator.rocrate.ROCrate]] {
+    }
+}
+
+@enduml

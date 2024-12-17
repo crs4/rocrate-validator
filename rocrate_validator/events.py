@@ -17,18 +17,30 @@ from abc import ABC, abstractmethod
 from functools import total_ordering
 from typing import Optional, Union
 
+import enum_tools
+
 
 @enum.unique
+@enum_tools.documentation.document_enum
 @total_ordering
 class EventType(enum.Enum):
-    """Enum ordering "strength" of conditions to be verified"""
+    """ Event types """
+
+    #: Validation start
     VALIDATION_START = 0
+    #: Validation end
     VALIDATION_END = 1
+    #: Profile validation start
     PROFILE_VALIDATION_START = 2
+    #: Profile validation end
     PROFILE_VALIDATION_END = 3
+    #: Requirement validation start
     REQUIREMENT_VALIDATION_START = 4
+    #: Requirement validation end
     REQUIREMENT_VALIDATION_END = 5
+    #: Requirement check validation start
     REQUIREMENT_CHECK_VALIDATION_START = 6
+    #: Requirement check validation end
     REQUIREMENT_CHECK_VALIDATION_END = 7
 
     def __lt__(self, other):
@@ -38,17 +50,43 @@ class EventType(enum.Enum):
 
 
 class Event:
+    """
+    Base class for representing events
+    """
+
     def __init__(self, event_type: EventType, message: Optional[str] = None):
+        """
+        Initialize the event.
+
+        :param event_type: the event type
+        :type event_type: EventType
+
+        :param message: the message
+        :type message: Optional[str]
+        """
         self.event_type = event_type
         self.message = message
 
 
 class Subscriber(ABC):
+
+    """
+    Subscriber interface.
+    Objects that want to be notified of events generated during the validation process
+    should implement this interface.
+    """
+
     def __init__(self, name):
         self.name = name
 
     @abstractmethod
     def update(self, event: Event):
+        """
+        Update the subscriber with the event
+
+        :param event: the event
+        :type event: Event
+        """
         pass
 
 

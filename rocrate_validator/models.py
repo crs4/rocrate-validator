@@ -26,6 +26,7 @@ from functools import total_ordering
 from pathlib import Path
 from typing import Optional, Tuple, Union
 
+import enum_tools
 from rdflib import RDF, RDFS, Graph, Namespace, URIRef
 
 import rocrate_validator.log as logging
@@ -37,9 +38,7 @@ from rocrate_validator.constants import (DEFAULT_ONTOLOGY_FILE,
                                          JSON_OUTPUT_FORMAT_VERSION, PROF_NS,
                                          PROFILE_FILE_EXTENSIONS,
                                          PROFILE_SPECIFICATION_FILE,
-                                         RDF_SERIALIZATION_FORMATS_TYPES,
-                                         ROCRATE_METADATA_FILE, SCHEMA_ORG_NS,
-                                         VALID_INFERENCE_OPTIONS_TYPES)
+                                         ROCRATE_METADATA_FILE, SCHEMA_ORG_NS)
 from rocrate_validator.errors import (DuplicateRequirementCheck,
                                       InvalidProfilePath, ProfileNotFound,
                                       ProfileSpecificationError,
@@ -60,11 +59,18 @@ BaseTypes = Union[str, Path, bool, int, None]
 
 
 @enum.unique
+@enum_tools.documentation.document_enum
 @total_ordering
 class Severity(enum.Enum):
-    """Enum ordering "strength" of conditions to be verified"""
+    """
+    Enum ordering "strength" of conditions to be verified
+    """
+
+    #: the condition is not mandatory
     OPTIONAL = 0
+    #: the condition is recommended
     RECOMMENDED = 2
+    #: the condition is mandatory
     REQUIRED = 4
 
     def __lt__(self, other: object) -> bool:
@@ -81,6 +87,13 @@ class Severity(enum.Enum):
 @total_ordering
 @dataclass
 class RequirementLevel:
+
+    """
+    Represents a requirement level.
+
+    A requirement has a name and a severity level of type :class:`.Severity`.
+    It implements the comparison operators to allow ordering of the requirement levels.
+    """
     name: str
     severity: Severity
 
@@ -116,22 +129,39 @@ class RequirementLevel:
 
 class LevelCollection:
     """
-    * The keywords MUST, MUST NOT, REQUIRED,
-    * SHALL, SHALL NOT, SHOULD, SHOULD NOT,
-    * RECOMMENDED, MAY, and OPTIONAL in this document
-    * are to be interpreted as described in RFC 2119.
-    """
-    OPTIONAL = RequirementLevel('OPTIONAL', Severity.OPTIONAL)
-    MAY = RequirementLevel('MAY', Severity.OPTIONAL)
+    Collection of :class:`.RequirementLevel` instances.
 
+    Provides a set of predefined RequirementLevel instances
+    that can be used to define the severity of a requirement.
+    They map the keywords defined in **RFC 2119** to the corresponding severity levels.
+
+    .. note::
+        The keywords **MUST**, **MUST NOT**, **REQUIRED**,
+        **SHALL**, **SHALL NOT**, **SHOULD**, **SHOULD NOT**,
+        **RECOMMENDED**, **MAY**, and **OPTIONAL** in this document
+        are to be interpreted as described in **RFC 2119**.
+
+    """
+    #: The requirement level OPTIONAL is mapped to the OPTIONAL severity level
+    OPTIONAL = RequirementLevel('OPTIONAL', Severity.OPTIONAL)
+    #: The requirement level MAY is mapped to the OPTIONAL severity level
+    MAY = RequirementLevel('MAY', Severity.OPTIONAL)
+    #: The requirement level REQUIRED is mapped to the REQUIRED severity level
     REQUIRED = RequirementLevel('REQUIRED', Severity.REQUIRED)
+    #: The requirement level SHOULD is mapped to the RECOMMENDED severity level
     SHOULD = RequirementLevel('SHOULD', Severity.RECOMMENDED)
+    #: The requirement level SHOULD NOT is mapped to the RECOMMENDED severity level
     SHOULD_NOT = RequirementLevel('SHOULD_NOT', Severity.RECOMMENDED)
+    #: The requirement level RECOMMENDED is mapped to the RECOMMENDED severity level
     RECOMMENDED = RequirementLevel('RECOMMENDED', Severity.RECOMMENDED)
 
+    #: The requirement level MUST is mapped to the REQUIRED severity level
     MUST = RequirementLevel('MUST', Severity.REQUIRED)
+    #: The requirement level MUST_NOT is mapped to the REQUIRED severity level
     MUST_NOT = RequirementLevel('MUST_NOT', Severity.REQUIRED)
+    #: The requirement level SHALL is mapped to the REQUIRED severity level
     SHALL = RequirementLevel('SHALL', Severity.REQUIRED)
+    #: The requirement level SHALL_NOT is mapped to the REQUIRED severity level
     SHALL_NOT = RequirementLevel('SHALL_NOT', Severity.REQUIRED)
 
     def __init__(self):
@@ -154,6 +184,12 @@ class LevelCollection:
 @total_ordering
 class Profile:
 
+    """
+    RO-Crate Validator profile.
+
+    A profile is a named set of requirements that can be used to validate an RO-Crate.
+    """
+
     # store the map of profiles: profile URI -> Profile instance
     __profiles_map: MultiIndexMap = \
         MultiIndexMap("uri", indexes=[
@@ -167,6 +203,31 @@ class Profile:
                  identifier: str = None,
                  publicID: Optional[str] = None,
                  severity: Severity = Severity.REQUIRED):
+        """
+        Initialize the Profile instance
+
+        :param profile_path: the path of the profile
+        :type profile_path: Path
+
+        :param requirements: the list of requirements of the profile
+        :type requirements: list[Requirement]
+
+        :param identifier: the identifier of the profile
+        :type identifier: str
+
+        :param publicID: the public identifier of the profile
+        :type publicID: str
+        :meta private:
+
+        :param severity: the severity of the profile
+        :type severity: Severity
+
+        : raises ProfileSpecificationNotFound: if the profile specification file is not found
+        : raises ProfileSpecificationError: if the profile specification file contains more than one profile
+        : raises InvalidProfilePath: if the profile path is not a directory
+
+        :meta private:
+        """
         self._identifier: Optional[str] = identifier
         self._profiles_base_path = profiles_base_path
         self._profile_path = profile_path
@@ -219,10 +280,16 @@ class Profile:
 
     @property
     def path(self):
+        """
+        The path of the profile directory
+        """
         return self._profile_path
 
     @property
     def identifier(self) -> str:
+        """
+        The identifier of the profile.
+        """
         if not self._identifier:
             version = self.version
             self._identifier = f"{self.token}-{version}" if version else self.token
@@ -230,6 +297,11 @@ class Profile:
 
     @property
     def name(self):
+        """
+        The name of the profile as specified in the profile specification file
+        (i.e., the value of the rdfs: label property in the `profile.ttl` file) or
+        a default name if the label is not specified.
+        """
         return self.label or f"Profile {self.uri}"
 
     @property
@@ -238,10 +310,19 @@ class Profile:
 
     @property
     def token(self):
+        """
+        A token that uniquely identifies the profile
+        as specified in the profile specification file
+        (i.e., the value of the prof: hasToken property
+        in the `profile.ttl` file).
+        """
         return self._token
 
     @property
     def uri(self):
+        """
+        The URI of the profile.
+        """
         return self._profile_node.toPython()
 
     @property
@@ -250,46 +331,91 @@ class Profile:
 
     @property
     def comment(self):
+        """
+        The comment added to the profile in the profile specification file
+        (i.e., the value of the rdfs: comment property in the `profile.ttl` file).
+        """
         return self.__get_specification_property__("comment", RDFS)
 
     @property
     def version(self):
+        """
+        The version of the profile as specified in the profile specification file
+        (i.e., the value of the prof: version property in the `profile.ttl` file).
+        """
         return self._version
 
     @property
     def is_profile_of(self) -> list[str]:
+        """
+        The list of profiles that this profile is a profile of
+        as specified in the profile specification file
+        (i.e., the value of the prof: isProfileOf property in the `profile.ttl` file).
+        """
         return self.__get_specification_property__("isProfileOf", PROF_NS, pop_first=False)
 
     @property
     def is_transitive_profile_of(self) -> list[str]:
+        """
+        The list of profiles that this profile is a transitive profile of
+        as specified in the profile specification file
+        (i.e., the value of the prof: isTransitiveProfileOf property in the `profile.ttl` file).
+        """
         return self.__get_specification_property__("isTransitiveProfileOf", PROF_NS, pop_first=False)
 
     @property
     def parents(self) -> list[Profile]:
+        """
+        The list of profiles that this profile is a profile of
+        as specified in the profile specification file.
+        """
         return [self.__profiles_map.get_by_key(_) for _ in self.is_profile_of]
 
     @property
     def siblings(self) -> list[Profile]:
+        """
+        The list of profiles that are siblings of this profile
+        (i.e., profiles that share the same parent profile).
+        """
         return self.get_sibling_profiles(self)
 
     @property
     def readme_file_path(self) -> Path:
+        """
+        The path of the README file of the profile.
+        """
         return self.path / DEFAULT_PROFILE_README_FILE
 
     @property
     def profile_specification_file_path(self) -> Path:
+        """
+        The path of the profile specification file.
+        """
         return self.path / PROFILE_SPECIFICATION_FILE
 
     @property
     def publicID(self) -> Optional[str]:
+        """
+        The public identifier of the RO-Crate which is validated by the profile.
+
+        :meta private:
+        """
         return self._publicID
 
     @property
     def severity(self) -> Severity:
+        """
+        The severity of the profile which the profile is loaded with,
+        i.e., the minimum severity level of the requirements of the profile.
+        """
         return self._severity
 
     @property
     def description(self) -> str:
+        """
+        The description of the profile as specified in the profile specification file
+        (i.e., the value of the rdfs: comment property in the `profile.ttl` file).
+        """
         if not self._description:
             if self.path and self.readme_file_path.exists():
                 with open(self.readme_file_path, "r") as f:
@@ -300,6 +426,9 @@ class Profile:
 
     @property
     def requirements(self) -> list[Requirement]:
+        """
+        The list of requirements of the profile.
+        """
         if not self._requirements:
             self._requirements = \
                 RequirementLoader.load_requirements(self, severity=self.severity)
@@ -308,12 +437,21 @@ class Profile:
     def get_requirements(
             self, severity: Severity = Severity.REQUIRED,
             exact_match: bool = False) -> list[Requirement]:
+        """
+        Get the requirements of the profile with the given severity level.
+        If the exact_match flag is set to `True`, only the requirements with the exact severity level
+        are returned; otherwise, the requirements with severity level greater than or equal to
+        the given severity level are returned.
+        """
         return [requirement for requirement in self.requirements
                 if (not exact_match and
                     (not requirement.severity_from_path or requirement.severity_from_path >= severity)) or
                 (exact_match and requirement.severity_from_path == severity)]
 
     def get_requirement(self, name: str) -> Optional[Requirement]:
+        """
+        Get the requirement with the given name
+        """
         for requirement in self.requirements:
             if requirement.name == name:
                 return requirement
@@ -520,26 +658,77 @@ class Profile:
 
     @classmethod
     def get_by_identifier(cls, identifier: str) -> Profile:
+        """
+        Get the profile with the given identifier
+
+        :param identifier: the identifier
+        :type identifier: str
+
+        :return: the profile
+        :rtype: Profile
+        """
         return cls.__profiles_map.get_by_index("identifier", identifier)
 
     @classmethod
     def get_by_uri(cls, uri: str) -> Profile:
+        """
+        Get the profile with the given URI
+
+        :param uri: the URI
+        :type uri: str
+
+        :return: the profile
+        :rtype: Profile
+        """
         return cls.__profiles_map.get_by_key(uri)
 
     @classmethod
     def get_by_name(cls, name: str) -> list[Profile]:
+        """
+        Get the profile with the given name
+
+        :param name: the name
+        :type name: str
+
+        :return: the profile
+        :rtype: Profile
+        """
         return cls.__profiles_map.get_by_index("name", name)
 
     @classmethod
     def get_by_token(cls, token: str) -> Profile:
+        """
+        Get the profile with the given token
+
+        :param token: the token
+        :type token: str
+
+        :return: the profile
+        :rtype: Profile
+        """
         return cls.__profiles_map.get_by_index("token", token)
 
     @classmethod
     def get_sibling_profiles(cls, profile: Profile) -> list[Profile]:
+        """
+        Get the sibling profiles of the given profile
+
+        :param profile: the profile
+        :type profile: Profile
+
+        :return: the list of sibling profiles
+        :rtype: list[Profile]
+        """
         return [p for p in cls.__profiles_map.values() if profile in p.parents]
 
     @classmethod
     def all(cls) -> list[Profile]:
+        """
+        Get all the profiles
+
+        :return: the list of profiles
+        :rtype: list[Profile]
+        """
         return cls.__profiles_map.values()
 
 
@@ -554,6 +743,10 @@ class SkipRequirementCheck(Exception):
 
 @total_ordering
 class Requirement(ABC):
+    """
+    Abstract class representing a requirement of a profile.
+    A requirement is a named set of checks that can be used to validate an RO-Crate.
+    """
 
     def __init__(self,
                  profile: Profile,
@@ -561,6 +754,11 @@ class Requirement(ABC):
                  description: Optional[str] = None,
                  path: Optional[Path] = None,
                  initialize_checks: bool = True):
+        """
+        Initialize the Requirement instance
+
+        :meta private:
+        """
         self._order_number: Optional[int] = None
         self._profile = profile
         self._description = description
@@ -586,15 +784,35 @@ class Requirement(ABC):
 
     @property
     def order_number(self) -> int:
+        """
+        The order number of the requirement in the profile
+
+        :return: the order number
+        :rtype: int
+        """
         assert self._order_number is not None
         return self._order_number
 
     @property
     def identifier(self) -> str:
-        return f"{self.profile.identifier}.{self.relative_identifier}"
+        """
+        The identifier of the requirement
+
+        :return: the identifier
+        :rtype: str
+        """
+        return f"{self.profile.identifier}_{self.relative_identifier}"
 
     @property
     def relative_identifier(self) -> str:
+        """
+        The relative identifier of the requirement
+
+        :return: the relative identifier
+        :rtype: str
+
+        :meta private:
+        """
         return f"{self.order_number}"
 
     @property
@@ -662,10 +880,12 @@ class Requirement(ABC):
         for i, check in enumerate(self._checks):
             check.order_number = i + 1
 
-    def __do_validate__(self, context: ValidationContext) -> bool:
+    def _do_validate_(self, context: ValidationContext) -> bool:
         """
         Internal method to perform the validation
         Returns whether all checks in this requirement passed.
+
+        :meta private:
         """
         logger.debug("Validating Requirement %s with %s checks", self.name, len(self._checks))
 
@@ -683,7 +903,7 @@ class Requirement(ABC):
                     EventType.REQUIREMENT_CHECK_VALIDATION_START, check))
                 check_result = check.execute_check(context)
                 logger.debug("Result of check %s: %s", check.identifier, check_result)
-                context.result.add_executed_check(check, check_result)
+                context.result._add_executed_check(check, check_result)
                 context.validator.notify(RequirementCheckValidationEvent(
                     EventType.REQUIREMENT_CHECK_VALIDATION_END, check, validation_result=check_result))
                 logger.debug("Ran check '%s'. Got result %s", check.name, check_result)
@@ -695,7 +915,7 @@ class Requirement(ABC):
                     break
             except SkipRequirementCheck as e:
                 logger.debug("Skipping check '%s' because: %s", check.name, e)
-                context.result.add_skipped_check(check)
+                context.result._add_skipped_check(check)
                 continue
             except Exception as e:
                 # Ignore the fact that the check failed as far as the validation result is concerned.
@@ -902,7 +1122,7 @@ class RequirementCheck(ABC):
         return overridden_by
 
     @property
-    def override(self) -> list[RequirementCheck]:
+    def overrides(self) -> list[RequirementCheck]:
         overrides = []
         for parent in self.requirement.profile.parents:
             check = parent.get_requirement_check(self.name)
@@ -953,50 +1173,25 @@ class RequirementCheck(ABC):
     def __hash__(self) -> int:
         return hash((self.requirement, self.name or ""))
 
-    # TODO: delete these?
-    #
-    # @property
-    # def issues(self) -> list[CheckIssue]:
-    #    """Return the issues found during the check"""
-    #    assert self.result, "Issues not set before the check"
-    #    return self.result.get_issues_by_check(self, Severity.OPTIONAL)
-
-    # def get_issues_by_severity(self, severity: Severity = Severity.RECOMMENDED) -> list[CheckIssue]:
-    #    return self.result.get_issues_by_check_and_severity(self, severity)
-
-
-# TODO: delete this?
-
-# def issue_types(issues: list[Type[CheckIssue]]) -> Type[RequirementCheck]:
-#     def class_decorator(cls):
-#         cls.issue_types = issues
-#         return cls
-#     return class_decorator
-
 
 @total_ordering
 class CheckIssue:
     """
-    Class to store an issue found during a check
-
-    Attributes:
-        severity (IssueSeverity): The severity of the issue
-        message (str): The message
-        code (int): The code
-        check (RequirementCheck): The check that generated the issue
+    Represents an issue with a check that has been executed
+    during the validation process.
     """
 
     def __init__(self,
                  check: RequirementCheck,
                  message: Optional[str] = None,
-                 resultPath: Optional[str] = None,
-                 focusNode: Optional[str] = None,
+                 violatingProperty: Optional[str] = None,
+                 violatingEntity: Optional[str] = None,
                  value: Optional[str] = None):
         self._message = message
         self._check: RequirementCheck = check
-        self._resultPath = resultPath
-        self._focusNode = focusNode
-        self._value = value
+        self._violatingProperty = violatingProperty
+        self._violatingEntity = violatingEntity
+        self._propertyValue = value
 
     @property
     def message(self) -> Optional[str]:
@@ -1023,16 +1218,37 @@ class CheckIssue:
         return self._check
 
     @property
-    def resultPath(self) -> Optional[str]:
-        return self._resultPath
+    def violatingEntity(self) -> Optional[str]:
+        """
+        It represents the specific element being evaluated that fails
+        to meet the defined rules or constraints within a validation process.
+        Also referred to as `focusNode` in SHACL terminology
+        in the context of an RDF graph, it is the subject of a triple
+        that violates a given constraint on the subject’s property/predicate,
+        represented by the violatingProperty.
+        """
+        return self._violatingEntity
 
     @property
-    def focusNode(self) -> Optional[str]:
-        return self._focusNode
+    def violatingProperty(self) -> Optional[str]:
+        """
+        It refers to the specific property or relationship within an item
+        that leads to a validation failure.
+        It identifies the part of the data structure that is causing the issue.
+        Also referred to as `resultPath` in SHACL terminology,
+        in the context of an RDF graph, it is the predicate of a triple
+        that violates a given constraint on the subject’s property/predicate,
+        represented by the violatingProperty.
+        """
+        return self._violatingProperty
 
     @property
-    def value(self) -> Optional[str]:
-        return self._value
+    def violatingPropertyValue(self) -> Optional[str]:
+        """
+        It represents the value of the violatingProperty
+        that leads to a validation failure.
+        """
+        return self._propertyValue
 
     def __eq__(self, other: object) -> bool:
         return isinstance(other, CheckIssue) and \
@@ -1051,15 +1267,16 @@ class CheckIssue:
         return f'CheckIssue(severity={self.severity}, check={self.check}, message={self.message})'
 
     def __str__(self) -> str:
-        return f"{self.severity}: {self.message} ({self.check})"
+        return f"Issue of severity {self.severity.name} with check \"{self.check.identifier}\": {self.message}"
 
     def to_dict(self, with_check: bool = True,
                 with_requirement: bool = True, with_profile: bool = True) -> dict:
         result = {
             "severity": self.severity.name,
             "message": self.message,
-            "focusNode": self.focusNode,
-            "value": self.value
+            "violatingEntity": self.violatingEntity,
+            "violatingProperty": self.violatingProperty,
+            "violatingPropertyValue": self.violatingPropertyValue
         }
         if with_check:
             result["check"] = self.check.to_dict(with_requirement=with_requirement, with_profile=with_profile)
@@ -1076,38 +1293,28 @@ class CheckIssue:
                 with_profile=with_profile
             ), indent=4, cls=CustomEncoder)
 
-    # @property
-    # def code(self) -> int:
-    #     breakpoint()
-    #     # If the code has not been set, calculate it
-    #     if not self._code:
-    #         """
-    #         Calculate the code based on the severity, the class name and the message.
-    #         - All issues with the same severity, class name and message will have the same code.
-    #         - All issues with the same severity and class name but different message will have different codes.
-    #         - All issues with the same severity but different class name and message will have different codes.
-    #         - All issues with the same severity should start with the same number.
-    #         - All codes should be positive numbers.
-    #         """
-    #         # Concatenate the level, class name and message into a single string
-    #         issue_string = self.level.name + self.__class__.__name__ + str(self.message)
-    #
-    #         # Use the built-in hash function to generate a unique code for this string
-    #         # The modulo operation ensures that the code is a positive number
-    #         self._code = hash(issue_string) % ((1 << 31) - 1)
-    #     # Return the code
-    #     return self._code
-
 
 class ValidationResult:
+    """
+    Represents the result of a validation.
+
+    :param context: The validation context
+    :type context: ValidationContext
+    :param rocrate_uri: The URI of the RO-Crate
+    :type rocrate_uri: str
+    :param validation_settings: The validation settings
+    :type validation_settings: ValidationSettings
+    :param issues: The issues found during the validation
+    :type issues: list[CheckIssue]
+    """
 
     def __init__(self, context: ValidationContext):
         # reference to the validation context
         self._context = context
-        # reference to the ro-crate path
-        self._rocrate_path = context.rocrate_path
+        # reference to the ro-crate URI
+        self._rocrate_uri = context.rocrate_uri
         # reference to the validation settings
-        self._validation_settings: dict[str, BaseTypes] = context.settings
+        self._validation_settings: ValidationSettings = context.settings
         # keep track of the issues found during the validation
         self._issues: list[CheckIssue] = []
         # keep track of the checks that have been executed
@@ -1118,22 +1325,37 @@ class ValidationResult:
 
     @property
     def context(self) -> ValidationContext:
+        """
+        The validation context
+        """
         return self._context
 
     @property
-    def rocrate_path(self):
-        return self._rocrate_path
+    def rocrate_uri(self):
+        """
+        The URI of the RO-Crate
+        """
+        return self._rocrate_uri
 
     @property
     def validation_settings(self):
+        """
+        The validation settings
+        """
         return self._validation_settings
 
     # --- Checks ---
     @property
     def executed_checks(self) -> set[RequirementCheck]:
+        """
+        The checks that have been executed
+        """
         return self._executed_checks
 
-    def add_executed_check(self, check: RequirementCheck, result: bool):
+    def _add_executed_check(self, check: RequirementCheck, result: bool):
+        """
+        Internal method to add a check to the executed checks
+        """
         self._executed_checks.add(check)
         self._executed_checks_results[check.identifier] = result
         # remove the check from the skipped checks if it was skipped
@@ -1142,84 +1364,129 @@ class ValidationResult:
             logger.debug("Removing check '%s' from skipped checks", check.name)
 
     def get_executed_check_result(self, check: RequirementCheck) -> Optional[bool]:
+        """
+        Get the result of an executed check
+        """
         return self._executed_checks_results.get(check.identifier)
 
     @property
     def skipped_checks(self) -> set[RequirementCheck]:
+        """
+        The checks that have been skipped
+        """
         return self._skipped_checks
 
-    def add_skipped_check(self, check: RequirementCheck):
+    def _add_skipped_check(self, check: RequirementCheck):
+        """
+        Internal method to add a check to the skipped checks
+        """
         self._skipped_checks.add(check)
 
-    def remove_skipped_check(self, check: RequirementCheck):
+    def _remove_skipped_check(self, check: RequirementCheck):
+        """
+        Internal method to remove a check from the skipped checks
+        """
         self._skipped_checks.remove(check)
 
     #  --- Issues ---
     @property
     def issues(self) -> list[CheckIssue]:
-        return self._issues
+        """
+        The issues found during the validation
+        """
+        return self._issues.copy()
 
     def get_issues(self, min_severity: Optional[Severity] = None) -> list[CheckIssue]:
+        """
+        Get the issues found during the validation with a severity greater than or equal to `min_severity`
+        """
         min_severity = min_severity or self.context.requirement_severity
         return [issue for issue in self._issues if issue.severity >= min_severity]
 
     def get_issues_by_check(self,
                             check: RequirementCheck,
                             min_severity: Severity = None) -> list[CheckIssue]:
+        """
+        Get the issues found during the validation for a specific check
+        with a severity greater than or equal to `min_severity`
+        """
         min_severity = min_severity or self.context.requirement_severity
         return [issue for issue in self._issues if issue.check == check and issue.severity >= min_severity]
 
     # def get_issues_by_check_and_severity(self, check: RequirementCheck, severity: Severity) -> list[CheckIssue]:
     #     return [issue for issue in self.issues if issue.check == check and issue.severity == severity]
 
-    def has_issues(self, severity: Optional[Severity] = None) -> bool:
-        severity = severity or self.context.requirement_severity
-        return any(issue.severity >= severity for issue in self._issues)
+    def has_issues(self, min_severity: Optional[Severity] = None) -> bool:
+        """
+        Check if there are issues with a severity greater than or equal to the given `severity`
+        """
+        min_severity = min_severity or self.context.requirement_severity
+        return any(issue.severity >= min_severity for issue in self._issues)
 
-    def passed(self, severity: Optional[Severity] = None) -> bool:
-        severity = severity or self.context.requirement_severity
-        return not any(issue.severity >= severity for issue in self._issues)
+    def passed(self, min_severity: Optional[Severity] = None) -> bool:
+        """
+        Check if all checks passed with a severity greater than or equal to the given `severity`
+        """
+        min_severity = min_severity or self.context.requirement_severity
+        return not any(issue.severity >= min_severity for issue in self._issues)
 
-    def add_issue(self, issue: CheckIssue):
-        bisect.insort(self._issues, issue)
+    def add_issue(self,
+                  message: str,
+                  check: RequirementCheck,
+                  violatingEntity: Optional[str] = None,
+                  violatingProperty: Optional[str] = None,
+                  violatingPropertyValue: Optional[str] = None) -> CheckIssue:
+        """
+        Add an issue to the validation result
 
-    def add_check_issue(self,
-                        message: str,
-                        check: RequirementCheck,
-                        resultPath: Optional[str] = None,
-                        focusNode: Optional[str] = None,
-                        value: Optional[str] = None) -> CheckIssue:
-        c = CheckIssue(check, message, resultPath=resultPath, focusNode=focusNode, value=value)
+        Parameters:
+            message(str): The message of the issue
+            check(RequirementCheck): The check that generated the issue
+            violatingEntity(Optional[str]): The entity that caused the issue (if any)
+            violatingProperty(Optional[str]): The property that caused the issue (if any)
+            violatingPropertyValue(Optional[str]): The value of the violatingProperty (if any)
+        """
+        c = CheckIssue(check, message, violatingProperty=violatingProperty,
+                       violatingEntity=violatingEntity, value=violatingPropertyValue)
         bisect.insort(self._issues, c)
         return c
-
-    def add_error(self, message: str, check: RequirementCheck) -> CheckIssue:
-        return self.add_check_issue(message, check)
 
     #  --- Requirements ---
     @property
     def failed_requirements(self) -> Collection[Requirement]:
+        """
+        Get the requirements that failed
+        """
         return set(issue.check.requirement for issue in self._issues)
 
     #  --- Checks ---
     @property
     def failed_checks(self) -> Collection[RequirementCheck]:
+        """
+        Get the checks that failed
+        """
         return set(issue.check for issue in self._issues)
 
     def get_failed_checks_by_requirement(self, requirement: Requirement) -> Collection[RequirementCheck]:
+        """
+        Get the checks that failed for a specific requirement
+        """
         return [check for check in self.failed_checks if check.requirement == requirement]
 
     def get_failed_checks_by_requirement_and_severity(
             self, requirement: Requirement, severity: Severity) -> Collection[RequirementCheck]:
+        """
+        Get the checks that failed for a specific requirement and severity
+        """
         return [check for check in self.failed_checks
                 if check.requirement == requirement
                 and check.severity == severity]
 
     def __str__(self) -> str:
-        return f"Validation result: {len(self._issues)} issues"
+        return f"Validation result: passed={len(self.failed_checks)==0}, {len(self._issues)} issues"
 
     def __repr__(self):
-        return f"ValidationResult(issues={self._issues})"
+        return f"ValidationResult(passed={len(self.failed_checks)==0},issues={self._issues})"
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, ValidationResult):
@@ -1227,14 +1494,19 @@ class ValidationResult:
         return self._issues == other._issues
 
     def to_dict(self) -> dict:
-        allowed_properties = ["profile_identifier", "inherit_profiles", "requirement_severity", "abort_on_first"]
+        """
+        Convert the ValidationResult to a dictionary
+        """
+        allowed_properties = ["profile_identifier", "enable_profile_inheritance",
+                              "requirement_severity", "abort_on_first"]
+        validation_settings = {key: value for key, value in self.validation_settings.to_dict().items()
+                               if key in allowed_properties}
         result = {
             "meta": {
                 "version": JSON_OUTPUT_FORMAT_VERSION
             },
-            "validation_settings": {key: self.validation_settings[key]
-                                    for key in allowed_properties if key in self.validation_settings},
-            "passed": self.passed(self.context.settings["requirement_severity"]),
+            "validation_settings": validation_settings,
+            "passed": self.passed(self.context.settings.requirement_severity),
             "issues": [issue.to_dict() for issue in self.issues]
         }
         # add validator version to the settings
@@ -1242,7 +1514,9 @@ class ValidationResult:
         return result
 
     def to_json(self, path: Optional[Path] = None) -> str:
-
+        """
+        Convert the ValidationResult to a JSON string
+        """
         result = json.dumps(self.to_dict(), indent=4, cls=CustomEncoder)
         if path:
             with open(path, "w") as f:
@@ -1270,36 +1544,37 @@ class CustomEncoder(json.JSONEncoder):
 
 @dataclass
 class ValidationSettings:
+    """
+    Represents the settings for RO-Crate validation.
 
-    # Data settings
-    data_path: Path
+    It includes the following attributes:
+    """
+    #: The URI of the RO-Crate
+    rocrate_uri: URI
     # Profile settings
+    #: The path to the profiles
     profiles_path: Path = DEFAULT_PROFILES_PATH
+    #: The profile identifier to validate against
     profile_identifier: str = DEFAULT_PROFILE_IDENTIFIER
-    inherit_profiles: bool = True
-    allow_requirement_check_override: bool = True
-    disable_check_for_duplicates: bool = False
-    # Ontology and inference settings
-    ontology_path: Optional[Path] = None
-    inference: Optional[VALID_INFERENCE_OPTIONS_TYPES] = None
-    # Validation strategy settings
-    advanced: bool = True  # enable SHACL Advanced Validation
-    inplace: Optional[bool] = False
-    abort_on_first: Optional[bool] = True
-    inplace: Optional[bool] = False
-    meta_shacl: bool = False
-    iterate_rules: bool = True
-    target_only_validation: bool = True
-    remote_validation: bool = True
-    http_cache_timeout: int = 60
-    # Requirement severity settings
+    #: Flag to enable profile inheritance
+    enable_profile_inheritance: bool = True
+    # Validation settings
+    #: Flag to abort on first error
+    abort_on_first: Optional[bool] = False
+    #: Flag to disable inherited profiles reporting
+    disable_inherited_profiles_reporting: bool = False
+    #: Flag to disable remote crate download
+    disable_remote_crate_download: bool = True
+    # Requirement settings
+    #: The requirement severity
     requirement_severity: Union[str, Severity] = Severity.REQUIRED
+    #: Flag to validate requirement severity only skipping check with lower or higher severity
     requirement_severity_only: bool = False
-    allow_infos: Optional[bool] = True
-    allow_warnings: Optional[bool] = True
-    # Output serialization settings
-    serialization_output_path: Optional[Path] = None
-    serialization_output_format: RDF_SERIALIZATION_FORMATS_TYPES = "turtle"
+    # Requirement check settings
+    #: Flag to allow requirement check override
+    allow_requirement_check_override: bool = True
+    #: Flag to disable the check for duplicates
+    disable_check_for_duplicates: bool = False
 
     def __init__(self, **kwargs):
         for key, value in kwargs.items():
@@ -1310,22 +1585,54 @@ class ValidationSettings:
         if isinstance(severity, str):
             setattr(self, "requirement_severity", Severity[severity])
 
+        # parse and set the rocrate URI
+        self._rocrate_uri = None
+        if "rocrate_uri" in kwargs:
+            self.rocrate_uri = kwargs["rocrate_uri"]
+        logger.debug("Validating RO-Crate: %s", self.rocrate_uri)
+
     def to_dict(self):
-        return asdict(self)
+        """
+        Convert the ValidationSettings to a dictionary
+        """
+        result = asdict(self)
+        result['rocrate_uri'] = str(self.rocrate_uri)
+        return result
+
+    @property
+    def rocrate_uri(self) -> Optional[URI]:
+        """
+        Get the RO-Crate URI
+
+        :return: The RO-Crate URI
+        :rtype: URI
+        """
+        return self._rocrate_uri
+
+    @rocrate_uri.setter
+    def rocrate_uri(self, value: URI):
+        """
+        Set the RO-Crate URI.
+
+        :param value: The RO-Crate URI.
+        :type value: URI
+        """
+        if not value:
+            raise ValueError("Invalid RO-Crate URI")
+        self._rocrate_uri: URI = URI(value)
 
     @classmethod
     def parse(cls, settings: Union[dict, ValidationSettings]) -> ValidationSettings:
         """
-        Parse the settings into a ValidationSettings object
+        Parse the settings to a ValidationSettings object.
 
-        Args:
-            settings (Union[dict, ValidationSettings]): The settings to parse
+        :param settings: The settings to parse.
+        :type settings: Union[dict, ValidationSettings]
 
-        Returns:
-            ValidationSettings: The parsed settings
+        :return: The parsed settings.
+        :rtype: ValidationSettings
 
-        Raises:
-            ValueError: If the settings type is invalid
+        :raises ValueError: If the settings type is invalid.
         """
         if isinstance(settings, dict):
             return cls(**settings)
@@ -1397,8 +1704,23 @@ class RequirementCheckValidationEvent(Event):
 
 class Validator(Publisher):
     """
-    Can validate conformance to a single Profile (including any requirements
-    inherited by parent profiles).
+    Validator class for validating Research Object Crates(RO-Crate)
+    against specified profiles according to the validation settings.
+
+    Attributes:
+        validation_settings(ValidationSettings): The settings used for validation.
+
+    Methods:
+        __init__(settings: Union[str, ValidationSettings]):
+            Initializes the Validator with the given settings.
+        validation_settings() -> ValidationSettings:
+            Returns the validation settings.
+        detect_rocrate_profiles() -> list[Profile]:
+            Detects the profiles to validate against.
+        validate() -> ValidationResult:
+            Validate the RO-Crate against the detected profiles according to the validation settings
+        validate_requirements(requirements: list[Requirement]) -> ValidationResult:
+            Validates the RO-Crate against the specified subset of the profile requirements.
     """
 
     def __init__(self, settings: Union[str, ValidationSettings]):
@@ -1415,7 +1737,7 @@ class Validator(Publisher):
         """
         try:
             # initialize the validation context
-            context = ValidationContext(self, self.validation_settings.to_dict())
+            context = ValidationContext(self, self.validation_settings)
             candidate_profiles_uris = set()
             try:
                 candidate_profiles_uris.add(context.ro_crate.metadata.get_conforms_to())
@@ -1452,10 +1774,15 @@ class Validator(Publisher):
             return None
 
     def validate(self) -> ValidationResult:
+        """
+        Validate the RO-Crate against the detected profiles according to the validation settings
+        """
         return self.__do_validate__()
 
     def validate_requirements(self, requirements: list[Requirement]) -> ValidationResult:
-        # check if requirement is an instance of Requirement
+        """
+        Validates the RO-Crate against the specified subset of the profile requirements
+        """
         assert all(isinstance(requirement, Requirement) for requirement in requirements), \
             "Invalid requirement type"
         # perform the requirements validation
@@ -1465,7 +1792,7 @@ class Validator(Publisher):
                         requirements: Optional[list[Requirement]] = None) -> ValidationResult:
 
         # initialize the validation context
-        context = ValidationContext(self, self.validation_settings.to_dict())
+        context = ValidationContext(self, self.validation_settings)
 
         # set the profiles to validate against
         profiles = context.profiles
@@ -1485,7 +1812,7 @@ class Validator(Publisher):
                 if not requirement.overridden:
                     self.notify(RequirementValidationEvent(
                         EventType.REQUIREMENT_VALIDATION_START, requirement=requirement))
-                passed = requirement.__do_validate__(context)
+                passed = requirement._do_validate_(context)
                 logger.debug("Requirement %s passed: %s", requirement, passed)
                 if not requirement.overridden:
                     self.notify(RequirementValidationEvent(
@@ -1508,8 +1835,11 @@ class Validator(Publisher):
 
 
 class ValidationContext:
+    """
+    Class that represents the context for the validation process.
+    """
 
-    def __init__(self, validator: Validator, settings: dict[str, object]):
+    def __init__(self, validator: Validator, settings: ValidationSettings):
         # reference to the validator
         self._validator = validator
         # reference to the settings
@@ -1523,34 +1853,57 @@ class ValidationContext:
         # additional properties for the context
         self._properties = {}
 
-        # parse the rocrate path
-        rocrate_path: URI = URI(settings.get("data_path"))
-        logger.debug("Validating RO-Crate: %s", rocrate_path)
-
         # initialize the ROCrate object
-        self._rocrate = ROCrate.new_instance(rocrate_path)
+        self._rocrate = ROCrate.new_instance(settings.rocrate_uri)
         assert isinstance(self._rocrate, ROCrate), "Invalid RO-Crate instance"
 
     @property
     def ro_crate(self) -> ROCrate:
+        """
+        The RO-Crate instance
+
+        :return: The RO-Crate instance
+        :rtype: ROCrate
+        """
         return self._rocrate
 
     @property
     def validator(self) -> Validator:
+        """
+        The validator instance which this context belongs to
+
+        :return: The validator instance
+        :rtype: Validator
+        """
         return self._validator
 
     @property
     def result(self) -> ValidationResult:
+        """
+        The validation result
+
+        :return: The validation result
+        :rtype: ValidationResult
+        """
         if self._result is None:
             self._result = ValidationResult(self)
         return self._result
 
     @property
-    def settings(self) -> dict[str, object]:
+    def settings(self) -> ValidationSettings:
+        """
+        The validation settings
+
+        :return: The validation settings
+        :rtype: ValidationSettings
+        """
         return self._settings
 
     @property
     def publicID(self) -> str:
+        """
+        The root URI of the RO-Crate
+        """
         path = str(self.ro_crate.uri.base_uri)
         if not path.endswith("/"):
             path = f"{path}/"
@@ -1558,14 +1911,26 @@ class ValidationContext:
 
     @property
     def profiles_path(self) -> Path:
-        profiles_path = self.settings.get("profiles_path")
+        """
+        The path to the profiles
+
+        :return: The path to the profiles
+        :rtype: Path
+        """
+        profiles_path = self.settings.profiles_path
         if isinstance(profiles_path, str):
             profiles_path = Path(profiles_path)
         return profiles_path
 
     @property
     def requirement_severity(self) -> Severity:
-        severity = self.settings.get("requirement_severity", Severity.REQUIRED)
+        """
+        The requirement severity to validate against
+
+        :return: The requirement severity
+        :rtype: Severity
+        """
+        severity = self.settings.requirement_severity
         if isinstance(severity, str):
             severity = Severity[severity]
         elif not isinstance(severity, Severity):
@@ -1574,21 +1939,45 @@ class ValidationContext:
 
     @property
     def requirement_severity_only(self) -> bool:
-        return self.settings.get("requirement_severity_only", False)
+        """
+        Flag to validate requirement severity only skipping check with lower or higher severity
+
+        :return: The flag to validate requirement severity only
+        :rtype: bool
+        """
+        return self.settings.requirement_severity_only
 
     @property
-    def rocrate_path(self) -> Path:
-        return self.settings.get("data_path")
+    def rocrate_uri(self) -> URI:
+        """
+        The URI of the RO-Crate
+
+        :return: The URI of the RO-Crate
+        :rtype: Path
+        """
+        return self.settings.rocrate_uri
 
     @property
     def fail_fast(self) -> bool:
-        return self.settings.get("abort_on_first", True)
+        """
+        Flag to abort on first error
+
+        :return: The flag to abort on first error
+        :rtype: bool
+        """
+        return self.settings.abort_on_first
 
     @property
     def rel_fd_path(self) -> Path:
+        """
+        The relative path to the file descriptor
+
+        :return: The relative path to the file descriptor
+        :rtype: Path
+        """
         return Path(ROCRATE_METADATA_FILE)
 
-    def __load_data_graph__(self):
+    def __load_data_graph__(self) -> Graph:
         data_graph = Graph()
         logger.debug("Loading RO-Crate metadata of: %s", self.ro_crate.uri)
         _ = data_graph.parse(data=self.ro_crate.metadata.as_dict(),
@@ -1596,7 +1985,19 @@ class ValidationContext:
         logger.debug("RO-Crate metadata loaded: %s", data_graph)
         return data_graph
 
-    def get_data_graph(self, refresh: bool = False):
+    def get_data_graph(self, refresh: bool = False) -> Graph:
+        """
+        Utility method to get the data graph of the RO-Crate,
+        i.e., the metadata of the RO-Crate as an RDF graph.
+
+        :param refresh: Flag to refresh the data graph
+        :type refresh: bool
+
+        :return: The data graph of the RO-Crate
+        :rtype: :py:class:rdflib.Graph
+
+        :raises ROCrateMetadataNotFoundError: If the RO-Crate metadata is not found
+        """
         # load the data graph
         try:
             if not self._data_graph or refresh:
@@ -1604,27 +2005,58 @@ class ValidationContext:
             return self._data_graph
         except FileNotFoundError as e:
             logger.debug("Error loading data graph: %s", e)
-            raise ROCrateMetadataNotFoundError(self.rocrate_path)
+            raise ROCrateMetadataNotFoundError(self.rocrate_uri)
 
     @property
     def data_graph(self) -> Graph:
+        """
+        The data graph of the RO-Crate,
+        i.e., the metadata of the RO-Crate as an RDF graph.
+
+        :return: The data graph of the RO-Crate
+        :rtype: Graph
+        """
         return self.get_data_graph()
 
     @property
     def inheritance_enabled(self) -> bool:
-        return self.settings.get("inherit_profiles", False)
+        """
+        Flag which indicates if profile inheritance is enabled
+
+        :return: The flag to enable profile inheritance
+        :rtype: bool
+        """
+        return self.settings.enable_profile_inheritance
 
     @property
     def profile_identifier(self) -> str:
-        return self.settings.get("profile_identifier")
+        """
+        The profile identifier to validate against
+
+        :return: The profile identifier
+        :rtype: str
+        """
+        return self.settings.profile_identifier
 
     @property
     def allow_requirement_check_override(self) -> bool:
-        return self.settings.get("allow_requirement_check_override", True)
+        """
+        Flag that indicates if requirement check override is allowed
+
+        :return: The flag to allow requirement check override
+        :rtype: bool
+        """
+        return self.settings.allow_requirement_check_override
 
     @property
     def disable_check_for_duplicates(self) -> bool:
-        return self.settings.get("disable_check_for_duplicates", False)
+        """
+        Flag that indicates if the check for duplicates is disabled
+
+        :return: The flag to disable the check for duplicates
+        :rtype: bool
+        """
+        return self.settings.disable_check_for_duplicates
 
     def __load_profiles__(self) -> list[Profile]:
 
@@ -1653,10 +2085,10 @@ class ValidationContext:
                 if candidate_profiles:
                     # Find the profile with the highest version number
                     profile = max(candidate_profiles, key=lambda p: p.version)
-                    self.settings["profile_identifier"] = profile.identifier
+                    self.settings.profile_identifier = profile.identifier
                     logger.debug("Profile with the highest version number: %s", profile)
                 # if the profile is found by token, set the profile name to the identifier
-                self.settings["profile_identifier"] = profile.identifier
+                self.settings.profile_identifier = profile.identifier
             except AttributeError as e:
                 # raised when the profile is not found
                 if logger.isEnabledFor(logging.DEBUG):
@@ -1676,20 +2108,51 @@ class ValidationContext:
 
     @property
     def profiles(self) -> list[Profile]:
+        """
+        The profiles to validate against,
+        i.e., the target profile and its inherited profiles
+
+        :return: The profiles to validate against
+        :rtype: list[Profile]
+        """
         if not self._profiles:
             self._profiles = self.__load_profiles__()
         return self._profiles.copy()
 
     @property
     def target_profile(self) -> Profile:
+        """
+        The target profile to validate against
+
+        :return: The target profile
+        :rtype: Profile
+        """
         profiles = self.profiles
         assert len(profiles) > 0, "No profiles to validate"
         return self.profiles[-1]
 
     def get_profile_by_token(self, token: str) -> list[Profile]:
+        """
+        Get the profile by token from the profiles to validate against
+
+        :param token: The token of the profile
+        :type token: str
+
+        :return: The profile with the given token
+        :rtype: Profile
+        """
         return [p for p in self.profiles if p.token == token]
 
     def get_profile_by_identifier(self, identifier: str) -> list[Profile]:
+        """
+        Get the profile by identifier from the profiles to validate against
+
+        :param identifier: The identifier of the profile
+        :type identifier: str
+
+        :return: The profile with the given identifier
+        :rtype: Profile
+        """
         for p in self.profiles:
             if p.identifier == identifier:
                 return p

@@ -1,0 +1,84 @@
+@startuml
+
+skinparam wrapWidth 600
+
+hide members
+hide fields
+
+' Define the services in the core package
+package "rocrate_validator" {
+
+    interface services [[#rocrate_validator.services.validate]] {
+        + validate(settings: Union[dict, ValidationSettings], subscribers: Optional[list[Subscriber]]) -> rocrate_validator.models.ValidationResult
+    }
+
+    show services members
+
+    services ..> rocrate_validator.models.ValidationSettings : " receives"
+    services ..> "*" rocrate_validator.events.Subscriber: " updates"
+    services ..> rocrate_validator.models.ValidationResult: " returns"
+}
+
+note top of services
+    **I** ➠ **Interface**
+          Python module that exposes 
+          the main validation services 
+          provided by the RO-Crate validator
+end note
+
+
+package "rocrate_validator.models" {
+
+    class ValidationResult [[#rocrate_validator.models.ValidationResult]] {
+    }
+
+    note bottom of ValidationResult
+        **C** ➠ **Class**
+               The **ValidationResult** class
+               represents the result of a
+               validation process
+    end note
+
+    note bottom of ValidationSettings
+        **C** ➠ **Class**
+               The **ValidationSettings** class
+               represents the settings used
+               to configure a validation process
+    end note
+}
+
+package "rocrate_validator.events" {
+
+    class Event [[#rocrate_validator.events.Event]] {
+        + type: str
+        + message: str
+    }
+
+    abstract class Subscriber [[#rocrate_validator.events.Subscriber]] {
+        + update(event: Event)
+    }
+
+    Subscriber ..> Event : " receives"
+
+    note bottom of Subscriber
+        **A** ➠ **Abstract Class**
+               The **Subscriber** abstract class
+               defines the base interface for
+               an object that listens to events
+               and updates its state accordingly
+    end note
+
+
+    note bottom of Event
+        **C** ➠ **Class**
+               The **Event** class represents
+               an event that can be sent to subscribers
+    end note
+}
+
+
+
+
+
+
+@enduml
