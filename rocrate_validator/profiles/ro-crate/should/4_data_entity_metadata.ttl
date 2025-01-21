@@ -54,3 +54,16 @@ ro-crate:FileRecommendedProperties a sh:NodeShape ;
             ]
         )
     ] .
+
+ro-crate:DirectoryDataEntityRequiredValueRestriction a sh:NodeShape ;
+    sh:name "Directory Data Entity: RECOMMENDED value restriction" ;
+    sh:description """A Directory Data Entity SHOULD end with `/`""" ;
+    sh:targetNode ro-crate:Directory ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Directory Data Entity: RECOMMENDED value restriction" ;
+        sh:description """Check if the Directory Data Entity ends with `/`""" ;
+        sh:path [ sh:inversePath rdf:type ] ;
+        sh:message """Every Data Entity Directory URI SHOULD end with `/`""" ;
+        sh:pattern "/$" ;
+    ] .
