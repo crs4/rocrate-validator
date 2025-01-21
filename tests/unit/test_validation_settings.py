@@ -22,14 +22,12 @@ def test_validation_settings_parse_dict():
         "rocrate_uri": "/path/to/data",
         "profiles_path": "/path/to/profiles",
         "requirement_severity": "RECOMMENDED",
-        "allow_infos": True,
         "enable_profile_inheritance": False,
     }
     settings = ValidationSettings.parse(settings_dict)
     assert str(settings.rocrate_uri) == "/path/to/data"
     assert settings.profiles_path == "/path/to/profiles"
     assert settings.requirement_severity == Severity.RECOMMENDED
-    assert settings.allow_infos is True
     assert settings.enable_profile_inheritance is False
 
 
@@ -38,7 +36,6 @@ def test_validation_settings_parse_object():
         rocrate_uri="/path/to/data",
         profiles_path="/path/to/profiles",
         requirement_severity=Severity.RECOMMENDED,
-        allow_infos=True,
         enable_profile_inheritance=False
     )
     settings = ValidationSettings.parse(existing_settings)
@@ -58,7 +55,6 @@ def test_validation_settings_to_dict():
         rocrate_uri="/path/to/data",
         profiles_path="/path/to/profiles",
         requirement_severity=Severity.RECOMMENDED,
-        allow_infos=True,
         enable_profile_inheritance=False
     )
     settings_dict = settings.to_dict()
@@ -89,11 +85,6 @@ def test_validation_settings_profiles_path():
 def test_validation_settings_requirement_severity():
     settings = ValidationSettings(requirement_severity=Severity.RECOMMENDED)
     assert settings.requirement_severity == Severity.RECOMMENDED
-
-
-def test_validation_settings_allow_infos():
-    settings = ValidationSettings(allow_infos=True)
-    assert settings.allow_infos is True
 
 
 def test_validation_settings_abort_on_first():
