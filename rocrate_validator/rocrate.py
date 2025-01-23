@@ -132,9 +132,14 @@ class ROCrateEntity:
         e_types = self.type if isinstance(self.type, list) else [self.type]
         return entity_type in e_types
 
-    def has_types(self, entity_types: list[str]) -> bool:
+    def has_types(self, entity_types: list[str], all_types: bool = False) -> bool:
+        """
+        Check if the entity has any or all of the specified types.
+        """
         assert isinstance(entity_types, list), "Entity types must be a list"
         e_types = self.type if isinstance(self.type, list) else [self.type]
+        if all_types:
+            return all([t in e_types for t in entity_types])
         return any([t in e_types for t in entity_types])
 
     def __process_property__(self, name: str, data: object) -> object:
@@ -275,7 +280,7 @@ class ROCrateMetadata:
     def get_entities_by_type(self, entity_type: Union[str, list[str]]) -> list[ROCrateEntity]:
         entities = []
         for e in self.get_entities():
-            if e.has_type(entity_type):
+            if e.has_types(entity_type):
                 entities.append(e)
         return entities
 
