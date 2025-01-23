@@ -21,6 +21,7 @@ import zipfile
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Optional, Union
+from urllib.parse import unquote
 
 import requests
 from rdflib import Graph
