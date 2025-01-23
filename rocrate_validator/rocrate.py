@@ -59,6 +59,53 @@ class ROCrateEntity:
     def ro_crate(self) -> ROCrate:
         return self.metadata.ro_crate
 
+    @staticmethod
+    def get_path_from_identifier(identifier: str, rocrate_path: Optional[Union[str, Path]] = None) -> Path:
+        """
+        Get the path from an identifier.
+
+
+        :param identifier: the identifier of the entity
+        :type identifier: str
+
+        :param rocrate_path: the path to the RO-Crate
+        :type rocrate_path: Optional[Union[str, Path]
+
+        :return: the path to the entity
+        :rtype: Path
+
+        """
+        def __define_path__(path: str, decode: bool = False) -> Path:
+            # ensure the path is a string
+            path = str(path)
+            # Decode the path if required
+            if decode:
+                path = unquote(path)
+            # Convert the path to a Path object
+            path = Path(path)
+            # if the path is absolute, return it
+            if path.is_absolute():
+                return path
+            try:
+                # set the base path
+                base_path = rocrate_path
+                if base_path is None:
+                    base_path = Path('./')
+                elif not isinstance(base_path, Path):
+                    base_path = Path(base_path)
+                # Check if the path if the root of the RO-Crate
+                if path == Path('./'):
+                    return base_path
+                # if the path is relative, try to resolve it
+                return base_path / path.relative_to(base_path)
+            except ValueError:
+                # if the path cannot be resolved, return the absolute path
+                return base_path / path
+        # Define the path based on the identifier
+        path = __define_path__(identifier)
+        if not path.exists():
+            path = __define_path__(identifier, decode=True)
+        return path
     def has_type(self, entity_type: str) -> bool:
         assert isinstance(entity_type, str), "Entity type must be a string"
         e_types = self.type if isinstance(self.type, list) else [self.type]
