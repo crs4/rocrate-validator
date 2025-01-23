@@ -419,15 +419,7 @@ class ROCrate(ABC):
 
     def __parse_path__(self, path: Path) -> Path:
         assert path, "Path cannot be None"
-        # if the path is absolute, return it
-        if path.is_absolute():
-            return path
-        try:
-            # if the path is relative, try to resolve it
-            return self.uri.as_path().absolute() / path.relative_to(self.uri.as_path())
-        except ValueError:
-            # if the path cannot be resolved, return the absolute path
-            return self.uri.as_path().absolute() / path
+        return ROCrateEntity.get_path_from_identifier(str(path), rocrate_path=self.uri.as_path())
 
     def has_descriptor(self) -> bool:
         """
