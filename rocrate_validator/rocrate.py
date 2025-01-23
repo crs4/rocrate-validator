@@ -285,6 +285,12 @@ class ROCrateMetadata:
     def get_file_entities(self) -> list[ROCrateEntity]:
         return self.get_entities_by_type('File')
 
+    def get_data_entities(self, exclude_web_data_entities: bool = False) -> list[ROCrateEntity]:
+        if not exclude_web_data_entities:
+            return self.get_entities_by_type(['Dataset', 'File'])
+        return [e for e in self.get_entities_by_type(['Dataset', 'File'])
+                if not e.id.startswith("http")]
+
     def get_web_data_entities(self) -> list[ROCrateEntity]:
         entities = []
         for entity in self.get_entities():
