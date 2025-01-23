@@ -191,6 +191,15 @@ def get_single_char(console: Optional[Console] = None, end: str = "\n",
     show_default=True
 )
 @click.option(
+    '-x',
+    '--skip-checks',
+    multiple=True,
+    type=click.STRING,
+    default=None,
+    show_default=True,
+    help="List of checks to skip"
+)
+@click.option(
     '-v',
     '--verbose',
     is_flag=True,
@@ -238,6 +247,7 @@ def validate(ctx,
              disable_profile_inheritance: bool = False,
              requirement_severity: str = Severity.REQUIRED.name,
              requirement_severity_only: bool = False,
+             skip_checks: list[str] = None,
              rocrate_uri: Path = ".",
              fail_fast: bool = False,
              no_paging: bool = False,
@@ -280,7 +290,8 @@ def validate(ctx,
             "enable_profile_inheritance": not disable_profile_inheritance,
             "verbose": verbose,
             "rocrate_uri": rocrate_uri,
-            "abort_on_first": fail_fast
+            "abort_on_first": fail_fast,
+            "skip_checks": skip_checks
         }
 
         # Print the application header
@@ -762,7 +773,7 @@ class ValidationReportLayout(Layout):
                             path = f"{path} on [cyan]<{issue.violatingEntity}>[/cyan]"
                         console.print(
                             Padding(f"- [[red]Violation[/red]{path}]: "
-                                    f"{Markdown(issue.message).markup}", (0, 9)), style="white")
+                                    f"{Markdown(issue.message).markup}", (0, 9)))
                     console.print("\n", style="white")
 
 
