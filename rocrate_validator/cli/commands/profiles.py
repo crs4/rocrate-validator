@@ -305,8 +305,9 @@ def __verbose_describe_profile__(profile):
                 description_table.add_row(Align(Padding(override, (0, 0, 1, 0)), align="right"))
             description_table.add_row(Markdown(check.description.strip()))
 
-            table_rows.append((str(check.relative_identifier), check.name,
-                               description_table, level_info))
+            table_rows.append((
+                check.identifier, check.name,
+                description_table, level_info))
             count_checks += 1
 
     table = Table(show_header=True,
