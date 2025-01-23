@@ -59,6 +59,10 @@ class ROCrateEntity:
     def ro_crate(self) -> ROCrate:
         return self.metadata.ro_crate
 
+    @classmethod
+    def get_id_as_path(cls, entity_id: str, ro_crate: ROCrate) -> Path:
+        return cls.get_path_from_identifier(entity_id, ro_crate.uri.as_path())
+
     @staticmethod
     def get_path_from_identifier(identifier: str, rocrate_path: Optional[Union[str, Path]] = None) -> Path:
         """
@@ -106,6 +110,22 @@ class ROCrateEntity:
         if not path.exists():
             path = __define_path__(identifier, decode=True)
         return path
+
+    @property
+    def id_as_path(self) -> Path:
+        return self.get_id_as_path(self.id, self.ro_crate)
+
+    @classmethod
+    def get_id_as_uri(cls, entity_id: str, ro_crate: ROCrate) -> URI:
+        assert entity_id, "Entity ID cannot be None"
+        if entity_id.startswith("http"):
+            return URI(entity_id)
+        return URI(cls.get_id_as_path(entity_id, ro_crate))
+
+    @property
+    def id_as_uri(self) -> URI:
+        return self.get_id_as_uri(self.id, self.ro_crate)
+
     def has_type(self, entity_type: str) -> bool:
         assert isinstance(entity_type, str), "Entity type must be a string"
         e_types = self.type if isinstance(self.type, list) else [self.type]
@@ -146,11 +166,8 @@ class ROCrateEntity:
             if self.ro_crate.uri.is_local_resource():
                 # check if the file exists in the local file system
                 if isinstance(self.ro_crate, ROCrateLocalFolder):
-                    logger.debug("Checking local folder: %s", self.ro_crate.uri.as_path().absolute() / self.id)
-                    return self.ro_crate.has_file(
-                        self.ro_crate.uri.as_path().absolute() / self.id) \
-                        or self.ro_crate.has_directory(
-                        self.ro_crate.uri.as_path().absolute() / self.id)
+                    return self.ro_crate.has_file(self.id_as_path) \
+                        or self.ro_crate.has_directory(self.id_as_path)
                 # check if the file exists in the local zip file
                 if isinstance(self.ro_crate, ROCrateLocalZip):
                     if self.id in [str(_) for _ in self.ro_crate.list_files()]:
