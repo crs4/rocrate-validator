@@ -238,6 +238,10 @@ class InvalidDataEntity:
     def invalid_sdDatePublished(self) -> Path:
         return self.base_path / "invalid_sdDatePublished"
 
+    @property
+    def data_entity_path(self) -> Path:
+        return self.base_path / "data_entity_path"
+
 
 class InvalidMainWorkflow:
 
