@@ -278,7 +278,6 @@ def validate(ctx,
             "requirement_severity": requirement_severity,
             "requirement_severity_only": requirement_severity_only,
             "enable_profile_inheritance": not disable_profile_inheritance,
-            "verbose": verbose,
             "rocrate_uri": rocrate_uri,
             "abort_on_first": fail_fast
         }
@@ -348,14 +347,14 @@ def validate(ctx,
         for profile in profile_identifier:
             # Set the selected profile
             validation_settings["profile_identifier"] = profile
-            validation_settings["profile_autodetected"] = autodetection
             logger.debug("Profile selected for validation: %s", validation_settings["profile_identifier"])
             logger.debug("Profile autodetected: %s", autodetection)
 
             # Compute the profile statistics
             profile_stats = __compute_profile_stats__(validation_settings)
 
-            report_layout = ValidationReportLayout(console, validation_settings, profile_stats, None)
+            report_layout = ValidationReportLayout(console, validation_settings,
+                                                   profile_stats, None, profile_autodetected=autodetection)
 
             # Validate RO-Crate against the profile and get the validation result
             result: ValidationResult = None
@@ -513,11 +512,13 @@ class ProgressMonitor(Subscriber):
 
 class ValidationReportLayout(Layout):
 
-    def __init__(self, console: Console, validation_settings: dict, profile_stats: dict, result: ValidationResult):
+    def __init__(self, console: Console, validation_settings: dict,
+                 profile_stats: dict, result: ValidationResult, profile_autodetected: bool = False):
         super().__init__()
         self.console = console
         self.validation_settings = validation_settings
         self.profile_stats = profile_stats
+        self.profile_autodetected = profile_autodetected
         self.result = result
         self.__layout = None
         self._validation_checks_progress = None
@@ -566,7 +567,7 @@ class ValidationReportLayout(Layout):
                 f"\n[bold cyan]RO-Crate:[/bold cyan] [bold]{URI(settings['rocrate_uri']).uri}[/bold]"
                 "\n[bold cyan]Target Profile:[/bold cyan][bold magenta] "
                 f"{settings['profile_identifier']}[/bold magenta] "
-                f"{'[italic](autodetected)[/italic]' if settings['profile_autodetected'] else ''}"
+                f"{'[italic](autodetected)[/italic]' if self.profile_autodetected else ''}"
                 f"\n[bold cyan]Validation Severity:[/bold cyan] "
                 f"[bold {severity_color}]{settings['requirement_severity']}[/bold {severity_color}]",
                 style="white", align="left"),

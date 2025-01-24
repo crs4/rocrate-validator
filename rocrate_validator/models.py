@@ -1576,20 +1576,10 @@ class ValidationSettings:
     #: Flag to disable the check for duplicates
     disable_check_for_duplicates: bool = False
 
-    def __init__(self, **kwargs):
-        for key, value in kwargs.items():
-            setattr(self, key, value)
-
+    def __post_init__(self):
         # if requirement_severity is a str, convert to Severity
-        severity = getattr(self, "requirement_severity")
-        if isinstance(severity, str):
-            setattr(self, "requirement_severity", Severity[severity])
-
-        # parse and set the rocrate URI
-        self._rocrate_uri = None
-        if "rocrate_uri" in kwargs:
-            self.rocrate_uri = kwargs["rocrate_uri"]
-        logger.debug("Validating RO-Crate: %s", self.rocrate_uri)
+        if isinstance(self.requirement_severity, str):
+            self.requirement_severity = Severity[self.requirement_severity]
 
     def to_dict(self):
         """
