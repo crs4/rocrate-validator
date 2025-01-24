@@ -256,12 +256,12 @@ class InvalidDataEntity:
         return self.base_path / "missing_file_data_entity_with_unquoted_name"
 
     @property
-    def missing_file_dataset_entity_with_quoted_name(self) -> Path:
-        return self.base_path / "missing_file_dataset_entity_with_quoted_name"
+    def missing_dataset_data_entity_with_quoted_name(self) -> Path:
+        return self.base_path / "missing_dataset_data_entity_with_quoted_name"
 
     @property
-    def missing_file_dataset_entity_with_unquoted_name(self) -> Path:
-        return self.base_path / "missing_file_dataset_entity_with_unquoted_name"
+    def missing_dataset_data_entity_with_unquoted_name(self) -> Path:
+        return self.base_path / "missing_dataset_data_entity_with_unquoted_name"
 
 
 class InvalidMainWorkflow:

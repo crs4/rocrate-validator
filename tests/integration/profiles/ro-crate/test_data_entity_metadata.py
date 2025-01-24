@@ -155,10 +155,10 @@ def test_missing_file_data_entity_with_unquoted_name():
     )
 
 
-def test_missing_file_dataset_entity_with_quoted_name():
+def test_missing_dataset_entity_with_quoted_name():
     """"""
     do_entity_test(
-        paths.missing_file_dataset_entity_with_quoted_name,
+        paths.missing_dataset_data_entity_with_quoted_name,
         models.Severity.REQUIRED,
         False,
         ["Data Entity: REQUIRED resource availability"],
@@ -166,10 +166,10 @@ def test_missing_file_dataset_entity_with_quoted_name():
     )
 
 
-def test_missing_file_dataset_entity_with_unquoted_name():
+def test_missing_dataset_entity_with_unquoted_name():
     """"""
     do_entity_test(
-        paths.missing_file_data_entity_with_unquoted_name,
+        paths.missing_dataset_data_entity_with_unquoted_name,
         models.Severity.REQUIRED,
         False,
         ["Data Entity: REQUIRED resource availability"],
