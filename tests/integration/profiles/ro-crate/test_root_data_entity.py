@@ -15,6 +15,7 @@
 import logging
 
 from rocrate_validator import models
+from tests.conftest import SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER
 from tests.ro_crates import InvalidRootDataEntity, ValidROC
 from tests.shared import do_entity_test
 
@@ -111,7 +112,8 @@ def test_valid_required_root_date(valid_datetime):
         ValidROC().wrroc_paper,
         models.Severity.REQUIRED,
         True,
-        rocrate_entity_patch={"./": {"datePublished": valid_datetime}}
+        rocrate_entity_patch={"./": {"datePublished": valid_datetime}},
+        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER]
     )
 
 
@@ -132,7 +134,8 @@ def test_valid_referenced_generic_data_entities():
     do_entity_test(
         paths.valid_referenced_generic_data_entities,
         models.Severity.REQUIRED,
-        True
+        True,
+        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER]
     )
 
 

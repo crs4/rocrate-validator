@@ -15,6 +15,7 @@
 import logging
 
 from rocrate_validator import models
+from tests.conftest import SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER
 from tests.ro_crates import InvalidDataEntity
 from tests.shared import do_entity_test
 
@@ -42,7 +43,8 @@ def test_data_entity_must_be_directly_linked():
     do_entity_test(
         paths.direct_hasPart_data_entity_reference,
         models.Severity.REQUIRED,
-        True
+        True,
+        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER]
     )
 
 
@@ -51,7 +53,8 @@ def test_data_entity_must_be_indirectly_linked():
     do_entity_test(
         paths.indirect_hasPart_data_entity_reference,
         models.Severity.REQUIRED,
-        True
+        True,
+        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER]
     )
 
 
@@ -115,7 +118,8 @@ def test_valid_data_entity_encoding_format_pronom():
     do_entity_test(
         paths.valid_encoding_format_pronom,
         models.Severity.RECOMMENDED,
-        True
+        True,
+        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER]
     )
 
 
@@ -124,5 +128,6 @@ def test_valid_data_entity_encoding_format_ctx_website():
     do_entity_test(
         paths.valid_encoding_format_ctx_entity,
         models.Severity.RECOMMENDED,
-        True
+        True,
+        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER]
     )

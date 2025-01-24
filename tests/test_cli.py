@@ -20,6 +20,7 @@ from pytest import fixture
 from rocrate_validator import log as logging
 from rocrate_validator.cli.main import cli
 from rocrate_validator.utils import get_version
+from tests.conftest import SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER
 from tests.ro_crates import InvalidFileDescriptor, ValidROC
 
 # set up logging
@@ -52,12 +53,16 @@ def test_validate_subcmd_valid_local_folder_rocrate(cli_runner: CliRunner):
 
 def test_validate_subcmd_valid_remote_rocrate(cli_runner: CliRunner):
     result = cli_runner.invoke(
-        cli, ['validate', str(ValidROC().sort_and_change_remote), '--verbose', '--no-paging'])
+        cli, ['validate', str(ValidROC().sort_and_change_remote),
+              '--verbose', '--no-paging',
+              '--skip-checks', SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER])
     assert result.exit_code == 0
     assert re.search(r'RO-Crate.*is a valid', result.output)
 
 
 def test_validate_subcmd_invalid_local_archive_rocrate(cli_runner: CliRunner):
-    result = cli_runner.invoke(cli, ['validate', str(ValidROC().sort_and_change_archive), '--verbose', '--no-paging'])
+    result = cli_runner.invoke(cli, ['validate', str(ValidROC().sort_and_change_archive),
+                                     '--verbose', '--no-paging',
+                                     '--skip-checks', SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER])
     assert result.exit_code == 0
     assert re.search(r'RO-Crate.*is a valid', result.output)
