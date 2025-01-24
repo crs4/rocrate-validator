@@ -180,7 +180,8 @@ def test_missing_dataset_entity_with_unquoted_name():
 def test_valid_rocrate_with_data_entities():
     """"""
     do_entity_test(
-        ValidROC().valid_rocrate_with_data_entities,
+        ValidROC().rocrate_with_data_entities,
         models.Severity.REQUIRED,
-        True
+        True,
+        profile_identifier="ro-crate"
     )
