@@ -60,6 +60,9 @@ class ROCrateEntity:
     def ro_crate(self) -> ROCrate:
         return self.metadata.ro_crate
 
+    def is_remote(self) -> bool:
+        return self.id_as_uri.is_remote_resource()
+
     @classmethod
     def get_id_as_path(cls, entity_id: str, ro_crate: ROCrate) -> Path:
         return cls.get_path_from_identifier(entity_id, ro_crate.uri.as_path())
@@ -294,13 +297,13 @@ class ROCrateMetadata:
         if not exclude_web_data_entities:
             return self.get_entities_by_type(['Dataset', 'File'])
         return [e for e in self.get_entities_by_type(['Dataset', 'File'])
-                if not e.id.startswith("http")]
+                if not e.is_remote()]
 
     def get_web_data_entities(self) -> list[ROCrateEntity]:
         entities = []
         for entity in self.get_entities():
             if entity.has_type('File') or entity.has_type('Dataset'):
-                if entity.id.startswith("http"):
+                if entity.is_remote():
                     entities.append(entity)
         return entities
 
