@@ -35,9 +35,9 @@ class DataEntityRequiredChecker(PyFunctionCheck):
         result = True
         for entity in context.ro_crate.metadata.get_data_entities(exclude_web_data_entities=True):
             assert entity.id is not None, "Entity has no @id"
-            logger.warning("Ensure the presence of the Data Entity '%s' within the RO-Crate", entity.id)
+            logger.debug("Ensure the presence of the Data Entity '%s' within the RO-Crate", entity.id)
             try:
-                logger.info("Ensure the presence of the Data Entity '%s' within the RO-Crate", entity.id)
+                logger.debug("Ensure the presence of the Data Entity '%s' within the RO-Crate", entity.id)
                 if not entity.is_available():
                     context.result.add_issue(
                         f"The RO-Crate does not include the Data Entity '{entity.id}' as part of its payload", self)
