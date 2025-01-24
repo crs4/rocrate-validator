@@ -86,7 +86,7 @@ def do_entity_test(
     try:
         logger.debug("Testing RO-Crate @ path: %s", rocrate_path)
         logger.debug("Requirement severity: %s", requirement_severity)
-        logger.warning("Checks to skip: %s", skip_checks)
+        logger.debug("Checks to skip: %s", skip_checks)
 
         # set abort_on_first to False
         abort_on_first = False
