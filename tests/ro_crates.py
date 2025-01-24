@@ -30,6 +30,11 @@ def ro_crates_path() -> Path:
 
 
 class ValidROC:
+
+    @property
+    def valid_rocrate_with_data_entities(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "rocrate_with_data_entities"
+
     @property
     def wrroc_paper(self) -> Path:
         return VALID_CRATES_DATA_PATH / "wrroc-paper"
@@ -241,6 +246,22 @@ class InvalidDataEntity:
     @property
     def data_entity_path(self) -> Path:
         return self.base_path / "data_entity_path"
+
+    @property
+    def missing_file_data_entity_with_quoted_name(self) -> Path:
+        return self.base_path / "missing_file_data_entity_with_quoted_name"
+
+    @property
+    def missing_file_data_entity_with_unquoted_name(self) -> Path:
+        return self.base_path / "missing_file_data_entity_with_unquoted_name"
+
+    @property
+    def missing_file_dataset_entity_with_quoted_name(self) -> Path:
+        return self.base_path / "missing_file_dataset_entity_with_quoted_name"
+
+    @property
+    def missing_file_dataset_entity_with_unquoted_name(self) -> Path:
+        return self.base_path / "missing_file_dataset_entity_with_unquoted_name"
 
 
 class InvalidMainWorkflow:

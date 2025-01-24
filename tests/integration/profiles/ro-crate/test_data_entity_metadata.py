@@ -16,7 +16,7 @@ import logging
 
 from rocrate_validator import models
 from tests.conftest import SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER
-from tests.ro_crates import InvalidDataEntity
+from tests.ro_crates import InvalidDataEntity, ValidROC
 from tests.shared import do_entity_test
 
 # set up logging
@@ -130,4 +130,57 @@ def test_valid_data_entity_encoding_format_ctx_website():
         models.Severity.RECOMMENDED,
         True,
         skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER]
+    )
+
+
+def test_missing_file_data_entity_with_quoted_name():
+    """"""
+    do_entity_test(
+        paths.missing_file_data_entity_with_quoted_name,
+        models.Severity.REQUIRED,
+        False,
+        ["Data Entity: REQUIRED resource availability"],
+        ["The RO-Crate does not include the Data Entity 'pics/2017-06-11%2012.56.14.jpg' as part of its payload"]
+    )
+
+
+def test_missing_file_data_entity_with_unquoted_name():
+    """"""
+    do_entity_test(
+        paths.missing_file_data_entity_with_unquoted_name,
+        models.Severity.REQUIRED,
+        False,
+        ["Data Entity: REQUIRED resource availability"],
+        ["The RO-Crate does not include the Data Entity 'pics/2017-06-11 12.56.14.jpg' as part of its payload"]
+    )
+
+
+def test_missing_file_dataset_entity_with_quoted_name():
+    """"""
+    do_entity_test(
+        paths.missing_file_dataset_entity_with_quoted_name,
+        models.Severity.REQUIRED,
+        False,
+        ["Data Entity: REQUIRED resource availability"],
+        ["The RO-Crate does not include the Data Entity 'data%20set/' as part of its payload"]
+    )
+
+
+def test_missing_file_dataset_entity_with_unquoted_name():
+    """"""
+    do_entity_test(
+        paths.missing_file_data_entity_with_unquoted_name,
+        models.Severity.REQUIRED,
+        False,
+        ["Data Entity: REQUIRED resource availability"],
+        ["The RO-Crate does not include the Data Entity 'data set/' as part of its payload"]
+    )
+
+
+def test_valid_rocrate_with_data_entities():
+    """"""
+    do_entity_test(
+        ValidROC().valid_rocrate_with_data_entities,
+        models.Severity.REQUIRED,
+        True
     )
