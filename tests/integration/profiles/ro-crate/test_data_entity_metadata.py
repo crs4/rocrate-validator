@@ -59,10 +59,10 @@ def test_directory_data_entity_wo_trailing_slash():
     """Test a RO-Crate without a root data entity."""
     do_entity_test(
         paths.directory_data_entity_wo_trailing_slash,
-        models.Severity.REQUIRED,
+        models.Severity.RECOMMENDED,
         False,
-        ["Directory Data Entity: REQUIRED value restriction"],
-        ["Every Data Entity Directory URI MUST end with `/`"]
+        ["Directory Data Entity: RECOMMENDED value restriction"],
+        ["Every Data Entity Directory URI SHOULD end with `/`"]
     )
 
 
