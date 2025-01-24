@@ -191,7 +191,7 @@ def get_single_char(console: Optional[Console] = None, end: str = "\n",
     show_default=True
 )
 @click.option(
-    '-x',
+    '-s',
     '--skip-checks',
     multiple=True,
     type=click.STRING,
