@@ -24,13 +24,13 @@ logger = logging.getLogger(__name__)
 @requirement(name="Data Entity: REQUIRED resource availability")
 class DataEntityRequiredChecker(PyFunctionCheck):
     """
-    Data Entity instances MUST be present within the RO-Crate
+    Resources corresponding to local Data Entities MUST be present in the RO-Crate payload
     """
 
     @check(name="Data Entity: REQUIRED resource availability")
     def check_availability(self, context: ValidationContext) -> bool:
         """
-        Check if the presence of the Data Entity within the RO-Crate
+        Check the presence of the Data Entity in the RO-Crate
         """
         result = True
         for entity in context.ro_crate.metadata.get_data_entities(exclude_web_data_entities=True):
