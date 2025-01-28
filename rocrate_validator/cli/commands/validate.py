@@ -755,10 +755,10 @@ class ValidationReportLayout(Layout):
                     issue_color = get_severity_color(check.level.severity)
                     console.print(
                         Padding(
-                            f"[bold][{issue_color}][{check.relative_identifier.center(16)}][/{issue_color}]  "
+                            f"[bold][{issue_color}][ {check.identifier.center(16)} ][/{issue_color}]  "
                             f"[magenta]{check.name}[/magenta][/bold]:", (0, 7)),
                         style="white bold")
-                    console.print(Padding(Markdown(check.description), (0, 27)))
+                    console.print(Padding(Markdown(check.description), (0, len(check.identifier) + 13)))
                     console.print(Padding("[u] Detected issues [/u]", (0, 8)), style="white bold")
                     for issue in sorted(result.get_issues_by_check(check),
                                         key=lambda x: (-x.severity.value, x)):
