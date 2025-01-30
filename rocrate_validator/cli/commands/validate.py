@@ -191,6 +191,15 @@ def get_single_char(console: Optional[Console] = None, end: str = "\n",
     show_default=True
 )
 @click.option(
+    '-s',
+    '--skip-checks',
+    multiple=True,
+    type=click.STRING,
+    default=None,
+    show_default=True,
+    help="List of checks to skip"
+)
+@click.option(
     '-v',
     '--verbose',
     is_flag=True,
@@ -238,6 +247,7 @@ def validate(ctx,
              disable_profile_inheritance: bool = False,
              requirement_severity: str = Severity.REQUIRED.name,
              requirement_severity_only: bool = False,
+             skip_checks: list[str] = None,
              rocrate_uri: Path = ".",
              fail_fast: bool = False,
              no_paging: bool = False,
@@ -279,7 +289,8 @@ def validate(ctx,
             "requirement_severity_only": requirement_severity_only,
             "enable_profile_inheritance": not disable_profile_inheritance,
             "rocrate_uri": rocrate_uri,
-            "abort_on_first": fail_fast
+            "abort_on_first": fail_fast,
+            "skip_checks": skip_checks
         }
 
         # Print the application header
@@ -745,10 +756,10 @@ class ValidationReportLayout(Layout):
                     issue_color = get_severity_color(check.level.severity)
                     console.print(
                         Padding(
-                            f"[bold][{issue_color}][{check.relative_identifier.center(16)}][/{issue_color}]  "
+                            f"[bold][{issue_color}][ {check.identifier.center(16)} ][/{issue_color}]  "
                             f"[magenta]{check.name}[/magenta][/bold]:", (0, 7)),
                         style="white bold")
-                    console.print(Padding(Markdown(check.description), (0, 27)))
+                    console.print(Padding(Markdown(check.description), (0, 0, 0, len(check.identifier) + 13)))
                     console.print(Padding("[u] Detected issues [/u]", (0, 8)), style="white bold")
                     for issue in sorted(result.get_issues_by_check(check),
                                         key=lambda x: (-x.severity.value, x)):
@@ -763,7 +774,7 @@ class ValidationReportLayout(Layout):
                             path = f"{path} on [cyan]<{issue.violatingEntity}>[/cyan]"
                         console.print(
                             Padding(f"- [[red]Violation[/red]{path}]: "
-                                    f"{Markdown(issue.message).markup}", (0, 9)), style="white")
+                                    f"{Markdown(issue.message).markup}", (0, 9)))
                     console.print("\n", style="white")
 
 

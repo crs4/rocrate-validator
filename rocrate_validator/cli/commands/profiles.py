@@ -289,14 +289,14 @@ def __verbose_describe_profile__(profile):
             #         if co != check.overridden_by[-1]:
             #             override += ", "
             #     override += "]"
-            if check.override:
+            if check.overrides:
                 logger.debug("Check %s overrides: %s", check.identifier, check.override)
                 override = "[" + "overrides: "
-                for co in check.override:
+                for co in check.overrides:
                     severity_color = get_severity_color(co.severity)
                     override += f"[bold][magenta]{co.requirement.profile.identifier}[/magenta] "\
                         f"[{severity_color}]{co.relative_identifier}[/{severity_color}][/bold]"
-                    if co != check.override[-1]:
+                    if co != check.overrides[-1]:
                         override += ", "
                 override += "]"
             from rich.align import Align
@@ -305,8 +305,9 @@ def __verbose_describe_profile__(profile):
                 description_table.add_row(Align(Padding(override, (0, 0, 1, 0)), align="right"))
             description_table.add_row(Markdown(check.description.strip()))
 
-            table_rows.append((str(check.relative_identifier), check.name,
-                               description_table, level_info))
+            table_rows.append((
+                check.identifier, check.name,
+                description_table, level_info))
             count_checks += 1
 
     table = Table(show_header=True,

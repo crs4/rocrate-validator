@@ -21,6 +21,7 @@ import zipfile
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Optional, Union
+from urllib.parse import unquote
 
 import requests
 from rdflib import Graph
@@ -59,14 +60,95 @@ class ROCrateEntity:
     def ro_crate(self) -> ROCrate:
         return self.metadata.ro_crate
 
+    def is_remote(self) -> bool:
+        return self.id_as_uri.is_remote_resource()
+
+    @classmethod
+    def get_id_as_path(cls, entity_id: str, ro_crate: Optional[ROCrate] = None) -> Path:
+        return cls.get_path_from_identifier(entity_id, ro_crate.uri.as_path() if ro_crate else None)
+
+    @staticmethod
+    def get_path_from_identifier(identifier: str, rocrate_path: Optional[Union[str, Path]] = None) -> Path:
+        """
+        Get the path from an identifier.
+
+
+        :param identifier: the identifier of the entity
+        :type identifier: str
+
+        :param rocrate_path: the path to the RO-Crate
+        :type rocrate_path: Optional[Union[str, Path]
+
+        :return: the path to the entity
+        :rtype: Path
+
+        """
+        def __define_path__(path: str, decode: bool = False) -> Path:
+            # ensure the path is a string and remove the file:// prefix
+            path = str(path).replace('file://', '')
+            # Decode the path if required
+            if decode:
+                path = unquote(path)
+            # Convert the path to a Path object
+            path = Path(path)
+            # if the path is absolute, return it
+            if path.is_absolute():
+                return path
+            try:
+                # set the base path
+                base_path = rocrate_path
+                if base_path is None:
+                    base_path = Path('./')
+                elif not isinstance(base_path, Path):
+                    base_path = Path(base_path)
+                # Check if the path if the root of the RO-Crate
+                if path == Path('./'):
+                    return base_path
+                # if the path is relative, try to resolve it
+                return base_path / path.relative_to(base_path)
+            except ValueError:
+                # if the path cannot be resolved, return the absolute path
+                return base_path / path
+        # Define the path based on the identifier
+        path = __define_path__(identifier)
+        if not path.exists():
+            path = __define_path__(identifier, decode=True)
+        return path
+
+    @property
+    def id_as_path(self) -> Path:
+        return self.get_id_as_path(self.id, self.ro_crate)
+
+    @classmethod
+    def get_id_as_uri(cls, entity_id: str, ro_crate: ROCrate) -> URI:
+        assert entity_id, "Entity ID cannot be None"
+        if entity_id.startswith("http"):
+            return URI(entity_id)
+        return URI(cls.get_id_as_path(entity_id, ro_crate))
+
+    @property
+    def id_as_uri(self) -> URI:
+        return self.get_id_as_uri(self.id, self.ro_crate)
+
+    def has_absolute_path(self) -> bool:
+        return self.get_id_as_path(self.id).is_absolute()
+
+    def has_relative_path(self) -> bool:
+        return not self.has_absolute_path()
+
     def has_type(self, entity_type: str) -> bool:
         assert isinstance(entity_type, str), "Entity type must be a string"
         e_types = self.type if isinstance(self.type, list) else [self.type]
         return entity_type in e_types
 
-    def has_types(self, entity_types: list[str]) -> bool:
+    def has_types(self, entity_types: list[str], all_types: bool = False) -> bool:
+        """
+        Check if the entity has any or all of the specified types.
+        """
         assert isinstance(entity_types, list), "Entity types must be a list"
         e_types = self.type if isinstance(self.type, list) else [self.type]
+        if all_types:
+            return all([t in e_types for t in entity_types])
         return any([t in e_types for t in entity_types])
 
     def __process_property__(self, name: str, data: object) -> object:
@@ -89,6 +171,9 @@ class ROCrateEntity:
     def raw_data(self) -> object:
         return self._raw_data
 
+    def is_local(self) -> bool:
+        return not self.is_remote()
+
     def is_available(self) -> bool:
         try:
             # check if the entity points to an external file
@@ -99,11 +184,8 @@ class ROCrateEntity:
             if self.ro_crate.uri.is_local_resource():
                 # check if the file exists in the local file system
                 if isinstance(self.ro_crate, ROCrateLocalFolder):
-                    logger.debug("Checking local folder: %s", self.ro_crate.uri.as_path().absolute() / self.id)
-                    return self.ro_crate.has_file(
-                        self.ro_crate.uri.as_path().absolute() / self.id) \
-                        or self.ro_crate.has_directory(
-                        self.ro_crate.uri.as_path().absolute() / self.id)
+                    return self.ro_crate.has_file(self.id_as_path) \
+                        or self.ro_crate.has_directory(self.id_as_path)
                 # check if the file exists in the local zip file
                 if isinstance(self.ro_crate, ROCrateLocalZip):
                     if self.id in [str(_) for _ in self.ro_crate.list_files()]:
@@ -210,7 +292,7 @@ class ROCrateMetadata:
     def get_entities_by_type(self, entity_type: Union[str, list[str]]) -> list[ROCrateEntity]:
         entities = []
         for e in self.get_entities():
-            if e.has_type(entity_type):
+            if e.has_types(entity_type):
                 entities.append(e)
         return entities
 
@@ -220,11 +302,17 @@ class ROCrateMetadata:
     def get_file_entities(self) -> list[ROCrateEntity]:
         return self.get_entities_by_type('File')
 
+    def get_data_entities(self, exclude_web_data_entities: bool = False) -> list[ROCrateEntity]:
+        if not exclude_web_data_entities:
+            return self.get_entities_by_type(['Dataset', 'File'])
+        return [e for e in self.get_entities_by_type(['Dataset', 'File'])
+                if not e.is_remote()]
+
     def get_web_data_entities(self) -> list[ROCrateEntity]:
         entities = []
         for entity in self.get_entities():
             if entity.has_type('File') or entity.has_type('Dataset'):
-                if entity.id.startswith("http"):
+                if entity.is_remote():
                     entities.append(entity)
         return entities
 
@@ -343,15 +431,7 @@ class ROCrate(ABC):
 
     def __parse_path__(self, path: Path) -> Path:
         assert path, "Path cannot be None"
-        # if the path is absolute, return it
-        if path.is_absolute():
-            return path
-        try:
-            # if the path is relative, try to resolve it
-            return self.uri.as_path().absolute() / path.relative_to(self.uri.as_path())
-        except ValueError:
-            # if the path cannot be resolved, return the absolute path
-            return self.uri.as_path().absolute() / path
+        return ROCrateEntity.get_path_from_identifier(str(path), rocrate_path=self.uri.as_path())
 
     def has_descriptor(self) -> bool:
         """

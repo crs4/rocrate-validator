@@ -891,7 +891,10 @@ class Requirement(ABC):
 
         logger.debug("Running %s checks for Requirement '%s'", len(self._checks), self.name)
         all_passed = True
-        for check in self._checks:
+        for check in [_ for _ in self._checks
+                      if not context.settings.skip_checks
+                      or _.identifier not in context.settings.skip_checks]:
+
             try:
                 logger.debug("Running check '%s' - Desc: %s - overridden: %s",
                              check.name, check.description, [_.identifier for _ in check.overridden_by])
@@ -1575,6 +1578,8 @@ class ValidationSettings:
     allow_requirement_check_override: bool = True
     #: Flag to disable the check for duplicates
     disable_check_for_duplicates: bool = False
+    #: Checks to skip
+    skip_checks: list[str] = None
 
     def __post_init__(self):
         # if requirement_severity is a str, convert to Severity
