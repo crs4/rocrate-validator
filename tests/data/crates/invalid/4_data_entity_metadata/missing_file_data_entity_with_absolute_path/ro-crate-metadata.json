@@ -22,27 +22,15 @@
             "datePublished": "2024-05-17T01:04:52+01:00",
             "conformsTo": [
                 {
-                    "@id": "https://w3id.org/ro/crate/1.1"
+                    "@id": "https://w3id.org/ro/wfrun/process/0.5"
+                },
+                {
+                    "@id": "https://example.com/otherprofile/0.1"
                 }
             ],
             "hasPart": [
                 {
                     "@id": "pics/2017-06-11%2012.56.14.jpg"
-                },
-                {
-                    "@id": "pics/2018-06-11%2012.56.14.jpg"
-                },
-                {
-                    "@id": "pics/2019-06-11 12.56.14.jpg"
-                },
-                {
-                    "@id": "data%20set/"
-                },
-                {
-                    "@id": "data%20set2/"
-                },
-                {
-                    "@id": "data set3/"
                 },
                 {
                     "@id": "pics/sepia_fence.jpg"
@@ -121,6 +109,12 @@
             "containerImage": "https://example.com/imagemagick.sif"
         },
         {
+            "@id": "file:///tmp/test.txt",
+            "@type": "File",
+            "description": "A test file",
+            "encodingFormat": "text/plain"
+        },
+        {
             "@id": "#width-limit-pv",
             "@type": "PropertyValue",
             "name": "MAGICK_WIDTH_LIMIT",
@@ -133,12 +127,6 @@
             "value": "3072"
         },
         {
-            "@id": "file:///tmp/test.txt",
-            "@type": "File",
-            "description": "A test file",
-            "encodingFormat": "text/plain"
-        },
-        {
             "@id": "pics/2017-06-11%2012.56.14.jpg",
             "@type": "File",
             "description": "Original image",
@@ -146,50 +134,6 @@
             "name": "2017-06-11 12.56.14.jpg (input)",
             "author": {
                 "@id": "https://orcid.org/0000-0002-3545-944X"
-            }
-        },
-        {
-            "@id": "pics/2018-06-11%2012.56.14.jpg",
-            "@type": "File",
-            "description": "Original image",
-            "encodingFormat": "image/jpeg",
-            "name": "2018-06-11 12.56.14.jpg (input)"
-        },
-        {
-            "@id": "pics/2019-06-11 12.56.14.jpg",
-            "@type": "File",
-            "description": "Original image",
-            "encodingFormat": "image/jpeg",
-            "name": "2018-06-11 12.56.14.jpg (input)"
-        },
-        {
-            "@id": "data%20set/",
-            "@type": "Dataset",
-            "name": "Data set",
-            "description": "A dataset",
-            "datePublished": "2024-05-17T01:04:52+01:00",
-            "license": {
-                "@id": "http://spdx.org/licenses/CC0-1.0"
-            }
-        },
-        {
-            "@id": "data%20set2/",
-            "@type": "Dataset",
-            "name": "Data set 2",
-            "description": "A dataset",
-            "datePublished": "2024-05-17T01:04:52+01:00",
-            "license": {
-                "@id": "http://spdx.org/licenses/CC0-1.0"
-            }
-        },
-        {
-            "@id": "data set3/",
-            "@type": "Dataset",
-            "name": "Data set 3",
-            "description": "A dataset",
-            "datePublished": "2024-05-17T01:04:52+01:00",
-            "license": {
-                "@id": "http://spdx.org/licenses/CC0-1.0"
             }
         },
         {
