@@ -84,8 +84,8 @@ class ROCrateEntity:
 
         """
         def __define_path__(path: str, decode: bool = False) -> Path:
-            # ensure the path is a string
-            path = str(path)
+            # ensure the path is a string and remove the file:// prefix
+            path = str(path).replace('file://', '')
             # Decode the path if required
             if decode:
                 path = unquote(path)
