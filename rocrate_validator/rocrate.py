@@ -64,8 +64,8 @@ class ROCrateEntity:
         return self.id_as_uri.is_remote_resource()
 
     @classmethod
-    def get_id_as_path(cls, entity_id: str, ro_crate: ROCrate) -> Path:
-        return cls.get_path_from_identifier(entity_id, ro_crate.uri.as_path())
+    def get_id_as_path(cls, entity_id: str, ro_crate: Optional[ROCrate] = None) -> Path:
+        return cls.get_path_from_identifier(entity_id, ro_crate.uri.as_path() if ro_crate else None)
 
     @staticmethod
     def get_path_from_identifier(identifier: str, rocrate_path: Optional[Union[str, Path]] = None) -> Path:
@@ -130,6 +130,9 @@ class ROCrateEntity:
     def id_as_uri(self) -> URI:
         return self.get_id_as_uri(self.id, self.ro_crate)
 
+    def has_relative_path(self) -> bool:
+        return not self.get_id_as_path(self.id).is_absolute()
+
     def has_type(self, entity_type: str) -> bool:
         assert isinstance(entity_type, str), "Entity type must be a string"
         e_types = self.type if isinstance(self.type, list) else [self.type]
@@ -164,6 +167,9 @@ class ROCrateEntity:
     @property
     def raw_data(self) -> object:
         return self._raw_data
+
+    def is_local(self) -> bool:
+        return not self.is_remote()
 
     def is_available(self) -> bool:
         try:
