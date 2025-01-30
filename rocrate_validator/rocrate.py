@@ -130,8 +130,11 @@ class ROCrateEntity:
     def id_as_uri(self) -> URI:
         return self.get_id_as_uri(self.id, self.ro_crate)
 
+    def has_absolute_path(self) -> bool:
+        return self.get_id_as_path(self.id).is_absolute()
+
     def has_relative_path(self) -> bool:
-        return not self.get_id_as_path(self.id).is_absolute()
+        return not self.has_absolute_path()
 
     def has_type(self, entity_type: str) -> bool:
         assert isinstance(entity_type, str), "Entity type must be a string"
