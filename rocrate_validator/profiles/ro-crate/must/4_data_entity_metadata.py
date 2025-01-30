@@ -38,6 +38,14 @@ class DataEntityRequiredChecker(PyFunctionCheck):
             logger.debug("Ensure the presence of the Data Entity '%s' within the RO-Crate", entity.id)
             try:
                 logger.debug("Ensure the presence of the Data Entity '%s' within the RO-Crate", entity.id)
+                if not entity.has_relative_path():
+                    logger.debug(
+                        "Ignoring the Data Entity '%s' as it is a local entity with an absolute path. "
+                        "According to the RO-Crate specification, local entities with absolute paths "
+                        "are not required to be included in the RO-Crate payload. "
+                        "It is only recommended that they exist at the time of RO-Crate creation.",
+                        entity.id)
+                    continue
                 if not entity.is_available():
                     context.result.add_issue(
                         f"The RO-Crate does not include the Data Entity '{entity.id}' as part of its payload", self)
