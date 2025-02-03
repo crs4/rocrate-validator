@@ -15,7 +15,7 @@
 import logging
 
 from rocrate_validator import models
-from tests.ro_crates import InvalidFileDescriptor
+from tests.ro_crates import InvalidFileDescriptor, ValidROC
 from tests.shared import do_entity_test
 
 logger = logging.getLogger(__name__)
@@ -97,4 +97,47 @@ def test_not_valid_jsonld_format_missing_types():
         False,
         ["File Descriptor JSON-LD format"],
         ["file descriptor does not contain the @type attribute"]
+    )
+
+
+def test_invalid_jsonld_not_compacted():
+    """
+    Test a RO-Crate with an invalid JSON-LD file descriptor format.
+    The file descriptor is not compacted.
+    """
+    do_entity_test(
+        paths.invalid_jsonld_not_compacted,
+        models.Severity.REQUIRED,
+        False,
+        ["File Descriptor JSON-LD format"],
+        ['The "https://schema.org/name" URI cannot be used as a key']
+    )
+
+
+def test_invalid_jsonld_unexpected_key():
+    """
+    Test a RO-Crate with an invalid JSON-LD file descriptor format.
+    The file descriptor contains an unexpected key.
+    """
+    do_entity_test(
+        paths.invalid_jsonld_unexpected_key,
+        models.Severity.REQUIRED,
+        False,
+        ["File Descriptor JSON-LD format"],
+        ['The 1 occurrence of the JSON-LD key "hasPartx" is not allowed in the compacted format',
+         'The 2 occurrences of the JSON-LD key "namex" are not allowed in the compacted format']
+    )
+
+
+def test_valid_jsonld_custom_term():
+    """
+    Test a RO-Crate with a valid JSON-LD file descriptor format
+    which contains custom terms.
+    """
+    do_entity_test(
+        ValidROC().rocrate_with_custom_terms,
+        models.Severity.REQUIRED,
+        True,
+        [],
+        []
     )

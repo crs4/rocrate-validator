@@ -36,6 +36,10 @@ class ValidROC:
         return VALID_CRATES_DATA_PATH / "rocrate_with_data_entities"
 
     @property
+    def rocrate_with_custom_terms(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "rocrate_with_custom_terms"
+
+    @property
     def wrroc_paper(self) -> Path:
         return VALID_CRATES_DATA_PATH / "wrroc-paper"
 
@@ -103,6 +107,14 @@ class InvalidFileDescriptor:
     @property
     def invalid_not_flattened(self) -> Path:
         return self.base_path / "invalid_not_flattened"
+
+    @property
+    def invalid_jsonld_not_compacted(self) -> Path:
+        return self.base_path / "invalid_jsonld_format/not_compacted"
+
+    @property
+    def invalid_jsonld_unexpected_key(self) -> Path:
+        return self.base_path / "invalid_jsonld_format/unexpected_key"
 
 
 class InvalidRootDataEntity:
