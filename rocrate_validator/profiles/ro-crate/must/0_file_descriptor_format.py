@@ -13,6 +13,9 @@
 # limitations under the License.
 
 from typing import Any
+
+import requests
+
 import rocrate_validator.log as logging
 from rocrate_validator.models import ValidationContext
 from rocrate_validator.requirements.python import (PyFunctionCheck, check,
@@ -165,4 +168,110 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
         except Exception as e:
             if logger.isEnabledFor(logging.DEBUG):
                 logger.exception(e)
+        return False
+
+    def __get_context_keys__(self, context: object) -> set:
+        """ Get the keys of the context URI """
+        if isinstance(context, str):
+            return self.__get_remote_context_keys__(context)
+
+        # if the context is a dictionary, get the keys of the dictionary
+        if isinstance(context, dict):
+            return set(context.keys())
+
+        # if the context is a list of contexts, get the keys of each context
+        if isinstance(context, list):
+            keys = set()
+            for ctx in context:
+                keys.update(self.__get_context_keys__(ctx))
+            return keys
+
+    def __get_remote_context_keys__(self, context_uri: str) -> set:
+        """ Get the keys of the context URI """
+
+        # Try to retrieve the context
+        raw_data = requests.get(context_uri)
+        if raw_data.status_code != 200:
+            raise RuntimeError(f"Unable to retrieve the JSON-LD context '{context_uri}'", self)
+
+        logger.debug(f"Retrieved context from {context_uri}")
+
+        # Get the keys of the context
+        jsonLD = raw_data.json()
+        jsonLD_ctx = jsonLD["@context"]
+        if not isinstance(jsonLD_ctx, dict):
+            raise RuntimeError("The context is not a dictionary", self)
+        return set(jsonLD_ctx.keys())
+
+    def __check_entity_keys__(self, entity: dict,
+                              context_keys: set,
+                              unexpected_keys: dict[str, int] = None) -> dict[str, int]:
+        """ Check if the entity is in the correct format """
+
+        def add_unexpected_key(k: str, u_keys: dict) -> None:
+            """ Add a key to the unexpected keys dictionary """
+            u_keys[k] = u_keys.get(k, 0) + 1
+
+        # Keys that should be skipped
+        SKIP_KEYS = {"@id", "@type", "@context"}
+
+        # Ensure unexpected_keys is initialized
+        if unexpected_keys is None:
+            unexpected_keys = {}
+
+        # If the entity is a dictionary, check each key
+        if isinstance(entity, dict):
+            for k, v in entity.items():
+                if k not in context_keys and k not in SKIP_KEYS:
+                    logger.debug(f"Key {k} not in context keys")
+                    add_unexpected_key(k, unexpected_keys)
+                if isinstance(v, (dict, list)):
+                    self.__check_entity_keys__(v, context_keys, unexpected_keys)
+
+        # If the entity is a list, check each element
+        elif isinstance(entity, list):
+            for elem in entity:
+                self.__check_entity_keys__(elem, context_keys, unexpected_keys)
+
+        return unexpected_keys
+
+    @check(name="Validation of the compaction format of the file descriptor")
+    def check_compaction(self, context: ValidationContext) -> bool:
+        """ Check if the file descriptor is in the **compacted** JSON-LD format """
+        try:
+            logger.debug("Checking compaction format of JSON-LD file at %s", context.ro_crate.metadata)
+            json_dict = context.ro_crate.metadata.as_dict()
+            logger.debug(f"JSONLD keys:{json_dict.keys()}")
+
+            jsonld_context = json_dict.get("@context", None)
+            logger.debug(f"Context: {jsonld_context}")
+
+            context_keys = self.__get_context_keys__(jsonld_context)
+            logger.debug(f"{context_keys}")
+
+            unexpected_keys = self.__check_entity_keys__(json_dict.get("@graph"), context_keys)
+            logger.debug(f"Unexpected keys: {unexpected_keys}")
+            if len(unexpected_keys) > 0:
+                for k, v in unexpected_keys.items():
+                    logger.debug(f"Key {k} appears {v} times")
+                    # Check if k is a term or a URI
+                    if k.startswith("http"):
+                        context.result.add_issue(
+                            f'The "{k}" URI cannot be used as a key because the compacted format requires '
+                            'simple terms as keys '
+                            '(see https://www.w3.org/TR/json-ld-api/#compaction for more details).', self)
+                    else:
+                        suffix = "s" if v > 1 else ""
+                        context.result.add_issue(
+                            f'The {v} occurrence{suffix} of the JSON-LD key "{k}" '
+                            f'{"is" if v ==1 else "are"} not allowed in the compacted format '
+                            'because it not present in the @context of the document', self)
+                return False
+
+            return True
+        except Exception as e:
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.exception(e)
+            context.result.add_issue(
+                f'Unexpected error: {e}', self)
         return False
