@@ -100,6 +100,22 @@ def test_not_valid_jsonld_format_missing_types():
     )
 
 
+def test_invalid_jsonld_context():
+    """
+    Test a RO-Crate with an invalid JSON-LD file descriptor format.
+    The file descriptor contains an invalid context.
+    """
+    do_entity_test(
+        f"{paths.invalid_jsonld_format}/invalid_context_uri",
+        models.Severity.REQUIRED,
+        False,
+        ["File Descriptor JSON-LD format"],
+        ["Unable to retrieve the JSON-LD context 'https://w3id.org/ro/terms/invalid/context'"],
+        profile_identifier="ro-crate",
+        abort_on_first=True
+    )
+
+
 def test_invalid_jsonld_not_compacted():
     """
     Test a RO-Crate with an invalid JSON-LD file descriptor format.
