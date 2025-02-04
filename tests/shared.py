@@ -43,7 +43,7 @@ def do_entity_test(
         expected_validation_result: bool,
         expected_triggered_requirements: Optional[list[str]] = None,
         expected_triggered_issues: Optional[list[str]] = None,
-        abort_on_first: bool = True,
+        abort_on_first: bool = False,
         profile_identifier: str = DEFAULT_PROFILE_IDENTIFIER,
         rocrate_entity_patch: Optional[dict] = None,
         skip_checks: Optional[list[str]] = ()
@@ -89,7 +89,7 @@ def do_entity_test(
         logger.debug("Checks to skip: %s", skip_checks)
 
         # set abort_on_first to False
-        abort_on_first = False
+        abort_on_first = abort_on_first
 
         # validate RO-Crate
         result: models.ValidationResult = \
