@@ -25,6 +25,7 @@ from dataclasses import asdict, dataclass
 from functools import total_ordering
 from pathlib import Path
 from typing import Optional, Tuple, Union
+from urllib.error import HTTPError
 
 import enum_tools
 from rdflib import RDF, RDFS, Graph, Namespace, URIRef
@@ -1998,7 +1999,7 @@ class ValidationContext:
             if not self._data_graph or refresh:
                 self._data_graph = self.__load_data_graph__()
             return self._data_graph
-        except FileNotFoundError as e:
+        except (HTTPError, FileNotFoundError) as e:
             logger.debug("Error loading data graph: %s", e)
             raise ROCrateMetadataNotFoundError(self.rocrate_uri)
 
