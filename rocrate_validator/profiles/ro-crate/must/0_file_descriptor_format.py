@@ -247,8 +247,14 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
             jsonld_context = json_dict.get("@context", None)
             logger.debug(f"Context: {jsonld_context}")
 
-            context_keys = self.__get_context_keys__(jsonld_context)
-            logger.debug(f"{context_keys}")
+            try:
+                context_keys = self.__get_context_keys__(jsonld_context)
+                logger.debug(f"{context_keys}")
+            except Exception as e:
+                if logger.isEnabledFor(logging.DEBUG):
+                    logger.exception(e)
+                context.result.add_issue(str(e), self)
+                return False
 
             unexpected_keys = self.__check_entity_keys__(json_dict.get("@graph"), context_keys)
             logger.debug(f"Unexpected keys: {unexpected_keys}")
