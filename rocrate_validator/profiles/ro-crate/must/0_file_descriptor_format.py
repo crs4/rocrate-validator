@@ -254,14 +254,15 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
             if len(unexpected_keys) > 0:
                 for k, v in unexpected_keys.items():
                     logger.debug(f"Key {k} appears {v} times")
+                    # Add the correct suffix to the message
+                    suffix = "s" if v > 1 else ""
                     # Check if k is a term or a URI
                     if k.startswith("http"):
                         context.result.add_issue(
-                            f'The "{k}" URI cannot be used as a key because the compacted format requires '
-                            'simple terms as keys '
+                            f'The The {v} occurrence{suffix} of the "{k}" URI cannot be used as a key{suffix} "'
+                            'because the compacted format requires simple terms as keys '
                             '(see https://www.w3.org/TR/json-ld-api/#compaction for more details).', self)
                     else:
-                        suffix = "s" if v > 1 else ""
                         context.result.add_issue(
                             f'The {v} occurrence{suffix} of the JSON-LD key "{k}" '
                             f'{"is" if v ==1 else "are"} not allowed in the compacted format '
