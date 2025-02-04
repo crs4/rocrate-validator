@@ -81,9 +81,50 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
     The file descriptor MUST be a valid JSON-LD file
     """
 
+    def __check_remote_context__(self, context_uri: str) -> bool:
+        # Try to retrieve the context
+        try:
+            raw_data = requests.get(context_uri, headers={"Accept": "application/ld+json"})
+            if raw_data.status_code != 200:
+                raise RuntimeError(f"Unable to retrieve the JSON-LD context '{context_uri}'", self)
+            logger.debug(f"Retrieved context from {context_uri}")
+
+            # Try to parse the JSON-LD and access the context
+            jsonLD = raw_data.json()["@context"]
+            assert isinstance(jsonLD, dict)
+            return True
+        except Exception as e:
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.exception(e)
+        return False
+
+    def __check_contexts__(self, context: ValidationContext, jsonld_context: object) -> bool:
+        """ Get the keys of the context URI """
+        is_valid = True
+        # if the context is a string, check if it is a valid URI
+        if isinstance(jsonld_context, str):
+            if not self.__check_remote_context__(jsonld_context):
+                context.result.add_issue(
+                    f'Unable to retrieve the JSON-LD context "{jsonld_context}"', self)
+                is_valid = False
+
+        # if the context is a dictionary, get the keys of the dictionary
+        if isinstance(jsonld_context, dict):
+            logger.debug(f"Detected dictionary context: {jsonld_context}")
+
+        # if the context is a list of contexts, get the keys of each context
+        if isinstance(jsonld_context, list):
+            for ctx in jsonld_context:
+                if not self.__check_contexts__(context, ctx):
+                    is_valid = False
+        # return if the context is valid
+        return is_valid
+
     @check(name="File Descriptor @context property validation")
     def check_context(self, context: ValidationContext) -> bool:
-        """ Check if the file descriptor contains the @context property """
+        """ Check if the file descriptor contains
+        the @context property and it is a valid JSON-LD context
+        """
         try:
             json_dict = context.ro_crate.metadata.as_dict()
             if "@context" not in json_dict:
@@ -91,7 +132,9 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
                     f'RO-Crate file descriptor "{context.rel_fd_path}" '
                     "does not contain a context", self)
                 return False
-            return True
+
+            # Check if the context is valid
+            return self.__check_contexts__(context, json_dict["@context"])
         except Exception as e:
             if logger.isEnabledFor(logging.DEBUG):
                 logger.exception(e)
