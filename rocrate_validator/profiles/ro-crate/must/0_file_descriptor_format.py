@@ -189,10 +189,11 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
     def __get_remote_context_keys__(self, context_uri: str) -> set:
         """ Get the keys of the context URI """
 
+        logger.debug(f"Retrieving context from {context_uri}...")
         # Try to retrieve the context
-        raw_data = requests.get(context_uri)
+        raw_data = requests.get(context_uri, headers={"Accept": "application/ld+json"})
         if raw_data.status_code != 200:
-            raise RuntimeError(f"Unable to retrieve the JSON-LD context '{context_uri}'", self)
+            raise RuntimeError(f"Unable to retrieve the JSON-LD context '{context_uri}'")
 
         logger.debug(f"Retrieved context from {context_uri}")
 
