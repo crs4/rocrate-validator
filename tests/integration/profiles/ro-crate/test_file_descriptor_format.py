@@ -110,7 +110,7 @@ def test_invalid_jsonld_not_compacted():
         models.Severity.REQUIRED,
         False,
         ["File Descriptor JSON-LD format"],
-        ['The "https://schema.org/name" URI cannot be used as a key']
+        ['The 1 occurrence of the "https://schema.org/name" URI cannot be used as a key']
     )
 
 
