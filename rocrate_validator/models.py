@@ -25,6 +25,7 @@ from dataclasses import asdict, dataclass
 from functools import total_ordering
 from pathlib import Path
 from typing import Optional, Tuple, Union
+from urllib.error import HTTPError
 
 import enum_tools
 from rdflib import RDF, RDFS, Graph, Namespace, URIRef
@@ -891,7 +892,10 @@ class Requirement(ABC):
 
         logger.debug("Running %s checks for Requirement '%s'", len(self._checks), self.name)
         all_passed = True
-        for check in self._checks:
+        for check in [_ for _ in self._checks
+                      if not context.settings.skip_checks
+                      or _.identifier not in context.settings.skip_checks]:
+
             try:
                 logger.debug("Running check '%s' - Desc: %s - overridden: %s",
                              check.name, check.description, [_.identifier for _ in check.overridden_by])
@@ -1575,21 +1579,13 @@ class ValidationSettings:
     allow_requirement_check_override: bool = True
     #: Flag to disable the check for duplicates
     disable_check_for_duplicates: bool = False
+    #: Checks to skip
+    skip_checks: list[str] = None
 
-    def __init__(self, **kwargs):
-        for key, value in kwargs.items():
-            setattr(self, key, value)
-
+    def __post_init__(self):
         # if requirement_severity is a str, convert to Severity
-        severity = getattr(self, "requirement_severity")
-        if isinstance(severity, str):
-            setattr(self, "requirement_severity", Severity[severity])
-
-        # parse and set the rocrate URI
-        self._rocrate_uri = None
-        if "rocrate_uri" in kwargs:
-            self.rocrate_uri = kwargs["rocrate_uri"]
-        logger.debug("Validating RO-Crate: %s", self.rocrate_uri)
+        if isinstance(self.requirement_severity, str):
+            self.requirement_severity = Severity[self.requirement_severity]
 
     def to_dict(self):
         """
@@ -2003,7 +1999,7 @@ class ValidationContext:
             if not self._data_graph or refresh:
                 self._data_graph = self.__load_data_graph__()
             return self._data_graph
-        except FileNotFoundError as e:
+        except (HTTPError, FileNotFoundError) as e:
             logger.debug("Error loading data graph: %s", e)
             raise ROCrateMetadataNotFoundError(self.rocrate_uri)
 

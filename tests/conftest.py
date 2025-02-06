@@ -19,6 +19,7 @@ import os
 from pytest import fixture
 
 import rocrate_validator.log as logging
+from rocrate_validator import services
 
 # set up logging
 logging.basicConfig(
@@ -35,6 +36,21 @@ TEST_DATA_PATH = os.path.abspath(os.path.join(CURRENT_PATH, "data"))
 
 # profiles paths
 PROFILES_PATH = os.path.abspath(f"{CURRENT_PATH}/../rocrate_validator/profiles")
+
+# Dynamically update the SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER
+rocrate_profile = services.get_profile("ro-crate")
+if not rocrate_profile:
+    raise RuntimeError("Unable to load the RO-Crate profile")
+check_local_data_entity_existence = \
+    rocrate_profile.get_requirement_check("Data Entity: REQUIRED resource availability")
+assert check_local_data_entity_existence, \
+    "Unable to find the requirement 'Data Entity: REQUIRED resource availability'"
+SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER = check_local_data_entity_existence.identifier
+
+
+@fixture
+def skip_data_entity_existence_check_identifier():
+    return SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER
 
 
 @fixture

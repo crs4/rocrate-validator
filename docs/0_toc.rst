@@ -20,10 +20,12 @@
     1_installation
     2_usage_cli
     3_usage_api
+    4_how_it_works
 
 .. toctree::
     :maxdepth: 5
     :caption: Resources
 
+    11_writing_a_profile
     10_api
     genindex

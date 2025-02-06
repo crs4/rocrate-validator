@@ -15,7 +15,8 @@
 import logging
 
 from rocrate_validator import models
-from tests.ro_crates import InvalidDataEntity
+from tests.conftest import SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER
+from tests.ro_crates import InvalidDataEntity, ValidROC
 from tests.shared import do_entity_test
 
 # set up logging
@@ -42,7 +43,8 @@ def test_data_entity_must_be_directly_linked():
     do_entity_test(
         paths.direct_hasPart_data_entity_reference,
         models.Severity.REQUIRED,
-        True
+        True,
+        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER]
     )
 
 
@@ -51,7 +53,8 @@ def test_data_entity_must_be_indirectly_linked():
     do_entity_test(
         paths.indirect_hasPart_data_entity_reference,
         models.Severity.REQUIRED,
-        True
+        True,
+        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER]
     )
 
 
@@ -59,10 +62,10 @@ def test_directory_data_entity_wo_trailing_slash():
     """Test a RO-Crate without a root data entity."""
     do_entity_test(
         paths.directory_data_entity_wo_trailing_slash,
-        models.Severity.REQUIRED,
+        models.Severity.RECOMMENDED,
         False,
-        ["Directory Data Entity: REQUIRED value restriction"],
-        ["Every Data Entity Directory URI MUST end with `/`"]
+        ["Directory Data Entity: RECOMMENDED value restriction"],
+        ["Every Data Entity Directory URI SHOULD end with `/`"]
     )
 
 
@@ -115,7 +118,8 @@ def test_valid_data_entity_encoding_format_pronom():
     do_entity_test(
         paths.valid_encoding_format_pronom,
         models.Severity.RECOMMENDED,
-        True
+        True,
+        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER]
     )
 
 
@@ -124,5 +128,71 @@ def test_valid_data_entity_encoding_format_ctx_website():
     do_entity_test(
         paths.valid_encoding_format_ctx_entity,
         models.Severity.RECOMMENDED,
-        True
+        True,
+        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER]
+    )
+
+
+def test_missing_file_data_entity_with_quoted_name():
+    """"""
+    do_entity_test(
+        paths.missing_file_data_entity_with_quoted_name,
+        models.Severity.REQUIRED,
+        False,
+        ["Data Entity: REQUIRED resource availability"],
+        ["The RO-Crate does not include the Data Entity 'pics/2017-06-11%2012.56.14.jpg' as part of its payload"]
+    )
+
+
+def test_missing_file_data_entity_with_unquoted_name():
+    """"""
+    do_entity_test(
+        paths.missing_file_data_entity_with_unquoted_name,
+        models.Severity.REQUIRED,
+        False,
+        ["Data Entity: REQUIRED resource availability"],
+        ["The RO-Crate does not include the Data Entity 'pics/2017-06-11 12.56.14.jpg' as part of its payload"]
+    )
+
+
+def test_missing_dataset_entity_with_quoted_name():
+    """"""
+    do_entity_test(
+        paths.missing_dataset_data_entity_with_quoted_name,
+        models.Severity.REQUIRED,
+        False,
+        ["Data Entity: REQUIRED resource availability"],
+        ["The RO-Crate does not include the Data Entity 'data%20set/' as part of its payload"]
+    )
+
+
+def test_missing_dataset_entity_with_unquoted_name():
+    """"""
+    do_entity_test(
+        paths.missing_dataset_data_entity_with_unquoted_name,
+        models.Severity.REQUIRED,
+        False,
+        ["Data Entity: REQUIRED resource availability"],
+        ["The RO-Crate does not include the Data Entity 'data set/' as part of its payload"]
+    )
+
+
+def test_missing_absolute_path_data_entity():
+    """"""
+    do_entity_test(
+        paths.missing_file_data_entity_with_absolute_path,
+        models.Severity.RECOMMENDED,
+        False,
+        ["Data Entity: RECOMMENDED resource availability"],
+        ["Data Entity file:///tmp/test.txt is not available"]
+    )
+
+
+def test_valid_rocrate_with_data_entities():
+    """"""
+    do_entity_test(
+        ValidROC().rocrate_with_data_entities,
+        models.Severity.REQUIRED,
+        True,
+        profile_identifier="ro-crate"
     )

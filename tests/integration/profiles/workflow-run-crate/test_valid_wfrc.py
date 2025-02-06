@@ -15,6 +15,7 @@
 import logging
 
 from rocrate_validator.models import Severity
+from tests.conftest import SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER
 from tests.ro_crates import ValidROC
 from tests.shared import do_entity_test
 
@@ -27,5 +28,6 @@ def test_valid_workflow_run_crate_required():
         ValidROC().workflow_run_crate,
         Severity.REQUIRED,
         True,
-        profile_identifier="workflow-run-crate"
+        profile_identifier="workflow-run-crate",
+        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER]
     )

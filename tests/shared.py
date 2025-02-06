@@ -43,9 +43,10 @@ def do_entity_test(
         expected_validation_result: bool,
         expected_triggered_requirements: Optional[list[str]] = None,
         expected_triggered_issues: Optional[list[str]] = None,
-        abort_on_first: bool = True,
+        abort_on_first: bool = False,
         profile_identifier: str = DEFAULT_PROFILE_IDENTIFIER,
         rocrate_entity_patch: Optional[dict] = None,
+        skip_checks: Optional[list[str]] = ()
 ):
     """
     Shared function to test a RO-Crate entity
@@ -85,9 +86,10 @@ def do_entity_test(
     try:
         logger.debug("Testing RO-Crate @ path: %s", rocrate_path)
         logger.debug("Requirement severity: %s", requirement_severity)
+        logger.debug("Checks to skip: %s", skip_checks)
 
         # set abort_on_first to False
-        abort_on_first = False
+        abort_on_first = abort_on_first
 
         # validate RO-Crate
         result: models.ValidationResult = \
@@ -95,7 +97,8 @@ def do_entity_test(
                 "rocrate_uri": rocrate_path,
                 "requirement_severity": requirement_severity,
                 "abort_on_first": abort_on_first,
-                "profile_identifier": profile_identifier
+                "profile_identifier": profile_identifier,
+                "skip_checks": skip_checks
             }))
         logger.debug("Expected validation result: %s", expected_validation_result)
 

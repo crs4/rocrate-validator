@@ -30,6 +30,15 @@ def ro_crates_path() -> Path:
 
 
 class ValidROC:
+
+    @property
+    def rocrate_with_data_entities(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "rocrate_with_data_entities"
+
+    @property
+    def rocrate_with_custom_terms(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "rocrate_with_custom_terms"
+
     @property
     def wrroc_paper(self) -> Path:
         return VALID_CRATES_DATA_PATH / "wrroc-paper"
@@ -98,6 +107,14 @@ class InvalidFileDescriptor:
     @property
     def invalid_not_flattened(self) -> Path:
         return self.base_path / "invalid_not_flattened"
+
+    @property
+    def invalid_jsonld_not_compacted(self) -> Path:
+        return self.base_path / "invalid_jsonld_format/not_compacted"
+
+    @property
+    def invalid_jsonld_unexpected_key(self) -> Path:
+        return self.base_path / "invalid_jsonld_format/unexpected_key"
 
 
 class InvalidRootDataEntity:
@@ -237,6 +254,30 @@ class InvalidDataEntity:
     @property
     def invalid_sdDatePublished(self) -> Path:
         return self.base_path / "invalid_sdDatePublished"
+
+    @property
+    def data_entity_path(self) -> Path:
+        return self.base_path / "data_entity_path"
+
+    @property
+    def missing_file_data_entity_with_quoted_name(self) -> Path:
+        return self.base_path / "missing_file_data_entity_with_quoted_name"
+
+    @property
+    def missing_file_data_entity_with_unquoted_name(self) -> Path:
+        return self.base_path / "missing_file_data_entity_with_unquoted_name"
+
+    @property
+    def missing_dataset_data_entity_with_quoted_name(self) -> Path:
+        return self.base_path / "missing_dataset_data_entity_with_quoted_name"
+
+    @property
+    def missing_dataset_data_entity_with_unquoted_name(self) -> Path:
+        return self.base_path / "missing_dataset_data_entity_with_unquoted_name"
+
+    @property
+    def missing_file_data_entity_with_absolute_path(self) -> Path:
+        return self.base_path / "missing_file_data_entity_with_absolute_path"
 
 
 class InvalidMainWorkflow:

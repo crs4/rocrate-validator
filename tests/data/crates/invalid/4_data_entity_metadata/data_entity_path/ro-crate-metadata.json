@@ -1,0 +1,148 @@
+{
+    "@context": [
+        "https://w3id.org/ro/crate/1.1/context",
+        "https://w3id.org/ro/terms/workflow-run/context"
+    ],
+    "@graph": [
+        {
+            "@id": "ro-crate-metadata.json",
+            "@type": "CreativeWork",
+            "conformsTo": {
+                "@id": "https://w3id.org/ro/crate/1.1"
+            },
+            "about": {
+                "@id": "./"
+            }
+        },
+        {
+            "@id": "./",
+            "@type": "Dataset",
+            "name": "My Pictures",
+            "description": "A collection of my pictures",
+            "datePublished": "2024-05-17T01:04:52+01:00",
+            "conformsTo": [
+                {
+                    "@id": "https://w3id.org/ro/wfrun/process/0.5"
+                },
+                {
+                    "@id": "https://example.com/otherprofile/0.1"
+                }
+            ],
+            "hasPart": [
+                {
+                    "@id": "pics/2017-06-11%2012.56.14.jpg"
+                },
+                {
+                    "@id": "pics/sepia_fence.jpg"
+                }
+            ],
+            "isBasedOn": {
+                "@id": "https://doi.org/10.5281/zenodo.1009240"
+            },
+            "license": {
+                "@id": "http://spdx.org/licenses/CC0-1.0"
+            },
+            "mentions": {
+                "@id": "#SepiaConversion_1"
+            }
+        },
+        {
+            "@id": "https://w3id.org/ro/wfrun/process/0.5",
+            "@type": "CreativeWork",
+            "name": "Process Run Crate",
+            "version": "0.5"
+        },
+        {
+            "@id": "https://example.com/otherprofile/0.1",
+            "@type": "CreativeWork",
+            "name": "Other Profile",
+            "version": "0.1"
+        },
+        {
+            "@id": "https://www.imagemagick.org/",
+            "@type": "SoftwareApplication",
+            "url": "https://www.imagemagick.org/",
+            "name": "ImageMagick",
+            "softwareVersion": "6.9.7-4",
+            "softwareRequirements": {
+                "@id": "https://example.com/foobar/1.0.0/"
+            }
+        },
+        {
+            "@id": "https://example.com/foobar/1.0.0/",
+            "@type": "SoftwareApplication",
+            "name": "foobar",
+            "softwareVersion": "1.0.0"
+        },
+        {
+            "@id": "#SepiaConversion_1",
+            "@type": "CreateAction",
+            "name": "Convert dog image to sepia",
+            "description": "convert -sepia-tone 80% pics/2017-06-11\\ 12.56.14.jpg pics/sepia_fence.jpg",
+            "startTime": "2024-05-17T01:04:50+01:00",
+            "endTime": "2024-05-17T01:04:52+01:00",
+            "instrument": {
+                "@id": "https://www.imagemagick.org/"
+            },
+            "object": {
+                "@id": "pics/2017-06-11%2012.56.14.jpg"
+            },
+            "result": {
+                "@id": "pics/sepia_fence.jpg"
+            },
+            "agent": {
+                "@id": "https://orcid.org/0000-0001-9842-9718"
+            },
+            "actionStatus": "http://schema.org/FailedActionStatus",
+            "error": "this is just to test the error property",
+            "environment": [
+                {
+                    "@id": "#height-limit-pv"
+                },
+                {
+                    "@id": "#width-limit-pv"
+                }
+            ],
+            "containerImage": "https://example.com/imagemagick.sif"
+        },
+        {
+            "@id": "#width-limit-pv",
+            "@type": "PropertyValue",
+            "name": "MAGICK_WIDTH_LIMIT",
+            "value": "4096"
+        },
+        {
+            "@id": "#height-limit-pv",
+            "@type": "PropertyValue",
+            "name": "MAGICK_HEIGHT_LIMIT",
+            "value": "3072"
+        },
+        {
+            "@id": "pics/2017-06-11%2012.56.14.jpg",
+            "@type": "File",
+            "description": "Original image",
+            "encodingFormat": "image/jpeg",
+            "name": "2017-06-11 12.56.14.jpg (input)",
+            "author": {
+                "@id": "https://orcid.org/0000-0002-3545-944X"
+            }
+        },
+        {
+            "@id": "pics/sepia_fence.jpg",
+            "@type": "File",
+            "description": "The converted picture, now sepia-colored",
+            "encodingFormat": "image/jpeg",
+            "name": "sepia_fence (output)"
+        },
+        {
+            "@id": "https://orcid.org/0000-0001-9842-9718",
+            "@type": "Person",
+            "name": "Stian Soiland-Reyes"
+        },
+        {
+            "@id": "https://orcid.org/0000-0002-3545-944X",
+            "@type": "Person",
+            "name": "Peter Sefton"
+        }
+    ]
+}

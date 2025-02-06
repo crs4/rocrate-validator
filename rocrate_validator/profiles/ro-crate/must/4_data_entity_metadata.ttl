@@ -141,19 +141,6 @@ ro-crate:DataEntityRquiredPropertiesShape a sh:NodeShape ;
             # sh:message "A Data Entity MUST be directly or indirectly linked to the `Root Data Entity` through the `hasPart` property" ;
         ] .
 
-ro-crate:DirectoryDataEntityRequiredValueRestriction a sh:NodeShape ;
-    sh:name "Directory Data Entity: REQUIRED value restriction" ;
-    sh:description """A Directory Data Entity MUST end with `/`""" ;
-    sh:targetNode ro-crate:Directory ;
-    sh:property [
-        a sh:PropertyShape ;
-        sh:name "Directory Data Entity: REQUIRED value restriction" ;
-        sh:description """Check if the Directory Data Entity ends with `/`""" ;
-        sh:path [ sh:inversePath rdf:type ] ;
-        sh:message """Every Data Entity Directory URI MUST end with `/`""" ;
-        sh:pattern "/$" ;
-    ] .
-
 ro-crate:GenericDataEntityRequiredProperties a sh:NodeShape ;
     sh:name "Generic Data Entity: REQUIRED properties" ;
     sh:description """A Data Entity other than a File or a Directory MUST be a `DataEntity`""" ;

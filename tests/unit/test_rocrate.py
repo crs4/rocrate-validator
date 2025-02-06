@@ -13,19 +13,15 @@
 # limitations under the License.
 
 from pathlib import Path
+
 import pytest
 
 from rocrate_validator import log as logging
 from rocrate_validator.errors import ROCrateInvalidURIError
-from rocrate_validator.rocrate import (
-    ROCrate,
-    ROCrateEntity,
-    ROCrateLocalFolder,
-    ROCrateLocalZip,
-    ROCrateMetadata,
-    ROCrateRemoteZip,
-)
-from tests.ro_crates import ValidROC
+from rocrate_validator.rocrate import (ROCrate, ROCrateEntity,
+                                       ROCrateLocalFolder, ROCrateLocalZip,
+                                       ROCrateMetadata, ROCrateRemoteZip)
+from tests.ro_crates import InvalidDataEntity, ValidROC
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -237,3 +233,29 @@ def test_external_file():
 
     size = ROCrate.get_external_file_size(ValidROC().sort_and_change_remote)
     assert size == 137039, "Size should be 137039"
+
+
+def test_entity_path_from_identifier():
+    rocrate_path = InvalidDataEntity().data_entity_path
+    logger.debug(f"RO-Crate path: {rocrate_path}")
+
+    # Test quoted entity id which exists within the ro-crate
+    quoted_entity_id = "pics/2017-06-11%2012.56.14.jpg"
+    path = ROCrateEntity.get_path_from_identifier(quoted_entity_id, rocrate_path=rocrate_path)
+    logger.debug(f"Quoted Entity Path: {path}")
+    assert str(path) == f"{rocrate_path}/pics/2017-06-11%2012.56.14.jpg", \
+        "Path should be pics/2017-06-11%2012.56.14.jpg"
+
+    # Test quoted entity id which does not exist within the ro-crate
+    quoted_entity_id = "pics/2018-06-11%2012.56.14.jpg"
+    path = ROCrateEntity.get_path_from_identifier(quoted_entity_id, rocrate_path=rocrate_path)
+    logger.debug(f"Quoted Entity Path: {path}")
+    assert str(path) == f"{rocrate_path}/pics/2018-06-11 12.56.14.jpg", \
+        "Path should be pics/2018-06-11 12.56.14.jpg"
+
+    # Test unquoted entity id which exists within the ro-crate
+    unquoted_entity_id = "pics/2017-06-11 12.56.14.jpg"
+    path = ROCrateEntity.get_path_from_identifier(unquoted_entity_id, rocrate_path=rocrate_path)
+    logger.debug(f"Unquoted Entity Path: {path}")
+    assert str(path) == f"{rocrate_path}/pics/2017-06-11 12.56.14.jpg", \
+        "Path should be pics/2017-06-11 12.56.14.jpg"
