@@ -16,6 +16,9 @@
                 },
                 {
                     "@id": "https://w3id.org/workflowhub/workflow-ro-crate/1.0"
+                },
+                {
+                    "@id": "https://w3id.org/ro/wftest/0.1"
                 }
             ]
         },
