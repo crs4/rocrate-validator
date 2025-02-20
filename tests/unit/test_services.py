@@ -76,4 +76,5 @@ def test_valid_local_workflow_testing_ro_crate():
         rocrate_uri=crate_path
     ))
     assert len(profiles) == 1, "Expected a single profile"
-    assert profiles[0].identifier == "workflow-testing-ro-crate-0.1", "Expected the 'workflow-testing-ro-crate-0.1' profile"
+    assert profiles[0].identifier == "workflow-testing-ro-crate-0.1", \
+        "Expected the 'workflow-testing-ro-crate-0.1' profile"
