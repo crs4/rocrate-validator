@@ -1736,11 +1736,11 @@ class Validator(Publisher):
             context = ValidationContext(self, self.validation_settings)
             candidate_profiles_uris = set()
             try:
-                candidate_profiles_uris.add(context.ro_crate.metadata.get_conforms_to())
+                candidate_profiles_uris.update(context.ro_crate.metadata.get_conforms_to())
             except Exception as e:
                 logger.debug("Error while getting candidate profiles URIs: %s", e)
             try:
-                candidate_profiles_uris.add(context.ro_crate.metadata.get_root_data_entity_conforms_to())
+                candidate_profiles_uris.update(context.ro_crate.metadata.get_root_data_entity_conforms_to())
             except Exception as e:
                 logger.debug("Error while getting candidate profiles URIs: %s", e)
 
