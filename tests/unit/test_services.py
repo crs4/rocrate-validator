@@ -18,7 +18,7 @@ from rocrate_validator import log as logging
 from rocrate_validator.models import ValidationSettings
 from rocrate_validator.rocrate import ROCrateMetadata
 from rocrate_validator.services import detect_profiles
-from tests.ro_crates import ValidROC
+from tests.ro_crates import ValidROC, InvalidMultiProfileROC
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -71,4 +71,20 @@ def test_valid_local_workflow_testing_ro_crate():
     ))
     assert len(profiles) == 1, "Expected a single profile"
     assert profiles[0].identifier == "workflow-testing-ro-crate-0.1", \
+        "Expected the 'workflow-testing-ro-crate-0.1' profile"
+
+
+def test_valid_local_multi_profile_crate():
+    # Set the rocrate_uri to the multi-profile RO-Crate
+    crate_path = InvalidMultiProfileROC().invalid_multi_profile_crate
+    logger.debug("Validating a local RO-Crate: %s", crate_path)
+    profiles = detect_profiles(ValidationSettings(
+        rocrate_uri=crate_path
+    ))
+    assert len(profiles) == 2, "Expected two profiles"
+
+    # Extract profiles identifiers
+    profiles_ids = [profile.identifier for profile in profiles]
+    assert "provenance-run-crate-0.5" in profiles_ids, "Expected the 'provenance-run-crate' profile"
+    assert "workflow-testing-ro-crate-0.1" in profiles_ids, \
         "Expected the 'workflow-testing-ro-crate-0.1' profile"

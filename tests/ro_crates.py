@@ -87,6 +87,10 @@ class ValidROC:
     def provenance_run_crate(self) -> Path:
         return VALID_CRATES_DATA_PATH / "provenance-run-crate"
 
+    @property
+    def multi_profile_crate(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "multi-profile-crate"
+
 
 class InvalidFileDescriptor:
 
@@ -964,3 +968,10 @@ class InvalidProvRC:
     @property
     def propertyvalue_no_unitcode(self) -> Path:
         return self.base_path / "propertyvalue_no_unitcode"
+
+
+class InvalidMultiProfileROC:
+
+    @property
+    def invalid_multi_profile_crate(self) -> Path:
+        return INVALID_CRATES_DATA_PATH / "0_multi_profile_crate"
