@@ -18,7 +18,7 @@ from rocrate_validator import log as logging
 from rocrate_validator.models import ValidationSettings
 from rocrate_validator.rocrate import ROCrateMetadata
 from rocrate_validator.services import detect_profiles
-from tests.ro_crates import ValidROC
+from tests.ro_crates import ValidROC, InvalidMultiProfileROC
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -76,7 +76,7 @@ def test_valid_local_workflow_testing_ro_crate():
 
 def test_valid_local_multi_profile_crate():
     # Set the rocrate_uri to the multi-profile RO-Crate
-    crate_path = ValidROC().multi_profile_crate
+    crate_path = InvalidMultiProfileROC().invalid_multi_profile_crate
     logger.debug("Validating a local RO-Crate: %s", crate_path)
     profiles = detect_profiles(ValidationSettings(
         rocrate_uri=crate_path

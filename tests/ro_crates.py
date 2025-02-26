@@ -968,3 +968,10 @@ class InvalidProvRC:
     @property
     def propertyvalue_no_unitcode(self) -> Path:
         return self.base_path / "propertyvalue_no_unitcode"
+
+
+class InvalidMultiProfileROC:
+
+    @property
+    def invalid_multi_profile_crate(self) -> Path:
+        return INVALID_CRATES_DATA_PATH / "0_multi_profile_crate"
