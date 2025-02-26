@@ -420,7 +420,7 @@ def validate(ctx,
             # Init the JSON output
             json_output = results[profile_identifier[0]].to_dict()
             # Init issues list
-            if not json_output.get("issuses", None):
+            if not json_output.get("issues", None):
                 json_output["issues"] = []
             # Set the list of validation profiles
             if len(results) > 1:
