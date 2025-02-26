@@ -14,6 +14,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 import sys
 from pathlib import Path
@@ -39,8 +40,8 @@ from rocrate_validator.cli.utils import Console, get_app_header_rule
 from rocrate_validator.colors import get_severity_color
 from rocrate_validator.errors import ROCrateInvalidURIError
 from rocrate_validator.events import Event, EventType, Subscriber
-from rocrate_validator.models import (LevelCollection, Profile, Severity,
-                                      ValidationResult)
+from rocrate_validator.models import (CustomEncoder, LevelCollection, Profile,
+                                      Severity, ValidationResult)
 from rocrate_validator.utils import (URI, get_profiles_path,
                                      validate_rocrate_uri)
 
@@ -432,11 +433,11 @@ def validate(ctx,
                         json_output["issues"].extend(result_i.to_dict().get("issues"))
             # Print the validation report to the console
             if not output_file:
-                console.print(json_output)
+                console.print(json.dumps(json_output, indent=4, cls=CustomEncoder))
             # Print the validation report to a file
             if output_file:
                 with open(output_file, "w") as f:
-                    f.write(json_output)
+                    f.write(json.dumps(json_output, indent=4, cls=CustomEncoder))
 
         # using ctx.exit seems to raise an Exception that gets caught below,
         # so we use sys.exit instead.
