@@ -316,7 +316,7 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
                         context.result.add_issue(
                             f'The {v} occurrence{suffix} of the JSON-LD key "{k}" '
                             f'{"is" if v ==1 else "are"} not allowed in the compacted format '
-                            'because it not present in the @context of the document', self)
+                            'because it is not present in the @context of the document', self)
                 return False
 
             return True
