@@ -422,10 +422,12 @@ def validate(ctx,
             # Init issues list
             if not json_output.get("issues", None):
                 json_output["issues"] = []
+            # Always remove the property "profile identifier"
+            json_output["validation_settings"].pop("profile_identifier")
+            # Set the list of validation profiles
+            json_output["validation_settings"]["profile_identifiers"] = profile_identifier
             # Set the list of validation profiles
             if len(results) > 1:
-                json_output["validation_settings"].pop("profile_identifier")
-                json_output["validation_settings"]["profile_identifiers"] = profile_identifier
                 for i in range(1, len(profile_identifier)):
                     result_i: ValidationResult = results[profile_identifier[i]]
                     json_output["passed"] = json_output["passed"] and result_i.passed()
