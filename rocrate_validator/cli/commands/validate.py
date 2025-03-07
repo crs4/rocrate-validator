@@ -14,6 +14,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 import sys
 from pathlib import Path
@@ -39,8 +40,8 @@ from rocrate_validator.cli.utils import Console, get_app_header_rule
 from rocrate_validator.colors import get_severity_color
 from rocrate_validator.errors import ROCrateInvalidURIError
 from rocrate_validator.events import Event, EventType, Subscriber
-from rocrate_validator.models import (LevelCollection, Profile, Severity,
-                                      ValidationResult)
+from rocrate_validator.models import (CustomEncoder, LevelCollection, Profile,
+                                      Severity, ValidationResult)
 from rocrate_validator.utils import (URI, get_profiles_path,
                                      validate_rocrate_uri)
 
@@ -355,6 +356,7 @@ def validate(ctx,
 
         # Validate the RO-Crate against the selected profiles
         is_valid = True
+        results = {}
         for profile in profile_identifier:
             # Set the selected profile
             validation_settings["profile_identifier"] = profile
@@ -382,6 +384,7 @@ def validate(ctx,
                 result: ValidationResult = services.validate(
                     validation_settings
                 )
+                results[profile] = result
 
             # store the cumulative validation result
             is_valid = is_valid and result.passed(LevelCollection.get(requirement_severity).severity)
@@ -399,25 +402,44 @@ def validate(ctx,
                     if verbose_choice == "y" or verbose:
                         report_layout.show_validation_details(pager, enable_pager=enable_pager)
 
-            if output_format == "json" and not output_file:
-                console.print(result.to_json())
-
-            if output_file:
-                # Print the validation report to a file
-                if output_format == "json":
-                    with open(output_file, "w") as f:
-                        f.write(result.to_json())
-                elif output_format == "text":
-                    with open(output_file, "w") as f:
-                        c = Console(file=f, color_system=None, width=output_line_width, height=31)
-                        c.print(report_layout.layout)
-                        report_layout.console = c
-                        if not result.passed() and verbose:
-                            report_layout.show_validation_details(None, enable_pager=False)
+            # Print the textual validation report to a file
+            if output_file and output_format == "text":
+                with open(output_file, "w") as f:
+                    c = Console(file=f, color_system=None, width=output_line_width, height=31)
+                    c.print(report_layout.layout)
+                    report_layout.console = c
+                    if not result.passed() and verbose:
+                        report_layout.show_validation_details(None, enable_pager=False)
 
             # Interrupt the validation if the fail fast mode is enabled
             if fail_fast and not is_valid:
                 break
+
+        # Process JSON output format
+        if output_format == "json":
+            # Init the JSON output
+            json_output = results[profile_identifier[0]].to_dict()
+            # Init issues list
+            if not json_output.get("issues", None):
+                json_output["issues"] = []
+            # Always remove the property "profile identifier"
+            json_output["validation_settings"].pop("profile_identifier")
+            # Set the list of validation profiles
+            json_output["validation_settings"]["profile_identifiers"] = profile_identifier
+            # Set the list of validation profiles
+            if len(results) > 1:
+                for i in range(1, len(profile_identifier)):
+                    result_i: ValidationResult = results[profile_identifier[i]]
+                    json_output["passed"] = json_output["passed"] and result_i.passed()
+                    if result_i.has_issues():
+                        json_output["issues"].extend(result_i.to_dict().get("issues"))
+            # Print the validation report to the console
+            if not output_file:
+                console.print(json.dumps(json_output, indent=4, cls=CustomEncoder))
+            # Print the validation report to a file
+            if output_file:
+                with open(output_file, "w") as f:
+                    f.write(json.dumps(json_output, indent=4, cls=CustomEncoder))
 
         # using ctx.exit seems to raise an Exception that gets caught below,
         # so we use sys.exit instead.
