@@ -184,6 +184,8 @@ This work has been partially funded by the following sources:
 
 -   the [BY-COVID](https://by-covid.org/) project (HORIZON Europe grant agreement number 101046203);
 -   the [LIFEMap](https://www.thelifemap.it/) project, funded by the Italian Ministry of Health (Piano Operative Salute, Trajectory 3).
+-   the [Italian Research Center on High Performance Computing, Big Data and Quantum Computing - Spoke
+9](https://www.supercomputing-icsc.it/en/spoke-9-digital-society-smart-cities-en/).
 
 <img alt="Co-funded by the EU"
     src="https://raw.githubusercontent.com/crs4/rocrate-validator/develop/docs/img/eu-logo/EN_Co-fundedbytheEU_RGB_POS.png"
