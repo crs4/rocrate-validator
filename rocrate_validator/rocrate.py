@@ -679,6 +679,9 @@ class ROCrateLocalZip(ROCrate):
                 self._files.append(Path(file))
         return self._files
 
+    def list_entries(self) -> list[zipfile.ZipInfo]:
+        self._zipref.infolist()
+
     def get_entry(self, path: Path) -> zipfile.ZipInfo:
         """
         Return the ZipInfo object for the specified path.
