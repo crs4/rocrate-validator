@@ -170,3 +170,12 @@ def test_missing_root_license_description():
         ["License definition"],
         ["Missing license description"]
     )
+
+
+def test_availability_of_root_entity_rocrate_archive():
+    """Test a RO-Crate without a root data entity license description."""
+    do_entity_test(
+        ValidROC().sort_and_change_archive,
+        models.Severity.REQUIRED,
+        True
+    )
