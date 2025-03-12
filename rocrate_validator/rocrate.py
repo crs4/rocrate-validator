@@ -195,13 +195,7 @@ class ROCrateEntity:
                         logger.debug("Skipping the check for the presence of the Data Entity '%s' within the RO-Crate "
                                      "as it is the root of a ZIP archive", self.id)
                         return True
-                    entry = self.ro_crate.get_entry(str(self.id))
-                    if not entry:
-                        return False
-                    if entry.is_dir():
-                        return True
-                    # If the entry is a file, check if it exists and has a size greater than 0
-                    return self.ro_crate.get_file_size(Path(self.id)) > 0
+                    return self.ro_crate.get_entry(str(self.id)) is not None
 
             # check if the entity is part of the remote RO-Crate
             if self.ro_crate.uri.is_remote_resource():
