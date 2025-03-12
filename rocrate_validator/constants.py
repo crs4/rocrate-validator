@@ -84,7 +84,7 @@ VALID_REQUIREMENT_LEVELS_TYPES = typing.Literal[
 ]
 
 # Current JSON output format
-JSON_OUTPUT_FORMAT_VERSION = "0.1"
+JSON_OUTPUT_FORMAT_VERSION = "0.2"
 
 # Default value for the HTTP cache timeout
 DEFAULT_HTTP_CACHE_TIMEOUT = 60

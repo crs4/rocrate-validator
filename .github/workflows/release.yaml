@@ -151,7 +151,7 @@ jobs:
               uses: actions/upload-artifact@v4
               with:
                   name: python-package-signatures
-                  path: dist/*.sigstore
+                  path: dist/*.json
     
     # Create GitHub Release
     github_release:

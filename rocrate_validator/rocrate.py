@@ -184,12 +184,18 @@ class ROCrateEntity:
             if self.ro_crate.uri.is_local_resource():
                 # check if the file exists in the local file system
                 if isinstance(self.ro_crate, ROCrateLocalFolder):
+                    logger.debug("Checking the availability of a local entity in a local folder")
                     return self.ro_crate.has_file(self.id_as_path) \
                         or self.ro_crate.has_directory(self.id_as_path)
                 # check if the file exists in the local zip file
                 if isinstance(self.ro_crate, ROCrateLocalZip):
-                    if self.id in [str(_) for _ in self.ro_crate.list_files()]:
-                        return self.ro_crate.get_file_size(Path(self.id)) > 0
+                    logger.debug("Checking the availability of a local entity in a local zip file")
+                    # Skip the check for the root of a ZIP archive
+                    if self.id == "./":
+                        logger.debug("Skipping the check for the presence of the Data Entity '%s' within the RO-Crate "
+                                     "as it is the root of a ZIP archive", self.id)
+                        return True
+                    return self.ro_crate.get_entry(str(self.id)) is not None
 
             # check if the entity is part of the remote RO-Crate
             if self.ro_crate.uri.is_remote_resource():
@@ -666,6 +672,15 @@ class ROCrateLocalZip(ROCrate):
             for file in self._zipref.namelist():
                 self._files.append(Path(file))
         return self._files
+
+    def list_entries(self) -> list[zipfile.ZipInfo]:
+        self._zipref.infolist()
+
+    def get_entry(self, path: Path) -> zipfile.ZipInfo:
+        """
+        Return the ZipInfo object for the specified path.
+        """
+        return self.__get_file_info__(path)
 
     def get_file_size(self, path: Path) -> int:
         return self._zipref.getinfo(str(path)).file_size
