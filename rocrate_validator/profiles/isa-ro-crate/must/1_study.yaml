@@ -26,5 +26,5 @@ slots:
     slot_uri: schema:additionalType
     any_of:
       - range: string
-        value: "Study"
+        pattern: "^Study$"
       - range: uriorcurie
