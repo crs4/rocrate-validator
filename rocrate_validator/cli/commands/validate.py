@@ -389,6 +389,15 @@ def validate(ctx,
             # store the cumulative validation result
             is_valid = is_valid and result.passed(LevelCollection.get(requirement_severity).severity)
 
+            # Uncomment the following lines to debug the validation process
+            # for c in profile_stats["checks"]:
+            # logger.debug("Check: %s", c)
+            # logger.debug("Failed checks: %r", profile_stats["failed_checks"])
+            # logger.debug("Passed checks: %r", profile_stats["passed_checks"])
+            # if c.identifier not in [_.identifier for _ in profile_stats["failed_checks"]] and \
+            #         c.identifier not in [_.identifier for _ in profile_stats["passed_checks"]]:
+            #     logger.debug("Skipped check : %s", c.identifier)
+
             # Print the validation result
             if output_format == "text" and not output_file:
                 if not result.passed():
