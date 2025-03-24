@@ -369,6 +369,13 @@ def validate(ctx,
             report_layout = ValidationReportLayout(console, validation_settings,
                                                    profile_stats, None, profile_autodetected=autodetection)
 
+            # set target profile for the progress monitor
+            severity_validation = Severity.get(validation_settings.get("requirement_severity"))
+            target_profile = services.get_profile(profile,
+                                                  validation_settings.get("profiles_path"),
+                                                  severity=severity_validation)
+            report_layout.progress_monitor.target_validation_profile = target_profile
+
             # Validate RO-Crate against the profile and get the validation result
             result: ValidationResult = None
             if output_format == "text":
@@ -490,7 +497,7 @@ class ProgressMonitor(Subscriber):
     REQUIREMENT_VALIDATION = "Requirements"
     REQUIREMENT_CHECK_VALIDATION = "Requirements Checks"
 
-    def __init__(self, layout: ValidationReportLayout, stats: dict):
+    def __init__(self, settings: dict, layout: ValidationReportLayout, stats: dict):
         self.__progress = Progress(
             TextColumn("[progress.description]{task.description}"),
             BarColumn(),
@@ -498,6 +505,7 @@ class ProgressMonitor(Subscriber):
             TimeElapsedColumn(),
             expand=True)
         self._stats = stats
+        self.settings = settings
         self.profile_validation = self.progress.add_task(
             self.PROFILE_VALIDATION, total=len(stats.get("profiles")))
         self.requirement_validation = self.progress.add_task(
@@ -505,6 +513,7 @@ class ProgressMonitor(Subscriber):
         self.requirement_check_validation = self.progress.add_task(
             self.REQUIREMENT_CHECK_VALIDATION, total=stats.get("total_checks"))
         self.__layout = layout
+        self._target_validation_profile = None
         super().__init__("ProgressMonitor")
 
     def start(self):
@@ -512,6 +521,14 @@ class ProgressMonitor(Subscriber):
 
     def stop(self):
         self.progress.stop()
+
+    @property
+    def target_validation_profile(self) -> Profile:
+        return self._target_validation_profile
+
+    @target_validation_profile.setter
+    def target_validation_profile(self, profile: Profile):
+        self._target_validation_profile = profile
 
     @property
     def layout(self) -> ValidationReportLayout:
@@ -583,7 +600,7 @@ class ValidationReportLayout(Layout):
     @property
     def progress_monitor(self) -> ProgressMonitor:
         if not self.__progress_monitor:
-            self.__progress_monitor = ProgressMonitor(self, self.profile_stats)
+            self.__progress_monitor = ProgressMonitor(self.validation_settings, self, self.profile_stats)
         return self.__progress_monitor
 
     def live(self, update_callable: callable) -> any:
