@@ -547,7 +547,10 @@ class ProgressMonitor(Subscriber):
         elif event.event_type == EventType.REQUIREMENT_CHECK_VALIDATION_START:
             logger.debug("Requirement check validation start")
         elif event.event_type == EventType.REQUIREMENT_CHECK_VALIDATION_END:
-            if not event.requirement_check.requirement.hidden:
+            target_profile = self.target_validation_profile
+            if not event.requirement_check.requirement.hidden and \
+                    (not event.requirement_check.overridden
+                     or target_profile.identifier == event.requirement_check.requirement.profile.identifier):
                 self.progress.update(task_id=self.requirement_check_validation, advance=1)
                 if event.validation_result is not None:
                     if event.validation_result:
