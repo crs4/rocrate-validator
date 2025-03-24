@@ -819,6 +819,7 @@ def __compute_profile_stats__(validation_settings: dict):
     profile = services.get_profile(validation_settings.get("profile_identifier"),
                                    validation_settings.get("profiles_path"),
                                    severity=severity_validation)
+    target_profile_identifier = profile.identifier
     # initialize the profiles list
     profiles = [profile]
 
@@ -836,6 +837,8 @@ def __compute_profile_stats__(validation_settings: dict):
     for severity in (Severity.REQUIRED, Severity.RECOMMENDED, Severity.OPTIONAL):
         check_count_by_severity[severity] = 0
 
+    checks = []
+
     # Process the requirements and checks
     processed_requirements = []
     for profile in profiles:
@@ -852,11 +855,13 @@ def __compute_profile_stats__(validation_settings: dict):
                 if severity < severity_validation:
                     continue
                 # count the checks
-                num_checks = len(
-                    [_ for _ in requirement.get_checks_by_level(LevelCollection.get(severity.name))
-                     if not _.overridden])
+                requirement_checks = [_ for _ in requirement.get_checks_by_level(LevelCollection.get(severity.name))
+                                      if not _.overridden or
+                                      _.requirement.profile.identifier == target_profile_identifier]
+                num_checks = len(requirement_checks)
                 check_count_by_severity[severity] += num_checks
                 requirement_checks_count += num_checks
+                checks.extend(requirement_checks)
 
             # count the requirements and checks
             if requirement_checks_count == 0:
@@ -881,7 +886,9 @@ def __compute_profile_stats__(validation_settings: dict):
         "failed_requirements": [],
         "failed_checks": [],
         "passed_requirements": [],
-        "passed_checks": []
+        "passed_checks": [],
+        "checks": checks
+
     }
     logger.debug(result)
     return result
