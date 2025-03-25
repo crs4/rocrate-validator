@@ -1,4 +1,4 @@
-# Copyright (c) 2024 CRS4
+# Copyright (c) 2024-2025 CRS4
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -239,13 +239,12 @@ class SHACLCheck(RequirementCheck):
             # the validation of their corresponding profile because SHACL checks are executed
             # all together and not profile by profile
             if requirementCheck.identifier not in failed_requirement_checks_notified:
-                #
-                if requirementCheck.requirement.profile != shacl_context.current_validation_profile:
-                    failed_requirement_checks_notified.append(requirementCheck.identifier)
-                    shacl_context.result._add_executed_check(requirementCheck, False)
-                    shacl_context.validator.notify(RequirementCheckValidationEvent(
-                        EventType.REQUIREMENT_CHECK_VALIDATION_END, requirementCheck, validation_result=False))
-                    logger.debug("Added validation issue to the context: %s", c)
+                shacl_context.result._add_executed_check(requirementCheck, False)
+                shacl_context.validator.notify(RequirementCheckValidationEvent(
+                    EventType.REQUIREMENT_CHECK_VALIDATION_END,
+                    requirementCheck, validation_result=False))
+                # failed_requirement_checks_notified.append(requirementCheck.identifier)
+                logger.debug("Added validation issue to the context: %s", c)
 
             # if the fail fast mode is enabled, stop the validation after the first failed check
             if shacl_context.fail_fast:
@@ -258,9 +257,8 @@ class SHACLCheck(RequirementCheck):
             if not isinstance(requirementCheck, SHACLCheck):
                 logger.debug("Skipped check is not a SHACLCheck: %s", requirementCheck.identifier)
                 continue
-            if requirementCheck.requirement.profile != shacl_context.current_validation_profile and \
-                    requirementCheck not in failed_requirements_checks and \
-                    requirementCheck.identifier not in failed_requirement_checks_notified:
+            # if requirementCheck.requirement.profile != shacl_context.current_validation_profile and \
+            if requirementCheck.identifier not in failed_requirement_checks_notified:
                 failed_requirement_checks_notified.append(requirementCheck.identifier)
                 shacl_context.result._add_executed_check(requirementCheck, True)
                 shacl_context.validator.notify(RequirementCheckValidationEvent(

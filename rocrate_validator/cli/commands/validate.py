@@ -1,4 +1,4 @@
-# Copyright (c) 2024 CRS4
+# Copyright (c) 2024-2025 CRS4
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -369,6 +369,13 @@ def validate(ctx,
             report_layout = ValidationReportLayout(console, validation_settings,
                                                    profile_stats, None, profile_autodetected=autodetection)
 
+            # set target profile for the progress monitor
+            severity_validation = Severity.get(validation_settings.get("requirement_severity"))
+            target_profile = services.get_profile(profile,
+                                                  validation_settings.get("profiles_path"),
+                                                  severity=severity_validation)
+            report_layout.progress_monitor.target_validation_profile = target_profile
+
             # Validate RO-Crate against the profile and get the validation result
             result: ValidationResult = None
             if output_format == "text":
@@ -388,6 +395,15 @@ def validate(ctx,
 
             # store the cumulative validation result
             is_valid = is_valid and result.passed(LevelCollection.get(requirement_severity).severity)
+
+            # Uncomment the following lines to debug the validation process
+            # for c in profile_stats["checks"]:
+            # logger.debug("Check: %s", c)
+            # logger.debug("Failed checks: %r", profile_stats["failed_checks"])
+            # logger.debug("Passed checks: %r", profile_stats["passed_checks"])
+            # if c.identifier not in [_.identifier for _ in profile_stats["failed_checks"]] and \
+            #         c.identifier not in [_.identifier for _ in profile_stats["passed_checks"]]:
+            #     logger.debug("Skipped check : %s", c.identifier)
 
             # Print the validation result
             if output_format == "text" and not output_file:
@@ -481,7 +497,7 @@ class ProgressMonitor(Subscriber):
     REQUIREMENT_VALIDATION = "Requirements"
     REQUIREMENT_CHECK_VALIDATION = "Requirements Checks"
 
-    def __init__(self, layout: ValidationReportLayout, stats: dict):
+    def __init__(self, settings: dict, layout: ValidationReportLayout, stats: dict):
         self.__progress = Progress(
             TextColumn("[progress.description]{task.description}"),
             BarColumn(),
@@ -489,6 +505,7 @@ class ProgressMonitor(Subscriber):
             TimeElapsedColumn(),
             expand=True)
         self._stats = stats
+        self.settings = settings
         self.profile_validation = self.progress.add_task(
             self.PROFILE_VALIDATION, total=len(stats.get("profiles")))
         self.requirement_validation = self.progress.add_task(
@@ -496,6 +513,7 @@ class ProgressMonitor(Subscriber):
         self.requirement_check_validation = self.progress.add_task(
             self.REQUIREMENT_CHECK_VALIDATION, total=stats.get("total_checks"))
         self.__layout = layout
+        self._target_validation_profile = None
         super().__init__("ProgressMonitor")
 
     def start(self):
@@ -503,6 +521,14 @@ class ProgressMonitor(Subscriber):
 
     def stop(self):
         self.progress.stop()
+
+    @property
+    def target_validation_profile(self) -> Profile:
+        return self._target_validation_profile
+
+    @target_validation_profile.setter
+    def target_validation_profile(self, profile: Profile):
+        self._target_validation_profile = profile
 
     @property
     def layout(self) -> ValidationReportLayout:
@@ -521,7 +547,10 @@ class ProgressMonitor(Subscriber):
         elif event.event_type == EventType.REQUIREMENT_CHECK_VALIDATION_START:
             logger.debug("Requirement check validation start")
         elif event.event_type == EventType.REQUIREMENT_CHECK_VALIDATION_END:
-            if not event.requirement_check.requirement.hidden:
+            target_profile = self.target_validation_profile
+            if not event.requirement_check.requirement.hidden and \
+                    (not event.requirement_check.overridden
+                     or target_profile.identifier == event.requirement_check.requirement.profile.identifier):
                 self.progress.update(task_id=self.requirement_check_validation, advance=1)
                 if event.validation_result is not None:
                     if event.validation_result:
@@ -574,7 +603,7 @@ class ValidationReportLayout(Layout):
     @property
     def progress_monitor(self) -> ProgressMonitor:
         if not self.__progress_monitor:
-            self.__progress_monitor = ProgressMonitor(self, self.profile_stats)
+            self.__progress_monitor = ProgressMonitor(self.validation_settings, self, self.profile_stats)
         return self.__progress_monitor
 
     def live(self, update_callable: callable) -> any:
@@ -810,6 +839,7 @@ def __compute_profile_stats__(validation_settings: dict):
     profile = services.get_profile(validation_settings.get("profile_identifier"),
                                    validation_settings.get("profiles_path"),
                                    severity=severity_validation)
+    target_profile_identifier = profile.identifier
     # initialize the profiles list
     profiles = [profile]
 
@@ -827,6 +857,8 @@ def __compute_profile_stats__(validation_settings: dict):
     for severity in (Severity.REQUIRED, Severity.RECOMMENDED, Severity.OPTIONAL):
         check_count_by_severity[severity] = 0
 
+    checks = []
+
     # Process the requirements and checks
     processed_requirements = []
     for profile in profiles:
@@ -843,11 +875,13 @@ def __compute_profile_stats__(validation_settings: dict):
                 if severity < severity_validation:
                     continue
                 # count the checks
-                num_checks = len(
-                    [_ for _ in requirement.get_checks_by_level(LevelCollection.get(severity.name))
-                     if not _.overridden])
+                requirement_checks = [_ for _ in requirement.get_checks_by_level(LevelCollection.get(severity.name))
+                                      if not _.overridden or
+                                      _.requirement.profile.identifier == target_profile_identifier]
+                num_checks = len(requirement_checks)
                 check_count_by_severity[severity] += num_checks
                 requirement_checks_count += num_checks
+                checks.extend(requirement_checks)
 
             # count the requirements and checks
             if requirement_checks_count == 0:
@@ -872,7 +906,9 @@ def __compute_profile_stats__(validation_settings: dict):
         "failed_requirements": [],
         "failed_checks": [],
         "passed_requirements": [],
-        "passed_checks": []
+        "passed_checks": [],
+        "checks": checks
+
     }
     logger.debug(result)
     return result
