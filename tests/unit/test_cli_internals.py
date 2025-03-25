@@ -74,6 +74,7 @@ def test_compute_stats(fake_profiles_path):
     assert len(requirement.get_checks()) == len(requirement.get_checks_by_level(LevelCollection.get("REQUIRED")))
 
     # check the number of requirement checks
-    assert stats["total_checks"] == len([_ for _ in requirements[0].get_checks() if not _.overridden])
+    assert stats["total_checks"] == len([_ for _ in requirements[0].get_checks() if not _.overridden or
+                                         _.requirement.profile.identifier == "a"])
 
     logger.error(stats)
