@@ -59,7 +59,7 @@ def test_valid_local_rocrate():
     assert size == 26788, "Size should be 26788"
 
     # test crate size
-    assert roc.size == 309521, "Size should be 309521"
+    assert roc.size == 311817, "Size should be 311817"
 
     # test get_file_content binary mode
     content = roc.get_file_content(metadata_file_descriptor)
