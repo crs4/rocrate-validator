@@ -359,6 +359,104 @@ def to_camel_case(snake_str: str) -> str:
     return components[0].capitalize() + ''.join(x.title() for x in components[1:])
 
 
+class HttpRequester:
+    """
+    A singleton class to handle HTTP requests
+    """
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(HttpRequester, cls).__new__(cls)
+        return cls._instance
+
+    def __init__(self):
+        if constants.DEFAULT_HTTP_CACHE_TIMEOUT > 0:
+            from requests_cache import CachedSession
+            self.session = CachedSession(
+                cache_name=constants.DEFAULT_HTTP_CACHE_PATH,  # Cache name
+                expire_after=constants.DEFAULT_HTTP_CACHE_TIMEOUT,  # Cache expiration time in seconds
+                backend='sqlite',  # Use SQLite backend
+                allowable_methods=('GET',),  # Cache GET
+                allowable_codes=(200, 302, 404)  # Cache responses with these status codes
+            )
+        else:
+            self.session = requests.Session()
+
+    def get(self, url: str, **kwargs):
+        """
+        Perform a GET request.
+
+        :param url: The URL to send the GET request to.
+        :param kwargs: Additional arguments to pass to the session's GET method.
+        :return: The response object.
+        """
+        return self.session.get(url, **kwargs)
+
+    def post(self, url: str, data=None, json=None, **kwargs):
+        """
+        Perform a POST request.
+
+        :param url: The URL to send the POST request to.
+        :param data: The data to send in the body of the POST request.
+        :param json: A JSON object to send in the body of the POST request.
+        :param kwargs: Additional arguments to pass to the session's POST method.
+        :return: The response object.
+        """
+        return self.session.post(url, data=data, json=json, **kwargs)
+
+    def put(self, url: str, data=None, **kwargs):
+        """
+        Perform a PUT request.
+
+        :param url: The URL to send the PUT request to.
+        :param data: The data to send in the body of the PUT request.
+        :param kwargs: Additional arguments to pass to the session's PUT method.
+        :return: The response object.
+        """
+        return self.session.put(url, data=data, **kwargs)
+
+    def delete(self, url: str, **kwargs):
+        """
+        Perform a DELETE request.
+
+        :param url: The URL to send the DELETE request to.
+        :param kwargs: Additional arguments to pass to the session's DELETE method.
+        :return: The response object.
+        """
+        return self.session.delete(url, **kwargs)
+
+    def head(self, url: str, **kwargs):
+        """
+        Perform a HEAD request.
+
+        :param url: The URL to send the HEAD request to.
+        :param kwargs: Additional arguments to pass to the session's HEAD method.
+        :return: The response object.
+        """
+        return self.session.head(url, **kwargs)
+
+    def options(self, url: str, **kwargs):
+        """
+        Perform an OPTIONS request.
+
+        :param url: The URL to send the OPTIONS request to.
+        :param kwargs: Additional arguments to pass to the session's OPTIONS method.
+        :return: The response object.
+        """
+        return self.session.options(url, **kwargs)
+
+    def patch(self, url: str, data=None, **kwargs):
+        """
+        Perform a PATCH request.
+
+        :param url: The URL to send the PATCH request to.
+        :param data: The data to send in the body of the PATCH request.
+        :param kwargs: Additional arguments to pass to the session's PATCH method.
+        :return: The response object.
+        """
+        return self.session.patch(url, data=data, **kwargs)
+
 class URI:
 
     REMOTE_SUPPORTED_SCHEMA = ('http', 'https', 'ftp')
