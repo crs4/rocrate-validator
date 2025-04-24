@@ -14,7 +14,7 @@
 
 from typing import Union
 
-from .models import LevelCollection, Severity
+from rocrate_validator.models import LevelCollection, Severity
 
 
 def get_severity_color(severity: Union[str, Severity]) -> str:

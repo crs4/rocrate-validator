@@ -12,10 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .checks import SHACLCheck
-from .errors import SHACLValidationError
-from .requirements import SHACLRequirement, SHACLRequirementLoader
-from .validator import SHACLValidationResult, SHACLValidator
+from rocrate_validator.requirements.shacl.checks import SHACLCheck
+from rocrate_validator.requirements.shacl.errors import SHACLValidationError
+from rocrate_validator.requirements.shacl.requirements import (
+    SHACLRequirement, SHACLRequirementLoader)
+from rocrate_validator.requirements.shacl.validator import (
+    SHACLValidationResult, SHACLValidator)
 
 __all__ = ["SHACLCheck", "SHACLValidator", "SHACLValidationResult",
            "SHACLValidationError", "SHACLRequirement", "SHACLRequirementLoader"]
