@@ -595,7 +595,7 @@ class URI:
         """Check if the resource is available"""
         if self.is_remote_resource():
             try:
-                response = requests.head(self._uri, allow_redirects=True)
+                response = HttpRequester().head(self._uri, allow_redirects=True)
                 return response.status_code in (200, 302)
             except Exception as e:
                 if logger.isEnabledFor(logging.DEBUG):
