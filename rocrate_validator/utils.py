@@ -444,79 +444,16 @@ class HttpRequester:
             except Exception as e:
                 logger.error(f"Error deleting cache directory: {e}")
 
-    def get(self, url: str, **kwargs):
+    def __getattr__(self, name):
         """
-        Perform a GET request.
+        Delegate HTTP methods to the session object.
 
-        :param url: The URL to send the GET request to.
-        :param kwargs: Additional arguments to pass to the session's GET method.
-        :return: The response object.
+        :param name: The name of the method to call.
+        :return: The method from the session object.
         """
-        return self.session.get(url, **kwargs)
-
-    def post(self, url: str, data=None, json=None, **kwargs):
-        """
-        Perform a POST request.
-
-        :param url: The URL to send the POST request to.
-        :param data: The data to send in the body of the POST request.
-        :param json: A JSON object to send in the body of the POST request.
-        :param kwargs: Additional arguments to pass to the session's POST method.
-        :return: The response object.
-        """
-        return self.session.post(url, data=data, json=json, **kwargs)
-
-    def put(self, url: str, data=None, **kwargs):
-        """
-        Perform a PUT request.
-
-        :param url: The URL to send the PUT request to.
-        :param data: The data to send in the body of the PUT request.
-        :param kwargs: Additional arguments to pass to the session's PUT method.
-        :return: The response object.
-        """
-        return self.session.put(url, data=data, **kwargs)
-
-    def delete(self, url: str, **kwargs):
-        """
-        Perform a DELETE request.
-
-        :param url: The URL to send the DELETE request to.
-        :param kwargs: Additional arguments to pass to the session's DELETE method.
-        :return: The response object.
-        """
-        return self.session.delete(url, **kwargs)
-
-    def head(self, url: str, **kwargs):
-        """
-        Perform a HEAD request.
-
-        :param url: The URL to send the HEAD request to.
-        :param kwargs: Additional arguments to pass to the session's HEAD method.
-        :return: The response object.
-        """
-        return self.session.head(url, **kwargs)
-
-    def options(self, url: str, **kwargs):
-        """
-        Perform an OPTIONS request.
-
-        :param url: The URL to send the OPTIONS request to.
-        :param kwargs: Additional arguments to pass to the session's OPTIONS method.
-        :return: The response object.
-        """
-        return self.session.options(url, **kwargs)
-
-    def patch(self, url: str, data=None, **kwargs):
-        """
-        Perform a PATCH request.
-
-        :param url: The URL to send the PATCH request to.
-        :param data: The data to send in the body of the PATCH request.
-        :param kwargs: Additional arguments to pass to the session's PATCH method.
-        :return: The response object.
-        """
-        return self.session.patch(url, data=data, **kwargs)
+        if name.upper() in {"GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS", "PATCH"}:
+            return getattr(self.session, name.lower())
+        raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
 
 
 class URI:
