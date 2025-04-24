@@ -18,16 +18,12 @@ import zipfile
 from pathlib import Path
 from typing import Optional, Union
 
-import requests
-import requests_cache
-
 import rocrate_validator.log as logging
-from rocrate_validator.constants import DEFAULT_HTTP_CACHE_TIMEOUT
 from rocrate_validator.errors import ProfileNotFound
 from rocrate_validator.events import Subscriber
 from rocrate_validator.models import (Profile, Severity, ValidationResult,
                                       ValidationSettings, Validator)
-from rocrate_validator.utils import URI, get_profiles_path
+from rocrate_validator.utils import URI, HttpRequester, get_profiles_path
 
 # set the default profiles path
 DEFAULT_PROFILES_PATH = get_profiles_path()
@@ -84,17 +80,6 @@ def __initialise_validator__(settings: Union[dict, ValidationSettings],
     if not rocrate_path.is_available():
         raise FileNotFoundError(f"RO-Crate not found: {rocrate_path}")
 
-    # check if the requests cache is enabled
-    if DEFAULT_HTTP_CACHE_TIMEOUT > 0:
-        # Set up requests cache
-        requests_cache.install_cache(
-            '/tmp/rocrate_validator_cache',
-            expire_after=DEFAULT_HTTP_CACHE_TIMEOUT,  # Cache expiration time in seconds
-            backend='sqlite',  # Use SQLite backend
-            allowable_methods=('GET',),  # Cache GET
-            allowable_codes=(200, 302, 404)  # Cache responses with these status codes
-        )
-
     # check if remote validation is enabled
     disable_remote_crate_download = settings.disable_remote_crate_download
     logger.debug("Remote validation: %s", disable_remote_crate_download)
@@ -144,7 +129,7 @@ def __initialise_validator__(settings: Union[dict, ValidationSettings],
         # create a temp folder to store the downloaded RO-Crate
         with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
             # download the remote RO-Crate
-            with requests.get(rocrate_path.uri, stream=True, allow_redirects=True) as r:
+            with HttpRequester().get(rocrate_path.uri, stream=True, allow_redirects=True) as r:
                 with open(tmp_file.name, 'wb') as f:
                     shutil.copyfileobj(r.raw, f)
             logger.debug("RO-Crate downloaded to temporary file: %s", tmp_file.name)

@@ -86,7 +86,7 @@ def cli(ctx: click.Context, debug: bool, version: bool, disable_color: bool, no_
         # If no subcommand is provided, invoke the default command
         if ctx.invoked_subcommand is None:
             # If no subcommand is provided, invoke the default command
-            from .commands.validate import validate
+            from rocrate_validator.cli.commands.validate import validate
             ctx.invoke(validate)
         else:
             logger.debug("Command invoked: %s", ctx.invoked_subcommand)

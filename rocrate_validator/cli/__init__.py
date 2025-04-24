@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .commands import profiles, validate
-from .main import cli
+from rocrate_validator.cli.commands import profiles, validate
+from rocrate_validator.cli.main import cli
 
 __all__ = ["cli", "profiles", "validate"]

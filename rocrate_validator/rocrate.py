@@ -23,12 +23,11 @@ from pathlib import Path
 from typing import Optional, Union
 from urllib.parse import unquote
 
-import requests
 from rdflib import Graph
 
 from rocrate_validator import log as logging
 from rocrate_validator.errors import ROCrateInvalidURIError
-from rocrate_validator.utils import URI, validate_rocrate_uri
+from rocrate_validator.utils import URI, HttpRequester, validate_rocrate_uri
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -525,7 +524,7 @@ class ROCrate(ABC):
         :return: the content of the file
         :rtype: Union[str, bytes]
         """
-        response = requests.get(str(uri))
+        response = HttpRequester().get(str(uri))
         response.raise_for_status()
         return response.content if binary_mode else response.text
 
@@ -542,7 +541,7 @@ class ROCrate(ABC):
 
         :raises requests.HTTPError: if the request fails
         """
-        response = requests.head(str(uri))
+        response = HttpRequester().head(str(uri))
         response.raise_for_status()
         return int(response.headers.get('Content-Length'))
 
@@ -727,7 +726,7 @@ class ROCrateRemoteZip(ROCrateLocalZip):
 
     @property
     def size(self) -> int:
-        response = requests.head(str(self.uri))
+        response = HttpRequester().head(str(self.uri))
         response.raise_for_status()  # Check if the request was successful
         file_size = response.headers.get('Content-Length')
         if file_size is not None:
@@ -738,7 +737,7 @@ class ROCrateRemoteZip(ROCrateLocalZip):
     @staticmethod
     def __fetch_range__(uri: str, start, end):
         headers = {'Range': f'bytes={start}-{end}'}
-        response = requests.get(uri, headers=headers)
+        response = HttpRequester().get(uri, headers=headers)
         response.raise_for_status()
         return response.content
 

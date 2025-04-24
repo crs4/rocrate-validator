@@ -86,5 +86,6 @@ VALID_REQUIREMENT_LEVELS_TYPES = typing.Literal[
 # Current JSON output format
 JSON_OUTPUT_FORMAT_VERSION = "0.2"
 
-# Default value for the HTTP cache timeout
+# Http Cache Settings
 DEFAULT_HTTP_CACHE_TIMEOUT = 60
+DEFAULT_HTTP_CACHE_PATH_PREFIX = '/tmp/rocrate_validator_cache'

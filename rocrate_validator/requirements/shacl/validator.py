@@ -24,16 +24,16 @@ from rdflib import BNode, Graph
 from rdflib.term import Node, URIRef
 
 import rocrate_validator.log as logging
+from rocrate_validator.constants import (DEFAULT_ONTOLOGY_FILE,
+                                         RDF_SERIALIZATION_FORMATS,
+                                         RDF_SERIALIZATION_FORMATS_TYPES,
+                                         SHACL_NS, VALID_INFERENCE_OPTIONS,
+                                         VALID_INFERENCE_OPTIONS_TYPES)
 from rocrate_validator.models import (Profile, RequirementCheck, Severity,
                                       ValidationContext, ValidationResult)
+from rocrate_validator.requirements.shacl.models import ShapesRegistry
 from rocrate_validator.requirements.shacl.utils import (make_uris_relative,
                                                         map_severity)
-
-from ...constants import (DEFAULT_ONTOLOGY_FILE, RDF_SERIALIZATION_FORMATS,
-                          RDF_SERIALIZATION_FORMATS_TYPES, SHACL_NS,
-                          VALID_INFERENCE_OPTIONS,
-                          VALID_INFERENCE_OPTIONS_TYPES)
-from .models import ShapesRegistry
 
 # set up logging
 logger = logging.getLogger(__name__)

@@ -14,12 +14,11 @@
 
 from typing import Any
 
-import requests
-
 import rocrate_validator.log as logging
 from rocrate_validator.models import ValidationContext
 from rocrate_validator.requirements.python import (PyFunctionCheck, check,
                                                    requirement)
+from rocrate_validator.utils import HttpRequester
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -84,7 +83,7 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
     def __check_remote_context__(self, context_uri: str) -> bool:
         # Try to retrieve the context
         try:
-            raw_data = requests.get(context_uri, headers={"Accept": "application/ld+json"})
+            raw_data = HttpRequester().get(context_uri, headers={"Accept": "application/ld+json"})
             if raw_data.status_code != 200:
                 raise RuntimeError(f"Unable to retrieve the JSON-LD context '{context_uri}'", self)
             logger.debug(f"Retrieved context from {context_uri}")
@@ -234,7 +233,7 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
 
         logger.debug(f"Retrieving context from {context_uri}...")
         # Try to retrieve the context
-        raw_data = requests.get(context_uri, headers={"Accept": "application/ld+json"})
+        raw_data = HttpRequester().get(context_uri, headers={"Accept": "application/ld+json"})
         if raw_data.status_code != 200:
             raise RuntimeError(f"Unable to retrieve the JSON-LD context '{context_uri}'")
 
