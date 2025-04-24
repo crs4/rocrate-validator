@@ -25,10 +25,10 @@ from rocrate_validator.models import (LevelCollection, Requirement,
                                       SkipRequirementCheck, ValidationContext)
 from rocrate_validator.requirements.shacl.models import Shape
 from rocrate_validator.requirements.shacl.utils import make_uris_relative
-
-from .validator import (SHACLValidationAlreadyProcessed,
-                        SHACLValidationContext, SHACLValidationContextManager,
-                        SHACLValidationSkip, SHACLValidator, SHACLViolation)
+from rocrate_validator.requirements.shacl.validator import (
+    SHACLValidationAlreadyProcessed, SHACLValidationContext,
+    SHACLValidationContextManager, SHACLValidationSkip, SHACLValidator,
+    SHACLViolation)
 
 logger = logging.getLogger(__name__)
 

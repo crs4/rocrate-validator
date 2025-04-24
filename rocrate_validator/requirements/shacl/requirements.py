@@ -19,11 +19,10 @@ from rdflib import RDF
 
 import rocrate_validator.log as logging
 from rocrate_validator.constants import VALIDATOR_NS
-
-from ...models import (Profile, Requirement, RequirementCheck,
-                       RequirementLevel, RequirementLoader)
-from .checks import SHACLCheck
-from .models import Shape, ShapesRegistry
+from rocrate_validator.models import (Profile, Requirement, RequirementCheck,
+                                      RequirementLevel, RequirementLoader)
+from rocrate_validator.requirements.shacl.checks import SHACLCheck
+from rocrate_validator.requirements.shacl.models import Shape, ShapesRegistry
 
 # set up logging
 logger = logging.getLogger(__name__)

@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from ...errors import ValidationError
-from .validator import SHACLValidationResult
+from rocrate_validator.errors import ValidationError
+from rocrate_validator.requirements.shacl.validator import \
+    SHACLValidationResult
 
 
 class SHACLValidationError(ValidationError):
