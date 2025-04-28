@@ -229,6 +229,8 @@ class SHACLCheck(RequirementCheck):
                         violatingProperty=violating_property,
                         violatingEntity=violating_entity,
                         violatingPropertyValue=violation.value)
+                    shacl_context.result._add_executed_check(requirementCheck, False)
+                    failed_requirement_checks_notified.append(requirementCheck.identifier)
                 # if the fail fast mode is enabled, stop the validation after the first issue
                 if shacl_context.fail_fast:
                     break
