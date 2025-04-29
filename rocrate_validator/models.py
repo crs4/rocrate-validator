@@ -897,9 +897,7 @@ class Requirement(ABC):
                       or _.identifier not in context.settings.skip_checks]:
 
             try:
-                logger.debug("Running check '%s' - Desc: %s - overridden: %s",
-                             check.name, check.description, [_.identifier for _ in check.overridden_by])
-                if check.overridden:
+                if check.overridden and not check.requirement.profile.identifier == context.profile_identifier:
                     logger.debug("Skipping check '%s' because overridden by '%r'",
                                  check.identifier, [_.identifier for _ in check.overridden_by])
                     continue
