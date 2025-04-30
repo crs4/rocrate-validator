@@ -114,6 +114,7 @@ class SHACLCheck(RequirementCheck):
                 logger.debug("SHACL Validation of requirement check %s (profile: %s) started",
                              self.requirement.profile.identifier, self.identifier)
                 result = self.__do_execute_check__(ctx)
+                ctx.current_validation_result = self.identifier not in result
                 logger.debug("SHACL Validation of requirement check %s (profile: %s) finished with result %s",
                              self.requirement.profile.identifier, self.identifier, ctx.current_validation_result)
                 return ctx.current_validation_result
@@ -122,7 +123,7 @@ class SHACLCheck(RequirementCheck):
                          self.requirement.identifier, self.requirement.profile.identifier)
             # The check belongs to a profile which has already been processed
             # so we can skip the validation and return the specific result for the check
-            return self not in [i.check for i in context.result.get_issues()]
+            return self.identifier not in [i.check.identifier for i in context.result.get_issues()]
         except SHACLValidationSkip as e:
             logger.debug("SHACL Validation of profile %s requirement %s skipped",
                          self.requirement.profile.identifier, self.identifier)
