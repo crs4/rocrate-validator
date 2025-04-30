@@ -1657,6 +1657,23 @@ class ProfileValidationEvent(Event):
     def profile(self) -> Profile:
         return self._profile
 
+    def __str__(self) -> str:
+        return f"ProfileValidationEvent({self.event_type}, {self.profile})"
+
+    def __repr__(self) -> str:
+        return f"ProfileValidationEvent(event_type={self.event_type}, profile={self.profile})"
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, ProfileValidationEvent):
+            raise TypeError(f"Cannot compare {type(self)} with {type(other)}")
+        return self.event_type == other.event_type and self.profile == other.profile
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
+
+    def __hash__(self) -> int:
+        return hash((self.event_type, self.profile))
+
 
 class RequirementValidationEvent(Event):
     def __init__(self,
@@ -1677,6 +1694,23 @@ class RequirementValidationEvent(Event):
     def validation_result(self) -> Optional[bool]:
         return self._validation_result
 
+    def __str__(self) -> str:
+        return f"RequirementValidationEvent({self.event_type}, {self.requirement})"
+
+    def __repr__(self) -> str:
+        return f"RequirementValidationEvent(event_type={self.event_type}, requirement={self.requirement})"
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, RequirementValidationEvent):
+            raise TypeError(f"Cannot compare {type(self)} with {type(other)}")
+        return self.event_type == other.event_type and self.requirement == other.requirement
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
+
+    def __hash__(self) -> int:
+        return hash((self.event_type, self.requirement))
+
 
 class RequirementCheckValidationEvent(Event):
     def __init__(self, event_type: EventType,
@@ -1694,6 +1728,24 @@ class RequirementCheckValidationEvent(Event):
     @property
     def validation_result(self) -> Optional[bool]:
         return self._validation_result
+
+    def __str__(self) -> str:
+        return f"RequirementCheckValidationEvent({self.event_type}, {self.requirement_check})"
+
+    def __repr__(self) -> str:
+        return f"RequirementCheckValidationEvent(event_type={self.event_type}, " \
+               f"requirement_check={self.requirement_check})"
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, RequirementCheckValidationEvent):
+            raise TypeError(f"Cannot compare {type(self)} with {type(other)}")
+        return self.event_type == other.event_type and self.requirement_check == other.requirement_check
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
+
+    def __hash__(self) -> int:
+        return hash((self.event_type, self.requirement_check))
 
 
 class Validator(Publisher):
