@@ -908,7 +908,7 @@ class Requirement(ABC):
                 context.result._add_executed_check(check, check_result)
                 context.validator.notify(RequirementCheckValidationEvent(
                     EventType.REQUIREMENT_CHECK_VALIDATION_END, check, validation_result=check_result))
-                logger.debug("Ran check '%s'. Got result %s", check.name, check_result)
+                logger.debug("Ran check '%s'. Got result %s", check.identifier, check_result)
                 if not isinstance(check_result, bool):
                     logger.warning("Ignoring the check %s as it returned the value %r instead of a boolean", check.name)
                     raise RuntimeError(f"Ignoring invalid result from check {check.name}")
@@ -1807,7 +1807,7 @@ class Validator(Publisher):
                     self.notify(RequirementValidationEvent(
                         EventType.REQUIREMENT_VALIDATION_START, requirement=requirement))
                 passed = requirement._do_validate_(context)
-                logger.debug("Requirement %s passed: %s", requirement, passed)
+                logger.debug("Requirement %s passed: %s", requirement.identifier, passed)
                 if not requirement.overridden:
                     self.notify(RequirementValidationEvent(
                         EventType.REQUIREMENT_VALIDATION_END, requirement=requirement, validation_result=passed))

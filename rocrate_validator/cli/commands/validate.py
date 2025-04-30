@@ -558,6 +558,11 @@ class ProgressMonitor(Subscriber):
                     else:
                         self._stats["failed_checks"].append(event.requirement_check)
                     self.layout.update(self._stats)
+                else:
+                    logger.debug("Requirement check validation result is None: %s",
+                                 event.requirement_check.identifier)
+            else:
+                logger.debug("Skipping requirement check validation: %s", event.requirement_check.identifier)
         elif event.event_type == EventType.REQUIREMENT_VALIDATION_END:
             if not event.requirement.hidden:
                 self.progress.update(task_id=self.requirement_validation, advance=1)
