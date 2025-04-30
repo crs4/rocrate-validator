@@ -48,7 +48,7 @@ ro-crate:FileDataEntity a sh:NodeShape ;
             SELECT ?this
             WHERE {
                 ?this a schema:MediaObject .
-                FILTER(?this != ro:ro-crate-metadata.json)
+                FILTER(?this != ro:ro-crate-metadata.json && STRSTARTS(STR(?this), "#"))
             }
         """
     ] ;
