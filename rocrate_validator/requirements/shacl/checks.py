@@ -111,16 +111,19 @@ class SHACLCheck(RequirementCheck):
                          self.requirement.profile.identifier, self.identifier)
             with SHACLValidationContextManager(self, context) as ctx:
                 # The check is executed only if the profile is the most specific one
-                logger.debug("SHACL Validation of profile %s requirement %s started",
+                logger.debug("SHACL Validation of requirement check %s (profile: %s) started",
                              self.requirement.profile.identifier, self.identifier)
                 result = self.__do_execute_check__(ctx)
-                ctx.current_validation_result = self not in result
+                ctx.current_validation_result = self.identifier not in result
+                logger.debug("SHACL Validation of requirement check %s (profile: %s) finished with result %s",
+                             self.requirement.profile.identifier, self.identifier, ctx.current_validation_result)
                 return ctx.current_validation_result
         except SHACLValidationAlreadyProcessed:
-            logger.debug("SHACL Validation of profile %s already processed", self.requirement.profile.identifier)
+            logger.debug("SHACL Validation of requirement check %s (profile: %s) already processed",
+                         self.requirement.identifier, self.requirement.profile.identifier)
             # The check belongs to a profile which has already been processed
             # so we can skip the validation and return the specific result for the check
-            return self not in [i.check for i in context.result.get_issues()]
+            return self.identifier not in [i.check.identifier for i in context.result.get_issues()]
         except SHACLValidationSkip as e:
             logger.debug("SHACL Validation of profile %s requirement %s skipped",
                          self.requirement.profile.identifier, self.identifier)
@@ -187,7 +190,9 @@ class SHACLCheck(RequirementCheck):
         # if the validation fails, process the failed checks
         failed_requirements_checks = set()
         failed_requirements_checks_violations: dict[str, SHACLViolation] = {}
-        failed_requirement_checks_notified = []
+        failed_requirement_checks_notified = [_.check.identifier for _ in shacl_context.result.get_issues(
+            min_severity=shacl_context.settings.requirement_severity)]
+
         logger.debug("Parsing Validation with result: %s", shacl_result)
         # process the failed checks to extract the requirement checks involved
         for violation in shacl_result.violations:
@@ -215,13 +220,18 @@ class SHACLCheck(RequirementCheck):
                 violation_message = violation.get_result_message(shacl_context.rocrate_uri)
                 registered_check_issues = shacl_context.result.get_issues_by_check(requirementCheck)
                 skip_requirement_check = False
+                # check if the violation is already registered
+                # and skip the requirement check if it is
                 for check_issue in registered_check_issues:
                     if check_issue.message == violation_message and \
                             check_issue.violatingProperty == violating_property and \
                             check_issue.violatingEntity == violating_entity and \
                             check_issue.violatingPropertyValue == violation.value:
                         skip_requirement_check = True
+                        logger.debug("Skipping requirement check %s: %s", requirementCheck.identifier,
+                                     violation_message)
                         break
+                # if the check is not to be skipped, add the issue to the context
                 if not skip_requirement_check:
                     c = shacl_context.result.add_issue(
                         message=violation.get_result_message(shacl_context.rocrate_uri),
@@ -240,11 +250,13 @@ class SHACLCheck(RequirementCheck):
             # all together and not profile by profile
             if requirementCheck.identifier not in failed_requirement_checks_notified:
                 shacl_context.result._add_executed_check(requirementCheck, False)
-                shacl_context.validator.notify(RequirementCheckValidationEvent(
-                    EventType.REQUIREMENT_CHECK_VALIDATION_END,
-                    requirementCheck, validation_result=False))
-                # failed_requirement_checks_notified.append(requirementCheck.identifier)
-                logger.debug("Added validation issue to the context: %s", c)
+                if requirementCheck.identifier not in failed_requirement_checks_notified and \
+                        requirementCheck.requirement.profile != shacl_context.current_validation_profile:
+                    failed_requirement_checks_notified.append(requirementCheck.identifier)
+                    shacl_context.validator.notify(RequirementCheckValidationEvent(
+                        EventType.REQUIREMENT_CHECK_VALIDATION_END,
+                        requirementCheck, validation_result=False))
+                    logger.debug("Added validation issue to the context: %s", c)
 
             # if the fail fast mode is enabled, stop the validation after the first failed check
             if shacl_context.fail_fast:
@@ -257,7 +269,7 @@ class SHACLCheck(RequirementCheck):
             if not isinstance(requirementCheck, SHACLCheck):
                 logger.debug("Skipped check is not a SHACLCheck: %s", requirementCheck.identifier)
                 continue
-            # if requirementCheck.requirement.profile != shacl_context.current_validation_profile and \
+            # if requirementCheck.requirement.profile != shacl_context.current_validation_profile and
             if requirementCheck.identifier not in failed_requirement_checks_notified:
                 failed_requirement_checks_notified.append(requirementCheck.identifier)
                 shacl_context.result._add_executed_check(requirementCheck, True)

@@ -897,9 +897,7 @@ class Requirement(ABC):
                       or _.identifier not in context.settings.skip_checks]:
 
             try:
-                logger.debug("Running check '%s' - Desc: %s - overridden: %s",
-                             check.name, check.description, [_.identifier for _ in check.overridden_by])
-                if check.overridden:
+                if check.overridden and not check.requirement.profile.identifier == context.profile_identifier:
                     logger.debug("Skipping check '%s' because overridden by '%r'",
                                  check.identifier, [_.identifier for _ in check.overridden_by])
                     continue
@@ -910,7 +908,7 @@ class Requirement(ABC):
                 context.result._add_executed_check(check, check_result)
                 context.validator.notify(RequirementCheckValidationEvent(
                     EventType.REQUIREMENT_CHECK_VALIDATION_END, check, validation_result=check_result))
-                logger.debug("Ran check '%s'. Got result %s", check.name, check_result)
+                logger.debug("Ran check '%s'. Got result %s", check.identifier, check_result)
                 if not isinstance(check_result, bool):
                     logger.warning("Ignoring the check %s as it returned the value %r instead of a boolean", check.name)
                     raise RuntimeError(f"Ignoring invalid result from check {check.name}")
@@ -1659,6 +1657,23 @@ class ProfileValidationEvent(Event):
     def profile(self) -> Profile:
         return self._profile
 
+    def __str__(self) -> str:
+        return f"ProfileValidationEvent({self.event_type}, {self.profile})"
+
+    def __repr__(self) -> str:
+        return f"ProfileValidationEvent(event_type={self.event_type}, profile={self.profile})"
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, ProfileValidationEvent):
+            raise TypeError(f"Cannot compare {type(self)} with {type(other)}")
+        return self.event_type == other.event_type and self.profile == other.profile
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
+
+    def __hash__(self) -> int:
+        return hash((self.event_type, self.profile))
+
 
 class RequirementValidationEvent(Event):
     def __init__(self,
@@ -1679,6 +1694,23 @@ class RequirementValidationEvent(Event):
     def validation_result(self) -> Optional[bool]:
         return self._validation_result
 
+    def __str__(self) -> str:
+        return f"RequirementValidationEvent({self.event_type}, {self.requirement})"
+
+    def __repr__(self) -> str:
+        return f"RequirementValidationEvent(event_type={self.event_type}, requirement={self.requirement})"
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, RequirementValidationEvent):
+            raise TypeError(f"Cannot compare {type(self)} with {type(other)}")
+        return self.event_type == other.event_type and self.requirement == other.requirement
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
+
+    def __hash__(self) -> int:
+        return hash((self.event_type, self.requirement))
+
 
 class RequirementCheckValidationEvent(Event):
     def __init__(self, event_type: EventType,
@@ -1696,6 +1728,24 @@ class RequirementCheckValidationEvent(Event):
     @property
     def validation_result(self) -> Optional[bool]:
         return self._validation_result
+
+    def __str__(self) -> str:
+        return f"RequirementCheckValidationEvent({self.event_type}, {self.requirement_check})"
+
+    def __repr__(self) -> str:
+        return f"RequirementCheckValidationEvent(event_type={self.event_type}, " \
+               f"requirement_check={self.requirement_check})"
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, RequirementCheckValidationEvent):
+            raise TypeError(f"Cannot compare {type(self)} with {type(other)}")
+        return self.event_type == other.event_type and self.requirement_check == other.requirement_check
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
+
+    def __hash__(self) -> int:
+        return hash((self.event_type, self.requirement_check))
 
 
 class Validator(Publisher):
@@ -1809,7 +1859,7 @@ class Validator(Publisher):
                     self.notify(RequirementValidationEvent(
                         EventType.REQUIREMENT_VALIDATION_START, requirement=requirement))
                 passed = requirement._do_validate_(context)
-                logger.debug("Requirement %s passed: %s", requirement, passed)
+                logger.debug("Requirement %s passed: %s", requirement.identifier, passed)
                 if not requirement.overridden:
                     self.notify(RequirementValidationEvent(
                         EventType.REQUIREMENT_VALIDATION_END, requirement=requirement, validation_result=passed))
