@@ -156,6 +156,13 @@
             "name": "2018-06-11 12.56.14.jpg (input)"
         },
         {
+            "@id": "#thisIsNotDataEntity",
+            "@type": "File",
+            "description": "A File type that is not a data entity",
+            "encodingFormat": "text/plain",
+            "name": "thisIsNotDataEntity.txt"
+        },
+        {
             "@id": "pics/2019-06-11 12.56.14.jpg",
             "@type": "File",
             "description": "Original image",
