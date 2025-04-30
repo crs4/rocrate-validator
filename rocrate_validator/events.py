@@ -19,6 +19,11 @@ from typing import Optional, Union
 
 import enum_tools
 
+import rocrate_validator.log as logging
+
+# Set up logging
+logger = logging.getLogger(__name__)
+
 
 @enum.unique
 @enum_tools.documentation.document_enum
@@ -67,6 +72,59 @@ class Event:
         self.event_type = event_type
         self.message = message
 
+    def __str__(self):
+        """
+        String representation of the event.
+
+        :return: the string representation
+        :rtype: str
+        """
+        return f"{self.event_type.name}: {self.message}" if self.message else self.event_type.name
+
+    def __repr__(self):
+        """
+        String representation of the event.
+
+        :return: the string representation
+        :rtype: str
+        """
+        return f"{self.event_type.name}: {self.message}" if self.message else self.event_type.name
+
+    def __eq__(self, other):
+        """
+        Compare two events.
+
+        :param other: the other event
+        :type other: Event
+
+        :return: True if the events are equal, False otherwise
+        :rtype: bool
+        """
+        if self.__class__ is other.__class__:
+            return self.event_type == other.event_type and self.message == other.message
+        return NotImplemented
+
+    def __hash__(self):
+        """
+        Hash the event.
+
+        :return: the hash
+        :rtype: int
+        """
+        return hash((self.event_type, self.message))
+
+    def __ne__(self, other):
+        """
+        Compare two events.
+        :param other: the other event
+        :type other: Event
+        :return: True if the events are not equal, False otherwise
+        :rtype: bool
+        """
+        if self.__class__ is other.__class__:
+            return not self.__eq__(other)
+        return NotImplemented
+
 
 class Subscriber(ABC):
 
@@ -91,8 +149,10 @@ class Subscriber(ABC):
 
 
 class Publisher:
-    def __init__(self):
+    def __init__(self, avoid_duplicate_notifications: bool = False):
         self.__subscribers = set()
+        self.__notified_events = set()
+        self.__avoid_duplicate_notifications = avoid_duplicate_notifications
 
     @property
     def subscribers(self):
@@ -107,5 +167,15 @@ class Publisher:
     def notify(self, event: Union[Event, EventType]):
         if isinstance(event, EventType):
             event = Event(event)
+        # Check if the event has already been notified
+        # This is to avoid notifying the same event multiple times
+        if self.__avoid_duplicate_notifications:
+            if event in self.__notified_events:
+                logger.warning(f"Event {event} already notified")
+                return
+        # Add the event to the notified events
+        self.__notified_events.add(event)
+        logger.debug(f"Notifying event {event}")
+        # Notify all subscribers
         for subscriber in self.subscribers:
             subscriber.update(event)
