@@ -48,7 +48,9 @@ ro-crate:FileDataEntity a sh:NodeShape ;
             SELECT ?this
             WHERE {
                 ?this a schema:MediaObject .
-                FILTER(?this != ro:ro-crate-metadata.json && STRSTARTS(STR(?this), "#"))
+                FILTER(?this != ro:ro-crate-metadata.json)
+                # Exclude all file entities that ends with `#<something>`
+                FILTER(!REGEX(STR(?this), "/#(?!/).*"))
             }
         """
     ] ;
