@@ -135,6 +135,9 @@ class ROCrateEntity:
     def has_relative_path(self) -> bool:
         return not self.has_absolute_path()
 
+    def has_local_identifier(self) -> bool:
+        return self.id.startswith('#')
+
     def has_type(self, entity_type: str) -> bool:
         assert isinstance(entity_type, str), "Entity type must be a string"
         e_types = self.type if isinstance(self.type, list) else [self.type]

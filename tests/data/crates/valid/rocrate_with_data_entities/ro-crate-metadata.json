@@ -156,6 +156,13 @@
             "name": "2018-06-11 12.56.14.jpg (input)"
         },
         {
+            "@id": "#thisIsNotDataEntity",
+            "@type": "File",
+            "description": "A File type that is not a data entity",
+            "encodingFormat": "text/plain",
+            "name": "thisIsNotDataEntity.txt"
+        },
+        {
             "@id": "pics/2019-06-11 12.56.14.jpg",
             "@type": "File",
             "description": "Original image",
@@ -166,6 +173,16 @@
             "@id": "data%20set/",
             "@type": "Dataset",
             "name": "Data set",
+            "description": "A dataset",
+            "datePublished": "2024-05-17T01:04:52+01:00",
+            "license": {
+                "@id": "http://spdx.org/licenses/CC0-1.0"
+            }
+        },
+        {
+            "@id": "#xdata%20set/",
+            "@type": "Dataset",
+            "name": "Data set with a local ID",
             "description": "A dataset",
             "datePublished": "2024-05-17T01:04:52+01:00",
             "license": {
