@@ -180,6 +180,16 @@
             }
         },
         {
+            "@id": "#xdata%20set/",
+            "@type": "Dataset",
+            "name": "Data set with a local ID",
+            "description": "A dataset",
+            "datePublished": "2024-05-17T01:04:52+01:00",
+            "license": {
+                "@id": "http://spdx.org/licenses/CC0-1.0"
+            }
+        },
+        {
             "@id": "data%20set2/",
             "@type": "Dataset",
             "name": "Data set 2",
