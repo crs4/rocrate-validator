@@ -48,9 +48,9 @@ ro-crate:FileDataEntity a sh:NodeShape ;
             SELECT ?this
             WHERE {
                 ?this a schema:MediaObject .
-                FILTER(?this != ro:ro-crate-metadata.json)
-                # Exclude all file entities that ends with `/#<something>`
-                FILTER(!REGEX(STR(?this), "/#(?!/).*"))
+                ?metadatafile schema:about ?root .
+                FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
+                FILTER(!STRSTARTS(STR(?this), CONCAT(STR(?root), "#")))
             }
         """
     ] ;
@@ -88,10 +88,10 @@ ro-crate:DirectoryDataEntity a sh:NodeShape ;
             WHERE {
                 ?this a schema:Dataset .
                 ?metadatafile schema:about ?root .
+                # Exclude all dataset entities that ends with `./#<something>`
                 FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
                 FILTER(?this != ?root)
-                # Exclude all dataset entities that ends with `/#<something>`
-                FILTER(!REGEX(STR(?this), "/#(?!/).*"))
+                FILTER(!STRSTARTS(STR(?this), CONCAT(STR(?root), "#")))
             }
         """
     ] ;
