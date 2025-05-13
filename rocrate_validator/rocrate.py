@@ -136,7 +136,12 @@ class ROCrateEntity:
         return not self.has_absolute_path()
 
     def has_local_identifier(self) -> bool:
-        return self.id.startswith('#')
+        has_local_id = self.id.startswith('#') or \
+            f"{self.ro_crate.uri}/#" in self.id or \
+            f"file://{self.ro_crate.uri}/#" in self.id
+        logger.debug("Identifier '%s' is %s a local identifier", self.id,
+                     "" if has_local_id else " not")
+        return has_local_id
 
     def has_type(self, entity_type: str) -> bool:
         assert isinstance(entity_type, str), "Entity type must be a string"
