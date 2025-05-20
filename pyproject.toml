@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "roc-validator"
-version = "0.7.0"
+version = "0.7.1"
 description = "A Python package to validate RO-Crates"
 authors = [
     "Marco Enrico Piras <kikkomep@crs4.it>",
@@ -59,17 +59,17 @@ include = [
 
 [tool.poetry.dependencies]
 python = "^3.10"
-rdflib = "^7.0.0"
-pyshacl = "^0.26.0"
-click = "^8.1.7"
-rich = "^13.8.0"
-toml = "^0.10.2"
-rich-click = "^1.8.3"
-colorlog = "^6.8"
-requests = "^2.32.3"
-requests-cache = "^1.2.1"
-inquirerpy = "^0.3.4"
-enum-tools = "^0.12.0"
+rdflib = "7.1.4"
+pyshacl = "0.26.0"
+click = "8.2.0"
+rich = "13.9.4"
+toml = "0.10.2"
+rich-click = "1.8.9"
+colorlog = "6.9.0"
+requests = "2.32.3"
+requests-cache = "1.2.1"
+inquirerpy = "0.3.4"
+enum-tools = "0.12.0"
 
 [tool.poetry.group.dev.dependencies]
 pyproject-flake8 = "^6.1.0"
