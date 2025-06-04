@@ -1762,8 +1762,8 @@ astroid = ">=3.3.8,<=3.4.0.dev0"
 colorama = {version = ">=0.4.5", markers = "sys_platform == \"win32\""}
 dill = [
     {version = ">=0.2", markers = "python_version < \"3.11\""},
-    {version = ">=0.3.6", markers = "python_version >= \"3.11\" and python_version < \"3.12\""},
     {version = ">=0.3.7", markers = "python_version >= \"3.12\""},
+    {version = ">=0.3.6", markers = "python_version >= \"3.11\" and python_version < \"3.12\""},
 ]
 isort = ">=4.2.5,<5.13 || >5.13,<7"
 mccabe = ">=0.6,<0.8"
@@ -2518,7 +2518,6 @@ files = [
 [package.dependencies]
 jinja2 = ">=2.10"
 markupsafe = ">=1"
-standard-imghdr = {version = "3.10.14", markers = "python_version >= \"3.13\""}
 
 [[package]]
 name = "sphinx-prompt"
@@ -2740,17 +2739,6 @@ pure-eval = "*"
 tests = ["cython", "littleutils", "pygments", "pytest", "typeguard"]
 
 [[package]]
-name = "standard-imghdr"
-version = "3.10.14"
-description = "Standard library imghdr redistribution. \"dead battery\"."
-optional = false
-python-versions = "*"
-files = [
-    {file = "standard_imghdr-3.10.14-py3-none-any.whl", hash = "sha256:cdf6883163349624dee9a81d2853a20260337c4cd41c04e99c082e01833a08e2"},
-    {file = "standard_imghdr-3.10.14.tar.gz", hash = "sha256:2598fe2e7c540dbda34b233295e10957ab8dc8ac6f3bd9eaa8d38be167232e52"},
-]
-
-[[package]]
 name = "tabulate"
 version = "0.9.0"
 description = "Pretty-print tabular data"
@@ -2969,5 +2957,5 @@ type = ["pytest-mypy"]
 
 [metadata]
 lock-version = "2.0"
-python-versions = "^3.10"
-content-hash = "aeb081c420830a4ca101e559dbc0b8744c87ba6c1fc22fae2e334bc3e243b988"
+python-versions = ">=3.10,<3.13"
+content-hash = "9c81d8072595b4285834e8227c905db74fd5f38e4e21ada943f72af48c3fa8f8"
