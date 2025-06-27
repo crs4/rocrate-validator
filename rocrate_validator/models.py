@@ -2212,15 +2212,6 @@ class ValidationContext:
 
     def __load_profiles__(self) -> list[Profile]:
 
-        # if the inheritance is disabled, load only the target profile
-        if not self.inheritance_enabled:
-            profile = Profile.__load_profile_path__(
-                self.profiles_path,
-                self.profiles_path / self.profile_identifier,
-                publicID=self.publicID,
-                severity=self.requirement_severity)
-            return [profile]
-
         # load all profiles
         profiles = Profile.load_profiles(
             self.profiles_path,
@@ -2249,6 +2240,10 @@ class ValidationContext:
                 raise ProfileNotFound(
                     self.profile_identifier,
                     message=f"Profile '{self.profile_identifier}' not found in '{self.profiles_path}'") from e
+
+        # if the inheritance is enabled, return only the target profile
+        if not self.inheritance_enabled:
+            return [profile]
 
         # Set the profiles to validate against as the target profile and its inherited profiles
         profiles = profile.inherited_profiles + [profile]
