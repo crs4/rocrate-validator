@@ -713,7 +713,8 @@ class Profile:
                 # to avoid duplicates and ensure that the most specific profile is used
                 if profile.overrides:
                     for overridden_profile in profile.overrides:
-                        profiles.remove(overridden_profile)
+                        if overridden_profile in profiles:
+                            profiles.remove(overridden_profile)
                 # add the profile to the list of profiles
                 profiles.append(profile)
                 logger.debug("Loaded profile: %s (%s)", profile.identifier, profile.path)
