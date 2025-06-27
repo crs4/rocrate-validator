@@ -151,6 +151,13 @@ def get_single_char(console: Optional[Console] = None, end: str = "\n",
     help="Path containing the profiles files",
 )
 @click.option(
+    "--extra-profiles-path",
+    type=click.Path(exists=True),
+    default=None,
+    show_default=True,
+    help="Path containing additional user profiles files"
+)
+@click.option(
     "-p",
     "--profile-identifier",
     multiple=True,
@@ -243,6 +250,7 @@ def get_single_char(console: Optional[Console] = None, end: str = "\n",
 @click.pass_context
 def validate(ctx,
              profiles_path: Path = DEFAULT_PROFILES_PATH,
+             extra_profiles_path: Optional[Path] = None,
              profile_identifier: Optional[str] = None,
              no_auto_profile: bool = False,
              disable_profile_inheritance: bool = False,
@@ -269,6 +277,7 @@ def validate(ctx,
         enable_pager = False
     # Log the input parameters for debugging
     logger.debug("profiles_path: %s", os.path.abspath(profiles_path))
+    logger.debug("extra_profiles_path: %s", os.path.abspath(extra_profiles_path) if extra_profiles_path else None)
     logger.debug("profile_identifier: %s", profile_identifier)
     logger.debug("requirement_severity: %s", requirement_severity)
     logger.debug("requirement_severity_only: %s", requirement_severity_only)
@@ -285,6 +294,7 @@ def validate(ctx,
         # Validation settings
         validation_settings = {
             "profiles_path": profiles_path,
+            "extra_profiles_path": extra_profiles_path,
             "profile_identifier": profile_identifier,
             "requirement_severity": requirement_severity,
             "requirement_severity_only": requirement_severity_only,
@@ -299,7 +309,7 @@ def validate(ctx,
             console.print(get_app_header_rule())
 
         # Get the available profiles
-        available_profiles = services.get_profiles(profiles_path)
+        available_profiles = services.get_profiles(profiles_path, extra_profiles_path=extra_profiles_path)
 
         # Detect the profile to use for validation
         autodetection = False
@@ -373,6 +383,7 @@ def validate(ctx,
             severity_validation = Severity.get(validation_settings.get("requirement_severity"))
             target_profile = services.get_profile(profile,
                                                   validation_settings.get("profiles_path"),
+                                                  extra_profiles_path=validation_settings.get("extra_profiles_path"),
                                                   severity=severity_validation)
             report_layout.progress_monitor.target_validation_profile = target_profile
 
@@ -840,9 +851,12 @@ def __compute_profile_stats__(validation_settings: dict):
     """
     # extract the validation settings
     severity_validation = Severity.get(validation_settings.get("requirement_severity"))
-    profiles = services.get_profiles(validation_settings.get("profiles_path"), severity=severity_validation)
+    profiles = services.get_profiles(validation_settings.get("profiles_path"),
+                                     extra_profiles_path=validation_settings.get("extra_profiles_path"),
+                                     severity=severity_validation)
     profile = services.get_profile(validation_settings.get("profile_identifier"),
                                    validation_settings.get("profiles_path"),
+                                   extra_profiles_path=validation_settings.get("extra_profiles_path"),
                                    severity=severity_validation)
     target_profile_identifier = profile.identifier
     # initialize the profiles list
