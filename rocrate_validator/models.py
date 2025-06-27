@@ -652,29 +652,71 @@ class Profile:
         return profile
 
     @classmethod
-    def load_profiles(cls, profiles_path: Union[str, Path],
+    def __load_profiles_paths__(cls, profiles_path: Union[str, Path] = None,
+                                extra_profiles_path: Union[str, Path] = None) -> list[Tuple[Path, Path]]:
+        """
+        Load the paths of the profiles from the given profiles path and extra profiles path.
+
+        :param profiles_path: the path to the profiles directory
+        :type profiles_path: Union[str, Path]
+        :param extra_profiles_path: an additional path to search for profiles
+        :type extra_profiles_path: Union[str, Path]
+
+        :return: a list of tuples containing the root profile directory and the profile directory
+        :rtype: list[Tuple[Path, Path]]
+
+        :raises InvalidProfilePath: if the profiles path is not a directory
+        """
+        result = []
+        # set the list of root profile directories
+        root_profile_directories = [profiles_path] if profiles_path else []
+        if extra_profiles_path is not None and extra_profiles_path != profiles_path:
+            root_profile_directories.append(extra_profiles_path)
+        # collect profiles nested in the root profile directories
+        for root_profile_directory in root_profile_directories:
+            # if the path is a string, convert it to a Path
+            if isinstance(root_profile_directory, str):
+                root_profile_directory = Path(root_profile_directory)
+            # check if the path is a directory and raise an error if not
+            if not root_profile_directory.is_dir():
+                raise InvalidProfilePath(root_profile_directory)
+            # if the path is a directory, get the profile directories
+            result.extend([(root_profile_directory, p.parent)
+                          for p in root_profile_directory.rglob('*.*') if p.name == PROFILE_SPECIFICATION_FILE])
+        # return the list of profile directories
+        return result
+
+    @classmethod
+    def load_profiles(cls,
+                      profiles_path: Union[str, Path],
+                      extra_profiles_path: Union[str, Path] = None,
                       publicID: Optional[str] = None,
                       severity:  Severity = Severity.REQUIRED,
                       allow_requirement_check_override: bool = True) -> list[Profile]:
-        # if the path is a string, convert it to a Path
-        if isinstance(profiles_path, str):
-            profiles_path = Path(profiles_path)
-        # check if the path is a directory
-        if not profiles_path.is_dir():
-            raise InvalidProfilePath(profiles_path)
         # initialize the profiles list
         profiles = []
         # calculate the list of profiles path as the subdirectories of the profiles path
         # where the profile specification file is present
-        profile_paths = [p.parent for p in profiles_path.rglob('*.*') if p.name == PROFILE_SPECIFICATION_FILE]
+        profiles_paths = cls.__load_profiles_paths__(profiles_path,
+                                                     extra_profiles_path)
 
         # iterate through the directories and load the profiles
-        for profile_path in profile_paths:
+        for root_profile_path, profile_path in profiles_paths:
             logger.debug("Checking profile path: %s %s %r", profile_path,
                          profile_path.is_dir(), IGNORED_PROFILE_DIRECTORIES)
+            # check if the profile path is a directory and not in the ignored directories
             if profile_path.is_dir() and profile_path not in IGNORED_PROFILE_DIRECTORIES:
                 profile = Profile.__load_profile_path__(
+                    root_profile_path, profile_path, publicID=publicID, severity=severity)
+                # if the profile overrides another profile,
+                # remove the overridden profiles from the list of profiles
+                # to avoid duplicates and ensure that the most specific profile is used
+                if profile.overrides:
+                    for overridden_profile in profile.overrides:
+                        profiles.remove(overridden_profile)
+                # add the profile to the list of profiles
                 profiles.append(profile)
+                logger.debug("Loaded profile: %s (%s)", profile.identifier, profile.path)
 
         # order profiles based on the inheritance hierarchy,
         # from the most specific to the most general
