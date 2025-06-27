@@ -635,7 +635,7 @@ class Profile:
         return candidate_token, version
 
     @classmethod
-    def load(cls, profiles_base_path: str,
+    def __load_profile_path__(cls, profiles_base_path: str,
              profile_path: Union[str, Path],
              publicID: Optional[str] = None,
              severity:  Severity = Severity.REQUIRED) -> Profile:
@@ -673,7 +673,7 @@ class Profile:
             logger.debug("Checking profile path: %s %s %r", profile_path,
                          profile_path.is_dir(), IGNORED_PROFILE_DIRECTORIES)
             if profile_path.is_dir() and profile_path not in IGNORED_PROFILE_DIRECTORIES:
-                profile = Profile.load(profiles_path, profile_path, publicID=publicID, severity=severity)
+                profile = Profile.__load_profile_path__(
                 profiles.append(profile)
 
         # order profiles based on the inheritance hierarchy,
@@ -2153,7 +2153,7 @@ class ValidationContext:
 
         # if the inheritance is disabled, load only the target profile
         if not self.inheritance_enabled:
-            profile = Profile.load(
+            profile = Profile.__load_profile_path__(
                 self.profiles_path,
                 self.profiles_path / self.profile_identifier,
                 publicID=self.publicID,
