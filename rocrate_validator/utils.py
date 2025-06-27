@@ -362,7 +362,7 @@ def to_camel_case(snake_str: str) -> str:
     return components[0].capitalize() + ''.join(x.title() for x in components[1:])
 
 
-def shorten_path(p):
+def shorten_path(p: Path) -> str:
     """"
     Shorten the path to a relative path if possible, otherwise return the absolute path.
 
@@ -370,18 +370,16 @@ def shorten_path(p):
     :return: The shortened path
     :raises ValueError: If the path is not a valid Path object
     """
-
-    if not isinstance(p, (Path, ParseResult)):
+    if not isinstance(p, Path):
         raise ValueError("The path must be a Path or ParseResult object")
 
     try:
         cwd = Path.cwd()
-        p_path = Path(p.path)
-        rel = p_path.relative_to(cwd)
+        rel = p.relative_to(cwd)
         # Use relative path only if it's shorter than absolute
-        return str(rel) if len(str(rel)) < len(str(p_path)) else str(p_path)
+        return str(rel) if len(str(rel)) < len(str(p)) else str(p)
     except Exception:
-        return str(p.path)
+        return str(p)
 
 
 class HttpRequester:
