@@ -46,13 +46,22 @@ logger = logging.getLogger(__name__)
     show_default=True,
     help="Path containing the profiles files"
 )
+@click.option(
+    "--extra-profiles-path",
+    type=click.Path(exists=True),
+    default=None,
+    show_default=True,
+    help="Path containing additional user profiles files"
+)
 @click.pass_context
-def profiles(ctx, profiles_path: Path = DEFAULT_PROFILES_PATH):
+def profiles(ctx, profiles_path: Path = DEFAULT_PROFILES_PATH,
+             extra_profiles_path: Path = None):
     """
     [magenta]rocrate-validator:[/magenta] Manage profiles
     """
     logger.debug("Profiles path: %s", profiles_path)
     ctx.obj['profiles_path'] = profiles_path
+    ctx.obj['extra_profiles_path'] = extra_profiles_path
 
 
 @profiles.command("list")
@@ -70,6 +79,7 @@ def list_profiles(ctx, no_paging: bool = False):  # , profiles_path: Path = DEFA
     List available profiles
     """
     profiles_path = ctx.obj['profiles_path']
+    extra_profiles_path = ctx.obj['extra_profiles_path']
     console = ctx.obj['console']
     pager = ctx.obj['pager']
     interactive = ctx.obj['interactive']
@@ -81,7 +91,8 @@ def list_profiles(ctx, no_paging: bool = False):  # , profiles_path: Path = DEFA
 
     try:
         # Get the profiles
-        profiles = services.get_profiles(profiles_path=profiles_path)
+        profiles = services.get_profiles(profiles_path=profiles_path,
+                                         extra_profiles_path=extra_profiles_path)
 
         table = Table(show_header=True,
                       title="   Available profiles",
@@ -162,6 +173,7 @@ def list_profiles(ctx, no_paging: bool = False):  # , profiles_path: Path = DEFA
 def describe_profile(ctx,
                      profile_identifier: str = DEFAULT_PROFILE_IDENTIFIER,
                      profiles_path: Path = DEFAULT_PROFILES_PATH,
+                     extra_profiles_path: Path = None,
                      verbose: bool = False, no_paging: bool = False):
     """
     Show a profile
@@ -171,6 +183,7 @@ def describe_profile(ctx,
     pager = ctx.obj['pager']
     interactive = ctx.obj['interactive']
     profiles_path = ctx.obj['profiles_path']
+    extra_profiles_path = ctx.obj['extra_profiles_path']
     # Get the no_paging flag
     enable_pager = not no_paging
     # override the enable_pager flag if the interactive flag is False
@@ -179,7 +192,8 @@ def describe_profile(ctx,
 
     try:
         # Get the profile
-        profile = services.get_profile(profile_identifier, profiles_path=profiles_path)
+        profile = services.get_profile(profile_identifier, profiles_path=profiles_path,
+                                       extra_profiles_path=extra_profiles_path)
 
         # Set the subheader title
         subheader_title = f"[bold][cyan]Profile:[/cyan] [magenta italic]{profile.identifier}[/magenta italic][/bold]"
