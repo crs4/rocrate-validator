@@ -237,6 +237,8 @@ class Profile:
         self._requirements: list[Requirement] = requirements if requirements is not None else []
         self._publicID = publicID
         self._severity = severity
+        self._overrides: list[Profile] = []
+        self._overridden_by: list[Profile] = []
 
         # init property to store the RDF node which is the root of the profile specification graph
         self._profile_node = None
@@ -278,6 +280,33 @@ class Profile:
         if pop_first:
             return values[0] if values and len(values) >= 1 else None
         return values
+
+    def __add_override__(self, profile: Profile):
+        """
+        Add an override profile to this profile.
+
+        :param profile: the profile that overrides this profile
+        :type profile: Profile
+        """
+        if not isinstance(profile, Profile):
+            raise TypeError(f"Expected a Profile instance, got {type(profile)}")
+        if profile not in self._overrides:
+            self._overrides.append(profile)
+            profile._overridden_by.append(self)
+
+    @property
+    def overrides(self) -> list[Profile]:
+        """
+        The list of profiles that override this profile.
+        """
+        return self._overrides
+
+    @property
+    def overridden_by(self) -> list[Profile]:
+        """
+        The list of profiles that are overridden by this profile.
+        """
+        return self._overridden_by
 
     @property
     def path(self):
