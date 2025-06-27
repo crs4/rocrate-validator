@@ -15,6 +15,7 @@
 import sys
 from pathlib import Path
 
+from rich.align import Align
 from rich.markdown import Markdown
 from rich.padding import Padding
 from rich.panel import Panel
@@ -29,7 +30,7 @@ from rocrate_validator.colors import get_severity_color
 from rocrate_validator.constants import DEFAULT_PROFILE_IDENTIFIER
 from rocrate_validator.models import (LevelCollection, RequirementLevel,
                                       Severity)
-from rocrate_validator.utils import get_profiles_path
+from rocrate_validator.utils import get_profiles_path, shorten_path
 
 # set the default profiles path
 DEFAULT_PROFILES_PATH = get_profiles_path()
@@ -201,7 +202,27 @@ def describe_profile(ctx,
         # Set the subheader content
         subheader_content = f"[bold cyan]Version:[/bold cyan] [italic green]{profile.version}[/italic green]\n"
         subheader_content += f"[bold cyan]URI:[/bold cyan] [italic yellow]{profile.uri}[/italic yellow]\n\n"
+        subheader_content += f"[bold cyan]Name:[/bold cyan] [italic]{profile.name.strip()}[/italic]\n"
         subheader_content += f"[bold cyan]Description:[/bold cyan] [italic]{profile.description.strip()}[/italic]"
+        # Add path info to the subheader
+        subheader_content += (
+            "\n\n"
+            "[bold cyan]Validation Profile Path:[/bold cyan] "
+            "[italic green]"
+            f"{shorten_path(profile.path) if hasattr(profile, 'path') and profile.path else 'N/A'}"
+            "[/italic green]"
+        )
+        # Handle overridden and overriding profiles
+        if profile.overrides:
+            subheader_content += (
+                "\n\n" + " " * 20 + " [[bold red]overrides: [/bold red][italic]"
+                f"{', '.join(shorten_path(p.path) for p in profile.overrides)}[/italic]]"
+            )
+        if profile.overridden_by:
+            subheader_content += (
+                "\n\n" + " " * 20 + " [[bold red]overridden by: [/bold red][italic]"
+                f"{', '.join(shorten_path(p.path) for p in profile.overridden_by)}[/italic]]"
+            )
 
         # Build the profile table
         if not verbose:
@@ -211,7 +232,7 @@ def describe_profile(ctx,
 
         with console.pager(pager=pager, styles=not console.no_color) if enable_pager else console:
             console.print(get_app_header_rule())
-            console.print(Padding(Panel(subheader_content, title=subheader_title, padding=(1, 1),
+            console.print(Padding(Panel(subheader_content, title=subheader_title, padding=(1, 1, 0, 1),
                                         title_align="left", border_style="cyan"), (0, 1, 0, 1)))
             console.print(Padding(table, (1, 1)))
 
@@ -308,12 +329,12 @@ def __verbose_describe_profile__(profile):
                 override = "[" + "overrides: "
                 for co in check.overrides:
                     severity_color = get_severity_color(co.severity)
-                    override += f"[bold][magenta]{co.requirement.profile.identifier}[/magenta] "\
-                        f"[{severity_color}]{co.relative_identifier}[/{severity_color}][/bold]"
+                    override += f"[bold][magenta]{co.requirement.profile.identifier}[/magenta] "
+                    f"[{severity_color}]{co.relative_identifier}[/{severity_color}][/bold]"
                     if co != check.overrides[-1]:
                         override += ", "
                 override += "]"
-            from rich.align import Align
+
             description_table = Table(show_header=False, show_footer=False, show_lines=False, show_edge=False)
             if override:
                 description_table.add_row(Align(Padding(override, (0, 0, 1, 0)), align="right"))
