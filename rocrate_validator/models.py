@@ -1644,6 +1644,8 @@ class ValidationSettings:
     # Profile settings
     #: The path to the profiles
     profiles_path: Path = DEFAULT_PROFILES_PATH
+    #: The path to the extra profiles
+    extra_profiles_path: Optional[Path] = None
     #: The profile identifier to validate against
     profile_identifier: str = DEFAULT_PROFILE_IDENTIFIER
     #: Flag to enable profile inheritance
@@ -1889,8 +1891,11 @@ class Validator(Publisher):
             # load the profiles
             profiles = []
             candidate_profiles = []
-            available_profiles = Profile.load_profiles(context.profiles_path, publicID=context.publicID,
-                                                       severity=context.requirement_severity)
+            available_profiles = Profile.load_profiles(
+                context.profiles_path,
+                extra_profiles_path=context.extra_profiles_path,
+                publicID=context.publicID,
+                severity=context.requirement_severity)
             profiles = [p for p in available_profiles if p.uri in candidate_profiles_uris]
             # get the candidate profiles
             for profile in profiles:
@@ -2057,6 +2062,19 @@ class ValidationContext:
         return profiles_path
 
     @property
+    def extra_profiles_path(self) -> Optional[Path]:
+        """
+        The path to the extra profiles
+
+        :return: The path to the extra profiles
+        :rtype: Optional[Path]
+        """
+        extra_profiles_path = self.settings.extra_profiles_path
+        if isinstance(extra_profiles_path, str):
+            extra_profiles_path = Path(extra_profiles_path)
+        return extra_profiles_path if extra_profiles_path else None
+
+    @property
     def requirement_severity(self) -> Severity:
         """
         The requirement severity to validate against
@@ -2206,6 +2224,7 @@ class ValidationContext:
         # load all profiles
         profiles = Profile.load_profiles(
             self.profiles_path,
+            extra_profiles_path=self.settings.extra_profiles_path,
             publicID=self.publicID,
             severity=self.requirement_severity,
             allow_requirement_check_override=self.allow_requirement_check_override)
