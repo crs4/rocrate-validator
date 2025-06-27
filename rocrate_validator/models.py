@@ -636,9 +636,9 @@ class Profile:
 
     @classmethod
     def __load_profile_path__(cls, profiles_base_path: str,
-             profile_path: Union[str, Path],
-             publicID: Optional[str] = None,
-             severity:  Severity = Severity.REQUIRED) -> Profile:
+                              profile_path: Union[str, Path],
+                              publicID: Optional[str] = None,
+                              severity:  Severity = Severity.REQUIRED) -> Profile:
         # if the path is a string, convert it to a Path
         if isinstance(profile_path, str):
             profile_path = Path(profile_path)
