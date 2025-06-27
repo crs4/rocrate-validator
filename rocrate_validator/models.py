@@ -194,7 +194,8 @@ class Profile:
     # store the map of profiles: profile URI -> Profile instance
     __profiles_map: MultiIndexMap = \
         MultiIndexMap("uri", indexes=[
-            MapIndex("name"), MapIndex("token", unique=False), MapIndex("identifier", unique=True)
+            MapIndex("name"), MapIndex("token", unique=False), MapIndex("identifier", unique=True),
+            MapIndex("token_path", unique=False)
         ])
 
     def __init__(self,
@@ -260,11 +261,26 @@ class Profile:
             self._profile_specification_graph = profile
             # initialize the token and version
             self._token, self._version = self.__init_token_version__()
+
+            # Check if the profile is overriding an existing profile
+            existing_profile = self.__profiles_map.get_by_key(self._profile_node.toPython())
+            if existing_profile:
+                # if the profile already exists, raise an error
+                logger.warning(
+                    "Profile with identifier %s already exists at %s and will be overridden "
+                    "by the profile loaded from %s.",
+                    existing_profile.identifier,
+                    existing_profile.path,
+                    profile_path
+                )
+                self.__add_override__(existing_profile)
+
             # add the profile to the profiles map
             self.__profiles_map.add(
                 self._profile_node.toPython(),
                 self, token=self.token,
-                name=self.name, identifier=self.identifier
+                name=self.name, identifier=self.identifier,
+                token_path=self.__extract_token_from_path__()
             )  # add the profile to the profiles map
         else:
             raise ProfileSpecificationError(
