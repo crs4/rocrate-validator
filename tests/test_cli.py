@@ -108,4 +108,4 @@ def test_validate_skip_checks_option(cli_runner: CliRunner):
         assert 'skip_checks' in called_args
         logger.debug(f"Called args: {called_args}")
         # Check if the skip_checks value matches the expected value
-        assert skip_checks_1 + skip_checks_2 == called_args['skip_checks']
+        assert list(skip_checks_1 + skip_checks_2) == called_args['skip_checks']
