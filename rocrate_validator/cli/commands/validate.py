@@ -201,13 +201,14 @@ def get_single_char(console: Optional[Console] = None, end: str = "\n",
     show_default=True,
     metavar="Fully-Qualified-Check-IDs",
     help=(
-        "[bold yellow]Fully-Qualified-Check-IDs[/bold yellow] "
-        "is a [italic]comma-separated list[/italic] of checks to skip "
-        "(can be specified multiple times). "
-        "Each check must be given by its [bold yellow]Fully Qualified Identifier[/bold yellow], "
-        "e.g., [bold cyan]ro-crate-1.1_12.1[/bold cyan]. "
-        "The fully qualified check identifier has the format <Profile-ID>.<Requirement-ID>.<Check-ID> "
-        "and can be found using: [orange1]rocrate-validator profiles describe <Profile-ID> -v[/orange1]."
+        "[bold yellow]Fully-Qualified-Check-IDs[/bold yellow] is a comma-separated list of checks to skip "
+        "(may be specified multiple times). Each check must be specified by its "
+        "Fully Qualified Identifier, e.g., [bold cyan]ro-crate-1.1_12.1[/bold cyan]. The fully qualified "
+        "check identifier has the format <Profile-ID>_<Requirement_#>.<RequirementCheck_#>, "
+        "where <Requirement_#> is the position number of the Requirement in the profile, "
+        "and <RequirementCheck_#> is the position number of the RequirementCheck within that Requirement. "
+        "You can find the Fully-Qualified-Check IDs using: "
+        "[bold orange1]rocrate-validator profiles describe <Profile-ID> -v[/bold orange1]"
     ),
 )
 @click.option(
