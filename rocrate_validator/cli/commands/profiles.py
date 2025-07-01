@@ -290,7 +290,7 @@ def __verbose_describe_profile__(profile):
             #             override += ", "
             #     override += "]"
             if check.overrides:
-                logger.debug("Check %s overrides: %s", check.identifier, check.override)
+                logger.debug("Check %s overrides: %s", check.identifier, check.overrides)
                 override = "[" + "overrides: "
                 for co in check.overrides:
                     severity_color = get_severity_color(co.severity)
