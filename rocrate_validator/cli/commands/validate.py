@@ -157,6 +157,7 @@ def get_single_char(console: Optional[Console] = None, end: str = "\n",
     type=click.STRING,
     default=None,
     show_default=True,
+    metavar="Profile-ID",
     help="Identifier of the profile to use for validation",
 )
 @click.option(
@@ -198,7 +199,16 @@ def get_single_char(console: Optional[Console] = None, end: str = "\n",
     type=click.STRING,
     default=None,
     show_default=True,
-    help="List of checks to skip"
+    metavar="Fully-Qualified-Check-IDs",
+    help=(
+        "[bold yellow]Fully-Qualified-Check-IDs[/bold yellow] "
+        "is a [italic]comma-separated list[/italic] of checks to skip "
+        "(can be specified multiple times). "
+        "Each check must be given by its [bold yellow]Fully Qualified Identifier[/bold yellow], "
+        "e.g., [bold cyan]ro-crate-1.1_12.1[/bold cyan]. "
+        "The fully qualified check identifier has the format <Profile-ID>.<Requirement-ID>.<Check-ID> "
+        "and can be found using: [orange1]rocrate-validator profiles describe <Profile-ID> -v[/orange1]."
+    ),
 )
 @click.option(
     '-v',
