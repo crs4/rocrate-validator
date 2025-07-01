@@ -281,6 +281,25 @@ def validate(ctx,
     if rocrate_uri:
         logger.debug("rocrate_path: %s", os.path.abspath(rocrate_uri))
 
+    # Parse the skip_checks option
+    logger.debug("skip_checks: %s", skip_checks)
+    # Parse the skip_checks option
+    skip_checks_list = []
+    if skip_checks:
+        try:
+            for s in skip_checks:
+                skip_checks_list.extend(_.strip() for _ in s.split(",") if _.strip())
+            logger.debug("skip_checks_list: %s", skip_checks_list)
+        except Exception as e:
+            logger.error("Error parsing skip_checks: %s", e)
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.exception("Error parsing skip_checks: %s", e)
+            raise ValueError(
+                f"Invalid skip_checks value: {s}. "
+                "It must be a comma-separated list of Fully Qualified Check IDs."
+            )
+    logger.debug("Skip checks: %s", skip_checks_list)
+
     try:
         # Validation settings
         validation_settings = {
@@ -291,7 +310,7 @@ def validate(ctx,
             "enable_profile_inheritance": not disable_profile_inheritance,
             "rocrate_uri": rocrate_uri,
             "abort_on_first": fail_fast,
-            "skip_checks": skip_checks
+            "skip_checks": skip_checks_list
         }
 
         # Print the application header
