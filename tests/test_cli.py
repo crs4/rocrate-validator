@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import re
+from unittest.mock import patch
 
 from click.testing import CliRunner
 from pytest import fixture
@@ -66,3 +67,45 @@ def test_validate_subcmd_invalid_local_archive_rocrate(cli_runner: CliRunner):
                                      '--skip-checks', SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER])
     assert result.exit_code == 0
     assert re.search(r'RO-Crate.*is a valid', result.output)
+
+
+def test_validate_skip_checks_option(cli_runner: CliRunner):
+    # Patch the validation service to capture the skip_checks argument
+    called_args = {}
+
+    def mock_validate(*args, **kwargs):
+        nonlocal called_args  # noqa: F824
+
+        for arg in args:
+            if isinstance(arg, dict):
+                called_args.update(arg)
+
+        called_args.update(kwargs)
+        logger.debug(f"Args: {args}")
+        logger.debug(f"Kwargs: {kwargs}")
+        logger.debug(f"Called args: {called_args}")
+
+    with patch('rocrate_validator.cli.commands.validate.services.validate') as mock_validate_rocrate:
+        mock_validate_rocrate.return_value = None
+        mock_validate_rocrate.side_effect = mock_validate
+
+        skip_checks_1 = ("a", "b", "c")
+        skip_checks_2 = ("d", "e", "f")
+        result = cli_runner.invoke(
+            cli, [
+                '--no-interactive',
+                'validate', str(ValidROC().sort_and_change_remote),
+                '--skip-checks', ','.join(skip_checks_1),
+                '--skip-checks', ','.join(skip_checks_2),
+                '--no-paging'
+            ]
+        )
+
+        # Check the exit code which should be 2
+        # because the validation service is mocked and does not return a valid result
+        assert result.exit_code == 2
+        # Check if 'skip_checks' is in the called arguments
+        assert 'skip_checks' in called_args
+        logger.debug(f"Called args: {called_args}")
+        # Check if the skip_checks value matches the expected value
+        assert skip_checks_1 + skip_checks_2 == called_args['skip_checks']
