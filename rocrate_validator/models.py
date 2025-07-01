@@ -194,7 +194,8 @@ class Profile:
     # store the map of profiles: profile URI -> Profile instance
     __profiles_map: MultiIndexMap = \
         MultiIndexMap("uri", indexes=[
-            MapIndex("name"), MapIndex("token", unique=False), MapIndex("identifier", unique=True)
+            MapIndex("name"), MapIndex("token", unique=False), MapIndex("identifier", unique=True),
+            MapIndex("token_path", unique=False)
         ])
 
     def __init__(self,
@@ -237,6 +238,8 @@ class Profile:
         self._requirements: list[Requirement] = requirements if requirements is not None else []
         self._publicID = publicID
         self._severity = severity
+        self._overrides: list[Profile] = []
+        self._overridden_by: list[Profile] = []
 
         # init property to store the RDF node which is the root of the profile specification graph
         self._profile_node = None
@@ -258,11 +261,26 @@ class Profile:
             self._profile_specification_graph = profile
             # initialize the token and version
             self._token, self._version = self.__init_token_version__()
+
+            # Check if the profile is overriding an existing profile
+            existing_profile = self.__profiles_map.get_by_key(self._profile_node.toPython())
+            if existing_profile:
+                # if the profile already exists, raise an error
+                logger.warning(
+                    "Profile with identifier %s already exists at %s and will be overridden "
+                    "by the profile loaded from %s.",
+                    existing_profile.identifier,
+                    existing_profile.path,
+                    profile_path
+                )
+                self.__add_override__(existing_profile)
+
             # add the profile to the profiles map
             self.__profiles_map.add(
                 self._profile_node.toPython(),
                 self, token=self.token,
-                name=self.name, identifier=self.identifier
+                name=self.name, identifier=self.identifier,
+                token_path=self.__extract_token_from_path__()
             )  # add the profile to the profiles map
         else:
             raise ProfileSpecificationError(
@@ -278,6 +296,33 @@ class Profile:
         if pop_first:
             return values[0] if values and len(values) >= 1 else None
         return values
+
+    def __add_override__(self, profile: Profile):
+        """
+        Add an override profile to this profile.
+
+        :param profile: the profile that overrides this profile
+        :type profile: Profile
+        """
+        if not isinstance(profile, Profile):
+            raise TypeError(f"Expected a Profile instance, got {type(profile)}")
+        if profile not in self._overrides:
+            self._overrides.append(profile)
+            profile._overridden_by.append(self)
+
+    @property
+    def overrides(self) -> list[Profile]:
+        """
+        The list of profiles that override this profile.
+        """
+        return self._overrides
+
+    @property
+    def overridden_by(self) -> list[Profile]:
+        """
+        The list of profiles that are overridden by this profile.
+        """
+        return self._overridden_by
 
     @property
     def path(self):
@@ -590,10 +635,10 @@ class Profile:
         return candidate_token, version
 
     @classmethod
-    def load(cls, profiles_base_path: str,
-             profile_path: Union[str, Path],
-             publicID: Optional[str] = None,
-             severity:  Severity = Severity.REQUIRED) -> Profile:
+    def __load_profile_path__(cls, profiles_base_path: str,
+                              profile_path: Union[str, Path],
+                              publicID: Optional[str] = None,
+                              severity:  Severity = Severity.REQUIRED) -> Profile:
         # if the path is a string, convert it to a Path
         if isinstance(profile_path, str):
             profile_path = Path(profile_path)
@@ -607,29 +652,72 @@ class Profile:
         return profile
 
     @classmethod
-    def load_profiles(cls, profiles_path: Union[str, Path],
+    def __load_profiles_paths__(cls, profiles_path: Union[str, Path] = None,
+                                extra_profiles_path: Union[str, Path] = None) -> list[Tuple[Path, Path]]:
+        """
+        Load the paths of the profiles from the given profiles path and extra profiles path.
+
+        :param profiles_path: the path to the profiles directory
+        :type profiles_path: Union[str, Path]
+        :param extra_profiles_path: an additional path to search for profiles
+        :type extra_profiles_path: Union[str, Path]
+
+        :return: a list of tuples containing the root profile directory and the profile directory
+        :rtype: list[Tuple[Path, Path]]
+
+        :raises InvalidProfilePath: if the profiles path is not a directory
+        """
+        result = []
+        # set the list of root profile directories
+        root_profile_directories = [profiles_path] if profiles_path else []
+        if extra_profiles_path is not None and extra_profiles_path != profiles_path:
+            root_profile_directories.append(extra_profiles_path)
+        # collect profiles nested in the root profile directories
+        for root_profile_directory in root_profile_directories:
+            # if the path is a string, convert it to a Path
+            if isinstance(root_profile_directory, str):
+                root_profile_directory = Path(root_profile_directory)
+            # check if the path is a directory and raise an error if not
+            if not root_profile_directory.is_dir():
+                raise InvalidProfilePath(root_profile_directory)
+            # if the path is a directory, get the profile directories
+            result.extend([(root_profile_directory, p.parent)
+                          for p in root_profile_directory.rglob('*.*') if p.name == PROFILE_SPECIFICATION_FILE])
+        # return the list of profile directories
+        return result
+
+    @classmethod
+    def load_profiles(cls,
+                      profiles_path: Union[str, Path],
+                      extra_profiles_path: Union[str, Path] = None,
                       publicID: Optional[str] = None,
                       severity:  Severity = Severity.REQUIRED,
                       allow_requirement_check_override: bool = True) -> list[Profile]:
-        # if the path is a string, convert it to a Path
-        if isinstance(profiles_path, str):
-            profiles_path = Path(profiles_path)
-        # check if the path is a directory
-        if not profiles_path.is_dir():
-            raise InvalidProfilePath(profiles_path)
         # initialize the profiles list
         profiles = []
         # calculate the list of profiles path as the subdirectories of the profiles path
         # where the profile specification file is present
-        profile_paths = [p.parent for p in profiles_path.rglob('*.*') if p.name == PROFILE_SPECIFICATION_FILE]
+        profiles_paths = cls.__load_profiles_paths__(profiles_path,
+                                                     extra_profiles_path)
 
         # iterate through the directories and load the profiles
-        for profile_path in profile_paths:
+        for root_profile_path, profile_path in profiles_paths:
             logger.debug("Checking profile path: %s %s %r", profile_path,
                          profile_path.is_dir(), IGNORED_PROFILE_DIRECTORIES)
+            # check if the profile path is a directory and not in the ignored directories
             if profile_path.is_dir() and profile_path not in IGNORED_PROFILE_DIRECTORIES:
-                profile = Profile.load(profiles_path, profile_path, publicID=publicID, severity=severity)
+                profile = Profile.__load_profile_path__(
+                    root_profile_path, profile_path, publicID=publicID, severity=severity)
+                # if the profile overrides another profile,
+                # remove the overridden profiles from the list of profiles
+                # to avoid duplicates and ensure that the most specific profile is used
+                if profile.overrides:
+                    for overridden_profile in profile.overrides:
+                        if overridden_profile in profiles:
+                            profiles.remove(overridden_profile)
+                # add the profile to the list of profiles
                 profiles.append(profile)
+                logger.debug("Loaded profile: %s (%s)", profile.identifier, profile.path)
 
         # order profiles based on the inheritance hierarchy,
         # from the most specific to the most general
@@ -1556,6 +1644,8 @@ class ValidationSettings:
     # Profile settings
     #: The path to the profiles
     profiles_path: Path = DEFAULT_PROFILES_PATH
+    #: The path to the extra profiles
+    extra_profiles_path: Optional[Path] = None
     #: The profile identifier to validate against
     profile_identifier: str = DEFAULT_PROFILE_IDENTIFIER
     #: Flag to enable profile inheritance
@@ -1801,8 +1891,11 @@ class Validator(Publisher):
             # load the profiles
             profiles = []
             candidate_profiles = []
-            available_profiles = Profile.load_profiles(context.profiles_path, publicID=context.publicID,
-                                                       severity=context.requirement_severity)
+            available_profiles = Profile.load_profiles(
+                context.profiles_path,
+                extra_profiles_path=context.extra_profiles_path,
+                publicID=context.publicID,
+                severity=context.requirement_severity)
             profiles = [p for p in available_profiles if p.uri in candidate_profiles_uris]
             # get the candidate profiles
             for profile in profiles:
@@ -1969,6 +2062,19 @@ class ValidationContext:
         return profiles_path
 
     @property
+    def extra_profiles_path(self) -> Optional[Path]:
+        """
+        The path to the extra profiles
+
+        :return: The path to the extra profiles
+        :rtype: Optional[Path]
+        """
+        extra_profiles_path = self.settings.extra_profiles_path
+        if isinstance(extra_profiles_path, str):
+            extra_profiles_path = Path(extra_profiles_path)
+        return extra_profiles_path if extra_profiles_path else None
+
+    @property
     def requirement_severity(self) -> Severity:
         """
         The requirement severity to validate against
@@ -2106,18 +2212,10 @@ class ValidationContext:
 
     def __load_profiles__(self) -> list[Profile]:
 
-        # if the inheritance is disabled, load only the target profile
-        if not self.inheritance_enabled:
-            profile = Profile.load(
-                self.profiles_path,
-                self.profiles_path / self.profile_identifier,
-                publicID=self.publicID,
-                severity=self.requirement_severity)
-            return [profile]
-
         # load all profiles
         profiles = Profile.load_profiles(
             self.profiles_path,
+            extra_profiles_path=self.settings.extra_profiles_path,
             publicID=self.publicID,
             severity=self.requirement_severity,
             allow_requirement_check_override=self.allow_requirement_check_override)
@@ -2142,6 +2240,10 @@ class ValidationContext:
                 raise ProfileNotFound(
                     self.profile_identifier,
                     message=f"Profile '{self.profile_identifier}' not found in '{self.profiles_path}'") from e
+
+        # if the inheritance is enabled, return only the target profile
+        if not self.inheritance_enabled:
+            return [profile]
 
         # Set the profiles to validate against as the target profile and its inherited profiles
         profiles = profile.inherited_profiles + [profile]

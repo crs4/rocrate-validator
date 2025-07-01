@@ -17,14 +17,43 @@ from pathlib import Path
 from rocrate_validator import log as logging
 from rocrate_validator.models import ValidationSettings
 from rocrate_validator.rocrate import ROCrateMetadata
-from rocrate_validator.services import detect_profiles
-from tests.ro_crates import ValidROC, InvalidMultiProfileROC
+from rocrate_validator.services import detect_profiles, get_profiles
+from tests.ro_crates import InvalidMultiProfileROC, ValidROC
 
 # set up logging
 logger = logging.getLogger(__name__)
 
 
 metadata_file_descriptor = Path(ROCrateMetadata.METADATA_FILE_DESCRIPTOR)
+
+
+def test_default_profiles_list():
+    """
+    Test the list of profiles.
+    """
+    logger.debug("Testing the list of profiles")
+    profiles = get_profiles()
+    logger.debug("Profiles: %s", profiles)
+    # Check the number of profiles
+    assert len(profiles) > 0, "Expected at least one profile"
+
+
+def test_extra_profiles_list(fake_profiles_path: Path):
+    logger.error("Testing the list of extra profiles")
+    default_profiles = get_profiles()
+    assert len(default_profiles) > 0, "Expected at least one default profile"
+    extra_profiles = get_profiles(profiles_path=fake_profiles_path)
+    logger.error("Extra profiles: %s", extra_profiles)
+    # Check the number of extra profiles
+    assert len(extra_profiles) > 0, "Expected at least one extra profile"
+
+    all_profiles = get_profiles(extra_profiles_path=fake_profiles_path)
+    logger.error("All profiles: %s", all_profiles)
+    # Check the number of all profiles
+    assert len(all_profiles) > len(default_profiles), \
+        "Expected more profiles with extra profiles added than the default ones"
+    assert len(all_profiles) == len(extra_profiles) + len(default_profiles), \
+        "Expected the number of all profiles to be the sum of default and extra profiles"
 
 
 def test_valid_local_rocrate():

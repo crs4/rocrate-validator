@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import re
+from pathlib import Path
 
 from click.testing import CliRunner
 from pytest import fixture
@@ -66,3 +67,43 @@ def test_validate_subcmd_invalid_local_archive_rocrate(cli_runner: CliRunner):
                                      '--skip-checks', SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER])
     assert result.exit_code == 0
     assert re.search(r'RO-Crate.*is a valid', result.output)
+
+
+def test_validate_with_invalid_profiles_path_dir(cli_runner: CliRunner):
+    # Create a directory with a dummy profile file
+    dummy_profiles_path = "/tmp/dummy_profiles"
+    result = cli_runner.invoke(
+        cli,
+        [
+            "validate",
+            str(ValidROC().wrroc_paper_long_date),
+            "--profiles-path", dummy_profiles_path,
+            "--verbose",
+            "--no-paging"
+        ]
+    )
+    assert result.exit_code == 2
+    # logger.debug(result.output)
+    assert re.search(f"Path '{dummy_profiles_path}' does not exist.", result.output)
+
+
+def test_profiles_list(cli_runner: CliRunner):
+    """
+    Test the list of profiles.
+    """
+    result = cli_runner.invoke(cli, ["profiles", "list", "--no-paging"])
+    # logger.debug("Profiles list output: %s", result.output)
+    assert result.exit_code == 0
+    # assert "Available profiles:" in result.output
+    assert "ro-crate-1.1" in result.output  # Check for a known profile
+
+
+def test_extra_profiles_list(cli_runner: CliRunner, fake_profiles_path: Path):
+    """
+    Test the list of extra profiles.
+    """
+    result = cli_runner.invoke(cli, ["profiles", "--extra-profiles-path", fake_profiles_path, "list", "--no-paging"])
+    # logger.debug("Extra profiles list output: %s", result.output)
+    assert result.exit_code == 0
+    # assert "Available profiles:" in result.output
+    assert "Profile A" in result.output  # Check for a known extra profile
