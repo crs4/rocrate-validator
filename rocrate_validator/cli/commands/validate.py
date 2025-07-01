@@ -157,6 +157,7 @@ def get_single_char(console: Optional[Console] = None, end: str = "\n",
     type=click.STRING,
     default=None,
     show_default=True,
+    metavar="Profile-ID",
     help="Identifier of the profile to use for validation",
 )
 @click.option(
@@ -198,7 +199,17 @@ def get_single_char(console: Optional[Console] = None, end: str = "\n",
     type=click.STRING,
     default=None,
     show_default=True,
-    help="List of checks to skip"
+    metavar="Fully-Qualified-Check-IDs",
+    help=(
+        "[bold yellow]Fully-Qualified-Check-IDs[/bold yellow] is a comma-separated list of checks to skip "
+        "(may be specified multiple times). Each check must be specified by its "
+        "Fully Qualified Identifier, e.g., [bold cyan]ro-crate-1.1_12.1[/bold cyan]. The fully qualified "
+        "check identifier has the format <Profile-ID>_<Requirement_#>.<RequirementCheck_#>, "
+        "where <Requirement_#> is the position number of the Requirement in the profile, "
+        "and <RequirementCheck_#> is the position number of the RequirementCheck within that Requirement. "
+        "You can find the Fully-Qualified-Check IDs using: "
+        "[bold orange1]rocrate-validator profiles describe <Profile-ID> -v[/bold orange1]"
+    ),
 )
 @click.option(
     '-v',
@@ -281,6 +292,25 @@ def validate(ctx,
     if rocrate_uri:
         logger.debug("rocrate_path: %s", os.path.abspath(rocrate_uri))
 
+    # Parse the skip_checks option
+    logger.debug("skip_checks: %s", skip_checks)
+    # Parse the skip_checks option
+    skip_checks_list = []
+    if skip_checks:
+        try:
+            for s in skip_checks:
+                skip_checks_list.extend(_.strip() for _ in s.split(",") if _.strip())
+            logger.debug("skip_checks_list: %s", skip_checks_list)
+        except Exception as e:
+            logger.error("Error parsing skip_checks: %s", e)
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.exception("Error parsing skip_checks: %s", e)
+            raise ValueError(
+                f"Invalid skip_checks value: {s}. "
+                "It must be a comma-separated list of Fully Qualified Check IDs."
+            )
+    logger.debug("Skip checks: %s", skip_checks_list)
+
     try:
         # Validation settings
         validation_settings = {
@@ -291,7 +321,7 @@ def validate(ctx,
             "enable_profile_inheritance": not disable_profile_inheritance,
             "rocrate_uri": rocrate_uri,
             "abort_on_first": fail_fast,
-            "skip_checks": skip_checks
+            "skip_checks": skip_checks_list
         }
 
         # Print the application header
