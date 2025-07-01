@@ -66,3 +66,7 @@ jobs:
               run: poetry install --no-interaction --no-ansi
             - name: ⌛ Run tests
               run: poetry run pytest
+              env:
+                TERM: "dumb"
+                LINES: "50"
+                COLUMNS: "120"
