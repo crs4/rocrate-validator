@@ -1,0 +1,37 @@
+# Copyright (c) 2024-2025 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+@prefix ro: <./> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema_org: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix validator: <https://github.com/crs4/rocrate-validator/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+
+ro-crate:RootDataEntityRequiredProperties
+    a sh:NodeShape ;
+    sh:name "Five Safes Crate Root Data Entity REQUIRED properties" ;
+    sh:description "The Root Data Entity MUST have a `funding`" ;
+    sh:targetClass ro-crate:RootDataEntity ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Root Data Entity: `funding` property" ;
+        sh:description """Check if the Root Data Entity includes a `funding` property (as specified by schema.org).""" ;
+        sh:minCount 1 ;
+        sh:nodeKind sh:Literal ;
+        sh:path schema_org:funding;
+        sh:message "The Root Data Entity MUST have a `funding` property (as specified by schema.org)" ;
+    ] .
