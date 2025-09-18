@@ -91,6 +91,14 @@ class ValidROC:
     def multi_profile_crate(self) -> Path:
         return VALID_CRATES_DATA_PATH / "multi-profile-crate"
 
+    @property
+    def five_safes_crate_request(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "five-safes-crate-request"
+
+    @property
+    def five_safes_crate_result(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "five-safes-crate-result"
+
 
 class InvalidFileDescriptor:
 
