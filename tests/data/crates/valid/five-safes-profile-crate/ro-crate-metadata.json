@@ -1,0 +1,461 @@
+{
+    "@context": "https://w3id.org/ro/crate/1.1/context",
+    "@graph": [
+        {
+            "@type": "CreativeWork",
+            "@id": "ro-crate-metadata.json",
+            "about": {
+                "@id": "https://w3id.org/5s-crate/0.4"
+            },
+            "licence": {
+                "@id": "http://spdx.org/licenses/CC0-1.0"
+            },
+            "conformsTo": {
+                "@id": "https://w3id.org/ro/crate/1.1"
+            }
+        },
+        {
+            "@id": "https://w3id.org/5s-crate/0.4",
+            "@type": [
+                "Dataset",
+                "Profile"
+            ],
+            "name": "Five Safes RO-Crate profile",
+            "cite-as": "https://w3id.org/5s-crate/0.4",
+            "version": "0.4",
+            "datePublished": "2023-05-15T10:32:00Z",
+            "licence": {
+                "@id": "http://spdx.org/licenses/MIT"
+            },
+            "copyrightHolder": {
+                "@id": "https://ror.org/027m9bs27"
+            },
+            "copyrightYear": 2023,
+            "hasPart": [
+                {
+                    "@id": "https://trefx.uk/5s-crate/0.4/index.html"
+                },
+                {
+                    "@id": "https://trefx.uk/5s-crate/0.4/example-request.bagit.zip"
+                },
+                {
+                    "@id": "https://trefx.uk/5s-crate/0.4/example-request/data/"
+                },
+                {
+                    "@id": "https://trefx.uk/5s-crate/0.4/example-result.bagit.zip"
+                },
+                {
+                    "@id": "https://trefx.uk/5s-crate/0.4/example-result/data/"
+                },
+                {
+                    "@id": "http://schema.org/PotentialActionStatus"
+                },
+                {
+                    "@id": "http://schema.org/CompletedActionStatus"
+                },
+                {
+                    "@id": "http://schema.org/ActiveActionStatus"
+                },
+                {
+                    "@id": "http://schema.org/FailedActionStatus"
+                },
+                {
+                    "@id": "http://schema.org/CreateAction"
+                },
+                {
+                    "@id": "http://schema.org/AssessAction"
+                },
+                {
+                    "@id": "http://schema.org/DownloadAction"
+                },
+                {
+                    "@id": "http://schema.org/UpdateAction"
+                },
+                {
+                    "@id": "http://schema.org/grantee"
+                },
+                {
+                    "@id": "http://schema.org/DigitalDocument"
+                },
+                {
+                    "@id": "http://schema.org/DigitalDocumentPermission"
+                },
+                {
+                    "@id": "http://schema.org/hasDigitalDocumentPermission"
+                },
+                {
+                    "@id": "http://schema.org/ReadPermission"
+                },
+                {
+                    "@id": "https://bioschemas.org/FormalParameter"
+                },
+                {
+                    "@id": "https://w3id.org/shp#CheckValue"
+                },
+                {
+                    "@id": "https://w3id.org/shp#ValidationCheck"
+                },
+                {
+                    "@id": "https://w3id.org/shp#SignOff"
+                },
+                {
+                    "@id": "https://w3id.org/shp#DisclosureCheck"
+                },
+                {
+                    "@id": "https://w3id.org/shp#GenerateCheckValue"
+                }
+            ],
+            "hasResource": [
+                {
+                    "@id": "#hasSpecification"
+                },
+                {
+                    "@id": "#hasExampleRequest"
+                },
+                {
+                    "@id": "#hasExampleResult"
+                },                
+                {
+                    "@id": "#usesSHP"
+                }
+            ],
+            "publisher": {
+                "@id": "https://trefx.uk/"
+            },
+            "funding": {
+                "@id": "https://gtr.ukri.org/projects?ref=MC_PC_23007"
+            },
+            "author": [
+                {
+                    "@id": "https://orcid.org/0000-0001-9842-9718"
+                },
+                {
+                    "@id": "https://orcid.org/0009-0003-2419-1964"
+                }
+            ]
+        },
+        {
+            "@id": "https://trefx.uk/5s-crate/0.4/index.html",
+            "@type": "CreativeWork",
+            "name": "Five Safes RO-Crate profile (specification)"
+        },
+        {
+            "@id": "https://trefx.uk/5s-crate/0.4/example-request/data/",
+            "@type": "Dataset",
+            "name": "Example Crate in Request state",
+            "conformsTo": {
+                "@id": "https://w3id.org/5s-crate/0.4"
+            },
+            "subjectOf": [
+                {
+                    "@id": "https://trefx.uk/5s-crate/0.4/example-request/data/ro-crate-metadata.json"
+                },
+                {
+                    "@id": "https://trefx.uk/5s-crate/0.4/example-request/data/ro-crate-preview.html"
+                }
+            ],
+            "distribution": {
+                "@id": "https://trefx.uk/5s-crate/0.4/example-request.bagit.zip"
+            }            
+        },
+        {
+            "@id": "https://trefx.uk/5s-crate/0.4/example-result/data/",
+            "@type": "Dataset",
+            "name": "Example Crate in Request state",
+            "conformsTo": {
+                "@id": "https://w3id.org/5s-crate/0.4"
+            },
+            "subjectOf": [
+                {
+                    "@id": "https://trefx.uk/5s-crate/0.4/example-result/data/ro-crate-metadata.json"
+                },
+                {
+                    "@id": "https://trefx.uk/5s-crate/0.4/example-result/data/ro-crate-preview.html"
+                }
+            ],
+            "distribution": {
+                "@id": "https://trefx.uk/5s-crate/0.4/example-result.bagit.zip"
+            }
+        },
+        {
+            "@id": "https://trefx.uk/5s-crate/0.4/example-result.bagit.zip",
+            "@type": "DataDownload",
+            "name": "example-result.bagit.zip",
+            "description": "Example Result following the 5s-crate profile, archived as BagIt ZIP",
+            "encodingFormat": "application/zip",
+            "conformsTo": {
+                "@id": "https://w3id.org/ro/crate"
+            }
+        },
+        {
+            "@id": "https://trefx.uk/5s-crate/0.4/example-request.bagit.zip",
+            "@type": "DataDownload",
+            "name": "example-request.bagit.zip",
+            "description": "Example Request following the 5s-crate profile, archived as BagIt ZIP",
+            "encodingFormat": "application/zip",
+            "conformsTo": {
+                "@id": "https://w3id.org/ro/crate"
+            }
+        },        
+        {
+            "@id": "https://trefx.uk/5s-crate/0.4/example-request/data/ro-crate-metadata.json",
+            "@type": "CreativeWork",
+            "encodingFormat": "application/ld+json"
+        },
+        {
+            "@id": "https://trefx.uk/5s-crate/0.4/example-request/data/ro-crate-preview.html",
+            "@type": "CreativeWork",
+            "encodingFormat": "text/html"
+        },
+        {
+            "@id": "https://trefx.uk/5s-crate/0.4/example-result/data/ro-crate-metadata.json",
+            "@type": "CreativeWork",
+            "encodingFormat": "application/ld+json"
+        },
+        {
+            "@id": "https://trefx.uk/5s-crate/0.4/example-result/data/ro-crate-preview.html",
+            "@type": "CreativeWork",
+            "encodingFormat": "text/html"
+        },
+        {
+            "@id": "https://bioschemas.org/FormalParameter",
+            "@type": "DefinedTerm"
+        },
+        {
+            "@id": "https://w3id.org/shp",
+            "@type": "DefinedTermSet",
+            "name": "The Safe Haven Provenance (SHP) Ontology",
+            "version": "0.1"
+        },
+        {
+            "@id": "https://w3id.org/shp#CheckValue",
+            "@type": "DefinedTerm",
+            "inDefinedTermSet": {
+                "@id": "https://w3id.org/shp"
+            }
+        },
+        {
+            "@id": "https://w3id.org/shp#ValidationCheck",
+            "@type": "DefinedTerm",
+            "inDefinedTermSet": {
+                "@id": "https://w3id.org/shp"
+            }
+        },
+        {
+            "@id": "https://w3id.org/shp#SignOff",
+            "@type": "DefinedTerm",
+            "inDefinedTermSet": {
+                "@id": "https://w3id.org/shp"
+            }
+        },
+        {
+            "@id": "https://w3id.org/shp#DisclosureCheck",
+            "@type": "DefinedTerm",
+            "inDefinedTermSet": {
+                "@id": "https://w3id.org/shp"
+            }
+        },
+        {
+            "@id": "https://w3id.org/shp#GenerateCheckValue",
+            "@type": "DefinedTerm",
+            "inDefinedTermSet": {
+                "@id": "https://w3id.org/shp"
+            }
+        },
+        {
+            "@id": "https://w3id.org/shp#CheckValue",
+            "@type": "DefinedTerm",
+            "inDefinedTermSet": {
+                "@id": "https://w3id.org/shp"
+            }
+        },
+        {
+            "@id": "https://w3id.org/shp#ValidationCheck",
+            "@type": "DefinedTerm",
+            "inDefinedTermSet": {
+                "@id": "https://w3id.org/shp"
+            }
+        },
+        {
+            "@id": "https://w3id.org/shp#SignOff",
+            "@type": "DefinedTerm",
+            "inDefinedTermSet": {
+                "@id": "https://w3id.org/shp"
+            }
+        },
+        {
+            "@id": "https://w3id.org/shp#DisclosureCheck",
+            "@type": "DefinedTerm",
+            "inDefinedTermSet": {
+                "@id": "https://w3id.org/shp"
+            }
+        },
+        {
+            "@id": "https://w3id.org/shp#GenerateCheckValue",
+            "@type": "DefinedTerm",
+            "inDefinedTermSet": {
+                "@id": "https://w3id.org/shp"
+            }
+        },
+        {
+            "@id": "https://www.iana.org/assignments/named-information#sha-512",
+            "@type": "DefinedTerm",
+            "name": "sha-512 algorithm"
+        },
+        {
+            "@id": "#usesSHP",
+            "name": "uses vocabulary SHP",
+            "@type": "ResourceDescriptor",
+            "hasRole": {
+                "@id": "http://www.w3.org/ns/dx/prof/role/vocabulary"
+            },
+            "hasArtifact": {
+                "@id": "https://w3id.org/shp"
+            }
+        },
+        {
+            "@id": "#hasSpecification",
+            "@type": "ResourceDescriptor",
+            "name": "has specification",
+            "hasRole": {
+                "@id": "http://www.w3.org/ns/dx/prof/role/specification"
+            },
+            "hasArtifact": {
+                "@id": "https://trefx.uk/5s-crate/0.4/index.html"
+            }
+        },
+        {
+            "@id": "#hasExampleRequest",
+            "@type": "ResourceDescriptor",
+            "name": "has example: Request",
+            "hasRole": {
+                "@id": "http://www.w3.org/ns/dx/prof/role/example"
+            },
+            "hasArtifact": {
+                "@id": "https://trefx.uk/5s-crate/0.4/example-request/data/"
+            }
+        },
+        {
+            "@id": "#hasExampleResult",
+            "@type": "ResourceDescriptor",
+            "name": "has example: Result",
+            "hasRole": {
+                "@id": "http://www.w3.org/ns/dx/prof/role/example"
+            },
+            "hasArtifact": {
+                "@id": "https://trefx.uk/5s-crate/0.4/example-result/data/"
+            }
+        },
+
+        {
+            "@id": "http://www.w3.org/ns/dx/prof/role/example",
+            "@type": [
+                "DefinedTerm",
+                "ResourceRole"
+            ],
+            "name": "Example",
+            "description": "Sample instance data conforming to the profile"
+        },
+        {
+            "@id": "http://www.w3.org/ns/dx/prof/role/specification",
+            "@type": [
+                "DefinedTerm",
+                "ResourceRole"
+            ],
+            "name": "Specification",
+            "description": "Defining the profile in human-readable form"
+        },
+        {
+            "@id": "http://www.w3.org/ns/dx/prof/role/vocabulary",
+            "@type": [
+                "DefinedTerm",
+                "ResourceRole"
+            ],
+            "name": "Vocabulary",
+            "description": "Defines terms used in the profile specification"
+        },
+        {
+            "@id": "http://spdx.org/licenses/CC0-1.0",
+            "@type": "CreativeWork",
+            "name": "Creative Commons Zero v1.0 Universal",
+            "identifier": "CC0-1.0",
+            "url": "https://creativecommons.org/publicdomain/zero/1.0/"
+        },
+        {
+            "@id": "http://spdx.org/licenses/MIT",
+            "@type": "CreativeWork",
+            "name": "MIT Licence",
+            "identifier": "MIT"
+        },
+        {
+            "@id": "https://gtr.ukri.org/projects?ref=MC_PC_23007",
+            "@type": "Grant",
+            "identifier": {
+                "@id": "_:ukri:MC_PC_23007"
+            },
+            "name": "DARE-FX: Delivering a federated network of TREs to enable safe analytics",
+            "description": "",
+            "funder": {
+                "@id": "https://ror.org/001aqnf71"
+            },
+            "sponsor": {
+                "@id": "https://dareuk.org.uk/"
+            }
+        },
+        {
+            "@id": "https://dareuk.org.uk/",
+            "@type": "FundingScheme",
+            "name": "DARE UK",
+            "funder": {
+                "@id": "https://ror.org/001aqnf71"
+            }
+        },
+        {
+            "@id": "_:ukri:MC_PC_23007",
+            "@type": "PropertyValue",
+            "name": "UKRI",
+            "value": "MC_PC_23007"
+        },
+        {
+            "@id": "https://trefx.uk/",
+            "@type": "ResearchProject",
+            "name": "TRE-FX",
+            "description": "Delivering a federated network of TREs to enable safe analytics",
+            "funding": {
+                "@id": "https://gtr.ukri.org/projects?ref=MC_PC_23007"
+            }
+        },
+        {
+            "@id": "https://ror.org/001aqnf71",
+            "@type": "FundingAgency",
+            "name": "UK Research and Innovation",
+            "alternateName": "UKRI",
+            "url": "https://www.ukri.org/"
+        },
+        {
+            "@id": "https://orcid.org/0000-0001-9842-9718",
+            "@type": "Person",
+            "name": "Stian Soiland-Reyes",
+            "affiliation": {
+                "@id": "https://ror.org/027m9bs27"
+            },
+            "memberOf": {
+                "@id": "https://trefx.uk/"
+            }
+        },
+        {
+            "@id": "https://ror.org/027m9bs27",
+            "@type": "CollegeOrUniversity",
+            "name": "The University of Manchester",
+            "url": "https://www.manchester.ac.uk/"
+        },
+        {
+            "@id": "https://orcid.org/0009-0003-2419-1964",
+            "@type": "Person",
+            "name": "Stuart Wheater",
+            "memberOf": {
+                "@id": "https://trefx.uk/"
+            }
+        }
+    ]
+}

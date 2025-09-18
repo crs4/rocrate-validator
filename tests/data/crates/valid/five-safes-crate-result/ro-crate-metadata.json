@@ -1,0 +1,392 @@
+{
+    "@context": "https://w3id.org/ro/crate/1.2-DRAFT/context",
+    "@graph": [
+        {
+            "@type": "CreativeWork",
+            "@id": "ro-crate-metadata.json",
+            "about": {
+                "@id": "./"
+            },
+            "conformsTo": {
+                "@id": "https://w3id.org/ro/crate/1.2-DRAFT"
+            }
+        },
+        {
+            "@id": "./",
+            "@type": "Dataset",
+            "conformsTo": {
+                "@id": "https://w3id.org/5s-crate/0.4"
+            },
+            "hasPart": [
+                {
+                    "@id": "https://workflowhub.eu/workflows/289?version=1"
+                },
+                {
+                    "@id": "input1.txt"
+                },
+                {
+                    "@id": "workflow/289/"
+                }
+            ],
+            "mainEntity": {
+                "@id": "https://workflowhub.eu/workflows/289?version=1"
+            },
+            "mentions": [
+                {
+                    "@id": "#query-37252371-c937-43bd-a0a7-3680b48c0538"
+                },
+                {
+                    "@id": "#check-f33fe90c-0c22-4c72-b299-de509028410e"
+                },
+                {
+                    "@id": "#validate-1146f640-819e-4c86-b029-b763a0040896"
+                },
+                {
+                    "@id": "#download-8b51bf57-6b29-44da-b24b-638c8df91639"
+                },
+                {
+                    "@id": "#signoff-3b741265-cfef-49ea-8138-a2fa149bf2f0"
+                },
+                {
+                    "@id": "#disclosure-b16c1f0a-ae7f-4582-9b28-7d9df3313e27"
+                },
+                {
+                    "@id": "#bagit-ce785c0b-c988-4043-8cbd-1489dcebc14f"
+                }
+            ],
+            "sourceOrganization": {
+                "@id": "#project-be6ffb55-4f5a-4c14-b60e-47e0951090c70"
+            },
+            "publisher": {
+                "@id": "https://tre72.example.com/"
+            },
+            "licence": {
+                "@id": "http://spdx.org/licenses/CC-BY-4.0"
+            }
+        },
+        {
+            "@id": "https://w3id.org/5s-crate/0.4",
+            "@type": "Profile",
+            "name": "Five Safes RO-Crate profile"
+        },
+        {
+            "@id": "https://spdx.org/licenses/CC-BY-4.0",
+            "@type": "CreativeWork",
+            "name": "Creative Commons Attribution 4.0 International",
+            "identifier": "CC-BY-4.0"
+        },
+        {
+            "@id": "https://workflowhub.eu/workflows/289?version=1",
+            "@type": "Dataset",
+            "name": "CWL Protein MD Setup tutorial with mutations",
+            "conformsTo": {
+                "@id": "https://w3id.org/workflowhub/workflow-ro-crate/1.0"
+            },
+            "distribution": {
+                "@id": "https://workflowhub.eu/workflows/289/ro_crate?version=1"
+            }
+        },
+        {
+            "@id": "https://workflowhub.eu/workflows/289/ro_crate?version=1",
+            "@type": "DataDownload",
+            "conformsTo": {
+                "@id": "https://w3id.org/ro/crate"
+            },
+            "encodingFormat": "application/zip"
+        },
+        {
+            "@id": "#query-37252371-c937-43bd-a0a7-3680b48c0538",
+            "@type": "CreateAction",
+            "actionStatus": "http://schema.org/CompleteActionStatus",
+            "agent": {
+                "@id": "https://orcid.org/0000-0001-9842-9718"
+            },
+            "instrument": {
+                "@id": "https://workflowhub.eu/workflows/289?version=1"
+            },
+            "name": "Execute query 12389 on workflow ",
+            "object": [
+                {
+                    "@id": "input1.txt"
+                },
+                {
+                    "@id": "#enableFastMode"
+                }
+            ],
+            "result": [
+                {
+                    "@id": "outputs/table.csv"
+                },
+                {
+                    "@id": "outputs/diagrams/"
+                },
+                {
+                    "@id": "urn:uuid:07b81e0f-7ac4-5428-9940-878b241e2397"
+                }
+            ]
+        },
+        {
+            "@id": "#project-be6ffb55-4f5a-4c14-b60e-47e0951090c70",
+            "@type": "Project",
+            "name": "Investigation of cancer (TRE72 project 81)",
+            "identifier": [
+                {
+                    "@id": "_:localid:tre72:project81"
+                }
+            ],
+            "funding": {
+                "@id": "https://gtr.ukri.org/projects?ref=10038961"
+            },
+            "member": [
+                {
+                    "@id": "https://ror.org/027m9bs27"
+                },
+                {
+                    "@id": "https://ror.org/01ee9ar58"
+                }
+            ]
+        },
+        {
+            "@id": "_:localid:tre72:project81",
+            "@type": "PropertyValue",
+            "name": "tre72",
+            "value": "project81"
+        },        
+        {
+            "@id": "input1.txt",
+            "@type": "File",
+            "name": "input1",
+            "exampleOfWork": {
+                "@id": "#sequence"
+            }
+        },
+        {
+            "@id": "#enableFastMode",
+            "@type": "PropertyValue",
+            "name": "--fast-mode",
+            "value": "True",
+            "exampleOfWork": {
+                "@id": "#fast"
+            }
+        },
+        {
+            "@id": "#sequence",
+            "@type": "FormalParameter",
+            "name": "input-sequence"
+        },
+        {
+            "@id": "#fast",
+            "@type": "FormalParameter",
+            "name": "fast-mode"
+        },
+        {
+            "@id": "outputs/qa.csv",
+            "@type": "File",
+            "encodingFormat": "text/csv",
+            "name": "Tabular listing of quality assessment"
+        },
+        {
+            "@id": "outputs/diagrams/",
+            "@type": "Dataset",
+            "name": "Diagrams of regions of interest"
+        },
+        {
+            "@id": "workflow/289/",
+            "sameAs": {
+                "@id": "https://workflowhub.eu/workflows/289?version=1"
+            },
+            "@type": "Dataset",
+            "name": "CWL Protein MD Setup tutorial with mutations",
+            "conformsTo": {
+                "@id": "https://w3id.org/workflowhub/workflow-ro-crate/1.0"
+            },
+            "distribution": {
+                "@id": "https://workflowhub.eu/workflows/289/ro_crate?version=1"
+            }
+        },
+        {
+            "@id": "#check-f33fe90c-0c22-4c72-b299-de509028410e",
+            "type": "AssessAction",
+            "additionalType": {
+                "@id": "https://w3id.org/shp#CheckValue"
+            },
+            "name": "BagIt checksum of Crate: OK",
+            "endTime": "2023-04-18T12:11:45+01:00",
+            "object": {
+                "@id": "./"
+            },
+            "instrument": {
+                "@id": "https://www.iana.org/assignments/named-information#sha-512"
+            },
+            "agent": {
+                "@id": "#validator-a4a66c63-2fe0-4c57-830d-268a40718313"
+            },
+            "actionStatus": "http://schema.org/CompletedActionStatus"
+        },
+        {
+            "@id": "#validate-1146f640-819e-4c86-b029-b763a0040896",
+            "type": "AssessAction",
+            "additionalType": {
+                "@id": "https://w3id.org/shp#ValidationCheck"
+            },
+            "name": "Validation against Five Safes RO-Crate profile: approved",
+            "startTime": "2023-04-18T12:11:46+01:00",
+            "endTime": "2023-04-18T12:11:49+01:00",
+            "object": {
+                "@id": "./"
+            },
+            "instrument": {
+                "@id": "https://w3id.org/5s-crate/0.4"
+            },
+            "agent": {
+                "@id": "#validator-a4a66c63-2fe0-4c57-830d-268a40718313"
+            },
+            "actionStatus": "http://schema.org/CompletedActionStatus"
+        },
+        {
+            "@id": "#download-8b51bf57-6b29-44da-b24b-638c8df91639",
+            "type": "DownloadAction",
+            "name": "Downloaded workflow RO-Crate via proxy",
+            "startTime": "2023-04-18T12:11:50+01:00",
+            "endTime": "2023-04-18T12:11:52+01:00",
+            "object": {
+                "@id": "https://workflowhub.eu/workflows/289/ro_crate?version=1"
+            },
+            "result": {
+                "@id": "workflow/289/"
+            },
+            "agent": {
+                "@id": "http://proxy.example.com/"
+            },
+            "actionStatus": "http://schema.org/CompletedActionStatus"
+        },
+        {
+            "@id": "#signoff-3b741265-cfef-49ea-8138-a2fa149bf2f0",
+            "type": "AssessAction",
+            "additionalType": {
+                "@id": "https://w3id.org/shp#SignOff"
+            },
+            "name": "Sign-off of execution according to Agreement policy: approved",
+            "endTime": "2023-04-19T17:15:12+01:00",
+            "object": [
+                {
+                    "@id": "./"
+                },
+                {
+                    "@id": "https://workflowhub.eu/workflows/289?version=1"
+                },
+                {
+                    "@id": "#project-be6ffb55-4f5a-4c14-b60e-47e0951090c70"
+                }
+            ],
+            "instrument": {
+                "@id": "https://tre72.example.com/agreement-policy/81"
+            },
+            "agent": {
+                "@id": "https://orcid.org/0000-0002-1825-0097"
+            },
+            "actionStatus": "http://schema.org/CompletedActionStatus"
+        },
+        {
+            "@id": "#disclosure-b16c1f0a-ae7f-4582-9b28-7d9df3313e27",
+            "type": "AssessAction",
+            "additionalType": {
+                "@id": "https://w3id.org/shp#DisclosureCheck"
+            },
+            "name": "Disclosure check of workflow results: approved",
+            "endTime": "2023-04-25T16:00:00+01:00",
+            "object": {
+                "@id": "./"
+            },
+            "agent": {
+                "@id": "https://orcid.org/0000-0002-1825-0097"
+            },
+            "actionStatus": "http://schema.org/CompletedActionStatus"
+        },
+        {
+            "@id": "#bagit-ce785c0b-c988-4043-8cbd-1489dcebc14f",
+            "type": "UpdateAction",
+            "startTime": "2023-04-29T12:12:25+01:00",
+            "additionalType": {
+                "@id": "https://w3id.org/shp#GenerateCheckValue"
+            },
+            "name": "BagIt manifests of Crate updated",
+            "object": {
+                "@id": "./"
+            },
+            "instrument": {
+                "@id": "https://www.iana.org/assignments/named-information#sha-512"
+            },
+            "agent": {
+                "@id": "#validator-a4a66c63-2fe0-4c57-830d-268a40718313"
+            },
+            "actionStatus": "http://schema.org/CompletedActionStatus"
+        },
+        {
+            "@id": "urn:uuid:07b81e0f-7ac4-5428-9940-878b241e2397",
+            "@type": "DigitalDocument",
+            "encodingFormat": "text/csv",
+            "name": "Patient measurement 07b81e0f-7ac4-5428-9940-878b241e2397",
+            "hasDigitalDocumentPermission": {
+                "@id": "#permissions-07b81e0f"
+            }
+        },
+        {
+            "@id": "#permissions-07b81e0f",
+            "@type": "DigitalDocumentPermission",
+            "permissionType": "http://schema.org/ReadPermission",
+            "grantee": {
+                "@id": "#project-be6ffb55-4f5a-4c14-b60e-47e0951090c70"
+            }
+        },
+        {
+            "@id": "https://orcid.org/0000-0001-9842-9718",
+            "@type": "Person",
+            "name": "Stian Soiland-Reyes",
+            "affiliation": {
+                "@id": "https://ror.org/027m9bs27"
+            },
+            "memberOf": [
+                {
+                    "@id": "#project-be6ffb55-4f5a-4c14-b60e-47e0951090c70"
+                }
+            ]
+        },
+        {
+            "@id": "https://ror.org/027m9bs27",
+            "@type": "Organization",
+            "name": "The University of Manchester"
+        },
+        {
+            "@id": "https://gtr.ukri.org/projects?ref=10038961",
+            "@type": "Grant",
+            "name": "EOSC4Cancer"
+        },
+        {
+            "@id": "https://tre72.example.com/",
+            "@type": "Organization",
+            "name": "TRE 72 trusted research environment at The University of Manchester",
+            "parentOrganization": {
+                "@id": "https://ror.org/027m9bs27"
+            }
+        },
+        {
+            "@id": "https://tre72.example.com/#crate-validator",
+            "@type": "SoftwareApplication",
+            "name": "RO-Crate validator at TRE72",
+            "provider": {
+                "@id": "https://tre72.example.com/"
+            }
+        },
+        {
+            "@id": "https://tre72.example.com/agreement-policy/81",
+            "@type": "CreativeWork",
+            "name": "Agreement policy for TRE72 for project 81"
+        },
+        {
+            "@id": "https://www.iana.org/assignments/named-information#sha-512",
+            "@type": "DefinedTerm",
+            "name": "sha-512 algorithm"
+        }
+    ]
+}
