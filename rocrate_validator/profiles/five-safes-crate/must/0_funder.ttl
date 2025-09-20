@@ -14,24 +14,22 @@
 
 @prefix ro: <./> .
 @prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
-@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix five-safes-crate: <https://github.com/eScienceLab/rocrate-validator/profiles/five-safes-crate/> .
 @prefix schema_org: <http://schema.org/> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
-@prefix validator: <https://github.com/crs4/rocrate-validator/> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix bioschemas: <https://bioschemas.org/> .
 
-
-ro-crate:RootDataEntityRequiredProperties
-    a sh:NodeShape ;
-    sh:name "Five Safes Crate Root Data Entity REQUIRED properties" ;
-    sh:description "The Root Data Entity MUST have a `funding`" ;
-    sh:targetClass ro-crate:RootDataEntity ;
+five-safes-crate:FundingBody a sh:NodeShape ;
+    sh:name "Funding body Project" ;
+    sh:description "Project which is funding this work" ;
+    sh:targetClass schema_org:Project ;
     sh:property [
         a sh:PropertyShape ;
-        sh:name "Root Data Entity: `funding` property" ;
-        sh:description """Check if the Root Data Entity includes a `funding` property (as specified by schema.org).""" ;
+        sh:name "Project Name" ;
+        sh:description """Check if the Project Entity `name` (as specified by schema.org) 
+        to clearly identify the dataset and distinguish it from other projects.""" ;
         sh:minCount 1 ;
         sh:nodeKind sh:Literal ;
-        sh:path schema_org:funding;
-        sh:message "The Root Data Entity MUST have a `funding` property (as specified by schema.org)" ;
+        sh:path schema_org:name;
+        sh:message "The Project Entity MUST have a `name` property (as specified by schema.org)" ;
     ] .
