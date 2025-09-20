@@ -1,5 +1,5 @@
 {
-    "@context": "https://w3id.org/ro/crate/1.2-DRAFT/context",
+    "@context": "https://w3id.org/ro/crate/1.1/context",
     "@graph": [
         {
             "@type": "CreativeWork",
@@ -8,12 +8,15 @@
                 "@id": "./"
             },
             "conformsTo": {
-                "@id": "https://w3id.org/ro/crate/1.2-DRAFT"
+                "@id": "https://w3id.org/ro/crate/1.1"
             }
         },
         {
             "@id": "./",
             "@type": "Dataset",
+            "name": "5-Safe RO-Crate Result",
+            "description": "example 5-Safe RO-Crate result metadata for testing",
+            "datePublished": "2025-09-20T14:45:00+00:00",
             "conformsTo": {
                 "@id": "https://w3id.org/5s-crate/0.4"
             },
@@ -23,6 +26,12 @@
                 },
                 {
                     "@id": "input1.txt"
+                },
+                {
+                    "@id": "outputs/qa.csv"
+                },
+                {
+                    "@id": "outputs/diagrams/"
                 },
                 {
                     "@id": "workflow/289/"
@@ -60,7 +69,7 @@
             "publisher": {
                 "@id": "https://tre72.example.com/"
             },
-            "licence": {
+            "license": {
                 "@id": "http://spdx.org/licenses/CC-BY-4.0"
             }
         },
@@ -115,7 +124,7 @@
             ],
             "result": [
                 {
-                    "@id": "outputs/table.csv"
+                    "@id": "outputs/qa.csv"
                 },
                 {
                     "@id": "outputs/diagrams/"
@@ -206,7 +215,7 @@
         },
         {
             "@id": "#check-f33fe90c-0c22-4c72-b299-de509028410e",
-            "type": "AssessAction",
+            "@type": "AssessAction",
             "additionalType": {
                 "@id": "https://w3id.org/shp#CheckValue"
             },
@@ -225,7 +234,7 @@
         },
         {
             "@id": "#validate-1146f640-819e-4c86-b029-b763a0040896",
-            "type": "AssessAction",
+            "@type": "AssessAction",
             "additionalType": {
                 "@id": "https://w3id.org/shp#ValidationCheck"
             },
@@ -245,7 +254,7 @@
         },
         {
             "@id": "#download-8b51bf57-6b29-44da-b24b-638c8df91639",
-            "type": "DownloadAction",
+            "@type": "DownloadAction",
             "name": "Downloaded workflow RO-Crate via proxy",
             "startTime": "2023-04-18T12:11:50+01:00",
             "endTime": "2023-04-18T12:11:52+01:00",
@@ -262,7 +271,7 @@
         },
         {
             "@id": "#signoff-3b741265-cfef-49ea-8138-a2fa149bf2f0",
-            "type": "AssessAction",
+            "@type": "AssessAction",
             "additionalType": {
                 "@id": "https://w3id.org/shp#SignOff"
             },
@@ -289,7 +298,7 @@
         },
         {
             "@id": "#disclosure-b16c1f0a-ae7f-4582-9b28-7d9df3313e27",
-            "type": "AssessAction",
+            "@type": "AssessAction",
             "additionalType": {
                 "@id": "https://w3id.org/shp#DisclosureCheck"
             },
@@ -305,7 +314,7 @@
         },
         {
             "@id": "#bagit-ce785c0b-c988-4043-8cbd-1489dcebc14f",
-            "type": "UpdateAction",
+            "@type": "UpdateAction",
             "startTime": "2023-04-29T12:12:25+01:00",
             "additionalType": {
                 "@id": "https://w3id.org/shp#GenerateCheckValue"

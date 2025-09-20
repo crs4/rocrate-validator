@@ -1,5 +1,5 @@
 {
-    "@context": "https://w3id.org/ro/crate/1.2-DRAFT/context",
+    "@context": "https://w3id.org/ro/crate/1.1/context",
     "@graph": [
         {
             "@type": "CreativeWork",
@@ -8,12 +8,16 @@
                 "@id": "./"
             },
             "conformsTo": {
-                "@id": "https://w3id.org/ro/crate/1.2-DRAFT"
+                "@id": "https://w3id.org/ro/crate/1.1"
             }
         },
         {
             "@id": "./",
             "@type": "Dataset",
+            "name": "5-Safe RO-Crate Request",
+            "description": "example 5-Safe RO-Crate request metadata for testing",
+            "license": "Apache-2.0",
+            "datePublished": "2025-09-20T14:38:00+00:00",
             "conformsTo": {
                 "@id": "https://w3id.org/5s-crate/0.4"
             },
