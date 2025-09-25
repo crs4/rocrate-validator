@@ -11,8 +11,9 @@
 # Person who is the agent of a CreateAction SHOULD have an affiliation
 five-safes-crate:PersonAgentHasAffiliation
     a sh:NodeShape ;
-    sh:mame "Agent's affiliation" ;
+    sh:name "Agent's affiliation" ;
     sh:description "The agent of a CreateAction entity SHOULD have an affiliation" ;
+    sh:message "The agent of a CreateAction entity SHOULD have an affiliation" ;
     sh:target [
         a sh:SPARQLTarget ;
         sh:prefixes ro-crate:sparqlPrefixes ;
