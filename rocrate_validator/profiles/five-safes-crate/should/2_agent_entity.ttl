@@ -11,16 +11,49 @@
 # Person who is the agent of a CreateAction SHOULD have an affiliation
 five-safes-crate:PersonAgentHasAffiliation
     a sh:NodeShape ;
-    sh:name "Organizations value restriction" ;
-    sh:description "An Organization `@id` must be a permalink" ;
-    sh:targetClass schema:Organization ;
+    sh:mame "Agent's affiliation" ;
+    sh:description "The agent of a CreateAction entity SHOULD have an affiliation" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT DISTINCT ?this WHERE {
+              ?action a schema:CreateAction ;
+                      schema:agent ?this .
+              ?this a schema:Person .
+            }
+        """
+    ] ;
     sh:property [
-        a sh:PropertyShape ;
-        sh:name "Organization URI value" ;
-        sh:description "Check if the Organization Entity URI is a permalink" ;
-        sh:path [ sh:inversePath rdf:type ] ;
+        sh:path schema:affiliation ;
         sh:minCount 1 ;
-        sh:message """An Organization URI MUST be a permalink""" ;
-        sh:pattern  "^(https://(ror\\.org/0[0-9a-hjkmnp-tv-z]{6}[0-9]{2}|isni\\.org/isni/[0-9]{15}[0-9X]|(www\\.)?wikidata\\.org/entity/Q[0-9]+))$" ;
-sh:flags "i" ;
+        sh:message "The agent of a CreateAction entity SHOULD have an affiliation" ;
     ] .
+
+
+# All schema:Organization instances: @id SHOULD be a PID permalink (ROR / ISNI / Wikidata)
+five-safes-crate:OrganizationIdIsPIDPermalink
+  a sh:NodeShape ;
+  sh:name "Organizations value restriction" ;
+  sh:description "An Organization `@id` should be a PID permalink (ROR, ISNI, or Wikidata)." ;
+
+  # Target the CLASS node; values are all subjects with rdf:type schema:Organization
+  sh:targetNode schema:Organization ;
+
+  sh:property [
+    a sh:PropertyShape ;
+    sh:name "Organization URI value" ;
+    sh:description "Check that the Organization entity URI (@id) is a PID permalink." ;
+
+    # From the class node, walk inverse rdf:type to all instances
+    sh:path [ sh:inversePath rdf:type ] ;
+
+    # Require at least one instance (prevents empty graphs from 'passing')
+    sh:minCount 1 ;
+
+    # Regex over the string form of the instance IRI
+    sh:pattern "^(?:https://(?:ror\\.org/0[0-9a-hjkmnp-tv-z]{6}[0-9]{2}|isni\\.org/isni/\\d{15}[\\dX]|(?:www\\.)?wikidata\\.org/entity/Q\\d+))$" ;
+    sh:flags "i" ;
+
+    sh:message "Organization @id SHOULD be a PID permalink (ROR/ISNI/Wikidata)." ;
+  ] .
