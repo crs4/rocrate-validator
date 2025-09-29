@@ -32,29 +32,33 @@ five-safes-crate:PersonAgentHasAffiliation
     ] .
 
 
-# All schema:Organization instances: @id SHOULD be a PID permalink (ROR / ISNI / Wikidata)
-five-safes-crate:OrganizationIdIsPIDPermalink
+five-safes-crate:PersonAgentOfCreateAction_AffiliationPermalinkCheck
   a sh:NodeShape ;
-  sh:name "Organizations value restriction" ;
-  sh:description "An Organization `@id` should be a PID permalink (ROR, ISNI, or Wikidata)." ;
+  sh:name "Person (agent of CreateAction) → affiliation Organization PID check" ;
+  sh:description "For Persons who are agents of a CreateAction, validate that any affiliation Organization has a PID permalink @id." ;
 
-  # Target the CLASS node; values are all subjects with rdf:type schema:Organization
-  sh:targetNode schema:Organization ;
+  # Target: Persons that are objects of schema:agent where the subject is a CreateAction
+  sh:target [
+    a sh:SPARQLTarget ;
+    sh:prefixes ro-crate:sparqlPrefixes ;
+    sh:select """
+      SELECT ?this WHERE {
+        ?this a schema:Person .
+        ?action a schema:CreateAction ;
+                schema:agent ?this .
+      }
+    """ ;
+  ] ;
 
+  # If the Person has an affiliation, validate the affiliation node's IRI
   sh:property [
     a sh:PropertyShape ;
-    sh:name "Organization URI value" ;
-    sh:description "Check that the Organization entity URI (@id) is a PID permalink." ;
-
-    # From the class node, walk inverse rdf:type to all instances
-    sh:path [ sh:inversePath rdf:type ] ;
-
-    # Require at least one instance (prevents empty graphs from 'passing')
-    sh:minCount 1 ;
-
-    # Regex over the string form of the instance IRI
+    sh:name "affiliation Organization PID permalink" ;
+    sh:path schema:affiliation ;
+    # Optional typing requirement (keep or drop as you prefer)
+    sh:class schema:Organization ;
+    sh:nodeKind sh:IRI ;
     sh:pattern "^(?:https://(?:ror\\.org/0[0-9a-hjkmnp-tv-z]{6}[0-9]{2}|isni\\.org/isni/\\d{15}[\\dX]|(?:www\\.)?wikidata\\.org/entity/Q\\d+))$" ;
     sh:flags "i" ;
-
-    sh:message "Organization @id SHOULD be a PID permalink (ROR/ISNI/Wikidata)." ;
+    sh:message "Affiliation Organization @id SHOULD be a PID permalink (ROR/ISNI/Wikidata)." ;
   ] .

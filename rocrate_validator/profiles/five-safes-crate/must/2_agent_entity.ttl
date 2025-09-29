@@ -29,8 +29,7 @@ five-safes-crate:CreateActionHasAgent
     sh:targetClass schema:CreateAction ;
     sh:property [
         sh:path schema:agent ;
-        sh:minCount 1 ;                
-        sh:maxCount 1 ;               
+        sh:minCount 1 ;            
         sh:nodeKind sh:IRI ;          
         sh:message "CreateAction MUST have an agent property." ;
     ] .
