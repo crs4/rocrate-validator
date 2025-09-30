@@ -22,57 +22,41 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 
-# Any CreateAction entity must have one (and only one) agent
+
 five-safes-crate:CreateActionHasAgent
-    a sh:NodeShape ;
-    sh:description "CreateAction MUST have an agent property." ;
-    sh:targetClass schema:CreateAction ;
-    sh:property [
-        sh:path schema:agent ;
-        sh:minCount 1 ;            
-        sh:nodeKind sh:IRI ;          
-        sh:message "CreateAction MUST have an agent property." ;
-    ] .
+  a sh:NodeShape ;
+  sh:name: "CreateAction" ;
+  sh:targetClass schema:CreateAction ;
+  sh:description "Checks that a CreateAction has an agent and that each agent is a schema:Person." ;
 
+  # CreateAction entity MUST have an agent (IRI)
+  sh:property [
+    a sh:PropertyShape ;
+    sh:name "Has Agent" ;
+    sh:path schema:agent ;
+    sh:minCount 1 ;
+    sh:nodeKind sh:IRI ;
+    sh:severity sh:Violation ;
+    sh:message "CreateAction MUST have at least one schema:agent that is an IRI." ;
+  ] ;
 
-# The agent of a CreateAction must be a Person
-five-safes-crate:CreateActionAgentIsPerson
-    a sh:NodeShape ;
-    sh:description "The agent of a CreateAction entity MUST be a Person." ;
-    sh:target [
-        a sh:SPARQLTarget ;
-        sh:prefixes ro-crate:sparqlPrefixes ;
-        sh:select """
-            SELECT DISTINCT ?this WHERE {
-              ?action a schema:CreateAction ;
-                      schema:agent ?this .
-            }
-        """
-    ] ;
+  # The agent of a CreateAction entity MUST be a Person
+  sh:property [
+    a sh:PropertyShape ;
+    sh:name "Agent is a Person" ;
+    sh:path schema:agent ;
     sh:class schema:Person ;
     sh:severity sh:Violation ;
-    sh:message "The agent of a CreateAction entity MUST be a Person." .
+    sh:message "Each CreateAction agent MUST be typed as schema:Person and be an IRI." ;
+  ] ;
 
-
-# The affiliation (if any) of a CreateAction's agent MUST be an Organization
-five-safes-crate:AgentAffiliationIsOrganization
-    a sh:NodeShape ;
-    sh:description "The affiliation (if any) of a CreateAction's agent MUST be an Organization" ;
+  # If any agent affiliation exists, it MUST be an Organization (IRI)
+  sh:property [
+    a sh:PropertyShape ;
+    sh:name "Affiliation is an Organization" ;
+    sh:path ( schema:agent schema:affiliation ) ;
+    sh:class schema:Organization ;
+    sh:nodeKind sh:IRI ;
     sh:severity sh:Violation ;
-    sh:target [
-        a sh:SPARQLTarget ;
-        sh:prefixes ro-crate:sparqlPrefixes ;
-        sh:select """
-            SELECT DISTINCT ?this WHERE {
-              ?action a schema:CreateAction ;
-                      schema:agent ?this .
-              ?this a schema:Person .
-              ?this schema:affiliation ?aff .
-            }
-        """
-    ] ;
-    sh:property [
-        sh:path schema:affiliation ;
-        sh:class schema:Organization ;
-        sh:message "The affiliation (if any) of a CreateAction's agent MUST be an Organization" ;
-    ] .
+    sh:message "The affiliation (if any) of a CreateAction's agent MUST be a schema:Organization and be an IRI." ;
+  ] .
