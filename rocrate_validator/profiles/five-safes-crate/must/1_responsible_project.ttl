@@ -44,4 +44,13 @@ five-safes-crate:ResponsibleProject
         sh:class schema:Grant ;
         sh:severity sh:Violation ;
         sh:message """The property 'funding' of the Responsible Project MUST be of type schema:Grant.""" ;
+    ] ;
+
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "member" ;
+        sh:path schema:member;
+        sh:class schema:Organization ;
+        sh:severity sh:Violation ;
+        sh:message """The property 'member' of the Responsible Project MUST be of type schema:Organization.""" ;
     ] .
