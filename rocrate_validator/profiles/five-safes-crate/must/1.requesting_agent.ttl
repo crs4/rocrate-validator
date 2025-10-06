@@ -48,8 +48,8 @@ five-safes-crate:AgentIsMemberOf
 
 five-safes-crate:AgentProjectIntersection
     a sh:NodeShape ;
-    sh:name "Agent" ;
-    sh:description "At least one Project referenced by Agent -> memberOf MUST be included in the set of Projects referenced by RootDataEntity -> sourceOrganization." ;
+    sh:name "Agent Project Intersection" ;
+    sh:description """At least one Project referenced by Agent -> memberOf MUST be included in the set of Projects referenced by RootDataEntity -> sourceOrganization.""" ;
     sh:target [
         a sh:SPARQLTarget ;
         sh:prefixes ro-crate:sparqlPrefixes ;
@@ -62,12 +62,14 @@ five-safes-crate:AgentProjectIntersection
     ] ;
     sh:sparql [
         a sh:SPARQLConstraint ;
-        sh:name "MemberOf" ;
-        sh:description """At least one Project referenced by Agent -> memberOf MUST be included in the set of Projects referenced by RootDataEntity -> sourceOrganization.""" ; 
-        sh:message """At least one Project referenced by Agent -> memberOf MUST be included in the set of Projects referenced by RootDataEntity -> sourceOrganization.""" ;
+        sh:name "Agent Project Intersection" ;
+        sh:description """At least one Project referenced by Agent -> memberOf MUST be included in the set of Projects referenced by RootDataEntity -> sourceOrganization.""" ;
         sh:prefixes ro-crate:sparqlPrefixes ;
         sh:select """
             SELECT $this WHERE {
+              FILTER EXISTS {
+                $this schema:memberOf ?anyProject .
+              }
               FILTER NOT EXISTS {
                 $this schema:memberOf ?commonProject .
                 ?metadata schema:about ?root .
@@ -76,4 +78,5 @@ five-safes-crate:AgentProjectIntersection
             }
         """ ;
         sh:severity sh:Violation ;
+        sh:message """At least one Project referenced by Agent -> memberOf MUST be included in the set of Projects referenced by RootDataEntity -> sourceOrganization.""" ;
     ] .
