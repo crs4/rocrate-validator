@@ -25,7 +25,7 @@
 
 five-safes-crate:CreateActionHasAgent
   a sh:NodeShape ;
-  sh:name: "CreateAction" ;
+  sh:name "CreateAction" ;
   sh:targetClass schema:CreateAction ;
   sh:description "Checks that a CreateAction has an agent and that each agent is a schema:Person." ;
 
@@ -45,6 +45,7 @@ five-safes-crate:CreateActionHasAgent
     a sh:PropertyShape ;
     sh:name "Agent is a Person" ;
     sh:path schema:agent ;
+    sh:nodeKind sh:IRI ;
     sh:class schema:Person ;
     sh:severity sh:Violation ;
     sh:message "Each CreateAction agent MUST be typed as schema:Person and be an IRI." ;
