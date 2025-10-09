@@ -33,6 +33,7 @@ def test_valid_five_safes_crate_request_required():
         skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER]
     )
 
+
 def test_valid_five_safes_crate_result_required():
     """Test a valid Workflow Run Crate."""
     do_entity_test(
