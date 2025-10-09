@@ -994,6 +994,7 @@ class Invalid5sROC:
     def root_data_entity_source_organization_not_entity(self) -> Path:
         return self.base_path / "root_data_entity_source_organization_not_entity"
 
+
 class InvalidMultiProfileROC:
 
     @property
