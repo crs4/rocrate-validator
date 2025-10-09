@@ -978,6 +978,22 @@ class InvalidProvRC:
         return self.base_path / "propertyvalue_no_unitcode"
 
 
+class Invalid5sROC:
+
+    base_path = INVALID_CRATES_DATA_PATH / "6_five_safes_crate/"
+
+    @property
+    def funding_project_no_name(self) -> Path:
+        return self.base_path / "funding_project_no_name"
+
+    @property
+    def root_data_entity_no_source_organization(self) -> Path:
+        return self.base_path / "root_data_entity_no_source_organization"
+
+    @property
+    def root_data_entity_source_organization_not_entity(self) -> Path:
+        return self.base_path / "root_data_entity_source_organization_not_entity"
+
 class InvalidMultiProfileROC:
 
     @property
