@@ -19,6 +19,7 @@
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix bioschemas: <https://bioschemas.org/> .
 
+# TODO: note that this applies to all Projects, not just those targeted by `funding` relationships
 five-safes-crate:FundingBody a sh:NodeShape ;
     sh:name "Funding body Project" ;
     sh:description "Project which is funding this work" ;

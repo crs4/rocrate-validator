@@ -24,7 +24,7 @@ logger.setLevel(logging.DEBUG)
 
 
 def test_valid_five_safes_crate_request_required():
-    """Test a valid Workflow Run Crate."""
+    """Test a valid Five Safes Crate representing a request."""
     do_entity_test(
         ValidROC().five_safes_crate_request,
         Severity.REQUIRED,
@@ -35,7 +35,7 @@ def test_valid_five_safes_crate_request_required():
 
 
 def test_valid_five_safes_crate_result_required():
-    """Test a valid Workflow Run Crate."""
+    """Test a valid Five Safes Crate representing a result."""
     do_entity_test(
         ValidROC().five_safes_crate_result,
         Severity.REQUIRED,
