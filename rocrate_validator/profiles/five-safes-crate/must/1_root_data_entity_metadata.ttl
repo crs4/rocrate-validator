@@ -21,11 +21,11 @@
 @prefix validator: <https://github.com/crs4/rocrate-validator/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-
+# TODO: split into multiple checks
 five-safes-crate:RootDataEntityRequiredProperties
     a sh:NodeShape ;
     sh:name "Five Safes Crate Root Data Entity REQUIRED properties" ;
-    sh:description "The Root Data Entity MUST have a `sourceOrganisation`" ;
+    sh:description "The Root Data Entity MUST have a `sourceOrganization`" ;
     sh:targetClass ro-crate:RootDataEntity ;
     sh:property [
         a sh:PropertyShape ;
@@ -33,7 +33,7 @@ five-safes-crate:RootDataEntityRequiredProperties
         sh:description """Check if the Root Data Entity includes a `sourceOrganization` (as specified by schema.org).""" ;
         sh:path schema_org:sourceOrganization;
         sh:minCount 1 ;
-        sh:class ro-crate:ContextualEntity ;
+        sh:nodeKind sh:IRI;
         sh:message """The Root Data Entity MUST have a `sourceOrganization` property  (as specified by schema.org).
                    SHOULD link to a Contextual Entity in the RO-Crate Metadata File with a name.""" ;
     ] .
