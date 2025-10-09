@@ -21,11 +21,10 @@
 @prefix validator: <https://github.com/crs4/rocrate-validator/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-# TODO: split into multiple checks
 five-safes-crate:RootDataEntityRequiredProperties
     a sh:NodeShape ;
     sh:name "Five Safes Crate Root Data Entity REQUIRED properties" ;
-    sh:description "The Root Data Entity MUST have a `sourceOrganization`" ;
+    sh:description "The Root Data Entity MUST have a `sourceOrganisation`" ;
     sh:targetClass ro-crate:RootDataEntity ;
     sh:property [
         a sh:PropertyShape ;
