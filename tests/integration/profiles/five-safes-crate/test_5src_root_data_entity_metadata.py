@@ -38,6 +38,7 @@ def test_5src_root_data_entity_no_source_organization():
         profile_identifier="five-safes-crate",
     )
 
+
 def test_5src_root_data_entity_source_organization_not_entity():
     """\
     Test a Five Safes Crate where the Root Data Entity it does not reference a sourceOrganization.
