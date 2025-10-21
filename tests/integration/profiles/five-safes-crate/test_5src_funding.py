@@ -34,7 +34,7 @@ def test_5src_funding_project_no_name():
         target_object = None
 
         for s, p, o in graph.triples((target_subject, target_predicate, target_object)):
-            print(f"Removing: {s}, {p}, {o}")
+            logger.debug(f"Removing: {s}, {p}, {o}")
 
         graph.remove((target_subject, target_predicate, target_object))
 

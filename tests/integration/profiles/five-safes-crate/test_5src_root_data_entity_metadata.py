@@ -34,7 +34,7 @@ def test_5src_root_data_entity_no_source_organization():
         target_object = None
 
         for s, p, o in graph.triples((target_subject, target_predicate, target_object)):
-            print(f"Removing: {s}, {p}, {o}")
+            logger.debug(f"Removing: {s}, {p}, {o}")
 
         graph.remove((target_subject, target_predicate, target_object))
 
@@ -66,7 +66,7 @@ def test_5src_root_data_entity_source_organization_not_entity():
         new_object = rdflib.Literal('Investigation of cancer (TRE72 project 81)')
 
         for s, p, o in graph.triples((target_subject, target_predicate, original_object)):
-            print(f"Replacing: {s}, {p}, {o}")
+            logger.debug(f"Replacing: {s}, {p}, {o}")
 
         graph.remove((target_subject, target_predicate, original_object))
         graph.add((target_subject, target_predicate, new_object))
