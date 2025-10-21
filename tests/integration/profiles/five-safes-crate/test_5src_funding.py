@@ -23,24 +23,23 @@ from tests.shared import do_entity_test
 logger = logging.getLogger(__name__)
 
 
-def funding_project_no_name(graph):
-    SCHEMA = rdflib.Namespace("http://schema.org/")
-    target_subject = rdflib.URIRef("#project-be6ffb55-4f5a-4c14-b60e-47e0951090c70")
-    target_predicate = SCHEMA.name
-    target_object = None
-
-    for s, p, o in graph.triples((target_subject, target_predicate, target_object)):
-        print(f"Removing: {s}, {p}, {o}")
-
-    graph.remove((target_subject, target_predicate, target_object))
-
-    return graph
-
-
 def test_5src_funding_project_no_name():
     """\
     Test a Five Safes Crate where the funding Project does not have a name.
     """
+    def funding_project_no_name(graph):
+        SCHEMA = rdflib.Namespace("http://schema.org/")
+        target_subject = rdflib.URIRef("#project-be6ffb55-4f5a-4c14-b60e-47e0951090c70")
+        target_predicate = SCHEMA.name
+        target_object = None
+
+        for s, p, o in graph.triples((target_subject, target_predicate, target_object)):
+            print(f"Removing: {s}, {p}, {o}")
+
+        graph.remove((target_subject, target_predicate, target_object))
+
+        return graph
+
     do_entity_test(
         rocrate_path=ValidROC().five_safes_crate_result,
         requirement_severity=Severity.REQUIRED,
