@@ -21,7 +21,7 @@ import logging
 import shutil
 import tempfile
 import rdflib
-from collections.abc import Collection, Callable
+from collections.abc import Collection
 from pathlib import Path
 from typing import Optional, TypeVar, Union
 from urllib.parse import urljoin
