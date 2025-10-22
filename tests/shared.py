@@ -132,14 +132,10 @@ def do_entity_test(
                 json.dump(rocrate, f)
         # update the RO-Crate metadata using SPARQL, if required
         if rocrate_entity_mod_sparql is not None:
-            base = "https://example.org/"
-            rocrate_graph = rdflib.Graph()
-            rocrate_graph.parse(data=rocrate, format="json-ld", publicID=base)
+            rocrate_graph = load_graph_and_preserve_relative_ids(rocrate)
+            
+            rocrate_graph.update(rocrate_entity_mod_sparql)
 
-            query = f"""BASE <{base}>
-{rocrate_entity_mod_sparql}
-"""
-            rocrate_graph.update(query)
             # save the updated RO-Crate metadata
             context = "https://w3id.org/ro/crate/1.1/context"
             rocrate_graph.serialize(
@@ -148,10 +144,7 @@ def do_entity_test(
                 context=context,
                 indent=2,
                 use_native_types=True,
-                base=base,
             )
-            # TODO: tweak the generated crate to strip leading slash from relative URIs, and ensure RDE ID is ./
-        # set the new rocrate path
         rocrate_path = temp_rocrate_path
 
     if expected_triggered_requirements is None:
