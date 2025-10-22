@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import logging
-import rdflib
 
 from rocrate_validator.models import Severity
 from tests.ro_crates import ValidROC
