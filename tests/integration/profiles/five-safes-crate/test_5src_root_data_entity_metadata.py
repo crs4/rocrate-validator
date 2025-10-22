@@ -17,7 +17,7 @@ import rdflib
 
 from rocrate_validator.models import Severity
 from tests.ro_crates import ValidROC
-from tests.shared import do_entity_test
+from tests.shared import do_entity_test, SPARQL_PREFIXES
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -27,18 +27,10 @@ def test_5src_root_data_entity_no_source_organization():
     """\
     Test a Five Safes Crate where the Root Data Entity it does not reference a sourceOrganization.
     """
-    def remove_source_org(graph):
-        SCHEMA = rdflib.Namespace("http://schema.org/")
-        target_subject = rdflib.URIRef("./")
-        target_predicate = SCHEMA.sourceOrganization
-        target_object = None
-
-        for s, p, o in graph.triples((target_subject, target_predicate, target_object)):
-            logger.debug(f"Removing: {s}, {p}, {o}")
-
-        graph.remove((target_subject, target_predicate, target_object))
-
-        return graph
+    sparql = SPARQL_PREFIXES + """DELETE WHERE {
+        <./> schema:sourceOrganization ?object
+    }
+    """
 
     do_entity_test(
         rocrate_path=ValidROC().five_safes_crate_result,
@@ -50,7 +42,7 @@ def test_5src_root_data_entity_no_source_organization():
                    SHOULD link to a Contextual Entity in the RO-Crate Metadata File with a name."""
         ],
         profile_identifier="five-safes-crate",
-        rocrate_entity_mod_function=remove_source_org,
+        rocrate_entity_mod_sparql=sparql,
     )
 
 
@@ -58,20 +50,17 @@ def test_5src_root_data_entity_source_organization_not_entity():
     """\
     Test a Five Safes Crate where the Root Data Entity it does not reference a sourceOrganization.
     """
-    def replace_source_org(graph):
-        SCHEMA = rdflib.Namespace("http://schema.org/")
-        target_subject = rdflib.URIRef("./")
-        target_predicate = SCHEMA.sourceOrganization
-        original_object = None
-        new_object = rdflib.Literal('Investigation of cancer (TRE72 project 81)')
+    sparql = SPARQL_PREFIXES + """DELETE {
+        <./> schema:sourceOrganization ?o
+    }
+    INSERT {
+        <./> schema:sourceOrganization "Investigation of cancer (TRE72 project 81)"
+    }
+    WHERE {
+        <./> schema:sourceOrganization ?o
+    }
 
-        for s, p, o in graph.triples((target_subject, target_predicate, original_object)):
-            logger.debug(f"Replacing: {s}, {p}, {o}")
-
-        graph.remove((target_subject, target_predicate, original_object))
-        graph.add((target_subject, target_predicate, new_object))
-
-        return graph
+"""
 
     do_entity_test(
         rocrate_path=ValidROC().five_safes_crate_result,
@@ -83,5 +72,5 @@ def test_5src_root_data_entity_source_organization_not_entity():
                    SHOULD link to a Contextual Entity in the RO-Crate Metadata File with a name."""
         ],
         profile_identifier="five-safes-crate",
-        rocrate_entity_mod_function=replace_source_org,
+        rocrate_entity_mod_sparql=sparql,
     )
