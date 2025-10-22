@@ -104,7 +104,8 @@ def do_entity_test(
     """
     Shared function to test a RO-Crate entity
     """
-    assert not (rocrate_entity_patch and rocrate_entity_mod_sparql), "Cannot use rocrate_entity_patch and rocrate_entity_mod_sparql together"
+    assert not (rocrate_entity_patch and rocrate_entity_mod_sparql), \
+        "Cannot use rocrate_entity_patch and rocrate_entity_mod_sparql together"
 
     # declare variables
     failed_requirements = None
