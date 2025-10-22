@@ -133,7 +133,7 @@ def do_entity_test(
         # update the RO-Crate metadata using SPARQL, if required
         if rocrate_entity_mod_sparql is not None:
             rocrate_graph = load_graph_and_preserve_relative_ids(rocrate)
-            
+
             rocrate_graph.update(rocrate_entity_mod_sparql)
 
             # save the updated RO-Crate metadata
