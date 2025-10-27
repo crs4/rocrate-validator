@@ -27,12 +27,12 @@ five-safes-crate::DatasetMustHaveDistributionIfURI
     a sh:NodeShape ;
     sh:name "mainEntity" ;
     sh:targetObjectsOf schema:mainEntity ;
-    sh:description "If mainEntity has an HTTP(S) @id, it must have a distribution that is an HTTP(S) URL." ;
+    sh:description "If mainEntity has an HTTP(S) @id, it SHOULD have a distribution that is an HTTP(S) URL." ;
 
     sh:sparql [
         a sh:SPARQLConstraint ;
         sh:name "distribution" ;
-        sh:description "If mainEntity has an HTTP(S) @id, it must have a distribution that is an HTTP(S) URL." ;
+        sh:description "If mainEntity has an HTTP(S) @id, it SHOULD have a distribution that is an HTTP(S) URL." ;
         sh:prefixes ro-crate:sparqlPrefixes ;
         sh:select """
             SELECT $this
@@ -45,5 +45,5 @@ five-safes-crate::DatasetMustHaveDistributionIfURI
             }
         """ ;
         sh:severity sh:Warning ;
-        sh:message "If mainEntity has an HTTP(S) @id must have at least one distribution with an HTTP(S) URL." ;
+        sh:message "If mainEntity has an HTTP(S) @id SHOULD have at least one distribution with an HTTP(S) URL." ;
     ] .
