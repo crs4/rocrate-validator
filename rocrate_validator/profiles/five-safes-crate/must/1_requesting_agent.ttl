@@ -78,5 +78,5 @@ five-safes-crate:AgentProjectIntersection
             }
         """ ;
         sh:severity sh:Violation ;
-        sh:message """At least one Project referenced by Agent -> memberOf MUST be included in the set of Projects referenced by RootDataEntity -> sourceOrganization.""" ;
+        sh:message """Agent -> memberOf MUST intersect RootDataEntity -> sourceOrganization.""" ;
     ] .
