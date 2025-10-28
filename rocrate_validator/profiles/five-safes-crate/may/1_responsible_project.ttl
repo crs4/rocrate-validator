@@ -43,7 +43,7 @@ five-safes-crate:ResponsibleProject
         sh:path schema:funding;
         sh:minCount 1 ;
         sh:severity sh:Info ;
-        sh:message """The Responsible Project does not have the property 'funding'.""" ;
+        sh:message """The Responsible Project does not have the property `funding`.""" ;
     ] ;
 
     sh:property [
@@ -52,5 +52,5 @@ five-safes-crate:ResponsibleProject
         sh:path schema:member;
         sh:minCount 1 ;
         sh:severity sh:Info ;
-        sh:message """The Responsible Project does not have the property 'member'.""" ;
+        sh:message """The Responsible Project does not have the property `member`.""" ;
     ] .

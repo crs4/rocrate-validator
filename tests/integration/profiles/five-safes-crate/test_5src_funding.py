@@ -26,10 +26,13 @@ def test_5src_funding_project_no_name():
     """\
     Test a Five Safes Crate where the funding Project does not have a name.
     """
-    sparql = SPARQL_PREFIXES + """DELETE WHERE {
+    sparql = (
+        SPARQL_PREFIXES
+        + """DELETE WHERE {
     <#project-be6ffb55-4f5a-4c14-b60e-47e0951090c70> schema:name "Investigation of cancer (TRE72 project 81)"
 }
 """
+    )
 
     do_entity_test(
         rocrate_path=ValidROC().five_safes_crate_result,
