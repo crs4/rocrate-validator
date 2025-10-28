@@ -95,7 +95,7 @@ def test_5src_agent_memberOf_project_not_in_root():
         expected_validation_result=False,
         expected_triggered_requirements=["Agent Project Intersection"],
         expected_triggered_issues=[
-            """Projects referenced by Agent -> memberOf MUST intersect Projects referenced by RootDataEntity -> sourceOrganization."""
+            """Agent -> memberOf MUST intersect RootDataEntity -> sourceOrganization."""
         ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
