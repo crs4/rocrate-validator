@@ -127,7 +127,7 @@ def test_5src_responsible_project_member_and_agent_affiliation_no_intersection()
                    schema:memberOf ?project ;
                    schema:affiliation ?oldAff .
             ?project schema:member ?org2 .
-           
+
             FILTER NOT EXISTS { ?project schema:member <#missing-affiliation> }
         }
         """
