@@ -102,6 +102,11 @@
             "name": "The University of Manchester"
         },
         {
+            "@id": "https://ror.org/01ee9ar58",
+            "@type": "Organization",
+            "name": "University of Nottingham"
+        },
+        {
             "@id": "#project-be6ffb55-4f5a-4c14-b60e-47e0951090c70",
             "@type": "Project",
             "name": "Investigation of cancer (TRE72 project 81)",

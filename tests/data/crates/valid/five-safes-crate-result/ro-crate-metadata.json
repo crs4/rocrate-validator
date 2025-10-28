@@ -367,6 +367,11 @@
             "name": "The University of Manchester"
         },
         {
+            "@id": "https://ror.org/01ee9ar58",
+            "@type": "Organization",
+            "name": "University of Nottingham"
+        },
+        {
             "@id": "https://gtr.ukri.org/projects?ref=10038961",
             "@type": "Grant",
             "name": "EOSC4Cancer"

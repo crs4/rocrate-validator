@@ -101,6 +101,53 @@ def test_5src_responsible_project_member_not_organization():
     )
 
 
+# ---- SHOULD warns tests
+
+
+def test_5src_responsible_project_member_and_agent_affiliation_no_intersection():
+    """
+    Test a Five Safes Crate where none of the organisations that are members of the
+    Responsible Project appear in the Requesting Agent's affiliations (violates the
+    'Intersection with agent affiliations' SHACL warning).
+    """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        DELETE {
+            ?agent schema:affiliation ?oldAff .
+        }
+        INSERT {
+            ?agent schema:affiliation <#missing-affiliation> .
+            <#missing-affiliation> a schema:Organization .
+        }
+        WHERE {
+            ?action a schema:CreateAction ;
+                    schema:agent ?agent .
+            ?agent a schema:Person ;
+                   schema:memberOf ?project ;
+                   schema:affiliation ?oldAff .
+            ?project schema:member ?org2 .
+           
+            FILTER NOT EXISTS { ?project schema:member <#missing-affiliation> }
+        }
+        """
+    )
+
+    do_entity_test(
+        rocrate_path=ValidROC().five_safes_crate_request,
+        requirement_severity=Severity.RECOMMENDED,
+        expected_validation_result=False,
+        expected_triggered_requirements=[
+            "Organizations (members of Responsible Project)"
+        ],
+        expected_triggered_issues=[
+            "Responsible Project --> member SHOULD intersect Requesting Agent --> affiliation."
+        ],
+        profile_identifier="five-safes-crate",
+        rocrate_entity_mod_sparql=sparql,
+    )
+
+
 # ---- MAY warns tests
 
 
@@ -127,7 +174,7 @@ def test_5src_responsible_project_missing_funding_property():
     do_entity_test(
         rocrate_path=ValidROC().five_safes_crate_request,
         requirement_severity=Severity.OPTIONAL,
-        expected_validation_result=False,  # or True if Info is not treated as failure
+        expected_validation_result=False,
         expected_triggered_requirements=["Responsible Project"],
         expected_triggered_issues=[
             "The Responsible Project does not have the property `funding`."
@@ -160,7 +207,7 @@ def test_5src_responsible_project_missing_member_property():
     do_entity_test(
         rocrate_path=ValidROC().five_safes_crate_request,
         requirement_severity=Severity.OPTIONAL,
-        expected_validation_result=False,  # or True if Info is treated as failure
+        expected_validation_result=False,
         expected_triggered_requirements=["Responsible Project"],
         expected_triggered_issues=[
             "The Responsible Project does not have the property `member`."

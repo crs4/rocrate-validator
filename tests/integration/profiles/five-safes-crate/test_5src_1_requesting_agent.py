@@ -75,8 +75,8 @@ def test_5src_agent_memberOf_project_not_in_root():
         }
         INSERT {
             # assign the agent to a new Project that is not referenced by the Root Data Entity
-            ?agent schema:memberOf <./missing-project> .
-            <./missing-project> a schema:Project .
+            ?agent schema:memberOf <#missing-project> .
+            <#missing-project> a schema:Project .
         }
         WHERE {
             # locate a CreateAction -> agent -> memberOf that currently points to a Project
