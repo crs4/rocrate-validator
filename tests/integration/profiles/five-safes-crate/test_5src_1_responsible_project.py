@@ -126,9 +126,7 @@ def test_5src_responsible_project_member_and_agent_affiliation_no_intersection()
             ?agent a schema:Person ;
                    schema:memberOf ?project ;
                    schema:affiliation ?oldAff .
-            ?project schema:member ?org2 .
-
-            FILTER NOT EXISTS { ?project schema:member <#missing-affiliation> }
+            ?project schema:member ?oldAff .
         }
         """
     )
@@ -141,7 +139,10 @@ def test_5src_responsible_project_member_and_agent_affiliation_no_intersection()
             "Organizations (members of Responsible Project)"
         ],
         expected_triggered_issues=[
-            "Responsible Project --> member SHOULD intersect Requesting Agent --> affiliation."
+            (
+                "At least one of the organisations that are members of the responsible project SHOULD "
+                "be included in the Requesting Agent's affiliations, if such properties exist."
+            )
         ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,

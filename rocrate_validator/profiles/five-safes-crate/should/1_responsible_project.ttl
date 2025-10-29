@@ -56,5 +56,5 @@ five-safes-crate:ResponsibleProjectMemberAndSourceOrganizationIntersection
             }
         """ ;
         sh:severity sh:Warning ;
-        sh:message """Responsible Project --> member SHOULD intersect Requesting Agent --> affiliation.""" ;
+        sh:message """At least one of the organisations that are members of the responsible project SHOULD be included in the Requesting Agent's affiliations, if such properties exist.""" ;
     ] .
