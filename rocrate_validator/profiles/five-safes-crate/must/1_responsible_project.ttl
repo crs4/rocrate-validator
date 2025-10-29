@@ -50,7 +50,10 @@ five-safes-crate:ResponsibleProject
         a sh:PropertyShape ;
         sh:name "member" ;
         sh:path schema:member;
-        sh:class schema:Organization ;
+        sh:or (
+            [ sh:class schema:Organization ]
+            [ sh:class schema:Person ]
+        ) ;
         sh:severity sh:Violation ;
-        sh:message """The property 'member' of the Responsible Project MUST be of type schema:Organization.""" ;
+        sh:message """The property 'member' of the Responsible Project MUST be of type schema:Organization or schema:Person.""" ;
     ] .

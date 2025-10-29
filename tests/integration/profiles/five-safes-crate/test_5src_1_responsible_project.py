@@ -94,7 +94,7 @@ def test_5src_responsible_project_member_not_organization():
         expected_validation_result=False,
         expected_triggered_requirements=["Responsible Project"],
         expected_triggered_issues=[
-            "The property 'member' of the Responsible Project MUST be of type schema:Organization."
+            "The property 'member' of the Responsible Project MUST be of type schema:Organization or schema:Person."
         ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
