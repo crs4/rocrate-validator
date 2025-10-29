@@ -1,0 +1,63 @@
+# Copyright (c) 2025 eScience Lab, The University of Manchester
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+@prefix ro: <./> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+@prefix five-safes-crate: <https://github.com/eScienceLab/rocrate-validator/profiles/five-safes-crate/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix validator: <https://github.com/crs4/rocrate-validator/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+
+
+five-safes-crate:CreateActionHasAgent
+  a sh:NodeShape ;
+  sh:name "CreateAction" ;
+  sh:targetClass schema:CreateAction ;
+  sh:description "Checks that a CreateAction has an agent and that each agent is a schema:Person." ;
+
+  # CreateAction entity MUST have an agent (IRI)
+  sh:property [
+    a sh:PropertyShape ;
+    sh:name "Has Agent" ;
+    sh:path schema:agent ;
+    sh:minCount 1 ;
+    sh:nodeKind sh:IRI ;
+    sh:severity sh:Violation ;
+    sh:message "CreateAction MUST have at least one schema:agent that is a contextual entity." ;
+  ] ;
+
+  # The agent of a CreateAction entity MUST be a Person
+  sh:property [
+    a sh:PropertyShape ;
+    sh:name "Agent is a Person" ;
+    sh:path schema:agent ;
+    sh:nodeKind sh:IRI ;
+    sh:class schema:Person ;
+    sh:severity sh:Violation ;
+    sh:message "Each CreateAction agent MUST be typed as schema:Person." ;
+  ] ;
+
+  # If any agent affiliation exists, it MUST be an Organization (IRI)
+  sh:property [
+    a sh:PropertyShape ;
+    sh:name "Affiliation is an Organization" ;
+    sh:path ( schema:agent schema:affiliation ) ;
+    sh:class schema:Organization ;
+    sh:nodeKind sh:IRI ;
+    sh:severity sh:Violation ;
+    sh:message "The affiliation of a CreateAction's agent MUST be a contextual entity with type schema:Organization." ;
+  ] .

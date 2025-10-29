@@ -1,4 +1,4 @@
-# Copyright (c) 2024-2025 CRS4
+# Copyright (c) 2025 eScience Lab, The University of Manchester
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,23 +16,34 @@
 @prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
 @prefix five-safes-crate: <https://github.com/eScienceLab/rocrate-validator/profiles/five-safes-crate/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
-@prefix schema_org: <http://schema.org/> .
+@prefix schema: <http://schema.org/> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix validator: <https://github.com/crs4/rocrate-validator/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-five-safes-crate:RootDataEntityRequiredProperties
+
+# Person who is the agent of a CreateAction SHOULD have an affiliation
+five-safes-crate:PersonAgentHasAffiliation
     a sh:NodeShape ;
-    sh:name "Five Safes Crate Root Data Entity REQUIRED properties" ;
-    sh:description "The Root Data Entity MUST have a `sourceOrganisation`" ;
-    sh:targetClass ro-crate:RootDataEntity ;
+    sh:name "Agent of CreateAction" ;
+    sh:description "The agent of a CreateAction entity" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT DISTINCT ?this WHERE {
+              ?action a schema:CreateAction ;
+                      schema:agent ?this .
+            }
+        """
+    ] ;
+
+    # The agent of a CreateAction entity SHOULD have an affiliation
     sh:property [
         a sh:PropertyShape ;
-        sh:name "Root Data Entity: `sourceOrganization` property" ;
-        sh:description """Check if the Root Data Entity includes a `sourceOrganization` (as specified by schema.org).""" ;
-        sh:path schema_org:sourceOrganization;
+        sh:name "Presence of affiliations" ;
+        sh:path schema:affiliation ;
         sh:minCount 1 ;
-        sh:nodeKind sh:IRI;
-        sh:message """The Root Data Entity MUST have a `sourceOrganization` property  (as specified by schema.org).
-                   SHOULD link to a Contextual Entity in the RO-Crate Metadata File with a name.""" ;
+        sh:severity sh:Warning ;
+        sh:message "The agent of a CreateAction entity SHOULD have an affiliation" ;
     ] .
