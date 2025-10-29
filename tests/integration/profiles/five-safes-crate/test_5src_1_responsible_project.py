@@ -76,7 +76,7 @@ def test_5src_responsible_project_member_not_organization():
             ?project schema:member ?org .
         }
         INSERT {
-            ?project schema:member "Not an organization (literal replacement)" .
+            ?project schema:member "Not organization or person (literal replacement)" .
         }
         WHERE {
             ?action a schema:CreateAction ;
