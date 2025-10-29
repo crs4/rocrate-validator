@@ -30,7 +30,7 @@ def test_valid_five_safes_crate_request_required():
         Severity.REQUIRED,
         True,
         profile_identifier="five-safes-crate",
-        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER]
+        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER],
     )
 
 
@@ -41,5 +41,5 @@ def test_valid_five_safes_crate_result_required():
         Severity.REQUIRED,
         True,
         profile_identifier="five-safes-crate",
-        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER]
+        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER],
     )
