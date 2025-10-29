@@ -50,7 +50,7 @@ def test_createaction_does_not_have_agent():
         expected_validation_result=False,
         expected_triggered_requirements=["CreateAction"],
         expected_triggered_issues=[
-            "CreateAction MUST have at least one schema:agent that is an IRI."
+            "CreateAction MUST have at least one schema:agent that is a contextual entity."
         ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
@@ -85,7 +85,7 @@ def test_createaction_agent_is_not_person():
         expected_validation_result=False,
         expected_triggered_requirements=["CreateAction"],
         expected_triggered_issues=[
-            "Each CreateAction agent MUST be typed as schema:Person and be an IRI."
+            "Each CreateAction agent MUST be typed as schema:Person."
         ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
@@ -123,7 +123,7 @@ def test_agent_affiliation_not_organization():
         expected_validation_result=False,
         expected_triggered_requirements=["CreateAction"],
         expected_triggered_issues=[
-            "The affiliation of a CreateAction's agent MUST be a schema:Organization and be an IRI."
+            "The affiliation of a CreateAction's agent MUST be a contextual entity with type schema:Organization."
         ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
