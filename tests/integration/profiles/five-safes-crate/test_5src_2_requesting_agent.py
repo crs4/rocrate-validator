@@ -34,7 +34,7 @@ def test_createaction_does_not_have_agent():
         SPARQL_PREFIXES
         + """
         DELETE {
-            ?action schema:agent ?agent .        
+            ?action schema:agent ?agent .
         }
         WHERE {
             ?action schema:agent ?agent ;
