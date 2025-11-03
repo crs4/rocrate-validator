@@ -89,6 +89,36 @@ def test_5src_root_data_entity_main_entity_not_dataset_iri():
     )
 
 
+def test_5src_main_entity_conformsTo_absent():
+    """
+    Test a Five Safes Crate where the mainEntity does not have the purl:conformsTo property
+    (we remove from the fraph the triplet mainEntity conformsTo ?o).
+    """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        PREFIX purl: <http://purl.org/dc/terms/>
+        DELETE {
+            ?dataset purl:conformsTo ?o .
+        }
+        WHERE {
+            <./> schema:mainEntity ?dataset .
+            ?dataset purl:conformsTo ?o .
+        }
+        """
+    )
+
+    do_entity_test(
+        rocrate_path=ValidROC().five_safes_crate_request,
+        requirement_severity=Severity.REQUIRED,
+        expected_validation_result=False,
+        expected_triggered_requirements=["mainEntity"],
+        expected_triggered_issues=["mainEntity MUST have a conform property."],
+        profile_identifier="five-safes-crate",
+        rocrate_entity_mod_sparql=sparql,
+    )
+
+
 def test_5src_main_entity_conformsTo_invalid():
     """
     Test a Five Safes Crate where the mainEntity's purl:conformsTo IRI does NOT start with

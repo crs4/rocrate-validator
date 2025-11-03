@@ -56,6 +56,15 @@ five-safes-crate:mainEntityHasProperConformsTo
     sh:name "mainEntity" ;
     sh:description "The mainEntity of the RootDataEntity MUST have a conformsTo property with an IRI starting with https://w3id.org/workflowhub/workflow-ro-crate" ;
     sh:targetObjectsOf schema:mainEntity ;
+        sh:property [
+        a sh:PropertyShape ;
+        sh:name "conformsTo" ;
+        sh:path purl:conformsTo ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:severity sh:Violation ;
+        sh:message "mainEntity MUST have a conform property." ;
+    ] ;
     sh:sparql [
         a sh:SPARQLConstraint ;
         sh:name "conformsTo" ;
