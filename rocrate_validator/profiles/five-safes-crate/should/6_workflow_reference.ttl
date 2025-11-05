@@ -23,7 +23,7 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 
-five-safes-crate::DatasetMustHaveDistributionIfURI
+five-safes-crate:DatasetMustHaveDistributionIfURI
     a sh:NodeShape ;
     sh:name "mainEntity" ;
     sh:targetObjectsOf schema:mainEntity ;
