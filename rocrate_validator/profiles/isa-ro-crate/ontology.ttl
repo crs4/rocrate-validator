@@ -25,13 +25,21 @@
 # # #################################################################
 
 ###  https://bioschemas.org/LabProcess
-bioschemas:LabProcess rdf:type owl:Class .
+bioschemas:LabProcess rdf:type owl:Class ;
+                      rdfs:subClassOf schema:Action ;
+                      rdfs:label "LabProcess"@en .
 
 ###  https://bioschemas.org/LabProtocol
-bioschemas:LabProtocol rdf:type owl:Class .
+bioschemas:LabProtocol rdf:type owl:Class ;
+                       rdfs:subClassOf schema:HowTo ;
+                       rdfs:label "LabProtocol"@en .
+
 
 ###  https://bioschemas.org/Sample
-bioschemas:Sample rdf:type owl:Class .
+bioschemas:Sample rdf:type owl:Class ;
+                  rdfs:subClassOf schema:Thing ;
+                  rdfs:label "Sample"@en .
+
 
 ### Data Entity
 isa-ro-crate:Data rdf:type owl:Class ;
@@ -40,11 +48,15 @@ isa-ro-crate:Data rdf:type owl:Class ;
             ro-crate:File
             schema:MediaObject
         )
-    ] .
+    ] ;
+    rdfs:label "Data Entity"@en .
+
     
 ###  https://schema.org/PropertyValue
-schema:PropertyValue rdf:type owl:Class .
+schema:PropertyValue rdf:type owl:Class ;
+                     rdfs:label "PropertyValue"@en .
+
 
 ###  https://schema.org/ScholarlyArticle
-schema:ScholarlyArticle rdf:type owl:Class .
-
+schema:ScholarlyArticle rdf:type owl:Class ;
+                        rdfs:label "ScholarlyArticle"@en .

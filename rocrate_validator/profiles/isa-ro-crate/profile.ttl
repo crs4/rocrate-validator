@@ -70,6 +70,7 @@
         prof:hasRole role:Specification ;
 
         # this profile resource's actual file
+        # TODO: update to a specific tag on release
         prof:hasArtifact <https://github.com/nfdi4plants/isa-ro-crate-profile/blob/release/profile/isa_ro_crate.md> ;
 
         # this profile is inherited from the RO-Crate Metadata Specification 1.1
