@@ -33,19 +33,6 @@ isa-ro-crate:RootDataEntityMustBeInvestigation a sh:NodeShape ;
         sh:hasValue "Investigation";
         sh:description "Check if the root data entity is specified as an investigation through additionalType" ;
         sh:message "The root data entity must have additionalType of `Investigation`" ;
-    ] ;
-    sh:property [
-        a sh:PropertyShape ;
-        sh:path schema:identifier ;
-        sh:datatype xsd:integer ;
-        # sh:nodeKind sh:IRI ;
-        sh:minCount 2 ;
-        sh:maxCount 2 ;
-        # sh:or (
-        #     [ sh:nodeKind sh:IRI ]
-        #     [ sh:datatype xsd:string ]
-        # ) ;
-        sh:description "Check if the root data entity specifies an identifier" ;
-        sh:message "The root data entity must have the identifier pointing to the investigation (i.e. to the corresponding repository) ;"
+        sh:severity sh:Violation ;
     ] ;
 .
