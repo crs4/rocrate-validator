@@ -88,6 +88,10 @@ class ValidROC:
         return VALID_CRATES_DATA_PATH / "provenance-run-crate"
 
     @property
+    def isa_ro_crate(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "metabolights338_arc-main"
+
+    @property
     def multi_profile_crate(self) -> Path:
         return VALID_CRATES_DATA_PATH / "multi-profile-crate"
 
