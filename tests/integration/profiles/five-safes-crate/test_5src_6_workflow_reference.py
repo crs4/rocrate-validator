@@ -123,7 +123,7 @@ def test_5src_root_data_entity_main_entity_not_dataset_iri():
 def test_5src_main_entity_conformsTo_absent():
     """
     Test a Five Safes Crate where the mainEntity does not have the purl:conformsTo property
-    (we remove from the fraph the triplet mainEntity conformsTo ?o).
+    (we remove from the graph the triplet 'mainEntity conformsTo ?o').
     """
     sparql = (
         SPARQL_PREFIXES
