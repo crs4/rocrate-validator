@@ -25,6 +25,37 @@ logger = logging.getLogger(__name__)
 # ----- MUST fails tests
 
 
+def test_5src_root_data_entity_two_main_entities():
+    """
+    Add a 2nd RootDataEntity's mainEntity so maxCount=1 is violated.
+    """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        INSERT {
+            # add an IRI that is NOT typed as schema:Dataset (e.g. a schema:SoftwareSourceCode)
+            <./> schema:mainEntity <https://workflowhub.eu/workflows/289?version=2> .
+            <https://workflowhub.eu/workflows/289?version=2> a schema:Dataset .
+        }
+        WHERE {
+            <./> schema:mainEntity ?m .
+        }
+        """
+    )
+
+    do_entity_test(
+        rocrate_path=ValidROC().five_safes_crate_request,
+        requirement_severity=Severity.REQUIRED,
+        expected_validation_result=False,
+        expected_triggered_requirements=["RootDataEntity"],
+        expected_triggered_issues=[
+            "The RootDataEntity MUST have exactly one schema:mainEntity property that is an IRI."
+        ],
+        profile_identifier="five-safes-crate",
+        rocrate_entity_mod_sparql=sparql,
+    )
+
+
 def test_5src_root_data_entity_no_main_entity():
     """
     Remove the RootDataEntity's mainEntity so minCount=1 is violated.
