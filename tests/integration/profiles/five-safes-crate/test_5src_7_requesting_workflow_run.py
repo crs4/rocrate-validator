@@ -139,7 +139,6 @@ def test_createaction_does_not_reference_mainentity_via_instrument():
            ?action schema:instrument ?o ;
                    a schema:CreateAction .
         }
-        
         """
     )
 
