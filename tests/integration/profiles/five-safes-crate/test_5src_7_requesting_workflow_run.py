@@ -153,3 +153,72 @@ def test_createaction_does_not_reference_mainentity_via_instrument():
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
     )
+
+
+def test_createaction_object_does_not_reference_existing_entities():
+    """
+    Test a Five Safes Crate where `CreateAction` --> `object` does not
+    reference an existing entity in the RO-Crate.
+    (We replace the objects of `CreateAction` --> `object` with a literal.`)
+    """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        DELETE {
+            ?action schema:object ?o .
+        }
+        INSERT {
+            ?action schema:object "This is not an entity in the RO-Crate" .
+        }
+        WHERE {
+           ?action schema:object ?o ;
+                   a schema:CreateAction .
+        }
+        """
+    )
+
+    do_entity_test(
+        rocrate_path=ValidROC().five_safes_crate_request,
+        requirement_severity=Severity.REQUIRED,
+        expected_validation_result=False,
+        expected_triggered_requirements=["CreateAction"],
+        expected_triggered_issues=[
+            "Each `object` in `CreateAction` MUST reference an existing entity."
+        ],
+        profile_identifier="five-safes-crate",
+        rocrate_entity_mod_sparql=sparql,
+    )
+
+
+# ----- SHOULD fails tests
+
+
+def test_createaction_does_not_have_object_property():
+    """
+    Test a Five Safes Crate where `CreateAction` does not have the property `object`.
+    (We remove the property `object` from `CreateAction`)
+    """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        DELETE {
+            ?action schema:object ?o .
+        }
+        WHERE {
+           ?action schema:object ?o ;
+                   a schema:CreateAction .
+        }
+        """
+    )
+
+    do_entity_test(
+        rocrate_path=ValidROC().five_safes_crate_request,
+        requirement_severity=Severity.RECOMMENDED,
+        expected_validation_result=False,
+        expected_triggered_requirements=["CreateAction"],
+        expected_triggered_issues=[
+            "`CreateAction` SHOULD have the property `object` with IRI values."
+        ],
+        profile_identifier="five-safes-crate",
+        rocrate_entity_mod_sparql=sparql,
+    )

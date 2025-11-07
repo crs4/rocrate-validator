@@ -26,6 +26,7 @@
 five-safes-crate:CreateActionShouldHaveObjectProperty
     a sh:NodeShape ;
     sh:targetClass schema:CreateAction ;
+    sh:name "CreateAction" ;
     sh:property [
         sh:path schema:object ;
         sh:minCount 1 ;
