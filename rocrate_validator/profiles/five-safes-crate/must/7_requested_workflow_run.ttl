@@ -33,7 +33,7 @@ five-safes-crate:RootDataEntityMentionsCreateAction
         sh:path schema:mentions;
         sh:minCount 1 ;
         sh:severity sh:Violation ;
-        sh:message "RootDataEntity MUST have the schema:mentions property" ;
+        sh:message "`RootDataEntity` MUST have the `schema:mentions` property" ;
     ] ;
     sh:property [
         a sh:PropertyShape ;
@@ -41,7 +41,7 @@ five-safes-crate:RootDataEntityMentionsCreateAction
         sh:path schema:mentions;
         sh:class schema:CreateAction ;
         sh:severity sh:Violation ;
-        sh:message "RootDataEntity --> schema:mentions MUST point to a schema:CreateAction entity" ;
+        sh:message "`RootDataEntity` --> `schema:mentions` MUST point to a `schema:CreateAction` entity" ;
     ] .
 
 
@@ -56,17 +56,32 @@ five-safes-crate:CreateActionInstrumentAndStatus
         sh:path schema:instrument;
         sh:minCount 1 ;
         sh:severity sh:Violation ;
-        sh:message "CreateAction MUST have the schema:instrument property" ;
+        sh:message "`CreateAction` MUST have the `schema:instrument` property" ;
     ]  ;
-    sh:constraint [
+    sh:sparql [
         a sh:SPARQLConstraint ;
+        sh:name "CreateActionInstrumentReferencesMainEntity" ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
         sh:select """
-        SELECT $this ?main
+        SELECT $this ?main ?root
         WHERE {
-            <./> schema:mainEntity ?main .
+            ?root schema:mainEntity ?main .
             FILTER NOT EXISTS { $this schema:instrument ?main . }
         }
         """ ;
         sh:severity sh:Violation ;
-        sh:message "CreateAction --> instrument MUST (also) reference mainEntity" ;
+        sh:message "`CreateAction` --> `instrument` MUST (also) reference `mainEntity`" ;
+    ] ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT $this ?object
+            WHERE {
+                $this schema:object ?object .
+                FILTER NOT EXISTS {  ?object a ?type . }
+            }
+        """ ;
+        sh:severity sh:Violation ;
+        sh:message "Each object in CreateAction MUST reference an existing entity." ;
     ] .
