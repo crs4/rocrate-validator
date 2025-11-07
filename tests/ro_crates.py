@@ -89,7 +89,7 @@ class ValidROC:
 
     @property
     def isa_ro_crate(self) -> Path:
-        return VALID_CRATES_DATA_PATH / "metabolights338_arc-main"
+        return VALID_CRATES_DATA_PATH / "minimal-arc-ro-crate"
 
     @property
     def multi_profile_crate(self) -> Path:
