@@ -25,6 +25,39 @@ logger = logging.getLogger(__name__)
 # ----- MUST fails tests
 
 
+def test_rocrate_does_not_have_createaction():
+    """
+    Test a Five Safes Crate where no `CreateAction` entity exists.
+    (We remove the entire CreateAction entity from the RO-Crate)
+    """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        DELETE {
+            ?action ?p ?o .
+            ?s ?p2 ?action .
+        }
+        WHERE {
+            ?action a schema:CreateAction .
+            ?action ?p ?o .
+            OPTIONAL { ?s ?p2 ?action . }
+        }
+        """
+    )
+
+    do_entity_test(
+        rocrate_path=ValidROC().five_safes_crate_request,
+        requirement_severity=Severity.REQUIRED,
+        expected_validation_result=False,
+        expected_triggered_requirements=["RootDataEntity"],
+        expected_triggered_issues=[
+            "RO-Crate MUST contain at least one `CreateAction` entity."
+        ],
+        profile_identifier="five-safes-crate",
+        rocrate_entity_mod_sparql=sparql,
+    )
+
+
 def test_rootdataentity_does_not_have_mentions_property():
     """
     Test a Five Safes Crate where RootDataEntity does not have the property mentions.

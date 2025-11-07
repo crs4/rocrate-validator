@@ -26,6 +26,24 @@ five-safes-crate:RootDataEntityMentionsCreateAction
     a sh:NodeShape ;
     sh:name "RootDataEntity" ;
     sh:targetClass ro-crate:RootDataEntity ;
+    sh:description "" ;
+
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:name "RO-Crate must contain CreateAction" ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+        SELECT $this
+        WHERE {
+            $this a schema:Dataset .
+            FILTER NOT EXISTS { 
+                ?action a schema:CreateAction .
+            }
+        }
+        """ ;
+        sh:severity sh:Violation ;
+        sh:message "RO-Crate MUST contain at least one `CreateAction` entity." ;
+    ] ;
 
     sh:property [
         a sh:PropertyShape ;
