@@ -36,7 +36,7 @@ def test_isa_additionaltype_not_investigation():
             ?dataset schema:additionalType "Investigation" .
         }
         WHERE {
-            ?dataset a schema:Dataset ;
+            ?dataset a schema:Dataset .
             ?dataset schema:additionalType "Investigation" .
         }
         """
