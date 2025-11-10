@@ -63,7 +63,7 @@ five-safes-crate:mainEntityHasProperConformsTo
         sh:minCount 1 ;
         sh:maxCount 1 ;
         sh:severity sh:Violation ;
-        sh:message "mainEntity MUST have a conform property." ;
+        sh:message "mainEntity MUST have one and only one `purl:conformsTo` property." ;
     ] ;
     sh:sparql [
         a sh:SPARQLConstraint ;

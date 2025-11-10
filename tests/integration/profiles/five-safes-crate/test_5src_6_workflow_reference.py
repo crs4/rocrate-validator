@@ -144,7 +144,42 @@ def test_5src_main_entity_conformsTo_absent():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["mainEntity"],
-        expected_triggered_issues=["mainEntity MUST have a conform property."],
+        expected_triggered_issues=[
+            "mainEntity MUST have one and only one `purl:conformsTo` property."
+        ],
+        profile_identifier="five-safes-crate",
+        rocrate_entity_mod_sparql=sparql,
+    )
+
+
+def test_5src_main_entity_has_two_conformsto():
+    """
+    Test a Five Safes Crate where the mainEntity -> purl:conformsTo has two
+    objects.
+    (we add second obcject to mainEntity -> purl:conformsTo to violate maxCount 1).
+    """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        PREFIX purl: <http://purl.org/dc/terms/>
+        INSERT {
+            ?main purl:conformsTo <https://w3id.org/workflowhub/workflow-ro-crate/2.0> .
+        }
+        WHERE {
+            <./> schema:mainEntity ?main .
+            ?main purl:conformsTo ?o .
+        }
+        """
+    )
+
+    do_entity_test(
+        rocrate_path=ValidROC().five_safes_crate_request,
+        requirement_severity=Severity.REQUIRED,
+        expected_validation_result=False,
+        expected_triggered_requirements=["mainEntity"],
+        expected_triggered_issues=[
+            "mainEntity MUST have one and only one `purl:conformsTo` property."
+        ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
     )
