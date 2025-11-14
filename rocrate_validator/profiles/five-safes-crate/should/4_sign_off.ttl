@@ -24,10 +24,11 @@
 
 
 # There SHOULD be a Sign-Off Phase
-five-safes-crate:SignOffPhase a sh:NodeShape ; 
-sh:targetNode ro-crate:RootDataEntity ; 
-sh:description "Check the Sign-Off Phase" ;
-sh:sparql [
+five-safes-crate:SignOffPhase
+    a sh:NodeShape ; 
+    sh:targetNode ro-crate:RootDataEntity ; 
+    sh:description "Check the Sign-Off Phase" ;
+    sh:sparql [
         sh:select """
             PREFIX schema: <http://schema.org/> 
             SELECT $this
