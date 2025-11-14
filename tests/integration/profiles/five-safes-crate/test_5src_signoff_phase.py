@@ -29,22 +29,21 @@ def test_5src_no_signoff_phase():
     """
     Test a Five Safes Crate where no Sign-Off phase is listed.
     """
+
     sparql = (
         SPARQL_PREFIXES
         + """
         DELETE {
             <#signoff-3b741265-cfef-49ea-8138-a2fa149bf2f0> ?p ?o .
-            <./> schema:mentions <#signoff-3b741265-cfef-49ea-8138-a2fa149bf2f0> .
         }
         WHERE {
-            OPTIONAL { <./> schema:mentions <#signoff-3b741265-cfef-49ea-8138-a2fa149bf2f0> . }
-            OPTIONAL { <#signoff-3b741265-cfef-49ea-8138-a2fa149bf2f0> ?p ?o . }
+            <#signoff-3b741265-cfef-49ea-8138-a2fa149bf2f0> ?p ?o .
         }
         """
     )
 
     do_entity_test(
-        rocrate_path=ValidROC().five_safes_crate_request,
+        rocrate_path=ValidROC().five_safes_crate_result,
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
         expected_triggered_requirements=["SignOffPhase"],

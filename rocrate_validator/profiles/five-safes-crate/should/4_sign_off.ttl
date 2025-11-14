@@ -20,18 +20,18 @@
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix validator: <https://github.com/crs4/rocrate-validator/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-@prefix shp: <https://w3id.org/shp> .
+@prefix shp: <https://w3id.org/shp#> .
 
 
 # There SHOULD be a Sign-Off Phase
 five-safes-crate:SignOffPhase
-    a sh:NodeShape ; 
-    sh:targetNode ro-crate:RootDataEntity ; 
+    a sh:NodeShape ;
+    sh:targetNode <./> ;
     sh:description "Check the Sign-Off Phase" ;
     sh:sparql [
         sh:select """
             PREFIX schema: <http://schema.org/>
-            PREFIX shp: <https://w3id.org/shp>
+            PREFIX shp: <https://w3id.org/shp#>
             SELECT $this
             WHERE {
                 FILTER NOT EXISTS { 
@@ -40,6 +40,7 @@ five-safes-crate:SignOffPhase
                }
             }
         """ ;
+        sh:severity sh:Warning ;
         sh:message "There SHOULD be a Sign-Off Phase in the Final RO-Crate" ;         
     ] .
 
