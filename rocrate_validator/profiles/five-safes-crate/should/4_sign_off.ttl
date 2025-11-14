@@ -30,12 +30,13 @@ five-safes-crate:SignOffPhase
     sh:description "Check the Sign-Off Phase" ;
     sh:sparql [
         sh:select """
-            PREFIX schema: <http://schema.org/> 
+            PREFIX schema: <http://schema.org/>
+            PREFIX shp: <https://w3id.org/shp>
             SELECT $this
             WHERE {
                 FILTER NOT EXISTS { 
                    ?action a schema:AssessAction ; 
-                        schema:additionalType <https://w3id.org/shp#SignOff> . 
+                        schema:additionalType shp:SignOff .
                }
             }
         """ ;
