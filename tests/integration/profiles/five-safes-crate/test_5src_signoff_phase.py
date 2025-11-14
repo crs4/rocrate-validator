@@ -22,7 +22,7 @@ from tests.shared import do_entity_test, SPARQL_PREFIXES
 logger = logging.getLogger(__name__)
 
 
-# ---- MUST fails tests
+# ---- SHOULD fails tests
 
 
 def test_5src_no_signoff_phase():
@@ -78,6 +78,37 @@ def test_5src_signoff_phase_not_mentioned():
         expected_triggered_requirements=["SignOffPhase"],
         expected_triggered_issues=[
             "The Root Data Entity SHOULD mention a Sign-Off Phase Object"
+        ],
+        profile_identifier="five-safes-crate",
+        rocrate_entity_mod_sparql=sparql,
+    )
+
+
+def test_5src_signoff_phase_no_endtime():
+    """
+    Test a Five Safes Crate where the Sign-Off phase has no endTime.
+    """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        DELETE {
+            ?signoff schema:endTime ?endTime .
+        }
+        WHERE {
+           ?signoff a schema:AssessAction ;
+               schema:additionalType <https://w3id.org/shp#SignOff> ;
+               schema:endTime ?endTime .
+        }
+        """
+    )
+
+    do_entity_test(
+        rocrate_path=ValidROC().five_safes_crate_result,
+        requirement_severity=Severity.RECOMMENDED,
+        expected_validation_result=False,
+        expected_triggered_requirements=["SignOffPhaseProperties"],
+        expected_triggered_issues=[
+            "The Sign-Off Phase SHOULD have an endTime"
         ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
