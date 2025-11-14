@@ -42,6 +42,22 @@ five-safes-crate:SignOffPhase
         """ ;
         sh:severity sh:Warning ;
         sh:message "There SHOULD be a Sign-Off Phase in the Final RO-Crate" ;         
+    ] ;
+    sh:sparql [
+        sh:select """
+            PREFIX schema: <http://schema.org/>
+            PREFIX shp: <https://w3id.org/shp#>
+            SELECT $this
+            WHERE {
+                ?action a schema:AssessAction ;
+                        schema:additionalType shp:SignOff .
+                FILTER NOT EXISTS {
+                    $this schema:mentions ?action .
+                }
+            }
+        """ ;
+        sh:severity sh:Warning ;
+        sh:message "The Root Data Entity SHOULD mention a Sign-Off Phase Object" ;
     ] .
 
 

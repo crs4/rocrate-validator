@@ -55,3 +55,30 @@ def test_5src_no_signoff_phase():
     )
 
 
+def test_5src_signoff_phase_not_mentioned():
+    """
+    Test a Five Safes Crate where the Sign-Off phase is not mentioned by the MainRootEntity.
+    """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        DELETE {
+            <./> schema:mentions <#signoff-3b741265-cfef-49ea-8138-a2fa149bf2f0> .
+        }
+        WHERE {
+            <./> schema:mentions <#signoff-3b741265-cfef-49ea-8138-a2fa149bf2f0> .
+        }
+        """
+    )
+
+    do_entity_test(
+        rocrate_path=ValidROC().five_safes_crate_result,
+        requirement_severity=Severity.RECOMMENDED,
+        expected_validation_result=False,
+        expected_triggered_requirements=["SignOffPhase"],
+        expected_triggered_issues=[
+            "The Root Data Entity SHOULD mention a Sign-Off Phase Object"
+        ],
+        profile_identifier="five-safes-crate",
+        rocrate_entity_mod_sparql=sparql,
+    )
