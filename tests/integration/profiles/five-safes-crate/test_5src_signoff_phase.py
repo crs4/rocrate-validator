@@ -264,7 +264,7 @@ def test_5src_signoff_phase_instrument_no_type():
         expected_validation_result=False,
         expected_triggered_requirements=["SignOffPhaseProperties"],
         expected_triggered_issues=[
-            "The Sign-Off Phase SHOULD have an TRE policy (instrument) with type CreativeWork and human-readable name"
+            "The Sign-Off Phase SHOULD have an TRE policy (instrument) with type CreativeWork"
         ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
@@ -296,7 +296,7 @@ def test_5src_signoff_phase_instrument_no_name():
         expected_validation_result=False,
         expected_triggered_requirements=["SignOffPhaseProperties"],
         expected_triggered_issues=[
-            "The Sign-Off Phase SHOULD have an TRE policy (instrument) with type CreativeWork and human-readable name"
+            "The Sign-Off Phase SHOULD have an TRE policy (instrument) with a human-readable name"
         ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,

@@ -108,12 +108,18 @@ five-safes-crate:SignOffPhaseProperties
         sh:description "Check if the Sign Off phase has an instrument (TRE Policy)" ;
         sh:path schema:instrument ;
         sh:class schema:CreativeWork ;
-        sh:hasValue schema:name ;
         sh:minCount 1 ;
         sh:severity sh:Warning ;
-        sh:message "The Sign-Off Phase SHOULD have an TRE policy (instrument) with type CreativeWork and human-readable name" ;
-    ] .
-
+        sh:message "The Sign-Off Phase SHOULD have an TRE policy (instrument) with type CreativeWork" ;
+    ] ;
+    sh:property [
+        sh:description "Check if the Sign Off phase has an instrument (TRE Policy)" ;
+        sh:path ( schema:instrument schema:name ) ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:severity sh:Warning ;
+        sh:message "The Sign-Off Phase SHOULD have an TRE policy (instrument) with a human-readable name" ;
+    ].
 
 
 
