@@ -77,6 +77,13 @@ five-safes-crate:SignOffPhaseProperties
         """
     ] ;
     sh:property [
+        sh:description "Check if the Sign Off phase has a name" ;
+        sh:path schema:name ;
+        sh:minCount 1 ;
+        sh:severity sh:Warning ;
+        sh:message "The Sign-Off Phase SHOULD have a human-readable name" ;
+    ] ;
+    sh:property [
         sh:description "Check if the Sign Off phase has an endTime" ;
         sh:path schema:endTime ;
         sh:minCount 1 ;

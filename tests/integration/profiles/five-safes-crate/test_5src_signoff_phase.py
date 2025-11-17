@@ -115,6 +115,37 @@ def test_5src_signoff_phase_no_endtime():
     )
 
 
+def test_5src_signoff_phase_no_name():
+    """
+    Test a Five Safes Crate where the Sign-Off phase has no name.
+    """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        DELETE {
+            ?signoff schema:name ?name .
+        }
+        WHERE {
+           ?signoff a schema:AssessAction ;
+               schema:additionalType <https://w3id.org/shp#SignOff> ;
+               schema:name ?name .
+        }
+        """
+    )
+
+    do_entity_test(
+        rocrate_path=ValidROC().five_safes_crate_result,
+        requirement_severity=Severity.RECOMMENDED,
+        expected_validation_result=False,
+        expected_triggered_requirements=["SignOffPhaseProperties"],
+        expected_triggered_issues=[
+            "The Sign-Off Phase SHOULD have a human-readable name"
+        ],
+        profile_identifier="five-safes-crate",
+        rocrate_entity_mod_sparql=sparql,
+    )
+
+
 def test_5src_signoff_phase_no_actionstatus():
     """
     Test a Five Safes Crate where the Sign-Off phase has no actionStatus.
