@@ -160,7 +160,7 @@
             "@type": "PropertyValue",
             "name": "tre72",
             "value": "project81"
-        },        
+        },
         {
             "@id": "input1.txt",
             "@type": "File",
