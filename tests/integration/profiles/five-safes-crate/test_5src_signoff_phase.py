@@ -301,3 +301,37 @@ def test_5src_signoff_phase_instrument_no_name():
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
     )
+
+
+def test_5src_signoff_phase_object_notworkflow():
+    """
+    Test a Five Safes Crate where there is no workflow in the Sign-Off objects.
+    """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        DELETE {
+            ?signoff schema:object <https://workflowhub.eu/workflows/289?version=1> .
+        }
+        INSERT {
+            ?signoff schema:object <notaworkflow> .
+        }
+        WHERE {
+            ?signoff a schema:AssessAction ;
+                schema:additionalType <https://w3id.org/shp#SignOff> ;
+                schema:object <https://workflowhub.eu/workflows/289?version=1> .
+        }
+        """
+    )
+
+    do_entity_test(
+        rocrate_path=ValidROC().five_safes_crate_result,
+        requirement_severity=Severity.RECOMMENDED,
+        expected_validation_result=False,
+        expected_triggered_requirements=["SignOffPhaseProperties"],
+        expected_triggered_issues=[
+            "The Sign-Off Phase SHOULD list the workflow (mainEntity) as an object"
+        ],
+        profile_identifier="five-safes-crate",
+        rocrate_entity_mod_sparql=sparql,
+    )

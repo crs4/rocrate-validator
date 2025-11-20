@@ -119,6 +119,26 @@ five-safes-crate:SignOffPhaseProperties
         sh:minCount 1 ;
         sh:severity sh:Warning ;
         sh:message "The Sign-Off Phase SHOULD have an TRE policy (instrument) with a human-readable name" ;
+    ] ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:description "Check if the Sign Off phase lists the workflow as an object" ;
+        sh:select """
+            PREFIX schema: <http://schema.org/>
+            PREFIX rocrate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/>
+            SELECT $this
+            WHERE {
+                $this schema:object ?anyObject .
+                ?root a schema:Dataset ;
+                    schema:mainEntity ?mainEntity ;
+                    rdf:type rocrate:RootDataEntity .
+                FILTER NOT EXISTS {
+                    $this schema:object ?mainEntity .
+                }
+            }
+        """ ;
+        sh:severity sh:Warning ;
+        sh:message "The Sign-Off Phase SHOULD list the workflow (mainEntity) as an object" ;
     ].
 
 
