@@ -46,7 +46,7 @@ def test_rocrate_does_not_have_createaction():
     )
 
     do_entity_test(
-        rocrate_path=ValidROC().five_safes_crate_request,
+        rocrate_path=ValidROC().five_safes_crate_result,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["RootDataEntity"],
