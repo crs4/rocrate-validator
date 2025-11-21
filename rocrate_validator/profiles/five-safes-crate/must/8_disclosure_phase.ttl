@@ -52,7 +52,7 @@ five-safes-crate:DisclosureObjectHasDescriptiveName
     sh:property [
         sh:path rdf:type ;
         sh:minCount 1 ;
-        sh:class schema:AssessAction ;
+        sh:hasValue schema:AssessAction;
         sh:severity sh:Violation ;
         sh:message "DisclosureCheck MUST be a `schema:AssessAction`." ;
     ] .
