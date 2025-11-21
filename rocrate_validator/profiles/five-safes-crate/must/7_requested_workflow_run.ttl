@@ -49,17 +49,12 @@ five-safes-crate:RootDataEntityMentionsCreateAction
         a sh:PropertyShape ;
         sh:name "mentions" ;
         sh:path schema:mentions;
-        sh:minCount 1 ;
+        sh:qualifiedValueShape [
+            sh:class schema:CreateAction ;
+        ] ;
+        sh:qualifiedMinCount 1 ;
         sh:severity sh:Violation ;
-        sh:message "`RootDataEntity` MUST have the `schema:mentions` property" ;
-    ] ;
-    sh:property [
-        a sh:PropertyShape ;
-        sh:name "mentions" ;
-        sh:path schema:mentions;
-        sh:class schema:CreateAction ;
-        sh:severity sh:Violation ;
-        sh:message "`RootDataEntity` --> `schema:mentions` MUST point to a `schema:CreateAction` entity" ;
+        sh:message "`RootDataEntity` MUST reference `CreateAction` through `schema:mentions`" ;
     ] .
 
 
