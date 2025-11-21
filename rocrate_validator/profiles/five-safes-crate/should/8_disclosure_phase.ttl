@@ -48,3 +48,32 @@ five-safes-crate:RootDataEntityShouldMentionDisclosureObject
         sh:severity sh:Warning ;
         sh:message "RootDataEntity SHOULD mention a disclosure object." ;
     ] .
+
+
+five-safes-crate:DisclosureObjectHasActionStatus
+    a sh:NodeShape ;
+    sh:name "DisclosureCheck" ;
+    sh:description "DisclosureCheck" ;
+
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:select """
+            PREFIX schema: <http://schema.org/>
+            PREFIX shp:    <https://w3id.org/shp#>
+
+            SELECT ?this
+            WHERE {
+                ?this schema:additionalType shp:DisclosureCheck .
+            }
+        """ ;
+    ] ;
+
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "ActionStatus" ;
+        sh:description "The DisclosureCheck SHOULD have actionStatus property." ;
+        sh:path schema:actionStatus ;
+        sh:minCount 1 ;
+        sh:severity sh:Warning ;
+        sh:message "The DisclosureCheck SHOULD have actionStatus property." ;
+    ] .

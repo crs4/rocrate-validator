@@ -56,3 +56,38 @@ five-safes-crate:DisclosureObjectHasDescriptiveName
         sh:severity sh:Violation ;
         sh:message "DisclosureCheck MUST be a `schema:AssessAction`." ;
     ] .
+
+
+five-safes-crate:DisclosureObjectHasActionStatus
+    a sh:NodeShape ;
+    sh:name "DisclosureCheck" ;
+    sh:description "DisclosureCheck" ;
+
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:select """
+            PREFIX schema: <http://schema.org/>
+            PREFIX shp:    <https://w3id.org/shp#>
+
+            SELECT ?this
+            WHERE {
+                ?this schema:additionalType shp:DisclosureCheck ;
+                      schema:actionStatus ?status .
+            }
+        """ ;
+    ] ;
+
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "actionStatus" ;
+        sh:description "The value of actionStatus MUST be one of the allowed values." ;
+        sh:path schema:actionStatus ;
+        sh:in (
+            "http://schema.org/PotentialActionStatus"
+            "http://schema.org/ActiveActionStatus"
+            "http://schema.org/CompletedActionStatus"
+            "http://schema.org/FailedActionStatus"
+        ) ;
+        sh:severity sh:Violation ;
+        sh:message "The value of actionStatus MUST be one of the allowed values." ;
+    ] .
