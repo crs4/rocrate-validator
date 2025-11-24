@@ -132,7 +132,25 @@ five-safes-crate:SignOffPhaseProperties
         """ ;
         sh:severity sh:Warning ;
         sh:message "The Sign-Off Phase SHOULD list the workflow (mainEntity) as an object" ;
+    ];
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:description "Check if the Sign Off phase lists the Responsible Project as an object" ;
+        sh:select """
+            PREFIX schema: <http://schema.org/>
+            PREFIX rocrate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/>
+            SELECT $this
+            WHERE {
+                $this schema:object ?anyObject .
+                ?root a schema:Dataset ;
+                    schema:sourceOrganization ?sourceOrg .
+                FILTER NOT EXISTS {
+                    $this schema:object ?sourceOrg .
+                }
+            }
+        """ ;
+        sh:severity sh:Warning ;
+        sh:message "The Sign-Off Phase SHOULD list the Responsible Project (sourceOrganization) as an object" ;
     ].
-
 
 
