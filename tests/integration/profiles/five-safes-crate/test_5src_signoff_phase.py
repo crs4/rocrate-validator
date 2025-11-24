@@ -120,6 +120,41 @@ def test_5src_signoff_phase_wrong_type():
     )
 
 
+def test_5src_signoff_phase_wrong_action_status():
+    """
+    Test a Five Safes Crate where the Sign-Off phase has the wrong action status.
+    """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        DELETE {
+            ?signoff schema:actionStatus ?status .
+        }
+        INSERT {
+            ?signoff schema:actionStatus <wrongstatus> .
+        }
+        WHERE {
+           ?signoff a schema:AssessAction ;
+               schema:additionalType <https://w3id.org/shp#SignOff> ;
+               schema:actionStatus ?status .
+        }
+        """
+    )
+
+    do_entity_test(
+        rocrate_path=ValidROC().five_safes_crate_result,
+        requirement_severity=Severity.REQUIRED,
+        expected_validation_result=False,
+        expected_triggered_requirements=["SignOffStatus"],
+        expected_triggered_issues=[
+            "The value of actionStatus MUST be one of the allowed values:"
+            + " PotentialActionStatus; ActiveActionStatus; CompletedActionStatus; FailedActionStatus."
+        ],
+        profile_identifier="five-safes-crate",
+        rocrate_entity_mod_sparql=sparql,
+    )
+
+
 def test_5src_signoff_phase_not_mentioned():
     """
     Test a Five Safes Crate where the Sign-Off phase is not mentioned by the MainRootEntity.

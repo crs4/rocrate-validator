@@ -54,3 +54,36 @@ five-safes-crate:SignOffObjectActionAndName
         sh:severity sh:Violation ;
         sh:message "Sign Off phase MUST be a `schema:AssessAction`." ;
     ] .
+
+five-safes-crate:SignOffObjectHasActionStatus
+    a sh:NodeShape ;
+    sh:name "SignOffStatus" ;
+    sh:description "Sign Off Phase Action Status" ;
+
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:select """
+            PREFIX schema: <http://schema.org/>
+            PREFIX shp:    <https://w3id.org/shp#>
+            SELECT ?this
+            WHERE {
+                ?this schema:additionalType shp:SignOff ;
+                      schema:actionStatus ?status .
+            }
+        """ ;
+    ] ;
+
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "actionStatus" ;
+        sh:description "The value of actionStatus MUST be one of the allowed values." ;
+        sh:path schema:actionStatus ;
+        sh:in (
+            "http://schema.org/PotentialActionStatus"
+            "http://schema.org/ActiveActionStatus"
+            "http://schema.org/CompletedActionStatus"
+            "http://schema.org/FailedActionStatus"
+        ) ;
+        sh:severity sh:Violation ;
+        sh:message "The value of actionStatus MUST be one of the allowed values: PotentialActionStatus; ActiveActionStatus; CompletedActionStatus; FailedActionStatus." ;
+    ] .
