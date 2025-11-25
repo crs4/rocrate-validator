@@ -28,10 +28,45 @@
 @prefix validator: <https://github.com/crs4/rocrate-validator/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
+# class:study
+#     isTypeDataset
+#     isAdditionalType"Study
+
+
+# check study must have identifer
+# check study must have name
+# check study must have description
+
+# check study must be pointed to by investigation through hasPart
+
+ro-crate:FindStudies a sh:NodeShape, validator:HiddenShape;
+    sh:name "Identify Studies within the RO-Crate" ;
+    sh:description "A Study has type Dataset and additionalType 'Study'." ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?this a schema:Dataset .
+                ?this schema:additionalType "Study" .
+            }
+        """
+    ] ;
+
+    # Expand data graph with triples from the file data entity
+    sh:rule [
+        a sh:TripleRule ;
+        sh:subject sh:this ;
+        sh:predicate rdf:type ;
+        sh:object isa-ro-crate:Study ;
+    ] .
+
+# WIP: rewrite this rule to run checks on Study entities
 isa-ro-crate:RootDataEntityMustBeInvestigation a sh:NodeShape ;
     sh:name "Root Data Entity must be Investigation" ;
     sh:description "The root data entity must follow the investigation profile" ;
-    sh:targetClass ro-crate:RootDataEntity ;
+    sh:targetClass isa-ro-crate:Study ;
     sh:property [
         a sh:PropertyShape ;
         sh:path schema:additionalType ;
