@@ -77,3 +77,78 @@ five-safes-crate:DisclosureObjectHasActionStatus
         sh:severity sh:Warning ;
         sh:message "The DisclosureCheck SHOULD have actionStatus property." ;
     ] .
+
+
+
+five-safes-crate:DisclosureObjectHasStartTimeIfBegun
+    a sh:NodeShape ;
+    sh:name "DisclosureCheck" ;
+    sh:description "DisclosureCheck" ;
+
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:select """
+            PREFIX schema: <http://schema.org/>
+            PREFIX shp:    <https://w3id.org/shp#>
+
+            SELECT ?this
+            WHERE {
+                ?this schema:additionalType shp:DisclosureCheck ;
+                        schema:actionStatus ?status .
+                FILTER(?status IN (
+                    "http://schema.org/CompletedActionStatus",
+                    "http://schema.org/FailedActionStatus",
+                    "http://schema.org/ActiveActionStatus"
+                ))
+            }
+        """ ;
+    ] ;
+
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "StartTime" ;
+        sh:path schema:startTime ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:pattern "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(Z|[+-][0-9]{2}:[0-9]{2})$" ;
+        sh:severity sh:Warning ;
+        sh:description "Disclosure object SHOULD have startTime property with a valid datetime if action began." ;
+        sh:message "Disclosure object SHOULD have startTime property with a valid datetime if action began." ;
+    ] .
+
+
+
+five-safes-crate:DisclosureObjectHasEndTimeIfcompletedOrFailed
+    a sh:NodeShape ;
+    sh:name "DisclosureCheck" ;
+    sh:description "DisclosureCheck" ;
+
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:select """
+            PREFIX schema: <http://schema.org/>
+            PREFIX shp:    <https://w3id.org/shp#>
+
+            SELECT ?this
+            WHERE {
+                ?this schema:additionalType shp:DisclosureCheck ;
+                        schema:actionStatus ?status .
+                FILTER(?status IN (
+                    "http://schema.org/CompletedActionStatus",
+                    "http://schema.org/FailedActionStatus"
+                ))
+            }
+        """ ;
+    ] ;
+
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "EndTime" ;
+        sh:path schema:endTime ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:pattern "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(Z|[+-][0-9]{2}:[0-9]{2})$" ;
+        sh:severity sh:Warning ;
+        sh:description "Disclosure object SHOULD have endTime property with a valid datetetime if action completed of failed." ;
+        sh:message "Disclosure object SHOULD have endTime property with a valid datetime if action completed of failed." ;
+    ] .
