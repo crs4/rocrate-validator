@@ -33,7 +33,8 @@ from rdflib import RDF, RDFS, Graph, Namespace, URIRef
 
 from rocrate_validator.utils import log as logging
 from rocrate_validator import __version__
-from rocrate_validator.constants import (DEFAULT_ONTOLOGY_FILE,
+from rocrate_validator.constants import (DEFAULT_HTTP_CACHE_MAX_AGE,
+                                         DEFAULT_ONTOLOGY_FILE,
                                          DEFAULT_PROFILE_IDENTIFIER,
                                          DEFAULT_PROFILE_README_FILE,
                                          IGNORED_PROFILE_DIRECTORIES,
@@ -2388,11 +2389,21 @@ class ValidationSettings:
     metadata_dict: dict = None
     #: Verbose output
     verbose: bool = False
+    #: Cache max age in seconds
+    cache_max_age: Optional[int] = DEFAULT_HTTP_CACHE_MAX_AGE
+    #: Cache path
+    cache_path: Optional[Path] = None
 
     def __post_init__(self):
         # if requirement_severity is a str, convert to Severity
         if isinstance(self.requirement_severity, str):
             self.requirement_severity = Severity[self.requirement_severity]
+        # initialize the HTTP cache
+        from rocrate_validator.utils import HttpRequester
+        # HttpRequester.initialize_cache(cache_path=self.cache_path, cache_max_age=self.cache_max_age)
+        HttpRequester.initialize_cache(cache_path=self.cache_path, cache_max_age=self.cache_max_age)
+        logger.debug("HTTP cache initialized at %s with max age %s seconds",
+                     self.cache_path, self.cache_max_age)
 
     def to_dict(self):
         """
