@@ -16,7 +16,7 @@ import logging
 
 from rocrate_validator.models import Severity
 from tests.ro_crates import ValidROC
-from tests.shared import do_entity_test, SPARQL_PREFIXES
+from tests.shared import do_entity_test
 
 # set up logging
 logger = logging.getLogger(__name__)
