@@ -23,7 +23,7 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 
-five-safes-crate:DisclosureObjectHasDescriptiveName
+five-safes-crate:DisclosureObjectHasDescriptiveNameAndIsAssessAction
     a sh:NodeShape ;
     sh:name "DisclosureCheck" ;
     sh:description "DisclosureCheck" ;
@@ -42,19 +42,25 @@ five-safes-crate:DisclosureObjectHasDescriptiveName
     ] ;
 
     sh:property [
-        sh:path schema:name ;
-        sh:datatype xsd:string ;
-        sh:minLength 20 ;
-        sh:severity sh:Violation ;
-        sh:message "DisclosureCheck MUST have a name string of at least 20 characters." ;
-    ] ;
-
-    sh:property [
+        sh:a sh:PropertyShape ;
+        sh:name "AssessAction" ;
+        sh:description "DisclosureCheck MUST be a `schema:AssessAction`." ;
         sh:path rdf:type ;
         sh:minCount 1 ;
         sh:hasValue schema:AssessAction;
         sh:severity sh:Violation ;
         sh:message "DisclosureCheck MUST be a `schema:AssessAction`." ;
+    ] ;
+
+    sh:property [
+        sh:a sh:PropertyShape ;
+        sh:name "name" ;
+        sh:description "DisclosureCheck MUST have a name string of at least 20 characters." ;
+        sh:path schema:name ;
+        sh:datatype xsd:string ;
+        sh:minLength 20 ;
+        sh:severity sh:Violation ;
+        sh:message "DisclosureCheck MUST have a name string of at least 20 characters." ;
     ] .
 
 
