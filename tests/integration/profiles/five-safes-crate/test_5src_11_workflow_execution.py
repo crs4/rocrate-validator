@@ -175,7 +175,7 @@ def test_5src_workflow_object_has_no_properly_formatted_start_time_if_begun():
 def test_5src_workflow_object_has_no_end_time_if_ended():
     sparql = """
         PREFIX schema: <http://schema.org/>
-        PREFIX shp:    <https://w3id.org/shp#>        
+        PREFIX shp:    <https://w3id.org/shp#>
         PREFIX rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 
         DELETE {
