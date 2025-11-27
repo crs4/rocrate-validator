@@ -36,9 +36,11 @@
 # check study must have identifer
 # check study must have name
 # check study must have description
+# check study should have about
 
 # check study must be pointed to by investigation through hasPart
 
+# Find studies and add isa-ro-crate:Study type to them, for easier retrieval for checks
 ro-crate:FindStudies a sh:NodeShape, validator:HiddenShape;
     sh:name "Identify Studies within the RO-Crate" ;
     sh:description "A Study has type Dataset and additionalType 'Study'." ;
@@ -62,18 +64,38 @@ ro-crate:FindStudies a sh:NodeShape, validator:HiddenShape;
         sh:object isa-ro-crate:Study ;
     ] .
 
-# WIP: rewrite this rule to run checks on Study entities
-isa-ro-crate:RootDataEntityMustBeInvestigation a sh:NodeShape ;
-    sh:name "Root Data Entity must be Investigation" ;
-    sh:description "The root data entity must follow the investigation profile" ;
+# WIP
+isa-ro-crate:StudyMustHaveBaseDescriptors a sh:NodeShape ;
+    sh:name "Study MUST have base properties" ;
+    sh:description "A Study MUST have identifier, name and description" ;
     sh:targetClass isa-ro-crate:Study ;
     sh:property [
         a sh:PropertyShape ;
-        sh:path schema:additionalType ;
+        sh:path schema:identifier ;
+        sh:datatype xsd:string ;
         sh:minCount 1 ;
-        sh:hasValue "Investigation";
-        sh:description "Check if the root data entity is specified as an investigation through additionalType" ;
-        sh:message "The root data entity must have additionalType of `Investigation`" ;
+        sh:maxCount 1 ; 
+        sh:not [
+            sh:hasValue ""
+        ] ;
+        sh:description "Check that study does have non-empty identifier and it's a string" ;
+        sh:message "Study entity MUST have a non-empty identifier of type string" ;
         sh:severity sh:Violation ;
     ] ;
 .
+
+
+isa-ro-crate:StudyMustBeReferencedFromInvestigation a sh:NodeShape ;
+  sh:name "Study MUST be directly referenced from Investigation (Root Data Entity)" ;
+  sh:targetClass isa-ro-crate:Study ;
+  sh:property
+        [
+            a sh:PropertyShape ;
+            sh:path [ sh:inversePath schema:hasPart ] ;
+            sh:class ro-crate:RootDataEntity ;
+            sh:minCount 1 ;
+            sh:name "Study MUST be directly referenced from Investigation (Root Data Entity)" ;
+            sh:description """Check if the Study is directly linked to the Investigation (which is the Root Data Entity) using the `hasPart` (as defined in `schema.org`) property" """ ;
+            sh:message "Study MUST be directly referenced in hasPart on the Investigation (Root Data Entity)"
+         ] .
+ 

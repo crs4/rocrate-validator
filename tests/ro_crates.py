@@ -973,6 +973,15 @@ class InvalidProvRC:
     def propertyvalue_no_unitcode(self) -> Path:
         return self.base_path / "propertyvalue_no_unitcode"
 
+class InvalidISARC:
+
+    base_path = INVALID_CRATES_DATA_PATH / "7_isa_ro_crate/"
+
+    @property
+    def study_is_linked_through_illegal_property(self) -> Path:
+        return self.base_path / "invalid-study-is-linked-through-illegal-property"
+
+
 
 class InvalidMultiProfileROC:
 
