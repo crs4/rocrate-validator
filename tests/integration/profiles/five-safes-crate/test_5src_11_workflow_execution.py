@@ -234,6 +234,59 @@ def test_5src_workflow_object_has_no_properly_formatted_end_time_if_ended():
     )
 
 
+def test_5src_workflow_object_with_no_action_status():
+    sparql = """
+        PREFIX schema: <http://schema.org/>
+        PREFIX rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+        DELETE {
+            ?this schema:actionStatus ?o .
+        }
+        WHERE {
+            ?this schema:actionStatus ?o ;
+                  rdf:type schema:CreateAction .
+        }
+        """
+
+    do_entity_test(
+        rocrate_path=ValidROC().five_safes_crate_request,
+        requirement_severity=Severity.REQUIRED,
+        expected_validation_result=False,
+        expected_triggered_requirements=None,
+        expected_triggered_issues=None,
+        profile_identifier="five-safes-crate",
+        rocrate_entity_mod_sparql=sparql,
+    )
+
+
+def test_5src_workflow_object_with_no_properly_valued_action_status():
+    sparql = """
+        PREFIX schema: <http://schema.org/>
+        PREFIX rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+        DELETE {
+            ?this schema:actionStatus ?o .
+        }
+        INSERT {
+            ?this schema:actionStatus "Not a proper actionStatus value" .
+        }
+        WHERE {
+            ?this schema:actionStatus ?o ;
+                  rdf:type schema:CreateAction .
+        }
+        """
+
+    do_entity_test(
+        rocrate_path=ValidROC().five_safes_crate_request,
+        requirement_severity=Severity.REQUIRED,
+        expected_validation_result=False,
+        expected_triggered_requirements=None,
+        expected_triggered_issues=None,
+        profile_identifier="five-safes-crate",
+        rocrate_entity_mod_sparql=sparql,
+    )
+
+
 # ----- SHOULD fails tests
 
 

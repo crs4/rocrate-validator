@@ -113,4 +113,23 @@ five-safes-crate:WorkflowexecutionObjectHasEndTimeIfEnded
         sh:message "The workflow execution object MUST have the endTime property with a valid datetime if it has ended." ;
     ] .
 
-    
+
+five-safes-crate:WorkflowMustHaveActionStatusWithAllowedValues
+    a sh:NodeShape ;
+    sh:name "WorkflowExecution" ;
+    sh:targetClass schema:CreateAction ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:minCount 1 ;
+        sh:name "actionStatus" ;
+        sh:description "WorkflowExecution MUST have an actionStatus with an allowed value." ;
+        sh:path schema:actionStatus ;
+        sh:in (
+            "http://schema.org/PotentialActionStatus"
+            "http://schema.org/ActiveActionStatus"
+            "http://schema.org/CompletedActionStatus"
+            "http://schema.org/FailedActionStatus"
+        ) ;
+        sh:severity sh:Violation ;
+        sh:message "WorkflowExecution MUST have an actionStatus with an allowed value." ;
+    ] .
