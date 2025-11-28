@@ -68,7 +68,7 @@ five-safes-crate:CreateActionInstrumentAndStatus
         }
         """ ;
         sh:severity sh:Violation ;
-        sh:message "`CreateAction` --> `instrument` MUST (also) reference `mainEntity`" ;
+        sh:message "`CreateAction` --> `instrument` MUST reference the same entity as `Root Data Entity` --> `mainEntity`" ;
     ] ;
     sh:sparql [
         a sh:SPARQLConstraint ;

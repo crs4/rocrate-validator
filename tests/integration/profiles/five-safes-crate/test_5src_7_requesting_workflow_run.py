@@ -180,7 +180,7 @@ def test_createaction_does_not_reference_mainentity_via_instrument():
         expected_validation_result=False,
         expected_triggered_requirements=["CreateAction"],
         expected_triggered_issues=[
-            "`CreateAction` --> `instrument` MUST (also) reference `mainEntity`"
+            "`CreateAction` --> `instrument` MUST reference the same entity as `Root Data Entity` --> `mainEntity`"
         ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
