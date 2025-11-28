@@ -51,7 +51,7 @@ def test_rocrate_does_not_have_createaction():
         expected_validation_result=False,
         expected_triggered_requirements=["RootDataEntity"],
         expected_triggered_issues=[
-            "RO-Crate MUST contain at least one `CreateAction` entity."
+            "`RootDataEntity` MUST reference at least one `CreateAction` through `mentions`"
         ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
@@ -61,7 +61,7 @@ def test_rocrate_does_not_have_createaction():
 def test_rootdataentity_does_not_have_mentions_property():
     """
     Test a Five Safes Crate where RootDataEntity does not have the property mentions.
-    (We remove the property mentions from the RootDFataEntity entity)
+    (We remove the property mentions from the RootDataEntity entity)
     """
     sparql = (
         SPARQL_PREFIXES
@@ -81,7 +81,40 @@ def test_rootdataentity_does_not_have_mentions_property():
         expected_validation_result=False,
         expected_triggered_requirements=["RootDataEntity"],
         expected_triggered_issues=[
-            "`RootDataEntity` MUST reference `CreateAction` through `schema:mentions`"
+            "`RootDataEntity` MUST reference at least one `CreateAction` through `mentions`"
+        ],
+        profile_identifier="five-safes-crate",
+        rocrate_entity_mod_sparql=sparql,
+    )
+
+
+def test_rootdataentity_does_not_mention_create_action():
+    """
+    Test a Five Safes Crate where `RootDataEntity` does not `mention` a `CreateAction` entity.
+    (We replace the object of RooDataEntity --> mentions with a string literal).
+    """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        DELETE {
+            <./> schema:mentions ?o .
+        }
+        INSERT {
+            <./> schema:mentions "This is not a CreateAction entity" .
+        }
+        WHERE {
+            <./> schema:mentions ?o .
+        }
+        """
+    )
+
+    do_entity_test(
+        rocrate_path=ValidROC().five_safes_crate_request,
+        requirement_severity=Severity.REQUIRED,
+        expected_validation_result=False,
+        expected_triggered_requirements=["RootDataEntity"],
+        expected_triggered_issues=[
+            "`RootDataEntity` MUST reference at least one `CreateAction` through `mentions`"
         ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
