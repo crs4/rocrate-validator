@@ -140,6 +140,7 @@ five-safes-crate:SignOffPhaseProperties
             WHERE {
                 $this schema:object ?anyObject .
                 ?root a schema:Dataset ;
+                    rdf:type rocrate:RootDataEntity ;
                     schema:sourceOrganization ?sourceOrg .
                 FILTER NOT EXISTS {
                     $this schema:object ?sourceOrg .
