@@ -22,13 +22,6 @@
       "name": "My Study is great"
     },
     {
-      "@id": "MyInBetweenDataset",
-      "@type": "Dataset",
-      "hasPart": {
-        "@id": "studies/MyStudy/"
-      }
-    },
-    {
       "@id": "LICENSE",
       "@type": "CreativeWork",
       "text": "MYLICENSE"
@@ -39,10 +32,10 @@
       "additionalType": "Investigation",
       "identifier": "MyInvestigation",
       "hasPart": {
-        "@id": "MyInBetweenDataset"
+        "@id": "studies/MyStudy/"
       },
       "name": "My Investigation is great",
-      "datePublished": "2025-12-02T18:02:02.4096952",
+      "datePublished": "2025-12-02T18:02:02.2553150",
       "description": "This is an example investigation.",
       "license": {
         "@id": "LICENSE"

@@ -15,17 +15,36 @@
   ],
   "@graph": [
     {
+      "@id": "#Sample_MyInputSample",
+      "@type": "Sample",
+      "additionalType": "Sample",
+      "name": "MyInputSample"
+    },
+    {
+      "@id": "#Sample_MyOutputSample",
+      "@type": "Sample",
+      "additionalType": "Sample",
+      "name": "MyOutputSample"
+    },
+    {
+      "@id": "#Process_MyProcess",
+      "@type": "LabProcess",
+      "name": "MyProcess",
+      "object": {
+        "@id": "#Sample_MyInputSample"
+      },
+      "result": {
+        "@id": "#Sample_MyOutputSample"
+      }
+    },
+    {
       "@id": "studies/MyStudy/",
       "@type": "Dataset",
       "additionalType": "Study",
       "identifier": "MyStudy",
-      "name": "My Study is great"
-    },
-    {
-      "@id": "MyInBetweenDataset",
-      "@type": "Dataset",
-      "hasPart": {
-        "@id": "studies/MyStudy/"
+      "name": "My Study is great",
+      "http://schema.org/measurementMethod": {
+        "@id": "#Process_MyProcess"
       }
     },
     {
@@ -39,10 +58,10 @@
       "additionalType": "Investigation",
       "identifier": "MyInvestigation",
       "hasPart": {
-        "@id": "MyInBetweenDataset"
+        "@id": "studies/MyStudy/"
       },
       "name": "My Investigation is great",
-      "datePublished": "2025-12-02T18:02:02.4096952",
+      "datePublished": "2025-12-02T18:02:02.7097632",
       "description": "This is an example investigation.",
       "license": {
         "@id": "LICENSE"
