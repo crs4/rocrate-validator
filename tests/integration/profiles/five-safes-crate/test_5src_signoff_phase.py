@@ -206,9 +206,114 @@ def test_5src_signoff_phase_no_endtime():
         rocrate_path=ValidROC().five_safes_crate_result,
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
-        expected_triggered_requirements=["SignOffPhaseProperties"],
+        expected_triggered_requirements=["SignOffPhaseEndTime"],
         expected_triggered_issues=[
-            "The Sign-Off Phase SHOULD have an endTime"
+            "Sign Off object SHOULD have endTime property if action completed or failed."
+            + " This must follow ISO-8601 syntax"
+        ],
+        profile_identifier="five-safes-crate",
+        rocrate_entity_mod_sparql=sparql,
+    )
+
+
+def test_5src_signoff_phase_malformed_endtime():
+    """
+    Test a Five Safes Crate where the Sign-Off phase has an endTime
+    in the wrong format.
+    """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        DELETE {
+            ?signoff schema:endTime ?endTime .
+        }
+        INSERT {
+            ?signoff schema:endTime <2025-10-20> .
+        }
+        WHERE {
+           ?signoff a schema:AssessAction ;
+               schema:additionalType <https://w3id.org/shp#SignOff> ;
+               schema:endTime ?endTime .
+        }
+        """
+    )
+
+    do_entity_test(
+        rocrate_path=ValidROC().five_safes_crate_result,
+        requirement_severity=Severity.RECOMMENDED,
+        expected_validation_result=False,
+        expected_triggered_requirements=["SignOffPhaseEndTime"],
+        expected_triggered_issues=[
+            "Sign Off object SHOULD have endTime property if action completed or failed."
+            + " This must follow ISO-8601 syntax"
+        ],
+        profile_identifier="five-safes-crate",
+        rocrate_entity_mod_sparql=sparql,
+    )
+
+
+def test_5src_signoff_phase_no_starttime():
+    """
+    Test a Five Safes Crate where the Sign-Off phase has no startTime.
+    """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        DELETE {
+            ?signoff schema:startTime ?startTime .
+        }
+        WHERE {
+           ?signoff a schema:AssessAction ;
+               schema:additionalType <https://w3id.org/shp#SignOff> ;
+               schema:startTime ?startTime .
+        }
+        """
+    )
+
+    do_entity_test(
+        rocrate_path=ValidROC().five_safes_crate_result,
+        requirement_severity=Severity.OPTIONAL,
+        expected_validation_result=False,
+        expected_triggered_requirements=["SignOffPhaseStartTime"],
+        expected_triggered_issues=[
+            "Sign Off object MAY have a startTime property if action is active, completed or failed."
+            + " This must follow ISO-8601 syntax"
+        ],
+        profile_identifier="five-safes-crate",
+        rocrate_entity_mod_sparql=sparql,
+    )
+
+
+def test_5src_signoff_phase_malformed_starttime():
+    """
+    Test a Five Safes Crate where the Sign-Off phase has a startTime
+    in the wrong format.
+    """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        DELETE {
+            ?signoff schema:startTime ?startTime .
+        }
+        INSERT {
+            ?signoff schema:startTime <2025-10-20> .
+        }
+        WHERE {
+           ?signoff a schema:AssessAction ;
+               schema:additionalType <https://w3id.org/shp#SignOff> ;
+               schema:startTime ?startTime .
+        }
+        """
+    )
+
+    do_entity_test(
+        rocrate_path=ValidROC().five_safes_crate_result,
+        requirement_severity=Severity.OPTIONAL,
+        expected_validation_result=False,
+        expected_triggered_requirements=["SignOffPhaseStartTime"],
+        expected_triggered_issues=[
+            "Sign Off object MAY have a startTime property if action is active, completed or failed."
+            + " This must follow ISO-8601 syntax"
         ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
