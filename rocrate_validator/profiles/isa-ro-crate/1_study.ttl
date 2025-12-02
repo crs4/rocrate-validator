@@ -82,6 +82,19 @@ isa-ro-crate:StudyMustHaveBaseDescriptors a sh:NodeShape ;
         sh:message "Study entity MUST have a non-empty identifier of type string" ;
         sh:severity sh:Violation ;
     ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:name ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ; 
+        sh:not [
+            sh:hasValue ""
+        ] ;
+        sh:description "Check that study does have non-empty name and it's a string" ;
+        sh:message "Study entity MUST have a non-empty name of type string" ;
+        sh:severity sh:Violation ;
+    ] ;
 .
 
 

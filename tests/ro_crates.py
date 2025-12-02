@@ -981,6 +981,34 @@ class InvalidISARC:
     def study_is_linked_through_illegal_property(self) -> Path:
         return self.base_path / "invalid-study-is-linked-through-illegal-property"
 
+    @property
+    def study_is_missing_identifier(self) -> Path:
+        return self.base_path / "invalid-study-is-missing-identifier"
+
+    @property
+    def study_is_missing_name(self) -> Path:
+        return self.base_path / "invalid-study-is-missing-name"
+    
+    @property
+    def study_is_not_directly_part_of_investigation(self) -> Path:
+        return self.base_path / "invalid-study-is-not-directly-part-of-investigation"
+    
+    @property
+    def process_is_missing_name(self) -> Path:
+        return self.base_path / "invalid-process-is-missing-name"
+    
+    @property
+    def process_is_linked_through_illegal_property(self) -> Path:
+        return self.base_path / "invalid-process-is-linked-through-illegal-property"
+    
+    @property
+    def process_is_missing_objects(self) -> Path:
+        return self.base_path / "invalid-process-is-missing-objects"
+    
+    @property
+    def process_is_missing_results(self) -> Path:
+        return self.base_path / "invalid-process-is-missing-results"
+
 
 
 class InvalidMultiProfileROC:

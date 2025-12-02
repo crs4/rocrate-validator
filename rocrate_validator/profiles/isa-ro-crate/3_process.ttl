@@ -35,7 +35,7 @@
 # check process should have result
 
 isa-ro-crate:ProcessMustHaveName a sh:NodeShape ;
-    sh:name "Process MUST have base properties" ;
+    sh:name "Process MUST have name" ;
     sh:description "A Process MUST have a name" ;
     sh:targetClass bioschemas:LabProcess ;
     sh:property [
@@ -84,8 +84,8 @@ isa-ro-crate:ProcessShouldHaveObject a sh:NodeShape ;
 .
 
 isa-ro-crate:ProcessShouldHaveResult a sh:NodeShape ;
-    sh:name "Process SHOULD have an result" ;
-    sh:description "A Process SHOULD have an result" ;
+    sh:name "Process SHOULD have a result" ;
+    sh:description "A Process SHOULD have a result" ;
     sh:targetClass bioschemas:LabProcess ;
     sh:property [
         a sh:PropertyShape ;
@@ -93,7 +93,7 @@ isa-ro-crate:ProcessShouldHaveResult a sh:NodeShape ;
         sh:node schema:Thing ;
         sh:minCount 1 ;
         sh:description "Check that process does have at least one result" ;
-        sh:message "Process entity SHOULD have an result" ;
+        sh:message "Process entity SHOULD have a result" ;
         sh:severity sh:Warning ;
     ] ;
 .
