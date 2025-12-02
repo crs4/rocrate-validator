@@ -23,14 +23,17 @@ import logging
 from rocrate_validator.models import Severity
 from tests.ro_crates import ValidROC, InvalidISARC
 from tests.shared import do_entity_test, SPARQL_PREFIXES
-
+import pytest
 # set up logging
 logger = logging.getLogger(__name__)
 
 
 # ----- MUST fails tests
 
-# WIP update these tests to actually do what the name/description say
+# WIP fix this test and replace the test below which makes use of an pre-made invalid RO-Crate 
+@pytest.mark.xfail(
+    reason="'Study MUST have base properties' check fails: The SPARQL modification does not remove all identifiers from Study entities"
+)
 def test_isa_study_no_identifier():
     """
     Test an ISA RO-Crate where a Study does not have an identifier.
@@ -123,7 +126,7 @@ def test_isa_study_directly_referenced_from_investigation():
 
 def test_isa_study_identifier():
     """
-    Test an ISA RO-Crate where a Study does not have a name.
+    Test an ISA RO-Crate where a Study does not have an identifier.
     """
     do_entity_test(
         rocrate_path=InvalidISARC().study_is_missing_identifier,
