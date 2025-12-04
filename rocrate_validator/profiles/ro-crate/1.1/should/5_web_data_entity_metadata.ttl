@@ -35,21 +35,18 @@ ro-crate:WebBasedDataEntityRequiredValueRestriction a sh:NodeShape ;
         sh:name "Web-based Data Entity: `contentSize` property" ;
         sh:description """Check if the Web-based Data Entity has a `contentSize` property""" ;
         sh:path schema_org:contentSize ;
-        sh:datatype xsd:string ;
+        # sh:datatype xsd:string ;
         sh:severity sh:Warning ;
         sh:message """Web-based Data Entities SHOULD have a `contentSize` property""" ;
-        sh:sparql [
-            sh:message "If the value is a string it must be a string representing an integer." ;
-            sh:select """
-                SELECT ?this ?value
-                WHERE {
-                    ?this schema:contentSize ?value .
-                    FILTER NOT EXISTS {
-                        FILTER (xsd:integer(?value) = ?value)
-                    }
-                }
-            """ ;
-        ] ;
+        # sh:sparql [
+        #     # sh:message "If the value is a string it must be a string representing an integer." ;
+        #     sh:select """
+        #         SELECT $this WHERE {
+        #             $this schema:contentSize ?v .
+        #             FILTER(xsd:decimal(?v) <= 0)
+        #         }
+        #     """ ;
+        # ] ;
     ] ;
     # Check if the Web-based Data Entity has a sdDatePublished property
     sh:property [

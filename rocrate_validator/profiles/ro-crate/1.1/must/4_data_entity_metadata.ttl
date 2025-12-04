@@ -132,7 +132,7 @@ ro-crate:DirectoryDataEntity a sh:NodeShape ;
 
 ro-crate:DataEntityRequiredPropertiesShape a sh:NodeShape ;
     sh:name "Data Entity: REQUIRED properties" ;
-    sh:description """A `DataEntity` MUST be linked, either directly or indirectly, from the Root Data Entity""" ;
+    sh:description """A `DataEntity`The file descriptor MUST be a valid JSON-LD file MUST be linked, either directly or indirectly, from the Root Data Entity""" ;
     sh:targetClass ro-crate:DataEntity ;
     sh:property
         [
