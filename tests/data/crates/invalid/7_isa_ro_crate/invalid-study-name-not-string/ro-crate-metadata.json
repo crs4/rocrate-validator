@@ -18,7 +18,8 @@
       "@id": "studies/MyStudy/",
       "@type": "Dataset",
       "additionalType": "Study",
-      "name": "My Study is great"
+      "identifier": "MyStudy",
+      "name": 13
     },
     {
       "@id": "LICENSE",
@@ -34,7 +35,7 @@
         "@id": "studies/MyStudy/"
       },
       "name": "My Investigation is great",
-      "datePublished": "2025-12-02T18:02:02.3597375",
+      "datePublished": "2025-12-02T18:02:02.2553150",
       "description": "This is an example investigation.",
       "license": {
         "@id": "LICENSE"
@@ -49,6 +50,12 @@
       "about": {
         "@id": "./"
       }
+    },
+    {
+        "@id": "#Person_Christoph_Garth",
+        "@type": "Person",
+        "givenName": "Christoph",
+        "familyName": "Garth"
     }
   ]
 }

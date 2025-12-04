@@ -112,8 +112,7 @@
             "name": "organism",
             "value": "Arabidopsis thaliana",
             "propertyID": "https://bioregistry.io/OBI:0100026",
-            "valueReference": "http://purl.obolibrary.org/obo/NCBITaxon_3702",
-            "columnIndex": "0"
+            "valueReference": "http://purl.obolibrary.org/obo/NCBITaxon_3702"
         },
         {
             "@id": "#CharacteristicValue_biological_replicate_1",
@@ -121,8 +120,7 @@
             "additionalType": "CharacteristicValue",
             "name": "biological replicate",
             "value": "1",
-            "propertyID": "http://purl.org/nfdi4plants/ontology/dpbo/DPBO_0000042",
-            "columnIndex": "1"
+            "propertyID": "http://purl.org/nfdi4plants/ontology/dpbo/DPBO_0000042"
         },
         {
             "@id": "#Source_Source1",
@@ -245,8 +243,7 @@
             "additionalType": "CharacteristicValue",
             "name": "biological replicate",
             "value": "2",
-            "propertyID": "http://purl.org/nfdi4plants/ontology/dpbo/DPBO_0000042",
-            "columnIndex": "1"
+            "propertyID": "http://purl.org/nfdi4plants/ontology/dpbo/DPBO_0000042"
         },
         {
             "@id": "#Source_Source4",
@@ -356,8 +353,7 @@
             "additionalType": "CharacteristicValue",
             "name": "Performed Procedure Step SOP Instance UID",
             "value": "e36ca6b8-19ba-4504-aa82-d4781765873d",
-            "propertyID": "https://bioregistry.io/NCIT:C69261",
-            "columnIndex": "0"
+            "propertyID": "https://bioregistry.io/NCIT:C69261"
         },
         {
             "@id": "#Sample_Sample1",
@@ -392,8 +388,7 @@
             "additionalType": "CharacteristicValue",
             "name": "Performed Procedure Step SOP Instance UID",
             "value": "714ca2b7-22b7-4f69-b83d-9165f624da25",
-            "propertyID": "https://bioregistry.io/NCIT:C69261",
-            "columnIndex": "0"
+            "propertyID": "https://bioregistry.io/NCIT:C69261"
         },
         {
             "@id": "#Sample_Sample2",
@@ -424,8 +419,7 @@
             "additionalType": "CharacteristicValue",
             "name": "Performed Procedure Step SOP Instance UID",
             "value": "66fac760-acc7-4ed4-ba21-2cb67fa36e4d",
-            "propertyID": "https://bioregistry.io/NCIT:C69261",
-            "columnIndex": "0"
+            "propertyID": "https://bioregistry.io/NCIT:C69261"
         },
         {
             "@id": "#Sample_Sample3",
@@ -456,8 +450,7 @@
             "additionalType": "CharacteristicValue",
             "name": "Performed Procedure Step SOP Instance UID",
             "value": "cba5f40c-fc05-44d6-a589-b0e3dafaeefe",
-            "propertyID": "https://bioregistry.io/NCIT:C69261",
-            "columnIndex": "0"
+            "propertyID": "https://bioregistry.io/NCIT:C69261"
         },
         {
             "@id": "#Sample_Sample4",
@@ -488,8 +481,7 @@
             "additionalType": "CharacteristicValue",
             "name": "Performed Procedure Step SOP Instance UID",
             "value": "84c37b60-2342-4226-a36c-4b8dfe84ebe9",
-            "propertyID": "https://bioregistry.io/NCIT:C69261",
-            "columnIndex": "0"
+            "propertyID": "https://bioregistry.io/NCIT:C69261"
         },
         {
             "@id": "#Sample_Sample5",
@@ -520,8 +512,7 @@
             "additionalType": "CharacteristicValue",
             "name": "Performed Procedure Step SOP Instance UID",
             "value": "208df064-4b1c-4da0-a1f8-6412e1fb2284",
-            "propertyID": "https://bioregistry.io/NCIT:C69261",
-            "columnIndex": "0"
+            "propertyID": "https://bioregistry.io/NCIT:C69261"
         },
         {
             "@id": "#Sample_Sample6",
@@ -550,6 +541,7 @@
             "@id": "studies/MaterialPreparation/",
             "@type": "Dataset",
             "additionalType": "Study",
+            "name": "MaterialPreparation",
             "identifier": "MaterialPreparation",
             "dateModified": "2025-07-15T12:34:16.4372939",
             "description": "In this a devised study to have an exemplary experimental material description.",
@@ -636,8 +628,7 @@
             "name": "protein assay",
             "value": "SDS-PAGE",
             "propertyID": "https://bioregistry.io/EFO:0001458",
-            "valueReference": "https://bioregistry.io/EFO:0010936",
-            "columnIndex": "0"
+            "valueReference": "https://bioregistry.io/EFO:0010936"
         },
         {
             "@id": "#Process_experiment2",
@@ -660,6 +651,7 @@
             "@id": "studies/experiment2/",
             "@type": "Dataset",
             "additionalType": "Study",
+            "name": "experiment2",
             "identifier": "experiment2",
             "dateModified": "2025-07-15T12:34:16.4412433",
             "hasPart": [],
@@ -965,8 +957,7 @@
             "additionalType": "Component",
             "name": "sonicator",
             "value": "Fisherbrand™ Model 705 Sonic Dismembrator",
-            "propertyID": "https://bioregistry.io/OBI:0400114",
-            "columnIndex": "1"
+            "propertyID": "https://bioregistry.io/OBI:0400114"
         },
         {
             "@id": "#Component_centrifuge_Eppendorf™_Centrifuge_5420",
@@ -974,8 +965,7 @@
             "additionalType": "Component",
             "name": "centrifuge",
             "value": "Eppendorf™ Centrifuge 5420",
-            "propertyID": "https://bioregistry.io/OBI:0400106",
-            "columnIndex": "3"
+            "propertyID": "https://bioregistry.io/OBI:0400106"
         },
         {
             "@id": "#Protocol_Cell_Lysis",
@@ -996,8 +986,7 @@
             "name": "cell lysis",
             "value": "Sonication",
             "propertyID": "https://bioregistry.io/OBI:0302894",
-            "valueReference": "https://bioregistry.io/NCIT:C81871",
-            "columnIndex": "0"
+            "valueReference": "https://bioregistry.io/NCIT:C81871"
         },
         {
             "@id": "#ParameterValue_centrifugation_10",
@@ -1006,8 +995,7 @@
             "name": "centrifugation",
             "value": "10",
             "propertyID": "https://bioregistry.io/OBI:0302886",
-            "unitText": "g unit",
-            "columnIndex": "2"
+            "unitText": "g unit"
         },
         {
             "@id": "#Process_Cell_Lysis_0",
@@ -1303,8 +1291,7 @@
             "name": "cleavage agent name",
             "value": "Trypsin",
             "propertyID": "https://www.ebi.ac.uk/ols4/ontologies/ms/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FMS_1001045",
-            "valueReference": "https://www.ebi.ac.uk/ols4/ontologies/ms/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FMS_1001251",
-            "columnIndex": "0"
+            "valueReference": "https://www.ebi.ac.uk/ols4/ontologies/ms/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FMS_1001251"
         },
         {
             "@id": "#Component_instrument_model_TripleTOF_5600+",
@@ -1313,8 +1300,7 @@
             "name": "instrument model",
             "value": "TripleTOF 5600+",
             "propertyID": "https://www.ebi.ac.uk/ols4/ontologies/ms/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FMS_1000031",
-            "valueReference": "https://www.ebi.ac.uk/ols4/ontologies/ms/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FMS_1002584",
-            "columnIndex": "1"
+            "valueReference": "https://www.ebi.ac.uk/ols4/ontologies/ms/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FMS_1002584"
         },
         {
             "@id": "#Protocol_Protein_Measurement",
@@ -1422,8 +1408,7 @@
             "additionalType": "ParameterValue",
             "name": "software",
             "value": "ProteomIqon",
-            "propertyID": "https://www.ebi.ac.uk/ols4/ontologies/ms/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FMS_1000531",
-            "columnIndex": "0"
+            "propertyID": "https://www.ebi.ac.uk/ols4/ontologies/ms/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FMS_1000531"
         },
         {
             "@id": "#Process_Computational_Proteome_Analysis_0",

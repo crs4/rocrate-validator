@@ -15,10 +15,18 @@
   ],
   "@graph": [
     {
-      "@id": "studies/MyStudy/",
+      "@id": "assays/MyAssay/",
       "@type": "Dataset",
-      "additionalType": "Study",
-      "name": "My Study is great"
+      "additionalType": "Assay",
+      "identifier": "MyAssay",
+      "name": "My Assay is great"
+    },
+    {
+      "@id": "MyInBetweenDataset",
+      "@type": "Dataset",
+      "hasPart": {
+        "@id": "assays/MyAssay/"
+      }
     },
     {
       "@id": "LICENSE",
@@ -31,10 +39,10 @@
       "additionalType": "Investigation",
       "identifier": "MyInvestigation",
       "hasPart": {
-        "@id": "studies/MyStudy/"
+        "@id": "MyInBetweenDataset"
       },
       "name": "My Investigation is great",
-      "datePublished": "2025-12-02T18:02:02.3597375",
+      "datePublished": "2025-12-04T14:00:06.3256510",
       "description": "This is an example investigation.",
       "license": {
         "@id": "LICENSE"
