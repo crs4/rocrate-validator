@@ -1,0 +1,94 @@
+# Copyright (c) 2024 DataPLANT
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+@prefix ro: <./> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+@prefix isa-ro-crate: <https://github.com/crs4/rocrate-validator/profiles/isa-ro-crate/> .
+@prefix bioschemas: <https://bioschemas.org/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix validator: <https://github.com/crs4/rocrate-validator/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+
+# check assay must have name
+
+# check assay must be pointed to by investigation through hasPart
+
+# Find assays and add isa-ro-crate:Assay type to them, for easier retrieval for checks
+ro-crate:FindAssays a sh:NodeShape, validator:HiddenShape;
+    sh:name "Identify Assays within the RO-Crate" ;
+    sh:description "An Assay has type Dataset and additionalType 'Assay'." ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?this a schema:Dataset .
+                ?this schema:additionalType "Assay" .
+            }
+        """
+    ] ;
+
+    # Expand data graph with triples from the file data entity
+    sh:rule [
+        a sh:TripleRule ;
+        sh:subject sh:this ;
+        sh:predicate rdf:type ;
+        sh:object isa-ro-crate:Assay ;
+    ] .
+
+# WIP
+isa-ro-crate:AssayMustHaveBaseDescriptors a sh:NodeShape ;
+    sh:name "Assay MUST have base properties" ;
+    sh:description "An Assay MUST have identifier" ;
+    sh:targetClass isa-ro-crate:Assay ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:identifier ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ; 
+        sh:not [
+            sh:hasValue ""
+        ] ;
+        sh:description "Check that assay does have non-empty identifier and it's a string" ;
+        sh:message "Assay entity MUST have a non-empty identifier of type string" ;
+        sh:severity sh:Violation ;
+    ] ;
+.
+
+
+isa-ro-crate:AssayMustBeReferencedFromInvestigation a sh:NodeShape ;
+  sh:name "Assay MUST be directly referenced from Investigation (Root Data Entity)" ;
+  sh:targetClass isa-ro-crate:Assay ;
+  sh:property
+        [
+            a sh:PropertyShape ;
+            sh:path [ sh:inversePath schema:hasPart ] ;
+            sh:class ro-crate:RootDataEntity ;
+            sh:minCount 1 ;
+            sh:name "Assay MUST be directly referenced from Investigation (Root Data Entity)" ;
+            sh:description """Check if the Assay is directly linked to the Investigation (which is the Root Data Entity) using the `hasPart` (as defined in `schema.org`) property" """ ;
+            sh:message "Assay MUST be directly referenced in hasPart on the Investigation (Root Data Entity)"
+         ] .
+ 

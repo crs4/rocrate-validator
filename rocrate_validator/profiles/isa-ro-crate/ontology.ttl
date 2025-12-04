@@ -30,6 +30,11 @@ isa-ro-crate:Study rdf:type owl:Class ;
   rdfs:subClassOf schema:Dataset ;
   rdfs:label "Study"@en .
 
+# Assay
+isa-ro-crate:Assay rdf:type owl:Class ;
+  rdfs:subClassOf schema:Dataset ;
+  rdfs:label "Assay"@en .
+
 ###  https://bioschemas.org/LabProcess
 bioschemas:LabProcess rdf:type owl:Class ;
                       rdfs:subClassOf schema:Action ;
