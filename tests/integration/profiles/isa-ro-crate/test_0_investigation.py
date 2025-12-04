@@ -21,7 +21,7 @@
 import logging
 
 from rocrate_validator.models import Severity
-from tests.ro_crates import ValidROC
+from tests.ro_crates import InvalidISARC, ValidROC
 from tests.shared import do_entity_test, SPARQL_PREFIXES
 
 # set up logging
@@ -58,4 +58,36 @@ def test_isa_additionaltype_not_investigation():
         ],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
+    )
+
+def test_isa_investigation_no_identifier():
+    """
+    Test an ISA RO-Crate where the investigation has no identifier.
+    """
+
+    do_entity_test(
+        rocrate_path=InvalidISARC().investigation_is_missing_identifier,
+        requirement_severity=Severity.REQUIRED,
+        expected_validation_result=False,
+        # expected_triggered_requirements=["Investigation MUST have base properties"],
+        expected_triggered_issues=[
+            "The root data entity must have a non-empty identifier"
+        ],
+        profile_identifier="isa-ro-crate"
+    )
+
+def test_isa_investigation_identifier_not_string():
+    """
+    Test an ISA RO-Crate where the investigation has an identifier that is not a string.
+    """
+
+    do_entity_test(
+        rocrate_path=InvalidISARC().investigation_identifier_not_string,
+        requirement_severity=Severity.REQUIRED,
+        expected_validation_result=False,
+        # expected_triggered_requirements=["Investigation MUST have base properties"],
+        expected_triggered_issues=[
+            "The root data entity must have a non-empty identifier"
+        ],
+        profile_identifier="isa-ro-crate"
     )

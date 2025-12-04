@@ -984,10 +984,26 @@ class InvalidISARC:
     @property
     def study_is_missing_identifier(self) -> Path:
         return self.base_path / "invalid-study-is-missing-identifier"
+    
+    @property
+    def investigation_is_missing_identifier(self) -> Path:
+        return self.base_path / "invalid-investigation-is-missing-identifier"
+    
+    @property
+    def study_identifier_not_string(self) -> Path:
+        return self.base_path / "invalid-study-identifier-not-string"
+    
+    @property
+    def investigation_identifier_not_string(self) -> Path:
+        return self.base_path / "invalid-investigation-identifier-not-string"
 
     @property
     def study_is_missing_name(self) -> Path:
         return self.base_path / "invalid-study-is-missing-name"
+    
+    @property
+    def study_name_not_string(self) -> Path:
+        return self.base_path / "invalid-study-name-not-string"
     
     @property
     def study_is_not_directly_part_of_investigation(self) -> Path:
@@ -1008,6 +1024,22 @@ class InvalidISARC:
     @property
     def process_is_missing_results(self) -> Path:
         return self.base_path / "invalid-process-is-missing-results"
+    
+    @property
+    def assay_is_linked_through_illegal_property(self) -> Path:
+        return self.base_path / "invalid-assay-is-linked-through-illegal-property"
+
+    @property
+    def assay_is_missing_identifier(self) -> Path:
+        return self.base_path / "invalid-assay-is-missing-identifier"
+    
+    @property
+    def assay_identifier_not_string(self) -> Path:
+        return self.base_path / "invalid-assay-identifier-not-string"
+    
+    @property
+    def assay_is_not_directly_part_of_investigation(self) -> Path:
+        return self.base_path / "invalid-assay-is-not-directly-part-of-investigation"
 
 
 
