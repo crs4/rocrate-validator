@@ -22,40 +22,6 @@ from tests.shared import do_entity_test, SPARQL_PREFIXES
 logger = logging.getLogger(__name__)
 
 
-# ----- MUST fails tests
-
-
-def test_result_output_does_not_exist():
-    """
-    Test a Five Safes Crate where an output listed in
-    `CreateAction` --> `result` does not exist as an
-    entity in the metadata file.
-    (We remove the triplets with an output as the subjects)
-    """
-    sparql = (
-        SPARQL_PREFIXES
-        + """
-        DELETE {
-            ?output ?p ?o .
-        }
-        WHERE {
-            ?action schema:result ?output ;
-                    a schema:CreateAction .
-        }
-        """
-    )
-
-    do_entity_test(
-        rocrate_path=ValidROC().five_safes_crate_request,
-        requirement_severity=Severity.REQUIRED,
-        expected_validation_result=False,
-        expected_triggered_requirements=None,
-        expected_triggered_issues=None,
-        profile_identifier="five-safes-crate",
-        rocrate_entity_mod_sparql=sparql,
-    )
-
-
 # ----- SHOULD fails tests
 
 

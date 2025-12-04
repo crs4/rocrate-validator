@@ -28,9 +28,10 @@ five-safes-crate:CreateActionHasResultIfActionCompleted
   sh:name "CreateAction" ;
   sh:description "`CreateAction` with CompleteActionStatus SHOULD have the `schema:result` property." ;
 
-
   sh:target [
         a sh:SPARQLTarget ;
+        sh:name "Result" ;
+        sh:description "`CreateAction` with CompleteActionStatus SHOULD have the `schema:result` property." ;
         sh:prefixes ro-crate:sparqlPrefixes ;
         sh:select """
             SELECT ?this WHERE {
