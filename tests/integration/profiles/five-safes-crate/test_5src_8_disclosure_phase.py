@@ -194,7 +194,7 @@ def test_5src_disclosure_object_not_mentioned_by_root_data_entity():
     )
 
 
-def test_5src_disclosure_object_with_no_axction_status():
+def test_5src_disclosure_object_with_no_action_status():
     sparql = """
         PREFIX schema: <http://schema.org/>
         PREFIX shp:    <https://w3id.org/shp#>
@@ -204,36 +204,6 @@ def test_5src_disclosure_object_with_no_axction_status():
         }
         WHERE {
             ?s schema:additionalType shp:DisclosureCheck .
-        }
-        """
-
-    do_entity_test(
-        rocrate_path=ValidROC().five_safes_crate_request,
-        requirement_severity=Severity.RECOMMENDED,
-        expected_validation_result=False,
-        expected_triggered_requirements=None,
-        expected_triggered_issues=None,
-        profile_identifier="five-safes-crate",
-        rocrate_entity_mod_sparql=sparql,
-    )
-
-
-def test_5src_disclosure_object_has_no_start_time_if_begun():
-    sparql = """
-        PREFIX schema: <http://schema.org/>
-        PREFIX shp:    <https://w3id.org/shp#>
-
-        DELETE {
-            ?s schema:startTime ?o .
-        }
-        WHERE {
-            ?s schema:additionalType shp:DisclosureCheck ;
-               schema:actionStatus ?status .
-               FILTER(?status IN (
-                    "http://schema.org/CompletedActionStatus",
-                    "http://schema.org/FailedActionStatus",
-                    "http://schema.org/ActiveActionStatus"
-                ))
         }
         """
 
@@ -334,6 +304,39 @@ def test_5src_disclosure_object_has_no_properly_formatted_end_time_if_ended():
     do_entity_test(
         rocrate_path=ValidROC().five_safes_crate_request,
         requirement_severity=Severity.RECOMMENDED,
+        expected_validation_result=False,
+        expected_triggered_requirements=None,
+        expected_triggered_issues=None,
+        profile_identifier="five-safes-crate",
+        rocrate_entity_mod_sparql=sparql,
+    )
+
+
+# ----- MAY fails tests
+
+
+def test_5src_disclosure_object_has_no_start_time_if_begun():
+    sparql = """
+        PREFIX schema: <http://schema.org/>
+        PREFIX shp:    <https://w3id.org/shp#>
+
+        DELETE {
+            ?s schema:startTime ?o .
+        }
+        WHERE {
+            ?s schema:additionalType shp:DisclosureCheck ;
+               schema:actionStatus ?status .
+               FILTER(?status IN (
+                    "http://schema.org/CompletedActionStatus",
+                    "http://schema.org/FailedActionStatus",
+                    "http://schema.org/ActiveActionStatus"
+                ))
+        }
+        """
+
+    do_entity_test(
+        rocrate_path=ValidROC().five_safes_crate_request,
+        requirement_severity=Severity.OPTIONAL,
         expected_validation_result=False,
         expected_triggered_requirements=None,
         expected_triggered_issues=None,
