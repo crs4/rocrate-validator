@@ -79,7 +79,40 @@ def test_completed_createaction_does_not_have_result():
 
     do_entity_test(
         rocrate_path=ValidROC().five_safes_crate_request,
-        requirement_severity=Severity.REQUIRED,
+        requirement_severity=Severity.RECOMMENDED,
+        expected_validation_result=False,
+        expected_triggered_requirements=None,
+        expected_triggered_issues=None,
+        profile_identifier="five-safes-crate",
+        rocrate_entity_mod_sparql=sparql,
+    )
+
+
+def test_result_output_does_not_have_allowed_type():
+    """
+    Test a Five Safes Crate where the result output does not have a type that
+    is among those allowed.
+    (We remove the output entity and replace it with one that is of a wrong type)"""
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        DELETE {
+            ?result a ?oldType .
+        }
+        INSERT {
+            ?result a schema:Person .
+        }
+        WHERE {
+            ?action a schema:CreateAction ;
+                    schema:result ?result .
+            ?result a ?oldType .
+            }
+        """
+    )
+
+    do_entity_test(
+        rocrate_path=ValidROC().five_safes_crate_request,
+        requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
         expected_triggered_requirements=None,
         expected_triggered_issues=None,

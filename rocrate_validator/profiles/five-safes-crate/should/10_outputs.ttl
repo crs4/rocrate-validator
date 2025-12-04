@@ -51,41 +51,38 @@ five-safes-crate:CreateActionHasResultIfActionCompleted
   ] .
 
 
+five-safes-crate:CreateActionResultOutputsHaveAllowedTypes
+  a sh:NodeShape ;
+    sh:name "Output" ;
+    sh:description "Result SHOULD have a `@type` among an allowed set of values." ;
+    sh:target [
+      a sh:SPARQLTarget ;
+      sh:select """
+        PREFIX schema: <http://schema.org/>
+        SELECT ?this
+        WHERE {
+          ?createAction a schema:CreateAction .
+          ?createAction schema:result ?this .
+        }
+      """ ;
+    ] ;
+    sh:message "Result SHOULD have a `@type` among an allowed set of values." ;
+    sh:severity sh:Warning ;
+    sh:or (
+      [
+        sh:class schema:MediaObject;
+      ]
+      [
+        sh:class schema:Dataset;
+      ]
+      [
+        sh:class schema:Collection;
+      ]
+      [
+        sh:class schema:DigitalDocument;
+      ]
+      [
+        sh:class schema:PropertyValue;
+      ]
+    ) .
 
-# This test passes even when it should fail, so it is disabled for now.
-# According to Clause.ai the possible reason for this misbehaviour is that
-# the RO-Crate validator adds inferred types like schema:MediaObject to the
-# entity based on other characteristics (like it being a file). So the entity
-# has BOTH "Filexx" (which doesn't expand to a schema.org URI) AND the inferred
-#  schema:MediaObject, which makes the constraint pass.
-# The fundamental problem is that we can't easily distinguish between
-# user-declared types and validator-inferred types in the materialized RDF graph.
-
-# five-safes-crate:CreateActionResultOutputsHaveAllowedTypes
-#   a sh:NodeShape ;
-#     sh:name "Output" ;
-#     sh:target [
-#       a sh:SPARQLTarget ;
-#       sh:select """
-#         PREFIX schema: <http://schema.org/>
-#         SELECT ?this
-#         WHERE {
-#           ?createAction a schema:CreateAction .
-#           ?createAction schema:result ?this .
-#         }
-#       """ ;
-#     ] ;
-#     sh:message "Every schema:result must point to a defined node (must have an rdf:type)." ;
-#     sh:property [
-#       sh:path rdf:type ;
-#       sh:qualifiedValueShape (
-#         schema:MediaObject
-#         schema:Dataset
-#         schema:Collection
-#         schema:DigitalDocument
-#         schema:PropertyValue
-#       ) ;
-#       sh:qualifiedMinCount 1 ;
-#       sh:message "Result has a rdf:type outside the allowed set." ;
-#       sh:severity sh:Warning ;
-#     ] .

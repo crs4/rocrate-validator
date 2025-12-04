@@ -27,22 +27,22 @@ five-safes-crate:CreateActionResultOutputsDefined
     a sh:NodeShape ;
     sh:name "CreateAction" ;
     sh:targetClass schema:CreateAction ;
-    sh:message "The result of a schema:CreateAction must be a defined node (must have an rdf:type)." ;
+    sh:message "The result of a schema:CreateAction must be a defined node (must have `@type`)." ;
     sh:property [
         sh:name "result" ;
         sh:path schema:result ;
         sh:node five-safes-crate:DefinedNodeShape ;
-        sh:description "The result of a schema:CreateAction must be a defined node (must have an rdf:type)." ;
+        sh:description "The result of a schema:CreateAction must be a defined node (must have `@type`)." ;
     ] .
 
 five-safes-crate:DefinedNodeShape
     a sh:NodeShape ;
     sh:name "DefinedNode" ;
-    sh:message "Result node is not defined in the RO-Crate (no rdf:type triple)." ;
+    sh:message "Result node is not defined in the RO-Crate (it does not have its own entry in `@graph` with a `@type` attribute defined)." ;
     sh:property [
         sh:name "type" ;
         sh:path rdf:type ;
         sh:minCount 1 ;
-        sh:message "Result node is not defined in the RO-Crate (no rdf:type triple)." ;
+        sh:message "Result node is not defined in the RO-Crate (it does not have its own entry in `@graph` with a `@type` attribute defined)." ;
         sh:severity sh:Violation ;
     ] .
