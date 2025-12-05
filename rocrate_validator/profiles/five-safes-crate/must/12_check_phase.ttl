@@ -42,9 +42,6 @@ five-safes-crate:CheckValueObjectHasDescriptiveNameAndIsAssessAction
     ] ;
 
     sh:property [
-        sh:a sh:PropertyShape ;
-        sh:name "AssessAction" ;
-        sh:description "CheckValue MUST be a `schema:AssessAction`." ;
         sh:path rdf:type ;
         sh:minCount 1 ;
         sh:hasValue schema:AssessAction;
