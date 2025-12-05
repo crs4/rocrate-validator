@@ -220,6 +220,7 @@
                 "@id": "https://w3id.org/shp#CheckValue"
             },
             "name": "BagIt checksum of Crate: OK",
+            "startTime": "2023-04-18T12:11:00+01:00",
             "endTime": "2023-04-18T12:11:45+01:00",
             "object": {
                 "@id": "./"
@@ -229,8 +230,7 @@
             },
             "agent": {
                 "@id": "#validator-a4a66c63-2fe0-4c57-830d-268a40718313"
-            },
-            "actionStatus": "http://schema.org/CompletedActionStatus"
+            }
         },
         {
             "@id": "#validate-1146f640-819e-4c86-b029-b763a0040896",

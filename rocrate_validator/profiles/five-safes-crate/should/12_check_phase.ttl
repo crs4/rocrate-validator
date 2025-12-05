@@ -27,7 +27,7 @@ five-safes-crate:RootDataEntityShouldMentionCheckValueObject
     a sh:NodeShape ;
     sh:name "RootDataEntity" ;
     sh:targetClass ro-crate:RootDataEntity ;
-    sh:description "RootDataEntity SHOULD mention a check value object." ;
+    sh:description "" ;
 
     sh:sparql [
         a sh:SPARQLConstraint ;
@@ -52,7 +52,7 @@ five-safes-crate:RootDataEntityShouldMentionCheckValueObject
 five-safes-crate:CheckValueObjectShouldPointToRootDataEntity
     a sh:NodeShape ;
     sh:name "CheckValue" ;
-    sh:description "`CheckValue` --> `object` SHOULD point to the root of the RO-Crate" ;
+    sh:description "" ;
     sh:target [
         a sh:SPARQLTarget ;
         sh:select """
@@ -79,7 +79,7 @@ five-safes-crate:CheckValueObjectShouldPointToRootDataEntity
 five-safes-crate:CheckValueInstrumentShouldPointToEntityTypedDefinedTerm
     a sh:NodeShape ;
     sh:name "CheckValue" ;
-    sh:description "`CheckValue` --> `instrument` SHOULD point to an entity typed `schema:DefinedTerm`" ;
+    sh:description "" ;
     sh:target [
         a sh:SPARQLTarget ;
         sh:select """
@@ -106,7 +106,7 @@ five-safes-crate:CheckValueInstrumentShouldPointToEntityTypedDefinedTerm
 five-safes-crate:CheckValueAgentShouldIdentifyTheAgentWhoPerformnedTheCheck
     a sh:NodeShape ;
     sh:name "CheckValue" ;
-    sh:description "`CheckValue` --> `agent` SHOULD reference the agent who initiated the check" ;
+    sh:description "" ;
     sh:target [
         a sh:SPARQLTarget ;
         sh:select """
@@ -130,10 +130,10 @@ five-safes-crate:CheckValueAgentShouldIdentifyTheAgentWhoPerformnedTheCheck
     ] .
 
 
-five-safes-crate:CheckValueEndTimeShouldFollowISOStandard
+five-safes-crate:CheckValueShouldHaveEndTime
     a sh:NodeShape ;
     sh:name "CheckValue" ;
-    sh:description "`CheckValue` SHOULD have `endTime` property that follows the RFC 3339 standard." ;
+    sh:description "" ;
     sh:target [
         a sh:SPARQLTarget ;
         sh:select """
@@ -152,71 +152,36 @@ five-safes-crate:CheckValueEndTimeShouldFollowISOStandard
         sh:path schema:endTime ;
         sh:minCount 1 ;
         sh:maxCount 1 ;
-        sh:pattern "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(Z|[+-][0-9]{2}:[0-9]{2})$" ;
         sh:severity sh:Warning ;
-        sh:message "`CheckValue` SHOULD have `endTime` property that follows the RFC 3339 standard." ;
+        sh:message "`CheckValue` SHOULD have the `endTime` property." ;
     ] .
 
-# five-safes-crate:DisclosureObjectHasActionStatus
-#     a sh:NodeShape ;
-#     sh:name "DisclosureCheck" ;
-#     sh:description "DisclosureCheck" ;
 
-#     sh:target [
-#         a sh:SPARQLTarget ;
-#         sh:select """
-#             PREFIX schema: <http://schema.org/>
-#             PREFIX shp:    <https://w3id.org/shp#>
+five-safes-crate:CheckValueShouldHaveActionStatus
+    a sh:NodeShape ;
+    sh:name "CheckValue" ;
+    sh:description "" ;
 
-#             SELECT ?this
-#             WHERE {
-#                 ?this schema:additionalType shp:DisclosureCheck .
-#             }
-#         """ ;
-#     ] ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:select """
+            PREFIX schema: <http://schema.org/>
+            PREFIX shp:    <https://w3id.org/shp#>
 
-#     sh:property [
-#         a sh:PropertyShape ;
-#         sh:name "ActionStatus" ;
-#         sh:description "The DisclosureCheck SHOULD have actionStatus property." ;
-#         sh:path schema:actionStatus ;
-#         sh:minCount 1 ;
-#         sh:severity sh:Warning ;
-#         sh:message "The DisclosureCheck SHOULD have actionStatus property." ;
-#     ] .
+            SELECT ?this
+            WHERE {
+                ?this schema:additionalType shp:CheckValue .
+            }
+        """ ;
+    ] ;
 
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "ActionStatus" ;
+        sh:description "CheckValue SHOULD have actionStatus property." ;
+        sh:path schema:actionStatus ;
+        sh:minCount 1 ;
+        sh:severity sh:Warning ;
+        sh:message "CheckValue SHOULD have actionStatus property." ;
+    ] .
 
-# five-safes-crate:DisclosureObjectHasEndTimeIfcompletedOrFailed
-#     a sh:NodeShape ;
-#     sh:name "DisclosureCheck" ;
-#     sh:description "DisclosureCheck" ;
-
-#     sh:target [
-#         a sh:SPARQLTarget ;
-#         sh:select """
-#             PREFIX schema: <http://schema.org/>
-#             PREFIX shp:    <https://w3id.org/shp#>
-
-#             SELECT ?this
-#             WHERE {
-#                 ?this schema:additionalType shp:DisclosureCheck ;
-#                         schema:actionStatus ?status .
-#                 FILTER(?status IN (
-#                     "http://schema.org/CompletedActionStatus",
-#                     "http://schema.org/FailedActionStatus"
-#                 ))
-#             }
-#         """ ;
-#     ] ;
-
-#     sh:property [
-#         a sh:PropertyShape ;
-#         sh:name "EndTime" ;
-#         sh:path schema:endTime ;
-#         sh:minCount 1 ;
-#         sh:maxCount 1 ;
-#         sh:pattern "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(Z|[+-][0-9]{2}:[0-9]{2})$" ;
-#         sh:severity sh:Warning ;
-#         sh:description "Disclosure object SHOULD have endTime property with a valid datetetime if action completed of failed." ;
-#         sh:message "Disclosure object SHOULD have endTime property with a valid datetime if action completed of failed." ;
-#     ] .

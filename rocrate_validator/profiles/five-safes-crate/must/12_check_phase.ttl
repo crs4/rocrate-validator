@@ -26,7 +26,7 @@
 five-safes-crate:CheckValueObjectHasDescriptiveNameAndIsAssessAction
     a sh:NodeShape ;
     sh:name "CheckValue" ;
-    sh:description "CheckVAlue Object" ;
+    sh:description "" ;
 
     sh:target [
         a sh:SPARQLTarget ;
@@ -63,37 +63,91 @@ five-safes-crate:CheckValueObjectHasDescriptiveNameAndIsAssessAction
         sh:message "CheckValue MUST have a human readable name string of at least 20 characters." ;
     ] .
 
+five-safes-crate:CheckValueStartTimeMustFollowISOStandard
+    a sh:NodeShape ;
+    sh:name "CheckValue" ;
+    sh:description "" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:select """
+            PREFIX schema: <http://schema.org/>
+            PREFIX shp:    <https://w3id.org/shp#>
+            SELECT ?this
+            WHERE {
+                ?this schema:additionalType shp:CheckValue ;
+                      schema:startTime ?o
 
-# five-safes-crate:DisclosureObjectHasActionStatus
-#     a sh:NodeShape ;
-#     sh:name "DisclosureCheck" ;
-#     sh:description "DisclosureCheck" ;
+            }
+        """  ;
+    ] ;
 
-#     sh:target [
-#         a sh:SPARQLTarget ;
-#         sh:select """
-#             PREFIX schema: <http://schema.org/>
-#             PREFIX shp:    <https://w3id.org/shp#>
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "StartTime" ;
+        sh:path schema:startTime ;
+        sh:pattern "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(Z|[+-][0-9]{2}:[0-9]{2})$" ;
+        sh:severity sh:Violation ;
+        sh:message "`CheckValue` --> `startTime` MUST follows the RFC 3339 standard." ;
+    ] .
 
-#             SELECT ?this
-#             WHERE {
-#                 ?this schema:additionalType shp:DisclosureCheck ;
-#                       schema:actionStatus ?status .
-#             }
-#         """ ;
-#     ] ;
 
-#     sh:property [
-#         a sh:PropertyShape ;
-#         sh:name "actionStatus" ;
-#         sh:description "The value of actionStatus MUST be one of the allowed values." ;
-#         sh:path schema:actionStatus ;
-#         sh:in (
-#             "http://schema.org/PotentialActionStatus"
-#             "http://schema.org/ActiveActionStatus"
-#             "http://schema.org/CompletedActionStatus"
-#             "http://schema.org/FailedActionStatus"
-#         ) ;
-#         sh:severity sh:Violation ;
-#         sh:message "The value of actionStatus MUST be one of the allowed values." ;
-#     ] .
+five-safes-crate:CheckValueEndTimeMustFollowISOStandard
+    a sh:NodeShape ;
+    sh:name "CheckValue" ;
+    sh:description "" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:select """
+            PREFIX schema: <http://schema.org/>
+            PREFIX shp:    <https://w3id.org/shp#>
+            SELECT ?this
+            WHERE {
+                ?this schema:additionalType shp:CheckValue ;
+                      schema:endTime ?o
+
+            }
+        """  ;
+    ] ;
+
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "EndTime" ;
+        sh:path schema:endTime ;
+        sh:pattern "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(Z|[+-][0-9]{2}:[0-9]{2})$" ;
+        sh:severity sh:Violation ;
+        sh:message "`CheckValue` --> `endTime` MUST follows the RFC 3339 standard." ;
+    ] .
+
+
+five-safes-crate:CheckValueActionStatusMustHaveAllowedValues
+    a sh:NodeShape ;
+    sh:name "CheckValue" ;
+    sh:description "" ;
+
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:select """
+            PREFIX schema: <http://schema.org/>
+            PREFIX shp:    <https://w3id.org/shp#>
+
+            SELECT ?this
+            WHERE {
+                ?this schema:additionalType shp:CheckValue ;
+                        schema:actionStatus ?status .
+            }
+        """ ;
+    ] ;
+
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "ActionStatus" ;
+        sh:path schema:actionStatus ;
+        sh:in (
+            "http://schema.org/PotentialActionStatus"
+            "http://schema.org/ActiveActionStatus"
+            "http://schema.org/CompletedActionStatus"
+            "http://schema.org/FailedActionStatus"
+        ) ;
+        sh:severity sh:Violation ;
+        sh:message "`CheckValue` --> `actionStatus` MUST have one of the allowed values." ;
+    ] .
