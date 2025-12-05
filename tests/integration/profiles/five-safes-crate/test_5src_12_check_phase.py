@@ -286,7 +286,7 @@ def test_5src_check_value_instrument_does_not_point_to_entity_with_type_defined_
     )
 
 
-def test_5src_check_value_does_not_have_start_time():
+def test_5src_check_value_does_not_have_end_time():
     sparql = """
         PREFIX schema: <http://schema.org/>
         PREFIX shp:    <https://w3id.org/shp#>
