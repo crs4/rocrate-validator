@@ -34,7 +34,9 @@ logger = logging.getLogger(__name__)
 
 T = TypeVar("T")
 
-SPARQL_PREFIXES = """PREFIX schema: <http://schema.org/>
+SPARQL_PREFIXES = """
+PREFIX schema: <http://schema.org/>
+PREFIX dct: <http://purl.org/dc/terms/>
 """
 
 
