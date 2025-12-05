@@ -275,7 +275,9 @@ def test_5src_check_value_instrument_does_not_point_to_entity_with_type_defined_
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
         expected_triggered_requirements=["CheckValue"],
-        expected_triggered_issues=["`CheckValue` --> `instrument` SHOULD point to an entity typed `schema:DefinedTerm`"],
+        expected_triggered_issues=[
+            "`CheckValue` --> `instrument` SHOULD point to an entity typed `schema:DefinedTerm`"
+            ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
     )
