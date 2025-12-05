@@ -98,7 +98,7 @@ class ValidROC:
     @property
     def five_safes_crate_result(self) -> Path:
         return VALID_CRATES_DATA_PATH / "five-safes-crate-result"
-    
+
     @property
     def five_safes_crate_multiple_context(self) -> Path:
         return VALID_CRATES_DATA_PATH / "five-safes-crate-multiple-context"
@@ -993,6 +993,7 @@ class Invalid5sROC:
     @property
     def context_single_wrong_version(self) -> Path:
         return self.base_path / "context_single_wrong_version"
+
 
 class InvalidMultiProfileROC:
 

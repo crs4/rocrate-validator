@@ -34,10 +34,12 @@ def skip_spec_version_identifier():
     rocrate_profile = services.get_profile("ro-crate")
     if not rocrate_profile:
         raise RuntimeError("Unable to load the RO-Crate profile")
-    check_conformsTo_version = \
-        rocrate_profile.get_requirement_check("Metadata File Descriptor entity: `conformsTo` property")
-    assert check_conformsTo_version, \
-        'Unable to find the requirement "Metadata File Descriptor entity: `conformsTo` property"'
+    check_conformsTo_version = rocrate_profile.get_requirement_check(
+        "Metadata File Descriptor entity: `conformsTo` property"
+    )
+    assert (
+        check_conformsTo_version
+    ), 'Unable to find the requirement "Metadata File Descriptor entity: `conformsTo` property"'
     SKIP_CONFORMSTO_VERSION_CHECK_IDENTIFIER = check_conformsTo_version.identifier
     return SKIP_CONFORMSTO_VERSION_CHECK_IDENTIFIER
 
@@ -49,7 +51,10 @@ def test_valid_five_safes_crate_request_required(skip_spec_version_identifier):
         Severity.REQUIRED,
         True,
         profile_identifier="five-safes-crate",
-        skip_checks=[ SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER, skip_spec_version_identifier],
+        skip_checks=[
+            SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER,
+            skip_spec_version_identifier,
+        ],
     )
 
 
@@ -60,8 +65,12 @@ def test_valid_five_safes_crate_result_required(skip_spec_version_identifier):
         Severity.REQUIRED,
         True,
         profile_identifier="five-safes-crate",
-        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER, skip_spec_version_identifier],
+        skip_checks=[
+            SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER,
+            skip_spec_version_identifier,
+        ],
     )
+
 
 def test_valid_five_safes_crate_multiple_context(skip_spec_version_identifier):
     """Test a valid Five Safes Crate representing a result."""
@@ -70,5 +79,8 @@ def test_valid_five_safes_crate_multiple_context(skip_spec_version_identifier):
         Severity.REQUIRED,
         True,
         profile_identifier="five-safes-crate",
-        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER, skip_spec_version_identifier],
+        skip_checks=[
+            SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER,
+            skip_spec_version_identifier,
+        ],
     )

@@ -26,7 +26,9 @@ logger = logging.getLogger(__name__)
 
 
 def test_5src_conforms_to_old_version():
-    sparql = SPARQL_PREFIXES + """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
         DELETE {
             ?this dct:conformsTo ?version .
         }
@@ -38,16 +40,23 @@ def test_5src_conforms_to_old_version():
                 schema:about <./> .
         }
         """
+    )
 
     do_entity_test(
         rocrate_path=ValidROC().five_safes_crate_request,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
-        expected_triggered_requirements=["RO-Crate conforms to 1.2 or later minor version"],
-        expected_triggered_issues=["The RO-Crate metadata file descriptor MUST have a `conformsTo` property with RO-Crate specification version 1.2 or later minor version"],
+        expected_triggered_requirements=[
+            "RO-Crate conforms to 1.2 or later minor version"
+        ],
+        expected_triggered_issues=[
+            "The RO-Crate metadata file descriptor MUST have a `conformsTo` property with "
+            "RO-Crate specification version 1.2 or later minor version"
+        ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
     )
+
 
 def test_5src_context_single_wrong_version():
     do_entity_test(
@@ -55,9 +64,13 @@ def test_5src_context_single_wrong_version():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["RO-Crate context version"],
-        expected_triggered_issues=["The RO-Crate metadata file MUST include the RO-Crate context version 1.2 (or later minor version) in `@context`"],
+        expected_triggered_issues=[
+            "The RO-Crate metadata file MUST include the RO-Crate context version 1.2 "
+            "(or later minor version) in `@context`"
+        ],
         profile_identifier="five-safes-crate",
     )
+
 
 def test_5src_context_multiple_wrong_version():
     do_entity_test(
@@ -65,6 +78,9 @@ def test_5src_context_multiple_wrong_version():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["RO-Crate context version"],
-        expected_triggered_issues=["The RO-Crate metadata file MUST include the RO-Crate context version 1.2 (or later minor version) in `@context`"],
+        expected_triggered_issues=[
+            "The RO-Crate metadata file MUST include the RO-Crate context version 1.2 "
+            "(or later minor version) in `@context`"
+        ],
         profile_identifier="five-safes-crate",
     )

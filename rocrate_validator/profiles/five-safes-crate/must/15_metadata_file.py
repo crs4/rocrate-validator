@@ -12,14 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any
 import re
 
 import rocrate_validator.log as logging
 from rocrate_validator.models import Severity, ValidationContext
-from rocrate_validator.requirements.python import (PyFunctionCheck, check,
-                                                   requirement)
-from rocrate_validator.utils import HttpRequester
+from rocrate_validator.requirements.python import PyFunctionCheck, check, requirement
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -32,23 +29,32 @@ class FileDescriptorExistence(PyFunctionCheck):
     @check(name="RO-Crate context version", severity=Severity.REQUIRED)
     def test_existence(self, context: ValidationContext) -> bool:
         """
-        The RO-Crate metadata file MUST include the RO-Crate context version 1.2 (or later minor version) in `@context`
+        The RO-Crate metadata file MUST include the RO-Crate context version 1.2
+        (or later minor version) in `@context`
         """
         try:
             json_dict = context.ro_crate.metadata.as_dict()
             context_value = json_dict["@context"]
-            pattern = re.compile(r"https://w3id\.org/ro/crate/1\.[2-9](-DRAFT)?/context")
+            pattern = re.compile(
+                r"https://w3id\.org/ro/crate/1\.[2-9](-DRAFT)?/context"
+            )
             passed = True
             if isinstance(context_value, list):
-                if not any(pattern.match(item) for item in context_value if isinstance(item, str)):
+                if not any(
+                    pattern.match(item)
+                    for item in context_value
+                    if isinstance(item, str)
+                ):
                     passed = False
             else:
                 if not pattern.match(context_value):
                     passed = False
             if not passed:
                 context.result.add_issue(
-                    f"The RO-Crate metadata file MUST include the RO-Crate context "
-                    "version 1.2 (or later minor version) in `@context`", self)
+                    "The RO-Crate metadata file MUST include the RO-Crate context "
+                    "version 1.2 (or later minor version) in `@context`",
+                    self,
+                )
             return passed
 
         except Exception as e:
