@@ -16,7 +16,7 @@ import logging
 
 from rocrate_validator.models import Severity
 from tests.ro_crates import ValidROC
-from tests.shared import do_entity_test, SPARQL_PREFIXES
+from tests.shared import do_entity_test
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -40,10 +40,10 @@ def test_5src_check_value_not_of_type_assess_action():
         WHERE {
             ?this a schema:AssessAction ;
                   schema:additionalType shp:CheckValue ;
-                  rdf:type ?type . 
+                  rdf:type ?type .
         }
         """
-    
+
     do_entity_test(
         rocrate_path=ValidROC().five_safes_crate_result,
         requirement_severity=Severity.REQUIRED,
