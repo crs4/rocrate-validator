@@ -37,7 +37,7 @@ def skip_spec_version_identifier():
     check_conformsTo_version = \
         rocrate_profile.get_requirement_check("Metadata File Descriptor entity: `conformsTo` property")
     assert check_conformsTo_version, \
-        "Metadata File Descriptor entity: `conformsTo` property"
+        'Unable to find the requirement "Metadata File Descriptor entity: `conformsTo` property"'
     SKIP_CONFORMSTO_VERSION_CHECK_IDENTIFIER = check_conformsTo_version.identifier
     return SKIP_CONFORMSTO_VERSION_CHECK_IDENTIFIER
 
