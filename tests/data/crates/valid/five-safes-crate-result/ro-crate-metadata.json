@@ -230,7 +230,8 @@
             },
             "agent": {
                 "@id": "#validator-a4a66c63-2fe0-4c57-830d-268a40718313"
-            }
+            },
+            "actionStatus": "http://schema.org/CompletedActionStatus"
         },
         {
             "@id": "#validate-1146f640-819e-4c86-b029-b763a0040896",

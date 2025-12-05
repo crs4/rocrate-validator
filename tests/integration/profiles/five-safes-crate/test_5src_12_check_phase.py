@@ -115,6 +115,91 @@ def test_5src_check_value_name_not_long_enough():
 
 
 
+def test_5src_check_value_start_time_not_iso_standard():
+    sparql = """
+        PREFIX schema: <http://schema.org/>
+        PREFIX shp:    <https://w3id.org/shp#>
+        PREFIX rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+        DELETE {
+            ?c schema:startTime ?t .
+        }
+        INSERT {
+            ?c schema:startTime "1st of Jan 2021" .
+        }
+        WHERE {
+            ?c schema:additionalType shp:CheckValue ;
+             schema:startTime ?t .
+        }
+        """
+
+    do_entity_test(
+        rocrate_path=ValidROC().five_safes_crate_result,
+        requirement_severity=Severity.REQUIRED,
+        expected_validation_result=False,
+        expected_triggered_requirements=["CheckValue"],
+        expected_triggered_issues=["`CheckValue` --> `startTime` MUST follows the RFC 3339 standard."],
+        profile_identifier="five-safes-crate",
+        rocrate_entity_mod_sparql=sparql,
+    )
+
+
+def test_5src_check_value_end_time_not_iso_standard():
+    sparql = """
+        PREFIX schema: <http://schema.org/>
+        PREFIX shp:    <https://w3id.org/shp#>
+        PREFIX rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+        DELETE {
+            ?c schema:endTime ?t .
+        }
+        INSERT {
+            ?c schema:endTime "1st of Jan 2021" .
+        }
+        WHERE {
+            ?c schema:additionalType shp:CheckValue ;
+             schema:endTime ?t .
+        }
+        """
+
+    do_entity_test(
+        rocrate_path=ValidROC().five_safes_crate_result,
+        requirement_severity=Severity.REQUIRED,
+        expected_validation_result=False,
+        expected_triggered_requirements=["CheckValue"],
+        expected_triggered_issues=["`CheckValue` --> `endTime` MUST follows the RFC 3339 standard."],
+        profile_identifier="five-safes-crate",
+        rocrate_entity_mod_sparql=sparql,
+    )
+
+
+def test_5src_check_value_has_action_status_with_not_allowed_value():
+    sparql = """
+        PREFIX schema: <http://schema.org/>
+        PREFIX shp:    <https://w3id.org/shp#>
+        PREFIX rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+        DELETE {
+            ?s schema:actionStatus ?o .
+        }
+        INSERT {
+            ?s schema:actionStatus "Not a good action status" .
+        }
+        WHERE {
+            ?s schema:additionalType <https://w3id.org/shp#CheckValue> ;
+               schema:actionStatus ?o .
+        }
+        """
+
+    do_entity_test(
+        rocrate_path=ValidROC().five_safes_crate_result,
+        requirement_severity=Severity.REQUIRED,
+        expected_validation_result=False,
+        expected_triggered_requirements=["CheckValue"],
+        expected_triggered_issues=["`CheckValue` --> `actionStatus` MUST have one of the allowed values."],
+        profile_identifier="five-safes-crate",
+        rocrate_entity_mod_sparql=sparql,
+    )
 
 # ----- SHOULD fails tests
 
@@ -201,6 +286,83 @@ def test_5src_check_value_instrument_does_not_point_to_entity_with_type_defined_
     )
 
 
+def test_5src_check_value_does_not_have_start_time():
+    sparql = """
+        PREFIX schema: <http://schema.org/>
+        PREFIX shp:    <https://w3id.org/shp#>
+        PREFIX rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+        DELETE {
+            ?c schema:endTime ?t .
+        }
+        WHERE {
+            ?c schema:additionalType shp:CheckValue ;
+             schema:endTime ?t .
+        }
+        """
+
+    do_entity_test(
+        rocrate_path=ValidROC().five_safes_crate_result,
+        requirement_severity=Severity.RECOMMENDED,
+        expected_validation_result=False,
+        expected_triggered_requirements=["CheckValue"],
+        expected_triggered_issues=["`CheckValue` SHOULD have the `endTime` property."],
+        profile_identifier="five-safes-crate",
+        rocrate_entity_mod_sparql=sparql,
+    )
+
+
+def test_5src_check_value_does_not_have_action_status_property():
+    sparql = """
+        PREFIX schema: <http://schema.org/>
+        PREFIX shp:    <https://w3id.org/shp#>
+        PREFIX rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+        DELETE {
+            ?s schema:actionStatus ?o .
+        }
+        WHERE {
+            ?s schema:additionalType shp:CheckValue ;
+               schema:actionStatus ?o .
+        }
+        """
+
+    do_entity_test(
+        rocrate_path=ValidROC().five_safes_crate_result,
+        requirement_severity=Severity.RECOMMENDED,
+        expected_validation_result=False,
+        expected_triggered_requirements=["CheckValue"],
+        expected_triggered_issues=["CheckValue SHOULD have actionStatus property."],
+        profile_identifier="five-safes-crate",
+        rocrate_entity_mod_sparql=sparql,
+    )
+
+
+
+def test_5src_check_value_does_not_point_to_an_agent():
+    sparql = """
+        PREFIX schema: <http://schema.org/>
+        PREFIX shp:    <https://w3id.org/shp#>
+        PREFIX rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+        DELETE {
+            ?s schema:agent ?o .
+        }
+        WHERE {
+            ?s schema:additionalType shp:CheckValue ;
+               schema:agent ?o .
+        }
+        """
+
+    do_entity_test(
+        rocrate_path=ValidROC().five_safes_crate_result,
+        requirement_severity=Severity.RECOMMENDED,
+        expected_validation_result=False,
+        expected_triggered_requirements=["CheckValue"],
+        expected_triggered_issues=["`CheckValue` --> `agent` SHOULD reference the agent who initiated the check"],
+        profile_identifier="five-safes-crate",
+        rocrate_entity_mod_sparql=sparql,
+    )
 
 
 # ----- MAY fails tests

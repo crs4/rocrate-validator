@@ -178,7 +178,6 @@ five-safes-crate:CheckValueShouldHaveActionStatus
     sh:property [
         a sh:PropertyShape ;
         sh:name "ActionStatus" ;
-        sh:description "CheckValue SHOULD have actionStatus property." ;
         sh:path schema:actionStatus ;
         sh:minCount 1 ;
         sh:severity sh:Warning ;
