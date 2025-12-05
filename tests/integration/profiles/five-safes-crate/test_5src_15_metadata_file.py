@@ -28,13 +28,14 @@ logger = logging.getLogger(__name__)
 def test_5src_conforms_to_old_version():
     sparql = SPARQL_PREFIXES + """
         DELETE {
-            <ro-crate-metadata.json> dct:conformsTo ?version .
+            ?this dct:conformsTo ?version .
         }
         INSERT {
-            <ro-crate-metadata.json> dct:conformsTo <https://w3id.org/ro/crate/1.1> .
+            ?this dct:conformsTo <https://w3id.org/ro/crate/1.1> .
         }
         WHERE {
-            <ro-crate-metadata.json> dct:conformsTo ?version .
+            ?this dct:conformsTo ?version ;
+                schema:about <./> .
         }
         """
 
