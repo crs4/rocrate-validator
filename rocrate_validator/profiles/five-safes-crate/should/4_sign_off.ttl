@@ -111,7 +111,6 @@ five-safes-crate:SignOffPhaseProperties
             PREFIX rocrate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/>
             SELECT $this
             WHERE {
-                $this schema:object ?anyObject .
                 ?root a schema:Dataset ;
                     schema:mainEntity ?mainEntity ;
                     rdf:type rocrate:RootDataEntity .
@@ -131,7 +130,6 @@ five-safes-crate:SignOffPhaseProperties
             PREFIX rocrate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/>
             SELECT $this
             WHERE {
-                $this schema:object ?anyObject .
                 ?root a schema:Dataset ;
                     rdf:type rocrate:RootDataEntity ;
                     schema:sourceOrganization ?sourceOrg .
