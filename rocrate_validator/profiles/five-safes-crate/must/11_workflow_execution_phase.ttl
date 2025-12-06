@@ -41,10 +41,10 @@ five-safes-crate:WorkflowMustHaveDescriptiveName
     ] .
 
 
-five-safes-crate:WorkflowexecutionObjectHasStartTimeIfBegun
+five-safes-crate:WorkflowexecutionObjectHasCompliantStartTimeFormat
     a sh:NodeShape ;
     sh:name "WorkflowExecution" ;
-    sh:description "The workflow execution object MUST have a startTime property with a valid datetime if it has begun." ;
+    sh:description "The startTime of the workflow execution object MUST follow the RFC 3339 standard." ;
 
     sh:target [
         a sh:SPARQLTarget ;
@@ -55,12 +55,7 @@ five-safes-crate:WorkflowexecutionObjectHasStartTimeIfBegun
             SELECT ?this
             WHERE {
                 ?this rdf:type schema:CreateAction ;
-                      schema:actionStatus ?status .
-                FILTER(?status IN (
-                    "http://schema.org/CompletedActionStatus",
-                    "http://schema.org/FailedActionStatus",
-                    "http://schema.org/ActiveActionStatus"
-                ))
+                      schema:startTime ?time .
             }
         """ ;
     ] ;
@@ -69,19 +64,17 @@ five-safes-crate:WorkflowexecutionObjectHasStartTimeIfBegun
         a sh:PropertyShape ;
         sh:name "StartTime" ;
         sh:path schema:startTime ;
-        sh:minCount 1 ;
-        sh:maxCount 1 ;
         sh:pattern "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(Z|[+-][0-9]{2}:[0-9]{2})$" ;
         sh:severity sh:Violation ;
-        sh:description "The workflow execution object MUST have a startTime property with a valid datetime if it has begun." ;
-        sh:message "The workflow execution object MUST have a startTime property with a valid datetime if it has begun." ;
+        sh:description "The startTime of the workflow execution object MUST follow the RFC 3339 standard." ;
+        sh:message "The startTime of the workflow execution object MUST follow the RFC 3339 standard." ;
     ] .
 
     
-five-safes-crate:WorkflowexecutionObjectHasEndTimeIfEnded
+five-safes-crate:WorkflowexecutionObjectHasCompliantEndTimeFormat
     a sh:NodeShape ;
     sh:name "WorkflowExecution" ;
-    sh:description "The workflow execution object MUST have the endTime property with a valid datetime if it has ended." ;
+    sh:description "The endTime of the workflow execution object MUST follow the RFC 3339 standard." ;
 
     sh:target [
         a sh:SPARQLTarget ;
@@ -92,11 +85,7 @@ five-safes-crate:WorkflowexecutionObjectHasEndTimeIfEnded
             SELECT ?this
             WHERE {
                 ?this rdf:type schema:CreateAction ;
-                      schema:actionStatus ?status .
-                FILTER(?status IN (
-                    "http://schema.org/CompletedActionStatus",
-                    "http://schema.org/FailedActionStatus"
-                ))
+                      schema:endTime ?time .
             }
         """ ;
     ] ;
@@ -105,12 +94,10 @@ five-safes-crate:WorkflowexecutionObjectHasEndTimeIfEnded
         a sh:PropertyShape ;
         sh:name "EndTime" ;
         sh:path schema:endTime ;
-        sh:minCount 1 ;
-        sh:maxCount 1 ;
         sh:pattern "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(Z|[+-][0-9]{2}:[0-9]{2})$" ;
         sh:severity sh:Violation ;
-        sh:description "The workflow execution object MUST have the endTime property with a valid datetime if it has ended." ;
-        sh:message "The workflow execution object MUST have the endTime property with a valid datetime if it has ended." ;
+        sh:description "The endTime of the workflow execution object MUST follow the RFC 3339 standard." ;
+        sh:message "The endTime of the workflow execution object MUST follow the RFC 3339 standard." ;
     ] .
 
 
@@ -122,7 +109,7 @@ five-safes-crate:WorkflowMustHaveActionStatusWithAllowedValues
         a sh:PropertyShape ;
         sh:minCount 1 ;
         sh:name "actionStatus" ;
-        sh:description "WorkflowExecution MUST have an actionStatus with an allowed value." ;
+        sh:description "WorkflowExecution MUST have an actionStatus with an allowed value (see https://schema.org/ActionStatusType)." ;
         sh:path schema:actionStatus ;
         sh:in (
             "http://schema.org/PotentialActionStatus"
@@ -131,5 +118,5 @@ five-safes-crate:WorkflowMustHaveActionStatusWithAllowedValues
             "http://schema.org/FailedActionStatus"
         ) ;
         sh:severity sh:Violation ;
-        sh:message "WorkflowExecution MUST have an actionStatus with an allowed value." ;
+        sh:message "WorkflowExecution MUST have an actionStatus with an allowed value (see https://schema.org/ActionStatusType)." ;
     ] .

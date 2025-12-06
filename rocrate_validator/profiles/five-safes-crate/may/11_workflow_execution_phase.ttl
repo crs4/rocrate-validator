@@ -17,43 +17,15 @@
 @prefix five-safes-crate: <https://github.com/eScienceLab/rocrate-validator/profiles/five-safes-crate/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix schema: <http://schema.org/> .
-@prefix purl: <http://purl.org/dc/terms/> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix validator: <https://github.com/crs4/rocrate-validator/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 
-
-five-safes-crate:RootDataEntityShouldMentionWorkflow 
-    a sh:NodeShape ;
-    sh:name "RootDataEntity" ;
-    sh:description "RootDataEntity SHOULD mention workflow execution object (typed CreateAction)." ;
-    sh:targetClass ro-crate:RootDataEntity ;
-    sh:sparql [
-        a sh:SPARQLConstraint ; 
-        sh:name "mentions" ;
-        sh:select """
-        PREFIX schema: <http://schema.org/>
-        PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-        SELECT $this 
-        WHERE {
-            
-            FILTER NOT EXISTS {
-                $this schema:mentions ?workflowExecution .
-                ?workflowExecution rdf:type schema:CreateAction .
-            }
-        }
-        """ ;
-      sh:severity sh:Warning ;
-      sh:message "RootDataEntity SHOULD mention workflow execution object (typed CreateAction)." ;
-   ] .
-
-
-
-five-safes-crate:WorkflowexecutionObjectHasEndTimeIfEnded
+five-safes-crate:WorkflowexecutionObjectHasStartTimeIfBegun
     a sh:NodeShape ;
     sh:name "WorkflowExecution" ;
-    sh:description "The workflow execution object SHOULD have an endTime property if it has ended." ;
+    sh:description "The workflow execution object MAY have a startTime if execution was initiated." ;
 
     sh:target [
         a sh:SPARQLTarget ;
@@ -67,7 +39,8 @@ five-safes-crate:WorkflowexecutionObjectHasEndTimeIfEnded
                       schema:actionStatus ?status .
                 FILTER(?status IN (
                     "http://schema.org/CompletedActionStatus",
-                    "http://schema.org/FailedActionStatus"
+                    "http://schema.org/FailedActionStatus",
+                    "http://schema.org/ActiveActionStatus"
                 ))
             }
         """ ;
@@ -75,11 +48,11 @@ five-safes-crate:WorkflowexecutionObjectHasEndTimeIfEnded
 
     sh:property [
         a sh:PropertyShape ;
-        sh:name "EndTime" ;
-        sh:path schema:endTime ;
+        sh:name "StartTime" ;
+        sh:path schema:startTime ;
         sh:minCount 1 ;
         sh:maxCount 1 ;
-        sh:severity sh:Warning ;
-        sh:description "The workflow execution object SHOULD have an endTime property if it has ended." ;
-        sh:message "The workflow execution object SHOULD have an endTime property if it has ended." ;
+        sh:severity sh:Info ;
+        sh:description "The workflow execution object MAY have a startTime if execution was initiated." ;
+        sh:message "The workflow execution object MAY have a startTime if execution was initiated." ;
     ] .
