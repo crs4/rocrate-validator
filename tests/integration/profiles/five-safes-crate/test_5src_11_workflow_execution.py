@@ -107,19 +107,14 @@ def test_5src_workflow_object_with_not_long_enough_name():
 def test_5src_workflow_object_has_no_properly_formatted_start_time():
     sparql = (SPARQL_PREFIXES + """
         DELETE {
-            ?s schema:startTime ?o .
+            ?s schema:startTime ?time .
         }
         INSERT {
             ?s schema:startTime "1st Dec '25 @ 10:00:00" .
         }
         WHERE {
             ?s rdf:type schema:CreateAction ;
-               schema:actionStatus ?status .
-               FILTER(?status IN (
-                    "http://schema.org/CompletedActionStatus",
-                    "http://schema.org/FailedActionStatus",
-                    "http://schema.org/ActiveActionStatus"
-                ))
+               schema:startTime ?time .
         }
         """)
 
@@ -128,7 +123,9 @@ def test_5src_workflow_object_has_no_properly_formatted_start_time():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["WorkflowExecution"],
-        expected_triggered_issues=["The startTime of the workflow execution object MUST follow the RFC 3339 standard."],
+        expected_triggered_issues=[
+            "The startTime of the workflow execution object MUST follow the RFC 3339 standard."
+            ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
     )
@@ -137,18 +134,14 @@ def test_5src_workflow_object_has_no_properly_formatted_start_time():
 def test_5src_workflow_object_has_no_properly_formatted_end_time():
     sparql = (SPARQL_PREFIXES + """
         DELETE {
-            ?s schema:endTime ?o .
+            ?s schema:endTime ?time .
         }
         INSERT {
             ?s schema:endTime "1st Dec '25 @ 10:00:00" .
         }
         WHERE {
             ?s rdf:type schema:CreateAction ;
-               schema:actionStatus ?status .
-               FILTER(?status IN (
-                    "http://schema.org/CompletedActionStatus",
-                    "http://schema.org/FailedActionStatus"
-                ))
+               schema:endTime ?time .
         }
         """)
 
@@ -157,7 +150,9 @@ def test_5src_workflow_object_has_no_properly_formatted_end_time():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["WorkflowExecution"],
-        expected_triggered_issues=["The endTime of the workflow execution object MUST follow the RFC 3339 standard."],
+        expected_triggered_issues=[
+            "The endTime of the workflow execution object MUST follow the RFC 3339 standard."
+        ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
     )
@@ -178,8 +173,11 @@ def test_5src_workflow_object_with_no_action_status():
         rocrate_path=ValidROC().five_safes_crate_result,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
-        expected_triggered_requirements=None,
-        expected_triggered_issues=None,
+        expected_triggered_requirements=["WorkflowExecution"],
+        expected_triggered_issues=[(
+            "WorkflowExecution MUST have an actionStatus "
+            "with an allowed value (see https://schema.org/ActionStatusType)."
+        )],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
     )
@@ -204,7 +202,10 @@ def test_5src_workflow_object_with_no_properly_valued_action_status():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["WorkflowExecution"],
-        expected_triggered_issues=["WorkflowExecution MUST have an actionStatus with an allowed value (see https://schema.org/ActionStatusType)."],
+        expected_triggered_issues=[(
+            "WorkflowExecution MUST have an actionStatus "
+            "with an allowed value (see https://schema.org/ActionStatusType)."
+        )],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
     )
@@ -228,7 +229,9 @@ def test_5src_workflow_object_not_mentioned_by_root_data_entity():
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
         expected_triggered_requirements=["RootDataEntity"],
-        expected_triggered_issues=["RootDataEntity SHOULD mention workflow execution object (typed CreateAction)."],
+        expected_triggered_issues=[
+            "RootDataEntity SHOULD mention workflow execution object (typed CreateAction)."
+        ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
     )
@@ -250,7 +253,9 @@ def test_5src_workflow_object_has_no_end_time_if_ended():
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
         expected_triggered_requirements=["WorkflowExecution"],
-        expected_triggered_issues=["The workflow execution object SHOULD have an endTime property if it has ended."],
+        expected_triggered_issues=[
+            "The workflow execution object SHOULD have an endTime property if it has ended."
+        ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
     )
@@ -274,7 +279,9 @@ def test_5src_workflow_object_has_no_start_time_if_begun():
         requirement_severity=Severity.OPTIONAL,
         expected_validation_result=False,
         expected_triggered_requirements=["WorkflowExecution"],
-        expected_triggered_issues=["The workflow execution object MAY have a startTime if execution was initiated."],
+        expected_triggered_issues=[
+            "The workflow execution object MAY have a startTime if execution was initiated."
+        ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
     )
