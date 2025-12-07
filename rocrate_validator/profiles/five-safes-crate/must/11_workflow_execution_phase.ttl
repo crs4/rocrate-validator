@@ -32,12 +32,12 @@ five-safes-crate:WorkflowMustHaveDescriptiveName
         sh:a sh:PropertyShape ;
         sh:name "name" ;
         sh:minCount 1 ;    
-        sh:description "Workflow (CreateAction) MUST have a name string of at least 20 characters." ;
+        sh:description "Workflow (CreateAction) MUST have a name string of at least 10 characters." ;
         sh:path schema:name ;
         sh:datatype xsd:string ;
-        sh:minLength 20 ;
+        sh:minLength 10 ;
         sh:severity sh:Violation ;
-        sh:message "Workflow (CreateAction) MUST have a name string of at least 20 characters." ;
+        sh:message "Workflow (CreateAction) MUST have a name string of at least 10 characters." ;
     ] .
 
 

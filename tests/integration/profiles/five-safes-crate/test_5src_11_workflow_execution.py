@@ -44,7 +44,7 @@ def test_5src_workflow_object_with_no_name():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["WorkflowExecution"],
-        expected_triggered_issues=["Workflow (CreateAction) MUST have a name string of at least 20 characters."],
+        expected_triggered_issues=["Workflow (CreateAction) MUST have a name string of at least 10 characters."],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
     )
@@ -70,7 +70,7 @@ def test_5src_workflow_object_with_name_not_string():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["WorkflowExecution"],
-        expected_triggered_issues=["Workflow (CreateAction) MUST have a name string of at least 20 characters."],
+        expected_triggered_issues=["Workflow (CreateAction) MUST have a name string of at least 10 characters."],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
     )
@@ -82,7 +82,7 @@ def test_5src_workflow_object_with_not_long_enough_name():
             ?this schema:name ?name .
         }
         INSERT {
-            ?this schema:name "Too short" .
+            ?this schema:name "Short" .
         }
         WHERE {
             ?this rdf:type schema:CreateAction ;
@@ -96,7 +96,7 @@ def test_5src_workflow_object_with_not_long_enough_name():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["WorkflowExecution"],
-        expected_triggered_issues=["Workflow (CreateAction) MUST have a name string of at least 20 characters."],
+        expected_triggered_issues=["Workflow (CreateAction) MUST have a name string of at least 10 characters."],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
     )
