@@ -22,8 +22,6 @@ from tests.shared import do_entity_test, SPARQL_PREFIXES
 logger = logging.getLogger(__name__)
 
 
-
-
 # ----- MUST fails tests
 
 
@@ -262,6 +260,7 @@ def test_5src_workflow_object_has_no_end_time_if_ended():
 
 
 # ------- MAY fail tests
+
 
 def test_5src_workflow_object_has_no_start_time_if_begun():
     sparql = (SPARQL_PREFIXES + """
