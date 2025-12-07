@@ -118,7 +118,10 @@ def test_5src_validation_check_has_action_status_with_not_allowed_value():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["ValidationCheck"],
-        expected_triggered_issues=["The `actionStatus` of ValidationCheck MUST have an allowed value (see https://schema.org/ActionStatusType)."],
+        expected_triggered_issues=[(
+            "The `actionStatus` of ValidationCheck MUST have an allowed value "
+            "(see https://schema.org/ActionStatusType)."
+            )],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
     )
