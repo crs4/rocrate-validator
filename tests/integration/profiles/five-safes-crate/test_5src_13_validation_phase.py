@@ -176,11 +176,7 @@ def test_5src_validation_check_object_does_not_point_to_root_data_entity():
 
 
 def test_5src_validation_check_instrument_does_not_point_to_5scrate_0p4():
-    sparql = """
-        PREFIX schema: <http://schema.org/>
-        PREFIX shp:    <https://w3id.org/shp#>
-        PREFIX rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-
+    sparql = (SPARQL_PREFIXES + """
         DELETE {
             ?s schema:instrument <https://w3id.org/5s-crate/0.4> .
         }
@@ -189,6 +185,7 @@ def test_5src_validation_check_instrument_does_not_point_to_5scrate_0p4():
                 schema:instrument <https://w3id.org/5s-crate/0.4> .
         }
         """
+    )
 
     do_entity_test(
         rocrate_path=ValidROC().five_safes_crate_result,
