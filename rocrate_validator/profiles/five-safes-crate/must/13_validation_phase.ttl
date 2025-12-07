@@ -55,7 +55,7 @@ five-safes-crate:ValidationCheckObjectHasDescriptiveNameAndIsAssessAction
         sh:description "ValidationCheck MUST have a human readable name string of at least 10 characters." ;
         sh:path schema:name ;
         sh:datatype xsd:string ;
-        sh:minLength 20 ;
+        sh:minLength 10 ;
         sh:severity sh:Violation ;
         sh:message "ValidationCheck MUST have a human readable name string of at least 10 characters." ;
     ] .

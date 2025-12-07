@@ -23,38 +23,6 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 
-five-safes-crate:ValidationCheckShouldHaveActionStatus
-    a sh:NodeShape ;
-    sh:name "ValidationCheck" ;
-    sh:target [
-        a sh:SPARQLTarget ;
-        sh:select """
-            PREFIX schema: <http://schema.org/>
-            PREFIX shp:    <https://w3id.org/shp#>
-
-            SELECT ?this
-            WHERE {
-                ?this schema:additionalType shp:ValidationCheck .
-            }
-        """ ;
-    ] ;
-
-    sh:property [
-        a sh:PropertyShape ;
-        sh:minCount 1 ;
-        sh:name "actionStatus" ;
-        sh:description "ValidationCheck SHOULD have the `actionStatus` property." ;
-        sh:path schema:actionStatus ;
-        sh:in (
-            "http://schema.org/PotentialActionStatus"
-            "http://schema.org/ActiveActionStatus"
-            "http://schema.org/CompletedActionStatus"
-            "http://schema.org/FailedActionStatus"
-        ) ;
-        sh:severity sh:Warning ;
-        sh:message "ValidationCheck SHOULD have the `actionStatus` property." ;
-    ] .
-
 five-safes-crate:RootDataEntityShouldMentionValidationCheckObject
     a sh:NodeShape ;
     sh:name "RootDataEntity" ;
@@ -162,4 +130,38 @@ five-safes-crate:ValidationCheckShouldHaveActionStatus
         sh:minCount 1 ;
         sh:severity sh:Warning ;
         sh:message "ValidationCheck SHOULD have actionStatus property." ;
+    ] .
+
+
+
+five-safes-crate:ValidationCheckShouldHaveActionStatus
+    a sh:NodeShape ;
+    sh:name "ValidationCheck" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:select """
+            PREFIX schema: <http://schema.org/>
+            PREFIX shp:    <https://w3id.org/shp#>
+
+            SELECT ?this
+            WHERE {
+                ?this schema:additionalType shp:ValidationCheck .
+            }
+        """ ;
+    ] ;
+
+    sh:property [
+        a sh:PropertyShape ;
+        sh:minCount 1 ;
+        sh:name "actionStatus" ;
+        sh:description "ValidationCheck SHOULD have the `actionStatus` property." ;
+        sh:path schema:actionStatus ;
+        sh:in (
+            "http://schema.org/PotentialActionStatus"
+            "http://schema.org/ActiveActionStatus"
+            "http://schema.org/CompletedActionStatus"
+            "http://schema.org/FailedActionStatus"
+        ) ;
+        sh:severity sh:Warning ;
+        sh:message "ValidationCheck SHOULD have the `actionStatus` property." ;
     ] .
