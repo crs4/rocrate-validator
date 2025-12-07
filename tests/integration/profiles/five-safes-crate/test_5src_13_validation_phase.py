@@ -26,7 +26,8 @@ logger = logging.getLogger(__name__)
 
 # TO BE CHECKED AGAIN
 def test_5src_validation_check_not_of_type_assess_action():
-    sparql = (SPARQL_PREFIXES + """
+    sparql = (
+        SPARQL_PREFIXES + """
         DELETE {
             ?this rdf:type schema:AssessAction .
         }
@@ -62,8 +63,7 @@ def test_5src_validation_check_name_not_a_string():
         WHERE {
             ?this schema:additionalType shp:ValidationCheck .
         }
-        """
-    )
+        """)
 
     do_entity_test(
         rocrate_path=ValidROC().five_safes_crate_result,
@@ -87,8 +87,7 @@ def test_5src_validation_check_name_not_long_enough():
         WHERE {
             ?this schema:additionalType shp:ValidationCheck .
         }
-        """
-    )
+        """)
 
     do_entity_test(
         rocrate_path=ValidROC().five_safes_crate_result,
@@ -112,8 +111,7 @@ def test_5src_validation_check_has_action_status_with_not_allowed_value():
         WHERE {
             ?s schema:additionalType <https://w3id.org/shp#ValidationCheck> .
         }
-        """
-    )
+        """)
 
     do_entity_test(
         rocrate_path=ValidROC().five_safes_crate_result,
@@ -136,8 +134,7 @@ def test_5src_root_data_entity_does_not_mention_validation_check_entity():
         WHERE {
             ?o schema:additionalType shp:ValidationCheck ;
         }
-        """
-    )
+        """)
 
     do_entity_test(
         rocrate_path=ValidROC().five_safes_crate_result,
@@ -161,8 +158,7 @@ def test_5src_validation_check_object_does_not_point_to_root_data_entity():
         WHERE {
             ?s schema:additionalType shp:ValidationCheck ;
         }
-        """
-    )
+        """)
 
     do_entity_test(
         rocrate_path=ValidROC().five_safes_crate_result,
@@ -184,8 +180,7 @@ def test_5src_validation_check_instrument_does_not_point_to_5scrate_0p4():
             ?s schema:additionalType shp:ValidationCheck ;
                 schema:instrument <https://w3id.org/5s-crate/0.4> .
         }
-        """
-    )
+        """)
 
     do_entity_test(
         rocrate_path=ValidROC().five_safes_crate_result,
@@ -209,8 +204,7 @@ def test_5src_Validation_check_does_not_have_action_status_property():
             ?s schema:additionalType shp:ValidationCheck ;
                schema:actionStatus ?o .
         }
-        """
-    )
+        """)
 
     do_entity_test(
         rocrate_path=ValidROC().five_safes_crate_result,
