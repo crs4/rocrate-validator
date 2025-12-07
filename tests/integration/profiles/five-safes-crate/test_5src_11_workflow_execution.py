@@ -241,7 +241,7 @@ def test_5src_workflow_object_has_no_end_time_if_ended():
         }
         WHERE {
             ?s rdf:type schema:CreateAction ;
-               schema:endTime ?time .    
+               schema:endTime ?time . 
         }
         """)
 
