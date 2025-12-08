@@ -101,10 +101,14 @@ def do_entity_test(
         profile_identifier: str = DEFAULT_PROFILE_IDENTIFIER,
         rocrate_entity_patch: Optional[dict] = None,
         rocrate_entity_mod_sparql: Optional[str] = None,
-        skip_checks: Optional[list[str]] = ()
+        skip_checks: Optional[list[str]] = (),
+        **kwargs
 ):
     """
-    Shared function to test a RO-Crate entity
+    Shared function to test a RO-Crate entity.
+
+    Additional keyword arguments (kwargs) are passed through to ValidationSettings, 
+    allowing individual tests to tweak settings as needed.
     """
     assert not (rocrate_entity_patch and rocrate_entity_mod_sparql), \
         "Cannot use rocrate_entity_patch and rocrate_entity_mod_sparql together"
@@ -172,7 +176,8 @@ def do_entity_test(
                 "requirement_severity": requirement_severity,
                 "abort_on_first": abort_on_first,
                 "profile_identifier": profile_identifier,
-                "skip_checks": skip_checks
+                "skip_checks": skip_checks,
+                **kwargs
             }))
         logger.debug("Expected validation result: %s", expected_validation_result)
 

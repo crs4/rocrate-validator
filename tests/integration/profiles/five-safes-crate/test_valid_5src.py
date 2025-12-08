@@ -55,6 +55,8 @@ def test_valid_five_safes_crate_request_required(skip_spec_version_identifier):
             SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER,
             skip_spec_version_identifier,
         ],
+        # argument below can be removed when https://github.com/crs4/rocrate-validator/issues/126 is fixed
+        disable_inherited_profiles_reporting=True,
     )
 
 
@@ -69,6 +71,8 @@ def test_valid_five_safes_crate_result_required(skip_spec_version_identifier):
             SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER,
             skip_spec_version_identifier,
         ],
+        # argument below can be removed when https://github.com/crs4/rocrate-validator/issues/126 is fixed
+        disable_inherited_profiles_reporting=True,
     )
 
 
@@ -83,4 +87,6 @@ def test_valid_five_safes_crate_multiple_context(skip_spec_version_identifier):
             SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER,
             skip_spec_version_identifier,
         ],
+        # argument below can be removed when https://github.com/crs4/rocrate-validator/issues/126 is fixed
+        disable_inherited_profiles_reporting=True,
     )
