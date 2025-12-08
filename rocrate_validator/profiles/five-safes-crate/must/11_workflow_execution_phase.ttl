@@ -45,25 +45,13 @@ five-safes-crate:WorkflowexecutionObjectHasCompliantStartTimeFormat
     a sh:NodeShape ;
     sh:name "WorkflowExecution" ;
     sh:description "The startTime of the workflow execution object MUST follow the RFC 3339 standard (YYYY-MM-DD'T'hh:mm:ss[.fraction](Z | ±hh:mm))." ;
-
-    sh:target [
-        a sh:SPARQLTarget ;
-        sh:select """
-            PREFIX schema: <http://schema.org/>
-            PREFIX rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-
-            SELECT ?this
-            WHERE {
-                ?this rdf:type schema:CreateAction ;
-                      schema:startTime ?time .
-            }
-        """ ;
-    ] ;
+    sh:targetClass schema:CreateAction ;
 
     sh:property [
         a sh:PropertyShape ;
         sh:name "StartTime" ;
         sh:path schema:startTime ;
+        sh:minCount 0 ;
         sh:pattern "^[0-9]{4}-[0-9]{2}-[0-9]{2}[Tt][0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?(Z|z|[+-][0-9]{2}:[0-9]{2})$" ;
         sh:severity sh:Violation ;
         sh:message "The startTime of the workflow execution object MUST follow the RFC 3339 standard (YYYY-MM-DD'T'hh:mm:ss[.fraction](Z | ±hh:mm))." ;
@@ -74,25 +62,13 @@ five-safes-crate:WorkflowexecutionObjectHasCompliantEndTimeFormat
     a sh:NodeShape ;
     sh:name "WorkflowExecution" ;
     sh:description "The endTime of the workflow execution object MUST follow the RFC 3339 standard (YYYY-MM-DD'T'hh:mm:ss[.fraction](Z | ±hh:mm))." ;
-
-    sh:target [
-        a sh:SPARQLTarget ;
-        sh:select """
-            PREFIX schema: <http://schema.org/>
-            PREFIX rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-
-            SELECT ?this
-            WHERE {
-                ?this rdf:type schema:CreateAction ;
-                      schema:endTime ?time .
-            }
-        """ ;
-    ] ;
+    sh:targetClass schema:CreateAction ;
 
     sh:property [
         a sh:PropertyShape ;
         sh:name "EndTime" ;
         sh:path schema:endTime ;
+        sh:minCount 0 ;
         sh:pattern "^[0-9]{4}-[0-9]{2}-[0-9]{2}[Tt][0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?(Z|z|[+-][0-9]{2}:[0-9]{2})$" ;
         sh:severity sh:Violation ;
         sh:message "The endTime of the workflow execution object MUST follow the RFC 3339 standard (YYYY-MM-DD'T'hh:mm:ss[.fraction](Z | ±hh:mm))." ;
