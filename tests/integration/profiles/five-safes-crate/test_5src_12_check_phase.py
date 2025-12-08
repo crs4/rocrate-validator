@@ -134,7 +134,10 @@ def test_5src_check_value_start_time_not_iso_standard():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["CheckValue"],
-        expected_triggered_issues=["`CheckValue` --> `startTime` MUST follows the RFC 3339 standard."],
+        expected_triggered_issues=[(
+            "`CheckValue` --> `startTime` MUST follows the RFC 3339 standard "
+            "(YYYY-MM-DD'T'hh:mm:ss[.fraction](Z | ±hh:mm))."
+        )],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
     )
@@ -163,7 +166,10 @@ def test_5src_check_value_end_time_not_iso_standard():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["CheckValue"],
-        expected_triggered_issues=["`CheckValue` --> `endTime` MUST follows the RFC 3339 standard."],
+        expected_triggered_issues=[(
+            "`CheckValue` --> `endTime` MUST follows the RFC 3339 standard "
+            "(YYYY-MM-DD'T'hh:mm:ss[.fraction](Z | ±hh:mm))."
+        )],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
     )
