@@ -27,9 +27,9 @@ logger = logging.getLogger(__name__)
 
 def test_completed_createaction_does_not_have_result():
     """
-    Test a Five Safes Crate where `CreateAction` has `CompleteActionStatus` but
+    Test a Five Safes Crate where `CreateAction` has `CompletedActionStatus` but
     does not have the property `result`.
-    (We remove `result` from `CreateAction` if this has `CompleteActionStatus`)
+    (We remove `result` from `CreateAction` if this has `CompletedActionStatus`)
     """
     sparql = (
         SPARQL_PREFIXES
@@ -39,16 +39,20 @@ def test_completed_createaction_does_not_have_result():
         }
         WHERE {
             ?action a schema:CreateAction ;
-                      schema:actionStatus "http://schema.org/CompleteActionStatus" .        }
+                      schema:actionStatus "http://schema.org/CompletedActionStatus" ;
+                      schema:result ?o
+        }
         """
     )
 
     do_entity_test(
-        rocrate_path=ValidROC().five_safes_crate_request,
+        rocrate_path=ValidROC().five_safes_crate_result,
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
-        expected_triggered_requirements=None,
-        expected_triggered_issues=None,
+        expected_triggered_requirements=["CreateAction"],
+        expected_triggered_issues=[
+            "`CreateAction` with CompletedActionStatus SHOULD have the `schema:result` property."
+        ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
     )
@@ -77,11 +81,13 @@ def test_result_output_does_not_have_allowed_type():
     )
 
     do_entity_test(
-        rocrate_path=ValidROC().five_safes_crate_request,
+        rocrate_path=ValidROC().five_safes_crate_result,
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
-        expected_triggered_requirements=None,
-        expected_triggered_issues=None,
+        expected_triggered_requirements=["Output"],
+        expected_triggered_issues=[
+            "Result SHOULD have a `@type` among an allowed set of values."
+        ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
     )
