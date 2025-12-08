@@ -119,7 +119,7 @@ def test_5src_download_action_start_time_not_iso_standard():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["DownloadAction"],
-        expected_triggered_issues= [(
+        expected_triggered_issues=[(
             "`DownloadAction` --> `startTime` MUST follows the RFC 3339 standard "
             "(YYYY-MM-DD'T'hh:mm:ss[.fraction](Z | ±hh:mm))."
         )],
