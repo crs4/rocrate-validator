@@ -107,7 +107,7 @@ def do_entity_test(
     """
     Shared function to test a RO-Crate entity.
 
-    Additional keyword arguments (kwargs) are passed through to ValidationSettings, 
+    Additional keyword arguments (kwargs) are passed through to ValidationSettings,
     allowing individual tests to tweak settings as needed.
     """
     assert not (rocrate_entity_patch and rocrate_entity_mod_sparql), \
@@ -184,7 +184,7 @@ def do_entity_test(
         assert result.context is not None, "Validation context should not be None"
         f"Expected requirement severity to be {requirement_severity}, but got {result.context.requirement_severity}"
         assert result.passed() == expected_validation_result, \
-            f"RO-Crate should be {'valid' if expected_validation_result else 'invalid'}"
+            f"RO-Crate should be {'valid' if expected_validation_result else 'invalid'}. {result.failed_requirements} {result.failed_checks} {[issue.message for issue in result.get_issues(requirement_severity)]}"
 
         # check requirement
         failed_requirements = [_.name for _ in result.failed_requirements]
@@ -196,7 +196,7 @@ def do_entity_test(
         for expected_triggered_requirement in expected_triggered_requirements:
             if expected_triggered_requirement not in failed_requirements:
                 assert False, f"The expected requirement " \
-                    f"\"{expected_triggered_requirement}\" was not found in the failed requirements"
+                    f"\"{expected_triggered_requirement}\" was not found in the failed requirements {failed_requirements}"
 
         # check requirement issues
         detected_issues = [issue.message for issue in result.get_issues(requirement_severity)
@@ -205,7 +205,7 @@ def do_entity_test(
         logger.debug("Expected issues: %s", expected_triggered_issues)
         for expected_issue in expected_triggered_issues:
             if not any(expected_issue in issue for issue in detected_issues):  # support partial match
-                assert False, f"The expected issue \"{expected_issue}\" was not found in the detected issues"
+                assert False, f"The expected issue \"{expected_issue}\" was not found in the detected issues {detected_issues}"
     except Exception as e:
         if logger.isEnabledFor(logging.DEBUG):
             logger.exception(e)
