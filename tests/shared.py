@@ -170,15 +170,18 @@ def do_entity_test(
         abort_on_first = abort_on_first
 
         # validate RO-Crate
-        result: models.ValidationResult = \
-            services.validate(models.ValidationSettings(**{
-                "rocrate_uri": rocrate_path,
-                "requirement_severity": requirement_severity,
-                "abort_on_first": abort_on_first,
-                "profile_identifier": profile_identifier,
-                "skip_checks": skip_checks,
-                **kwargs
-            }))
+        result: models.ValidationResult = services.validate(
+            models.ValidationSettings(
+                **{
+                    "rocrate_uri": rocrate_path,
+                    "requirement_severity": requirement_severity,
+                    "abort_on_first": abort_on_first,
+                    "profile_identifier": profile_identifier,
+                    "skip_checks": skip_checks,
+                },
+                **kwargs,
+            )
+        )
         logger.debug("Expected validation result: %s", expected_validation_result)
 
         assert result.context is not None, "Validation context should not be None"
