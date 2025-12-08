@@ -106,6 +106,8 @@
         {
             "@id": "#query-37252371-c937-43bd-a0a7-3680b48c0538",
             "@type": "CreateAction",
+            "startTime": "2023-04-18T12:12:00+01:00",
+            "endTime": "2023-04-19T16:59:59+01:00",
             "actionStatus": "http://schema.org/CompletedActionStatus",
             "agent": {
                 "@id": "https://orcid.org/0000-0001-9842-9718"
@@ -160,7 +162,7 @@
             "@type": "PropertyValue",
             "name": "tre72",
             "value": "project81"
-        },        
+        },
         {
             "@id": "input1.txt",
             "@type": "File",
@@ -303,6 +305,7 @@
                 "@id": "https://w3id.org/shp#DisclosureCheck"
             },
             "name": "Disclosure check of workflow results: approved",
+            "startTime": "2023-04-24T00:00:00+01:00",
             "endTime": "2023-04-25T16:00:00+01:00",
             "object": {
                 "@id": "./"

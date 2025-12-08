@@ -1,0 +1,80 @@
+# Copyright (c) 2025 eScience Lab, The University of Manchester
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+@prefix ro: <./> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+@prefix five-safes-crate: <https://github.com/eScienceLab/rocrate-validator/profiles/five-safes-crate/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema: <http://schema.org/> .
+@prefix purl: <http://purl.org/dc/terms/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix validator: <https://github.com/crs4/rocrate-validator/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+
+
+five-safes-crate:ReferenceToWorkflowCrate
+    a sh:NodeShape ;
+    sh:name "RootDataEntity" ;
+    sh:targetClass ro-crate:RootDataEntity ;
+
+    # RootDataEntity MUST have an mainEntity property
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "mainEntity" ;
+        sh:path schema:mainEntity ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:severity sh:Violation ;
+        sh:message "The RootDataEntity MUST have exactly one schema:mainEntity property that is an IRI." ;
+    ] ;
+
+    # The mainEntity of a RootDataEntity MUST be a Dataset
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "mainEntity" ;
+        sh:path schema:mainEntity ;
+        sh:class schema:Dataset ;
+        sh:severity sh:Violation ;
+        sh:message "The mainEntity pointed to by the RootDataEntity MUST be of type schema:Dataset" ;
+    ] .
+
+five-safes-crate:mainEntityHasProperConformsTo
+    a sh:NodeShape ;
+    sh:name "mainEntity" ;
+    sh:description "The mainEntity of the RootDataEntity MUST have a conformsTo property with an IRI starting with https://w3id.org/workflowhub/workflow-ro-crate" ;
+    sh:targetObjectsOf schema:mainEntity ;
+        sh:property [
+        a sh:PropertyShape ;
+        sh:name "conformsTo" ;
+        sh:path purl:conformsTo ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:severity sh:Violation ;
+        sh:message "mainEntity MUST have one and only one `purl:conformsTo` property." ;
+    ] ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:name "conformsTo" ;
+        sh:message "conformsTo IRI must start with https://w3id.org/workflowhub/workflow-ro-crate" ;
+        sh:select """
+        PREFIX schema: <http://schema.org/>
+        PREFIX purl: <http://purl.org/dc/terms/>
+        SELECT $this WHERE {
+            $this purl:conformsTo ?iri .
+            FILTER(!STRSTARTS(STR(?iri), "https://w3id.org/workflowhub/workflow-ro-crate"))
+        }
+        """ ;
+    ] .
