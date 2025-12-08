@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 @requirement(name="RO-Crate context version")
 class FileDescriptorExistence(PyFunctionCheck):
-    """The RO-Crate metadata file MUST include the RO-Crate context version 1.2 
+    """The RO-Crate metadata file MUST include the RO-Crate context version 1.2
     (or later minor version) in `@context`"""
 
     @check(name="RO-Crate context version", severity=Severity.REQUIRED)
