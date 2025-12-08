@@ -141,7 +141,12 @@ five-safes-crate:CheckValueShouldHaveEndTime
             PREFIX shp:    <https://w3id.org/shp#>
             SELECT ?this
             WHERE {
-                ?this schema:additionalType shp:CheckValue .
+                ?this schema:additionalType shp:CheckValue ;
+                    schema:actionStatus ?status .
+                FILTER(?status IN (
+                    "http://schema.org/CompletedActionStatus",
+                    "http://schema.org/FailedActionStatus"
+                ))
             }
         """  ;
     ] ;
