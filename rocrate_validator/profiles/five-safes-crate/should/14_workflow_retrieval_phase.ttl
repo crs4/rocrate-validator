@@ -49,87 +49,6 @@ five-safes-crate:RootDataEntityShouldMentionDownloadActionObjectIfItExists
     ] .
 
 
-# five-safes-crate:CheckValueObjectShouldPointToRootDataEntity
-#     a sh:NodeShape ;
-#     sh:name "CheckValue" ;
-#     sh:description "" ;
-#     sh:target [
-#         a sh:SPARQLTarget ;
-#         sh:select """
-#             PREFIX schema: <http://schema.org/>
-#             PREFIX shp:    <https://w3id.org/shp#>
-#             SELECT ?this
-#             WHERE {
-#                 ?this schema:additionalType shp:CheckValue .
-#             }
-#         """  ;
-#     ] ;
-
-#     sh:property [
-#         a sh:PropertyShape ;
-#         sh:name "object" ;
-#         sh:path schema:object ;
-#         sh:minCount 1 ;
-#         sh:hasValue <./> ;
-#         sh:severity sh:Warning ;
-#         sh:message "`CheckValue` --> `object` SHOULD point to the root of the RO-Crate" ;
-#     ] .
-
-
-# five-safes-crate:CheckValueInstrumentShouldPointToEntityTypedDefinedTerm
-#     a sh:NodeShape ;
-#     sh:name "CheckValue" ;
-#     sh:description "" ;
-#     sh:target [
-#         a sh:SPARQLTarget ;
-#         sh:select """
-#             PREFIX schema: <http://schema.org/>
-#             PREFIX shp:    <https://w3id.org/shp#>
-#             SELECT ?this
-#             WHERE {
-#                 ?this schema:additionalType shp:CheckValue .
-#             }
-#         """  ;
-#     ] ;
-
-#     sh:property [
-#         a sh:PropertyShape ;
-#         sh:name "instrument" ;
-#         sh:path schema:instrument ;
-#         sh:minCount 1 ;
-#         sh:class schema:DefinedTerm ;
-#         sh:severity sh:Warning ;
-#         sh:message "`CheckValue` --> `instrument` SHOULD point to an entity typed `schema:DefinedTerm`" ;
-#     ] .
-
-
-# five-safes-crate:CheckValueAgentShouldIdentifyTheAgentWhoPerformnedTheCheck
-#     a sh:NodeShape ;
-#     sh:name "CheckValue" ;
-#     sh:description "" ;
-#     sh:target [
-#         a sh:SPARQLTarget ;
-#         sh:select """
-#             PREFIX schema: <http://schema.org/>
-#             PREFIX shp:    <https://w3id.org/shp#>
-#             SELECT ?this
-#             WHERE {
-#                 ?this schema:additionalType shp:CheckValue .
-#             }
-#         """  ;
-#     ] ;
-
-#     sh:property [
-#         a sh:PropertyShape ;
-#         sh:name "agent" ;
-#         sh:path schema:agent ;
-#         sh:minCount 1 ;
-#         sh:nodeKind sh:IRI ; 
-#         sh:severity sh:Warning ;
-#         sh:message "`CheckValue` --> `agent` SHOULD reference the agent who initiated the check" ;
-#     ] .
-
-
 five-safes-crate:DownloadActionShouldHaveEndTimeIfEnded
     a sh:NodeShape ;
     sh:name "DownloadAction" ;
@@ -159,7 +78,7 @@ five-safes-crate:DownloadActionShouldHaveEndTimeIfEnded
         sh:minCount 1 ;
         sh:maxCount 1 ;
         sh:severity sh:Warning ;
-        sh:message "`DownloadAction` SHOULD have the `endTime` property if it has ended." ;
+        sh:message "`DownloadAction` SHOULD have the `endTime` property if `actionStatus` is either CompletedActionStatus or FailedActionStatus." ;
     ] .
 
 

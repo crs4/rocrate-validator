@@ -23,7 +23,7 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 
-five-safes-crate:CheckValueMayHaveStartTimeIfBegun
+five-safes-crate:DownloadActionMayHaveStartTimeIfBegun
     a sh:NodeShape ;
     sh:name "DownloadAction" ;
     sh:description "" ;
@@ -52,5 +52,5 @@ five-safes-crate:CheckValueMayHaveStartTimeIfBegun
         sh:minCount 1 ;
         sh:maxCount 1 ;
         sh:severity sh:Info ;
-        sh:message "`DownloadAction` MAY have the `startTime` property if it has begun." ;
+        sh:message "`DownloadAction` SHOULD have the `endTime` property if `actionStatus` is either ActiveActionStatus, CompletedActionStatus or FailedActionStatus." ;
     ] .

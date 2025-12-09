@@ -117,5 +117,5 @@ five-safes-crate:CheckValueActionStatusMustHaveAllowedValues
             "http://schema.org/FailedActionStatus"
         ) ;
         sh:severity sh:Violation ;
-        sh:message "`DownloadAction` --> `actionStatus` MUST have one of the allowed values (see https://schema.org/ActionStatusType)." ;
+        sh:message "The value of actionStatus MUST be one of the allowed values: PotentialActionStatus; ActiveActionStatus; CompletedActionStatus; FailedActionStatus." ;
     ] .

@@ -24,8 +24,11 @@ logger = logging.getLogger(__name__)
 
 # ----- MUST fails tests
 
+
 def test_5src_download_action_does_not_have_name():
-    sparql = (SPARQL_PREFIXES + """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
         DELETE {
             ?this schema:name ?name .
         }
@@ -33,7 +36,8 @@ def test_5src_download_action_does_not_have_name():
             ?this schema:name ?name ;
                   rdf:type schema:DownloadAction .
         }
-        """)
+        """
+    )
 
     do_entity_test(
         rocrate_path=ValidROC().five_safes_crate_result,
@@ -42,14 +46,16 @@ def test_5src_download_action_does_not_have_name():
         expected_triggered_requirements=["DownloadAction"],
         expected_triggered_issues=[
             "DownloadAction MUST have a human readable name string of at least 10 characters."
-            ],
+        ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
     )
 
 
 def test_5src_download_action_name_not_a_string():
-    sparql = (SPARQL_PREFIXES + """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
         DELETE {
             ?this schema:name ?name .
         }
@@ -59,7 +65,8 @@ def test_5src_download_action_name_not_a_string():
         WHERE {
             ?this rdf:type schema:DownloadAction .
         }
-        """)
+        """
+    )
 
     do_entity_test(
         rocrate_path=ValidROC().five_safes_crate_result,
@@ -68,14 +75,16 @@ def test_5src_download_action_name_not_a_string():
         expected_triggered_requirements=["DownloadAction"],
         expected_triggered_issues=[
             "DownloadAction MUST have a human readable name string of at least 10 characters."
-            ],
+        ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
     )
 
 
 def test_5src_download_action_name_not_long_enough():
-    sparql = (SPARQL_PREFIXES + """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
         DELETE {
             ?this schema:name ?name .
         }
@@ -85,7 +94,8 @@ def test_5src_download_action_name_not_long_enough():
         WHERE {
             ?this rdf:type schema:DownloadAction .
         }
-        """)
+        """
+    )
 
     do_entity_test(
         rocrate_path=ValidROC().five_safes_crate_result,
@@ -101,7 +111,9 @@ def test_5src_download_action_name_not_long_enough():
 
 
 def test_5src_download_action_start_time_not_iso_standard():
-    sparql = (SPARQL_PREFIXES + """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
         DELETE {
             ?c schema:startTime ?t .
         }
@@ -112,24 +124,29 @@ def test_5src_download_action_start_time_not_iso_standard():
             ?c rdf:type schema:DownloadAction ;
              schema:startTime ?t .
         }
-        """)
+        """
+    )
 
     do_entity_test(
         rocrate_path=ValidROC().five_safes_crate_result,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["DownloadAction"],
-        expected_triggered_issues=[(
-            "`DownloadAction` --> `startTime` MUST follows the RFC 3339 standard "
-            "(YYYY-MM-DD'T'hh:mm:ss[.fraction](Z | ±hh:mm))."
-        )],
+        expected_triggered_issues=[
+            (
+                "`DownloadAction` --> `startTime` MUST follows the RFC 3339 standard "
+                "(YYYY-MM-DD'T'hh:mm:ss[.fraction](Z | ±hh:mm))."
+            )
+        ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
     )
 
 
 def test_5src_check_value_end_time_not_iso_standard():
-    sparql = (SPARQL_PREFIXES + """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
         DELETE {
             ?c schema:endTime ?t .
         }
@@ -140,24 +157,29 @@ def test_5src_check_value_end_time_not_iso_standard():
             ?c rdf:type schema:DownloadAction ;
                schema:endTime ?t .
         }
-        """)
+        """
+    )
 
     do_entity_test(
         rocrate_path=ValidROC().five_safes_crate_result,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["DownloadAction"],
-        expected_triggered_issues=[(
-            "`DownloadAction` --> `endTime` MUST follows the RFC 3339 standard "
-            "(YYYY-MM-DD'T'hh:mm:ss[.fraction](Z | ±hh:mm))."
-        )],
+        expected_triggered_issues=[
+            (
+                "`DownloadAction` --> `endTime` MUST follows the RFC 3339 standard "
+                "(YYYY-MM-DD'T'hh:mm:ss[.fraction](Z | ±hh:mm))."
+            )
+        ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
     )
 
 
 def test_5src_download_action_has_action_status_with_not_allowed_value():
-    sparql = (SPARQL_PREFIXES + """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
         DELETE {
             ?s schema:actionStatus ?o .
         }
@@ -168,17 +190,20 @@ def test_5src_download_action_has_action_status_with_not_allowed_value():
             ?s rdf:type schema:DownloadAction ;
                schema:actionStatus ?o .
         }
-        """)
+        """
+    )
 
     do_entity_test(
         rocrate_path=ValidROC().five_safes_crate_result,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["DownloadAction"],
-        expected_triggered_issues=[(
-            "`DownloadAction` --> `actionStatus` MUST have one of the allowed values "
-            "(see https://schema.org/ActionStatusType)."
-        )],
+        expected_triggered_issues=[
+            (
+                "The value of actionStatus MUST be one of the allowed values: "
+                "PotentialActionStatus; ActiveActionStatus; CompletedActionStatus; FailedActionStatus."
+            )
+        ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
     )
@@ -186,15 +211,19 @@ def test_5src_download_action_has_action_status_with_not_allowed_value():
 
 # ----- SHOULD fails tests
 
+
 def test_5src_root_data_entity_does_not_mention_download_action_entity():
-    sparql = (SPARQL_PREFIXES + """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
         DELETE {
             <./> schema:mentions ?o .
         }
         WHERE {
             ?o rdf:type schema:DownloadAction ;
         }
-        """)
+        """
+    )
 
     do_entity_test(
         rocrate_path=ValidROC().five_safes_crate_result,
@@ -210,7 +239,9 @@ def test_5src_root_data_entity_does_not_mention_download_action_entity():
 
 
 def test_5src_download_action_does_not_have_end_time():
-    sparql = (SPARQL_PREFIXES + """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
         DELETE {
             ?c schema:endTime ?t .
         }
@@ -218,7 +249,8 @@ def test_5src_download_action_does_not_have_end_time():
             ?c rdf:type schema:DownloadAction ;
              schema:endTime ?t .
         }
-        """)
+        """
+    )
 
     do_entity_test(
         rocrate_path=ValidROC().five_safes_crate_result,
@@ -226,7 +258,10 @@ def test_5src_download_action_does_not_have_end_time():
         expected_validation_result=False,
         expected_triggered_requirements=["DownloadAction"],
         expected_triggered_issues=[
-            "`DownloadAction` SHOULD have the `endTime` property if it has ended."
+            (
+                "`DownloadAction` SHOULD have the `endTime` property "
+                "if `actionStatus` is either CompletedActionStatus or FailedActionStatus."
+            )
         ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
@@ -234,7 +269,9 @@ def test_5src_download_action_does_not_have_end_time():
 
 
 def test_5src_download_action_does_not_have_action_status_property():
-    sparql = (SPARQL_PREFIXES + """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
         DELETE {
             ?s schema:actionStatus ?o .
         }
@@ -242,7 +279,8 @@ def test_5src_download_action_does_not_have_action_status_property():
             ?s rdf:type schema:DownloadAction ;
                schema:actionStatus ?o .
         }
-        """)
+        """
+    )
 
     do_entity_test(
         rocrate_path=ValidROC().five_safes_crate_result,
@@ -259,8 +297,11 @@ def test_5src_download_action_does_not_have_action_status_property():
 
 # ----- MAY fails tests
 
+
 def test_5src_download_action_does_not_have_start_time():
-    sparql = (SPARQL_PREFIXES + """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
         DELETE {
             ?c schema:startTime ?t .
         }
@@ -268,7 +309,8 @@ def test_5src_download_action_does_not_have_start_time():
             ?c rdf:type schema:DownloadAction ;
                schema:startTime ?t .
         }
-        """)
+        """
+    )
 
     do_entity_test(
         rocrate_path=ValidROC().five_safes_crate_result,
@@ -276,7 +318,8 @@ def test_5src_download_action_does_not_have_start_time():
         expected_validation_result=False,
         expected_triggered_requirements=["DownloadAction"],
         expected_triggered_issues=[
-            "`DownloadAction` MAY have the `startTime` property if it has begun."
+            "`DownloadAction` SHOULD have the `endTime` property "
+            "if `actionStatus` is either ActiveActionStatus, CompletedActionStatus or FailedActionStatus."
         ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
