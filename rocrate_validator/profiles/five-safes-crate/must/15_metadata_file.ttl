@@ -37,3 +37,5 @@ five-safes-crate:MetadataFileDescriptorProperties a sh:NodeShape ;
         sh:severity sh:Violation;
         sh:message "The RO-Crate metadata file descriptor MUST have a `conformsTo` property with RO-Crate specification version 1.2 or later minor version" ;
     ] .
+
+ro-crate:conformsToROCrateSpec sh:deactivated true .
