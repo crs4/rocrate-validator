@@ -103,14 +103,10 @@ def do_entity_test(
         profile_identifier: str = DEFAULT_PROFILE_IDENTIFIER,
         rocrate_entity_patch: Optional[dict] = None,
         rocrate_entity_mod_sparql: Optional[str] = None,
-        skip_checks: Optional[list[str]] = (),
-        **kwargs
+        skip_checks: Optional[list[str]] = ()
 ):
     """
-    Shared function to test a RO-Crate entity.
-
-    Additional keyword arguments (kwargs) are passed through to ValidationSettings,
-    allowing individual tests to tweak settings as needed.
+    Shared function to test a RO-Crate entity
     """
     assert not (rocrate_entity_patch and rocrate_entity_mod_sparql), \
         "Cannot use rocrate_entity_patch and rocrate_entity_mod_sparql together"
@@ -172,18 +168,14 @@ def do_entity_test(
         abort_on_first = abort_on_first
 
         # validate RO-Crate
-        result: models.ValidationResult = services.validate(
-            models.ValidationSettings(
-                **{
-                    "rocrate_uri": rocrate_path,
-                    "requirement_severity": requirement_severity,
-                    "abort_on_first": abort_on_first,
-                    "profile_identifier": profile_identifier,
-                    "skip_checks": skip_checks,
-                },
-                **kwargs,
-            )
-        )
+        result: models.ValidationResult = \
+            services.validate(models.ValidationSettings(**{
+                "rocrate_uri": rocrate_path,
+                "requirement_severity": requirement_severity,
+                "abort_on_first": abort_on_first,
+                "profile_identifier": profile_identifier,
+                "skip_checks": skip_checks
+            }))
         logger.debug("Expected validation result: %s", expected_validation_result)
 
         assert result.context is not None, "Validation context should not be None"
