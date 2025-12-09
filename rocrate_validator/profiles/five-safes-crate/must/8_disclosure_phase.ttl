@@ -42,7 +42,7 @@ five-safes-crate:DisclosureObjectHasDescriptiveNameAndIsAssessAction
     ] ;
 
     sh:property [
-        sh:a sh:PropertyShape ;
+        a sh:PropertyShape ;
         sh:name "AssessAction" ;
         sh:description "DisclosureCheck MUST be a `schema:AssessAction`." ;
         sh:path rdf:type ;
@@ -53,7 +53,7 @@ five-safes-crate:DisclosureObjectHasDescriptiveNameAndIsAssessAction
     ] ;
 
     sh:property [
-        sh:a sh:PropertyShape ;
+        a sh:PropertyShape ;
         sh:name "name" ;
         sh:description "DisclosureCheck MUST have a name string of at least 20 characters." ;
         sh:path schema:name ;
