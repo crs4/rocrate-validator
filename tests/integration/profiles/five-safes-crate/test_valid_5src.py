@@ -13,9 +13,7 @@
 # limitations under the License.
 
 import logging
-import pytest
 
-from rocrate_validator import services
 from rocrate_validator.models import Severity
 from tests.conftest import SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER
 from tests.ro_crates import ValidROC
