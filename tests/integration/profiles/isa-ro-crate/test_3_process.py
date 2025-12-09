@@ -74,6 +74,21 @@ def test_isa_process_no_object():
         profile_identifier="isa-ro-crate",
     )
 
+def test_isa_process_object_incorrect_type():
+    """
+    Test an ISA RO-Crate where a Process has an object with the wrong type.
+    """
+    do_entity_test(
+        rocrate_path=InvalidISARC().process_object_is_incorrect_type,
+        requirement_severity=Severity.REQUIRED,
+        expected_validation_result=False,
+        expected_triggered_requirements=["Process SHOULD have an object"],
+        expected_triggered_issues=[
+            "Process objects MUST be of type File, Sample or BioSample"
+        ],
+        profile_identifier="isa-ro-crate",
+    )
+
 def test_isa_process_no_result():
     """
     Test an ISA RO-Crate where a Process does not have a result.
@@ -85,6 +100,36 @@ def test_isa_process_no_result():
         expected_triggered_requirements=["Process SHOULD have a result"],
         expected_triggered_issues=[
             "Process entity SHOULD have a result"
+        ],
+        profile_identifier="isa-ro-crate",
+    )
+
+def test_isa_process_result_incorrect_type():
+    """
+    Test an ISA RO-Crate where a Process has a result with the wrong type.
+    """
+    do_entity_test(
+        rocrate_path=InvalidISARC().process_result_is_incorrect_type,
+        requirement_severity=Severity.REQUIRED,
+        expected_validation_result=False,
+        expected_triggered_requirements=["Process SHOULD have a result"],
+        expected_triggered_issues=[
+            "Process results MUST be of type File, Sample or BioSample"
+        ],
+        profile_identifier="isa-ro-crate",
+    )
+
+def test_isa_process_result_incorrect_type():
+    """
+    Test an ISA RO-Crate where a Process has a result with the wrong type.
+    """
+    do_entity_test(
+        rocrate_path=InvalidISARC().process_result_is_incorrect_type,
+        requirement_severity=Severity.REQUIRED,
+        expected_validation_result=False,
+        expected_triggered_requirements=["Process SHOULD have a result"],
+        expected_triggered_issues=[
+            "Process results MUST be of type File, Sample or BioSample"
         ],
         profile_identifier="isa-ro-crate",
     )

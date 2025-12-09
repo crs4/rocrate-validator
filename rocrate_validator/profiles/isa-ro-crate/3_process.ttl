@@ -75,12 +75,23 @@ isa-ro-crate:ProcessShouldHaveObject a sh:NodeShape ;
     sh:property [
         a sh:PropertyShape ;
         sh:path schema:object ;
-        sh:node schema:Thing ;
         sh:minCount 1 ;
         sh:description "Check that process does have at least one object" ;
         sh:message "Process entity SHOULD have an object" ;
         sh:severity sh:Warning ;
     ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:object ;
+        sh:or (
+            [sh:class schema:MediaObject]
+            [sh:class bioschemas:Sample]
+            [sh:class bioschemas:BioSample]
+        );
+        sh:description "Check that if process does have at least one object, it MUST be of type File, Sample or BioSample" ;
+        sh:message "Process objects MUST be of type File, Sample or BioSample" ;
+        sh:severity sh:Violation ;
+    ]
 .
 
 isa-ro-crate:ProcessShouldHaveResult a sh:NodeShape ;
@@ -90,10 +101,21 @@ isa-ro-crate:ProcessShouldHaveResult a sh:NodeShape ;
     sh:property [
         a sh:PropertyShape ;
         sh:path schema:result ;
-        sh:node schema:Thing ;
         sh:minCount 1 ;
         sh:description "Check that process does have at least one result" ;
         sh:message "Process entity SHOULD have a result" ;
         sh:severity sh:Warning ;
     ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:result ;
+        sh:or (
+            [sh:class schema:MediaObject]
+            [sh:class bioschemas:Sample]
+            [sh:class bioschemas:BioSample]
+        );
+        sh:description "Check that if process does have at least one result, it MUST be of type File, Sample or BioSample" ;
+        sh:message "Process results MUST be of type File, Sample or BioSample" ;
+        sh:severity sh:Violation ;
+    ]
 .

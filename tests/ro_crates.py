@@ -1022,9 +1022,17 @@ class InvalidISARC:
         return self.base_path / "invalid-process-is-missing-objects"
     
     @property
+    def process_object_is_incorrect_type(self) -> Path:
+        return self.base_path / "invalid-process-object-is-incorrect-type"
+
+    @property
     def process_is_missing_results(self) -> Path:
         return self.base_path / "invalid-process-is-missing-results"
     
+    @property
+    def process_result_is_incorrect_type(self) -> Path:
+        return self.base_path / "invalid-process-result-is-incorrect-type"
+
     @property
     def assay_is_linked_through_illegal_property(self) -> Path:
         return self.base_path / "invalid-assay-is-linked-through-illegal-property"
