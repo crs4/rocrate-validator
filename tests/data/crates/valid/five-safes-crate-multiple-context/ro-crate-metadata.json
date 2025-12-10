@@ -1,5 +1,5 @@
 {
-    "@context": "https://w3id.org/ro/crate/1.2/context",
+    "@context": ["https://w3id.org/ro/crate/1.2/context", "https://w3id.org/ro/terms/workflow-run/context", {"test": "http://schema.org/test"}],
     "@graph": [
         {
             "@type": "CreativeWork",

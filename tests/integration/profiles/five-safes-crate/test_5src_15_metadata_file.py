@@ -1,0 +1,86 @@
+# Copyright (c) 2024-2025 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import logging
+
+from rocrate_validator.models import Severity
+from tests.ro_crates import ValidROC, Invalid5sROC
+from tests.shared import do_entity_test, SPARQL_PREFIXES
+
+# set up logging
+logger = logging.getLogger(__name__)
+
+
+# ----- MUST fails tests
+
+
+def test_5src_conforms_to_old_version():
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        DELETE {
+            ?this dct:conformsTo ?version .
+        }
+        INSERT {
+            ?this dct:conformsTo <https://w3id.org/ro/crate/1.1> .
+        }
+        WHERE {
+            ?this dct:conformsTo ?version ;
+                schema:about <./> .
+        }
+        """
+    )
+
+    do_entity_test(
+        rocrate_path=ValidROC().five_safes_crate_request,
+        requirement_severity=Severity.REQUIRED,
+        expected_validation_result=False,
+        expected_triggered_requirements=[
+            "RO-Crate conforms to 1.2 or later minor version"
+        ],
+        expected_triggered_issues=[
+            "The RO-Crate metadata file descriptor MUST have a `conformsTo` property with "
+            "RO-Crate specification version 1.2 or later minor version"
+        ],
+        profile_identifier="five-safes-crate",
+        rocrate_entity_mod_sparql=sparql,
+    )
+
+
+def test_5src_context_single_wrong_version():
+    do_entity_test(
+        rocrate_path=Invalid5sROC().context_single_wrong_version,
+        requirement_severity=Severity.REQUIRED,
+        expected_validation_result=False,
+        expected_triggered_requirements=["RO-Crate context version"],
+        expected_triggered_issues=[
+            "The RO-Crate metadata file MUST include the RO-Crate context version 1.2 "
+            "(or later minor version) in `@context`"
+        ],
+        profile_identifier="five-safes-crate",
+    )
+
+
+def test_5src_context_multiple_wrong_version():
+    do_entity_test(
+        rocrate_path=Invalid5sROC().context_multiple_wrong_version,
+        requirement_severity=Severity.REQUIRED,
+        expected_validation_result=False,
+        expected_triggered_requirements=["RO-Crate context version"],
+        expected_triggered_issues=[
+            "The RO-Crate metadata file MUST include the RO-Crate context version 1.2 "
+            "(or later minor version) in `@context`"
+        ],
+        profile_identifier="five-safes-crate",
+    )

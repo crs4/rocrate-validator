@@ -36,6 +36,7 @@ T = TypeVar("T")
 
 SPARQL_PREFIXES = """
 PREFIX schema: <http://schema.org/>
+PREFIX dct: <http://purl.org/dc/terms/>
 PREFIX shp:    <https://w3id.org/shp#>
 PREFIX rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 """
