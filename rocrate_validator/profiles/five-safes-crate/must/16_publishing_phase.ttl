@@ -1,0 +1,41 @@
+# Copyright (c) 2025 eScience Lab, The University of Manchester
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+@prefix ro: <./> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+@prefix five-safes-crate: <https://github.com/eScienceLab/rocrate-validator/profiles/five-safes-crate/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema: <http://schema.org/> .
+@prefix purl: <http://purl.org/dc/terms/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix validator: <https://github.com/crs4/rocrate-validator/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+
+five-safes-crate:AllAssessActionsMentioned
+    a sh:NodeShape ;
+    sh:name "All AssessActions are mentioned from Root Data Entity" ;
+    sh:description "All AssessAction entities in the crate MUST be referenced from the Root Dataset via `mentions`." ;
+    sh:targetClass schema:AssessAction;
+
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "AssessAction mentions from RDE" ;
+        sh:description "All AssessAction entities in the crate MUST be referenced from the Root Dataset via `mentions`." ;
+        sh:path [ sh:inversePath schema:mentions ] ;
+        sh:node ro-crate:RootDataEntity ;
+        sh:minCount 1 ;
+        sh:severity sh:Violation ;
+        sh:message "All AssessAction entities in the crate MUST be referenced from the Root Dataset via `mentions`." ;
+    ] .
