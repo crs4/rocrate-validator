@@ -52,8 +52,7 @@ five-safes-crate:DisclosureObjectHasStartTimeIfBegun
         sh:path schema:startTime ;
         sh:minCount 1 ;
         sh:maxCount 1 ;
-        sh:pattern "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(Z|[+-][0-9]{2}:[0-9]{2})$" ;
         sh:severity sh:Info ;
-        sh:description "Disclosure object MAY have startTime property with RFC 3339 full datetime string if action began." ;
-        sh:message "Disclosure object MAY have startTime property with RFC 3339 full datetime string if action began." ;
+        sh:description "`DisclosureCheck` MAY have the `startTime` property if `actionStatus` is either ActiveActionStatus, CompletedActionStatus or FailedActionStatus." ;
+        sh:message "`DisclosureCheck` MAY have the `startTime` property if `actionStatus` is either ActiveActionStatus, CompletedActionStatus or FailedActionStatus." ;
     ] .
