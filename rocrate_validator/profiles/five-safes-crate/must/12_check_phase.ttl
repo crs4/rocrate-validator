@@ -82,7 +82,7 @@ five-safes-crate:CheckValueStartTimeMustFollowISOStandard
         a sh:PropertyShape ;
         sh:name "StartTime" ;
         sh:path schema:startTime ;
-        sh:pattern "^[0-9]{4}-[0-9]{2}-[0-9]{2}[Tt][0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?(Z|z|[+-][0-9]{2}:[0-9]{2})$" ;
+        sh:pattern "^[0-9]{4}-[0-9]{2}-[0-9]{2}[Tt][0-9]{2}:[0-9]{2}:[0-9]{2}([.|,][0-9]+)?(Z|z|[+-][0-9]{2}:[0-9]{2})$" ;
         sh:severity sh:Violation ;
         sh:message "`CheckValue` --> `startTime` MUST follows the RFC 3339 standard (YYYY-MM-DD'T'hh:mm:ss[.fraction](Z | ±hh:mm))." ;
     ] .
@@ -110,7 +110,7 @@ five-safes-crate:CheckValueEndTimeMustFollowISOStandard
         a sh:PropertyShape ;
         sh:name "EndTime" ;
         sh:path schema:endTime ;
-        sh:pattern "^[0-9]{4}-[0-9]{2}-[0-9]{2}[Tt][0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?(Z|z|[+-][0-9]{2}:[0-9]{2})$" ;
+        sh:pattern "^[0-9]{4}-[0-9]{2}-[0-9]{2}[Tt][0-9]{2}:[0-9]{2}:[0-9]{2}([.|,][0-9]+)?(Z|z|[+-][0-9]{2}:[0-9]{2})$" ;
         sh:severity sh:Violation ;
         sh:message "`CheckValue` --> `endTime` MUST follows the RFC 3339 standard (YYYY-MM-DD'T'hh:mm:ss[.fraction](Z | ±hh:mm))." ;
     ] .
