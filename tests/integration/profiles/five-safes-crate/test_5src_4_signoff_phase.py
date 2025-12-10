@@ -412,6 +412,7 @@ def test_5src_signoff_phase_no_instrument():
         rocrate_entity_mod_sparql=sparql,
     )
 
+
 def test_5src_signoff_phase_instrument_not_iri():
     """
     Test a Five Safes Crate where the Sign-Off phase TRE policy (instrument) is not an IRI.
