@@ -412,6 +412,39 @@ def test_5src_signoff_phase_no_instrument():
         rocrate_entity_mod_sparql=sparql,
     )
 
+def test_5src_signoff_phase_instrument_not_iri():
+    """
+    Test a Five Safes Crate where the Sign-Off phase TRE policy (instrument) is not an IRI.
+    """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        DELETE {
+            ?signoff schema:instrument ?instrument .
+        }
+        INSERT {
+            ?signoff schema:instrument "Not a cross-reference" .
+        }
+        WHERE {
+           ?signoff a schema:AssessAction ;
+               schema:additionalType <https://w3id.org/shp#SignOff> ;
+               schema:instrument ?instrument .
+        }
+        """
+    )
+
+    do_entity_test(
+        rocrate_path=ValidROC().five_safes_crate_result,
+        requirement_severity=Severity.RECOMMENDED,
+        expected_validation_result=False,
+        expected_triggered_requirements=["SignOffPhaseProperties"],
+        expected_triggered_issues=[
+            "The Sign-Off Phase SHOULD have an TRE policy (instrument) with type CreativeWork"
+        ],
+        profile_identifier="five-safes-crate",
+        rocrate_entity_mod_sparql=sparql,
+    )
+
 
 def test_5src_signoff_phase_instrument_no_type():
     """

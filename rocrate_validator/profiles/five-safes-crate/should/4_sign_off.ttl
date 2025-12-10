@@ -91,6 +91,7 @@ five-safes-crate:SignOffPhaseProperties
         sh:description "Check if the Sign Off phase has an instrument (TRE Policy)" ;
         sh:path schema:instrument ;
         sh:class schema:CreativeWork ;
+        sh:nodeKind sh:IRI;
         sh:minCount 1 ;
         sh:severity sh:Warning ;
         sh:message "The Sign-Off Phase SHOULD have an TRE policy (instrument) with type CreativeWork" ;
@@ -170,7 +171,7 @@ five-safes-crate:SignOffPhaseEndTime
         sh:path schema:endTime ;
         sh:minCount 1 ;
         sh:maxCount 1 ;
-        sh:pattern "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(Z|[+-][0-9]{2}:[0-9]{2})$" ;
+        sh:pattern "^[0-9]{4}-[0-9]{2}-[0-9]{2}[Tt][0-9]{2}:[0-9]{2}:[0-9]{2}([.|,][0-9]+)?(Z|z|[+-][0-9]{2}:[0-9]{2})$" ;
         sh:severity sh:Warning ;
         sh:description "Sign Off object SHOULD have endTime property if action completed or failed. This must follow ISO-8601 syntax" ;
         sh:message "Sign Off object SHOULD have endTime property if action completed or failed. This must follow ISO-8601 syntax" ;
