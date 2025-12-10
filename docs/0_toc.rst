@@ -26,6 +26,7 @@
     :maxdepth: 5
     :caption: Resources
 
+    12_validation_profiles
     11_writing_a_profile
     10_api
     genindex

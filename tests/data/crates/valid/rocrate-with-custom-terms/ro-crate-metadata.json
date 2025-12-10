@@ -29,7 +29,7 @@
             ],
             "hasPart": [
                 {
-                    "@id": "pics/2017-06-11%2012.56.14.jpg"
+                    "@id": "pics/2017-06-11%252012.56.14.jpg"
                 },
                 {
                     "@id": "pics/2018-06-11%2012.56.14.jpg"
@@ -38,7 +38,7 @@
                     "@id": "pics/2019-06-11 12.56.14.jpg"
                 },
                 {
-                    "@id": "data%20set/"
+                    "@id": "data%2520set/"
                 },
                 {
                     "@id": "data%20set2/"
@@ -102,7 +102,7 @@
                 "@id": "https://www.imagemagick.org/"
             },
             "object": {
-                "@id": "pics/2017-06-11%2012.56.14.jpg"
+                "@id": "pics/2017-06-11%252012.56.14.jpg"
             },
             "result": {
                 "@id": "pics/sepia_fence.jpg"
@@ -141,7 +141,7 @@
             "encodingFormat": "text/plain"
         },
         {
-            "@id": "pics/2017-06-11%2012.56.14.jpg",
+            "@id": "pics/2017-06-11%252012.56.14.jpg",
             "@type": "File",
             "description": "Original image",
             "encodingFormat": "image/jpeg",
@@ -165,7 +165,7 @@
             "name": "2018-06-11 12.56.14.jpg (input)"
         },
         {
-            "@id": "data%20set/",
+            "@id": "data%2520set/",
             "@type": "Dataset",
             "name": "Data set",
             "description": "A dataset",

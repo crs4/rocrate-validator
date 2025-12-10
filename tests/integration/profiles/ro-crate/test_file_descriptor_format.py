@@ -72,6 +72,23 @@ def test_not_valid_jsonld_format_not_flattened():
     )
 
 
+def test_not_valid_jsonld_format_not_valid_value_object():
+    """Test a RO-Crate with an invalid JSON-LD file descriptor format.
+    One or more entities in the file descriptor are not flattened.
+    """
+    do_entity_test(
+        f"{paths.invalid_jsonld_format}/invalid_value_object",
+        models.Severity.REQUIRED,
+        False,
+        ["File Descriptor JSON-LD format"],
+        ["entity \"nested-file.txt\" contains both @id and @value",
+         "is not a valid value object: @language and @type cannot coexist",
+         "entity \"invalidNestedReference\" is not a valid node object reference",
+         "entity \"{'@language': 'en', '@value': 12345}\" is not a valid value object"
+         ]
+    )
+
+
 def test_not_valid_jsonld_format_missing_ids():
     """
     Test a RO-Crate with an invalid JSON-LD file descriptor format.
