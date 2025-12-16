@@ -22,6 +22,9 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix shp: <https://w3id.org/shp#> .
 
+<> a sh:ShapesGraph ;
+    sh:import <../shape_library.ttl> .
+
 
 # There SHOULD be a Sign-Off Phase
 five-safes-crate:SignOffPhase
@@ -147,32 +150,8 @@ five-safes-crate:SignOffPhaseProperties
 five-safes-crate:SignOffPhaseEndTime
     a sh:NodeShape ;
     sh:description "Sign Off end time check" ;
-
-    sh:target [
-        a sh:SPARQLTarget ;
-        sh:select """
-            PREFIX schema: <http://schema.org/>
-            PREFIX shp:    <https://w3id.org/shp#>
-            SELECT ?this
-            WHERE {
-                ?this schema:additionalType shp:SignOff ;
-                        schema:actionStatus ?status .
-                FILTER(?status IN (
-                    "http://schema.org/CompletedActionStatus",
-                    "http://schema.org/FailedActionStatus"
-                ))
-            }
-        """ ;
-    ] ;
-
-    sh:property [
-        a sh:PropertyShape ;
-        sh:name "EndTime" ;
-        sh:path schema:endTime ;
-        sh:minCount 1 ;
-        sh:maxCount 1 ;
-        sh:pattern "^[0-9]{4}-[0-9]{2}-[0-9]{2}[Tt][0-9]{2}:[0-9]{2}:[0-9]{2}([.|,][0-9]+)?(Z|z|[+-][0-9]{2}:[0-9]{2})$" ;
-        sh:severity sh:Warning ;
-        sh:description "Sign Off object SHOULD have endTime property if action completed or failed. This must follow ISO-8601 syntax" ;
-        sh:message "Sign Off object SHOULD have endTime property if action completed or failed. This must follow ISO-8601 syntax" ;
-    ] .
+    sh:node five-safes-crate:EndTimeStamp ;
+    sh:target [ 
+        a five-safes-crate:EndTimeSearch ;
+        sh:additionalType shp:SignOff ;
+    ].
