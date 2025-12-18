@@ -176,6 +176,74 @@ def test_5src_check_value_end_time_not_iso_standard():
     )
 
 
+def test_5src_downloaded_workflow_same_as_is_not_the_same_as_root_data_entity_main_entity():
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        DELETE {
+            ?wf schema:sameAs ?me .
+        }
+        INSERT {
+            ?wf schema:sameAs "This is not the same as the main entity" .
+        }
+        WHERE {
+            ?wf schema:sameAs ?me .
+            <./> schema:mainEntity ?me .
+            ?da schema:result ?wf ;
+               rdf:type schema:DownloadAction .
+        }
+        """
+    )
+
+    do_entity_test(
+        rocrate_path=ValidROC().five_safes_crate_result,
+        requirement_severity=Severity.REQUIRED,
+        expected_validation_result=False,
+        expected_triggered_requirements=["Downloaded Workflow"],
+        expected_triggered_issues=[
+            (
+                "The property `sameAs` of the entity representing the downloaded workflow "
+                "MUST point to the same entity as `RootDataEntity` --> `mainEntity`."
+            )
+        ],
+        profile_identifier="five-safes-crate",
+        rocrate_entity_mod_sparql=sparql,
+    )
+
+
+def test_5src_downloaded_workflow_distribution_is_not_the_same_as_download_action_object():
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        DELETE {
+            ?s schema:object ?o .
+        }
+        INSERT {
+            ?s schema:result "This is not the downloaded workflow entity" .
+        }
+        WHERE {
+            ?s schema:object ?o ;
+               rdf:type schema:DownloadAction .
+        }
+        """
+    )
+
+    do_entity_test(
+        rocrate_path=ValidROC().five_safes_crate_result,
+        requirement_severity=Severity.REQUIRED,
+        expected_validation_result=False,
+        expected_triggered_requirements=["Downloaded Workflow"],
+        expected_triggered_issues=[
+            (
+                "DownloadedWorkflow --> `distribution` MUST reference "
+                "the same entity as `DownloadAction` --> `object`."
+            )
+        ],
+        profile_identifier="five-safes-crate",
+        rocrate_entity_mod_sparql=sparql,
+    )
+
+
 def test_5src_download_action_has_action_status_with_not_allowed_value():
     sparql = (
         SPARQL_PREFIXES
@@ -212,6 +280,31 @@ def test_5src_download_action_has_action_status_with_not_allowed_value():
 # ----- SHOULD fails tests
 
 
+def test_5src_download_action_is_not_present():
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        DELETE {
+            ?da ?p ?o .
+        }
+        WHERE {
+            ?da rdf:type schema:DownloadAction ;
+                ?p ?o .
+        }
+        """
+    )
+
+    do_entity_test(
+        rocrate_path=ValidROC().five_safes_crate_result,
+        requirement_severity=Severity.RECOMMENDED,
+        expected_validation_result=False,
+        expected_triggered_requirements=["RootDataEntity"],
+        expected_triggered_issues=["An entity typed DownloadAction SHOULD exist."],
+        profile_identifier="five-safes-crate",
+        rocrate_entity_mod_sparql=sparql,
+    )
+
+
 def test_5src_root_data_entity_does_not_mention_download_action_entity():
     sparql = (
         SPARQL_PREFIXES
@@ -231,7 +324,7 @@ def test_5src_root_data_entity_does_not_mention_download_action_entity():
         expected_validation_result=False,
         expected_triggered_requirements=["RootDataEntity"],
         expected_triggered_issues=[
-            "RootDataEntity SHOULD mention the DownloadAction object."
+            "RootDataEntity SHOULD mention DownloadAction if this exists."
         ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
@@ -261,6 +354,104 @@ def test_5src_download_action_does_not_have_end_time():
             (
                 "`DownloadAction` SHOULD have the `endTime` property "
                 "if `actionStatus` is either CompletedActionStatus or FailedActionStatus."
+            )
+        ],
+        profile_identifier="five-safes-crate",
+        rocrate_entity_mod_sparql=sparql,
+    )
+
+
+def test_5src_downloaded_workflow_is_not_represented_by_its_own_entity():
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        DELETE {
+            ?wf ?p ?o .
+        }
+        WHERE {
+            ?wf ?p ?o .
+            ?da schema:result ?wf ;
+               rdf:type schema:DownloadAction .
+        }
+        """
+    )
+
+    do_entity_test(
+        rocrate_path=ValidROC().five_safes_crate_result,
+        requirement_severity=Severity.RECOMMENDED,
+        expected_validation_result=False,
+        expected_triggered_requirements=["DownloadAction"],
+        expected_triggered_issues=[
+            (
+                "The entity represented the downloaded workflow is not properly defined in the "
+                "RO-Crate and/or it is not referenced by `DownloadAction` --> `result`."
+            )
+        ],
+        profile_identifier="five-safes-crate",
+        rocrate_entity_mod_sparql=sparql,
+    )
+
+
+def test_5src_downloaded_workflow_is_not_referenced_by_download_action_result():
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        DELETE {
+            ?s schema:result ?o .
+        }
+        INSERT {
+            ?s schema:result "This is not the downloaded workflow entity" .
+        }
+        WHERE {
+            ?s schema:result ?o ;
+               rdf:type schema:DownloadAction .
+        }
+        """
+    )
+
+    do_entity_test(
+        rocrate_path=ValidROC().five_safes_crate_result,
+        requirement_severity=Severity.RECOMMENDED,
+        expected_validation_result=False,
+        expected_triggered_requirements=["DownloadAction"],
+        expected_triggered_issues=[
+            (
+                "The entity represented the downloaded workflow is not properly defined in the "
+                "RO-Crate and/or it is not referenced by `DownloadAction` --> `result`."
+            )
+        ],
+        profile_identifier="five-safes-crate",
+        rocrate_entity_mod_sparql=sparql,
+    )
+
+
+def test_5src_downloaded_workflow_entity_is_not_of_type_dataset():
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        DELETE {
+            ?wf rdf:type schema:Dataset .
+        }
+        INSERT {
+            ?wf rdf:type schema:Person .
+        }
+        WHERE {
+            ?wf rdf:type schema:Dataset .
+            ?da schema:result ?wf ;
+                rdf:type schema:DownloadAction .
+        }
+        """
+    )
+
+    do_entity_test(
+        rocrate_path=ValidROC().five_safes_crate_result,
+        requirement_severity=Severity.RECOMMENDED,
+        expected_validation_result=False,
+        expected_triggered_requirements=["DownloadAction"],
+        expected_triggered_issues=[
+            (
+                "The entity represented the downloaded workflow is not properly defined in the "
+                "RO-Crate and/or it is not referenced by `DownloadAction` --> `result`."
             )
         ],
         profile_identifier="five-safes-crate",
@@ -318,8 +509,8 @@ def test_5src_download_action_does_not_have_start_time():
         expected_validation_result=False,
         expected_triggered_requirements=["DownloadAction"],
         expected_triggered_issues=[
-            "`DownloadAction` SHOULD have the `endTime` property "
-            "if `actionStatus` is either ActiveActionStatus, CompletedActionStatus or FailedActionStatus."
+            "`DownloadAction` MAY have the `startTime` property if `actionStatus` "
+            "is either ActiveActionStatus, CompletedActionStatus or FailedActionStatus."
         ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,

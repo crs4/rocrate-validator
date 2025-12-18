@@ -52,5 +52,5 @@ five-safes-crate:DownloadActionMayHaveStartTimeIfBegun
         sh:minCount 1 ;
         sh:maxCount 1 ;
         sh:severity sh:Info ;
-        sh:message "`DownloadAction` SHOULD have the `endTime` property if `actionStatus` is either ActiveActionStatus, CompletedActionStatus or FailedActionStatus." ;
+        sh:message "`DownloadAction` MAY have the `startTime` property if `actionStatus` is either ActiveActionStatus, CompletedActionStatus or FailedActionStatus." ;
     ] .

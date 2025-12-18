@@ -23,7 +23,7 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 
-five-safes-crate:DownloadActionObjectHasDescriptiveName
+five-safes-crate:DownloadActionObjectMUSTHavesDescriptiveName
     a sh:NodeShape ;
     sh:name "DownloadAction" ;
     sh:targetClass schema:DownloadAction ;
@@ -42,27 +42,16 @@ five-safes-crate:DownloadActionObjectHasDescriptiveName
         sh:message "DownloadAction MUST have a human readable name string of at least 10 characters." ;
     ] .
 
-five-safes-crate:DownloadActionStartTimeMustFollowISOStandard
+five-safes-crate:DownloadActionStartTimeMUSTFollowISOStandard
     a sh:NodeShape ;
     sh:name "DownloadAction" ;
     sh:description "" ;
-    sh:target [
-        a sh:SPARQLTarget ;
-        sh:select """
-            PREFIX schema: <http://schema.org/>
-            PREFIX rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-
-            SELECT ?this
-            WHERE {
-                ?this rdf:type schema:DownloadAction ;
-                      schema:startTime ?o .
-            }
-        """  ;
-    ] ;
+    sh:targetClass schema:DownloadAction ;
 
     sh:property [
         a sh:PropertyShape ;
         sh:name "StartTime" ;
+        sh:minCount 0;
         sh:path schema:startTime ;
         sh:pattern "^[0-9]{4}-[0-9]{2}-[0-9]{2}[Tt][0-9]{2}:[0-9]{2}:[0-9]{2}([.|,][0-9]+)?(Z|z|[+-][0-9]{2}:[0-9]{2})$"  ;
         sh:severity sh:Violation ;
@@ -70,7 +59,7 @@ five-safes-crate:DownloadActionStartTimeMustFollowISOStandard
     ] .
 
 
-five-safes-crate:DownloadActionEndTimeMustFollowISOStandard
+five-safes-crate:DownloadActionEndTimeMUSTFollowISOStandard
     a sh:NodeShape ;
     sh:name "DownloadAction" ;
     sh:description "" ;
@@ -87,7 +76,87 @@ five-safes-crate:DownloadActionEndTimeMustFollowISOStandard
     ] .
 
 
-five-safes-crate:CheckValueActionStatusMustHaveAllowedValues
+five-safes-crate:WorkflowSameAsAndRootDataEntityMainEntityMUSTBeTheSame
+    a sh:NodeShape ;
+    sh:name "Downloaded Workflow" ;
+    sh:description "" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:select """
+            PREFIX schema: <http://schema.org/>
+            PREFIX rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+            SELECT ?this
+            WHERE {
+                ?this rdf:type schema:Dataset .
+                ?s rdf:type schema:DownloadAction ;
+                   schema:result ?this .
+            }
+        """ ;
+    ];
+
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:select """
+            PREFIX schema: <http://schema.org/>
+            PREFIX rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+            SELECT $this
+            WHERE {
+                FILTER NOT EXISTS {
+                    $this schema:sameAs ?o .
+                    ?s schema:mainEntity ?o .
+                    # ?o rdf:type schema:Dataset .
+                }
+            }
+        """ ;
+        sh:severity sh:Violation ;
+        sh:description "The property `sameAs` of the entity representing the downloaded workflow MUST point to the same entity as `RootDataEntity` --> `mainEntity`." ;
+        sh:message "The property `sameAs` of the entity representing the downloaded workflow MUST point to the same entity as `RootDataEntity` --> `mainEntity`." ;
+    ] .
+
+
+five-safes-crate:DownloadedWorkflowDistributionAndDownloadActionObjectMUSTBeTheSame
+    a sh:NodeShape ;
+    sh:name "Downloaded Workflow" ;
+    sh:description "" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:select """
+            PREFIX schema: <http://schema.org/>
+            PREFIX rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+            SELECT ?this
+            WHERE {
+                ?this rdf:type schema:Dataset .
+                ?s rdf:type schema:DownloadAction ;
+                   schema:result ?this .
+            }
+        """ ;
+    ];
+
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:name "" ;
+        sh:select """
+            PREFIX schema: <http://schema.org/>
+            PREFIX rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+            SELECT $this
+            WHERE {
+                ?action rdf:type schema:DownloadAction .
+                FILTER NOT EXISTS {
+                    $this schema:distribution ?url .
+                    ?action schema:object ?url .
+                }
+            }
+        """  ;
+        sh:severity sh:Violation ;
+        sh:message "DownloadedWorkflow --> `distribution` MUST reference the same entity as `DownloadAction` --> `object`." ;
+    ] .
+
+
+five-safes-crate:DownloadActionActionStatusMUSTHaveAllowedValues
     a sh:NodeShape ;
     sh:name "DownloadAction" ;
     sh:description "" ;
