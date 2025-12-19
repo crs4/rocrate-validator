@@ -21,7 +21,7 @@ from rich.padding import Padding
 
 import rocrate_validator.log as logging
 from rocrate_validator.colors import get_severity_color
-from rocrate_validator.io.output.text.layout.report import \
+from rocrate_validator.rocv_io.output.text.layout.report import \
     ValidationReportLayout
 from rocrate_validator.models import ValidationResult, ValidationStatistics
 

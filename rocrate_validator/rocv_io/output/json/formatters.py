@@ -3,8 +3,8 @@ import json
 from rich.console import ConsoleOptions, RenderResult
 
 import rocrate_validator.log as logging
-from rocrate_validator.io.output import OutputFormatter
-from rocrate_validator.io.output.console import Console
+from rocrate_validator.rocv_io.output import OutputFormatter
+from rocrate_validator.rocv_io.output.console import Console
 from rocrate_validator.models import (AggregatedValidationStatistics,
                                       CustomEncoder, ValidationResult,
                                       ValidationStatistics)

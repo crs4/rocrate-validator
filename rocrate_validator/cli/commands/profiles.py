@@ -27,7 +27,7 @@ from rocrate_validator.cli.commands.errors import handle_error
 from rocrate_validator.cli.main import cli, click
 from rocrate_validator.colors import get_severity_color
 from rocrate_validator.constants import DEFAULT_PROFILE_IDENTIFIER
-from rocrate_validator.io.output.text.layout.report import get_app_header_rule
+from rocrate_validator.rocv_io.output.text.layout.report import get_app_header_rule
 from rocrate_validator.models import (LevelCollection, RequirementLevel,
                                       Severity)
 from rocrate_validator.utils import get_profiles_path, shorten_path
