@@ -34,6 +34,11 @@ class DataEntityRecommendedChecker(PyFunctionCheck):
         Check the availability of the Data Entity with absolute URI paths
         are available at the time of RO-Crate creation
         """
+        # Skip the check in metadata-only mode
+        if context.settings.metadata_only:
+            logger.debug("Skipping file descriptor existence check in metadata-only mode")
+            return True
+        # Perform the check
         result = True
         for entity in [
                 _ for _ in context.ro_crate.metadata.get_data_entities(exclude_web_data_entities=True)

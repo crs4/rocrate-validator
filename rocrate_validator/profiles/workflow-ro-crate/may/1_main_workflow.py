@@ -28,6 +28,10 @@ class WorkflowFilesExistence(PyFunctionCheck):
     @check(name="Workflow diagram existence")
     def check_workflow_diagram(self, context: ValidationContext) -> bool:
         """Check if the crate contains the workflow diagram."""
+        if context.settings.metadata_only:
+            logger.debug("Skipping file descriptor existence check in metadata-only mode")
+            return True
+
         try:
             main_workflow = context.ro_crate.metadata.get_main_workflow()
             image = main_workflow.get_property("image")
@@ -54,7 +58,7 @@ class WorkflowFilesExistence(PyFunctionCheck):
             if not description_relpath:
                 context.result.add_issue("main workflow does not have a 'subjectOf' property", self)
                 return False
-            if not main_workflow_subject.is_available():
+            if not context.settings.metadata_only and not main_workflow_subject.is_available():
                 context.result.add_issue(
                     f"Workflow CWL description {main_workflow_subject.id} not found in crate", self)
                 return False

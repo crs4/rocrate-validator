@@ -17,9 +17,12 @@
 Welcome to rocrate-validator's documentation!
 =============================================
 
+.. _index:
+
 .. include:: ../README.md
       :parser: myst_parser.sphinx_
       :start-line: 2
       :end-line: 32
+
 
 .. include:: 0_toc.rst
