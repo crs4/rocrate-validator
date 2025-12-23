@@ -31,10 +31,10 @@ five-safes-crate:EndTimeStamp
         sh:pattern "^[0-9]{4}-[0-9]{2}-[0-9]{2}[Tt][0-9]{2}:[0-9]{2}:[0-9]{2}([.|,][0-9]+)?(Z|z|[+-][0-9]{2}:[0-9]{2})$" ;
         sh:description "End Time Check" ;
         sh:path schema:endTime ;
-        sh:minCount 1 ;
-        sh:maxCount 1 ;
+        sh:minCount 0 ;
         sh:name "EndTimeStamp" ;
         sh:message "endTime property MUST follow ISO-8601 syntax. e.g. 2023-04-19T10:15:12+01:00" ;
+        sh:severity sh:Violation ;
     ] .
 
 
@@ -43,12 +43,12 @@ five-safes-crate:StartTimeStamp
     sh:property [
         sh:datatype xsd:string ;
         sh:pattern "^[0-9]{4}-[0-9]{2}-[0-9]{2}[Tt][0-9]{2}:[0-9]{2}:[0-9]{2}([.|,][0-9]+)?(Z|z|[+-][0-9]{2}:[0-9]{2})$" ;
-        sh:description "End Time Check" ;
+        sh:description "Start Time Check" ;
         sh:path schema:startTime ;
-        sh:minCount 1 ;
-        sh:maxCount 1 ;
-        sh:name "StartTime" ;
+        sh:minCount 0 ;
+        sh:name "StartTimeStamp" ;
         sh:message "startTime property MUST follow ISO-8601 syntax. e.g. 2023-04-19T10:15:12+01:00" ;
+        sh:severity sh:Violation ;
     ] .
 
 

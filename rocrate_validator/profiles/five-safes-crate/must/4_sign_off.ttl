@@ -21,6 +21,7 @@
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix validator: <https://github.com/crs4/rocrate-validator/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix shp: <https://w3id.org/shp#> .
 
 five-safes-crate:SignOffObjectActionAndName
     a sh:NodeShape ;
@@ -53,7 +54,11 @@ five-safes-crate:SignOffObjectActionAndName
         sh:hasValue schema:AssessAction;
         sh:severity sh:Violation ;
         sh:message "Sign Off phase MUST be a `schema:AssessAction`." ;
-    ] .
+    ] ;
+
+    sh:node five-safes-crate:StartTimeStamp ;
+
+    sh:node five-safes-crate:EndTimeStamp .
 
 five-safes-crate:SignOffObjectHasActionStatus
     a sh:NodeShape ;

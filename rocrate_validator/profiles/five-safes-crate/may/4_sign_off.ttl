@@ -26,11 +26,14 @@
 five-safes-crate:SignOffPhaseStartTime
     a sh:NodeShape ;
     sh:description "Sign Off start time check" ;
-    sh:node five-safes-crate:StartTimeStamp ;
     sh:severity sh:Info ;
     sh:target [ 
         a five-safes-crate:ActionActiveCompFailSearch ;
         five-safes-crate:addtype shp:SignOff ;
     ] ;
-    sh:message "Sign Off phase MAY have a compliant startTime if action is active, completed or failed."
-    .
+    sh:property [
+        sh:path schema:startTime ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "Sign Off phase MAY have a startTime if action is active, completed or failed." ;
+    ] .
