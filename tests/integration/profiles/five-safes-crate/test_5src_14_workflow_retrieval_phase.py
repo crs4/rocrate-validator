@@ -45,7 +45,7 @@ def test_5src_download_action_does_not_have_name():
         expected_validation_result=False,
         expected_triggered_requirements=["DownloadAction"],
         expected_triggered_issues=[
-            "DownloadAction MUST have a human readable name string of at least 10 characters."
+            "DownloadAction MUST have a human readable name string."
         ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
@@ -74,36 +74,7 @@ def test_5src_download_action_name_not_a_string():
         expected_validation_result=False,
         expected_triggered_requirements=["DownloadAction"],
         expected_triggered_issues=[
-            "DownloadAction MUST have a human readable name string of at least 10 characters."
-        ],
-        profile_identifier="five-safes-crate",
-        rocrate_entity_mod_sparql=sparql,
-    )
-
-
-def test_5src_download_action_name_not_long_enough():
-    sparql = (
-        SPARQL_PREFIXES
-        + """
-        DELETE {
-            ?this schema:name ?name .
-        }
-        INSERT {
-            ?this schema:name "Short" .
-        }
-        WHERE {
-            ?this rdf:type schema:DownloadAction .
-        }
-        """
-    )
-
-    do_entity_test(
-        rocrate_path=ValidROC().five_safes_crate_result,
-        requirement_severity=Severity.REQUIRED,
-        expected_validation_result=False,
-        expected_triggered_requirements=["DownloadAction"],
-        expected_triggered_issues=[
-            "DownloadAction MUST have a human readable name string of at least 10 characters."
+            "DownloadAction MUST have a human readable name string."
         ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
@@ -361,37 +332,6 @@ def test_5src_download_action_does_not_have_end_time():
     )
 
 
-def test_5src_downloaded_workflow_is_not_represented_by_its_own_entity():
-    sparql = (
-        SPARQL_PREFIXES
-        + """
-        DELETE {
-            ?wf ?p ?o .
-        }
-        WHERE {
-            ?wf ?p ?o .
-            ?da schema:result ?wf ;
-               rdf:type schema:DownloadAction .
-        }
-        """
-    )
-
-    do_entity_test(
-        rocrate_path=ValidROC().five_safes_crate_result,
-        requirement_severity=Severity.RECOMMENDED,
-        expected_validation_result=False,
-        expected_triggered_requirements=["DownloadAction"],
-        expected_triggered_issues=[
-            (
-                "The entity represented the downloaded workflow is not properly defined in the "
-                "RO-Crate and/or it is not referenced by `DownloadAction` --> `result`."
-            )
-        ],
-        profile_identifier="five-safes-crate",
-        rocrate_entity_mod_sparql=sparql,
-    )
-
-
 def test_5src_downloaded_workflow_is_not_referenced_by_download_action_result():
     sparql = (
         SPARQL_PREFIXES
@@ -487,6 +427,37 @@ def test_5src_download_action_does_not_have_action_status_property():
 
 
 # ----- MAY fails tests
+
+
+def test_5src_downloaded_workflow_is_not_represented_by_its_own_entity():
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        DELETE {
+            ?wf ?p ?o .
+        }
+        WHERE {
+            ?wf ?p ?o .
+            ?da schema:result ?wf ;
+               rdf:type schema:DownloadAction .
+        }
+        """
+    )
+
+    do_entity_test(
+        rocrate_path=ValidROC().five_safes_crate_result,
+        requirement_severity=Severity.OPTIONAL,
+        expected_validation_result=False,
+        expected_triggered_requirements=["DownloadAction"],
+        expected_triggered_issues=[
+            (
+                "The entity represented the downloaded workflow is not properly defined in the "
+                "RO-Crate and/or it is not referenced by `DownloadAction` --> `result`."
+            )
+        ],
+        profile_identifier="five-safes-crate",
+        rocrate_entity_mod_sparql=sparql,
+    )
 
 
 def test_5src_download_action_does_not_have_start_time():

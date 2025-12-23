@@ -32,14 +32,13 @@ five-safes-crate:DownloadActionObjectMUSTHavesDescriptiveName
     sh:property [
         a sh:PropertyShape ;
         sh:name "name" ;
-        sh:description "DownloadAction MUST have a human readable name string of at least 10 characters." ;
+        sh:description "DownloadAction MUST have a human readable name string." ;
         sh:path schema:name ;
         sh:minCount 1 ;
         sh:maxCount 1 ;
         sh:datatype xsd:string ;
-        sh:minLength 10 ;
         sh:severity sh:Violation ;
-        sh:message "DownloadAction MUST have a human readable name string of at least 10 characters." ;
+        sh:message "DownloadAction MUST have a human readable name string." ;
     ] .
 
 five-safes-crate:DownloadActionStartTimeMUSTFollowISOStandard

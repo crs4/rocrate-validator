@@ -108,42 +108,6 @@ five-safes-crate:DownloadActionShouldHaveEndTimeIfEnded
     ] .
 
 
-five-safes-crate:DownloadedWorkflowSHOULDExistAndBeReferencedByDownloadActionResult
-    a sh:NodeShape ;
-    sh:name "DownloadAction" ;
-    sh:description "Validates that DownloadAction result references an existing entity" ;
-    sh:targetClass schema:DownloadAction ;
-
-    sh:property [
-        a sh:PropertyShape ;
-        sh:name "Result" ;
-        sh:description "The result property must reference an existing entity in the RO-Crate" ;
-        sh:path schema:result ;
-        sh:minCount 1 ;
-        sh:nodeKind sh:IRI ;
-
-        sh:sparql [
-            a sh:SPARQLConstraint ;
-            sh:select """
-                PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-                PREFIX schema: <http://schema.org/>
-
-                SELECT $this $value
-                WHERE {
-                    $this schema:result $value .
-                    
-                    # Entity must have BOTH type AND name (proper definition)
-                    FILTER NOT EXISTS {
-                        $value rdf:type schema:Dataset .
-                    }
-                }
-            """ ;
-            sh:severity sh:Warning ;
-            sh:message "The entity represented the downloaded workflow is not properly defined in the RO-Crate and/or it is not referenced by `DownloadAction` --> `result`." ;
-        ] ;
-    ] .
-
-
 five-safes-crate:DownloadActionShouldHaveActionStatus
     a sh:NodeShape ;
     sh:name "DownloadAction" ;
