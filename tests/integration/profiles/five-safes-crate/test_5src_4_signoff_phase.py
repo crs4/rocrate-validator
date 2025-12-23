@@ -274,10 +274,10 @@ def test_5src_signoff_phase_no_starttime():
         rocrate_path=ValidROC().five_safes_crate_result,
         requirement_severity=Severity.OPTIONAL,
         expected_validation_result=False,
-        expected_triggered_requirements=["SignOffPhaseStartTime"],
+        expected_triggered_requirements=["SignOffPhaseStartTime", "StartTimeStamp"],
         expected_triggered_issues=[
-            "Sign Off object MAY have a startTime property if action is active, completed or failed."
-            + " This must follow ISO-8601 syntax"
+            "Sign Off phase MAY have a compliant startTime if action is active, completed or failed.",
+            "startTime property MUST follow ISO-8601 syntax. e.g. 2023-04-19T10:15:12+01:00"
         ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
@@ -310,10 +310,10 @@ def test_5src_signoff_phase_malformed_starttime():
         rocrate_path=ValidROC().five_safes_crate_result,
         requirement_severity=Severity.OPTIONAL,
         expected_validation_result=False,
-        expected_triggered_requirements=["SignOffPhaseStartTime"],
+        expected_triggered_requirements=["SignOffPhaseStartTime", "StartTimeStamp"],
         expected_triggered_issues=[
-            "Sign Off object MAY have a startTime property if action is active, completed or failed."
-            + " This must follow ISO-8601 syntax"
+            "Sign Off phase MAY have a compliant startTime if action is active, completed or failed.",
+            "startTime property MUST follow ISO-8601 syntax. e.g. 2023-04-19T10:15:12+01:00"
         ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
