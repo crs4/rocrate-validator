@@ -25,34 +25,12 @@
 
 five-safes-crate:SignOffPhaseStartTime
     a sh:NodeShape ;
-    sh:name "SignOffPhaseStartTime" ;
-
-    sh:target [
-        a sh:SPARQLTarget ;
-        sh:select """
-            PREFIX schema: <http://schema.org/>
-            PREFIX shp:    <https://w3id.org/shp#>
-            SELECT ?this
-            WHERE {
-                ?this schema:additionalType shp:SignOff ;
-                        schema:actionStatus ?status .
-                FILTER(?status IN (
-                    "http://schema.org/ActiveActionStatus",
-                    "http://schema.org/CompletedActionStatus",
-                    "http://schema.org/FailedActionStatus"
-                ))
-            }
-        """ ;
+    sh:description "Sign Off start time check" ;
+    sh:node five-safes-crate:StartTimeStamp ;
+    sh:severity sh:Info ;
+    sh:target [ 
+        a five-safes-crate:ActionActiveCompFailSearch ;
+        five-safes-crate:addtype shp:SignOff ;
     ] ;
-
-    sh:property [
-        a sh:PropertyShape ;
-        sh:name "StartTime" ;
-        sh:path schema:startTime ;
-        sh:minCount 1 ;
-        sh:maxCount 1 ;
-        sh:pattern "^[0-9]{4}-[0-9]{2}-[0-9]{2}[Tt][0-9]{2}:[0-9]{2}:[0-9]{2}([.|,][0-9]+)?(Z|z|[+-][0-9]{2}:[0-9]{2})$" ;
-        sh:severity sh:Info ;
-        sh:description "Sign Off object MAY have a startTime property if action is active, completed or failed. This must follow ISO-8601 syntax" ;
-        sh:message "Sign Off object MAY have a startTime property if action is active, completed or failed. This must follow ISO-8601 syntax" ;
-    ] .
+    sh:message "Sign Off phase MAY have a compliant startTime if action is active, completed or failed."
+    .

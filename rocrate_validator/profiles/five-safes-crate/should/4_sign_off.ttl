@@ -151,6 +151,7 @@ five-safes-crate:SignOffPhaseEndTime
     a sh:NodeShape ;
     sh:description "Sign Off end time check" ;
     sh:node five-safes-crate:EndTimeStamp ;
+    sh:severity sh:Warning ;
     sh:target [ 
         a five-safes-crate:ActionCompFailSearch ;
         five-safes-crate:addtype shp:SignOff ;
