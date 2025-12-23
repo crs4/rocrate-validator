@@ -208,8 +208,8 @@ def test_5src_signoff_phase_no_endtime():
         expected_validation_result=False,
         expected_triggered_requirements=["SignOffPhaseEndTime", "EndTimeStamp"],
         expected_triggered_issues=[
-            "Sign Off phase SHOULD have a compliant EndTime if action completed or failed.",
-            "Object SHOULD have endTime property. This must follow ISO-8601 syntax."
+            "Sign Off phase SHOULD have a compliant endTime if action completed or failed.",
+            "endTime property MUST follow ISO-8601 syntax. e.g. 2023-04-19T10:15:12+01:00"
         ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
@@ -244,8 +244,8 @@ def test_5src_signoff_phase_malformed_endtime():
         expected_validation_result=False,
         expected_triggered_requirements=["SignOffPhaseEndTime", "EndTimeStamp"],
         expected_triggered_issues=[
-            "Sign Off phase SHOULD have a compliant EndTime if action completed or failed.",
-            "Object SHOULD have endTime property. This must follow ISO-8601 syntax."
+            "Sign Off phase SHOULD have a compliant endTime if action completed or failed.",
+            "endTime property MUST follow ISO-8601 syntax. e.g. 2023-04-19T10:15:12+01:00"
         ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,

@@ -35,7 +35,7 @@ five-safes-crate:EndTimeStamp
         sh:maxCount 1 ;
         sh:name "EndTimeStamp" ;
         sh:severity sh:Warning ;
-        sh:message "Object SHOULD have endTime property. This must follow ISO-8601 syntax." ;
+        sh:message "endTime property MUST follow ISO-8601 syntax. e.g. 2023-04-19T10:15:12+01:00" ;
     ] .
 
 
@@ -50,7 +50,7 @@ five-safes-crate:StartTimeStamp
         sh:maxCount 1 ;
         sh:name "EndTime" ;
         sh:severity sh:Warning ;
-        sh:message "Object SHOULD have startTime property. This must follow ISO-8601 syntax" ;
+        sh:message "startTime property MUST follow ISO-8601 syntax. e.g. 2023-04-19T10:15:12+01:00" ;
     ] .
 
 

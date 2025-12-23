@@ -155,7 +155,7 @@ five-safes-crate:SignOffPhaseEndTime
         a five-safes-crate:ActionCompFailSearch ;
         five-safes-crate:addtype shp:SignOff ;
     ] ;
-    sh:message "Sign Off phase SHOULD have a compliant EndTime if action completed or failed."
+    sh:message "Sign Off phase SHOULD have a compliant endTime if action completed or failed."
     .
 
 
