@@ -54,7 +54,7 @@ five-safes-crate:StartTimeStamp
     ] .
 
 
-five-safes-crate:ActionCFSearch
+five-safes-crate:ActionCompFailSearch
     a sh:SPARQLTargetType ;
     rdfs:subClassOf sh:Target ;
     sh:parameter [
@@ -76,3 +76,26 @@ five-safes-crate:ActionCFSearch
         }
     """ .
 
+
+five-safes-crate:ActionActiveCompFailSearch
+    a sh:SPARQLTargetType ;
+    rdfs:subClassOf sh:Target ;
+    sh:parameter [
+        sh:path five-safes-crate:addtype ;
+        sh:description "Additional Type for Class" ;
+        sh:class sh:additionalType ;
+    ] ;
+    sh:select """
+        PREFIX schema: <http://schema.org/>
+        PREFIX shp:    <https://w3id.org/shp#>
+        SELECT ?this
+        WHERE {
+            ?this schema:additionalType $addtype ;
+                    schema:actionStatus ?status .
+            FILTER(?status IN (
+                "http://schema.org/ActiveActionStatus",
+                "http://schema.org/CompletedActionStatus",
+                "http://schema.org/FailedActionStatus"
+            ))
+        }
+    """ .
