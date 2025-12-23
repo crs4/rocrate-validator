@@ -153,5 +153,9 @@ five-safes-crate:SignOffPhaseEndTime
     sh:node five-safes-crate:EndTimeStamp ;
     sh:target [ 
         a five-safes-crate:EndTimeSearch ;
-        sh:additionalType shp:SignOff ;
-    ].
+        five-safes-crate:addtype shp:SignOff ;
+    ] ;
+    sh:message "Sign Off phase SHOULD have a compliant EndTime"
+    .
+
+
