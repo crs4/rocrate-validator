@@ -332,73 +332,6 @@ def test_5src_download_action_does_not_have_end_time():
     )
 
 
-def test_5src_downloaded_workflow_is_not_referenced_by_download_action_result():
-    sparql = (
-        SPARQL_PREFIXES
-        + """
-        DELETE {
-            ?s schema:result ?o .
-        }
-        INSERT {
-            ?s schema:result "This is not the downloaded workflow entity" .
-        }
-        WHERE {
-            ?s schema:result ?o ;
-               rdf:type schema:DownloadAction .
-        }
-        """
-    )
-
-    do_entity_test(
-        rocrate_path=ValidROC().five_safes_crate_result,
-        requirement_severity=Severity.RECOMMENDED,
-        expected_validation_result=False,
-        expected_triggered_requirements=["DownloadAction"],
-        expected_triggered_issues=[
-            (
-                "The entity represented the downloaded workflow is not properly defined in the "
-                "RO-Crate and/or it is not referenced by `DownloadAction` --> `result`."
-            )
-        ],
-        profile_identifier="five-safes-crate",
-        rocrate_entity_mod_sparql=sparql,
-    )
-
-
-def test_5src_downloaded_workflow_entity_is_not_of_type_dataset():
-    sparql = (
-        SPARQL_PREFIXES
-        + """
-        DELETE {
-            ?wf rdf:type schema:Dataset .
-        }
-        INSERT {
-            ?wf rdf:type schema:Person .
-        }
-        WHERE {
-            ?wf rdf:type schema:Dataset .
-            ?da schema:result ?wf ;
-                rdf:type schema:DownloadAction .
-        }
-        """
-    )
-
-    do_entity_test(
-        rocrate_path=ValidROC().five_safes_crate_result,
-        requirement_severity=Severity.RECOMMENDED,
-        expected_validation_result=False,
-        expected_triggered_requirements=["DownloadAction"],
-        expected_triggered_issues=[
-            (
-                "The entity represented the downloaded workflow is not properly defined in the "
-                "RO-Crate and/or it is not referenced by `DownloadAction` --> `result`."
-            )
-        ],
-        profile_identifier="five-safes-crate",
-        rocrate_entity_mod_sparql=sparql,
-    )
-
-
 def test_5src_download_action_does_not_have_action_status_property():
     sparql = (
         SPARQL_PREFIXES
@@ -451,8 +384,9 @@ def test_5src_downloaded_workflow_is_not_represented_by_its_own_entity():
         expected_triggered_requirements=["DownloadAction"],
         expected_triggered_issues=[
             (
-                "The entity represented the downloaded workflow is not properly defined in the "
-                "RO-Crate and/or it is not referenced by `DownloadAction` --> `result`."
+                "The entity representing the downloaded workflow is not defined, "
+                "OR is not referenced by `DownloadAction` --> `result`, "
+                "OR is not of type `schema:Dataset`."
             )
         ],
         profile_identifier="five-safes-crate",
