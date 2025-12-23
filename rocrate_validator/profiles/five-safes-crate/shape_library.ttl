@@ -33,13 +33,28 @@ five-safes-crate:EndTimeStamp
         sh:path schema:endTime ;
         sh:minCount 1 ;
         sh:maxCount 1 ;
-        sh:name "EndTime" ;
+        sh:name "EndTimeStamp" ;
         sh:severity sh:Warning ;
-        sh:message "Object SHOULD have endTime property if action completed or failed. This must follow ISO-8601 syntax" ;
+        sh:message "Object SHOULD have endTime property. This must follow ISO-8601 syntax." ;
     ] .
 
 
-five-safes-crate:EndTimeSearch
+five-safes-crate:StartTimeStamp
+    a sh:NodeShape ;
+    sh:property [
+        sh:datatype xsd:string ;
+        sh:pattern "^[0-9]{4}-[0-9]{2}-[0-9]{2}[Tt][0-9]{2}:[0-9]{2}:[0-9]{2}([.|,][0-9]+)?(Z|z|[+-][0-9]{2}:[0-9]{2})$" ;
+        sh:description "End Time Check" ;
+        sh:path schema:startTime ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:name "EndTime" ;
+        sh:severity sh:Warning ;
+        sh:message "Object SHOULD have startTime property. This must follow ISO-8601 syntax" ;
+    ] .
+
+
+five-safes-crate:ActionCFSearch
     a sh:SPARQLTargetType ;
     rdfs:subClassOf sh:Target ;
     sh:parameter [
