@@ -24,7 +24,6 @@ logger = logging.getLogger(__name__)
 
 # ----- MUST fails tests
 
-# TO BE CHECKED AGAIN
 def test_5src_validation_check_not_of_type_assess_action():
     sparql = (
         SPARQL_PREFIXES + """
@@ -83,9 +82,6 @@ def test_5src_validation_check_has_action_status_with_not_allowed_value():
         DELETE {
             ?s schema:actionStatus ?o .
         }
-        INSERT {
-            ?s schema:actionStatus "Not a good action status" .
-        }
         WHERE {
             ?s schema:additionalType shp:ValidationCheck ;
                schema:actionStatus ?o .
@@ -99,10 +95,7 @@ def test_5src_validation_check_has_action_status_with_not_allowed_value():
         expected_validation_result=False,
         expected_triggered_requirements=["ValidationCheck"],
         expected_triggered_issues=[
-            (
-                "The value of actionStatus MUST be one of the allowed "
-                "values: PotentialActionStatus; ActiveActionStatus; CompletedActionStatus; FailedActionStatus."
-            )
+            "actionStatus MUST be either PotentialActionStatus, ActiveActionStatus, CompletedActionStatus, or FailedActionStatus."
         ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,

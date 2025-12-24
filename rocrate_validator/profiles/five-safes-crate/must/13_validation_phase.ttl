@@ -113,7 +113,7 @@ five-safes-crate:ValidationCheckActionStatusMustHaveAllowedValue
         a sh:PropertyShape ;
         sh:minCount 1 ;
         sh:name "actionStatus" ;
-        sh:description "The value of actionStatus MUST be one of the allowed values: PotentialActionStatus; ActiveActionStatus; CompletedActionStatus; FailedActionStatus." ;
+        sh:description "actionStatus MUST be either PotentialActionStatus, ActiveActionStatus, CompletedActionStatus, or FailedActionStatus." ;
         sh:path schema:actionStatus ;
         sh:in (
             "http://schema.org/PotentialActionStatus"
@@ -122,7 +122,7 @@ five-safes-crate:ValidationCheckActionStatusMustHaveAllowedValue
             "http://schema.org/FailedActionStatus"
         ) ;
         sh:severity sh:Violation ;
-        sh:message "The value of actionStatus MUST be one of the allowed values: PotentialActionStatus; ActiveActionStatus; CompletedActionStatus; FailedActionStatus." ;
+        sh:message "actionStatus MUST be either PotentialActionStatus, ActiveActionStatus, CompletedActionStatus, or FailedActionStatus." ;
     ] .
 
 
