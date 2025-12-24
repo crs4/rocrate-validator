@@ -414,8 +414,8 @@ def test_5src_download_action_does_not_have_start_time():
         expected_triggered_requirements=["DownloadAction"],
         expected_triggered_issues=[
             (
-            "`DownloadAction` MAY have the `startTime` property if `actionStatus` "
-            "is either ActiveActionStatus, CompletedActionStatus or FailedActionStatus."
+                "`DownloadAction` MAY have the `startTime` property if `actionStatus` "
+                "is either ActiveActionStatus, CompletedActionStatus or FailedActionStatus."
             )
         ],
         profile_identifier="five-safes-crate",
