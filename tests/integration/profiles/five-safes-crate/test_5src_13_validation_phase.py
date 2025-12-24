@@ -77,33 +77,6 @@ def test_5src_validation_check_name_not_a_string():
 
 
 def test_5src_validation_check_has_action_status_with_not_allowed_value():
-    sparql = (SPARQL_PREFIXES + """
-        DELETE {
-            ?s schema:actionStatus ?o .
-        }
-        INSERT {
-            ?s schema:actionStatus "Not a good action status" .
-        }
-        WHERE {
-            ?s schema:additionalType <https://w3id.org/shp#ValidationCheck> .
-        }
-        """)
-
-    do_entity_test(
-        rocrate_path=ValidROC().five_safes_crate_result,
-        requirement_severity=Severity.REQUIRED,
-        expected_validation_result=False,
-        expected_triggered_requirements=["ValidationCheck"],
-        expected_triggered_issues=[(
-            "The `actionStatus` of ValidationCheck MUST have an allowed value "
-            "(see https://schema.org/ActionStatusType)."
-            )],
-        profile_identifier="five-safes-crate",
-        rocrate_entity_mod_sparql=sparql,
-    )
-
-
-def test_5src_validation_check_has_action_status_with_not_allowed_value():
     sparql = (
         SPARQL_PREFIXES
         + """
