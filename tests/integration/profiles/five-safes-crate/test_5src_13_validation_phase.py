@@ -109,7 +109,7 @@ def test_5src_validation_check_has_action_status_with_not_allowed_value():
     )
 
 
-# # ----- SHOULD fails tests
+# ----- SHOULD fails tests
 
 def test_5src_root_data_entity_does_not_mention_validation_check_entity():
     sparql = (SPARQL_PREFIXES + """
@@ -197,6 +197,38 @@ def test_5src_Validation_check_does_not_have_action_status_property():
         expected_validation_result=False,
         expected_triggered_requirements=["ValidationCheck"],
         expected_triggered_issues=["ValidationCheck SHOULD have actionStatus property."],
+        profile_identifier="five-safes-crate",
+        rocrate_entity_mod_sparql=sparql,
+    )
+
+
+# ----- MAY fails tests
+
+def test_5src_download_action_does_not_have_start_time():
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        DELETE {
+            ?s schema:startTime ?time .
+        }
+        WHERE {
+            ?s schema:additionalType shp:ValidationCheck ;
+               schema:startTime ?time .
+        }
+        """
+    )
+
+    do_entity_test(
+        rocrate_path=ValidROC().five_safes_crate_result,
+        requirement_severity=Severity.OPTIONAL,
+        expected_validation_result=False,
+        expected_triggered_requirements=["ValidationCheck"],
+        expected_triggered_issues=[
+            (
+                "ValidationCheck MAY have the `startTime` property if `actionStatus` "
+                "is either ActiveActionStatus, CompletedActionStatus or FailedActionStatus."
+            )
+        ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
     )
