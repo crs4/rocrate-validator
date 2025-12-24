@@ -25,7 +25,10 @@
 five-safes-crate:WorkflowexecutionObjectHasStartTimeIfBegun
     a sh:NodeShape ;
     sh:name "WorkflowExecution" ;
-    sh:description "The workflow execution object MAY have a startTime if execution was initiated." ;
+    sh:description (
+        "The workflow execution object MAY have a startTime if actionStatus is "
+        "either ActiveActionStatus, CompletedActionStatus or FailedActionStatus."
+    ) ;
 
     sh:target [
         a sh:SPARQLTarget ;
@@ -53,6 +56,12 @@ five-safes-crate:WorkflowexecutionObjectHasStartTimeIfBegun
         sh:minCount 1 ;
         sh:maxCount 1 ;
         sh:severity sh:Info ;
-        sh:description "The workflow execution object MAY have a startTime if execution was initiated." ;
-        sh:message "The workflow execution object MAY have a startTime if execution was initiated." ;
+        sh:description (
+            "The workflow execution object MAY have a startTime if actionStatus is "
+            "either ActiveActionStatus, CompletedActionStatus or FailedActionStatus."
+        ) ;
+        sh:message (
+            "The workflow execution object MAY have a startTime if actionStatus is "
+            "either ActiveActionStatus, CompletedActionStatus or FailedActionStatus."
+        ) ;
     ] .

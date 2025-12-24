@@ -26,9 +26,9 @@ logger = logging.getLogger(__name__)
 
 
 def test_5src_workflow_object_with_no_name():
-
     sparql = (
-        SPARQL_PREFIXES + """
+        SPARQL_PREFIXES
+        + """
         DELETE {
             ?this schema:name ?name .
         }
@@ -37,21 +37,26 @@ def test_5src_workflow_object_with_no_name():
                     schema:name ?name .
             <./> schema:mentions ?this .
         }
-    """)
+    """
+    )
 
     do_entity_test(
         rocrate_path=ValidROC().five_safes_crate_result,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["WorkflowExecution"],
-        expected_triggered_issues=["Workflow (CreateAction) MUST have a name string of at least 10 characters."],
+        expected_triggered_issues=[
+            "Workflow (CreateAction) MUST have a name string of at least 10 characters."
+        ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
     )
 
 
 def test_5src_workflow_object_with_name_not_string():
-    sparql = (SPARQL_PREFIXES + """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
         DELETE {
             ?this schema:name ?name .
         }
@@ -63,21 +68,26 @@ def test_5src_workflow_object_with_name_not_string():
                   schema:name ?name .
             <./> schema:mentions ?this .
         }
-        """)
+        """
+    )
 
     do_entity_test(
         rocrate_path=ValidROC().five_safes_crate_result,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["WorkflowExecution"],
-        expected_triggered_issues=["Workflow (CreateAction) MUST have a name string of at least 10 characters."],
+        expected_triggered_issues=[
+            "Workflow (CreateAction) MUST have a name string of at least 10 characters."
+        ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
     )
 
 
 def test_5src_workflow_object_with_not_long_enough_name():
-    sparql = (SPARQL_PREFIXES + """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
         DELETE {
             ?this schema:name ?name .
         }
@@ -89,21 +99,26 @@ def test_5src_workflow_object_with_not_long_enough_name():
                   schema:name ?name .
             <./> schema:mentions ?this .
         }
-    """)
+    """
+    )
 
     do_entity_test(
         rocrate_path=ValidROC().five_safes_crate_result,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["WorkflowExecution"],
-        expected_triggered_issues=["Workflow (CreateAction) MUST have a name string of at least 10 characters."],
+        expected_triggered_issues=[
+            "Workflow (CreateAction) MUST have a name string of at least 10 characters."
+        ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
     )
 
 
 def test_5src_workflow_object_has_no_properly_formatted_start_time():
-    sparql = (SPARQL_PREFIXES + """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
         DELETE {
             ?s schema:startTime ?time .
         }
@@ -114,24 +129,29 @@ def test_5src_workflow_object_has_no_properly_formatted_start_time():
             ?s rdf:type schema:CreateAction ;
                schema:startTime ?time .
         }
-        """)
+        """
+    )
 
     do_entity_test(
         rocrate_path=ValidROC().five_safes_crate_result,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["WorkflowExecution"],
-        expected_triggered_issues=[(
-            "The startTime of the workflow execution object MUST follow the RFC 3339 standard "
-            "(YYYY-MM-DD'T'hh:mm:ss[.fraction](Z | ±hh:mm))."
-        )],
+        expected_triggered_issues=[
+            (
+                "The startTime of the workflow execution object MUST follow the RFC 3339 standard "
+                "(YYYY-MM-DD'T'hh:mm:ss[.fraction](Z | ±hh:mm))."
+            )
+        ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
     )
 
 
 def test_5src_workflow_object_has_no_properly_formatted_end_time():
-    sparql = (SPARQL_PREFIXES + """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
         DELETE {
             ?s schema:endTime ?time .
         }
@@ -142,24 +162,29 @@ def test_5src_workflow_object_has_no_properly_formatted_end_time():
             ?s rdf:type schema:CreateAction ;
                schema:endTime ?time .
         }
-        """)
+        """
+    )
 
     do_entity_test(
         rocrate_path=ValidROC().five_safes_crate_result,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["WorkflowExecution"],
-        expected_triggered_issues=[(
-            "The endTime of the workflow execution object MUST follow the RFC 3339 standard "
-            "(YYYY-MM-DD'T'hh:mm:ss[.fraction](Z | ±hh:mm))."
-        )],
+        expected_triggered_issues=[
+            (
+                "The endTime of the workflow execution object MUST follow the RFC 3339 standard "
+                "(YYYY-MM-DD'T'hh:mm:ss[.fraction](Z | ±hh:mm))."
+            )
+        ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
     )
 
 
 def test_5src_workflow_object_with_no_action_status():
-    sparql = (SPARQL_PREFIXES + """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
         DELETE {
             ?this schema:actionStatus ?o .
         }
@@ -167,24 +192,29 @@ def test_5src_workflow_object_with_no_action_status():
             ?this schema:actionStatus ?o ;
                   rdf:type schema:CreateAction .
         }
-        """)
+        """
+    )
 
     do_entity_test(
         rocrate_path=ValidROC().five_safes_crate_result,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["WorkflowExecution"],
-        expected_triggered_issues=[(
-            "WorkflowExecution MUST have an actionStatus "
-            "with an allowed value (see https://schema.org/ActionStatusType)."
-        )],
+        expected_triggered_issues=[
+            (
+                "WorkflowExecution MUST have an actionStatus "
+                "with an allowed value (see https://schema.org/ActionStatusType)."
+            )
+        ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
     )
 
 
 def test_5src_workflow_object_with_no_properly_valued_action_status():
-    sparql = (SPARQL_PREFIXES + """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
         DELETE {
             ?this schema:actionStatus ?o .
         }
@@ -195,17 +225,20 @@ def test_5src_workflow_object_with_no_properly_valued_action_status():
             ?this schema:actionStatus ?o ;
                   rdf:type schema:CreateAction .
         }
-        """)
+        """
+    )
 
     do_entity_test(
         rocrate_path=ValidROC().five_safes_crate_result,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["WorkflowExecution"],
-        expected_triggered_issues=[(
-            "WorkflowExecution MUST have an actionStatus "
-            "with an allowed value (see https://schema.org/ActionStatusType)."
-        )],
+        expected_triggered_issues=[
+            (
+                "WorkflowExecution MUST have an actionStatus "
+                "with an allowed value (see https://schema.org/ActionStatusType)."
+            )
+        ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
     )
@@ -215,14 +248,17 @@ def test_5src_workflow_object_with_no_properly_valued_action_status():
 
 
 def test_5src_workflow_object_not_mentioned_by_root_data_entity():
-    sparql = (SPARQL_PREFIXES + """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
         DELETE {
             <./> schema:mentions ?o .
         }
         WHERE {
             ?o rdf:type schema:CreateAction .
         }
-        """)
+        """
+    )
 
     do_entity_test(
         rocrate_path=ValidROC().five_safes_crate_result,
@@ -238,7 +274,9 @@ def test_5src_workflow_object_not_mentioned_by_root_data_entity():
 
 
 def test_5src_workflow_object_has_no_end_time_if_ended():
-    sparql = (SPARQL_PREFIXES + """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
         DELETE {
             ?s schema:endTime ?time .
         }
@@ -246,7 +284,8 @@ def test_5src_workflow_object_has_no_end_time_if_ended():
             ?s rdf:type schema:CreateAction ;
                schema:endTime ?time .
         }
-        """)
+        """
+    )
 
     do_entity_test(
         rocrate_path=ValidROC().five_safes_crate_result,
@@ -265,15 +304,18 @@ def test_5src_workflow_object_has_no_end_time_if_ended():
 
 
 def test_5src_workflow_object_has_no_start_time_if_begun():
-    sparql = (SPARQL_PREFIXES + """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
         DELETE {
             ?s schema:startTime ?time .
         }
         WHERE {
             ?s rdf:type schema:CreateAction;
-               schema:startTime ?time
+               schema:startTime ?time .
         }
-        """)
+        """
+    )
 
     do_entity_test(
         rocrate_path=ValidROC().five_safes_crate_result,
@@ -281,7 +323,10 @@ def test_5src_workflow_object_has_no_start_time_if_begun():
         expected_validation_result=False,
         expected_triggered_requirements=["WorkflowExecution"],
         expected_triggered_issues=[
-            "The workflow execution object MAY have a startTime if execution was initiated."
+            (
+                "The workflow execution object MAY have a startTime if actionStatus is "
+                "either ActiveActionStatus, CompletedActionStatus or FailedActionStatus."
+            )
         ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,

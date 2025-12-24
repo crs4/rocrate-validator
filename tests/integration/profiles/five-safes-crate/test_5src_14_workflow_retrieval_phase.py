@@ -361,7 +361,6 @@ def test_5src_download_action_does_not_have_action_status_property():
 
 # ----- MAY fails tests
 
-
 def test_5src_downloaded_workflow_is_not_represented_by_its_own_entity():
     sparql = (
         SPARQL_PREFIXES
@@ -399,11 +398,11 @@ def test_5src_download_action_does_not_have_start_time():
         SPARQL_PREFIXES
         + """
         DELETE {
-            ?c schema:startTime ?t .
+            ?s schema:startTime ?time .
         }
         WHERE {
-            ?c rdf:type schema:DownloadAction ;
-               schema:startTime ?t .
+            ?s rdf:type schema:DownloadAction ;
+               schema:startTime ?time .
         }
         """
     )
@@ -414,8 +413,10 @@ def test_5src_download_action_does_not_have_start_time():
         expected_validation_result=False,
         expected_triggered_requirements=["DownloadAction"],
         expected_triggered_issues=[
+            (
             "`DownloadAction` MAY have the `startTime` property if `actionStatus` "
             "is either ActiveActionStatus, CompletedActionStatus or FailedActionStatus."
+            )
         ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,

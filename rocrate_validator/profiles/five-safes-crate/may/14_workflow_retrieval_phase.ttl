@@ -54,10 +54,7 @@ five-safes-crate:DownloadedWorkflowSHOULDExistAndBeReferencedByDownloadActionRes
                 }
             """ ;
             sh:severity sh:Info ;
-            sh:message ("The entity representing the downloaded workflow is not defined, "
-                        "OR is not referenced by `DownloadAction` --> `result`, "
-                        "OR is not of type `schema:Dataset`."
-            ) ;
+            sh:message "The entity representing the downloaded workflow is not defined, OR is not referenced by `DownloadAction` --> `result`, OR is not of type `schema:Dataset`." ;
         ] ;
     ] .
 
@@ -65,12 +62,17 @@ five-safes-crate:DownloadedWorkflowSHOULDExistAndBeReferencedByDownloadActionRes
 five-safes-crate:DownloadActionMayHaveStartTimeIfBegun
     a sh:NodeShape ;
     sh:name "DownloadAction" ;
-    sh:description "" ;
+    sh:description (
+        "`DownloadAction` MAY have the `startTime` property if `actionStatus` "
+        "is either ActiveActionStatus, CompletedActionStatus or FailedActionStatus."
+    );
+
     sh:target [
         a sh:SPARQLTarget ;
         sh:select """
             PREFIX schema: <http://schema.org/>
             PREFIX rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
             SELECT ?this
             WHERE {
                 ?this rdf:type schema:DownloadAction ;
@@ -91,5 +93,9 @@ five-safes-crate:DownloadActionMayHaveStartTimeIfBegun
         sh:minCount 1 ;
         sh:maxCount 1 ;
         sh:severity sh:Info ;
+        sh:description (
+            "`DownloadAction` MAY have the `startTime` property if `actionStatus` "
+            "is either ActiveActionStatus, CompletedActionStatus or FailedActionStatus."
+        );
         sh:message "`DownloadAction` MAY have the `startTime` property if `actionStatus` is either ActiveActionStatus, CompletedActionStatus or FailedActionStatus." ;
     ] .
