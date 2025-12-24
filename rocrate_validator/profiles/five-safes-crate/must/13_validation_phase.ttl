@@ -52,12 +52,11 @@ five-safes-crate:ValidationCheckObjectHasDescriptiveNameAndIsAssessAction
     sh:property [
         sh:a sh:PropertyShape ;
         sh:name "name" ;
-        sh:description "ValidationCheck MUST have a human readable name string of at least 10 characters." ;
+        sh:description "ValidationCheck MUST have a human readable name string." ;
         sh:path schema:name ;
         sh:datatype xsd:string ;
-        sh:minLength 10 ;
         sh:severity sh:Violation ;
-        sh:message "ValidationCheck MUST have a human readable name string of at least 10 characters." ;
+        sh:message "ValidationCheck MUST have a human readable name string." ;
     ] .
 
 
@@ -91,4 +90,37 @@ five-safes-crate:ValidationCheckActionStatusMustHaveAllowedValue
         ) ;
         sh:severity sh:Violation ;
         sh:message "The `actionStatus` of ValidationCheck MUST have an allowed value (see https://schema.org/ActionStatusType)." ;
+    ] .
+
+
+five-safes-crate:ValidationCheckActionStatusMustHaveAllowedValue
+    a sh:NodeShape ;
+    sh:name "ValidationCheck" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:select """
+            PREFIX schema: <http://schema.org/>
+            PREFIX shp:    <https://w3id.org/shp#>
+
+            SELECT ?this
+            WHERE {
+                ?this schema:additionalType shp:ValidationCheck .
+            }
+        """ ;
+    ] ;
+
+    sh:property [
+        a sh:PropertyShape ;
+        sh:minCount 1 ;
+        sh:name "actionStatus" ;
+        sh:description "The value of actionStatus MUST be one of the allowed values: PotentialActionStatus; ActiveActionStatus; CompletedActionStatus; FailedActionStatus." ;
+        sh:path schema:actionStatus ;
+        sh:in (
+            "http://schema.org/PotentialActionStatus"
+            "http://schema.org/ActiveActionStatus"
+            "http://schema.org/CompletedActionStatus"
+            "http://schema.org/FailedActionStatus"
+        ) ;
+        sh:severity sh:Violation ;
+        sh:message "The value of actionStatus MUST be one of the allowed values: PotentialActionStatus; ActiveActionStatus; CompletedActionStatus; FailedActionStatus." ;
     ] .

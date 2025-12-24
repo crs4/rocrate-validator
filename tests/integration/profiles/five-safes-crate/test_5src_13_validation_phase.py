@@ -70,31 +70,7 @@ def test_5src_validation_check_name_not_a_string():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["ValidationCheck"],
-        expected_triggered_issues=["ValidationCheck MUST have a human readable name string of at least 10 characters."],
-        profile_identifier="five-safes-crate",
-        rocrate_entity_mod_sparql=sparql,
-    )
-
-
-def test_5src_validation_check_name_not_long_enough():
-    sparql = (SPARQL_PREFIXES + """
-        DELETE {
-            ?this schema:name ?name .
-        }
-        INSERT {
-            ?this schema:name "Short" .
-        }
-        WHERE {
-            ?this schema:additionalType shp:ValidationCheck .
-        }
-        """)
-
-    do_entity_test(
-        rocrate_path=ValidROC().five_safes_crate_result,
-        requirement_severity=Severity.REQUIRED,
-        expected_validation_result=False,
-        expected_triggered_requirements=["ValidationCheck"],
-        expected_triggered_issues=["ValidationCheck MUST have a human readable name string of at least 10 characters."],
+        expected_triggered_issues=["ValidationCheck MUST have a human readable name string."],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
     )
@@ -122,6 +98,38 @@ def test_5src_validation_check_has_action_status_with_not_allowed_value():
             "The `actionStatus` of ValidationCheck MUST have an allowed value "
             "(see https://schema.org/ActionStatusType)."
             )],
+        profile_identifier="five-safes-crate",
+        rocrate_entity_mod_sparql=sparql,
+    )
+
+def test_5src_validation_check_has_action_status_with_not_allowed_value():
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        DELETE {
+            ?s schema:actionStatus ?o .
+        }
+        INSERT {
+            ?s schema:actionStatus "Not a good action status" .
+        }
+        WHERE {
+            ?s schema:additionalType shp:ValidationCheck ;
+               schema:actionStatus ?o .
+        }
+        """
+    )
+
+    do_entity_test(
+        rocrate_path=ValidROC().five_safes_crate_result,
+        requirement_severity=Severity.REQUIRED,
+        expected_validation_result=False,
+        expected_triggered_requirements=["ValidationCheck"],
+        expected_triggered_issues=[
+            (
+                "The value of actionStatus MUST be one of the allowed values: "
+                "PotentialActionStatus; ActiveActionStatus; CompletedActionStatus; FailedActionStatus."
+            )
+        ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
     )

@@ -65,12 +65,19 @@ five-safes-crate:ValidationCheckObjectShouldPointToRootDataEntity
         """  ;
     ] ;
 
-    sh:property [
-        a sh:PropertyShape ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
         sh:name "object" ;
-        sh:path schema:object ;
-        sh:minCount 1 ;
-        sh:hasValue <./> ;
+        sh:select """
+            PREFIX schema: <http://schema.org/> 
+            PREFIX rocrate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> 
+            SELECT $this 
+            WHERE {
+                FILTER NOT EXISTS {
+                    $this schema:object rocrate:RootDataEntity .
+                } 
+            } 
+        """ ;
         sh:severity sh:Warning ;
         sh:message "`ValidationCheck` --> `object` SHOULD point to the root of the RO-Crate" ;
     ] .
@@ -130,38 +137,4 @@ five-safes-crate:ValidationCheckShouldHaveActionStatus
         sh:minCount 1 ;
         sh:severity sh:Warning ;
         sh:message "ValidationCheck SHOULD have actionStatus property." ;
-    ] .
-
-
-
-five-safes-crate:ValidationCheckShouldHaveActionStatus
-    a sh:NodeShape ;
-    sh:name "ValidationCheck" ;
-    sh:target [
-        a sh:SPARQLTarget ;
-        sh:select """
-            PREFIX schema: <http://schema.org/>
-            PREFIX shp:    <https://w3id.org/shp#>
-
-            SELECT ?this
-            WHERE {
-                ?this schema:additionalType shp:ValidationCheck .
-            }
-        """ ;
-    ] ;
-
-    sh:property [
-        a sh:PropertyShape ;
-        sh:minCount 1 ;
-        sh:name "actionStatus" ;
-        sh:description "ValidationCheck SHOULD have the `actionStatus` property." ;
-        sh:path schema:actionStatus ;
-        sh:in (
-            "http://schema.org/PotentialActionStatus"
-            "http://schema.org/ActiveActionStatus"
-            "http://schema.org/CompletedActionStatus"
-            "http://schema.org/FailedActionStatus"
-        ) ;
-        sh:severity sh:Warning ;
-        sh:message "ValidationCheck SHOULD have the `actionStatus` property." ;
     ] .
