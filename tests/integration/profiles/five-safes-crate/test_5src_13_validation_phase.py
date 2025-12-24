@@ -102,6 +102,7 @@ def test_5src_validation_check_has_action_status_with_not_allowed_value():
         rocrate_entity_mod_sparql=sparql,
     )
 
+
 def test_5src_validation_check_has_action_status_with_not_allowed_value():
     sparql = (
         SPARQL_PREFIXES
