@@ -138,3 +138,36 @@ five-safes-crate:ValidationCheckShouldHaveActionStatus
         sh:severity sh:Warning ;
         sh:message "ValidationCheck SHOULD have actionStatus property." ;
     ] .
+
+
+five-safes-crate:DownloadActionShouldHaveEndTimeIfBegun
+    a sh:NodeShape ;
+    sh:name "ValidationCheck" ;
+    sh:description "" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:select """
+            PREFIX schema: <http://schema.org/>
+            PREFIX shp:    <https://w3id.org/shp#>
+            SELECT ?this
+            WHERE {
+                ?this schema:additionalType shp:ValidationCheck ;
+                      schema:actionStatus ?status .
+                FILTER(?status IN (
+                    "http://schema.org/CompletedActionStatus",
+                    "http://schema.org/FailedActionStatus"
+                ))
+            }
+        """  ;
+    ] ;
+
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "EndTime" ;
+        sh:path schema:endTime ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:severity sh:Warning ;
+        sh:description "ValidationCheck SHOULD have the `endTime` property if `actionStatus` is either CompletedActionStatus or FailedActionStatus." ;
+        sh:message "ValidationCheck SHOULD have the `endTime` property if `actionStatus` is either CompletedActionStatus or FailedActionStatus." ;
+    ] .
