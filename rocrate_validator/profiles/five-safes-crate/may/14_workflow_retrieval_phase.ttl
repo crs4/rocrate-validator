@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 @prefix ro: <./> .
 @prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
 @prefix five-safes-crate: <https://github.com/eScienceLab/rocrate-validator/profiles/five-safes-crate/> .
