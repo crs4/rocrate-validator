@@ -24,9 +24,11 @@ logger = logging.getLogger(__name__)
 
 # ----- MUST fails tests
 
+
 def test_5src_validation_check_not_of_type_assess_action():
     sparql = (
-        SPARQL_PREFIXES + """
+        SPARQL_PREFIXES
+        + """
         DELETE {
             ?this rdf:type schema:AssessAction .
         }
@@ -52,7 +54,9 @@ def test_5src_validation_check_not_of_type_assess_action():
 
 
 def test_5src_validation_check_name_not_a_string():
-    sparql = (SPARQL_PREFIXES + """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
         DELETE {
             ?this schema:name ?name .
         }
@@ -62,14 +66,17 @@ def test_5src_validation_check_name_not_a_string():
         WHERE {
             ?this schema:additionalType shp:ValidationCheck .
         }
-        """)
+        """
+    )
 
     do_entity_test(
         rocrate_path=ValidROC().five_safes_crate_result,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["ValidationCheck"],
-        expected_triggered_issues=["ValidationCheck MUST have a human readable name string."],
+        expected_triggered_issues=[
+            "ValidationCheck MUST have a human readable name string."
+        ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
     )
@@ -95,7 +102,10 @@ def test_5src_validation_check_has_action_status_with_not_allowed_value():
         expected_validation_result=False,
         expected_triggered_requirements=["ValidationCheck"],
         expected_triggered_issues=[
-            "actionStatus MUST be either PotentialActionStatus, ActiveActionStatus, CompletedActionStatus, or FailedActionStatus."
+            (
+                "actionStatus MUST be either PotentialActionStatus, ActiveActionStatus, "
+                "CompletedActionStatus, or FailedActionStatus."
+            )
         ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
@@ -170,29 +180,37 @@ def test_5src_validation_check_end_time_not_iso_standard():
 
 # ----- SHOULD fails tests
 
+
 def test_5src_root_data_entity_does_not_mention_validation_check_entity():
-    sparql = (SPARQL_PREFIXES + """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
         DELETE {
             <./> schema:mentions ?o .
         }
         WHERE {
             ?o schema:additionalType shp:ValidationCheck ;
         }
-        """)
+        """
+    )
 
     do_entity_test(
         rocrate_path=ValidROC().five_safes_crate_result,
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
         expected_triggered_requirements=["RootDataEntity"],
-        expected_triggered_issues=["RootDataEntity SHOULD mention a ValidationCheck object."],
+        expected_triggered_issues=[
+            "RootDataEntity SHOULD mention a ValidationCheck object."
+        ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
     )
 
 
 def test_5src_validation_check_object_does_not_point_to_root_data_entity():
-    sparql = (SPARQL_PREFIXES + """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
         DELETE {
             ?s schema:object <./> .
         }
@@ -202,21 +220,26 @@ def test_5src_validation_check_object_does_not_point_to_root_data_entity():
         WHERE {
             ?s schema:additionalType shp:ValidationCheck ;
         }
-        """)
+        """
+    )
 
     do_entity_test(
         rocrate_path=ValidROC().five_safes_crate_result,
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
         expected_triggered_requirements=["ValidationCheck"],
-        expected_triggered_issues=["`ValidationCheck` --> `object` SHOULD point to the root of the RO-Crate"],
+        expected_triggered_issues=[
+            "`ValidationCheck` --> `object` SHOULD point to the root of the RO-Crate"
+        ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
     )
 
 
 def test_5src_validation_check_instrument_does_not_point_to_5scrate_0p4():
-    sparql = (SPARQL_PREFIXES + """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
         DELETE {
             ?s schema:instrument <https://w3id.org/5s-crate/0.4> .
         }
@@ -224,7 +247,8 @@ def test_5src_validation_check_instrument_does_not_point_to_5scrate_0p4():
             ?s schema:additionalType shp:ValidationCheck ;
                 schema:instrument <https://w3id.org/5s-crate/0.4> .
         }
-        """)
+        """
+    )
 
     do_entity_test(
         rocrate_path=ValidROC().five_safes_crate_result,
@@ -233,14 +257,16 @@ def test_5src_validation_check_instrument_does_not_point_to_5scrate_0p4():
         expected_triggered_requirements=["ValidationCheck"],
         expected_triggered_issues=[
             "`ValidationCheck` --> `instrument` SHOULD point to an entity with @id https://w3id.org/5s-crate/0.4"
-            ],
+        ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
     )
 
 
 def test_5src_Validation_check_does_not_have_action_status_property():
-    sparql = (SPARQL_PREFIXES + """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
         DELETE {
             ?s schema:actionStatus ?o .
         }
@@ -248,14 +274,17 @@ def test_5src_Validation_check_does_not_have_action_status_property():
             ?s schema:additionalType shp:ValidationCheck ;
                schema:actionStatus ?o .
         }
-        """)
+        """
+    )
 
     do_entity_test(
         rocrate_path=ValidROC().five_safes_crate_result,
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
         expected_triggered_requirements=["ValidationCheck"],
-        expected_triggered_issues=["ValidationCheck SHOULD have actionStatus property."],
+        expected_triggered_issues=[
+            "ValidationCheck SHOULD have actionStatus property."
+        ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
     )
@@ -292,6 +321,7 @@ def test_5src_download_action_does_not_have_end_time():
 
 
 # ----- MAY fails tests
+
 
 def test_5src_download_action_does_not_have_start_time():
     sparql = (
