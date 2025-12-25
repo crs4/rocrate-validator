@@ -60,8 +60,5 @@ five-safes-crate:WorkflowexecutionObjectHasStartTimeIfBegun
             "The workflow execution object MAY have a startTime if actionStatus is "
             "either ActiveActionStatus, CompletedActionStatus or FailedActionStatus."
         ) ;
-        sh:message (
-            "The workflow execution object MAY have a startTime if actionStatus is "
-            "either ActiveActionStatus, CompletedActionStatus or FailedActionStatus."
-        ) ;
+        sh:message "The workflow execution object MAY have a startTime if actionStatus is either ActiveActionStatus, CompletedActionStatus or FailedActionStatus." ;
     ] .
