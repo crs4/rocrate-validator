@@ -52,12 +52,11 @@ five-safes-crate:CheckValueObjectHasDescriptiveNameAndIsAssessAction
     sh:property [
         sh:a sh:PropertyShape ;
         sh:name "name" ;
-        sh:description "CheckValue MUST have a human readable name string of at least 20 characters." ;
+        sh:description "CheckValue MUST have a human readable name string." ;
         sh:path schema:name ;
         sh:datatype xsd:string ;
-        sh:minLength 20 ;
         sh:severity sh:Violation ;
-        sh:message "CheckValue MUST have a human readable name string of at least 20 characters." ;
+        sh:message "CheckValue MUST have a human readable name string." ;
     ] .
 
 five-safes-crate:CheckValueStartTimeMustFollowISOStandard
