@@ -89,13 +89,12 @@ ro-crate:ROCrateMetadataFileDescriptorRecommendedProperties a sh:NodeShape ;
         sh:class schema_org:Dataset ;
         sh:message "The RO-Crate metadata file descriptor MUST have an `about` property referencing the Root Data Entity" ;
     ] ;
-    sh:property [
-        a sh:PropertyShape ;
-        sh:name "Metadata File Descriptor entity: `conformsTo` property" ;
-        sh:description """Check if the RO-Crate Metadata File Descriptor has a `conformsTo` property which points to the RO-Crate specification version""" ;
-        sh:minCount 1 ;
-        sh:nodeKind sh:IRI ;
-        sh:path dct:conformsTo ;
-        sh:hasValue <https://w3id.org/ro/crate/1.1> ;
-        sh:message "The RO-Crate metadata file descriptor MUST have a `conformsTo` property with the RO-Crate specification version" ;
-    ] .
+    sh:property ro-crate:conformsToROCrateSpec .
+
+ro-crate:conformsToROCrateSpec sh:name "Metadata File Descriptor entity: `conformsTo` property" ;
+    sh:description """Check if the RO-Crate Metadata File Descriptor has a `conformsTo` property which points to the RO-Crate specification version""" ;
+    sh:minCount 1 ;
+    sh:nodeKind sh:IRI ;
+    sh:path dct:conformsTo ;
+    sh:hasValue <https://w3id.org/ro/crate/1.1> ;
+    sh:message "The RO-Crate metadata file descriptor MUST have a `conformsTo` property with the RO-Crate specification version" .

@@ -1,0 +1,178 @@
+# Copyright (c) 2025 eScience Lab, The University of Manchester
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+@prefix ro: <./> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+@prefix five-safes-crate: <https://github.com/eScienceLab/rocrate-validator/profiles/five-safes-crate/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix validator: <https://github.com/crs4/rocrate-validator/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix shp: <https://w3id.org/shp#> .
+
+
+# There SHOULD be a Sign-Off Phase
+five-safes-crate:SignOffPhase
+    a sh:NodeShape ;
+    sh:targetNode <./> ;
+    sh:description "Check the Sign-Off Phase" ;
+    sh:sparql [
+        sh:select """
+            PREFIX schema: <http://schema.org/>
+            PREFIX shp: <https://w3id.org/shp#>
+            SELECT $this
+            WHERE {
+                FILTER NOT EXISTS { 
+                   ?action schema:additionalType shp:SignOff .
+               }
+            }
+        """ ;
+        sh:severity sh:Warning ;
+        sh:message "There SHOULD be a Sign-Off Phase in the Final RO-Crate" ;         
+    ] ;
+    sh:sparql [
+        sh:select """
+            PREFIX schema: <http://schema.org/>
+            PREFIX shp: <https://w3id.org/shp#>
+            SELECT $this
+            WHERE {
+                ?action schema:additionalType shp:SignOff .
+                FILTER NOT EXISTS {
+                    $this schema:mentions ?action .
+                }
+            }
+        """ ;
+        sh:severity sh:Warning ;
+        sh:message "The Root Data Entity SHOULD mention a Sign-Off Phase Object" ;
+    ] .
+
+
+five-safes-crate:SignOffPhaseProperties
+    a sh:NodeShape ;
+    sh:description "Check Sign-Off Phase Properties" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:select """
+            PREFIX schema: <http://schema.org/>
+            PREFIX shp: <https://w3id.org/shp#>
+            SELECT ?this
+            WHERE {
+                ?this schema:additionalType shp:SignOff .
+            }
+        """
+    ] ;
+    sh:property [
+        sh:description "Check if the Sign Off phase has an actionStatus" ;
+        sh:path schema:actionStatus ;
+        sh:minCount 1 ;
+        sh:severity sh:Warning ;
+        sh:message "The Sign-Off Phase SHOULD have an actionStatus" ;
+    ] ;
+    sh:property [
+        sh:description "Check if the Sign Off phase has an agent" ;
+        sh:path schema:agent ;
+        sh:minCount 1 ;
+        sh:severity sh:Warning ;
+        sh:message "The Sign-Off Phase SHOULD have an agent" ;
+    ] ;
+    sh:property [
+        sh:description "Check if the Sign Off phase has an instrument (TRE Policy)" ;
+        sh:path schema:instrument ;
+        sh:class schema:CreativeWork ;
+        sh:nodeKind sh:IRI;
+        sh:minCount 1 ;
+        sh:severity sh:Warning ;
+        sh:message "The Sign-Off Phase SHOULD have an TRE policy (instrument) with type CreativeWork" ;
+    ] ;
+    sh:property [
+        sh:description "Check if the Sign Off phase has an instrument (TRE Policy)" ;
+        sh:path ( schema:instrument schema:name ) ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:severity sh:Warning ;
+        sh:message "The Sign-Off Phase SHOULD have an TRE policy (instrument) with a human-readable name" ;
+    ] ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:description "Check if the Sign Off phase lists the workflow as an object" ;
+        sh:select """
+            PREFIX schema: <http://schema.org/>
+            PREFIX rocrate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/>
+            SELECT $this
+            WHERE {
+                ?root a schema:Dataset ;
+                    schema:mainEntity ?mainEntity ;
+                    rdf:type rocrate:RootDataEntity .
+                FILTER NOT EXISTS {
+                    $this schema:object ?mainEntity .
+                }
+            }
+        """ ;
+        sh:severity sh:Warning ;
+        sh:message "The Sign-Off Phase SHOULD list the workflow (mainEntity) as an object" ;
+    ];
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:description "Check if the Sign Off phase lists the Responsible Project as an object" ;
+        sh:select """
+            PREFIX schema: <http://schema.org/>
+            PREFIX rocrate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/>
+            SELECT $this
+            WHERE {
+                ?root a schema:Dataset ;
+                    rdf:type rocrate:RootDataEntity ;
+                    schema:sourceOrganization ?sourceOrg .
+                FILTER NOT EXISTS {
+                    $this schema:object ?sourceOrg .
+                }
+            }
+        """ ;
+        sh:severity sh:Warning ;
+        sh:message "The Sign-Off Phase SHOULD list the Responsible Project (sourceOrganization) as an object" ;
+    ].
+
+
+five-safes-crate:SignOffPhaseEndTime
+    a sh:NodeShape ;
+    sh:description "Sign Off end time check" ;
+
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:select """
+            PREFIX schema: <http://schema.org/>
+            PREFIX shp:    <https://w3id.org/shp#>
+            SELECT ?this
+            WHERE {
+                ?this schema:additionalType shp:SignOff ;
+                        schema:actionStatus ?status .
+                FILTER(?status IN (
+                    "http://schema.org/CompletedActionStatus",
+                    "http://schema.org/FailedActionStatus"
+                ))
+            }
+        """ ;
+    ] ;
+
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "EndTime" ;
+        sh:path schema:endTime ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:pattern "^[0-9]{4}-[0-9]{2}-[0-9]{2}[Tt][0-9]{2}:[0-9]{2}:[0-9]{2}([.|,][0-9]+)?(Z|z|[+-][0-9]{2}:[0-9]{2})$" ;
+        sh:severity sh:Warning ;
+        sh:description "Sign Off object SHOULD have endTime property if action completed or failed. This must follow ISO-8601 syntax" ;
+        sh:message "Sign Off object SHOULD have endTime property if action completed or failed. This must follow ISO-8601 syntax" ;
+    ] .

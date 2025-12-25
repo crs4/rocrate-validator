@@ -31,7 +31,7 @@ ro-crate:LicenseOptionalAllowedValues a sh:NodeShape ;
         sh:message """MAY have a URI (eg for Creative Commons or Open Source licenses). 
         MAY, if necessary be a textual description of how the RO-Crate may be used.""" ;
         sh:minCount 1 ;
-        sh:nodeKind sh:Literal ;
+        sh:nodeKind sh:IRIOrLiteral ;
         sh:path schema_org:license ;
         sh:or (
             [ sh:dataType xsd:string ]

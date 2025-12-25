@@ -33,11 +33,11 @@ class ValidROC:
 
     @property
     def rocrate_with_data_entities(self) -> Path:
-        return VALID_CRATES_DATA_PATH / "rocrate_with_data_entities"
+        return VALID_CRATES_DATA_PATH / "rocrate-with-data-entities"
 
     @property
     def rocrate_with_custom_terms(self) -> Path:
-        return VALID_CRATES_DATA_PATH / "rocrate_with_custom_terms"
+        return VALID_CRATES_DATA_PATH / "rocrate-with-custom-terms"
 
     @property
     def wrroc_paper(self) -> Path:
@@ -46,6 +46,29 @@ class ValidROC:
     @property
     def wrroc_paper_long_date(self) -> Path:
         return VALID_CRATES_DATA_PATH / "wrroc-paper-long-date"
+
+    @property
+    def rocrate_with_value_objects(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "rocrate-with-value-objects"
+
+    @property
+    def rocrate_with_relative_root(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "rocrate-relative-root"
+
+    @property
+    def bagit(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "bagit"
+
+    @property
+    def bagit_zip(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "bagit.zip"
+
+    @property
+    def bagit_remote_zip(self) -> str:
+        return (
+            "https://github.com/kikkomep/rocrate-validator/raw/refs/heads/"
+            "feat/configurable-dataroot_issue-100/tests/data/crates/valid/bagit.zip"
+        )
 
     @property
     def workflow_roc(self) -> Path:
@@ -98,6 +121,10 @@ class ValidROC:
     @property
     def five_safes_crate_result(self) -> Path:
         return VALID_CRATES_DATA_PATH / "five-safes-crate-result"
+
+    @property
+    def five_safes_crate_multiple_context(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "five-safes-crate-multiple-context"
 
 
 class InvalidFileDescriptor:
@@ -980,19 +1007,15 @@ class InvalidProvRC:
 
 class Invalid5sROC:
 
-    base_path = INVALID_CRATES_DATA_PATH / "6_five_safes_crate/"
+    base_path = INVALID_CRATES_DATA_PATH / "five_safes_crate/"
 
     @property
-    def funding_project_no_name(self) -> Path:
-        return self.base_path / "funding_project_no_name"
+    def context_multiple_wrong_version(self) -> Path:
+        return self.base_path / "context_multiple_wrong_version"
 
     @property
-    def root_data_entity_no_source_organization(self) -> Path:
-        return self.base_path / "root_data_entity_no_source_organization"
-
-    @property
-    def root_data_entity_source_organization_not_entity(self) -> Path:
-        return self.base_path / "root_data_entity_source_organization_not_entity"
+    def context_single_wrong_version(self) -> Path:
+        return self.base_path / "context_single_wrong_version"
 
 
 class InvalidMultiProfileROC:

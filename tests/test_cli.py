@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import re
+from pathlib import Path
 from unittest.mock import patch
 
 from click.testing import CliRunner
@@ -71,19 +72,21 @@ def test_validate_subcmd_invalid_local_archive_rocrate(cli_runner: CliRunner):
 
 def test_validate_skip_checks_option(cli_runner: CliRunner):
     # Patch the validation service to capture the skip_checks argument
-    called_args = {}
+    called_args = []
+    called_kwargs = {}
 
     def mock_validate(*args, **kwargs):
         nonlocal called_args  # noqa: F824
 
-        for arg in args:
-            if isinstance(arg, dict):
-                called_args.update(arg)
+        logger.warning(f"Mock validate called with args: {args}, kwargs: {kwargs}")
 
-        called_args.update(kwargs)
+        called_args.extend(args)
+        called_kwargs.update(kwargs)
+
         logger.debug(f"Args: {args}")
         logger.debug(f"Kwargs: {kwargs}")
         logger.debug(f"Called args: {called_args}")
+        logger.debug(f"Called kwargs: {called_kwargs}")
 
     with patch('rocrate_validator.cli.commands.validate.services.validate') as mock_validate_rocrate:
         mock_validate_rocrate.return_value = None
@@ -105,7 +108,52 @@ def test_validate_skip_checks_option(cli_runner: CliRunner):
         # because the validation service is mocked and does not return a valid result
         assert result.exit_code == 2
         # Check if 'skip_checks' is in the called arguments
-        assert 'skip_checks' in called_args
-        logger.debug(f"Called args: {called_args}")
+        settings = called_args[0]
+        assert isinstance(settings, dict), "Validation settings should be a dictionary"
+
+        # Check if the skip_checks attribute is not None
+        assert settings["skip_checks"] is not None, "skip_checks should not be None"
+
         # Check if the skip_checks value matches the expected value
-        assert list(skip_checks_1 + skip_checks_2) == called_args['skip_checks']
+        assert list(skip_checks_1 + skip_checks_2) == settings["skip_checks"], \
+            f"Expected skip_checks to be {list(skip_checks_1 + skip_checks_2)}, but got {settings.skip_checks}"
+
+
+def test_validate_with_invalid_profiles_path_dir(cli_runner: CliRunner):
+    # Create a directory with a dummy profile file
+    dummy_profiles_path = "/tmp/dummy_profiles"
+    result = cli_runner.invoke(
+        cli,
+        [
+            "validate",
+            str(ValidROC().wrroc_paper_long_date),
+            "--profiles-path", dummy_profiles_path,
+            "--verbose",
+            "--no-paging"
+        ]
+    )
+    assert result.exit_code == 2
+    # logger.debug(result.output)
+    assert re.search(f"Path '{dummy_profiles_path}' does not exist.", result.output)
+
+
+def test_profiles_list(cli_runner: CliRunner):
+    """
+    Test the list of profiles.
+    """
+    result = cli_runner.invoke(cli, ["profiles", "list", "--no-paging"])
+    # logger.debug("Profiles list output: %s", result.output)
+    assert result.exit_code == 0
+    # assert "Available profiles:" in result.output
+    assert "ro-crate-1.1" in result.output  # Check for a known profile
+
+
+def test_extra_profiles_list(cli_runner: CliRunner, fake_profiles_path: Path):
+    """
+    Test the list of extra profiles.
+    """
+    result = cli_runner.invoke(cli, ["profiles", "--extra-profiles-path", fake_profiles_path, "list", "--no-paging"])
+    # logger.debug("Extra profiles list output: %s", result.output)
+    assert result.exit_code == 0
+    # assert "Available profiles:" in result.output
+    assert "Profile A" in result.output  # Check for a known extra profile

@@ -63,6 +63,9 @@ extensions = [
     'myst_parser',
     'sphinx.ext.mathjax',
     'enum_tools.autoenum',
+    'sphinx.ext.intersphinx',
+    'sphinx.ext.autosectionlabel',
+    'sphinx_copybutton',
 ]
 
 templates_path = ['_templates']

@@ -42,32 +42,33 @@ five-safes-crate:DisclosureObjectHasDescriptiveNameAndIsAssessAction
     ] ;
 
     sh:property [
-        sh:a sh:PropertyShape ;
+        a sh:PropertyShape ;
         sh:name "AssessAction" ;
-        sh:description "DisclosureCheck MUST be a `schema:AssessAction`." ;
+        sh:description "`DisclosureCheck` MUST be a `schema:AssessAction`." ;
         sh:path rdf:type ;
         sh:minCount 1 ;
         sh:hasValue schema:AssessAction;
         sh:severity sh:Violation ;
-        sh:message "DisclosureCheck MUST be a `schema:AssessAction`." ;
+        sh:message "`DisclosureCheck` MUST be a `schema:AssessAction`." ;
     ] ;
 
     sh:property [
-        sh:a sh:PropertyShape ;
+        a sh:PropertyShape ;
         sh:name "name" ;
-        sh:description "DisclosureCheck MUST have a name string of at least 20 characters." ;
+        sh:description "`DisclosureCheck` MUST have a name string of at least 10 characters." ;
+        sh:minCount 1 ;
         sh:path schema:name ;
         sh:datatype xsd:string ;
-        sh:minLength 20 ;
+        sh:minLength 10 ;
         sh:severity sh:Violation ;
-        sh:message "DisclosureCheck MUST have a name string of at least 20 characters." ;
+        sh:message "`DisclosureCheck` MUST have a name string of at least 10 characters." ;
     ] .
 
 
-five-safes-crate:DisclosureObjectHasActionStatus
+five-safes-crate:DisclosureObjectHasActionStatusWithAcceptedValue
     a sh:NodeShape ;
     sh:name "DisclosureCheck" ;
-    sh:description "DisclosureCheck" ;
+    sh:description "`DisclosureCheck` MUST have an actionStatus with an allowed value (see https://schema.org/ActionStatusType)." ;
 
     sh:target [
         a sh:SPARQLTarget ;
@@ -86,7 +87,7 @@ five-safes-crate:DisclosureObjectHasActionStatus
     sh:property [
         a sh:PropertyShape ;
         sh:name "actionStatus" ;
-        sh:description "The value of actionStatus MUST be one of the allowed values." ;
+        sh:description "`DisclosureCheck` MUST have an actionStatus with an allowed value (see https://schema.org/ActionStatusType)." ;
         sh:path schema:actionStatus ;
         sh:in (
             "http://schema.org/PotentialActionStatus"
@@ -95,5 +96,63 @@ five-safes-crate:DisclosureObjectHasActionStatus
             "http://schema.org/FailedActionStatus"
         ) ;
         sh:severity sh:Violation ;
-        sh:message "The value of actionStatus MUST be one of the allowed values." ;
+        sh:message "`DisclosureCheck` MUST have an actionStatus with an allowed value (see https://schema.org/ActionStatusType)." ;
+    ] .
+
+
+five-safes-crate:DisclosureObjectHasCompliantStartTimeFormat
+    a sh:NodeShape ;
+    sh:name "DisclosureCheck" ;
+    sh:description "`DisclosureCheck` --> `startTime` MUST follow the RFC 3339 standard (YYYY-MM-DD'T'hh:mm:ss[.fraction](Z | ±hh:mm))." ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:select """
+            PREFIX schema: <http://schema.org/>
+            PREFIX shp:    <https://w3id.org/shp#>
+
+            SELECT ?this
+            WHERE {
+                ?this schema:additionalType shp:DisclosureCheck ;
+                      schema:startTime ?o
+            }
+        """ ;
+    ] ;
+
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "StartTime" ;
+        sh:path schema:startTime ;
+        sh:minCount 0 ;
+        sh:pattern "^[0-9]{4}-[0-9]{2}-[0-9]{2}[Tt][0-9]{2}:[0-9]{2}:[0-9]{2}([.|,][0-9]+)?(Z|z|[+-][0-9]{2}:[0-9]{2})$" ;
+        sh:severity sh:Violation ;
+        sh:message "`DisclosureCheck` --> `startTime` MUST follow the RFC 3339 standard (YYYY-MM-DD'T'hh:mm:ss[.fraction](Z | ±hh:mm))." ;
+    ] .
+
+    
+five-safes-crate:DisclosureObjectHasCompliantEndTimeFormat
+    a sh:NodeShape ;
+    sh:name "DisclosureCheck" ;
+    sh:description "`DisclosureCheck` --> `endTime` MUST follow the RFC 3339 standard (YYYY-MM-DD'T'hh:mm:ss[.fraction](Z | ±hh:mm))." ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:select """
+            PREFIX schema: <http://schema.org/>
+            PREFIX shp:    <https://w3id.org/shp#>
+
+            SELECT ?this
+            WHERE {
+                ?this schema:additionalType shp:DisclosureCheck ;
+                      schema:endTime ?o
+            }
+        """ ;
+    ] ;
+
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "EndTime" ;
+        sh:path schema:endTime ;
+        sh:minCount 0 ;
+        sh:pattern "^[0-9]{4}-[0-9]{2}-[0-9]{2}[Tt][0-9]{2}:[0-9]{2}:[0-9]{2}([.|,][0-9]+)?(Z|z|[+-][0-9]{2}:[0-9]{2})$" ;
+        sh:severity sh:Violation ;
+        sh:message "`DisclosureCheck` --> `endTime` MUST follow the RFC 3339 standard (YYYY-MM-DD'T'hh:mm:ss[.fraction](Z | ±hh:mm))." ;
     ] .

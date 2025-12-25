@@ -32,7 +32,7 @@ five-safes-crate:RootDataEntityShouldMentionDisclosureObject
     sh:sparql [
         a sh:SPARQLConstraint ;
         sh:name "mentions" ;
-        sh:description "RootDataEntity SHOULD mention a disclosure object." ;
+        sh:description "`RootDataEntity` SHOULD mention a disclosure object." ;
         sh:select """
             PREFIX schema: <http://schema.org/>
             PREFIX shp: <https://w3id.org/shp#>
@@ -46,14 +46,14 @@ five-safes-crate:RootDataEntityShouldMentionDisclosureObject
             }
         """ ;
         sh:severity sh:Warning ;
-        sh:message "RootDataEntity SHOULD mention a disclosure object." ;
+        sh:message "`RootDataEntity` SHOULD mention a disclosure object." ;
     ] .
 
 
 five-safes-crate:DisclosureObjectHasActionStatus
     a sh:NodeShape ;
     sh:name "DisclosureCheck" ;
-    sh:description "DisclosureCheck" ;
+    sh:description "The `DisclosureCheck` SHOULD have `actionStatus` property." ;
 
     sh:target [
         a sh:SPARQLTarget ;
@@ -71,11 +71,11 @@ five-safes-crate:DisclosureObjectHasActionStatus
     sh:property [
         a sh:PropertyShape ;
         sh:name "ActionStatus" ;
-        sh:description "The DisclosureCheck SHOULD have actionStatus property." ;
+        sh:description "The `DisclosureCheck` SHOULD have `actionStatus` property." ;
         sh:path schema:actionStatus ;
         sh:minCount 1 ;
         sh:severity sh:Warning ;
-        sh:message "The DisclosureCheck SHOULD have actionStatus property." ;
+        sh:message "The `DisclosureCheck` SHOULD have `actionStatus` property." ;
     ] .
 
 
@@ -108,8 +108,7 @@ five-safes-crate:DisclosureObjectHasEndTimeIfcompletedOrFailed
         sh:path schema:endTime ;
         sh:minCount 1 ;
         sh:maxCount 1 ;
-        sh:pattern "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(Z|[+-][0-9]{2}:[0-9]{2})$" ;
         sh:severity sh:Warning ;
-        sh:description "Disclosure object SHOULD have endTime property with a valid datetetime if action completed of failed." ;
-        sh:message "Disclosure object SHOULD have endTime property with a valid datetime if action completed of failed." ;
+        sh:description "`DisclosureCheck` SHOULD have the `endTime` property if `actionStatus` is either CompletedActionStatus or FailedActionStatus." ;
+        sh:message "`DisclosureCheck` SHOULD have the `endTime` property if `actionStatus` is either CompletedActionStatus or FailedActionStatus." ;
     ] .

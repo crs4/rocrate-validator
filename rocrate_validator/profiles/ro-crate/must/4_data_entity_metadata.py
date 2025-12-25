@@ -32,6 +32,11 @@ class DataEntityRequiredChecker(PyFunctionCheck):
         """
         Check the presence of the Data Entity in the RO-Crate
         """
+        # Skip the check in metadata-only mode
+        if context.settings.metadata_only:
+            logger.debug("Skipping file descriptor existence check in metadata-only mode")
+            return True
+        # Perform the check
         result = True
         for entity in context.ro_crate.metadata.get_data_entities(exclude_web_data_entities=True):
             assert entity.id is not None, "Entity has no @id"

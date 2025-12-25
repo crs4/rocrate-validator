@@ -362,6 +362,26 @@ def to_camel_case(snake_str: str) -> str:
     return components[0].capitalize() + ''.join(x.title() for x in components[1:])
 
 
+def shorten_path(p: Path) -> str:
+    """"
+    Shorten the path to a relative path if possible, otherwise return the absolute path.
+
+    :param p: The path to shorten
+    :return: The shortened path
+    :raises ValueError: If the path is not a valid Path object
+    """
+    if not isinstance(p, Path):
+        raise ValueError("The path must be a Path or ParseResult object")
+
+    try:
+        cwd = Path.cwd()
+        rel = p.relative_to(cwd)
+        # Use relative path only if it's shorter than absolute
+        return str(rel) if len(str(rel)) < len(str(p)) else str(p)
+    except Exception:
+        return str(p)
+
+
 class HttpRequester:
     """
     A singleton class to handle HTTP requests
@@ -555,20 +575,20 @@ class URI:
         return hash(self._uri)
 
 
-def validate_rocrate_uri(uri: Union[str, URI], silent: bool = False) -> bool:
+def validate_rocrate_uri(uri: Union[str, Path, URI], silent: bool = False) -> bool:
     """
     Validate the RO-Crate URI
 
-    :param uri: The RO-Crate URI
+    :param uri: The RO-Crate URI to validate. Can be a string, Path, or URI object
     :param silent: If True, do not raise an exception
     :return: True if the URI is valid, False otherwise
     """
     try:
         assert uri, "The RO-Crate URI is required"
-        assert isinstance(uri, (str, URI)), "The RO-Crate URI must be a string or URI object"
+        assert isinstance(uri, (str, Path, URI)), "The RO-Crate URI must be a string, Path, or URI object"
         try:
             # parse the value to extract the scheme
-            uri = URI(uri) if isinstance(uri, str) else uri
+            uri = URI(str(uri)) if isinstance(uri, str) or isinstance(uri, Path) else uri
             # check if the URI is a remote resource or local directory or local file
             if not uri.is_remote_resource() and not uri.is_local_directory() and not uri.is_local_file():
                 raise errors.ROCrateInvalidURIError(uri)
