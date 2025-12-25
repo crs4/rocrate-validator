@@ -222,6 +222,7 @@
                 "@id": "https://w3id.org/shp#CheckValue"
             },
             "name": "BagIt checksum of Crate: OK",
+            "startTime": "2023-04-18T12:11:00+01:00",
             "endTime": "2023-04-18T12:11:45+01:00",
             "object": {
                 "@id": "./"
