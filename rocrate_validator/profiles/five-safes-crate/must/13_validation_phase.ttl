@@ -1,0 +1,182 @@
+# Copyright (c) 2025 eScience Lab, The University of Manchester
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+@prefix ro: <./> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+@prefix five-safes-crate: <https://github.com/eScienceLab/rocrate-validator/profiles/five-safes-crate/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema: <http://schema.org/> .
+@prefix purl: <http://purl.org/dc/terms/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix validator: <https://github.com/crs4/rocrate-validator/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+
+five-safes-crate:ValidationCheckObjectHasDescriptiveNameAndIsAssessAction
+    a sh:NodeShape ;
+    sh:name "ValidationCheck" ;
+    sh:description "" ;
+
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:select """
+            PREFIX schema: <http://schema.org/>
+            PREFIX shp:    <https://w3id.org/shp#>
+
+            SELECT ?this
+            WHERE {
+                ?this schema:additionalType shp:ValidationCheck .
+            }
+        """ ;
+    ] ;
+
+    sh:property [
+        sh:path rdf:type ;
+        sh:minCount 1 ;
+        sh:hasValue schema:AssessAction;
+        sh:severity sh:Violation ;
+        sh:message "ValidationCheck MUST be a `schema:AssessAction`." ;
+    ] ;
+
+    sh:property [
+        sh:a sh:PropertyShape ;
+        sh:name "name" ;
+        sh:description "ValidationCheck MUST have a human readable name string." ;
+        sh:path schema:name ;
+        sh:datatype xsd:string ;
+        sh:severity sh:Violation ;
+        sh:message "ValidationCheck MUST have a human readable name string." ;
+    ] .
+
+
+five-safes-crate:ValidationCheckActionStatusMustHaveAllowedValue
+    a sh:NodeShape ;
+    sh:name "ValidationCheck" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:select """
+            PREFIX schema: <http://schema.org/>
+            PREFIX shp:    <https://w3id.org/shp#>
+
+            SELECT ?this
+            WHERE {
+                ?this schema:additionalType shp:ValidationCheck ;
+                      schema:actionStatus ?status .
+            }
+        """ ;
+    ] ;
+
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "actionStatus" ;
+        sh:description "The `actionStatus` of ValidationCheck MUST have an allowed value (see https://schema.org/ActionStatusType)." ;
+        sh:path schema:actionStatus ;
+        sh:in (
+            "http://schema.org/PotentialActionStatus"
+            "http://schema.org/ActiveActionStatus"
+            "http://schema.org/CompletedActionStatus"
+            "http://schema.org/FailedActionStatus"
+        ) ;
+        sh:severity sh:Violation ;
+        sh:message "The `actionStatus` of ValidationCheck MUST have an allowed value (see https://schema.org/ActionStatusType)." ;
+    ] .
+
+
+five-safes-crate:ValidationCheckActionStatusMustHaveAllowedValue
+    a sh:NodeShape ;
+    sh:name "ValidationCheck" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:select """
+            PREFIX schema: <http://schema.org/>
+            PREFIX shp:    <https://w3id.org/shp#>
+
+            SELECT ?this
+            WHERE {
+                ?this schema:additionalType shp:ValidationCheck .
+            }
+        """ ;
+    ] ;
+
+    sh:property [
+        a sh:PropertyShape ;
+        sh:minCount 1 ;
+        sh:name "actionStatus" ;
+        sh:description "actionStatus MUST be either PotentialActionStatus, ActiveActionStatus, CompletedActionStatus, or FailedActionStatus." ;
+        sh:path schema:actionStatus ;
+        sh:in (
+            "http://schema.org/PotentialActionStatus"
+            "http://schema.org/ActiveActionStatus"
+            "http://schema.org/CompletedActionStatus"
+            "http://schema.org/FailedActionStatus"
+        ) ;
+        sh:severity sh:Violation ;
+        sh:message "actionStatus MUST be either PotentialActionStatus, ActiveActionStatus, CompletedActionStatus, or FailedActionStatus." ;
+    ] .
+
+
+five-safes-crate:ValidationCheckStartTimeMUSTFollowISOStandard
+    a sh:NodeShape ;
+    sh:name "ValidationCheck" ;
+    sh:description "" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:select """
+            PREFIX schema: <http://schema.org/>
+            PREFIX shp:    <https://w3id.org/shp#>
+
+            SELECT ?this
+            WHERE {
+                ?this schema:additionalType shp:ValidationCheck .
+            }
+        """ ;
+    ] ;
+
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "StartTime" ;
+        sh:minCount 0;
+        sh:path schema:startTime ;
+        sh:pattern "^[0-9]{4}-[0-9]{2}-[0-9]{2}[Tt][0-9]{2}:[0-9]{2}:[0-9]{2}([.|,][0-9]+)?(Z|z|[+-][0-9]{2}:[0-9]{2})$"  ;
+        sh:severity sh:Violation ;
+        sh:message "ValidationCheck --> `startTime` MUST follows the RFC 3339 standard (YYYY-MM-DD'T'hh:mm:ss[.fraction](Z | ±hh:mm))." ;
+    ] .
+
+
+five-safes-crate:ValidationCheckEndTimeMUSTFollowISOStandard
+    a sh:NodeShape ;
+    sh:name "ValidationCheck" ;
+    sh:description "" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:select """
+            PREFIX schema: <http://schema.org/>
+            PREFIX shp:    <https://w3id.org/shp#>
+
+            SELECT ?this
+            WHERE {
+                ?this schema:additionalType shp:ValidationCheck .
+            }
+        """ ;
+    ] ;
+
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "EndTime" ;
+        sh:minCount 0;
+        sh:path schema:endTime ;
+        sh:pattern "^[0-9]{4}-[0-9]{2}-[0-9]{2}[Tt][0-9]{2}:[0-9]{2}:[0-9]{2}([.|,][0-9]+)?(Z|z|[+-][0-9]{2}:[0-9]{2})$"  ;
+        sh:severity sh:Violation ;
+        sh:message "ValidationCheck --> `endTime` MUST follows the RFC 3339 standard (YYYY-MM-DD'T'hh:mm:ss[.fraction](Z | ±hh:mm))." ;
+    ] .
