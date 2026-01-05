@@ -207,7 +207,6 @@ def test_5src_signoff_phase_no_endtime():
         expected_triggered_requirements=["SignOffPhaseEndTime"],
         expected_triggered_issues=[
             "Sign Off object SHOULD have endTime property if action completed or failed."
-            + " This must follow ISO-8601 syntax"
         ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
@@ -277,7 +276,6 @@ def test_5src_signoff_phase_no_starttime():
         expected_triggered_requirements=["SignOffPhaseStartTime"],
         expected_triggered_issues=[
             "Sign Off object MAY have a startTime property if action is active, completed or failed."
-            + " This must follow ISO-8601 syntax"
         ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
