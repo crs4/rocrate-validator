@@ -22,6 +22,11 @@
 @prefix validator: <https://github.com/crs4/rocrate-validator/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
+
+# to ensure the entity id will be included in any error message,
+# target all entities which have startTime and/or endTime properties using sh:targetSubjectsOf,
+# then we use sh:property to validate the values of those properties.
+# the properties are listed individually so that the property id appears in any error message too
 five-safes-crate:TimeStampFormat
     a sh:NodeShape ;
     sh:name "Timestamp Format" ;
@@ -35,6 +40,7 @@ five-safes-crate:TimeStampFormat
         sh:pattern "^[0-9]{4}-[0-9]{2}-[0-9]{2}[Tt][0-9]{2}:[0-9]{2}:[0-9]{2}([.|,][0-9]+)?(Z|z|[+-][0-9]{2}:[0-9]{2})$" ;
         sh:severity sh:Violation ;
         sh:message "All `startTime` and `endTime` values MUST follow the RFC 3339 standard (YYYY-MM-DD'T'hh:mm:ss[.fraction](Z | ±hh:mm))." ;
+        sh:description "End timestamps MUST follow the RFC 3339 standard." ;
     ] ;
     sh:property [
         a sh:PropertyShape ;
@@ -44,4 +50,5 @@ five-safes-crate:TimeStampFormat
         sh:pattern "^[0-9]{4}-[0-9]{2}-[0-9]{2}[Tt][0-9]{2}:[0-9]{2}:[0-9]{2}([.|,][0-9]+)?(Z|z|[+-][0-9]{2}:[0-9]{2})$" ;
         sh:severity sh:Violation ;
         sh:message "All `startTime` and `endTime` values MUST follow the RFC 3339 standard (YYYY-MM-DD'T'hh:mm:ss[.fraction](Z | ±hh:mm))." ;
+        sh:description "Start timestamps MUST follow the RFC 3339 standard." ;
     ] .
