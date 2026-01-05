@@ -110,9 +110,12 @@ def do_entity_test(
     rocrate_relative_root_path: Optional[str] = None,
     metadata_only: bool = False,
     metadata_dict: Optional[dict] = None,
+    **kwargs,
 ):
     """
-    Shared function to test a RO-Crate entity
+    Shared function to test a RO-Crate entity.
+
+    Additional keyword arguments (kwargs) are passed along to initialise ValidationSettings.
     """
     assert not (
         rocrate_entity_patch and rocrate_entity_mod_sparql
@@ -186,7 +189,8 @@ def do_entity_test(
                     "rocrate_relative_root_path": rocrate_relative_root_path,
                     "metadata_only": metadata_only,
                     "metadata_dict": metadata_dict,
-                }
+                },
+                **kwargs,
             )
         )
         logger.debug("Expected validation result: %s", expected_validation_result)
