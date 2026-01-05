@@ -116,17 +116,8 @@ five-safes-crate:DisclosureObjectHasCompliantStartTimeFormat
                       schema:startTime ?o
             }
         """ ;
-    ] ;
-
-    sh:property [
-        a sh:PropertyShape ;
-        sh:name "StartTime" ;
-        sh:path schema:startTime ;
-        sh:minCount 0 ;
-        sh:pattern "^[0-9]{4}-[0-9]{2}-[0-9]{2}[Tt][0-9]{2}:[0-9]{2}:[0-9]{2}([.|,][0-9]+)?(Z|z|[+-][0-9]{2}:[0-9]{2})$" ;
-        sh:severity sh:Violation ;
-        sh:message "`DisclosureCheck` --> `startTime` MUST follow the RFC 3339 standard (YYYY-MM-DD'T'hh:mm:ss[.fraction](Z | ±hh:mm))." ;
     ] .
+
 
     
 five-safes-crate:DisclosureObjectHasCompliantEndTimeFormat
@@ -145,14 +136,4 @@ five-safes-crate:DisclosureObjectHasCompliantEndTimeFormat
                       schema:endTime ?o
             }
         """ ;
-    ] ;
-
-    sh:property [
-        a sh:PropertyShape ;
-        sh:name "EndTime" ;
-        sh:path schema:endTime ;
-        sh:minCount 0 ;
-        sh:pattern "^[0-9]{4}-[0-9]{2}-[0-9]{2}[Tt][0-9]{2}:[0-9]{2}:[0-9]{2}([.|,][0-9]+)?(Z|z|[+-][0-9]{2}:[0-9]{2})$" ;
-        sh:severity sh:Violation ;
-        sh:message "`DisclosureCheck` --> `endTime` MUST follow the RFC 3339 standard (YYYY-MM-DD'T'hh:mm:ss[.fraction](Z | ±hh:mm))." ;
     ] .
