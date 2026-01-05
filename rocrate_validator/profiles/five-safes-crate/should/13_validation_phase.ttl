@@ -65,23 +65,15 @@ five-safes-crate:ValidationCheckObjectShouldPointToRootDataEntity
         """  ;
     ] ;
 
-    sh:sparql [
-        a sh:SPARQLConstraint ;
+    sh:property [
+        a sh:PropertyShape ;
         sh:name "object" ;
-        sh:select """
-            PREFIX schema: <http://schema.org/> 
-            PREFIX rocrate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> 
-            SELECT $this 
-            WHERE {
-                FILTER NOT EXISTS {
-                    $this schema:object rocrate:RootDataEntity .
-                } 
-            } 
-        """ ;
+        sh:path schema:object ;
+        sh:minCount 1 ;
+        sh:class ro-crate:RootDataEntity ;
         sh:severity sh:Warning ;
         sh:message "`ValidationCheck` --> `object` SHOULD point to the root of the RO-Crate" ;
     ] .
-
 
 five-safes-crate:ValidationCheckInstrumentShouldPointToEntityWithSpecificId
     a sh:NodeShape ;
