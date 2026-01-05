@@ -70,7 +70,7 @@ five-safes-crate:CheckValueObjectShouldPointToRootDataEntity
         sh:name "object" ;
         sh:path schema:object ;
         sh:minCount 1 ;
-        sh:hasValue ro-crate:RootDataEntity ;
+        sh:class ro-crate:RootDataEntity ;
         sh:severity sh:Warning ;
         sh:message "`CheckValue` --> `object` SHOULD point to the root of the RO-Crate" ;
     ] .
