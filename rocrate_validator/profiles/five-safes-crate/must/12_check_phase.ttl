@@ -59,45 +59,6 @@ five-safes-crate:CheckValueObjectHasDescriptiveNameAndIsAssessAction
         sh:message "CheckValue MUST have a human readable name string." ;
     ] .
 
-five-safes-crate:CheckValueStartTimeMustFollowISOStandard
-    a sh:NodeShape ;
-    sh:name "CheckValue" ;
-    sh:description "" ;
-    sh:target [
-        a sh:SPARQLTarget ;
-        sh:select """
-            PREFIX schema: <http://schema.org/>
-            PREFIX shp:    <https://w3id.org/shp#>
-            SELECT ?this
-            WHERE {
-                ?this schema:additionalType shp:CheckValue ;
-                      schema:startTime ?o
-
-            }
-        """  ;
-    ] .
-
-
-
-five-safes-crate:CheckValueEndTimeMustFollowISOStandard
-    a sh:NodeShape ;
-    sh:name "CheckValue" ;
-    sh:description "" ;
-    sh:target [
-        a sh:SPARQLTarget ;
-        sh:select """
-            PREFIX schema: <http://schema.org/>
-            PREFIX shp:    <https://w3id.org/shp#>
-            SELECT ?this
-            WHERE {
-                ?this schema:additionalType shp:CheckValue ;
-                      schema:endTime ?o
-
-            }
-        """  ;
-    ] .
-
-
 five-safes-crate:CheckValueActionStatusMustHaveAllowedValues
     a sh:NodeShape ;
     sh:name "CheckValue" ;

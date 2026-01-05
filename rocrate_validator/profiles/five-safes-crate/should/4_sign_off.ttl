@@ -172,6 +172,6 @@ five-safes-crate:SignOffPhaseEndTime
         sh:minCount 1 ;
         sh:maxCount 1 ;
         sh:severity sh:Warning ;
-        sh:description "Sign Off object SHOULD have endTime property if action completed or failed. This must follow ISO-8601 syntax" ;
-        sh:message "Sign Off object SHOULD have endTime property if action completed or failed. This must follow ISO-8601 syntax" ;
+        sh:description "Sign Off object SHOULD have endTime property if action completed or failed." ;
+        sh:message "Sign Off object SHOULD have endTime property if action completed or failed." ;
     ] .
