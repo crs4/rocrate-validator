@@ -53,6 +53,6 @@ five-safes-crate:SignOffPhaseStartTime
         sh:maxCount 1 ;
         sh:pattern "^[0-9]{4}-[0-9]{2}-[0-9]{2}[Tt][0-9]{2}:[0-9]{2}:[0-9]{2}([.|,][0-9]+)?(Z|z|[+-][0-9]{2}:[0-9]{2})$" ;
         sh:severity sh:Info ;
-        sh:description "Sign Off object MAY have a startTime property if action is active, completed or failed. This must follow ISO-8601 syntax" ;
-        sh:message "Sign Off object MAY have a startTime property if action is active, completed or failed. This must follow ISO-8601 syntax" ;
+        sh:description "Sign Off object MAY have a startTime property if action is active, completed or failed." ;
+        sh:message "Sign Off object MAY have a startTime property if action is active, completed or failed." ;
     ] .

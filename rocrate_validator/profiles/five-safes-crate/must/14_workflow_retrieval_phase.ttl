@@ -41,38 +41,6 @@ five-safes-crate:DownloadActionObjectMUSTHavesDescriptiveName
         sh:message "DownloadAction MUST have a human readable name string." ;
     ] .
 
-five-safes-crate:DownloadActionStartTimeMUSTFollowISOStandard
-    a sh:NodeShape ;
-    sh:name "DownloadAction" ;
-    sh:description "" ;
-    sh:targetClass schema:DownloadAction ;
-
-    sh:property [
-        a sh:PropertyShape ;
-        sh:name "StartTime" ;
-        sh:minCount 0;
-        sh:path schema:startTime ;
-        sh:pattern "^[0-9]{4}-[0-9]{2}-[0-9]{2}[Tt][0-9]{2}:[0-9]{2}:[0-9]{2}([.|,][0-9]+)?(Z|z|[+-][0-9]{2}:[0-9]{2})$"  ;
-        sh:severity sh:Violation ;
-        sh:message "`DownloadAction` --> `startTime` MUST follows the RFC 3339 standard (YYYY-MM-DD'T'hh:mm:ss[.fraction](Z | ±hh:mm))." ;
-    ] .
-
-
-five-safes-crate:DownloadActionEndTimeMUSTFollowISOStandard
-    a sh:NodeShape ;
-    sh:name "DownloadAction" ;
-    sh:description "" ;
-    sh:targetClass schema:DownloadAction ;
-
-    sh:property [
-        a sh:PropertyShape ;
-        sh:name "EndTime" ;
-        sh:minCount 0;
-        sh:path schema:endTime ;
-        sh:pattern "^[0-9]{4}-[0-9]{2}-[0-9]{2}[Tt][0-9]{2}:[0-9]{2}:[0-9]{2}([.|,][0-9]+)?(Z|z|[+-][0-9]{2}:[0-9]{2})$" ;
-        sh:severity sh:Violation ;
-        sh:message "`DownloadAction` --> `endTime` MUST follows the RFC 3339 standard (YYYY-MM-DD'T'hh:mm:ss[.fraction](Z | ±hh:mm))." ;
-    ] .
 
 
 five-safes-crate:WorkflowSameAsAndRootDataEntityMainEntityMUSTBeTheSame

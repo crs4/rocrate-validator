@@ -102,10 +102,10 @@ def test_5src_download_action_start_time_not_iso_standard():
         rocrate_path=ValidROC().five_safes_crate_result,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
-        expected_triggered_requirements=["DownloadAction"],
+        expected_triggered_requirements=["Timestamp Format"],
         expected_triggered_issues=[
             (
-                "`DownloadAction` --> `startTime` MUST follows the RFC 3339 standard "
+                "All `startTime` and `endTime` values MUST follow the RFC 3339 standard "
                 "(YYYY-MM-DD'T'hh:mm:ss[.fraction](Z | ±hh:mm))."
             )
         ],
@@ -135,10 +135,10 @@ def test_5src_check_value_end_time_not_iso_standard():
         rocrate_path=ValidROC().five_safes_crate_result,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
-        expected_triggered_requirements=["DownloadAction"],
+        expected_triggered_requirements=["Timestamp Format"],
         expected_triggered_issues=[
             (
-                "`DownloadAction` --> `endTime` MUST follows the RFC 3339 standard "
+                "All `startTime` and `endTime` values MUST follow the RFC 3339 standard "
                 "(YYYY-MM-DD'T'hh:mm:ss[.fraction](Z | ±hh:mm))."
             )
         ],
@@ -360,6 +360,7 @@ def test_5src_download_action_does_not_have_action_status_property():
 
 
 # ----- MAY fails tests
+
 
 def test_5src_downloaded_workflow_is_not_represented_by_its_own_entity():
     sparql = (

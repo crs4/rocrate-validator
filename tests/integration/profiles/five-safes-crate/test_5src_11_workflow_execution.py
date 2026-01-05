@@ -136,10 +136,10 @@ def test_5src_workflow_object_has_no_properly_formatted_start_time():
         rocrate_path=ValidROC().five_safes_crate_result,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
-        expected_triggered_requirements=["WorkflowExecution"],
+        expected_triggered_requirements=["Timestamp Format"],
         expected_triggered_issues=[
             (
-                "The startTime of the workflow execution object MUST follow the RFC 3339 standard "
+                "All `startTime` and `endTime` values MUST follow the RFC 3339 standard "
                 "(YYYY-MM-DD'T'hh:mm:ss[.fraction](Z | ±hh:mm))."
             )
         ],
@@ -169,10 +169,10 @@ def test_5src_workflow_object_has_no_properly_formatted_end_time():
         rocrate_path=ValidROC().five_safes_crate_result,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
-        expected_triggered_requirements=["WorkflowExecution"],
+        expected_triggered_requirements=["Timestamp Format"],
         expected_triggered_issues=[
             (
-                "The endTime of the workflow execution object MUST follow the RFC 3339 standard "
+                "All `startTime` and `endTime` values MUST follow the RFC 3339 standard "
                 "(YYYY-MM-DD'T'hh:mm:ss[.fraction](Z | ±hh:mm))."
             )
         ],
