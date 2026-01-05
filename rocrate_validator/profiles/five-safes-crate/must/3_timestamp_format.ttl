@@ -26,7 +26,22 @@ five-safes-crate:TimeStampFormat
     a sh:NodeShape ;
     sh:name "Timestamp Format" ;
     sh:description "Timestamps MUST follow the RFC 3339 standard (YYYY-MM-DD'T'hh:mm:ss[.fraction](Z | ±hh:mm))." ;
-    sh:targetObjectsOf schema:startTime, schema:endTime;
-    sh:pattern "^[0-9]{4}-[0-9]{2}-[0-9]{2}[Tt][0-9]{2}:[0-9]{2}:[0-9]{2}([.|,][0-9]+)?(Z|z|[+-][0-9]{2}:[0-9]{2})$" ;
-    sh:severity sh:Violation ;
-    sh:message "All `startTime` and `endTime` values MUST follow the RFC 3339 standard (YYYY-MM-DD'T'hh:mm:ss[.fraction](Z | ±hh:mm))." .
+    sh:targetSubjectsOf schema:startTime, schema:endTime;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "End TimeStamp" ;
+        sh:path schema:endTime ;
+        sh:minCount 0 ;
+        sh:pattern "^[0-9]{4}-[0-9]{2}-[0-9]{2}[Tt][0-9]{2}:[0-9]{2}:[0-9]{2}([.|,][0-9]+)?(Z|z|[+-][0-9]{2}:[0-9]{2})$" ;
+        sh:severity sh:Violation ;
+        sh:message "All `startTime` and `endTime` values MUST follow the RFC 3339 standard (YYYY-MM-DD'T'hh:mm:ss[.fraction](Z | ±hh:mm))." ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Start TimeStamp" ;
+        sh:path schema:startTime ;
+        sh:minCount 0 ;
+        sh:pattern "^[0-9]{4}-[0-9]{2}-[0-9]{2}[Tt][0-9]{2}:[0-9]{2}:[0-9]{2}([.|,][0-9]+)?(Z|z|[+-][0-9]{2}:[0-9]{2})$" ;
+        sh:severity sh:Violation ;
+        sh:message "All `startTime` and `endTime` values MUST follow the RFC 3339 standard (YYYY-MM-DD'T'hh:mm:ss[.fraction](Z | ±hh:mm))." ;
+    ] .
