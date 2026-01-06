@@ -30,7 +30,7 @@ def test_input_does_not_reference_formalparameter():
     """
     Test a Five Safes Crate where an input entity does not reference a
     `bioschemas:FormalParameter using `schema:exampleOfWork`.
-    (We replace tjhe ?object of input --> exampleOfWork  with a literal)
+    (We replace the ?object of input --> exampleOfWork  with a literal)
     """
     sparql = (
         SPARQL_PREFIXES
