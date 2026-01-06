@@ -2,13 +2,13 @@ import json
 
 from rich.console import ConsoleOptions, RenderResult
 
-import rocrate_validator.log as logging
-from rocrate_validator.utils.io_helpers.output import OutputFormatter
-from rocrate_validator.utils.io_helpers.output.console import Console
+from rocrate_validator.utils import log as logging
 from rocrate_validator.models import (AggregatedValidationStatistics,
                                       CustomEncoder, ValidationResult,
                                       ValidationStatistics)
-from rocrate_validator.utils import get_version
+from rocrate_validator.utils.io_helpers.output import OutputFormatter
+from rocrate_validator.utils.io_helpers.output.console import Console
+from rocrate_validator.utils.versioning import get_version
 
 # set up logging
 logger = logging.getLogger(__name__)

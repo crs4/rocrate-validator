@@ -27,14 +27,15 @@ from rich.panel import Panel
 from rich.rule import Rule
 from rich.text import Text
 
-import rocrate_validator.log as logging
-from rocrate_validator.colors import get_severity_color
+from rocrate_validator.utils import log as logging
+from rocrate_validator.utils.io_helpers.colors import get_severity_color
 from rocrate_validator.events import Event, EventType
 from rocrate_validator.utils.io_helpers.output.console import Console
 from rocrate_validator.models import (Severity, ValidationContext,
                                       ValidationResult, ValidationSettings,
                                       ValidationStatistics)
-from rocrate_validator.utils import URI, get_version
+from rocrate_validator.utils.uri import URI
+from rocrate_validator.utils.versioning import get_version
 
 from .progress import ProgressMonitor
 

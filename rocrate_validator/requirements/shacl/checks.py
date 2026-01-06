@@ -16,7 +16,7 @@ import json
 from timeit import default_timer as timer
 from typing import Optional
 
-import rocrate_validator.log as logging
+from rocrate_validator.utils import log as logging
 from rocrate_validator.errors import ROCrateMetadataNotFoundError
 from rocrate_validator.events import EventType
 from rocrate_validator.models import (LevelCollection, Requirement,

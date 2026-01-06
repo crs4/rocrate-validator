@@ -16,7 +16,7 @@ from typing import Optional
 
 from rich.console import Console as BaseConsole
 
-import rocrate_validator.log as logging
+from rocrate_validator.utils import log as logging
 
 from . import BaseOutputFormatter, OutputFormatter
 

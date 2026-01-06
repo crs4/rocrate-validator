@@ -13,7 +13,7 @@
 # limitations under the License.
 
 def get_version():
-    from rocrate_validator.utils import get_version
+    from rocrate_validator.utils.versioning import get_version
     return get_version()
 
 

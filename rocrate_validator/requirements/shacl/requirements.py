@@ -17,7 +17,7 @@ from typing import Optional
 
 from rdflib import RDF
 
-import rocrate_validator.log as logging
+from rocrate_validator.utils import log as logging
 from rocrate_validator.constants import VALIDATOR_NS
 from rocrate_validator.models import (Profile, Requirement, RequirementCheck,
                                       RequirementLevel, RequirementLoader)

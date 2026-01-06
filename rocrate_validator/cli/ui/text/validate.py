@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from typing import Any, Callable, Optional
 
-import rocrate_validator.log as logging
+from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.io_helpers.output.console import Console
 from rocrate_validator.utils.io_helpers.output.pager import SystemPager
 from rocrate_validator.utils.io_helpers.output.text import TextOutputFormatter

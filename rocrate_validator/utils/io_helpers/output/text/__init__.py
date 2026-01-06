@@ -18,7 +18,7 @@ from typing import Any, Optional
 
 from rich.console import Console, ConsoleOptions, RenderResult
 
-import rocrate_validator.log as logging
+from rocrate_validator.utils import log as logging
 from rocrate_validator.models import ValidationResult, ValidationStatistics
 
 from .. import BaseOutputFormatter

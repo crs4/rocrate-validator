@@ -21,7 +21,7 @@ from typing import Optional, Union
 from rdflib import RDF, BNode, Graph, Namespace
 from rdflib.term import Node
 
-import rocrate_validator.log as logging
+from rocrate_validator.utils import log as logging
 from rocrate_validator.constants import RDF_SYNTAX_NS, SHACL_NS
 from rocrate_validator.errors import BadSyntaxError
 from rocrate_validator.models import Severity

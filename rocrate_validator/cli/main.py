@@ -16,11 +16,11 @@ import sys
 
 import rich_click as click
 
-import rocrate_validator.log as logging
+from rocrate_validator.utils import log as logging
 from rocrate_validator.cli.utils import running_in_jupyter
 from rocrate_validator.utils.io_helpers.output.console import Console
 from rocrate_validator.utils.io_helpers.output.pager import SystemPager
-from rocrate_validator.utils import get_version
+from rocrate_validator.utils.versioning import get_version
 
 # set up logging
 logger = logging.getLogger(__name__)

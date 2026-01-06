@@ -14,7 +14,7 @@
 
 import os
 
-import rocrate_validator.log as logging
+from rocrate_validator.utils import log as logging
 
 # set up logging
 logger = logging.getLogger(__name__)

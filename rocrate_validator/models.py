@@ -31,7 +31,7 @@ from urllib.error import HTTPError
 import enum_tools
 from rdflib import RDF, RDFS, Graph, Namespace, URIRef
 
-import rocrate_validator.log as logging
+from rocrate_validator.utils import log as logging
 from rocrate_validator import __version__
 from rocrate_validator.constants import (DEFAULT_ONTOLOGY_FILE,
                                          DEFAULT_PROFILE_IDENTIFIER,
@@ -48,9 +48,11 @@ from rocrate_validator.errors import (DuplicateRequirementCheck,
                                       ROCrateMetadataNotFoundError)
 from rocrate_validator.events import Event, EventType, Publisher, Subscriber
 from rocrate_validator.rocrate import ROCrate
-from rocrate_validator.utils import (URI, MapIndex, MultiIndexMap,
-                                     get_profiles_path,
-                                     get_requirement_name_from_file)
+from rocrate_validator.utils.collections import (MapIndex)
+from rocrate_validator.utils.paths import get_profiles_path
+from rocrate_validator.utils.python_helpers import get_requirement_name_from_file
+from rocrate_validator.utils.uri import URI
+from rocrate_validator.utils.collections import MultiIndexMap
 
 # set the default profiles path
 DEFAULT_PROFILES_PATH = get_profiles_path()

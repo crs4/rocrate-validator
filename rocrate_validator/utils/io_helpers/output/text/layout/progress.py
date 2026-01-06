@@ -17,7 +17,7 @@ from typing import Optional
 
 from rich.progress import BarColumn, Progress, TextColumn, TimeElapsedColumn
 
-import rocrate_validator.log as logging
+from rocrate_validator.utils import log as logging
 from rocrate_validator.events import Event, EventType, Subscriber
 from rocrate_validator.models import ValidationContext, ValidationStatistics
 

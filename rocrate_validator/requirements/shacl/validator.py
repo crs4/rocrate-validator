@@ -23,7 +23,7 @@ from pyshacl.pytypes import GraphLike
 from rdflib import BNode, Graph
 from rdflib.term import Node, URIRef
 
-import rocrate_validator.log as logging
+from rocrate_validator.utils import log as logging
 from rocrate_validator.constants import (DEFAULT_ONTOLOGY_FILE,
                                          RDF_SERIALIZATION_FORMATS,
                                          RDF_SERIALIZATION_FORMATS_TYPES,

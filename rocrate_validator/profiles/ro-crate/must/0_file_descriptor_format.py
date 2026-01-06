@@ -14,11 +14,11 @@
 
 from typing import Any
 
-import rocrate_validator.log as logging
+from rocrate_validator.utils import log as logging
 from rocrate_validator.models import ValidationContext
 from rocrate_validator.requirements.python import (PyFunctionCheck, check,
                                                    requirement)
-from rocrate_validator.utils import HttpRequester
+from rocrate_validator.utils.http import HttpRequester
 
 # set up logging
 logger = logging.getLogger(__name__)

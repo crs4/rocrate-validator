@@ -21,16 +21,17 @@ from rich.padding import Padding
 from rich.panel import Panel
 from rich.table import Table
 
-import rocrate_validator.log as logging
 from rocrate_validator import services
 from rocrate_validator.cli.commands.errors import handle_error
 from rocrate_validator.cli.main import cli, click
-from rocrate_validator.colors import get_severity_color
 from rocrate_validator.constants import DEFAULT_PROFILE_IDENTIFIER
-from rocrate_validator.utils.io_helpers.output.text.layout.report import get_app_header_rule
 from rocrate_validator.models import (LevelCollection, RequirementLevel,
                                       Severity)
-from rocrate_validator.utils import get_profiles_path, shorten_path
+from rocrate_validator.utils import log as logging
+from rocrate_validator.utils.io_helpers.colors import get_severity_color
+from rocrate_validator.utils.io_helpers.output.text.layout.report import \
+    get_app_header_rule
+from rocrate_validator.utils.paths import get_profiles_path, shorten_path
 
 # set the default profiles path
 DEFAULT_PROFILES_PATH = get_profiles_path()

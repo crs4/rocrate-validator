@@ -17,7 +17,7 @@ import shutil
 import tempfile
 from pathlib import Path
 
-from rocrate_validator import log as logging
+from rocrate_validator.utils import log as logging
 from rocrate_validator.models import ValidationSettings
 from rocrate_validator.rocrate import ROCrateMetadata
 from rocrate_validator.services import detect_profiles, get_profiles, validate

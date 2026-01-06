@@ -19,7 +19,7 @@ from typing import Any, Optional, Union
 
 import enum_tools
 
-import rocrate_validator.log as logging
+from rocrate_validator.utils import log as logging
 
 # Set up logging
 logger = logging.getLogger(__name__)

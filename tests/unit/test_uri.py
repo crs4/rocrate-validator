@@ -17,8 +17,9 @@ import unittest
 import pytest
 
 from rocrate_validator.errors import ROCrateInvalidURIError
-from rocrate_validator.utils import URI, validate_rocrate_uri
+from rocrate_validator.utils.uri import validate_rocrate_uri
 from tests.ro_crates import ValidROC
+from rocrate_validator.utils.uri import URI
 
 
 def test_valid_url():

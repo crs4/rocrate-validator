@@ -23,7 +23,7 @@ import rich_click as click
 from rich.padding import Padding
 from rich.rule import Rule
 
-import rocrate_validator.log as logging
+from rocrate_validator.utils import log as logging
 from rocrate_validator import services
 from rocrate_validator.cli.commands.errors import handle_error
 from rocrate_validator.cli.main import cli
@@ -37,7 +37,8 @@ from rocrate_validator.utils.io_helpers.output.text.layout.report import (
     LiveTextProgressLayout, get_app_header_rule)
 from rocrate_validator.models import (Severity, ValidationResult,
                                       ValidationSettings)
-from rocrate_validator.utils import get_profiles_path, validate_rocrate_uri
+from rocrate_validator.utils.uri import validate_rocrate_uri
+from rocrate_validator.utils.paths import get_profiles_path
 
 # from rich.markdown import Markdown
 # from rich.table import Table

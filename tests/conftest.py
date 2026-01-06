@@ -18,7 +18,7 @@ import os
 
 from pytest import fixture
 
-import rocrate_validator.log as logging
+from rocrate_validator.utils import log as logging
 from rocrate_validator import services
 
 # set up logging

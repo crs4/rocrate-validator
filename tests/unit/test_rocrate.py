@@ -16,7 +16,7 @@ from pathlib import Path
 
 import pytest
 
-from rocrate_validator import log as logging
+from rocrate_validator.utils import log as logging
 from rocrate_validator.errors import ROCrateInvalidURIError
 from rocrate_validator.rocrate import (BagitROCrate, ROCrate,
                                        ROCrateBagitLocalFolder,
