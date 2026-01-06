@@ -42,7 +42,7 @@ CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 logger = logging.getLogger(__name__)
 
 # Read the pyproject.toml file
-config = toml.load(Path(CURRENT_DIR).parent / "pyproject.toml")
+config = toml.load(Path(CURRENT_DIR).parent / "../pyproject.toml")
 
 
 def run_git_command(command: list[str]) -> Optional[str]:
@@ -198,7 +198,7 @@ def get_profiles_path() -> Path:
 
     :return: The path to the profiles directory
     """
-    return Path(CURRENT_DIR) / constants.DEFAULT_PROFILES_PATH
+    return Path(CURRENT_DIR).parent / constants.DEFAULT_PROFILES_PATH
 
 
 def get_format_extension(serialization_format: constants.RDF_SERIALIZATION_FORMATS_TYPES) -> str:
