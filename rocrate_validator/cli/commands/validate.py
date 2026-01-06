@@ -29,11 +29,11 @@ from rocrate_validator.cli.commands.errors import handle_error
 from rocrate_validator.cli.main import cli
 from rocrate_validator.cli.ui.text.validate import ValidationCommandView
 from rocrate_validator.errors import ROCrateInvalidURIError
-from rocrate_validator.utils.rocv_io.input import get_single_char, multiple_choice
-from rocrate_validator.utils.rocv_io.output.console import Console
-from rocrate_validator.utils.rocv_io.output.json import JSONOutputFormatter
-from rocrate_validator.utils.rocv_io.output.text import TextOutputFormatter
-from rocrate_validator.utils.rocv_io.output.text.layout.report import (
+from rocrate_validator.utils.io_helpers.input import get_single_char, multiple_choice
+from rocrate_validator.utils.io_helpers.output.console import Console
+from rocrate_validator.utils.io_helpers.output.json import JSONOutputFormatter
+from rocrate_validator.utils.io_helpers.output.text import TextOutputFormatter
+from rocrate_validator.utils.io_helpers.output.text.layout.report import (
     LiveTextProgressLayout, get_app_header_rule)
 from rocrate_validator.models import (Severity, ValidationResult,
                                       ValidationSettings)

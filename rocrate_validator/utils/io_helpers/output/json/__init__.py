@@ -2,8 +2,8 @@
 from typing import Any, Optional
 
 import rocrate_validator.log as logging
-from rocrate_validator.utils.rocv_io.output import BaseOutputFormatter
-from rocrate_validator.utils.rocv_io.output.json.formatters import (
+from rocrate_validator.utils.io_helpers.output import BaseOutputFormatter
+from rocrate_validator.utils.io_helpers.output.json.formatters import (
     ValidationResultJSONOutputFormatter, ValidationResultsJSONOutputFormatter,
     ValidationStatisticsJSONOutputFormatter)
 from rocrate_validator.models import ValidationResult, ValidationStatistics
