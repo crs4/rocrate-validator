@@ -18,8 +18,8 @@ import rich_click as click
 
 import rocrate_validator.log as logging
 from rocrate_validator.cli.utils import running_in_jupyter
-from rocrate_validator.rocv_io.output.console import Console
-from rocrate_validator.rocv_io.output.pager import SystemPager
+from rocrate_validator.utils.rocv_io.output.console import Console
+from rocrate_validator.utils.rocv_io.output.pager import SystemPager
 from rocrate_validator.utils import get_version
 
 # set up logging

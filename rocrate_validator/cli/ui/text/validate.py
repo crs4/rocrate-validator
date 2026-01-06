@@ -17,10 +17,10 @@ from __future__ import annotations
 from typing import Any, Callable, Optional
 
 import rocrate_validator.log as logging
-from rocrate_validator.rocv_io.output.console import Console
-from rocrate_validator.rocv_io.output.pager import SystemPager
-from rocrate_validator.rocv_io.output.text import TextOutputFormatter
-from rocrate_validator.rocv_io.output.text.layout.report import ValidationReportLayout
+from rocrate_validator.utils.rocv_io.output.console import Console
+from rocrate_validator.utils.rocv_io.output.pager import SystemPager
+from rocrate_validator.utils.rocv_io.output.text import TextOutputFormatter
+from rocrate_validator.utils.rocv_io.output.text.layout.report import ValidationReportLayout
 from rocrate_validator.models import (ValidationResult, ValidationSettings,
                                       ValidationStatistics)
 
