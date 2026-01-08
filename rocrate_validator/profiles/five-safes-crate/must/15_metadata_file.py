@@ -14,7 +14,7 @@
 
 import re
 
-import rocrate_validator.log as logging
+import rocrate_validator.utils.log as logging
 from rocrate_validator.models import Severity, ValidationContext
 from rocrate_validator.requirements.python import PyFunctionCheck, check, requirement
 
