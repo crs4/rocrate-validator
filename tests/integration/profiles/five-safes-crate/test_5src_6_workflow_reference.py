@@ -157,7 +157,7 @@ def test_5src_main_entity_has_two_conformsto():
     """
     Test a Five Safes Crate where the mainEntity -> purl:conformsTo has two
     objects.
-    (we add second obcject to mainEntity -> purl:conformsTo to violate maxCount 1).
+    (we add second object to mainEntity -> purl:conformsTo to violate maxCount 1).
     """
     sparql = (
         SPARQL_PREFIXES
