@@ -1,4 +1,4 @@
-# Copyright (c) 2024-2025 CRS4
+# Copyright (c) 2024-2026 CRS4
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,9 +19,9 @@ from unittest.mock import patch
 from click.testing import CliRunner
 from pytest import fixture
 
-from rocrate_validator import log as logging
+from rocrate_validator.utils import log as logging
 from rocrate_validator.cli.main import cli
-from rocrate_validator.utils import get_version
+from rocrate_validator.utils.versioning import get_version
 from tests.conftest import SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER
 from tests.ro_crates import InvalidFileDescriptor, ValidROC
 

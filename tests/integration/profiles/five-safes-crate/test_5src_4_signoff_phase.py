@@ -1,4 +1,5 @@
 # Copyright (c) 2024-2025 CRS4
+# Copyright (c) 2025-2026 eScience Lab, The University of Manchester
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -112,9 +113,7 @@ def test_5src_signoff_phase_wrong_type():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["SignOff"],
-        expected_triggered_issues=[
-            "Sign Off phase MUST be a `schema:AssessAction`."
-        ],
+        expected_triggered_issues=["Sign Off phase MUST be a `schema:AssessAction`."],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
     )
@@ -209,7 +208,6 @@ def test_5src_signoff_phase_no_endtime():
         expected_triggered_requirements=["SignOffPhaseEndTime"],
         expected_triggered_issues=[
             "Sign Off object SHOULD have endTime property if action completed or failed."
-            + " This must follow ISO-8601 syntax"
         ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
@@ -242,10 +240,12 @@ def test_5src_signoff_phase_malformed_endtime():
         rocrate_path=ValidROC().five_safes_crate_result,
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
-        expected_triggered_requirements=["SignOffPhaseEndTime"],
+        expected_triggered_requirements=["Timestamp Format"],
         expected_triggered_issues=[
-            "Sign Off object SHOULD have endTime property if action completed or failed."
-            + " This must follow ISO-8601 syntax"
+            (
+                "All `startTime` and `endTime` values MUST follow the RFC 3339 standard "
+                "(YYYY-MM-DD'T'hh:mm:ss[.fraction](Z | ±hh:mm))."
+            )
         ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
@@ -277,7 +277,6 @@ def test_5src_signoff_phase_no_starttime():
         expected_triggered_requirements=["SignOffPhaseStartTime"],
         expected_triggered_issues=[
             "Sign Off object MAY have a startTime property if action is active, completed or failed."
-            + " This must follow ISO-8601 syntax"
         ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
@@ -310,10 +309,12 @@ def test_5src_signoff_phase_malformed_starttime():
         rocrate_path=ValidROC().five_safes_crate_result,
         requirement_severity=Severity.OPTIONAL,
         expected_validation_result=False,
-        expected_triggered_requirements=["SignOffPhaseStartTime"],
+        expected_triggered_requirements=["Timestamp Format"],
         expected_triggered_issues=[
-            "Sign Off object MAY have a startTime property if action is active, completed or failed."
-            + " This must follow ISO-8601 syntax"
+            (
+                "All `startTime` and `endTime` values MUST follow the RFC 3339 standard "
+                "(YYYY-MM-DD'T'hh:mm:ss[.fraction](Z | ±hh:mm))."
+            )
         ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
@@ -343,9 +344,7 @@ def test_5src_signoff_phase_no_actionstatus():
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
         expected_triggered_requirements=["SignOffPhaseProperties"],
-        expected_triggered_issues=[
-            "The Sign-Off Phase SHOULD have an actionStatus"
-        ],
+        expected_triggered_issues=["The Sign-Off Phase SHOULD have an actionStatus"],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
     )
@@ -374,9 +373,7 @@ def test_5src_signoff_phase_no_agent():
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
         expected_triggered_requirements=["SignOffPhaseProperties"],
-        expected_triggered_issues=[
-            "The Sign-Off Phase SHOULD have an agent"
-        ],
+        expected_triggered_issues=["The Sign-Off Phase SHOULD have an agent"],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
     )

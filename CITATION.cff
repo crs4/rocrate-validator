@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using these metadata."
+title: "rocrate-validator"
+abstract: "A Python package to validate RO-Crates."
+type: software
+authors:
+  - family-names: "Piras"
+    given-names: "Marco Enrico"
+    orcid: https://orcid.org/0000-0002-5207-0030
+  - family-names: "Leo"
+    given-names: "Simone"
+    orcid: https://orcid.org/0000-0001-8271-5429
+  - family-names: "Pireddu"
+    given-names: "Luca"
+    orcid: https://orcid.org/0000-0002-4663-5613
+  - family-names: Chadwick
+    given-names: Eli
+    orcid: https://orcid.org/0000-0002-0035-6475
+  - family-names: Bauer
+    given-names: Daniel
+    orcid: https://orcid.org/0000-0001-9447-460X
+repository-code: "https://github.com/crs4/rocrate-validator"
+url: "https://github.com/crs4/rocrate-validator"
+keywords:
+  - "RO-Crate"
+  - "validation"
+  - "metadata"
+  - "FAIR"
+license: "Apache-2.0"

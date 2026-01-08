@@ -1,0 +1,960 @@
+{
+    "@context": [
+        "https://w3id.org/ro/crate/1.2-DRAFT/context",
+        {
+            "@base": "https://www.researchobject.org/workflow-run-crate/profiles/0.5/process_run_crate/"
+        }
+    ],
+    "@graph": [
+        {
+            "@id": "ro-crate-metadata.json",
+            "@type": "CreativeWork",
+            "license": { "@id": "http://spdx.org/licenses/CC0-1.0" },
+            "conformsTo": { "@id": "https://w3id.org/ro/crate/1.2-DRAFT" },
+            "about": { "@id": "https://w3id.org/ro/wfrun/process/0.5" }
+        },
+        {
+            "@id": "ro-crate-preview.html",
+            "@type": "CreativeWork",
+            "license": { "@id": "http://spdx.org/licenses/CC0-1.0" },
+            "isBasedOn": { "@id": "ro-crate-metadata.json" },
+            "name": "RO-Crate preview of the Process Run Crate profile",
+            "encodingFormat": "text/html",
+            "about": "https://w3id.org/ro/wfrun/process/0.5"
+        },
+        {
+            "@id": "https://w3id.org/ro/wfrun/process/0.5",
+            "@type": ["Dataset", "Profile"],
+            "isProfileOf": [{ "@id": "https://w3id.org/ro/crate/1.2-DRAFT" }],
+            "identifier": "https://w3id.org/ro/wfrun/process/0.5",
+            "name": "Process Run Crate profile",
+            "version": "0.5",
+            "license": {
+                "@id": "https://www.apache.org/licenses/LICENSE-2.0"
+            },
+            "author": [
+                { "@id": "https://www.researchobject.org/workflow-run-crate/" }
+            ],
+            "hasPart": [
+                { "@id": "index.html" },
+                { "@id": "example1/" },
+                {
+                    "@id": "https://www.researchobject.org/workflow-run-crate-paper/mapping/"
+                },
+                { "@id": "https://w3id.org/ro/terms/workflow-run#" },
+                { "@id": "https://w3id.org/ro/terms/workflow-run" },
+                { "@id": "https://gxy.io/GTN:T00343" },
+                { "@id": "https://pypi.org/project/runcrate/" },
+                { "@id": "http://schema.org/SoftwareApplication" },
+                { "@id": "http://schema.org/SoftwareSourceCode" },
+                { "@id": "https://bioschemas.org/ComputationalWorkflow" },
+                { "@id": "http://schema.org/CreateAction" },
+                { "@id": "http://schema.org/name" },
+                { "@id": "http://schema.org/description" },
+                { "@id": "http://schema.org/endTime" },
+                { "@id": "http://schema.org/startTime" },
+                { "@id": "http://schema.org/instrument" },
+                { "@id": "http://schema.org/agent" },
+                { "@id": "http://schema.org/Person" },
+                { "@id": "http://schema.org/Organization" },
+                { "@id": "http://schema.org/object" },
+                { "@id": "http://schema.org/result" },
+                { "@id": "http://schema.org/actionStatus" },
+                { "@id": "http://schema.org/error" },
+                { "@id": "http://schema.org/CompletedActionStatus" },
+                { "@id": "http://schema.org/FailedActionStatus" },
+                { "@id": "http://schema.org/MediaObject" },
+                { "@id": "http://schema.org/Dataset" },
+                { "@id": "http://schema.org/Collection" },
+                { "@id": "http://schema.org/CreativeWork" },
+                { "@id": "http://schema.org/PropertyValue" },
+                { "@id": "http://schema.org/alternateName" },
+                { "@id": "http://schema.org/mainEntity" }
+            ],
+            "hasResource": [
+                { "@id": "#hasSpecification" },
+                { "@id": "#hasConstraints" },
+                { "@id": "#hasVocabulary" },
+                { "@id": "#hasGuidance" },
+                { "@id": "#hasExample" },
+                { "@id": "#hasMappingToProv" }
+            ],
+            "citation": { "@id": "https://doi.org/10.48550/arXiv.2312.07852" }
+        },
+        {
+            "@id": "https://www.researchobject.org/workflow-run-crate/",
+            "@type": "Project",
+            "name": "Workflow Run Crate task force",
+            "member": [
+                { "@id": "https://orcid.org/0000-0001-8271-5429" },
+                { "@id": "https://orcid.org/0000-0003-4929-1219" },
+                { "@id": "https://orcid.org/0000-0001-9842-9718" },
+                { "@id": "https://orcid.org/0000-0002-5432-2748" },
+                { "@id": "https://orcid.org/0000-0002-4806-5140" },
+                { "@id": "https://orcid.org/0000-0003-3156-2105" },
+                { "@id": "https://orcid.org/0000-0002-6190-122X" },
+                { "@id": "https://orcid.org/0000-0003-0454-7145" },
+                { "@id": "https://orcid.org/0000-0002-8940-4946" },
+                { "@id": "https://orcid.org/0000-0003-0606-2512" },
+                { "@id": "https://orcid.org/0000-0002-3468-0652" },
+                { "@id": "https://orcid.org/0000-0002-2961-9670" },
+                { "@id": "https://orcid.org/0000-0003-3986-0510" },
+                { "@id": "https://orcid.org/0000-0002-0003-2024" },
+                { "@id": "https://orcid.org/0000-0002-9464-6640" },
+                { "@id": "https://orcid.org/0000-0001-5845-8880" },
+                { "@id": "https://orcid.org/0000-0003-4894-4660" },
+                { "@id": "https://orcid.org/0000-0002-4405-6802" },
+                { "@id": "https://orcid.org/0000-0001-9290-2017" },
+                { "@id": "https://orcid.org/0000-0003-0617-9219" },
+                { "@id": "https://orcid.org/0000-0001-9228-2882" },
+                { "@id": "https://orcid.org/0000-0003-3898-9451" },
+                { "@id": "https://orcid.org/0000-0003-3777-5945" },
+                { "@id": "https://orcid.org/0000-0003-2765-0049" },
+                { "@id": "https://orcid.org/0000-0001-9818-9320" },
+                { "@id": "https://orcid.org/0000-0002-8122-9522" },
+                { "@id": "https://orcid.org/0000-0002-8330-4071" },
+                { "@id": "https://orcid.org/0000-0003-4073-7456" },
+                { "@id": "https://orcid.org/0000-0003-1361-7301" },
+                { "@id": "https://orcid.org/0000-0002-5358-616X" },
+                { "@id": "https://orcid.org/0000-0002-5477-287X" },
+                { "@id": "https://orcid.org/0000-0001-8250-4074" },
+                { "@id": "https://orcid.org/0000-0003-0902-0086" },
+                { "@id": "https://orcid.org/0000-0001-8172-8981" },
+                { "@id": "https://orcid.org/0000-0001-6740-9212" },
+                { "@id": "https://orcid.org/0000-0001-5411-356X" },
+                { "@id": "https://orcid.org/0000-0003-0035-0951" },
+                { "@id": "https://orcid.org/0000-0003-0711-5196" }
+            ],
+            "parentOrganization": {
+                "@id": "https://www.researchobject.org/ro-crate/community"
+            }
+        },
+        {
+            "@id": "https://www.researchobject.org/ro-crate/community",
+            "@type": "Project",
+            "name": "RO-Crate Community"
+        },
+        {
+            "@id": "index.html",
+            "@type": "File",
+            "name": "Process Run Crate (HTML)",
+            "encodingFormat": [
+                "text/html",
+                { "@id": "https://www.nationalarchives.gov.uk/PRONOM/fmt/471" }
+            ]
+        },
+        {
+            "@id": "index.html#requirements",
+            "@type": "WebPageElement",
+            "name": "Process Run Crate requirements"
+        },
+        {
+            "@id": "example1/",
+            "@type": "Dataset",
+            "name": "Example Process Run Crate",
+            "conformsTo": [
+                { "@id": "https://w3id.org/ro/crate" },
+                { "@id": "https://w3id.org/ro/wfrun/process/0.4" }
+            ],
+            "subjectOf": [
+                { "@id": "example1/ro-crate-metadata.json" },
+                { "@id": "example1/ro-crate-preview.html" }
+            ]
+        },
+        {
+            "@id": "example1/ro-crate-metadata.json",
+            "@type": "CreativeWork",
+            "encodingFormat": "application/ld+json"
+        },
+        {
+            "@id": "example1/ro-crate-preview.html",
+            "@type": "CreativeWork",
+            "encodingFormat": "text/html"
+        },
+        {
+            "@id": "https://w3id.org/ro/terms/workflow-run",
+            "@type": "File",
+            "name": "JSON-LD context for workflow-run terms",
+            "contentUrl": "https://www.researchobject.org/ro-terms/workflow-run/context.json",
+            "conformsTo": {
+                "@id": "http://www.w3.org/ns/json-ld#Context"
+            },
+            "encodingFormat": "application/ld+json",
+            "isBasedOn": [
+                {
+                    "@id": "https://w3id.org/ro/crate/1.1/context"
+                },
+                {
+                    "@id": "https://w3id.org/ro/terms/workflow-run#"
+                }
+            ],
+            "license": {
+                "@id": "https://creativecommons.org/publicdomain/zero/1.0/"
+            }
+        },
+        {
+            "@id": "#hasSpecification",
+            "@type": "ResourceDescriptor",
+            "hasRole": {
+                "@id": "http://www.w3.org/ns/dx/prof/role/specification"
+            },
+            "hasArtifact": { "@id": "index.html" }
+        },
+        {
+            "@id": "#hasConstraints",
+            "@type": "ResourceDescriptor",
+            "hasRole": {
+                "@id": "http://www.w3.org/ns/dx/prof/role/constraints"
+            },
+            "hasArtifact": { "@id": "index.html#requirements" }
+        },
+        {
+            "@id": "#hasVocabulary",
+            "@type": "ResourceDescriptor",
+            "hasRole": {
+                "@id": "http://www.w3.org/ns/dx/prof/role/vocabulary"
+            },
+            "hasArtifact": { "@id": "https://w3id.org/ro/terms/workflow-run#" }
+        },
+        {
+            "@id": "#hasGuidance",
+            "@type": "ResourceDescriptor",
+            "hasRole": { "@id": "http://www.w3.org/ns/dx/prof/role/guidance" },
+            "hasArtifact": { "@id": "https://gxy.io/GTN:T00343" }
+        },
+        {
+            "@id": "#hasExample",
+            "@type": "ResourceDescriptor",
+            "hasRole": { "@id": "http://www.w3.org/ns/dx/prof/role/example" },
+            "hasArtifact": { "@id": "example1/" }
+        },
+        {
+            "@id": "#hasMappingToProv",
+            "@type": "ResourceDescriptor",
+            "hasRole": { "@id": "http://www.w3.org/ns/dx/prof/role/mapping" },
+            "hasArtifact": {
+                "@id": "https://www.researchobject.org/workflow-run-crate-paper/mapping/"
+            }
+        },
+        {
+            "@id": "https://www.researchobject.org/workflow-run-crate-paper/mapping/",
+            "@type": "Dataset",
+            "name": "SSSOM mapping from PROV to Workflow Run Crate",
+            "isPartOf": {
+                "@id": "https://w3id.org/ro/doi/10.5281/zenodo.10368989"
+            }
+        },
+        {
+            "@id": "https://w3id.org/ro/doi/10.5281/zenodo.10368989",
+            "@type": "Dataset",
+            "name": "Recording provenance of workflow runs with RO-Crate (RO-Crate and mapping)",
+            "conformsTo": { "@id": "https://w3id.org/ro/crate" },
+            "subjectOf": [
+                {
+                    "@id": "https://www.researchobject.org/workflow-run-crate-paper/ro-crate-metadata.jsonld"
+                },
+                {
+                    "@id": "https://www.researchobject.org/workflow-run-crate-paper/ro-crate-preview.html"
+                }
+            ]
+        },
+        {
+            "@id": "https://www.researchobject.org/workflow-run-crate-paper/ro-crate-metadata.jsonld",
+            "@type": "CreativeWork",
+            "encodingFormat": "application/ld+json"
+        },
+        {
+            "@id": "https://www.researchobject.org/workflow-run-crate-paper/ro-crate-preview.html",
+            "@type": "CreativeWork",
+            "encodingFormat": "text/html"
+        },
+        {
+            "@id": "https://gxy.io/GTN:T00343",
+            "@type": "LearningResource",
+            "name": "Workflow Run RO-Crate Introduction",
+            "author": {
+                "@id": "https://orcid.org/0000-0001-8271-5429"
+            }
+        },
+        {
+            "@id": "https://doi.org/10.48550/arXiv.2312.07852",
+            "@type": "ScholarlyArticle",
+            "name": "Recording provenance of workflow runs with RO-Crate",
+            "author": [
+                {
+                    "@id": "https://orcid.org/0000-0001-8271-5429"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0002-2961-9670"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0003-4929-1219"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0003-0606-2512"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0002-3468-0652"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0002-8940-4946"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0002-0003-2024"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0002-4663-5613"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0003-0454-7145"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0002-4806-5140"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0001-9290-2017"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0002-1119-1792"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0003-3777-5945"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0003-2765-0049"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0002-0309-604X"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0003-0902-0086"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0001-8250-4074"
+                },
+                {
+                    "@id": "https://orcid.org/0000-0001-9842-9718"
+                }
+            ],
+
+            "creditText": "Simone Leo, et al. (2024): Recording provenance of workflow runs with RO-Crate. arXiv:2312.07852"
+        },
+        {
+            "@id": "https://w3id.org/ro/terms/workflow-run#",
+            "@type": "DefinedTermSet",
+            "name": "Namespace for Workflow Run RO-Crate model",
+            "hasDefinedTerm": [
+                {
+                    "@id": "https://w3id.org/ro/terms/workflow-run#ParameterConnection"
+                },
+                {
+                    "@id": "https://w3id.org/ro/terms/workflow-run#ContainerImage"
+                },
+                { "@id": "https://w3id.org/ro/terms/workflow-run#DockerImage" },
+                { "@id": "https://w3id.org/ro/terms/workflow-run#SIFImage" },
+                { "@id": "https://w3id.org/ro/terms/workflow-run#connection" },
+                {
+                    "@id": "https://w3id.org/ro/terms/workflow-run#sourceParameter"
+                },
+                {
+                    "@id": "https://w3id.org/ro/terms/workflow-run#targetParameter"
+                },
+                { "@id": "https://w3id.org/ro/terms/workflow-run#environment" },
+                { "@id": "https://w3id.org/ro/terms/workflow-run#registry" },
+                { "@id": "https://w3id.org/ro/terms/workflow-run#tag" },
+                {
+                    "@id": "https://w3id.org/ro/terms/workflow-run#containerImage"
+                },
+                {
+                    "@id": "https://w3id.org/ro/terms/workflow-run#resourceUsage"
+                },
+                { "@id": "https://w3id.org/ro/terms/workflow-run#md5" },
+                { "@id": "https://w3id.org/ro/terms/workflow-run#sha1" },
+                { "@id": "https://w3id.org/ro/terms/workflow-run#sha256" },
+                { "@id": "https://w3id.org/ro/terms/workflow-run#sha512" }
+            ]
+        },
+
+        {
+            "@id": "https://w3id.org/ro/terms/workflow-run#ParameterConnection",
+            "@type": ["DefinedTerm", "rdfs:Class"],
+            "termCode": "ParameterConnection",
+            "name": "Parameter Connection",
+            "description": "A connection between parameters of different applications"
+        },
+        {
+            "@id": "https://w3id.org/ro/terms/workflow-run#ContainerImage",
+            "@type": ["DefinedTerm", "rdfs:Class"],
+            "termCode": "ContainerImage",
+            "name": "Container Image",
+            "description": "A containerization software container image"
+        },
+        {
+            "@id": "https://w3id.org/ro/terms/workflow-run#DockerImage",
+            "@type": ["DefinedTerm", "rdfs:Class"],
+            "termCode": "DockerImage",
+            "name": "Docker Image",
+            "description": "A docker container image"
+        },
+        {
+            "@id": "https://w3id.org/ro/terms/workflow-run#SIFImage",
+            "@type": ["DefinedTerm", "rdfs:Class"],
+            "termCode": "SIFImage",
+            "name": "SIF Image",
+            "description": "A Singularity Image Format container image"
+        },
+        {
+            "@id": "https://w3id.org/ro/terms/workflow-run#connection",
+            "@type": ["DefinedTerm", "rdf:Property"],
+            "termCode": "connection",
+            "name": "connection",
+            "description": "A parameter connection created by this workflow",
+            "domainIncludes": [
+                { "@id": "https://bioschemas.org/ComputationalWorkflow" },
+                { "@id": "http://schema.org/HowToStep" }
+            ],
+            "rangeIncludes": [
+                {
+                    "@id": "https://w3id.org/ro/terms/workflow-run#ParameterConnection"
+                }
+            ]
+        },
+        {
+            "@id": "https://w3id.org/ro/terms/workflow-run#sourceParameter",
+            "@type": ["DefinedTerm", "rdf:Property"],
+            "termCode": "sourceParameter",
+            "name": "source parameter",
+            "description": "The source (upstream) parameter",
+            "domainIncludes": [
+                {
+                    "@id": "https://w3id.org/ro/terms/workflow-run#ParameterConnection"
+                }
+            ],
+            "rangeIncludes": [
+                { "@id": "https://bioschemas.org/FormalParameter" }
+            ]
+        },
+        {
+            "@id": "https://w3id.org/ro/terms/workflow-run#targetParameter",
+            "@type": ["DefinedTerm", "rdf:Property"],
+            "termCode": "targetParameter",
+            "name": "target parameter",
+            "description": "The target (upstream) parameter",
+            "domainIncludes": [
+                {
+                    "@id": "https://w3id.org/ro/terms/workflow-run#ParameterConnection"
+                }
+            ],
+            "rangeIncludes": [
+                { "@id": "https://bioschemas.org/FormalParameter" }
+            ]
+        },
+        {
+            "@id": "https://w3id.org/ro/terms/workflow-run#environment",
+            "@type": ["DefinedTerm", "rdf:Property"],
+            "termCode": "environment",
+            "name": "environment",
+            "description": "environment variables used by the application",
+            "domainIncludes": [
+                { "@id": "http://schema.org/SoftwareApplication" },
+                { "@id": "http://schema.org/SoftwareSourceCode" },
+                { "@id": "http://schema.org/CreateAction" },
+                { "@id": "https://bioschema.org/ComputationalWorkflow" }
+            ],
+            "rangeIncludes": [
+                { "@id": "https://bioschemas.org/FormalParameter" },
+                { "@id": "http://schema.org/PropertyValue" }
+            ]
+        },
+        {
+            "@id": "https://w3id.org/ro/terms/workflow-run#registry",
+            "@type": ["DefinedTerm", "rdf:Property"],
+            "termCode": "registry",
+            "name": "registry",
+            "description": "A service to register software products, such as container images",
+            "domainIncludes": [
+                {
+                    "@id": "https://w3id.org/ro/terms/workflow-run#ContainerImage"
+                }
+            ],
+            "rangeIncludes": [{ "@id": "http://schema.org/Text" }]
+        },
+        {
+            "@id": "https://w3id.org/ro/terms/workflow-run#tag",
+            "@type": ["DefinedTerm", "rdf:Property"],
+            "termCode": "tag",
+            "name": "tag",
+            "description": "A tag assigned to a software product, such as a container image",
+            "domainIncludes": [
+                {
+                    "@id": "https://w3id.org/ro/terms/workflow-run#ContainerImage"
+                }
+            ],
+            "rangeIncludes": [{ "@id": "http://schema.org/Text" }]
+        },
+        {
+            "@id": "https://w3id.org/ro/terms/workflow-run#containerImage",
+            "@type": ["DefinedTerm", "rdf:Property"],
+            "termCode": "containerImage",
+            "name": "container image",
+            "description": "A container image associated with this entity",
+            "domainIncludes": [{ "@id": "http://schema.org/CreateAction" }],
+            "rangeIncludes": [
+                {
+                    "@id": "https://w3id.org/ro/terms/workflow-run#ContainerImage"
+                },
+                { "@id": "http://schema.org/URL" }
+            ]
+        },
+        {
+            "@id": "https://w3id.org/ro/terms/workflow-run#resourceUsage",
+            "@type": ["DefinedTerm", "rdf:Property"],
+            "termCode": "resourceUsage",
+            "name": "resource usage",
+            "description": "A resource usage item, such as peak memory",
+            "domainIncludes": [{ "@id": "http://schema.org/CreateAction" }],
+            "rangeIncludes": [{ "@id": "http://schema.org/PropertyValue" }]
+        },
+        {
+            "@id": "https://w3id.org/ro/terms/workflow-run#md5",
+            "@type": ["DefinedTerm", "rdf:Property"],
+            "termCode": "md5",
+            "name": "md5 checksum",
+            "description": "md5 checksum as a hexadecimal string",
+            "domainIncludes": [
+                { "@id": "http://schema.org/MediaObject" },
+                {
+                    "@id": "https://w3id.org/ro/terms/workflow-run#ContainerImage"
+                }
+            ],
+            "rangeIncludes": [{ "@id": "http://schema.org/Text" }]
+        },
+        {
+            "@id": "https://w3id.org/ro/terms/workflow-run#sha1",
+            "@type": ["DefinedTerm", "rdf:Property"],
+            "termCode": "sha1",
+            "name": "sha1 checksum",
+            "description": "sha1 checksum as a hexadecimal string",
+            "domainIncludes": [
+                { "@id": "http://schema.org/MediaObject" },
+                {
+                    "@id": "https://w3id.org/ro/terms/workflow-run#ContainerImage"
+                }
+            ],
+            "rangeIncludes": [{ "@id": "http://schema.org/Text" }]
+        },
+        {
+            "@id": "https://w3id.org/ro/terms/workflow-run#sha256",
+            "@type": ["DefinedTerm", "rdf:Property"],
+            "termCode": "sha256",
+            "name": "sha256 checksum",
+            "description": "sha256 checksum as a hexadecimal string",
+            "domainIncludes": [
+                { "@id": "http://schema.org/MediaObject" },
+                {
+                    "@id": "https://w3id.org/ro/terms/workflow-run#ContainerImage"
+                }
+            ],
+            "rangeIncludes": [{ "@id": "http://schema.org/Text" }],
+            "sameAs": {
+                "@id": "http://schema.org/sha256"
+            }
+        },
+        {
+            "@id": "https://w3id.org/ro/terms/workflow-run#sha512",
+            "@type": ["DefinedTerm", "rdf:Property"],
+            "termCode": "sha512",
+            "name": "sha512 checksum",
+            "description": "sha512 checksum as a hexadecimal string",
+            "domainIncludes": [
+                { "@id": "http://schema.org/MediaObject" },
+                {
+                    "@id": "https://w3id.org/ro/terms/workflow-run#ContainerImage"
+                }
+            ],
+            "rangeIncludes": [{ "@id": "http://schema.org/Text" }]
+        },
+        {
+            "@id": "https://pypi.org/project/runcrate/",
+            "@type": "SoftwareApplication",
+            "name": "runcrate",
+            "version": "0.5.0",
+            "url": "https://pypi.org/project/runcrate/"
+        },
+        {
+            "@id": "http://schema.org/MediaObject",
+            "@type": "DefinedTerm",
+            "name": "MediaObject",
+            "termCode": "File"
+        },
+        {
+            "@id": "http://schema.org/Text",
+            "@type": "DefinedTerm",
+            "name": "Text"
+        },
+        {
+            "@id": "https://bioschemas.org/FormalParameter",
+            "@type": "DefinedTerm",
+            "name": "FormalParameter"
+        },
+        {
+            "@id": "https://bioschemas.org/ComputationalWorkflow",
+            "@type": "DefinedTerm",
+            "name": "ComputationalWorkflow"
+        },
+        {
+            "@id": "http://schema.org/HowToStep",
+            "@type": "DefinedTerm",
+            "name": "HowToStep"
+        },
+        {
+            "@id": "http://schema.org/CreateAction",
+            "@type": "DefinedTerm",
+            "name": "CreateAction"
+        },
+        {
+            "@id": "http://schema.org/name",
+            "@type": "DefinedTerm",
+            "name": "name"
+        },
+        {
+            "@id": "http://schema.org/description",
+            "@type": "DefinedTerm",
+            "name": "description"
+        },
+        {
+            "@id": "http://schema.org/endTime",
+            "@type": "DefinedTerm",
+            "name": "endTime"
+        },
+        {
+            "@id": "http://schema.org/startTime",
+            "@type": "DefinedTerm",
+            "name": "startTime"
+        },
+        {
+            "@id": "http://schema.org/instrument",
+            "@type": "DefinedTerm",
+            "name": "instrument"
+        },
+        {
+            "@id": "http://schema.org/agent",
+            "@type": "DefinedTerm",
+            "name": "agent"
+        },
+        {
+            "@id": "http://schema.org/Person",
+            "@type": "DefinedTerm",
+            "name": "Person"
+        },
+        {
+            "@id": "http://schema.org/Organization",
+            "@type": "DefinedTerm",
+            "name": "Organization"
+        },
+        {
+            "@id": "http://schema.org/object",
+            "@type": "DefinedTerm",
+            "name": "object"
+        },
+        {
+            "@id": "http://schema.org/result",
+            "@type": "DefinedTerm",
+            "name": "result"
+        },
+        {
+            "@id": "http://schema.org/actionStatus",
+            "@type": "DefinedTerm",
+            "name": "actionStatus"
+        },
+        {
+            "@id": "http://schema.org/CompletedActionStatus",
+            "@type": "DefinedTerm",
+            "name": "CompletedActionStatus"
+        },
+        {
+            "@id": "http://schema.org/FailedActionStatus",
+            "@type": "DefinedTerm",
+            "name": "FailedActionStatus"
+        },
+        {
+            "@id": "http://schema.org/error",
+            "@type": "DefinedTerm",
+            "name": "error"
+        },
+        {
+            "@id": "http://schema.org/Dataset",
+            "@type": "DefinedTerm",
+            "name": "Dataset"
+        },
+        {
+            "@id": "http://schema.org/Collection",
+            "@type": "DefinedTerm",
+            "name": "Collection"
+        },
+        {
+            "@id": "http://schema.org/CreativeWork",
+            "@type": "DefinedTerm",
+            "name": "CreativeWork"
+        },
+        {
+            "@id": "http://schema.org/PropertyValue",
+            "@type": "DefinedTerm",
+            "name": "PropertyValue"
+        },
+        {
+            "@id": "http://schema.org/alternateName",
+            "@type": "DefinedTerm",
+            "name": "alternateName"
+        },
+        {
+            "@id": "http://schema.org/mainEntity",
+            "@type": "DefinedTerm",
+            "name": "mainEntity"
+        },
+        {
+            "@id": "http://schema.org/SoftwareApplication",
+            "@type": "DefinedTerm",
+            "name": "SoftwareApplication"
+        },
+        {
+            "@id": "http://schema.org/SoftwareSourceCode",
+            "@type": "DefinedTerm",
+            "name": "SoftwareSourceCode"
+        },
+
+        {
+            "@id": "https://orcid.org/0000-0001-8271-5429",
+            "@type": "Person",
+            "name": "Simone Leo"
+        },
+        {
+            "@id": "https://orcid.org/0000-0003-4929-1219",
+            "@type": "Person",
+            "name": "Laura Rodríguez-Navas"
+        },
+        {
+            "@id": "https://orcid.org/0000-0001-9842-9718",
+            "@type": "Person",
+            "name": "Stian Soiland-Reyes"
+        },
+        {
+            "@id": "https://orcid.org/0000-0002-5432-2748",
+            "@type": "Person",
+            "name": "Paul Brack"
+        },
+        {
+            "@id": "https://orcid.org/0000-0002-4806-5140",
+            "@type": "Person",
+            "name": "José María Fernández"
+        },
+        {
+            "@id": "https://orcid.org/0000-0003-3156-2105",
+            "@type": "Person",
+            "name": "Alan R Williams"
+        },
+        {
+            "@id": "https://orcid.org/0000-0002-6190-122X",
+            "@type": "Person",
+            "name": "Ignacio Eguinoa"
+        },
+        {
+            "@id": "https://orcid.org/0000-0003-0454-7145",
+            "@type": "Person",
+            "name": "Daniel Garijo"
+        },
+        {
+            "@id": "https://orcid.org/0000-0002-8940-4946",
+            "@type": "Person",
+            "name": "Paul De Geest"
+        },
+        {
+            "@id": "https://orcid.org/0000-0003-0606-2512",
+            "@type": "Person",
+            "name": "Raül Sirvent"
+        },
+        {
+            "@id": "https://orcid.org/0000-0002-3468-0652",
+            "@type": "Person",
+            "name": "Alexander Kanitz"
+        },
+        {
+            "@id": "https://orcid.org/0000-0002-2961-9670",
+            "@type": "Person",
+            "name": "Michael R Crusoe"
+        },
+        {
+            "@id": "https://orcid.org/0000-0003-3986-0510",
+            "@type": "Person",
+            "name": "LJ Garcia Castro"
+        },
+        {
+            "@id": "https://orcid.org/0000-0002-0003-2024",
+            "@type": "Person",
+            "name": "Rudolf Wittner"
+        },
+        {
+            "@id": "https://orcid.org/0000-0002-9464-6640",
+            "@type": "Person",
+            "name": "Wolfgang Maier"
+        },
+        {
+            "@id": "https://orcid.org/0000-0001-5845-8880",
+            "@type": "Person",
+            "name": "Sebastiaan Huber"
+        },
+        {
+            "@id": "https://orcid.org/0000-0003-4894-4660",
+            "@type": "Person",
+            "name": "Kevin Jablonka"
+        },
+        {
+            "@id": "https://orcid.org/0000-0002-4405-6802",
+            "@type": "Person",
+            "name": "Haris Zafeiropoulos"
+        },
+        {
+            "@id": "https://orcid.org/0000-0001-9290-2017",
+            "@type": "Person",
+            "name": "Iacopo Colonnelli"
+        },
+        {
+            "@id": "https://orcid.org/0000-0003-0617-9219",
+            "@type": "Person",
+            "name": "Jake Emerson"
+        },
+        {
+            "@id": "https://orcid.org/0000-0001-9228-2882",
+            "@type": "Person",
+            "name": "Abigail Miller"
+        },
+        {
+            "@id": "https://orcid.org/0000-0003-3898-9451",
+            "@type": "Person",
+            "name": "Stelios Ninidakis"
+        },
+        {
+            "@id": "https://orcid.org/0000-0003-3777-5945",
+            "@type": "Person",
+            "name": "Tazro Ohta"
+        },
+        {
+            "@id": "https://orcid.org/0000-0003-2765-0049",
+            "@type": "Person",
+            "name": "Hirotaka Suetake"
+        },
+        {
+            "@id": "https://orcid.org/0000-0001-9818-9320",
+            "@type": "Person",
+            "name": "Johannes Köster"
+        },
+        {
+            "@id": "https://orcid.org/0000-0002-8122-9522",
+            "@type": "Person",
+            "name": "Luiz Gadelha"
+        },
+        {
+            "@id": "https://orcid.org/0000-0002-8330-4071",
+            "@type": "Person",
+            "name": "Mahnoor Zulfiqar"
+        },
+        {
+            "@id": "https://orcid.org/0000-0003-4073-7456",
+            "@type": "Person",
+            "name": "Romain David"
+        },
+        {
+            "@id": "https://orcid.org/0000-0003-1361-7301",
+            "@type": "Person",
+            "name": "Maciek Bąk"
+        },
+        {
+            "@id": "https://orcid.org/0000-0002-5358-616X",
+            "@type": "Person",
+            "name": "Petr Holub"
+        },
+        {
+            "@id": "https://orcid.org/0000-0002-5477-287X",
+            "@type": "Person",
+            "name": "Milan Markovic"
+        },
+        {
+            "@id": "https://orcid.org/0000-0001-8250-4074",
+            "@type": "Person",
+            "name": "Bruno P. Kinoshita"
+        },
+        {
+            "@id": "https://orcid.org/0000-0003-0902-0086",
+            "@type": "Person",
+            "name": "Renske de Wit"
+        },
+        {
+            "@id": "https://orcid.org/0000-0001-8172-8981",
+            "@type": "Person",
+            "name": "Jasper Koehorst"
+        },
+        {
+            "@id": "https://orcid.org/0000-0001-6740-9212",
+            "@type": "Person",
+            "name": "Samuel Lampa"
+        },
+        {
+            "@id": "https://orcid.org/0000-0001-5411-356X",
+            "@type": "Person",
+            "name": "Samuel Grayson"
+        },
+        {
+            "@id": "https://orcid.org/0000-0003-0035-0951",
+            "@type": "Person",
+            "name": "Jörg F. Unger"
+        },
+        {
+            "@id": "https://orcid.org/0000-0003-0711-5196",
+            "@type": "Person",
+            "name": "Felix Bartusch"
+        },
+        {
+            "@id": "https://orcid.org/0000-0002-4663-5613",
+            "@type": "Person",
+            "name": "Luca Pireddu"
+        },
+        {
+            "@id": "https://orcid.org/0000-0002-1119-1792",
+            "@type": "Person",
+            "name": "Matej Gallo"
+        },
+        {
+            "@id": "https://orcid.org/0000-0002-0309-604X",
+            "@type": "Person",
+            "name": "Salvador Capella-Gutierrez"
+        },
+        {
+            "@id": "https://www.apache.org/licenses/LICENSE-2.0",
+            "@type": "CreativeWork",
+            "name": "Apache License 2.0",
+            "version": "2.0",
+            "identifier": { "@id": "http://spdx.org/licenses/Apache-2.0" }
+        },
+        {
+            "@id": "https://creativecommons.org/publicdomain/zero/1.0/",
+            "@type": "CreativeWork",
+            "identifier": { "@id": "http://spdx.org/licenses/CC0-1.0" },
+            "name": "Creative Commons Zero v1.0 Universal",
+            "version": "1.0"
+        },
+        {
+            "@id": "http://spdx.org/licenses/Apache-2.0",
+            "@type": "PropertyValue",
+            "propertyID": "http://spdx.org/rdf/terms#licenseId",
+            "name": "spdx",
+            "value": "Apache-2.0"
+        },
+        {
+            "@id": "http://spdx.org/licenses/CC0-1.0",
+            "@type": "PropertyValue",
+            "propertyID": "http://spdx.org/rdf/terms#licenseId",
+            "name": "spdx",
+            "value": "CC0-1.0"
+        }
+    ]
+}

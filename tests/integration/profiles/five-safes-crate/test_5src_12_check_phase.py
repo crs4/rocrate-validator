@@ -1,4 +1,5 @@
 # Copyright (c) 2024-2025 CRS4
+# Copyright (c) 2025-2026 eScience Lab, The University of Manchester
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -108,10 +109,10 @@ def test_5src_check_value_start_time_not_iso_standard():
         rocrate_path=ValidROC().five_safes_crate_result,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
-        expected_triggered_requirements=["CheckValue"],
+        expected_triggered_requirements=["Timestamp Format"],
         expected_triggered_issues=[
             (
-                "`CheckValue` --> `startTime` MUST follows the RFC 3339 standard "
+                "All `startTime` and `endTime` values MUST follow the RFC 3339 standard "
                 "(YYYY-MM-DD'T'hh:mm:ss[.fraction](Z | ±hh:mm))."
             )
         ],
@@ -142,10 +143,10 @@ def test_5src_check_value_end_time_not_iso_standard():
         rocrate_path=ValidROC().five_safes_crate_result,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
-        expected_triggered_requirements=["CheckValue"],
+        expected_triggered_requirements=["Timestamp Format"],
         expected_triggered_issues=[
             (
-                "`CheckValue` --> `endTime` MUST follows the RFC 3339 standard "
+                "All `startTime` and `endTime` values MUST follow the RFC 3339 standard "
                 "(YYYY-MM-DD'T'hh:mm:ss[.fraction](Z | ±hh:mm))."
             )
         ],

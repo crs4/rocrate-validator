@@ -1,4 +1,4 @@
-# Copyright (c) 2024-2025 CRS4
+# Copyright (c) 2024-2026 CRS4
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,21 +23,22 @@ import rich_click as click
 from rich.padding import Padding
 from rich.rule import Rule
 
-import rocrate_validator.log as logging
+from rocrate_validator.utils import log as logging
 from rocrate_validator import services
 from rocrate_validator.cli.commands.errors import handle_error
 from rocrate_validator.cli.main import cli
 from rocrate_validator.cli.ui.text.validate import ValidationCommandView
 from rocrate_validator.errors import ROCrateInvalidURIError
-from rocrate_validator.rocv_io.input import get_single_char, multiple_choice
-from rocrate_validator.rocv_io.output.console import Console
-from rocrate_validator.rocv_io.output.json import JSONOutputFormatter
-from rocrate_validator.rocv_io.output.text import TextOutputFormatter
-from rocrate_validator.rocv_io.output.text.layout.report import (
+from rocrate_validator.utils.io_helpers.input import get_single_char, multiple_choice
+from rocrate_validator.utils.io_helpers.output.console import Console
+from rocrate_validator.utils.io_helpers.output.json import JSONOutputFormatter
+from rocrate_validator.utils.io_helpers.output.text import TextOutputFormatter
+from rocrate_validator.utils.io_helpers.output.text.layout.report import (
     LiveTextProgressLayout, get_app_header_rule)
 from rocrate_validator.models import (Severity, ValidationResult,
                                       ValidationSettings)
-from rocrate_validator.utils import get_profiles_path, validate_rocrate_uri
+from rocrate_validator.utils.uri import validate_rocrate_uri
+from rocrate_validator.utils.paths import get_profiles_path
 
 # from rich.markdown import Markdown
 # from rich.table import Table

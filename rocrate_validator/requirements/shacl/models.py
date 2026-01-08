@@ -1,4 +1,4 @@
-# Copyright (c) 2024-2025 CRS4
+# Copyright (c) 2024-2026 CRS4
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ from rdflib import Graph, Namespace, URIRef
 from rdflib.term import Node
 
 from rocrate_validator.constants import SHACL_NS
-import rocrate_validator.log as logging
+from rocrate_validator.utils import log as logging
 from rocrate_validator.models import LevelCollection, RequirementLevel, Severity
 from rocrate_validator.requirements.shacl.utils import (ShapesList,
                                                         compute_key,
@@ -139,7 +139,7 @@ class SHACLNode:
             return f"{class_name} ({hash(self)})"
 
     def __repr__(self):
-        return f"{ self.__class__.__name__}({hash(self)})"
+        return f"{self.__class__.__name__}({hash(self)})"
 
     def __eq__(self, other):
         if not isinstance(other, Shape):

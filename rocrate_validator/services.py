@@ -1,4 +1,4 @@
-# Copyright (c) 2024-2025 CRS4
+# Copyright (c) 2024-2026 CRS4
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,11 +18,13 @@ import zipfile
 from pathlib import Path
 from typing import Optional, Union
 
-import rocrate_validator.log as logging
+from rocrate_validator.utils import log as logging
 from rocrate_validator.events import Subscriber
 from rocrate_validator.models import (Profile, Severity, ValidationResult,
                                       ValidationSettings, Validator)
-from rocrate_validator.utils import URI, HttpRequester, get_profiles_path
+from rocrate_validator.utils.uri import URI
+from rocrate_validator.utils.paths import get_profiles_path
+from rocrate_validator.utils.http import HttpRequester
 
 # set the default profiles path
 DEFAULT_PROFILES_PATH = get_profiles_path()

@@ -69,7 +69,7 @@ Formatting Validation Results
 Validation results can be rendered using different output formatters provided by
 the library. Two formatter types are available: *text* and *JSON*.  
 Both rely on the ``rich`` Python library and integrate with the
-``rocrate_validator.io.output.console.Console`` class, which extends
+``rocrate_validator.utils.io_helpers.output.console.Console`` class, which extends
 ``rich.console.Console`` to support custom formatter registration.
 
 To format results, create a ``Console`` instance, register one formatter,
@@ -86,8 +86,8 @@ to a file.
 
 .. code-block:: python
 
-    from rocrate_validator.io.output.console import Console
-    from rocrate_validator.io.output.text import TextOutputFormatter
+    from rocrate_validator.utils.io_helpers.output.console import Console
+    from rocrate_validator.utils.io_helpers.output.text import TextOutputFormatter
 
     console = Console()
     console.register_formatter(TextOutputFormatter())
@@ -114,8 +114,8 @@ programmatic processing, or integration with external tools.
 
 .. code-block:: python
 
-    from rocrate_validator.io.output.console import Console
-    from rocrate_validator.io.output.json import JSONOutputFormatter
+    from rocrate_validator.utils.io_helpers.output.console import Console
+    from rocrate_validator.utils.io_helpers.output.json import JSONOutputFormatter
 
     console = Console()
     console.register_formatter(JSONOutputFormatter())

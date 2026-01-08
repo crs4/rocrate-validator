@@ -1,4 +1,4 @@
-# Copyright (c) 2024-2025 CRS4
+# Copyright (c) 2024-2026 CRS4
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,9 +26,11 @@ from urllib.parse import unquote
 
 from rdflib import Graph
 
-from rocrate_validator import log as logging
+from rocrate_validator.utils import log as logging
 from rocrate_validator.errors import ROCrateInvalidURIError
-from rocrate_validator.utils import URI, HttpRequester, validate_rocrate_uri
+from rocrate_validator.utils.uri import validate_rocrate_uri
+from rocrate_validator.utils.http import HttpRequester
+from rocrate_validator.utils.uri import URI
 
 # set up logging
 logger = logging.getLogger(__name__)

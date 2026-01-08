@@ -188,4 +188,3 @@ five-safes-crate:CheckValueShouldHaveActionStatus
         sh:severity sh:Warning ;
         sh:message "CheckValue SHOULD have actionStatus property." ;
     ] .
-

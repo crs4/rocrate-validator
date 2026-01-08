@@ -1,4 +1,4 @@
-# Copyright (c) 2024-2025 CRS4
+# Copyright (c) 2024-2026 CRS4
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,9 +19,9 @@ from rich.console import ConsoleOptions, RenderResult
 from rich.markdown import Markdown
 from rich.padding import Padding
 
-import rocrate_validator.log as logging
-from rocrate_validator.colors import get_severity_color
-from rocrate_validator.rocv_io.output.text.layout.report import \
+from rocrate_validator.utils import log as logging
+from rocrate_validator.utils.io_helpers.colors import get_severity_color
+from rocrate_validator.utils.io_helpers.output.text.layout.report import \
     ValidationReportLayout
 from rocrate_validator.models import ValidationResult, ValidationStatistics
 
@@ -42,7 +42,7 @@ class ValidationResultTextOutputFormatter(OutputFormatter):
 
         # Print validation details
         # Print the list of failed requirements
-        yield Padding("\n[bold]The following requirements have not meet: [/bold]", (0, 2))
+        yield Padding("\n[bold]The following requirements have not been met: [/bold]", (0, 2))
         for requirement in sorted(result.failed_requirements, key=lambda x: x.identifier):
             yield Align(f"\n[profile: [magenta bold]{requirement.profile.name}[/magenta bold]]", align="right")
 

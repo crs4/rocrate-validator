@@ -1,4 +1,4 @@
-# Copyright (c) 2024-2025 CRS4
+# Copyright (c) 2024-2026 CRS4
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ from pathlib import Path
 
 import pytest
 
-from rocrate_validator import log as logging
+from rocrate_validator.utils import log as logging
 from rocrate_validator.errors import ROCrateInvalidURIError
 from rocrate_validator.rocrate import (BagitROCrate, ROCrate,
                                        ROCrateBagitLocalFolder,

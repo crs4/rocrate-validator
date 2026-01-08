@@ -1,4 +1,4 @@
-# Copyright (c) 2024-2025 CRS4
+# Copyright (c) 2024-2026 CRS4
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ import shutil
 import tempfile
 from pathlib import Path
 
-from rocrate_validator import log as logging
+from rocrate_validator.utils import log as logging
 from rocrate_validator.models import ValidationSettings
 from rocrate_validator.rocrate import ROCrateMetadata
 from rocrate_validator.services import detect_profiles, get_profiles, validate

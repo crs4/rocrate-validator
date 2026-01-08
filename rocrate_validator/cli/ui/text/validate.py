@@ -1,4 +1,4 @@
-# Copyright (c) 2024-2025 CRS4
+# Copyright (c) 2024-2026 CRS4
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,11 +16,11 @@ from __future__ import annotations
 
 from typing import Any, Callable, Optional
 
-import rocrate_validator.log as logging
-from rocrate_validator.rocv_io.output.console import Console
-from rocrate_validator.rocv_io.output.pager import SystemPager
-from rocrate_validator.rocv_io.output.text import TextOutputFormatter
-from rocrate_validator.rocv_io.output.text.layout.report import ValidationReportLayout
+from rocrate_validator.utils import log as logging
+from rocrate_validator.utils.io_helpers.output.console import Console
+from rocrate_validator.utils.io_helpers.output.pager import SystemPager
+from rocrate_validator.utils.io_helpers.output.text import TextOutputFormatter
+from rocrate_validator.utils.io_helpers.output.text.layout.report import ValidationReportLayout
 from rocrate_validator.models import (ValidationResult, ValidationSettings,
                                       ValidationStatistics)
 
