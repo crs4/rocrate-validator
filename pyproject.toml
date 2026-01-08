@@ -109,3 +109,6 @@ testpaths = ["tests"]
 
 [tool.typos.files]
 extend-exclude = ["tests/data","docs/diagrams","*.json","*.html","*__init__.py"]
+
+[tool.typos.default.extend-words]
+TRE = "TRE"
