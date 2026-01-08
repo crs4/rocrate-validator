@@ -18,7 +18,7 @@
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-ro-crate:CreativeWorkAuthorMinimuRecommendedProperties a sh:NodeShape ;
+ro-crate:CreativeWorkAuthorMinimumRecommendedProperties a sh:NodeShape ;
     sh:name "CreativeWork Author: minimum RECOMMENDED properties" ;
     sh:description """The minimum recommended properties for a `CreativeWork Author` are `name` and `affiliation`.""" ;
     sh:targetClass ro-crate:CreativeWorkAuthor ;

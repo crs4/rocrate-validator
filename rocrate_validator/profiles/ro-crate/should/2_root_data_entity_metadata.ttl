@@ -27,7 +27,7 @@ ro-crate:RootDataEntityDirectRecommendedProperties a sh:NodeShape ;
     sh:targetClass ro-crate:RootDataEntity ;
     sh:property [
         a sh:PropertyShape ;
-        sh:name "Root Data Entity: `licence` SHOULD link to a Contextual Entity" ;
+        sh:name "Root Data Entity: `license` SHOULD link to a Contextual Entity" ;
         sh:description """Check if the Root Data Entity includes a `license` property 
         that links to a Contextual Entity with type `schema_org:CreativeWork` to describe the license.""" ;
         sh:nodeKind sh:BlankNodeOrIRI ;

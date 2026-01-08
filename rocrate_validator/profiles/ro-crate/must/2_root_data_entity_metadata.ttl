@@ -129,7 +129,7 @@ ro-crate:RootDataEntityRequiredProperties
     ] ;
     sh:property [
         a sh:PropertyShape ;
-        sh:name "Root Data Entity: `licence` property" ;
+        sh:name "Root Data Entity: `license` property" ;
         sh:description """Check if the Root Data Entity includes a `license` property (as specified by schema.org)
         to provide information about the license of the dataset.""" ;
         sh:path schema_org:license;

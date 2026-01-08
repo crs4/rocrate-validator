@@ -31,7 +31,7 @@ def test_main_workflow_bad_type():
         Severity.REQUIRED,
         False,
         ["Main Workflow definition"],
-        ["The Main Workflow must have types File, SoftwareSourceCode, ComputationalWorfklow"],
+        ["The Main Workflow must have types File, SoftwareSourceCode, ComputationalWorkflow"],
         profile_identifier="workflow-ro-crate"
     )
 

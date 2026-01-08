@@ -27,7 +27,7 @@ ro-crate:FileDataEntityWebOptionalProperties a sh:NodeShape ;
     for instance a landing page that describes the file, including persistence identifiers (e.g. DOI),
     resolving to an intermediate HTML page instead of the downloadable file directly.
     These can included for File Data Entities as additional metadata by using the properties:
-    `ìdentifier`, `url`, `subjectOf`and `mainEntityOfPage`""" ;
+    `identifier`, `url`, `subjectOf`and `mainEntityOfPage`""" ;
     sh:targetClass ro-crate:File ;
     # Check if the Web-based Data Entity has a contentSize property
     sh:property [
@@ -87,4 +87,3 @@ ro-crate:DirectoryDataEntityWebOptionalDistribution a sh:NodeShape ;
         sh:severity sh:Info ;
         sh:message """The Directory Data Entity MAY have a `distribution` property to denote the distribution of the files within the directory""" ;
     ] .
-

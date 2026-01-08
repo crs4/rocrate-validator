@@ -27,3 +27,7 @@ docs/_build
 **/.coverage
 **/.coverage.*
 **/.report
+
+# ignore IDE files
+.vscode/
+.idea/

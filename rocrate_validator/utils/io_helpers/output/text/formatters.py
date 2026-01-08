@@ -42,7 +42,7 @@ class ValidationResultTextOutputFormatter(OutputFormatter):
 
         # Print validation details
         # Print the list of failed requirements
-        yield Padding("\n[bold]The following requirements have not meet: [/bold]", (0, 2))
+        yield Padding("\n[bold]The following requirements have not been met: [/bold]", (0, 2))
         for requirement in sorted(result.failed_requirements, key=lambda x: x.identifier):
             yield Align(f"\n[profile: [magenta bold]{requirement.profile.name}[/magenta bold]]", align="right")
 
