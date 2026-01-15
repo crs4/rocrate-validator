@@ -26,7 +26,7 @@
 # There SHOULD be a Sign-Off Phase
 five-safes-crate:SignOffPhase
     a sh:NodeShape ;
-    sh:targetNode <./> ;
+    sh:targetClass ro-crate:RootDataEntity ;
     sh:description "Check the Sign-Off Phase" ;
     sh:sparql [
         sh:select """
