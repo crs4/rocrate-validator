@@ -51,7 +51,7 @@ def test_5src_check_value_not_of_type_assess_action():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["CheckValue"],
-        expected_triggered_issues=["CheckValue MUST be a `schema:AssessAction`."],
+        expected_triggered_issues=["CheckValue MUST be a `AssessAction`."],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
     )
@@ -269,7 +269,7 @@ def test_5src_check_value_instrument_does_not_point_to_entity_with_type_defined_
         expected_validation_result=False,
         expected_triggered_requirements=["CheckValue"],
         expected_triggered_issues=[
-            "`CheckValue` --> `instrument` SHOULD point to an entity typed `schema:DefinedTerm`"
+            "`CheckValue` --> `instrument` SHOULD point to an entity typed `DefinedTerm`"
         ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,

@@ -113,7 +113,7 @@ def test_5src_signoff_phase_wrong_type():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["SignOff"],
-        expected_triggered_issues=["Sign Off phase MUST be a `schema:AssessAction`."],
+        expected_triggered_issues=["Sign Off phase MUST be a `AssessAction`."],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
     )

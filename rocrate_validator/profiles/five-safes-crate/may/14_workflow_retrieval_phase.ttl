@@ -55,7 +55,7 @@ five-safes-crate:DownloadedWorkflowSHOULDExistAndBeReferencedByDownloadActionRes
                 }
             """ ;
             sh:severity sh:Info ;
-            sh:message "The entity representing the downloaded workflow is not defined, OR is not referenced by `DownloadAction` --> `result`, OR is not of type `schema:Dataset`." ;
+            sh:message "The entity representing the downloaded workflow is not defined, OR is not referenced by `DownloadAction` --> `result`, OR is not of type `Dataset`." ;
         ] ;
     ] .
 

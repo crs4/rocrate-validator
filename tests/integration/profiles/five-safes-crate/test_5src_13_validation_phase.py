@@ -48,7 +48,7 @@ def test_5src_validation_check_not_of_type_assess_action():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["ValidationCheck"],
-        expected_triggered_issues=["ValidationCheck MUST be a `schema:AssessAction`."],
+        expected_triggered_issues=["ValidationCheck MUST be a `AssessAction`."],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
     )

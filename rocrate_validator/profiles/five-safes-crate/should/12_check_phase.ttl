@@ -99,7 +99,7 @@ five-safes-crate:CheckValueInstrumentShouldPointToEntityTypedDefinedTerm
         sh:minCount 1 ;
         sh:class schema:DefinedTerm ;
         sh:severity sh:Warning ;
-        sh:message "`CheckValue` --> `instrument` SHOULD point to an entity typed `schema:DefinedTerm`" ;
+        sh:message "`CheckValue` --> `instrument` SHOULD point to an entity typed `DefinedTerm`" ;
     ] .
 
 

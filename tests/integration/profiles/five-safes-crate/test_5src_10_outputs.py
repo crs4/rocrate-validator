@@ -52,7 +52,7 @@ def test_completed_createaction_does_not_have_result():
         expected_validation_result=False,
         expected_triggered_requirements=["CreateAction"],
         expected_triggered_issues=[
-            "`CreateAction` with CompletedActionStatus SHOULD have the `schema:result` property."
+            "`CreateAction` with CompletedActionStatus SHOULD have the `result` property."
         ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
