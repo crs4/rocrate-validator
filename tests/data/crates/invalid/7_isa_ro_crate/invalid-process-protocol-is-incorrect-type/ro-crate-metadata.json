@@ -15,9 +15,15 @@
   ],
   "@graph": [
     {
-      "@id": "#PV_I_am_not_a_sample",
+      "@id": "#Sample_MyInputSample",
+      "@type": "Sample",
+      "additionalType": "Sample",
+      "name": "MyInputSample"
+    },
+    {
+      "@id": "#PV_I_am_not_a_protocol",
       "@type": "PropertyValue",
-      "name": "I am not a sample"
+      "name": "I am not a protocol"
     },
     {
       "@id": "#Sample_MyOutputSample",
@@ -30,13 +36,13 @@
       "@type": "LabProcess",
       "name": "MyProcess",
       "object": {
-        "@id": "#PV_I_am_not_a_sample"
+        "@id": "#Sample_MyInputSample"
       },
       "result": {
         "@id": "#Sample_MyOutputSample"
       },
       "executesLabProtocol": {
-        "@id": "#Protocol_MyProtocol"
+        "@id": "#PV_I_am_not_a_protocol"
       },
       "parameterValue": {
         "@id": "#PV_MyParameterValue"
@@ -47,15 +53,6 @@
       "@type": "PropertyValue",
       "name": "MyParameter",
       "value": "42"
-    },
-    {
-      "@id": "#Protocol_MyProtocol",
-      "name": "MyProtocol",
-      "@type": "LabProtocol",
-      "intendedUse": {
-        "@id": "#Term_MyTerm"
-      },
-      "description": "This is a protocol description."
     },
     {
       "@type": "DefinedTerm",
@@ -86,7 +83,7 @@
         "@id": "studies/MyStudy/"
       },
       "name": "My Investigation is great",
-      "datePublished": "2025-12-09T16:11:16.8899868",
+      "datePublished": "2025-12-09T16:44:43.5942460",
       "description": "This is an example investigation.",
       "license": {
         "@id": "LICENSE"

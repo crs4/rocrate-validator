@@ -15,9 +15,10 @@
   ],
   "@graph": [
     {
-      "@id": "#PV_I_am_not_a_sample",
-      "@type": "PropertyValue",
-      "name": "I am not a sample"
+      "@id": "#Sample_MyInputSample",
+      "@type": "Sample",
+      "additionalType": "Sample",
+      "name": "MyInputSample"
     },
     {
       "@id": "#Sample_MyOutputSample",
@@ -30,32 +31,30 @@
       "@type": "LabProcess",
       "name": "MyProcess",
       "object": {
-        "@id": "#PV_I_am_not_a_sample"
+        "@id": "#Sample_MyInputSample"
       },
       "result": {
         "@id": "#Sample_MyOutputSample"
       },
       "executesLabProtocol": {
         "@id": "#Protocol_MyProtocol"
-      },
-      "parameterValue": {
-        "@id": "#PV_MyParameterValue"
       }
     },
     {
-      "@id": "#PV_MyParameterValue",
-      "@type": "PropertyValue",
-      "name": "MyParameter",
-      "value": "42"
-    },
-    {
       "@id": "#Protocol_MyProtocol",
-      "name": "MyProtocol",
       "@type": "LabProtocol",
+      "name": {
+        "@id": "#PV_I_am_not_a_String"
+      },
       "intendedUse": {
         "@id": "#Term_MyTerm"
       },
       "description": "This is a protocol description."
+    },
+    {
+      "@id": "#PV_I_am_not_a_String",
+      "@type": "PropertyValue",
+      "name": "I am not a string"
     },
     {
       "@type": "DefinedTerm",

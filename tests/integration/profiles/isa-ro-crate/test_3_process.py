@@ -119,17 +119,62 @@ def test_isa_process_result_incorrect_type():
         profile_identifier="isa-ro-crate",
     )
 
-def test_isa_process_result_incorrect_type():
+def test_isa_process_no_value():
     """
-    Test an ISA RO-Crate where a Process has a result with the wrong type.
+    Test an ISA RO-Crate where a Process does not have a parameter value.
     """
     do_entity_test(
-        rocrate_path=InvalidISARC().process_result_is_incorrect_type,
+        rocrate_path=InvalidISARC().process_is_missing_values,
+        requirement_severity=Severity.RECOMMENDED,
+        expected_validation_result=False,
+        expected_triggered_requirements=["Process SHOULD have a parameter value"],
+        expected_triggered_issues=[
+            "Process entity SHOULD have a parameter value"
+        ],
+        profile_identifier="isa-ro-crate",
+    )
+
+def test_isa_process_value_incorrect_type():
+    """
+    Test an ISA RO-Crate where a Process has a parameter value with the wrong type.
+    """
+    do_entity_test(
+        rocrate_path=InvalidISARC().process_value_is_incorrect_type,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
-        expected_triggered_requirements=["Process SHOULD have a result"],
+        expected_triggered_requirements=["Process SHOULD have a parameter value"],
         expected_triggered_issues=[
-            "Process results MUST be of type File, Sample or BioSample"
+            "Process parameter values MUST be of type PropertyValue"
+        ],
+        profile_identifier="isa-ro-crate",
+    )
+
+def test_isa_process_no_protocol():
+    """
+    Test an ISA RO-Crate where a Process does not have a protocol.
+    """
+    do_entity_test(
+        rocrate_path=InvalidISARC().process_is_missing_protocols,
+        requirement_severity=Severity.RECOMMENDED,
+        expected_validation_result=False,
+        expected_triggered_requirements=["Process SHOULD have a protocol"],
+        expected_triggered_issues=[
+            "Process entity SHOULD have a protocol"
+        ],
+        profile_identifier="isa-ro-crate",
+    )
+
+def test_isa_process_protocol_incorrect_type():
+    """
+    Test an ISA RO-Crate where a Process has a protocol with the wrong type.
+    """
+    do_entity_test(
+        rocrate_path=InvalidISARC().process_protocol_is_incorrect_type,
+        requirement_severity=Severity.REQUIRED,
+        expected_validation_result=False,
+        expected_triggered_requirements=["Process SHOULD have a protocol"],
+        expected_triggered_issues=[
+            "Process protocols MUST be of type LabProtocol"
         ],
         profile_identifier="isa-ro-crate",
     )

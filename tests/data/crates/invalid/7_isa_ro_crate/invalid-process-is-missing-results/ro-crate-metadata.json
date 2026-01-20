@@ -27,7 +27,33 @@
       "object": {
         "@id": "#Sample_MyInputSample"
       },
-      "result": []
+      "result": [],
+      "executesLabProtocol": {
+        "@id": "#Protocol_MyProtocol"
+      },
+      "parameterValue": {
+        "@id": "#PV_MyParameterValue"
+      }
+    },
+    {
+      "@id": "#PV_MyParameterValue",
+      "@type": "PropertyValue",
+      "name": "MyParameter",
+      "value": "42"
+    },
+    {
+      "@id": "#Protocol_MyProtocol",
+      "@type": "LabProtocol",
+      "name": "MyProtocol",
+      "intendedUse": {
+        "@id": "#Term_MyTerm"
+      },
+      "description": "This is a protocol description."
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "#Term_MyTerm",
+      "name": "MyTerm"
     },
     {
       "@id": "studies/MyStudy/",

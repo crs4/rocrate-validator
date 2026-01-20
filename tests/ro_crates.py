@@ -1034,6 +1034,46 @@ class InvalidISARC:
         return self.base_path / "invalid-process-result-is-incorrect-type"
 
     @property
+    def process_is_missing_values(self) -> Path:
+        return self.base_path / "invalid-process-is-missing-values"
+    
+    @property
+    def process_value_is_incorrect_type(self) -> Path:
+        return self.base_path / "invalid-process-value-is-incorrect-type"
+
+    @property
+    def process_is_missing_protocols(self) -> Path:
+        return self.base_path / "invalid-process-is-missing-protocols"
+    
+    @property
+    def process_protocol_is_incorrect_type(self) -> Path:
+        return self.base_path / "invalid-process-protocol-is-incorrect-type"
+    
+    @property
+    def protocol_is_missing_name(self) -> Path:
+        return self.base_path / "invalid-protocol-no-name"
+    
+    @property
+    def protocol_name_is_incorrect_type(self) -> Path:
+        return self.base_path / "invalid-protocol-name-is-incorrect-type"
+    
+    @property
+    def protocol_is_missing_description(self) -> Path:
+        return self.base_path / "invalid-protocol-no-description"
+    
+    @property
+    def protocol_description_is_incorrect_type(self) -> Path:
+        return self.base_path / "invalid-protocol-description-is-incorrect-type"
+    
+    @property
+    def protocol_is_missing_intendedUse(self) -> Path:
+        return self.base_path / "invalid-protocol-no-intendedUse"
+    
+    @property
+    def protocol_intendedUse_is_incorrect_type(self) -> Path:
+        return self.base_path / "invalid-protocol-intendedUse-is-incorrect-type"
+
+    @property
     def assay_is_linked_through_illegal_property(self) -> Path:
         return self.base_path / "invalid-assay-is-linked-through-illegal-property"
 
