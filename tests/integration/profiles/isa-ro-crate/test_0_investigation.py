@@ -91,3 +91,37 @@ def test_isa_investigation_identifier_not_string():
         ],
         profile_identifier="isa-ro-crate"
     )
+
+def test_isa_investigation_no_shoulds():
+    """
+    Test an ISA RO-Crate where the investigation is missing should properties.
+    """
+
+    do_entity_test(
+        rocrate_path=InvalidISARC().investigation_is_missing_shoulds,
+        requirement_severity=Severity.RECOMMENDED,
+        expected_validation_result=False,
+        # expected_triggered_requirements=["Investigation MUST have base properties"],
+        expected_triggered_issues=[
+            "Investigation entity SHOULD have a dateCreated",
+            "Investigation entity SHOULD have a creator"
+        ],
+        profile_identifier="isa-ro-crate"
+    )
+
+def test_isa_investigation_shoulds_have_wrong_types():
+    """
+    Test an ISA RO-Crate where the investigation's should properties have wrong types.
+    """
+
+    do_entity_test(
+        rocrate_path=InvalidISARC().investigation_shoulds_have_wrong_types,
+        requirement_severity=Severity.REQUIRED,
+        expected_validation_result=False,
+        # expected_triggered_requirements=["Investigation MUST have base properties"],
+        expected_triggered_issues=[
+            "Investigation dateCreated MUST be a valid date literal",
+            "Investigation creator MUST be of type Person"
+        ],
+        profile_identifier="isa-ro-crate"
+    )

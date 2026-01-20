@@ -94,3 +94,48 @@ isa-ro-crate:RootDataEntityMustBeInvestigation a sh:NodeShape ;
     #     sh:severity sh:Violation ;
     # ] ;
 .
+
+isa-ro-crate:InvestigationShouldHaveCreator a sh:NodeShape ;
+    sh:name "Investigation SHOULD have creator" ;
+    sh:description "An Investigation SHOULD have a creator" ;
+    sh:targetClass ro-crate:RootDataEntity ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:creator ;
+        sh:minCount 1 ;
+        sh:description "Check that investigation does have at least one creator" ;
+        sh:message "Investigation entity SHOULD have a creator" ;
+        sh:severity sh:Warning ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:creator ;
+        sh:class schema:Person ;
+        sh:description "Check that if investigation does have at least one creator, it MUST be of type Person" ;
+        sh:message "Investigation creator MUST be of type Person" ;
+        sh:severity sh:Violation ;
+    ]
+.
+
+isa-ro-crate:InvestigationShouldHaveDateCreated a sh:NodeShape ;
+    sh:name "Investigation SHOULD have dateCreated" ;
+    sh:description "An Investigation SHOULD have a dateCreated" ;
+    sh:targetClass ro-crate:RootDataEntity ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:dateCreated ;
+        sh:minCount 1 ;
+        sh:description "Check that investigation does have at least one dateCreated" ;
+        sh:message "Investigation entity SHOULD have a dateCreated" ;
+        sh:severity sh:Warning ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:dateCreated ;
+        sh:nodeKind sh:Literal ;
+        sh:pattern "^([\\+-]?\\d{4})((-?)((0[1-9]|1[0-2])(\\3([12]\\d|0[1-9]|3[01]))|W([0-4]\\d|5[0-2])(-?[1-7])|(00[1-9]|0[1-9]\\d|[12]\\d{2}|3([0-5]\\d|6[1-6])))([T\\s]((([01]\\d|2[0-3])((:?)?[0-5]\\d)?|24:?00)([\\.,]\\d+(?!:))?)?(\\17[0-5]\\d([\\.,]\\d+)?)?([zZ]|([\\+-])([01]\\d|2[0-3]):?([0-5]\\d)?)?)?)$" ;
+        sh:description "Check that if investigation does have at least one dateCreated, it MUST be of type Literal matching the date pattern" ;
+        sh:message "Investigation dateCreated MUST be a valid date literal" ;
+        sh:severity sh:Violation ;
+    ]
+.

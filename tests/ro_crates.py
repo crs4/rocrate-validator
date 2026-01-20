@@ -990,12 +990,20 @@ class InvalidISARC:
         return self.base_path / "invalid-investigation-is-missing-identifier"
     
     @property
+    def investigation_is_missing_shoulds(self) -> Path:
+        return self.base_path / "invalid-investigation-is-missing-shoulds"
+    
+    @property
     def study_identifier_not_string(self) -> Path:
         return self.base_path / "invalid-study-identifier-not-string"
     
     @property
     def investigation_identifier_not_string(self) -> Path:
         return self.base_path / "invalid-investigation-identifier-not-string"
+    
+    @property
+    def investigation_shoulds_have_wrong_types(self) -> Path:
+        return self.base_path / "invalid-investigation-shoulds-have-wrong-types"
 
     @property
     def study_is_missing_name(self) -> Path:

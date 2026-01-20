@@ -35,10 +35,19 @@
       },
       "name": "My Investigation is great",
       "datePublished": "2025-12-02T18:02:02.2553150",
+      "dateCreated": "2023-12-02T18:02:02.2553150",
+      "creator": {
+        "@id": "#Person_John_Doe"
+      },
       "description": "This is an example investigation.",
       "license": {
         "@id": "LICENSE"
       }
+    },
+    {
+      "@id": "#Person_John_Doe",
+      "@type": "Person",
+      "name": "John Doe"
     },
     {
       "@id": "ro-crate-metadata.json",

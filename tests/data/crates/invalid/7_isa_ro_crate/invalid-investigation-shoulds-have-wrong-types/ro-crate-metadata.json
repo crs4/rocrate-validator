@@ -15,9 +15,16 @@
   ],
   "@graph": [
     {
-      "@id": "assays/MyAssay/",
+      "@id": "studies/MyStudy/",
       "@type": "Dataset",
-      "additionalType": "Assay"
+      "additionalType": "Study",
+      "identifier": "MyStudy",
+      "name": "My Study is great"
+    },
+    {
+      "@id": "#PV_I_am_not_a_Person",
+      "@type": "PropertyValue",
+      "name": "I am not a person"
     },
     {
       "@id": "LICENSE",
@@ -30,23 +37,20 @@
       "additionalType": "Investigation",
       "identifier": "MyInvestigation",
       "hasPart": {
-        "@id": "assays/MyAssay/"
+        "@id": "studies/MyStudy/"
       },
       "name": "My Investigation is great",
-      "datePublished": "2025-12-04T14:00:06.2191037",
-      "dateCreated": "2023-12-04T14:00:06.2191037",
+      "datePublished": "2025-12-02T18:02:02.2553150",
+      "dateCreated": {
+        "@id": "#PV_I_am_not_a_Person"
+      },
       "creator": {
-        "@id": "#Person_John_Doe"
+        "@id": "#PV_I_am_not_a_Person"
       },
       "description": "This is an example investigation.",
       "license": {
         "@id": "LICENSE"
       }
-    },
-    {
-      "@id": "#Person_John_Doe",
-      "@type": "Person",
-      "name": "John Doe"
     },
     {
       "@id": "ro-crate-metadata.json",
@@ -57,6 +61,12 @@
       "about": {
         "@id": "./"
       }
+    },
+    {
+        "@id": "#Person_Christoph_Garth",
+        "@type": "Person",
+        "givenName": "Christoph",
+        "familyName": "Garth"
     }
   ]
 }
