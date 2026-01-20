@@ -53,7 +53,7 @@ five-safes-crate:CreateActionInstrumentAndStatus
         sh:path schema:instrument;
         sh:minCount 1 ;
         sh:severity sh:Violation ;
-        sh:message "`CreateAction` MUST have the `schema:instrument` property" ;
+        sh:message "`CreateAction` MUST have the `instrument` property" ;
     ]  ;
     sh:sparql [
         a sh:SPARQLConstraint ;

@@ -38,7 +38,7 @@ five-safes-crate:ReferenceToWorkflowCrate
         sh:maxCount 1 ;
         sh:nodeKind sh:IRI ;
         sh:severity sh:Violation ;
-        sh:message "The RootDataEntity MUST have exactly one schema:mainEntity property that is an IRI." ;
+        sh:message "The RootDataEntity MUST have exactly one mainEntity property that is an IRI." ;
     ] ;
 
     # The mainEntity of a RootDataEntity MUST be a Dataset
@@ -48,7 +48,7 @@ five-safes-crate:ReferenceToWorkflowCrate
         sh:path schema:mainEntity ;
         sh:class schema:Dataset ;
         sh:severity sh:Violation ;
-        sh:message "The mainEntity pointed to by the RootDataEntity MUST be of type schema:Dataset" ;
+        sh:message "The mainEntity pointed to by the RootDataEntity MUST be of type Dataset" ;
     ] .
 
 five-safes-crate:mainEntityHasProperConformsTo
@@ -63,7 +63,7 @@ five-safes-crate:mainEntityHasProperConformsTo
         sh:minCount 1 ;
         sh:maxCount 1 ;
         sh:severity sh:Violation ;
-        sh:message "mainEntity MUST have one and only one `purl:conformsTo` property." ;
+        sh:message "mainEntity MUST have one and only one `conformsTo` property." ;
     ] ;
     sh:sparql [
         a sh:SPARQLConstraint ;

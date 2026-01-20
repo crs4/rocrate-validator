@@ -387,7 +387,7 @@ def test_5src_downloaded_workflow_is_not_represented_by_its_own_entity():
             (
                 "The entity representing the downloaded workflow is not defined, "
                 "OR is not referenced by `DownloadAction` --> `result`, "
-                "OR is not of type `schema:Dataset`."
+                "OR is not of type `Dataset`."
             )
         ],
         profile_identifier="five-safes-crate",

@@ -146,7 +146,7 @@ def test_createaction_does_not_have_instrument_property():
         expected_validation_result=False,
         expected_triggered_requirements=["CreateAction"],
         expected_triggered_issues=[
-            "`CreateAction` MUST have the `schema:instrument` property"
+            "`CreateAction` MUST have the `instrument` property"
         ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,

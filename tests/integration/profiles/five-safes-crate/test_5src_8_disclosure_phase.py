@@ -138,9 +138,7 @@ def test_5src_disclosure_object_not_an_assess_action():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["DisclosureCheck"],
-        expected_triggered_issues=[
-            "`DisclosureCheck` MUST be a `schema:AssessAction`."
-        ],
+        expected_triggered_issues=["`DisclosureCheck` MUST be a `AssessAction`."],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
     )

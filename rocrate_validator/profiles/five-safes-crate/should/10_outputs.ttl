@@ -48,7 +48,7 @@ five-safes-crate:CreateActionHasResultIfActionCompleted
     sh:path schema:result ;
     sh:minCount 1 ;
     sh:severity sh:Warning ;
-    sh:message "`CreateAction` with CompletedActionStatus SHOULD have the `schema:result` property." ;
+    sh:message "`CreateAction` with CompletedActionStatus SHOULD have the `result` property." ;
   ] .
 
 

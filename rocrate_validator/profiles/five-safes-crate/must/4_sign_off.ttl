@@ -52,7 +52,7 @@ five-safes-crate:SignOffObjectActionAndName
         sh:minCount 1 ;
         sh:hasValue schema:AssessAction;
         sh:severity sh:Violation ;
-        sh:message "Sign Off phase MUST be a `schema:AssessAction`." ;
+        sh:message "Sign Off phase MUST be a `AssessAction`." ;
     ] .
 
 five-safes-crate:SignOffObjectHasActionStatus

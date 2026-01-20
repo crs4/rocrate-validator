@@ -46,7 +46,7 @@ five-safes-crate:ValidationCheckObjectHasDescriptiveNameAndIsAssessAction
         sh:minCount 1 ;
         sh:hasValue schema:AssessAction;
         sh:severity sh:Violation ;
-        sh:message "ValidationCheck MUST be a `schema:AssessAction`." ;
+        sh:message "ValidationCheck MUST be a `AssessAction`." ;
     ] ;
 
     sh:property [

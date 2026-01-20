@@ -50,7 +50,7 @@ def test_5src_root_data_entity_two_main_entities():
         expected_validation_result=False,
         expected_triggered_requirements=["RootDataEntity"],
         expected_triggered_issues=[
-            "The RootDataEntity MUST have exactly one schema:mainEntity property that is an IRI."
+            "The RootDataEntity MUST have exactly one mainEntity property that is an IRI."
         ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
@@ -79,7 +79,7 @@ def test_5src_root_data_entity_no_main_entity():
         expected_validation_result=False,
         expected_triggered_requirements=["RootDataEntity"],
         expected_triggered_issues=[
-            "The RootDataEntity MUST have exactly one schema:mainEntity property that is an IRI."
+            "The RootDataEntity MUST have exactly one mainEntity property that is an IRI."
         ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
@@ -114,7 +114,7 @@ def test_5src_root_data_entity_main_entity_not_dataset_iri():
         expected_validation_result=False,
         expected_triggered_requirements=["RootDataEntity"],
         expected_triggered_issues=[
-            "The mainEntity pointed to by the RootDataEntity MUST be of type schema:Dataset"
+            "The mainEntity pointed to by the RootDataEntity MUST be of type Dataset"
         ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
@@ -146,7 +146,7 @@ def test_5src_main_entity_conformsTo_absent():
         expected_validation_result=False,
         expected_triggered_requirements=["mainEntity"],
         expected_triggered_issues=[
-            "mainEntity MUST have one and only one `purl:conformsTo` property."
+            "mainEntity MUST have one and only one `conformsTo` property."
         ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
@@ -179,7 +179,7 @@ def test_5src_main_entity_has_two_conformsto():
         expected_validation_result=False,
         expected_triggered_requirements=["mainEntity"],
         expected_triggered_issues=[
-            "mainEntity MUST have one and only one `purl:conformsTo` property."
+            "mainEntity MUST have one and only one `conformsTo` property."
         ],
         profile_identifier="five-safes-crate",
         rocrate_entity_mod_sparql=sparql,
@@ -188,7 +188,7 @@ def test_5src_main_entity_has_two_conformsto():
 
 def test_5src_main_entity_conformsTo_invalid():
     """
-    Test a Five Safes Crate where the mainEntity's purl:conformsTo IRI does NOT start with
+    Test a Five Safes Crate where the mainEntity's conformsTo IRI does NOT start with
     "https://w3id.org/workflowhub/workflow-ro-crate" (violates the SHACL SPARQL constraint).
     """
     sparql = (
