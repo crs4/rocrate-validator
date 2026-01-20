@@ -1,0 +1,64 @@
+{
+  "@context": [
+    "https://w3id.org/ro/crate/1.1/context",
+    {
+      "Sample": "https://bioschemas.org/Sample",
+      "LabProtocol": "https://bioschemas.org/LabProtocol",
+      "LabProcess": "https://bioschemas.org/LabProcess",
+      "computationalTool": "https://bioschemas.org/properties/computationalTool",
+      "labEquipment": "https://bioschemas.org/properties/labEquipment",
+      "reagent": "https://bioschemas.org/properties/reagent",
+      "intendedUse": "https://bioschemas.org/properties/intendedUse",
+      "executesLabProtocol": "https://bioschemas.org/properties/executesLabProtocol",
+      "parameterValue": "https://bioschemas.org/properties/parameterValue"
+    }
+  ],
+  "@graph": [
+    {
+      "@id": "studies/MyStudy/",
+      "@type": "Dataset",
+      "additionalType": "Study",
+      "identifier": "MyStudy",
+      "name": "My Study is great"
+    },
+    {
+      "@id": "LICENSE",
+      "@type": "CreativeWork",
+      "text": "MYLICENSE"
+    },
+    {
+      "@id": "./",
+      "@type": "Dataset",
+      "additionalType": "Investigation",
+      "identifier": "MyInvestigation",
+      "hasPart": {
+        "@id": "studies/MyStudy/"
+      },
+      "name": "My Investigation is great",
+      "datePublished": "2025-12-02T18:02:02.5601160",
+      "dateCreated": "2023-12-04T14:00:06.2191037",
+      "creator": {
+        "@id": "#Person_John_Doe"
+      },
+      "description": "This is an example investigation.",
+      "license": {
+        "@id": "LICENSE"
+      }
+    },
+    {
+      "@id": "#Person_John_Doe",
+      "@type": "Person",
+      "name": "John Doe"
+    },
+    {
+      "@id": "ro-crate-metadata.json",
+      "@type": "CreativeWork",
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.1"
+      },
+      "about": {
+        "@id": "./"
+      }
+    }
+  ]
+}

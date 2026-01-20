@@ -143,6 +143,48 @@ def test_isa_study_directly_referenced_from_investigation():
         profile_identifier="isa-ro-crate",
     )
 
+def test_isa_study_no_shoulds():
+    """
+    Test an ISA RO-Crate where the study is missing should properties.
+    """
+
+    do_entity_test(
+        rocrate_path=InvalidISARC().study_is_missing_shoulds,
+        requirement_severity=Severity.RECOMMENDED,
+        expected_validation_result=False,
+        # expected_triggered_requirements=["Study MUST have base properties"],
+        expected_triggered_issues=[
+            "Study entity SHOULD have a dateCreated",
+            "Study entity SHOULD have a datePublished",
+            "Study entity SHOULD have a creator",
+            "Study entity SHOULD have hasPart",
+            "Study entity SHOULD have about",
+            "Study entity SHOULD have a non-empty description of type string"
+        ],
+        profile_identifier="isa-ro-crate"
+    )
+
+def test_isa_study_shoulds_have_wrong_types():
+    """
+    Test an ISA RO-Crate where the study has should properties with wrong types.
+    """
+
+    do_entity_test(
+        rocrate_path=InvalidISARC().study_shoulds_have_wrong_types,
+        requirement_severity=Severity.REQUIRED,
+        expected_validation_result=False,
+        # expected_triggered_requirements=["Study MUST have base properties"],
+        expected_triggered_issues=[
+            "Study dateCreated MUST be a valid date literal",
+            "Study datePublished MUST be a valid date literal",
+            "Study creator MUST be of type Person",
+            "Study hasPart MUST be of type Dataset or File",
+            "Study about MUST be of type LabProcess",
+            "Study description MUST be of type string"
+        ],
+        profile_identifier="isa-ro-crate"
+    )
+
 # def test_isa_study_identifier():
 #     """
 #     Test an ISA RO-Crate where a Study does not have an identifier.

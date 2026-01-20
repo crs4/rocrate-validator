@@ -976,6 +976,26 @@ class InvalidProvRC:
 class InvalidISARC:
 
     base_path = INVALID_CRATES_DATA_PATH / "7_isa_ro_crate/"
+    
+    # Investigation related invalid crates
+
+    @property
+    def investigation_identifier_not_string(self) -> Path:
+        return self.base_path / "invalid-investigation-identifier-not-string"
+    
+    @property
+    def investigation_shoulds_have_wrong_types(self) -> Path:
+        return self.base_path / "invalid-investigation-shoulds-have-wrong-types"
+    
+    @property
+    def investigation_is_missing_identifier(self) -> Path:
+        return self.base_path / "invalid-investigation-is-missing-identifier"
+    
+    @property
+    def investigation_is_missing_shoulds(self) -> Path:
+        return self.base_path / "invalid-investigation-is-missing-shoulds"
+    
+    # Study related invalid crates
 
     @property
     def study_is_linked_through_illegal_property(self) -> Path:
@@ -986,24 +1006,8 @@ class InvalidISARC:
         return self.base_path / "invalid-study-is-missing-identifier"
     
     @property
-    def investigation_is_missing_identifier(self) -> Path:
-        return self.base_path / "invalid-investigation-is-missing-identifier"
-    
-    @property
-    def investigation_is_missing_shoulds(self) -> Path:
-        return self.base_path / "invalid-investigation-is-missing-shoulds"
-    
-    @property
     def study_identifier_not_string(self) -> Path:
         return self.base_path / "invalid-study-identifier-not-string"
-    
-    @property
-    def investigation_identifier_not_string(self) -> Path:
-        return self.base_path / "invalid-investigation-identifier-not-string"
-    
-    @property
-    def investigation_shoulds_have_wrong_types(self) -> Path:
-        return self.base_path / "invalid-investigation-shoulds-have-wrong-types"
 
     @property
     def study_is_missing_name(self) -> Path:
@@ -1016,7 +1020,35 @@ class InvalidISARC:
     @property
     def study_is_not_directly_part_of_investigation(self) -> Path:
         return self.base_path / "invalid-study-is-not-directly-part-of-investigation"
+
+    @property
+    def study_is_missing_shoulds(self) -> Path:
+        return self.base_path / "invalid-study-is-missing-shoulds"
+
+    @property
+    def study_shoulds_have_wrong_types(self) -> Path:
+        return self.base_path / "invalid-study-shoulds-have-wrong-type"
     
+    # Assay related invalid crates
+
+    @property
+    def assay_is_linked_through_illegal_property(self) -> Path:
+        return self.base_path / "invalid-assay-is-linked-through-illegal-property"
+
+    @property
+    def assay_is_missing_identifier(self) -> Path:
+        return self.base_path / "invalid-assay-is-missing-identifier"
+    
+    @property
+    def assay_identifier_not_string(self) -> Path:
+        return self.base_path / "invalid-assay-identifier-not-string"
+    
+    @property
+    def assay_is_not_directly_part_of_investigation(self) -> Path:
+        return self.base_path / "invalid-assay-is-not-directly-part-of-investigation"
+    
+    # Process related invalid crates
+
     @property
     def process_is_missing_name(self) -> Path:
         return self.base_path / "invalid-process-is-missing-name"
@@ -1057,6 +1089,8 @@ class InvalidISARC:
     def process_protocol_is_incorrect_type(self) -> Path:
         return self.base_path / "invalid-process-protocol-is-incorrect-type"
     
+    # Protocol related invalid crates
+    
     @property
     def protocol_is_missing_name(self) -> Path:
         return self.base_path / "invalid-protocol-no-name"
@@ -1080,22 +1114,6 @@ class InvalidISARC:
     @property
     def protocol_intendedUse_is_incorrect_type(self) -> Path:
         return self.base_path / "invalid-protocol-intendedUse-is-incorrect-type"
-
-    @property
-    def assay_is_linked_through_illegal_property(self) -> Path:
-        return self.base_path / "invalid-assay-is-linked-through-illegal-property"
-
-    @property
-    def assay_is_missing_identifier(self) -> Path:
-        return self.base_path / "invalid-assay-is-missing-identifier"
-    
-    @property
-    def assay_identifier_not_string(self) -> Path:
-        return self.base_path / "invalid-assay-identifier-not-string"
-    
-    @property
-    def assay_is_not_directly_part_of_investigation(self) -> Path:
-        return self.base_path / "invalid-assay-is-not-directly-part-of-investigation"
 
 
 
