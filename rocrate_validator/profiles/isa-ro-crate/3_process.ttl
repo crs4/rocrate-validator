@@ -22,6 +22,7 @@
 @prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
 @prefix isa-ro-crate: <https://github.com/crs4/rocrate-validator/profiles/isa-ro-crate/> .
 @prefix bioschemas: <https://bioschemas.org/> .
+@prefix bioschemas-prop: <https://bioschemas.org/properties/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix schema: <http://schema.org/> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
@@ -116,6 +117,50 @@ isa-ro-crate:ProcessShouldHaveResult a sh:NodeShape ;
         );
         sh:description "Check that if process does have at least one result, it MUST be of type File, Sample or BioSample" ;
         sh:message "Process results MUST be of type File, Sample or BioSample" ;
+        sh:severity sh:Violation ;
+    ]
+.
+
+isa-ro-crate:ProcessShouldHaveProtocol a sh:NodeShape ;
+    sh:name "Process SHOULD have a protocol" ;
+    sh:description "A Process SHOULD have a protocol" ;
+    sh:targetClass bioschemas:LabProcess ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path bioschemas-prop:executesLabProtocol ;
+        sh:minCount 1 ;
+        sh:description "Check that process does have at least one protocol" ;
+        sh:message "Process entity SHOULD have a protocol" ;
+        sh:severity sh:Warning ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path bioschemas-prop:executesLabProtocol ;
+        sh:class bioschemas:LabProtocol;
+        sh:description "Check that if process does have at least one protocol, it MUST be of type LabProtocol" ;
+        sh:message "Process protocols MUST be of type LabProtocol" ;
+        sh:severity sh:Violation ;
+    ]
+.
+
+isa-ro-crate:ProcessShouldHaveParamValue a sh:NodeShape ;
+    sh:name "Process SHOULD have a parameter value" ;
+    sh:description "A Process SHOULD have a parameter value" ;
+    sh:targetClass bioschemas:LabProcess ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path bioschemas-prop:parameterValue ;
+        sh:minCount 1 ;
+        sh:description "Check that process does have at least one parameter value" ;
+        sh:message "Process entity SHOULD have a parameter value" ;
+        sh:severity sh:Warning ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path bioschemas-prop:parameterValue ;
+        sh:class schema:PropertyValue;
+        sh:description "Check that if process does have at least one parameter value, it MUST be of type PropertyValue" ;
+        sh:message "Process parameter values MUST be of type PropertyValue" ;
         sh:severity sh:Violation ;
     ]
 .
