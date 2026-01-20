@@ -23,6 +23,47 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 
+#=== MUST shapes ===#
+
+five-safes-crate:WorkflowMustHaveDescriptiveName
+    a sh:NodeShape ;
+    sh:name "WorkflowExecution" ;
+    sh:targetClass schema:CreateAction ;
+
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "name" ;
+        sh:minCount 1 ;    
+        sh:description "Workflow (CreateAction) MUST have a name string of at least 10 characters." ;
+        sh:path schema:name ;
+        sh:datatype xsd:string ;
+        sh:minLength 10 ;
+        sh:severity sh:Violation ;
+        sh:message "Workflow (CreateAction) MUST have a name string of at least 10 characters." ;
+    ] .
+
+
+five-safes-crate:WorkflowMustHaveActionStatusWithAllowedValues
+    a sh:NodeShape ;
+    sh:name "WorkflowExecution" ;
+    sh:targetClass schema:CreateAction ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:minCount 1 ;
+        sh:name "actionStatus" ;
+        sh:description "WorkflowExecution MUST have an actionStatus with an allowed value (see https://schema.org/ActionStatusType)." ;
+        sh:path schema:actionStatus ;
+        sh:in (
+            "http://schema.org/PotentialActionStatus"
+            "http://schema.org/ActiveActionStatus"
+            "http://schema.org/CompletedActionStatus"
+            "http://schema.org/FailedActionStatus"
+        ) ;
+        sh:severity sh:Violation ;
+        sh:message "WorkflowExecution MUST have an actionStatus with an allowed value (see https://schema.org/ActionStatusType)." ;
+    ] .
+
+#=== SHOULD shapes ===#
 
 five-safes-crate:RootDataEntityShouldMentionWorkflow 
     a sh:NodeShape ;
@@ -47,7 +88,6 @@ five-safes-crate:RootDataEntityShouldMentionWorkflow
       sh:severity sh:Warning ;
       sh:message "RootDataEntity SHOULD mention workflow execution object (typed CreateAction)." ;
    ] .
-
 
 
 five-safes-crate:WorkflowexecutionObjectHasEndTimeIfEnded
@@ -82,4 +122,47 @@ five-safes-crate:WorkflowexecutionObjectHasEndTimeIfEnded
         sh:severity sh:Warning ;
         sh:description "The workflow execution object SHOULD have an endTime property if it has ended." ;
         sh:message "The workflow execution object SHOULD have an endTime property if it has ended." ;
+    ] .
+
+#=== MAY shapes ===#
+
+five-safes-crate:WorkflowexecutionObjectHasStartTimeIfBegun
+    a sh:NodeShape ;
+    sh:name "WorkflowExecution" ;
+    sh:description (
+        "The workflow execution object MAY have a startTime if actionStatus is "
+        "either ActiveActionStatus, CompletedActionStatus or FailedActionStatus."
+    ) ;
+
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:select """
+            PREFIX schema: <http://schema.org/>
+            PREFIX rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+            SELECT ?this
+            WHERE {
+                ?this rdf:type schema:CreateAction ;
+                      schema:actionStatus ?status .
+                FILTER(?status IN (
+                    "http://schema.org/CompletedActionStatus",
+                    "http://schema.org/FailedActionStatus",
+                    "http://schema.org/ActiveActionStatus"
+                ))
+            }
+        """ ;
+    ] ;
+
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "StartTime" ;
+        sh:path schema:startTime ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:severity sh:Info ;
+        sh:description (
+            "The workflow execution object MAY have a startTime if actionStatus is "
+            "either ActiveActionStatus, CompletedActionStatus or FailedActionStatus."
+        ) ;
+        sh:message "The workflow execution object MAY have a startTime if actionStatus is either ActiveActionStatus, CompletedActionStatus or FailedActionStatus." ;
     ] .

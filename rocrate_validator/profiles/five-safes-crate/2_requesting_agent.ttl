@@ -22,6 +22,7 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 
+#=== MUST shapes ===#
 
 five-safes-crate:CreateActionHasAgent
   a sh:NodeShape ;
@@ -61,3 +62,34 @@ five-safes-crate:CreateActionHasAgent
     sh:severity sh:Violation ;
     sh:message "The affiliation of a CreateAction's agent MUST be a contextual entity with type schema:Organization." ;
   ] .
+
+#=== SHOULD shapes ===#
+
+# Person who is the agent of a CreateAction SHOULD have an affiliation
+five-safes-crate:PersonAgentHasAffiliation
+    a sh:NodeShape ;
+    sh:name "Agent of CreateAction" ;
+    sh:description "The agent of a CreateAction entity" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT DISTINCT ?this WHERE {
+              ?action a schema:CreateAction ;
+                      schema:agent ?this .
+            }
+        """
+    ] ;
+
+    # The agent of a CreateAction entity SHOULD have an affiliation
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Presence of affiliations" ;
+        sh:path schema:affiliation ;
+        sh:minCount 1 ;
+        sh:severity sh:Warning ;
+        sh:message "The agent of a CreateAction entity SHOULD have an affiliation" ;
+    ] .
+
+#=== MAY shapes ===#
+# (none)

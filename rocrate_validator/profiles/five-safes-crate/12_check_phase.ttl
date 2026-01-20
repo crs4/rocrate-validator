@@ -23,6 +23,79 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 
+#=== MUST shapes ===#
+
+five-safes-crate:CheckValueObjectHasDescriptiveNameAndIsAssessAction
+    a sh:NodeShape ;
+    sh:name "CheckValue" ;
+    sh:description "" ;
+
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:select """
+            PREFIX schema: <http://schema.org/>
+            PREFIX shp:    <https://w3id.org/shp#>
+
+            SELECT ?this
+            WHERE {
+                ?this schema:additionalType shp:CheckValue .
+            }
+        """ ;
+    ] ;
+
+    sh:property [
+        sh:path rdf:type ;
+        sh:minCount 1 ;
+        sh:hasValue schema:AssessAction;
+        sh:severity sh:Violation ;
+        sh:message "CheckValue MUST be a `schema:AssessAction`." ;
+    ] ;
+
+    sh:property [
+        sh:a sh:PropertyShape ;
+        sh:name "name" ;
+        sh:description "CheckValue MUST have a human readable name string." ;
+        sh:path schema:name ;
+        sh:datatype xsd:string ;
+        sh:severity sh:Violation ;
+        sh:message "CheckValue MUST have a human readable name string." ;
+    ] .
+
+five-safes-crate:CheckValueActionStatusMustHaveAllowedValues
+    a sh:NodeShape ;
+    sh:name "CheckValue" ;
+    sh:description "" ;
+
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:select """
+            PREFIX schema: <http://schema.org/>
+            PREFIX shp:    <https://w3id.org/shp#>
+
+            SELECT ?this
+            WHERE {
+                ?this schema:additionalType shp:CheckValue ;
+                        schema:actionStatus ?status .
+            }
+        """ ;
+    ] ;
+
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "ActionStatus" ;
+        sh:path schema:actionStatus ;
+        sh:in (
+            "http://schema.org/PotentialActionStatus"
+            "http://schema.org/ActiveActionStatus"
+            "http://schema.org/CompletedActionStatus"
+            "http://schema.org/FailedActionStatus"
+        ) ;
+        sh:severity sh:Violation ;
+        sh:message "`CheckValue` --> `actionStatus` MUST have one of the allowed values." ;
+    ] .
+
+#=== SHOULD shapes ===#
+
 five-safes-crate:RootDataEntityShouldMentionCheckValueObject
     a sh:NodeShape ;
     sh:name "RootDataEntity" ;
@@ -187,4 +260,38 @@ five-safes-crate:CheckValueShouldHaveActionStatus
         sh:minCount 1 ;
         sh:severity sh:Warning ;
         sh:message "CheckValue SHOULD have actionStatus property." ;
+    ] .
+
+#=== MAY shapes ===#
+
+five-safes-crate:CheckValueMayHaveStartTime
+    a sh:NodeShape ;
+    sh:name "CheckValue" ;
+    sh:description "" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:select """
+            PREFIX schema: <http://schema.org/>
+            PREFIX shp:    <https://w3id.org/shp#>
+            SELECT ?this
+            WHERE {
+                ?this schema:additionalType shp:CheckValue ;
+                      schema:actionStatus ?status .
+                FILTER(?status IN (
+                    "http://schema.org/CompletedActionStatus",
+                    "http://schema.org/FailedActionStatus",
+                    "http://schema.org/ActiveActionStatus"
+                ))
+            }
+        """  ;
+    ] ;
+
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "StartTime" ;
+        sh:path schema:startTime ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:severity sh:Info ;
+        sh:message "`CheckValue` MAY have the `startTime` property." ;
     ] .

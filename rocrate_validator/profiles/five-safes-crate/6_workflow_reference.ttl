@@ -23,6 +23,7 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 
+#=== MUST shapes ===#
 
 five-safes-crate:ReferenceToWorkflowCrate
     a sh:NodeShape ;
@@ -78,3 +79,33 @@ five-safes-crate:mainEntityHasProperConformsTo
         }
         """ ;
     ] .
+
+#=== SHOULD shapes ===#
+
+five-safes-crate:DatasetMustHaveDistributionIfURI
+    a sh:NodeShape ;
+    sh:name "mainEntity" ;
+    sh:targetObjectsOf schema:mainEntity ;
+    sh:description "If mainEntity has an HTTP(S) @id, it SHOULD have a distribution that is an HTTP(S) URL." ;
+
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:name "distribution" ;
+        sh:description "If mainEntity has an HTTP(S) @id, it SHOULD have a distribution that is an HTTP(S) URL." ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT $this
+            WHERE {
+              FILTER (STRSTARTS(STR($this), "http://") || STRSTARTS(STR($this), "https://")) .
+              FILTER NOT EXISTS {
+                $this schema:distribution ?dist .
+                FILTER (STRSTARTS(STR(?dist), "http://") || STRSTARTS(STR(?dist), "https://")) .
+              }
+            }
+        """ ;
+        sh:severity sh:Warning ;
+        sh:message "If mainEntity has an HTTP(S) @id SHOULD have at least one distribution with an HTTP(S) URL." ;
+    ] .
+
+#=== MAY shapes ===#
+# (none)

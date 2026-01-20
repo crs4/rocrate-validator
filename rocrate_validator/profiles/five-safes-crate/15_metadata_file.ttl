@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-@prefix ro: <./> .
 @prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
 @prefix five-safes-crate: <https://github.com/eScienceLab/rocrate-validator/profiles/five-safes-crate/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
@@ -21,36 +20,31 @@
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix validator: <https://github.com/crs4/rocrate-validator/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix dct: <http://purl.org/dc/terms/> .
 
 
-five-safes-crate:CheckValueMayHaveStartTime
-    a sh:NodeShape ;
-    sh:name "CheckValue" ;
-    sh:description "" ;
-    sh:target [
-        a sh:SPARQLTarget ;
-        sh:select """
-            PREFIX schema: <http://schema.org/>
-            PREFIX shp:    <https://w3id.org/shp#>
-            SELECT ?this
-            WHERE {
-                ?this schema:additionalType shp:CheckValue ;
-                      schema:actionStatus ?status .
-                FILTER(?status IN (
-                    "http://schema.org/CompletedActionStatus",
-                    "http://schema.org/FailedActionStatus",
-                    "http://schema.org/ActiveActionStatus"
-                ))
-            }
-        """  ;
-    ] ;
+#=== MUST shapes ===#
 
+five-safes-crate:MetadataFileDescriptorProperties a sh:NodeShape ;
+    sh:name "RO-Crate conforms to 1.2 or later minor version" ;
+    sh:description """The RO-Crate metadata file descriptor MUST have a `conformsTo` property with RO-Crate specification version 1.2 or later minor version""";
+    sh:targetClass ro-crate:ROCrateMetadataFileDescriptor ;
     sh:property [
         a sh:PropertyShape ;
-        sh:name "StartTime" ;
-        sh:path schema:startTime ;
+        sh:name "RO-Crate conforms to 1.2 or later minor version" ;
+        sh:description "The RO-Crate metadata file descriptor MUST have a `conformsTo` property with RO-Crate specification version 1.2 or later minor version" ;
         sh:minCount 1 ;
-        sh:maxCount 1 ;
-        sh:severity sh:Info ;
-        sh:message "`CheckValue` MAY have the `startTime` property." ;
+        sh:nodeKind sh:IRI ;
+        sh:path dct:conformsTo ;
+        sh:pattern "https://w3id\\.org/ro/crate/(1\\.[2-9](-DRAFT)?)" ;
+        sh:severity sh:Violation;
+        sh:message "The RO-Crate metadata file descriptor MUST have a `conformsTo` property with RO-Crate specification version 1.2 or later minor version" ;
     ] .
+
+ro-crate:conformsToROCrateSpec sh:deactivated true .
+
+#=== SHOULD shapes ===#
+# (none)
+
+#=== MAY shapes ===#
+# (none)

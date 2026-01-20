@@ -17,11 +17,81 @@
 @prefix five-safes-crate: <https://github.com/eScienceLab/rocrate-validator/profiles/five-safes-crate/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix schema: <http://schema.org/> .
+@prefix purl: <http://purl.org/dc/terms/> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix validator: <https://github.com/crs4/rocrate-validator/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-@prefix shp: <https://w3id.org/shp#> .
 
+
+#=== MUST shapes ===#
+
+five-safes-crate:SignOffObjectActionAndName
+    a sh:NodeShape ;
+    sh:name "SignOff" ;
+    sh:description "Sign Off phase" ;
+
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:select """
+            PREFIX schema: <http://schema.org/>
+            PREFIX shp:    <https://w3id.org/shp#>
+            SELECT ?this
+            WHERE {
+                ?this schema:additionalType shp:SignOff .
+            }
+        """ ;
+    ] ;
+
+    sh:property [
+        sh:path schema:name ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:severity sh:Violation ;
+        sh:message "Sign Off phase MUST have a human-readable name string." ;
+    ] ;
+
+    sh:property [
+        sh:path rdf:type ;
+        sh:minCount 1 ;
+        sh:hasValue schema:AssessAction;
+        sh:severity sh:Violation ;
+        sh:message "Sign Off phase MUST be a `schema:AssessAction`." ;
+    ] .
+
+five-safes-crate:SignOffObjectHasActionStatus
+    a sh:NodeShape ;
+    sh:name "SignOffStatus" ;
+    sh:description "Sign Off Phase Action Status" ;
+
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:select """
+            PREFIX schema: <http://schema.org/>
+            PREFIX shp:    <https://w3id.org/shp#>
+            SELECT ?this
+            WHERE {
+                ?this schema:additionalType shp:SignOff ;
+                      schema:actionStatus ?status .
+            }
+        """ ;
+    ] ;
+
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "actionStatus" ;
+        sh:description "The value of actionStatus MUST be one of the allowed values." ;
+        sh:path schema:actionStatus ;
+        sh:in (
+            "http://schema.org/PotentialActionStatus"
+            "http://schema.org/ActiveActionStatus"
+            "http://schema.org/CompletedActionStatus"
+            "http://schema.org/FailedActionStatus"
+        ) ;
+        sh:severity sh:Violation ;
+        sh:message "The value of actionStatus MUST be one of the allowed values: PotentialActionStatus; ActiveActionStatus; CompletedActionStatus; FailedActionStatus." ;
+    ] .
+
+#=== SHOULD shapes ===#
 
 # There SHOULD be a Sign-Off Phase
 five-safes-crate:SignOffPhase
@@ -174,4 +244,40 @@ five-safes-crate:SignOffPhaseEndTime
         sh:severity sh:Warning ;
         sh:description "Sign Off object SHOULD have endTime property if action completed or failed." ;
         sh:message "Sign Off object SHOULD have endTime property if action completed or failed." ;
+    ] .
+
+#=== MAY shapes ===#
+
+five-safes-crate:SignOffPhaseStartTime
+    a sh:NodeShape ;
+    sh:name "SignOffPhaseStartTime" ;
+
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:select """
+            PREFIX schema: <http://schema.org/>
+            PREFIX shp:    <https://w3id.org/shp#>
+            SELECT ?this
+            WHERE {
+                ?this schema:additionalType shp:SignOff ;
+                        schema:actionStatus ?status .
+                FILTER(?status IN (
+                    "http://schema.org/ActiveActionStatus",
+                    "http://schema.org/CompletedActionStatus",
+                    "http://schema.org/FailedActionStatus"
+                ))
+            }
+        """ ;
+    ] ;
+
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "StartTime" ;
+        sh:path schema:startTime ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:pattern "^[0-9]{4}-[0-9]{2}-[0-9]{2}[Tt][0-9]{2}:[0-9]{2}:[0-9]{2}([.|,][0-9]+)?(Z|z|[+-][0-9]{2}:[0-9]{2})$" ;
+        sh:severity sh:Info ;
+        sh:description "Sign Off object MAY have a startTime property if action is active, completed or failed." ;
+        sh:message "Sign Off object MAY have a startTime property if action is active, completed or failed." ;
     ] .

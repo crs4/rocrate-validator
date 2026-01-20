@@ -22,6 +22,46 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 
+#=== MUST shapes ===#
+
+five-safes-crate:ResponsibleProject
+    a sh:NodeShape ;
+    sh:name "Responsible Project" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT DISTINCT ?this WHERE {
+              ?action a schema:CreateAction ;
+                      schema:agent ?agent .
+              ?agent schema:memberOf ?this .
+            }
+        """
+    ] ;
+
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "funding" ;
+        sh:path schema:funding;
+        sh:class schema:Grant ;
+        sh:severity sh:Violation ;
+        sh:message """The property 'funding' of the Responsible Project MUST be of type schema:Grant.""" ;
+    ] ;
+
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "member" ;
+        sh:path schema:member;
+        sh:or (
+            [ sh:class schema:Organization ]
+            [ sh:class schema:Person ]
+        ) ;
+        sh:severity sh:Violation ;
+        sh:message """The property 'member' of the Responsible Project MUST be of type schema:Organization or schema:Person.""" ;
+    ] .
+
+#=== SHOULD shapes ===#
+
 five-safes-crate:ResponsibleProjectMemberAndSourceOrganizationIntersection
     a sh:NodeShape ;
     sh:name "Organizations (members of Responsible Project)" ;
@@ -57,4 +97,39 @@ five-safes-crate:ResponsibleProjectMemberAndSourceOrganizationIntersection
         """ ;
         sh:severity sh:Warning ;
         sh:message """At least one of the organisations that are members of the responsible project SHOULD be included in the Requesting Agent's affiliations, if such properties exist.""" ;
+    ] .
+
+#=== MAY shapes ===#
+
+five-safes-crate:ResponsibleProject
+    a sh:NodeShape ;
+    sh:name "Responsible Project" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT DISTINCT ?this WHERE {
+              ?action a schema:CreateAction ;
+                      schema:agent ?agent .
+              ?agent schema:memberOf ?this .
+            }
+        """
+    ] ;
+
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "funding" ;
+        sh:path schema:funding;
+        sh:minCount 1 ;
+        sh:severity sh:Info ;
+        sh:message """The Responsible Project does not have the property `funding`.""" ;
+    ] ;
+
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "member" ;
+        sh:path schema:member;
+        sh:minCount 1 ;
+        sh:severity sh:Info ;
+        sh:message """The Responsible Project does not have the property `member`.""" ;
     ] .

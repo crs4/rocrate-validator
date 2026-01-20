@@ -22,15 +22,34 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 
-# CreateAction SHOULD have object property with minimum cardinality 1
-five-safes-crate:CreateActionShouldHaveObjectProperty
+#=== MUST shapes ===#
+
+five-safes-crate:RootDataEntityRequiredProperties
     a sh:NodeShape ;
-    sh:targetClass schema:CreateAction ;
-    sh:name "CreateAction" ;
+    sh:name "RootDataEntity" ;
+    sh:targetClass ro-crate:RootDataEntity ;
+
     sh:property [
-        sh:path schema:object ;
+        a sh:PropertyShape ;
+        sh:name "sourceOrganization" ;
+        sh:path schema:sourceOrganization;
         sh:minCount 1 ;
-        sh:nodeKind sh:IRI ;
-        sh:severity sh:Warning ;
-        sh:message "`CreateAction` SHOULD have the property `object` with IRI values." ;
+        sh:severity sh:Violation ;
+        sh:message """The Root Data Entity MUST have a `sourceOrganization` property.""" ;
+    ] ;
+
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "sourceOrganization" ;
+        sh:path schema:sourceOrganization ;
+        sh:class schema:Project ;
+        sh:severity sh:Violation ;
+        sh:message """The `sourceOrganization` property of the RootDataEntity MUST point to a Project entity.""" ;
     ] .
+
+#=== SHOULD shapes ===#
+# (none)
+
+
+#=== MAY shapes ===#
+# (none)

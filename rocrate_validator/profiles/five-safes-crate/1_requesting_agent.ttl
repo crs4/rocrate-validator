@@ -22,6 +22,8 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 
+#=== MUST shapes ===#
+
 five-safes-crate:AgentIsMemberOf
     a sh:NodeShape ;
     sh:name "Requesting Agent" ;
@@ -80,3 +82,31 @@ five-safes-crate:AgentProjectIntersection
         sh:severity sh:Violation ;
         sh:message """At least one Project referenced by Agent -> memberOf MUST be included in the set of Projects referenced by RootDataEntity -> sourceOrganization.""" ;
     ] .
+
+#=== SHOULD shapes ===#
+
+five-safes-crate:AgentIsMemberOf
+    a sh:NodeShape ;
+    sh:name "Requesting Agent" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT DISTINCT ?this WHERE {
+              ?action a schema:CreateAction ;
+                      schema:agent ?this .
+            }
+        """
+    ] ;
+
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "memberOf" ;
+        sh:path schema:memberOf;
+        sh:minCount 1 ;
+        sh:severity sh:Warning ;
+        sh:message """The Requesting Agent SHOULD have a `memberOf` property.""" ;
+    ] .
+
+#=== MAY shapes ===#
+# (none)

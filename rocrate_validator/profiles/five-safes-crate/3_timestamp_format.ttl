@@ -23,6 +23,8 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 
+#=== MUST shapes ===#
+
 # to ensure the entity id will be included in any error message,
 # target all entities which have startTime and/or endTime properties using sh:targetSubjectsOf,
 # then we use sh:property to validate the values of those properties.
