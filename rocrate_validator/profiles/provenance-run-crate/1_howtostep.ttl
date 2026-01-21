@@ -23,6 +23,9 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix wfrun: <https://w3id.org/ro/terms/workflow-run#> .
 
+
+#=== MUST shapes ===#
+
 provenance-run-crate:ProvRCHowToStepRequired a sh:NodeShape ;
     sh:name "ProvRC HowToStep MUST" ;
     sh:description "Required properties of a Provenance Run Crate HowToStep" ;
@@ -48,6 +51,7 @@ provenance-run-crate:ProvRCHowToStepRequired a sh:NodeShape ;
         ) ;
         sh:minCount 1 ;
         sh:message "A HowToStep must refer to its corresponding tool via workExample" ;
+        sh:severity sh:Violation ;
     ] ;
     sh:property [
         a sh:PropertyShape ;
@@ -60,6 +64,7 @@ provenance-run-crate:ProvRCHowToStepRequired a sh:NodeShape ;
         ) ;
         sh:pattern "\\d+" ;
         sh:message "If specified, position must be a string representing an integer" ;
+        sh:severity sh:Violation ;
     ] ;
     sh:property [
         a sh:PropertyShape ;
@@ -68,4 +73,45 @@ provenance-run-crate:ProvRCHowToStepRequired a sh:NodeShape ;
         sh:path wfrun:connection ;
         sh:class wfrun:ParameterConnection ;
         sh:message "If the HowToStep has a connection, it must point to a ParameterConnection" ;
+        sh:severity sh:Violation ;
     ] .
+
+#===  SHOULD shapes ===#
+# (none)
+
+
+#=== MAY shapes ===#
+
+provenance-run-crate:ProvRCHowToStepOptional a sh:NodeShape ;
+    sh:name "ProvRC HowToStep MAY" ;
+    sh:description "Optional properties of a Provenance Run Crate HowToStep" ;
+    sh:targetClass schema:HowToStep ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "HowToStep position" ;
+        sh:description "A HowToStep may indicate its position in the execution order via position" ;
+        sh:path schema:position ;
+        sh:minCount 1 ;
+        sh:message "A HowToStep may indicate its position in the execution order via position" ;
+        sh:severity sh:Info ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "HowToStep connection" ;
+        sh:description "HowToStep may have a connection property" ;
+        sh:path wfrun:connection ;
+        sh:minCount 1 ;
+        sh:message "HowToStep may have a connection property" ;
+        sh:severity sh:Info ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "HowToStep buildInstructions" ;
+        sh:description "A HowToStep MAY have a buildInstructions pointing to a File" ;
+        sh:path codemeta:buildInstructions ;
+        sh:class schema:MediaObject ;
+        sh:minCount 1 ;
+        sh:message "A HowToStep MAY have a buildInstructions pointing to a File" ;
+        sh:severity sh:Info ;
+    ] .
+

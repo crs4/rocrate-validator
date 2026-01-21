@@ -24,6 +24,36 @@
 @prefix wfrun: <https://w3id.org/ro/terms/workflow-run#> .
 
 
+#=== MUST sjapes ===#
+
+provenance-run-crate:ProvRCParameterConnectionRequired a sh:NodeShape ;
+    sh:name "ProvRC ParameterConnection MUST" ;
+    sh:description "Required properties of a Provenance Run Crate ParameterConnection" ;
+    sh:targetClass wfrun:ParameterConnection ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "ParameterConnection sourceParameter" ;
+        sh:description "ParameterConnection must have a sourceParameter that references a FormalParameter" ;
+        sh:path wfrun:sourceParameter ;
+        sh:class bioschemas:FormalParameter ;
+        sh:minCount 1 ;
+        sh:message "ParameterConnection must have a sourceParameter that references a FormalParameter" ;
+        sh:severity sh:Violation ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "ParameterConnection targetParameter" ;
+        sh:description "ParameterConnection must have a targetParameter that references a FormalParameter" ;
+        sh:path wfrun:targetParameter ;
+        sh:class bioschemas:FormalParameter ;
+        sh:minCount 1 ;
+        sh:message "ParameterConnection must have a targetParameter that references a FormalParameter" ;
+        sh:severity sh:Violation ;
+    ] .
+
+
+#=== SHOULD shapes ===#
+
 provenance-run-crate:ProvRCParameterConnectionReferencesRecommended a sh:NodeShape ;
     sh:name "ParameterConnection references" ;
     sh:description "Recommended references for ParameterConnection entities" ;
@@ -41,6 +71,7 @@ provenance-run-crate:ProvRCParameterConnectionReferencesRecommended a sh:NodeSha
         sh:nodeKind sh:IRI ;
         sh:minCount 1 ;
         sh:message """Missing `connection` to this `ParameterConnection` entity""" ;
+        sh:severity sh:Warning ;
     ] .
 
 provenance-run-crate:ProvRCWorkflowParameterConnectionRecommended a sh:NodeShape ;
@@ -66,6 +97,7 @@ provenance-run-crate:ProvRCWorkflowParameterConnectionRecommended a sh:NodeShape
         """ ;
     ] ;
     sh:message """Missing `ComputationalWorkflow` connection to this `ParameterConnection` entity""" ;
+    sh:severity sh:Warning ;
 .
 
 provenance-run-crate:ProvRCHowToStepParameterConnectionRecommended a sh:NodeShape ;
@@ -93,4 +125,9 @@ provenance-run-crate:ProvRCHowToStepParameterConnectionRecommended a sh:NodeShap
         """ ;
     ] ;
     sh:message "Missing `HowToStep` connection to this `ParameterConnection` entity" ;
+    sh:severity sh:Warning ;
 .
+
+
+#=== MAY shapes ===#
+# (none)

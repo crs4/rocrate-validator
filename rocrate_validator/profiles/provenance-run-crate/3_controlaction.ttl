@@ -22,6 +22,9 @@
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix wfrun: <https://w3id.org/ro/terms/workflow-run#> .
 
+
+#=== MUST shapes ===#
+
 provenance-run-crate:ProvRCControlActionRequired a sh:NodeShape ;
     sh:name "ProvRC ControlAction MUST" ;
     sh:description "Required properties of a Provenance Run Crate ControlAction" ;
@@ -34,6 +37,7 @@ provenance-run-crate:ProvRCControlActionRequired a sh:NodeShape ;
         sh:class schema:HowToStep ;
         sh:minCount 1 ;
         sh:message "A ControlAction must reference a HowToStep instance representing the corresponding workflow step via instrument" ;
+        sh:severity sh:Violation ;
     ] ;
     sh:property [
         a sh:PropertyShape ;
@@ -47,4 +51,13 @@ provenance-run-crate:ProvRCControlActionRequired a sh:NodeShape ;
         ) ;
         sh:minCount 1 ;
         sh:message "A ControlAction must reference the action representing the corresponding tool run via object" ;
+        sh:severity sh:Violation ;
     ] .
+
+
+#=== SHOULD shapes ===#
+# (none)
+
+
+#=== MAY shapes ===#
+# (none)

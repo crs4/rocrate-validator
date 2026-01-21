@@ -19,6 +19,9 @@
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix provenance-run-crate: <https://github.com/crs4/rocrate-validator/profiles/provenance-run-crate/> .
 
+
+#=== MUST shapes ===#
+
 provenance-run-crate:ProvRCRootDataEntityMetadata a sh:NodeShape ;
     sh:name "Provenance Run Crate Root Data Entity" ;
     sh:description "Properties of the Provenance Run Crate Root Data Entity" ;
@@ -36,4 +39,31 @@ provenance-run-crate:ProvRCRootDataEntityMetadata a sh:NodeShape ;
         sh:qualifiedMinCount 1 ;
         sh:minCount 1 ;
         sh:message "The Root Data Entity MUST reference a CreativeWork entity with an @id URI that is consistent with the versioned permalink of the Provenance Run Crate profile" ;
+        sh:severity sh:Violation ;
     ] .
+
+
+#=== SHOULD shapes ===#
+
+provenance-run-crate:ProvRCRootDataEntityRecommended a sh:NodeShape ;
+    sh:name "Provenance Run Crate Root Data Entity SHOULD" ;
+    sh:description "Recommended Properties of the Provenance Run Crate Root Data Entity" ;
+    sh:targetClass ro-crate:RootDataEntity ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Root Data Entity conformsTo" ;
+        sh:description "The Root Data Entity SHOULD reference CreativeWork entities corresponding to the Process Run Crate, Workflow Run Crate and Workflow RO-Crate profiles" ;
+        sh:path dct:conformsTo ;
+        sh:class schema:CreativeWork;
+        sh:qualifiedValueShape [
+            sh:pattern "^https://w3id.org/(ro/wfrun/process|ro/wfrun/workflow|workflowhub/workflow-ro-crate)/.*" ;
+        ] ;
+        # At least three values of conformsTo must match the pattern
+        sh:qualifiedMinCount 3 ;
+        sh:minCount 1 ;
+        sh:message "The Root Data Entity SHOULD reference CreativeWork entities corresponding to the Process Run Crate, Workflow Run Crate and Workflow RO-Crate profiles" ;
+        sh:severity sh:Warning ;
+    ] .
+
+#=== MAY shapes ===#
+# (none)

@@ -20,6 +20,39 @@
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix wfrun: <https://w3id.org/ro/terms/workflow-run#> .
 
+
+#=== MUST shapes ===#
+
+provenance-run-crate:ProvRCRUPropertyValueRequired a sh:NodeShape ;
+    sh:name "Provenance Run Crate resource usage PropertyValue MUST" ;
+    sh:description "Required properties of a PropertyValue used to represent resource usage" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?this a schema:PropertyValue .
+                ?action wfrun:resourceUsage ?this .
+                { ?action a schema:CreateAction } UNION
+                { ?action a schema:ActivateAction } UNION
+                { ?action a schema:UpdateAction } .
+            }
+        """
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "RU PropertyValue propertyID" ;
+        sh:description "A PropertyValue used to represent resourceUsage MUST have a propertyID" ;
+        sh:path schema:propertyID ;
+        sh:minCount 1 ;
+        sh:message "A PropertyValue used to represent resourceUsage MUST have a propertyID" ;
+        sh:severity sh:Violation ;
+    ] .
+
+
+#=== SHOULD shapes ===#
+
 provenance-run-crate:ProvRCRUPropertyValueRecommended a sh:NodeShape ;
     sh:name "Provenance Run Crate resource usage PropertyValue SHOULD" ;
     sh:description "Recommended properties of a PropertyValue used to represent resource usage" ;
@@ -44,4 +77,9 @@ provenance-run-crate:ProvRCRUPropertyValueRecommended a sh:NodeShape ;
         sh:path schema:unitCode ;
         sh:minCount 1 ;
         sh:message "A PropertyValue used to represent resourceUsage SHOULD have a unitCode" ;
+        sh:severity sh:Warning ;
     ] .
+
+
+#=== MAY shapes ===#
+# (none)

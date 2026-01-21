@@ -23,6 +23,9 @@
 @prefix wfrun: <https://w3id.org/ro/terms/workflow-run#> .
 @prefix provenance-run-crate: <https://github.com/crs4/rocrate-validator/profiles/provenance-run-crate/> .
 
+
+#=== MUST shapes ===#
+
 provenance-run-crate:ProvRCComputationalWorkflowRequired a sh:NodeShape ;
     sh:name "Provenance Run Crate ComputationalWorkflow MUST" ;
     sh:description "Required properties of the Provenance Run Crate ComputationalWorkflow" ;
@@ -39,6 +42,7 @@ provenance-run-crate:ProvRCComputationalWorkflowRequired a sh:NodeShape ;
         ) ;
         sh:minCount 1 ;
         sh:message "ComputationalWorkflow MUST refer to orchestrated tools via hasPart" ;
+        sh:severity sh:Violation ;
     ] ;
     sh:property [
         a sh:PropertyShape ;
@@ -47,6 +51,7 @@ provenance-run-crate:ProvRCComputationalWorkflowRequired a sh:NodeShape ;
         sh:path wfrun:connection ;
         sh:class wfrun:ParameterConnection ;
         sh:message "If the ComputationalWorkflow has a connection, it must point to a ParameterConnection" ;
+        sh:severity sh:Violation ;
     ] .
 
 
@@ -73,4 +78,68 @@ provenance-run-crate:ProvRCComputationalWorkflowWithSteps a sh:NodeShape ;
         sh:hasValue schema:HowTo;
         sh:minCount 1 ;
         sh:message "A ComputationalWorkflow that links to steps MUST have the HowTo type" ;
+        sh:severity sh:Violation ;
     ] .
+
+
+#=== SHOULD shapes ===#
+
+provenance-run-crate:ProvRCComputationalWorkflowRecommended a sh:NodeShape ;
+    sh:name "Provenance Run Crate ComputationalWorkflow SHOULD" ;
+    sh:description "Recommended properties of the Provenance Run Crate ComputationalWorkflow" ;
+    sh:targetClass bioschemas:ComputationalWorkflow ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "ComputationalWorkflow step" ;
+        sh:description "ComputationalWorkflow SHOULD refer to HowToStep instances via step" ;
+        sh:path schema:step ;
+        sh:class schema:HowToStep ;
+        sh:minCount 1 ;
+        sh:message "ComputationalWorkflow SHOULD refer to HowToStep instances via step" ;
+        sh:severity sh:Warning ;
+    ] .
+
+
+#=== MAY shapes ===#
+
+provenance-run-crate:ProvRCComputationalWorkflowOptional a sh:NodeShape ;
+    sh:name "Provenance Run Crate ComputationalWorkflow MAY" ;
+    sh:description "Optional properties of the Provenance Run Crate ComputationalWorkflow" ;
+    sh:targetClass bioschemas:ComputationalWorkflow ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "ComputationalWorkflow connection" ;
+        sh:description "ComputationalWorkflow may have a connection property" ;
+        sh:path wfrun:connection ;
+        sh:minCount 1 ;
+        sh:message "ComputationalWorkflow may have a connection property" ;
+        sh:severity sh:Info ;
+    ] .
+
+
+provenance-run-crate:ProvRCComputationalWorkflowHowToOptional a sh:NodeShape ;
+    sh:name "Provenance Run Crate ComputationalWorkflow / HowTo MAY" ;
+    sh:description "Optional properties of a Provenance Run Crate ComputationalWorkflow that is also a HowTo" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?this a bioschemas:ComputationalWorkflow .
+                ?this a schema:HowTo .
+            }
+        """
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "ComputationalWorkflow buildInstructions" ;
+        sh:description "A ComputationalWorkflow / HowTo MAY have a buildInstructions pointing to a File" ;
+        sh:path codemeta:buildInstructions ;
+        sh:class schema:MediaObject ;
+        sh:minCount 1 ;
+        sh:message "A ComputationalWorkflow / HowTo MAY have a buildInstructions pointing to a File" ;
+        sh:severity sh:Info ;
+    ] .
+
+

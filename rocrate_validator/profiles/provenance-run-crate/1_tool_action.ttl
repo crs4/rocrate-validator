@@ -20,6 +20,9 @@
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix wfrun: <https://w3id.org/ro/terms/workflow-run#> .
 
+
+#=== MUST shapes ===#
+
 provenance-run-crate:ProvRCToolActionRequired a sh:NodeShape ;
     sh:name "Provenance Run Crate tool action MUST" ;
     sh:description "Required properties of a Provenance Run Crate action that represents a tool execution" ;
@@ -48,4 +51,43 @@ provenance-run-crate:ProvRCToolActionRequired a sh:NodeShape ;
         sh:path wfrun:resourceUsage ;
         sh:class schema:PropertyValue ;
         sh:message "If present, resourceUsage MUST point to PropertyValue" ;
+        sh:severity sh:Violation ;
+    ] .
+
+
+#=== SHOULD shapes ===#
+# (none)
+
+
+#=== MAY shapes ===#
+
+provenance-run-crate:ProvRCToolActionOptional a sh:NodeShape ;
+    sh:name "Provenance Run Crate tool action MAY" ;
+    sh:description "Optional properties of a Provenance Run Crate action that represents a tool execution" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                { ?this a schema:CreateAction } UNION
+                { ?this a schema:ActivateAction } UNION
+                { ?this a schema:UpdateAction } .
+                ?this schema:instrument ?tool .
+                { ?tool a schema:SoftwareApplication } UNION
+                { ?tool a schema:SoftwareSourceCode } UNION
+                { ?tool a bioschemas:ComputationalWorkflow } .
+                ?workflow schema:hasPart ?tool .
+                ?workflow a bioschemas:ComputationalWorkflow .
+            }
+        """
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Tool action resourceUsage" ;
+        sh:description "A tool action MAY have a resourceUsage" ;
+        sh:path wfrun:resourceUsage ;
+        sh:minCount 1 ;
+        sh:message "A tool action MAY have a resourceUsage" ;
+        sh:severity sh:Info ;
     ] .

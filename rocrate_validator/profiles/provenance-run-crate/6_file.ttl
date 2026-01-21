@@ -19,6 +19,13 @@
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix provenance-run-crate: <https://github.com/crs4/rocrate-validator/profiles/provenance-run-crate/> .
 
+
+#=== MUST shapes ===#
+# (none)
+
+
+#=== SHOULD shapes ===#
+
 provenance-run-crate:ProvRCBuildInstructionsFileRecommended a sh:NodeShape ;
     sh:name "Provenance Run Crate build instructions file SHOULD" ;
     sh:description "Recommended Properties of the Provenance Run Crate File that acts as a buildInstructions environment file" ;
@@ -42,6 +49,7 @@ provenance-run-crate:ProvRCBuildInstructionsFileRecommended a sh:NodeShape ;
         sh:path schema:encodingFormat ;
         sh:minCount 1 ;
         sh:message "the environment file SHOULD have an encodingFormat" ;
+        sh:severity sh:Warning ;
     ] ;
     sh:property [
         a sh:PropertyShape ;
@@ -50,4 +58,9 @@ provenance-run-crate:ProvRCBuildInstructionsFileRecommended a sh:NodeShape ;
         sh:path dct:conformsTo ;
         sh:minCount 1 ;
         sh:message "the environment file SHOULD have a conformsTo" ;
+        sh:severity sh:Warning ;
     ] .
+
+
+#=== MAY shapes ===#
+# (none)

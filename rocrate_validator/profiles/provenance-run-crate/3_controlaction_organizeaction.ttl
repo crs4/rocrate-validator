@@ -22,6 +22,13 @@
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix wfrun: <https://w3id.org/ro/terms/workflow-run#> .
 
+
+#=== MUST shapes ===#
+# (none)
+
+
+#=== SHOULD shapes ===#
+
 provenance-run-crate:ProvRCControlOrganizeActionRecommended a sh:NodeShape ;
     sh:name "ProvRC ControlAction and OrganizeAction SHOULD" ;
     sh:description "Recommended properties of a Provenance Run Crate ControlAction and OrganizeAction" ;
@@ -37,12 +44,14 @@ provenance-run-crate:ProvRCControlOrganizeActionRecommended a sh:NodeShape ;
             "http://schema.org/FailedActionStatus"
         ) ;
         sh:message "If the action has an actionStatus, it should be http://schema.org/CompletedActionStatus or http://schema.org/FailedActionStatus" ;
+        sh:severity sh:Warning ;
     ] .
 
 provenance-run-crate:ProvRCActionError a sh:NodeShape ;
     sh:name "Provenance Run Crate ControlAction and OrganizeAction error" ;
     sh:description "error SHOULD NOT be specified unless actionStatus is set to FailedActionStatus" ;
     sh:message "error SHOULD NOT be specified unless actionStatus is set to FailedActionStatus" ;
+    sh:severity sh:Warning ;
     sh:target [
         a sh:SPARQLTarget ;
         sh:prefixes ro-crate:sparqlPrefixes ;
@@ -62,3 +71,46 @@ provenance-run-crate:ProvRCActionError a sh:NodeShape ;
         sh:path schema:error ;
         sh:minCount 1 ;
     ] .
+
+
+#=== MAY shapes ===#
+
+provenance-run-crate:ProvRCControlOrganizeActionOptional a sh:NodeShape ;
+    sh:name "ProvRC ControlAction and OrganizeAction MAY" ;
+    sh:description "Optional properties of a Provenance Run Crate ControlAction and OrganizeAction" ;
+    sh:targetClass schema:ControlAction ,
+                   schema:OrganizeAction ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "ControlAction and OrganizeAction actionStatus" ;
+        sh:description "The action MAY have an actionStatus" ;
+        sh:path schema:actionStatus ;
+        sh:minCount 1 ;
+        sh:message "The Action MAY have an actionStatus" ;
+        sh:severity sh:Info ;
+    ] .
+
+provenance-run-crate:ProvRCControlOrganizeActionErrorOptional a sh:NodeShape ;
+    sh:name "ProvRC ControlAction and OrganizeAction error" ;
+    sh:description "error MAY be specified if actionStatus is set to FailedActionStatus" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                { ?this a schema:ControlAction } UNION
+                { ?this a schema:OrganizeAction } .
+                ?this schema:actionStatus ?status .
+                FILTER(?status = "http://schema.org/FailedActionStatus") .
+            }
+        """
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:error ;
+        sh:minCount 1 ;
+        sh:message "error MAY be specified if actionStatus is set to FailedActionStatus" ;
+        sh:severity sh:Info ;
+    ] .
+

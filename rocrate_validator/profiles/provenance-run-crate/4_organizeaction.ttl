@@ -22,6 +22,9 @@
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix wfrun: <https://w3id.org/ro/terms/workflow-run#> .
 
+
+#=== MUST shapes ===#
+
 provenance-run-crate:ProvRCOrganizeActionRequired a sh:NodeShape ;
     sh:name "ProvRC OrganizeAction MUST" ;
     sh:description "Required properties of a Provenance Run Crate OrganizeAction" ;
@@ -38,6 +41,7 @@ provenance-run-crate:ProvRCOrganizeActionRequired a sh:NodeShape ;
         ) ;
         sh:minCount 1 ;
         sh:message "An OrganizeAction must reference an entity representing the workflow engine (e.g. a SoftwareApplication) via instrument" ;
+        sh:severity sh:Violation ;
     ] ;
     sh:property [
         a sh:PropertyShape ;
@@ -51,6 +55,7 @@ provenance-run-crate:ProvRCOrganizeActionRequired a sh:NodeShape ;
         ) ;
         sh:minCount 1 ;
         sh:message "An OrganizeAction must reference the action representing the workflow run via result" ;
+        sh:severity sh:Violation ;
     ] ;
     sh:property [
         a sh:PropertyShape ;
@@ -60,4 +65,13 @@ provenance-run-crate:ProvRCOrganizeActionRequired a sh:NodeShape ;
         sh:class schema:ControlAction ;
         sh:minCount 1 ;
         sh:message "An OrganizeAction must reference the ControlAction instances representing the step executions via object" ;
+        sh:severity sh:Violation ;
     ] .
+
+
+#=== SHOULD shapes ===#
+# (none)
+
+
+#=== MAY shapes ===#
+# (none)
