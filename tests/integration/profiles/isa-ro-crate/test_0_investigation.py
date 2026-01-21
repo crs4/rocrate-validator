@@ -125,3 +125,36 @@ def test_isa_investigation_shoulds_have_wrong_types():
         ],
         profile_identifier="isa-ro-crate"
     )
+
+def test_isa_sparql():
+    """
+    Test an ISA RO-Crate with sparql.
+    """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        DELETE {
+            ?dataset schema:additionalType "Investigation" .
+            ?dataset schema:dateCreated "2025-12-09T16:11:16.8899868" .
+        }
+         INSERT {
+            ?dataset schema:dateCreated "abc" .
+        }
+        WHERE {
+            ?dataset a schema:Dataset .
+            ?dataset schema:additionalType "Investigation" .
+        }
+        """
+    )
+
+    do_entity_test(
+        rocrate_path=ValidROC().isa_ro_crate_manual,
+        requirement_severity=Severity.REQUIRED,
+        expected_validation_result=False,
+        expected_triggered_issues=[
+            "The root data entity must have additionalType of `Investigation`",
+            "Investigation dateCreated MUST be a valid date literal"
+        ],
+        profile_identifier="isa-ro-crate",
+        rocrate_entity_mod_sparql=sparql,
+    )

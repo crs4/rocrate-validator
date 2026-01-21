@@ -1,0 +1,156 @@
+{
+  "@context": [
+    "https://w3id.org/ro/crate/1.1/context",
+    {
+      "Sample": "https://bioschemas.org/Sample",
+      "LabProtocol": "https://bioschemas.org/LabProtocol",
+      "LabProcess": "https://bioschemas.org/LabProcess",
+      "computationalTool": "https://bioschemas.org/properties/computationalTool",
+      "labEquipment": "https://bioschemas.org/properties/labEquipment",
+      "reagent": "https://bioschemas.org/properties/reagent",
+      "intendedUse": "https://bioschemas.org/properties/intendedUse",
+      "executesLabProtocol": "https://bioschemas.org/properties/executesLabProtocol",
+      "parameterValue": "https://bioschemas.org/properties/parameterValue",
+      "measurementMethod": "http://schema.org/measurementMethod"
+    }
+  ],
+  "@graph": [
+    {
+      "@id": "assays/MyAssay/",
+      "@type": "Dataset",
+      "additionalType": "Assay",
+      "identifier": "MyAssay",
+      "name": "My Assay is great",
+      "description": "This is an example study.",
+      "creator": {
+        "@id": "#Person_John_Doe"
+      },
+      "about": {
+        "@id": "#Process_MyProcess"
+      },
+      "measurementMethod": {
+        "@id": "#Term_MyTerm"
+      },
+      "measurementTechnique":{
+        "@id": "#Term_MyTerm"
+      },
+      "hasPart": {
+        "@id": "assays/MyAssay/datafile.txt"
+      }
+    },
+    {
+      "@id": "#Sample_MyInputSample",
+      "@type": "Sample",
+      "additionalType": "Sample",
+      "name": "MyInputSample"
+    },
+    {
+      "@id": "#Sample_MyOutputSample",
+      "@type": "Sample",
+      "additionalType": "Sample",
+      "name": "MyOutputSample"
+    },
+    {
+      "@id": "#Process_MyProcess",
+      "@type": "LabProcess",
+      "name": "MyProcess",
+      "object": {
+        "@id": "#Sample_MyInputSample"
+      },
+      "result": {
+        "@id": "#Sample_MyOutputSample"
+      },
+      "executesLabProtocol": {
+        "@id": "#Protocol_MyProtocol"
+      },
+      "parameterValue": {
+        "@id": "#PV_MyParameterValue"
+      }
+    },
+    {
+      "@id": "#PV_MyParameterValue",
+      "@type": "PropertyValue",
+      "name": "MyParameter",
+      "value": "42"
+    },
+    {
+      "@id": "#Protocol_MyProtocol",
+      "@type": "LabProtocol",
+      "name": "MyProtocol",
+      "intendedUse": {
+        "@id": "#Term_MyTerm"
+      },
+      "description": "This is a protocol"
+    },
+    {
+      "@type": "DefinedTerm",
+      "@id": "#Term_MyTerm",
+      "name": "MyTerm"
+    },
+    {
+      "@id": "assays/MyAssay/datafile.txt",
+      "@type": "File",
+      "name": "datafile.txt"
+    },
+    {
+      "@id": "studies/MyStudy/",
+      "@type": "Dataset",
+      "additionalType": "Study",
+      "identifier": "MyStudy",
+      "name": "My Study is great",
+      "datePublished": "2025-12-09T16:11:16.8899868",
+      "dateCreated": "2025-12-09T16:11:16.8899868",
+      "description": "This is an example study.",
+      "creator": {
+        "@id": "#Person_John_Doe"
+      },
+      "about": {
+        "@id": "#Process_MyProcess"
+      }
+    },
+    {
+      "@id": "LICENSE",
+      "@type": "CreativeWork",
+      "text": "MYLICENSE"
+    },
+    {
+      "@id": "./",
+      "@type": "Dataset",
+      "additionalType": "Investigation",
+      "identifier": "MyInvestigation",
+      "hasPart":[
+        {
+          "@id": "studies/MyStudy/"
+        },
+        {
+          "@id": "assays/MyAssay/"
+        }
+      ],
+      "name": "My Investigation is great",
+      "datePublished": "2025-12-09T16:11:16.8899868",
+      "dateCreated": "2025-12-09T16:11:16.8899868",
+      "creator": {
+        "@id": "#Person_John_Doe"
+      },
+      "description": "This is an example investigation.",
+      "license": {
+        "@id": "LICENSE"
+      }
+    },
+    {
+      "@id": "#Person_John_Doe",
+      "@type": "Person",
+      "name": "John Doe"
+    },
+    {
+      "@id": "ro-crate-metadata.json",
+      "@type": "CreativeWork",
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.1"
+      },
+      "about": {
+        "@id": "./"
+      }
+    }
+  ]
+}

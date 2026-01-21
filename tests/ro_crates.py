@@ -92,6 +92,10 @@ class ValidROC:
         return VALID_CRATES_DATA_PATH / "minimal-arc-ro-crate"
 
     @property
+    def isa_ro_crate_manual(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "minimal-isa-ro-crate"
+
+    @property
     def multi_profile_crate(self) -> Path:
         return VALID_CRATES_DATA_PATH / "multi-profile-crate"
 
