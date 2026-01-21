@@ -204,9 +204,9 @@ isa-ro-crate:StudyRecommendedProperties a sh:NodeShape ;
         sh:path schema:hasPart ;
         sh:or (
             [sh:class schema:MediaObject]
-            [sh:class bioschemas:Dataset]
+            [sh:class schema:Dataset]
         );
-        sh:description "Check that if study does have at least one object in hasPart, it MUST be of type CreativeWork" ;
+        sh:description "Check that if study does have at least one object in hasPart, it MUST be of type Dataset or File" ;
         sh:message "Study hasPart MUST be of type Dataset or File" ;
         sh:severity sh:Violation ;
     ] ;

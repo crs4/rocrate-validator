@@ -81,14 +81,135 @@ isa-ro-crate:AssayMustHaveBaseDescriptors a sh:NodeShape ;
 isa-ro-crate:AssayMustBeReferencedFromInvestigation a sh:NodeShape ;
   sh:name "Assay MUST be directly referenced from Investigation (Root Data Entity)" ;
   sh:targetClass isa-ro-crate:Assay ;
-  sh:property
-        [
-            a sh:PropertyShape ;
-            sh:path [ sh:inversePath schema:hasPart ] ;
-            sh:class ro-crate:RootDataEntity ;
-            sh:minCount 1 ;
-            sh:name "Assay MUST be directly referenced from Investigation (Root Data Entity)" ;
-            sh:description """Check if the Assay is directly linked to the Investigation (which is the Root Data Entity) using the `hasPart` (as defined in `schema.org`) property" """ ;
-            sh:message "Assay MUST be directly referenced in hasPart on the Investigation (Root Data Entity)"
-         ] .
- 
+  sh:property[
+        a sh:PropertyShape ;
+        sh:path [ sh:inversePath schema:hasPart ] ;
+        sh:class ro-crate:RootDataEntity ;
+        sh:minCount 1 ;
+        sh:name "Assay MUST be directly referenced from Investigation (Root Data Entity)" ;
+        sh:description """Check if the Assay is directly linked to the Investigation (which is the Root Data Entity) using the `hasPart` (as defined in `schema.org`) property" """ ;
+        sh:message "Assay MUST be directly referenced in hasPart on the Investigation (Root Data Entity)"
+    ]
+.
+
+isa-ro-crate:AssayRecommendedProperties a sh:NodeShape ;
+    sh:name "Assay SHOULD have hasPart, name, description, creator, measurementMethod, measurementTechnique, and about" ;
+    sh:description "An Assay SHOULD have recommended fields" ;
+    sh:targetClass isa-ro-crate:Assay ;
+
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:name ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ; 
+        sh:not [
+            sh:hasValue ""
+        ] ;
+        sh:description "Check that assay does have non-empty name and it's a string" ;
+        sh:message "Assay entity SHOULD have a non-empty name of type string" ;
+        sh:severity sh:Warning ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:name ;
+        sh:datatype xsd:string ;
+        sh:description "The name of an assay MUST be a string" ;
+        sh:message "Assay name MUST be of type string" ;
+        sh:severity sh:Violation ;
+    ] ;
+
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:description ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ; 
+        sh:not [
+            sh:hasValue ""
+        ] ;
+        sh:description "Check that assay does have non-empty description and it's a string" ;
+        sh:message "Assay entity SHOULD have a non-empty description of type string" ;
+        sh:severity sh:Warning ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:description ;
+        sh:datatype xsd:string ;
+        sh:description "The description of an assay MUST be a string" ;
+        sh:message "Assay description MUST be of type string" ;
+        sh:severity sh:Violation ;
+    ] ;
+
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:creator ;
+        sh:minCount 1 ;
+        sh:description "Check that assay does have at least one creator" ;
+        sh:message "Assay entity SHOULD have a creator" ;
+        sh:severity sh:Warning ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:creator ;
+        sh:class schema:Person ;
+        sh:description "Check that if assay does have at least one creator, it MUST be of type Person" ;
+        sh:message "Assay creator MUST be of type Person" ;
+        sh:severity sh:Violation ;
+    ] ;
+
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:hasPart ;
+        sh:minCount 1 ;
+        sh:description "Check that assay does have at least one object in hasPart" ;
+        sh:message "Assay entity SHOULD have hasPart" ;
+        sh:severity sh:Warning ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:hasPart ;
+        sh:class schema:MediaObject ;
+        sh:description "Check that if assay does have at least one object in hasPart, it MUST be of type Dataset or File" ;
+        sh:message "Assay hasPart MUST be of type Dataset or File" ;
+        sh:severity sh:Violation ;
+    ] ;
+
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:measurementMethod ;
+        sh:minCount 1 ;
+        sh:description "Check that assay does have at least one measurement method" ;
+        sh:message "Assay entity SHOULD have a measurement method" ;
+        sh:severity sh:Warning ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:measurementMethod ;
+        sh:or (
+            [sh:datatype xsd:string]
+            [sh:class schema:DefinedTerm]
+        );
+        sh:description "Check that if assay does have a measurement method, it MUST be of type string or DefinedTerm" ;
+        sh:message "Assay measurement method MUST be of type string or DefinedTerm" ;
+        sh:severity sh:Violation ;
+    ] ;
+
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:measurementTechnique ;
+        sh:minCount 1 ;
+        sh:description "Check that assay does have at least one measurement technique" ;
+        sh:message "Assay entity SHOULD have a measurement technique" ;
+        sh:severity sh:Warning ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:measurementTechnique ;
+        sh:or (
+            [sh:datatype xsd:string]
+            [sh:class schema:DefinedTerm]
+        );
+        sh:description "Check that if assay does have a measurement technique, it MUST be of type string or DefinedTerm" ;
+        sh:message "Assay measurement technique MUST be of type string or DefinedTerm" ;
+        sh:severity sh:Violation ;
+    ] ;
+.
