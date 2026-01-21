@@ -1,4 +1,4 @@
-# Copyright (c) 2024-2025 CRS4
+# Copyright (c) 2024-2026 CRS4
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -44,6 +44,61 @@ def test_valid_roc_required_with_long_datetime():
     """Test a valid RO-Crate."""
     do_entity_test(
         ValidROC().wrroc_paper_long_date,
+        Severity.REQUIRED,
+        True
+    )
+
+
+def test_valid_roc_required_with_value_objects():
+    """Test a valid RO-Crate."""
+    do_entity_test(
+        ValidROC().rocrate_with_value_objects,
+        Severity.REQUIRED,
+        True
+    )
+
+
+def test_valid_roc_with_relative_root_required():
+    """Test a valid RO-Crate."""
+    do_entity_test(
+        ValidROC().rocrate_with_relative_root,
+        Severity.REQUIRED,
+        True,
+        rocrate_relative_root_path="custom-relative-root/"
+    )
+
+
+def test_valid_roc_remote_required():
+    """Test a valid RO-Crate."""
+    do_entity_test(
+        ValidROC().sort_and_change_remote,
+        Severity.REQUIRED,
+        True
+    )
+
+
+def test_valid_roc_bagit_required():
+    """Test a valid RO-Crate."""
+    do_entity_test(
+        ValidROC().bagit,
+        Severity.REQUIRED,
+        True
+    )
+
+
+def test_valid_roc_bagit_zip_required():
+    """Test a valid RO-Crate."""
+    do_entity_test(
+        ValidROC().bagit_zip,
+        Severity.REQUIRED,
+        True
+    )
+
+
+def test_valid_roc_remote_bagit_required():
+    """Test a valid RO-Crate."""
+    do_entity_test(
+        ValidROC().bagit_remote_zip,
         Severity.REQUIRED,
         True
     )

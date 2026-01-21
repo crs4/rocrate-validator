@@ -1,4 +1,4 @@
-# Copyright (c) 2024-2025 CRS4
+# Copyright (c) 2024-2026 CRS4
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -63,6 +63,9 @@ extensions = [
     'myst_parser',
     'sphinx.ext.mathjax',
     'enum_tools.autoenum',
+    'sphinx.ext.intersphinx',
+    'sphinx.ext.autosectionlabel',
+    'sphinx_copybutton',
 ]
 
 templates_path = ['_templates']

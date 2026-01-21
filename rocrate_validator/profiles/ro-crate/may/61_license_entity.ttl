@@ -1,4 +1,4 @@
-# Copyright (c) 2024-2025 CRS4
+# Copyright (c) 2024-2026 CRS4
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ ro-crate:LicenseOptionalAllowedValues a sh:NodeShape ;
         sh:message """MAY have a URI (eg for Creative Commons or Open Source licenses). 
         MAY, if necessary be a textual description of how the RO-Crate may be used.""" ;
         sh:minCount 1 ;
-        sh:nodeKind sh:Literal ;
+        sh:nodeKind sh:IRIOrLiteral ;
         sh:path schema_org:license ;
         sh:or (
             [ sh:dataType xsd:string ]

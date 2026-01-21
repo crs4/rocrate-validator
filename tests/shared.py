@@ -1,4 +1,4 @@
-# Copyright (c) 2024-2025 CRS4
+# Copyright (c) 2024-2026 CRS4
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -102,9 +102,15 @@ def do_entity_test(
     rocrate_entity_patch: Optional[dict] = None,
     rocrate_entity_mod_sparql: Optional[str] = None,
     skip_checks: Optional[list[str]] = (),
+    rocrate_relative_root_path: Optional[str] = None,
+    metadata_only: bool = False,
+    metadata_dict: Optional[dict] = None,
+    **kwargs,
 ):
     """
-    Shared function to test a RO-Crate entity
+    Shared function to test a RO-Crate entity.
+
+    Additional keyword arguments (kwargs) are passed along to initialise ValidationSettings.
     """
     assert not (
         rocrate_entity_patch and rocrate_entity_mod_sparql
@@ -114,7 +120,7 @@ def do_entity_test(
     failed_requirements = None
     detected_issues = None
 
-    if not isinstance(rocrate_path, Path):
+    if not isinstance(rocrate_path, Path) and not rocrate_path.startswith("http"):
         rocrate_path = Path(rocrate_path)
 
     temp_rocrate_path = None
@@ -175,7 +181,11 @@ def do_entity_test(
                     "abort_on_first": abort_on_first,
                     "profile_identifier": profile_identifier,
                     "skip_checks": skip_checks,
-                }
+                    "rocrate_relative_root_path": rocrate_relative_root_path,
+                    "metadata_only": metadata_only,
+                    "metadata_dict": metadata_dict,
+                },
+                **kwargs,
             )
         )
         logger.debug("Expected validation result: %s", expected_validation_result)

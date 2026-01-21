@@ -1,4 +1,4 @@
-# Copyright (c) 2024-2025 CRS4
+# Copyright (c) 2024-2026 CRS4
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@
 
 ro-crate:FindLicenseEntity a sh:NodeShape, validator:HiddenShape ;
     sh:name "Identify License Entity" ;
-    sh:description """Mark a license entity any Data Entity referenced by the `schema:licence` property.""" ;
+    sh:description """Mark a license entity any Data Entity referenced by the `schema:license` property.""" ;
     sh:target [
         a sh:SPARQLTarget ;
         sh:prefixes ro-crate:sparqlPrefixes ;
@@ -68,7 +68,7 @@ ro-crate:WebSiteRecommendedProperties a sh:NodeShape ;
 
 ro-crate:CreativeWorkAuthorDefinition a sh:NodeShape, validator:HiddenShape ;
     sh:name "CreativeWork Author Definition" ;
-    sh:description """Define the `CretiveWorkAuthor` as the `Person` object of the `schema:author` predicate.""" ;
+    sh:description """Define the `CreativeWorkAuthor` as the `Person` object of the `schema:author` predicate.""" ;
     sh:targetObjectsOf schema:author ;
     sh:rule [
         a sh:TripleRule ;
@@ -79,4 +79,3 @@ ro-crate:CreativeWorkAuthorDefinition a sh:NodeShape, validator:HiddenShape ;
             sh:property [ sh:path rdf:type ; sh:hasValue schema:Person ; sh:minCount 1 ] ;
         ] ;
     ] .
-

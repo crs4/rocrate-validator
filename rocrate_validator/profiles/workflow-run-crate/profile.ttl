@@ -1,4 +1,4 @@
-# Copyright (c) 2024-2025 CRS4
+# Copyright (c) 2024-2026 CRS4
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@
         # it's in JSON-LD format
         dct:format <https://w3id.org/mediatype/application/ld+json> ;
 
-        # it conforms to JSON-LD, here refered to by its namespace URI as a Profile
+        # it conforms to JSON-LD, here referred to by its namespace URI as a Profile
         dct:conformsTo <https://www.w3.org/TR/json-ld11/> ;
 
         # this profile resource plays the role of "Vocabulary"
@@ -63,7 +63,7 @@
         # it's in HTML format
         dct:format <https://w3id.org/mediatype/text/html> ;
 
-        # it conforms to HTML, here refered to by its namespace URI as a Profile
+        # it conforms to HTML, here referred to by its namespace URI as a Profile
         dct:conformsTo <https://www.w3.org/TR/html/> ;
 
         # this profile resource plays the role of "Specification"

@@ -1,4 +1,4 @@
-# Copyright (c) 2024-2025 CRS4
+# Copyright (c) 2024-2026 CRS4
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import rocrate_validator.log as logging
+from rocrate_validator.utils import log as logging
 from rocrate_validator.models import ValidationContext
 from rocrate_validator.requirements.python import (PyFunctionCheck, check,
                                                    requirement)
@@ -32,6 +32,11 @@ class DataEntityRequiredChecker(PyFunctionCheck):
         """
         Check the presence of the Data Entity in the RO-Crate
         """
+        # Skip the check in metadata-only mode
+        if context.settings.metadata_only:
+            logger.debug("Skipping file descriptor existence check in metadata-only mode")
+            return True
+        # Perform the check
         result = True
         for entity in context.ro_crate.metadata.get_data_entities(exclude_web_data_entities=True):
             assert entity.id is not None, "Entity has no @id"

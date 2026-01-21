@@ -1,4 +1,4 @@
-# Copyright (c) 2024-2025 CRS4
+# Copyright (c) 2024-2026 CRS4
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import rocrate_validator.log as logging
+from rocrate_validator.utils import log as logging
 from rocrate_validator.models import ValidationContext
 from rocrate_validator.requirements.python import (PyFunctionCheck, check,
                                                    requirement)
@@ -33,7 +33,7 @@ class MainWorkflowFileExistence(PyFunctionCheck):
             if not main_workflow:
                 context.result.add_issue("main workflow does not exist in metadata file", self)
                 return False
-            if not main_workflow.is_available():
+            if not context.settings.metadata_only and not main_workflow.is_available():
                 context.result.add_issue(f"Main Workflow {main_workflow.id} not found in crate", self)
                 return False
             return True

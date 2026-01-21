@@ -63,10 +63,24 @@ These instructions assume you are familiar with code development using Python an
    checks to write, you can create multiple files - the validator will 
    collect them all automatically at runtime. 
 
-    * Note: some profiles split the checks into folders called ``must/``, 
+   .. note::
+
+      Some profiles split the checks into folders called ``must/``, 
       ``should/`` and ``may/`` according to the requirement severity. This 
       is not mandatory - you can also label individual checks/shapes with 
       ``sh:severity`` in the SHACL code instead.
+
+#. Optionally, associate an ontology graph with the profile by providing 
+   an ``ontology.ttl`` file alongside the SHACL files. 
+   This graph is merged into the crate's data graph at validation time, 
+   allowing you to define formal relationships and additional definitions 
+   between profile entities (e.g., using ``rdfs:subClassOf``, 
+   ``owl:equivalentClass``, etc.).
+   
+   .. warning::
+
+      Including an ontology can significantly impact validation times and 
+      overall performance, especially for large graphs. Use with caution.
 
 #. From the root folder of the repo, create a test folder for the profile 
    under 
@@ -90,4 +104,6 @@ When running the validator manually, use ``--profile-identifier`` to select the 
 
 The crates in ``tests/data/crates``` can be used as examples for running the validator. For example: ::
 
-    rocrate-validator validate --profile-identifier your-profile-name tests/data/crates/invalid/1_wroc_crate/no_mainentity/
+    rocrate-validator validate \
+      --profile-identifier your-profile-name \
+      tests/data/crates/invalid/1_wroc_crate/no_mainentity/

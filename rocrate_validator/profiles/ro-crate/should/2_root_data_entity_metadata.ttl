@@ -1,4 +1,4 @@
-# Copyright (c) 2024-2025 CRS4
+# Copyright (c) 2024-2026 CRS4
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ ro-crate:RootDataEntityDirectRecommendedProperties a sh:NodeShape ;
     sh:targetClass ro-crate:RootDataEntity ;
     sh:property [
         a sh:PropertyShape ;
-        sh:name "Root Data Entity: `licence` SHOULD link to a Contextual Entity" ;
+        sh:name "Root Data Entity: `license` SHOULD link to a Contextual Entity" ;
         sh:description """Check if the Root Data Entity includes a `license` property 
         that links to a Contextual Entity with type `schema_org:CreativeWork` to describe the license.""" ;
         sh:nodeKind sh:BlankNodeOrIRI ;

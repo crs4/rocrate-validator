@@ -1,4 +1,4 @@
-# Copyright (c) 2024-2025 CRS4
+# Copyright (c) 2024-2026 CRS4
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,11 +14,11 @@
 
 from typing import Any
 
-import rocrate_validator.log as logging
+from rocrate_validator.utils import log as logging
 from rocrate_validator.models import ValidationContext
 from rocrate_validator.requirements.python import (PyFunctionCheck, check,
                                                    requirement)
-from rocrate_validator.utils import HttpRequester
+from rocrate_validator.utils.http import HttpRequester
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -33,6 +33,9 @@ class FileDescriptorExistence(PyFunctionCheck):
         """
         Check if the file descriptor is present in the RO-Crate
         """
+        if context.settings.metadata_only:
+            logger.debug("Skipping file descriptor existence check in metadata-only mode")
+            return True
         if not context.ro_crate.has_descriptor():
             message = f'file descriptor "{context.rel_fd_path}" is not present'
             context.result.add_issue(message, self)
@@ -44,6 +47,9 @@ class FileDescriptorExistence(PyFunctionCheck):
         """
         Check if the file descriptor is not empty
         """
+        if context.settings.metadata_only:
+            logger.debug("Skipping file descriptor existence check in metadata-only mode")
+            return True
         if not context.ro_crate.has_descriptor():
             message = f'file descriptor {context.rel_fd_path} is empty'
             context.result.add_issue(message, self)
@@ -143,34 +149,102 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
     def check_flattened(self, context: ValidationContext) -> bool:
         """ Check if the file descriptor is flattened """
 
-        def is_entity_flat_recursive(entity: Any, is_first: bool = True) -> bool:
+        def is_entity_flat_recursive(entity: Any, is_first: bool = True, fail_fast: bool = False) -> bool:
             """ Recursively check if the given data corresponds to a flattened JSON-LD object
             and returns False if it does not and is not a root element
             """
+            result = True
             if isinstance(entity, dict):
                 if is_first:
                     for _, elem in entity.items():
-                        if not is_entity_flat_recursive(elem, False):
-                            return False
+                        if not is_entity_flat_recursive(elem, is_first=False, fail_fast=fail_fast):
+                            result = False
+                            if fail_fast:
+                                return False
                 # if this is not the root element, it must not contain more properties than @id
                 else:
-                    if "@id" not in entity or len(entity) > 1:
-                        return False
+                    if "@id" in entity and "@value" in entity:
+                        # add issue if both @id and @value are present
+                        context.result.add_issue(
+                            (
+                                f'entity "{entity.get("@id", entity)}" contains both @id and @value: '
+                                'an object with an @value represents a value object, which is a literal value such as '
+                                'a string, number, date, or language-tagged string. This object is not an identifiable '
+                                'resource, but a simple literal value.'
+                            ),
+                            self
+                        )
+                        result = False
+                        if fail_fast:
+                            return False
+
+                    # Handle value objects
+                    if "@value" in entity:
+                        # Inline the checks from is_value_object and add issues for each violation
+                        if not isinstance(entity, dict):
+                            context.result.add_issue(
+                                f'entity "{entity.get("@id", entity)}" is not a valid value object: '
+                                'it MUST be a dictionary.',
+                                self
+                            )
+                            result = False
+                            if fail_fast:
+                                return False
+
+                        has_language = "@language" in entity
+                        has_type = "@type" in entity
+
+                        if has_language and has_type:
+                            context.result.add_issue(
+                                f'entity "{entity.get("@id", entity)}" is not a valid value object: '
+                                '@language and @type cannot coexist.',
+                                self
+                            )
+                            result = False
+                            if fail_fast:
+                                return False
+
+                        if has_language and not isinstance(entity["@value"], str):
+                            context.result.add_issue(
+                                f'entity "{entity.get("@id", entity)}" is not a valid value object: '
+                                'if @language is present, @value must be a string.',
+                                self
+                            )
+                            result = False
+                            if fail_fast:
+                                return False
+                    # Handle node objects:
+                    # every remaining entity with len(entity) > 1 must be a node object
+                    elif "@id" not in entity or len(entity) > 1:
+                        context.result.add_issue(
+                            f'entity "{entity.get("@id", entity)}" is not a valid node object reference: '
+                            'it MUST have only @id, but no other properties.',
+                            self
+                        )
+                        result = False
+                        if fail_fast:
+                            return False
             if isinstance(entity, list):
                 for element in entity:
-                    if not is_entity_flat_recursive(element, False):
-                        return False
-            return True
+                    if not is_entity_flat_recursive(element, is_first=False, fail_fast=fail_fast):
+                        result = False
+                        if fail_fast:
+                            return False
+            return result
 
         try:
+            fail_fast = context.settings.abort_on_first
             json_dict = context.ro_crate.metadata.as_dict()
+            result = True
             for entity in json_dict["@graph"]:
-                if not is_entity_flat_recursive(entity):
+                if not is_entity_flat_recursive(entity, fail_fast=fail_fast):
                     context.result.add_issue(
                         f'RO-Crate file descriptor "{context.rel_fd_path}" '
                         f'is not fully flattened at entity "{entity.get("@id", entity)}"', self)
-                    return False
-            return True
+                    result = False
+                    if fail_fast:
+                        return False
+            return result
         except Exception as e:
             if logger.isEnabledFor(logging.DEBUG):
                 logger.exception(e)
@@ -256,7 +330,7 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
             u_keys[k] = u_keys.get(k, 0) + 1
 
         # Keys that should be skipped
-        SKIP_KEYS = {"@id", "@type", "@context"}
+        SKIP_KEYS = {"@id", "@type", "@context", "@value", "@language"}
 
         # Ensure unexpected_keys is initialized
         if unexpected_keys is None:
@@ -314,7 +388,7 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
                     else:
                         context.result.add_issue(
                             f'The {v} occurrence{suffix} of the JSON-LD key "{k}" '
-                            f'{"is" if v ==1 else "are"} not allowed in the compacted format '
+                            f'{"is" if v == 1 else "are"} not allowed in the compacted format '
                             'because it is not present in the @context of the document', self)
                 return False
 

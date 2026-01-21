@@ -1,4 +1,4 @@
-# Copyright (c) 2024-2025 CRS4
+# Copyright (c) 2024-2026 CRS4
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import io
 import json
+import re
 import struct
 import zipfile
 from abc import ABC, abstractmethod
@@ -25,9 +26,11 @@ from urllib.parse import unquote
 
 from rdflib import Graph
 
-from rocrate_validator import log as logging
+from rocrate_validator.utils import log as logging
 from rocrate_validator.errors import ROCrateInvalidURIError
-from rocrate_validator.utils import URI, HttpRequester, validate_rocrate_uri
+from rocrate_validator.utils.uri import validate_rocrate_uri
+from rocrate_validator.utils.http import HttpRequester
+from rocrate_validator.utils.uri import URI
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -47,6 +50,12 @@ class ROCrateEntity:
     def type(self) -> Union[str, list[str]]:
         return self._raw_data.get('@type')
 
+    def is_dataset(self) -> bool:
+        return self.has_type('Dataset')
+
+    def is_file(self) -> bool:
+        return self.has_type('File')
+
     @property
     def name(self) -> str:
         return self._raw_data.get('name')
@@ -64,13 +73,22 @@ class ROCrateEntity:
 
     @classmethod
     def get_id_as_path(cls, entity_id: str, ro_crate: Optional[ROCrate] = None) -> Path:
-        return cls.get_path_from_identifier(entity_id, ro_crate.uri.as_path() if ro_crate else None)
+        result = cls.get_path_from_identifier(
+            entity_id,
+            ro_crate.uri.as_path()
+            if ro_crate and ro_crate.uri.is_local_resource()
+            else None,
+        )
+        return result
 
     @staticmethod
-    def get_path_from_identifier(identifier: str, rocrate_path: Optional[Union[str, Path]] = None) -> Path:
+    def get_path_from_identifier(
+        identifier: str,
+        rocrate_path: Optional[Union[str, Path]] = None,
+        decode: bool = None,
+    ) -> Path:
         """
         Get the path from an identifier.
-
 
         :param identifier: the identifier of the entity
         :type identifier: str
@@ -82,9 +100,10 @@ class ROCrateEntity:
         :rtype: Path
 
         """
+
         def __define_path__(path: str, decode: bool = False) -> Path:
             # ensure the path is a string and remove the file:// prefix
-            path = str(path).replace('file://', '')
+            path = str(path).replace("file://", "")
             # Decode the path if required
             if decode:
                 path = unquote(path)
@@ -97,21 +116,21 @@ class ROCrateEntity:
                 # set the base path
                 base_path = rocrate_path
                 if base_path is None:
-                    base_path = Path('./')
+                    base_path = Path("./")
                 elif not isinstance(base_path, Path):
                     base_path = Path(base_path)
                 # Check if the path if the root of the RO-Crate
-                if path == Path('./'):
+                if path == Path("./"):
                     return base_path
                 # if the path is relative, try to resolve it
                 return base_path / path.relative_to(base_path)
             except ValueError:
                 # if the path cannot be resolved, return the absolute path
                 return base_path / path
+
         # Define the path based on the identifier
-        path = __define_path__(identifier)
-        if not path.exists():
-            path = __define_path__(identifier, decode=True)
+        path = __define_path__(identifier, decode=decode)
+        logger.debug("Defined path '%s' from identifier '%s'", path, identifier)
         return path
 
     @property
@@ -123,6 +142,9 @@ class ROCrateEntity:
         assert entity_id, "Entity ID cannot be None"
         if entity_id.startswith("http"):
             return URI(entity_id)
+        if ro_crate.uri.is_remote_resource():
+            if entity_id.startswith("./"):
+                return URI(f"{ro_crate.uri}/{entity_id[2:]}")
         return URI(cls.get_id_as_path(entity_id, ro_crate))
 
     @property
@@ -136,11 +158,16 @@ class ROCrateEntity:
         return not self.has_absolute_path()
 
     def has_local_identifier(self) -> bool:
-        has_local_id = self.id.startswith('#') or \
-            f"{self.ro_crate.uri}/#" in self.id or \
-            f"file://{self.ro_crate.uri}/#" in self.id
-        logger.debug("Identifier '%s' is %s a local identifier", self.id,
-                     "" if has_local_id else " not")
+        has_local_id = (
+            self.id.startswith("#")
+            or f"{self.ro_crate.uri}/#" in self.id
+            or f"file://{self.ro_crate.uri}/#" in self.id
+        )
+        logger.debug(
+            "Identifier '%s' is %s a local identifier",
+            self.id,
+            "" if has_local_id else " not",
+        )
         return has_local_id
 
     def has_type(self, entity_type: str) -> bool:
@@ -159,8 +186,8 @@ class ROCrateEntity:
         return any([t in e_types for t in entity_types])
 
     def __process_property__(self, name: str, data: object) -> object:
-        if isinstance(data, dict) and '@id' in data:
-            entity = self.metadata.get_entity(data['@id'])
+        if isinstance(data, dict) and "@id" in data:
+            entity = self.metadata.get_entity(data["@id"])
             if entity is None:
                 return ROCrateEntity(self, data)
             return entity
@@ -185,34 +212,54 @@ class ROCrateEntity:
         try:
             # check if the entity points to an external file
             if self.id.startswith("http"):
-                return ROCrate.get_external_file_size(self.id) > 0
+                logger.debug("Checking the availability of a remote entity")
+                return self.ro_crate.get_external_file_size(self.id) > 0
 
             # check if the entity is part of the local RO-Crate
             if self.ro_crate.uri.is_local_resource():
                 # check if the file exists in the local file system
                 if isinstance(self.ro_crate, ROCrateLocalFolder):
-                    logger.debug("Checking the availability of a local entity in a local folder")
-                    return self.ro_crate.has_file(self.id_as_path) \
-                        or self.ro_crate.has_directory(self.id_as_path)
+                    logger.debug(
+                        "Checking the availability of a local entity in a local folder"
+                    )
+                    return self.ro_crate.has_file(
+                        self.id_as_path
+                    ) or self.ro_crate.has_directory(self.id_as_path)
                 # check if the file exists in the local zip file
                 if isinstance(self.ro_crate, ROCrateLocalZip):
-                    logger.debug("Checking the availability of a local entity in a local zip file")
+                    logger.debug(
+                        "Checking the availability of a local entity in a local zip file"
+                    )
                     # Skip the check for the root of a ZIP archive
                     if self.id == "./":
-                        logger.debug("Skipping the check for the presence of the Data Entity '%s' within the RO-Crate "
-                                     "as it is the root of a ZIP archive", self.id)
+                        logger.debug(
+                            "Skipping the check for the presence of the Data Entity '%s' within the RO-Crate "
+                            "as it is the root of a ZIP archive",
+                            self.id,
+                        )
                         return True
-                    return self.ro_crate.get_entry(str(self.id)) is not None
+                    return self.ro_crate.has_directory(
+                        unquote(str(self.id))
+                    ) or self.ro_crate.has_file(unquote(str(self.id)))
 
             # check if the entity is part of the remote RO-Crate
+            logger.debug(
+                "Checking the availability of a remote entity in a remote RO-Crate"
+            )
             if self.ro_crate.uri.is_remote_resource():
-                return self.ro_crate.get_file_size(Path(self.id)) > 0
+                if self.id == "./":
+                    return self.ro_crate.get_file_size(Path(self.id_as_uri())) > 0
+                return self.ro_crate.has_directory(
+                    unquote(str(self.id))
+                ) or self.ro_crate.has_file(unquote(str(self.id)))
         except Exception as e:
             if logger.isEnabledFor(logging.DEBUG):
                 logger.exception(e)
             return False
 
-        raise ROCrateInvalidURIError(uri=self.id, message="Could not determine the availability of the entity")
+        raise ROCrateInvalidURIError(
+            uri=self.id, message="Could not determine the availability of the entity"
+        )
 
     def get_size(self) -> int:
         try:
@@ -235,13 +282,12 @@ class ROCrateEntity:
 
 
 class ROCrateMetadata:
+    METADATA_FILE_DESCRIPTOR = "ro-crate-metadata.json"
 
-    METADATA_FILE_DESCRIPTOR = 'ro-crate-metadata.json'
-
-    def __init__(self, ro_crate: ROCrate) -> None:
+    def __init__(self, ro_crate: ROCrate, metadata_dict: Optional[dict] = None) -> None:
         self._ro_crate = ro_crate
-        self._dict = None
-        self._json: str = None
+        self._dict = metadata_dict
+        self._json: str = json.dumps(metadata_dict) if metadata_dict else None
 
     @property
     def ro_crate(self) -> ROCrate:
@@ -264,7 +310,7 @@ class ROCrateMetadata:
 
     def get_root_data_entity(self) -> ROCrateEntity:
         metadata_file_descriptor = self.get_file_descriptor_entity()
-        main_entity = metadata_file_descriptor.get_property('about')
+        main_entity = metadata_file_descriptor.get_property("about")
         if not main_entity:
             raise ValueError("no main entity in metadata file descriptor")
         return main_entity
@@ -272,7 +318,7 @@ class ROCrateMetadata:
     def get_root_data_entity_conforms_to(self) -> Optional[list[str]]:
         try:
             root_data_entity = self.get_root_data_entity()
-            result = root_data_entity.get_property('conformsTo', [])
+            result = root_data_entity.get_property("conformsTo", [])
             if result is None:
                 return None
             if not isinstance(result, list):
@@ -285,24 +331,26 @@ class ROCrateMetadata:
 
     def get_main_workflow(self) -> ROCrateEntity:
         root_data_entity = self.get_root_data_entity()
-        main_workflow = root_data_entity.get_property('mainEntity')
+        main_workflow = root_data_entity.get_property("mainEntity")
         if not main_workflow:
             raise ValueError("no main workflow in metadata file descriptor")
         return main_workflow
 
     def get_entity(self, entity_id: str) -> ROCrateEntity:
-        for entity in self.as_dict().get('@graph', []):
-            if entity.get('@id') == entity_id:
+        for entity in self.as_dict().get("@graph", []):
+            if entity.get("@id") == entity_id:
                 return ROCrateEntity(self, entity)
         return None
 
     def get_entities(self) -> list[ROCrateEntity]:
         entities = []
-        for entity in self.as_dict().get('@graph', []):
+        for entity in self.as_dict().get("@graph", []):
             entities.append(ROCrateEntity(self, entity))
         return entities
 
-    def get_entities_by_type(self, entity_type: Union[str, list[str]]) -> list[ROCrateEntity]:
+    def get_entities_by_type(
+        self, entity_type: Union[str, list[str]]
+    ) -> list[ROCrateEntity]:
         entities = []
         for e in self.get_entities():
             if e.has_types(entity_type):
@@ -310,21 +358,26 @@ class ROCrateMetadata:
         return entities
 
     def get_dataset_entities(self) -> list[ROCrateEntity]:
-        return self.get_entities_by_type('Dataset')
+        return self.get_entities_by_type("Dataset")
 
     def get_file_entities(self) -> list[ROCrateEntity]:
-        return self.get_entities_by_type('File')
+        return self.get_entities_by_type("File")
 
-    def get_data_entities(self, exclude_web_data_entities: bool = False) -> list[ROCrateEntity]:
+    def get_data_entities(
+        self, exclude_web_data_entities: bool = False
+    ) -> list[ROCrateEntity]:
         if not exclude_web_data_entities:
-            return self.get_entities_by_type(['Dataset', 'File'])
-        return [e for e in self.get_entities_by_type(['Dataset', 'File'])
-                if not e.is_remote()]
+            return self.get_entities_by_type(["Dataset", "File"])
+        return [
+            e
+            for e in self.get_entities_by_type(["Dataset", "File"])
+            if not e.is_remote()
+        ]
 
     def get_web_data_entities(self) -> list[ROCrateEntity]:
         entities = []
         for entity in self.get_entities():
-            if entity.has_type('File') or entity.has_type('Dataset'):
+            if entity.has_type("File") or entity.has_type("Dataset"):
                 if entity.is_remote():
                     entities.append(entity)
         return entities
@@ -332,7 +385,7 @@ class ROCrateMetadata:
     def get_conforms_to(self) -> Optional[list[str]]:
         try:
             file_descriptor = self.get_file_descriptor_entity()
-            result = file_descriptor.get_property('conformsTo', [])
+            result = file_descriptor.get_property("conformsTo", [])
             if result is None:
                 return None
             if not isinstance(result, list):
@@ -346,7 +399,8 @@ class ROCrateMetadata:
     def as_json(self) -> str:
         if not self._json:
             self._json = self.ro_crate.get_file_content(
-                Path(self.METADATA_FILE_DESCRIPTOR), binary_mode=False)
+                Path(self.METADATA_FILE_DESCRIPTOR), binary_mode=False
+            )
         return self._json
 
     def as_dict(self) -> dict:
@@ -359,7 +413,7 @@ class ROCrateMetadata:
         if not self._graph:
             # if the graph is not cached, load it
             self._graph = Graph(base=publicID or self.ro_crate.uri)
-            self._graph.parse(data=self.as_json, format='json-ld')
+            self._graph.parse(data=self.as_json, format="json-ld")
         return self._graph
 
     def __str__(self) -> str:
@@ -375,12 +429,37 @@ class ROCrateMetadata:
 
 
 class ROCrate(ABC):
-
     """
     Base class for representing and interacting with a Research Object Crate (RO-Crate).
     """
 
-    def __init__(self, uri: Union[str, Path, URI]):
+    def __new__(cls, uri: Union[str, Path, URI], relative_root_path: Path = None):
+        """
+        Factory method to create the appropriate ROCrate subclass instance.
+
+        :param uri: the URI of the RO-Crate
+        :type uri: Union[str, Path, URI]
+
+        :param relative_root_path: the relative root path inside the RO-Crate
+        :type relative_root_path: Path
+
+        :return: an instance of the appropriate ROCrate subclass
+        :rtype: ROCrate
+
+        :raises ROCrateInvalidURIError: if the URI is invalid
+        """
+        if cls is not ROCrate:
+            # If called on a subclass, use normal instantiation
+            instance = super(ROCrate, cls).__new__(cls)
+            return instance
+
+        # If called on ROCrate directly, use factory logic
+        instance = cls.new_instance(uri)
+        if relative_root_path:
+            instance.relative_root_path = relative_root_path
+        return instance
+
+    def __init__(self, uri: Union[str, Path, URI], relative_root_path: Path = None) -> None:
         """
         Initialize the RO-Crate.
 
@@ -392,6 +471,9 @@ class ROCrate(ABC):
 
         # store the path to the crate
         self._uri = URI(uri)
+
+        # the relative root path inside the RO-Crate
+        self.relative_root_path = relative_root_path
 
         # cache the list of files
         self._files = None
@@ -442,9 +524,81 @@ class ROCrate(ABC):
         """
         pass
 
-    def __parse_path__(self, path: Path) -> Path:
+    def __get_search_path__(self, path: Path) -> tuple[Path, Path]:
+        """
+        Get the search path relative to the RO-Crate root path.
+
+        :param path: the path to resolve
+        :type path: Path
+        :return: the search path
+        :rtype: Path
+        """
         assert path, "Path cannot be None"
-        return ROCrateEntity.get_path_from_identifier(str(path), rocrate_path=self.uri.as_path())
+        # Identify the root path of the RO-Crate
+        root_path = (
+            self.uri.as_path()
+            if self.uri.is_local_resource() and isinstance(path, Path)
+            else Path("./")
+        )
+        # Extract the search path relative to the root of the RO-Crate root path
+        try:
+            search_path = path.relative_to(root_path)
+        except Exception:
+            search_path = path
+        return search_path, root_path
+
+    def __check_search_path__(self, path) -> tuple[Optional[Path], Optional[Path]]:
+        """ "
+        Extract the search path if it does not contain the relative root path.
+
+        :param path: the path to resolve
+        :type path: Path
+        :return: the search path if valid, None otherwise
+        :rtype: Path or None
+        """
+        if not self.relative_root_path:
+            return None, None
+
+        search_path, root_path = self.__get_search_path__(path)
+        # Check if the path has the substring 'relative_root_path/' in it
+        has_sub_data_path = re.search(self.relative_root_path, str(search_path))
+        if not has_sub_data_path:
+            return search_path, root_path
+        return None, None
+
+    def __parse_path__(self, path: Path) -> Path:
+        """ "
+        Parse the given path to resolve it within the RO-Crate.
+        :param path: the path to resolve
+        :type path: Path
+        :return: the resolved path
+        :rtype: Path
+        """
+        assert path, "Path cannot be None"
+
+        # Resolve the path based on the RO-Crate location
+        rocrate_path = self.uri.as_path() if self.uri.is_local_resource() else None
+        rocrate_path_arg = (
+            rocrate_path if not str(rocrate_path).endswith(".zip") else None
+        )
+        paths_to_try = [path]
+        unquoted_path = Path(unquote(str(path)))
+        if str(path) != str(unquoted_path):
+            paths_to_try.append(unquoted_path)
+        path_identifier = path
+        for p in paths_to_try:
+            path_identifier = ROCrateEntity.get_path_from_identifier(
+                str(p), rocrate_path=rocrate_path_arg, decode=False
+            )
+            search_path, base_path = self.__check_search_path__(path_identifier)
+            if search_path and base_path:
+                if self.relative_root_path:
+                    path_identifier = base_path / self.relative_root_path / search_path
+                else:
+                    path_identifier = base_path / search_path
+                if path_identifier.exists():
+                    return path_identifier
+        return path_identifier
 
     def has_descriptor(self) -> bool:
         """
@@ -453,7 +607,9 @@ class ROCrate(ABC):
         :return: `True` if the RO-Crate has a metadata descriptor file, `False` otherwise
         :rtype: bool
         """
-        return (self.uri.as_path().absolute() / self.metadata.METADATA_FILE_DESCRIPTOR).is_file()
+        path = self.__parse_path__(Path(self.metadata.METADATA_FILE_DESCRIPTOR))
+        logger.debug("Checking for metadata descriptor at path: %s", path)
+        return self.has_file(path)
 
     def has_file(self, path: Path) -> bool:
         """
@@ -503,7 +659,9 @@ class ROCrate(ABC):
         pass
 
     @abstractmethod
-    def get_file_content(self, path: Path, binary_mode: bool = True) -> Union[str, bytes]:
+    def get_file_content(
+        self, path: Path, binary_mode: bool = True
+    ) -> Union[str, bytes]:
         """
         Get the content of a file in the RO-Crate.
 
@@ -519,7 +677,9 @@ class ROCrate(ABC):
         pass
 
     @staticmethod
-    def get_external_file_content(uri: str, binary_mode: bool = True) -> Union[str, bytes]:
+    def get_external_file_content(
+        uri: str, binary_mode: bool = True
+    ) -> Union[str, bytes]:
         """
         Get the content of an external file.
 
@@ -551,10 +711,31 @@ class ROCrate(ABC):
         """
         response = HttpRequester().head(str(uri))
         response.raise_for_status()
-        return int(response.headers.get('Content-Length'))
+        return int(response.headers.get("Content-Length"))
 
     @staticmethod
-    def new_instance(uri: Union[str, Path, URI]) -> 'ROCrate':
+    def from_metadata_dict(
+        metadata_dict: dict
+    ) -> "ROCrate":
+        """
+        Create a new instance of the RO-Crate based on the metadata dictionary.
+
+        :param metadata_dict: the metadata dictionary
+        :type metadata_dict: dict
+
+        :raises ROCrateInvalidURIError: if the URI is invalid
+        """
+        # create a new instance based on the URI
+        ro_crate = ROCrate(URI("./"), relative_root_path=None)
+
+        # override the metadata with the provided dictionary
+        ro_crate._metadata = ROCrateMetadata(ro_crate, metadata_dict=metadata_dict)
+        return ro_crate
+
+    @staticmethod
+    def new_instance(
+        uri: Union[str, Path, URI], relative_root_path: Optional[Path] = None
+    ) -> "ROCrate":
         """
         Create a new instance of the RO-Crate based on the URI.
 
@@ -571,23 +752,41 @@ class ROCrate(ABC):
         # create a new instance based on the URI
         if not isinstance(uri, URI):
             uri = URI(uri)
+        # check if the URI is a BagIt-wrapped crate
+        is_bagit_crate = BagitROCrate.is_bagit_wrapping_crate(uri)
+
         # check if the URI is a local directory
         if uri.is_local_directory():
-            return ROCrateLocalFolder(uri)
+            return (
+                ROCrateBagitLocalFolder(uri, relative_root_path=relative_root_path)
+                if is_bagit_crate
+                else ROCrateLocalFolder(uri, relative_root_path=relative_root_path)
+            )
         # check if the URI is a local zip file
         if uri.is_local_file():
-            return ROCrateLocalZip(uri)
+            return (
+                ROCrateBagitLocalZip(uri, relative_root_path=relative_root_path)
+                if is_bagit_crate
+                else ROCrateLocalZip(uri, relative_root_path=relative_root_path)
+            )
         # check if the URI is a remote zip file
         if uri.is_remote_resource():
-            return ROCrateRemoteZip(uri)
+            return (
+                ROCrateBagitRemoteZip(uri, relative_root_path=relative_root_path)
+                if is_bagit_crate
+                else ROCrateRemoteZip(uri, relative_root_path=relative_root_path)
+            )
         # if the URI is not supported, raise an error
         raise ROCrateInvalidURIError(uri=uri, message="Unsupported RO-Crate URI")
 
 
 class ROCrateLocalFolder(ROCrate):
+    """
+    Class representing an RO-Crate stored in a local folder.
+    """
 
-    def __init__(self, path: Union[str, Path, URI]):
-        super().__init__(path)
+    def __init__(self, path: Union[str, Path, URI], relative_root_path: Path = None):
+        super().__init__(path, relative_root_path=relative_root_path)
 
         # cache the list of files
         self._files = None
@@ -604,7 +803,7 @@ class ROCrateLocalFolder(ROCrate):
         if not self._files:
             self._files = []
             base_path = self.uri.as_path()
-            for file in base_path.rglob('*'):
+            for file in base_path.rglob("*"):
                 if file.is_file():
                     self._files.append(base_path / file)
         return self._files
@@ -615,7 +814,9 @@ class ROCrateLocalFolder(ROCrate):
             raise FileNotFoundError(f"File not found: {path}")
         return path.stat().st_size
 
-    def get_file_content(self, path: Path, binary_mode: bool = True) -> Union[str, bytes]:
+    def get_file_content(
+        self, path: Path, binary_mode: bool = True
+    ) -> Union[str, bytes]:
         path = self.__parse_path__(path)
         if not self.has_file(path):
             raise FileNotFoundError(f"File not found: {path}")
@@ -623,9 +824,13 @@ class ROCrateLocalFolder(ROCrate):
 
 
 class ROCrateLocalZip(ROCrate):
-
-    def __init__(self, path: Union[str, Path, URI], init_zip: bool = True):
-        super().__init__(path)
+    def __init__(
+        self,
+        path: Union[str, Path, URI],
+        relative_root_path: Path = None,
+        init_zip: bool = True,
+    ):
+        super().__init__(path, relative_root_path=relative_root_path)
 
         # initialize the zip reference
         self._zipref = None
@@ -636,9 +841,18 @@ class ROCrateLocalZip(ROCrate):
         self._files = None
 
     def __del__(self):
-        if self._zipref and self._zipref.fp is not None:
-            self._zipref.close()
-            del self._zipref
+        try:
+            if self._zipref and self._zipref.fp is not None:
+                self._zipref.close()
+                del self._zipref
+        except Exception as e:
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.exception(e)
+
+    def __parse_path__(self, path):
+        assert path, "Path cannot be None"
+        # If the RO-Crate is a zip file, the path should be changed
+        return path
 
     @property
     def size(self) -> int:
@@ -650,27 +864,41 @@ class ROCrateLocalZip(ROCrate):
         if not self.uri.as_path().is_file():
             raise ROCrateInvalidURIError(uri=path)
         # check if the file is a zip file
-        if not self.uri.as_path().suffix == '.zip':
+        if not self.uri.as_path().suffix == ".zip":
             raise ROCrateInvalidURIError(uri=path)
         self._zipref = zipfile.ZipFile(path)
         logger.debug("Initialized zip reference: %s", self._zipref)
 
     def __get_file_info__(self, path: Path) -> zipfile.ZipInfo:
-        return self._zipref.getinfo(str(path))
+        try:
+            return self._zipref.getinfo(str(path))
+        except KeyError:
+            logger.error("File not found in zip: %s", path)
+            raise FileNotFoundError(f"File not found in zip: {path}")
 
     def has_descriptor(self) -> bool:
-        return ROCrateMetadata.METADATA_FILE_DESCRIPTOR in [str(_.name) for _ in self.list_files()]
+        """
+        Check if the RO-Crate has a metadata descriptor file.
+        :rtype: bool
+        """
+        path = self.__parse_path__(Path(self.metadata.METADATA_FILE_DESCRIPTOR))
+        return str(path) in [str(_) for _ in self.list_files()]
 
     def has_file(self, path: Path) -> bool:
-        if path in self.list_files():
-            info = self.__get_file_info__(path)
-            return not info.is_dir()
+        path = self.__parse_path__(path)
+        for p in self.list_files():
+            if str(path) == str(p):
+                info = self.__get_file_info__(path)
+                return not info.is_dir()
         return False
 
     def has_directory(self, path: Path) -> bool:
-        if path in self.list_files():
-            info = self.__get_file_info__(path)
-            return info.is_dir()
+        assert path, "Path cannot be None"
+        for px in (path, self.__parse_path__(path)):
+            for p in self._zipref.namelist():
+                if f"{str(px)}/" == str(p) or str(px) == str(p):
+                    info = self.__get_file_info__(p)
+                    return info.is_dir()
         return False
 
     def list_files(self) -> list[Path]:
@@ -687,24 +915,25 @@ class ROCrateLocalZip(ROCrate):
         """
         Return the ZipInfo object for the specified path.
         """
-        return self.__get_file_info__(path)
+        return self.__get_file_info__(self.__parse_path__(path))
 
     def get_file_size(self, path: Path) -> int:
-        return self._zipref.getinfo(str(path)).file_size
+        return self._zipref.getinfo(str(self.__parse_path__(path))).file_size
 
-    def get_file_content(self, path: Path, binary_mode: bool = True) -> Union[str, bytes]:
+    def get_file_content(
+        self, path: Path, binary_mode: bool = True
+    ) -> Union[str, bytes]:
+        path = self.__parse_path__(path)
         if not self.has_file(path):
             raise FileNotFoundError(f"File not found: {path}")
         data = self._zipref.read(str(path))
-        return data if binary_mode else data.decode('utf-8')
+        return data if binary_mode else data.decode("utf-8")
 
 
 class ROCrateRemoteZip(ROCrateLocalZip):
 
-    def __init__(self, path: Union[str, Path, URI]):
-        super().__init__(path, init_zip=False)
-
-        logger.debug("Size: %s", self.size)
+    def __init__(self, path: Union[str, Path, URI], relative_root_path: Path = None):
+        super().__init__(path, relative_root_path=relative_root_path, init_zip=False)
 
         # # initialize the zip reference
         self.__init_zip_reference__()
@@ -764,3 +993,140 @@ class ROCrateRemoteZip(ROCrateLocalZip):
         central_directory_size = eocd[5]
         central_directory_offset = eocd[6]
         return central_directory_offset, central_directory_size
+
+
+class BagitROCrate(ROCrate, ABC):
+
+    def __init__(self, uri, relative_root_path=None):
+        super().__init__(uri, relative_root_path)
+
+        # check if the path is a BagIt-wrapped crate
+        assert self.is_bagit_wrapping_crate(uri), "Not a BagIt-wrapped RO-Crate"
+
+    @staticmethod
+    def is_bagit_wrapping_crate(uri: Union[str, Path, URI]) -> bool:
+        """
+        Check if the RO-Crate is a BagIt-wrapped crate.
+
+        :param uri: the URI of the RO-Crate
+        :type uri: Union[str, Path, URI]
+
+        :return: `True` if the RO-Crate is a BagIt-wrapped crate, `False` otherwise
+        :rtype: bool
+        """
+        if not isinstance(uri, URI):
+            uri = URI(uri)
+
+        try:
+            # Check for local directory
+            if uri.is_local_directory():
+                base_path = uri.as_path()
+                return (base_path / 'bagit.txt').is_file() and \
+                    (base_path / 'data' / 'ro-crate-metadata.json').is_file()
+
+            # Check for local zip file
+            elif uri.is_local_file():
+                path = uri.as_path()
+                if path.suffix == '.zip':
+                    with zipfile.ZipFile(path, 'r') as zf:
+                        namelist = zf.namelist()
+                        return 'bagit.txt' in namelist and \
+                            'data/ro-crate-metadata.json' in namelist
+
+            # Check for remote zip file
+            elif uri.is_remote_resource():
+                # For remote resources, we need to check if both files exist
+                # We'll use HTTP HEAD requests to check without downloading
+                base_url = str(uri).rstrip('/')
+
+                if not base_url.endswith('.zip'):
+                    # Check for bagit.txt
+                    bagit_response = HttpRequester().head(f"{base_url}/bagit.txt")
+                    if bagit_response.status_code != 200:
+                        return False
+
+                    # Check for data/ro-crate-metadata.json
+                    metadata_response = HttpRequester().head(f"{base_url}/data/ro-crate-metadata.json")
+                    return metadata_response.status_code == 200
+
+                else:
+                    # If it's a remote zip file, we need to download it partially
+                    # Temporarily create instance to check
+                    temp_crate = ROCrateRemoteZip(uri)
+                    logger.debug("Initializing ROCrateRemoteZip for URI: %s", uri)
+                    # ROCrate.__init__(temp_crate, uri)
+                    # temp_crate._ROCrateRemoteZip__init_zip_reference__()
+                    has_bagit_txt = temp_crate.has_file(Path('bagit.txt'))
+                    logger.debug("Presence of 'bagit.txt': %s", has_bagit_txt)
+                    has_ro_crate_metadata = temp_crate.has_file(Path('data/ro-crate-metadata.json'))
+                    logger.debug("Presence of 'data/ro-crate-metadata.json': %s",
+                                 has_ro_crate_metadata)
+                    result = has_bagit_txt and has_ro_crate_metadata
+                    del temp_crate
+                    return result
+
+        except Exception as e:
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.exception(e)
+            return False
+
+        return False
+
+    def __check_search_path__(self, path):
+        """
+        Check if the search path is valid for a BagIt-wrapped RO-Crate,
+        i.e., if it points to the 'data/' directory.
+
+        :param path: the path to resolve
+        :type path: Path
+        :return: the search path if valid, None otherwise
+        :rtype: Path or None
+        """
+        search_path, root_path = super().__get_search_path__(path)
+        # Check if the path has the substring 'data/' in it
+        has_sub_data_path = re.search(r'data/', str(search_path))
+        logger.debug("The search path '%s' %s the 'data/' sub-path", search_path,
+                     "contains" if has_sub_data_path else "does not contain")
+        if search_path == "." or not has_sub_data_path:
+            return search_path, root_path
+        return None, None
+
+
+class ROCrateBagitLocalFolder(BagitROCrate, ROCrateLocalFolder):
+
+    def __init__(self, uri: Union[str, Path, URI], relative_root_path: Path = None):
+        # initialize the parent classes
+        super(ROCrateLocalFolder, self).__init__(uri, relative_root_path=relative_root_path)
+        # check if the path is a BagIt-wrapped crate
+        assert self.is_bagit_wrapping_crate(uri), "Not a BagIt-wrapped RO-Crate"
+
+    def __parse_path__(self, path: Path) -> Path:
+        search_path, root_path = self.__check_search_path__(path)
+        # if search_path and root_path are set, adjust the path
+        if search_path and root_path:
+            path = root_path / Path("data") / search_path
+            if not path.exists():
+                path = Path(unquote(str(path)))
+        return path
+
+
+class ROCrateBagitLocalZip(BagitROCrate, ROCrateLocalZip):
+    """
+    Class representing an RO-Crate stored in a local BagIt-wrapped zip file.
+    """
+
+    def __parse_path__(self, path: Path) -> Path:
+        # Extract the search path relative to the root of the RO-Crate root path
+        search_path, _ = super().__check_search_path__(path)
+
+        # if search_path is set, adjust the path
+        if search_path:
+            path = Path("data") / search_path
+            zip_namelist = self._zipref.namelist()
+            if str(path) not in zip_namelist and f"{path}/" not in zip_namelist:
+                path = Path(unquote(str(path)))
+        return path
+
+
+class ROCrateBagitRemoteZip(ROCrateBagitLocalZip, ROCrateRemoteZip):
+    pass

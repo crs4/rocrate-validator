@@ -1,4 +1,4 @@
-# Copyright (c) 2024-2025 CRS4
+# Copyright (c) 2024-2026 CRS4
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,11 +15,11 @@
 import enum
 from abc import ABC, abstractmethod
 from functools import total_ordering
-from typing import Optional, Union
+from typing import Any, Optional, Union
 
 import enum_tools
 
-import rocrate_validator.log as logging
+from rocrate_validator.utils import log as logging
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -138,12 +138,15 @@ class Subscriber(ABC):
         self.name = name
 
     @abstractmethod
-    def update(self, event: Event):
+    def update(self, event: Event, ctx: Optional[Any] = None):
         """
         Update the subscriber with the event
 
         :param event: the event
         :type event: Event
+
+        :param ctx: optional context
+        :type ctx: Optional[Any]
         """
         pass
 
@@ -164,7 +167,7 @@ class Publisher:
     def remove_subscriber(self, subscriber):
         self.subscribers.remove(subscriber)
 
-    def notify(self, event: Union[Event, EventType]):
+    def notify(self, event: Union[Event, EventType], ctx: Optional[Any] = None):
         if isinstance(event, EventType):
             event = Event(event)
         # Check if the event has already been notified
@@ -178,4 +181,4 @@ class Publisher:
         logger.debug(f"Notifying event {event}")
         # Notify all subscribers
         for subscriber in self.subscribers:
-            subscriber.update(event)
+            subscriber.update(event, ctx=ctx)

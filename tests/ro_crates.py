@@ -1,4 +1,4 @@
-# Copyright (c) 2024-2025 CRS4
+# Copyright (c) 2024-2026 CRS4
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,11 +33,11 @@ class ValidROC:
 
     @property
     def rocrate_with_data_entities(self) -> Path:
-        return VALID_CRATES_DATA_PATH / "rocrate_with_data_entities"
+        return VALID_CRATES_DATA_PATH / "rocrate-with-data-entities"
 
     @property
     def rocrate_with_custom_terms(self) -> Path:
-        return VALID_CRATES_DATA_PATH / "rocrate_with_custom_terms"
+        return VALID_CRATES_DATA_PATH / "rocrate-with-custom-terms"
 
     @property
     def wrroc_paper(self) -> Path:
@@ -46,6 +46,29 @@ class ValidROC:
     @property
     def wrroc_paper_long_date(self) -> Path:
         return VALID_CRATES_DATA_PATH / "wrroc-paper-long-date"
+
+    @property
+    def rocrate_with_value_objects(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "rocrate-with-value-objects"
+
+    @property
+    def rocrate_with_relative_root(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "rocrate-relative-root"
+
+    @property
+    def bagit(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "bagit"
+
+    @property
+    def bagit_zip(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "bagit.zip"
+
+    @property
+    def bagit_remote_zip(self) -> str:
+        return (
+            "https://github.com/kikkomep/rocrate-validator/raw/refs/heads/"
+            "feat/configurable-dataroot_issue-100/tests/data/crates/valid/bagit.zip"
+        )
 
     @property
     def workflow_roc(self) -> Path:

@@ -1,4 +1,4 @@
-# Copyright (c) 2024-2025 CRS4
+# Copyright (c) 2024-2026 CRS4
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,12 +18,13 @@ import zipfile
 from pathlib import Path
 from typing import Optional, Union
 
-import rocrate_validator.log as logging
-from rocrate_validator.errors import ProfileNotFound
+from rocrate_validator.utils import log as logging
 from rocrate_validator.events import Subscriber
 from rocrate_validator.models import (Profile, Severity, ValidationResult,
                                       ValidationSettings, Validator)
-from rocrate_validator.utils import URI, HttpRequester, get_profiles_path
+from rocrate_validator.utils.uri import URI
+from rocrate_validator.utils.paths import get_profiles_path
+from rocrate_validator.utils.http import HttpRequester
 
 # set the default profiles path
 DEFAULT_PROFILES_PATH = get_profiles_path()
@@ -39,6 +40,26 @@ def detect_profiles(settings: Union[dict, ValidationSettings]) -> list[Profile]:
     profiles = validator.detect_rocrate_profiles()
     logger.debug("Profiles detected: %s", profiles)
     return profiles
+
+
+def validate_metadata_as_dict(
+        metadata_dict: dict,
+        settings: Union[dict, ValidationSettings],
+        subscribers: Optional[list[Subscriber]] = None) -> ValidationResult:
+    """
+    Validate the RO-Crate metadata only against a profile and return the validation result.
+    """
+    assert metadata_dict is not None, "Metadata dictionary cannot be None"
+    assert isinstance(metadata_dict, dict), "Metadata must be a dictionary"
+    # set the RO-Crate metadata dictionary in the settings
+    if isinstance(settings, dict):
+        settings["metadata_dict"] = metadata_dict
+        settings["metadata_only"] = True
+    else:
+        settings.metadata_dict = metadata_dict
+        settings.metadata_only = True
+    # validate the RO-Crate metadata
+    return validate(settings, subscribers)
 
 
 def validate(settings: Union[dict, ValidationSettings],
@@ -77,8 +98,9 @@ def __initialise_validator__(settings: Union[dict, ValidationSettings],
     logger.debug("Validating RO-Crate: %s", rocrate_path)
 
     # check if the RO-Crate exists
-    if not rocrate_path.is_available():
-        raise FileNotFoundError(f"RO-Crate not found: {rocrate_path}")
+    if not getattr(settings, "metadata_only", False) and getattr(settings, "metadata_dict", None) is None:
+        if not rocrate_path.is_available():
+            raise FileNotFoundError(f"RO-Crate not found: {rocrate_path}")
 
     # check if remote validation is enabled
     disable_remote_crate_download = settings.disable_remote_crate_download
@@ -154,6 +176,7 @@ def __initialise_validator__(settings: Union[dict, ValidationSettings],
 
 
 def get_profiles(profiles_path: Path = DEFAULT_PROFILES_PATH,
+                 extra_profiles_path: Optional[Path] = None,
                  severity=Severity.OPTIONAL,
                  allow_requirement_check_override: bool =
                  ValidationSettings.allow_requirement_check_override) -> list[Profile]:
@@ -181,6 +204,7 @@ def get_profiles(profiles_path: Path = DEFAULT_PROFILES_PATH,
     :rtype: list[Profile]
     """
     profiles = Profile.load_profiles(profiles_path,
+                                     extra_profiles_path=extra_profiles_path,
                                      severity=severity,
                                      allow_requirement_check_override=allow_requirement_check_override)
     logger.debug("Profiles loaded: %s", profiles)
@@ -189,6 +213,7 @@ def get_profiles(profiles_path: Path = DEFAULT_PROFILES_PATH,
 
 def get_profile(profile_identifier: str,
                 profiles_path: Path = DEFAULT_PROFILES_PATH,
+                extra_profiles_path: Optional[Path] = None,
                 severity=Severity.OPTIONAL,
                 allow_requirement_check_override: bool =
                 ValidationSettings.allow_requirement_check_override) -> Profile:
@@ -220,10 +245,8 @@ def get_profile(profile_identifier: str,
     :rtype: Profile
 
     """
-    profiles = get_profiles(profiles_path, severity=severity,
+    profiles = get_profiles(profiles_path,
+                            extra_profiles_path=extra_profiles_path,
+                            severity=severity,
                             allow_requirement_check_override=allow_requirement_check_override)
-    profile = next((p for p in profiles if p.identifier == profile_identifier), None) or \
-        next((p for p in profiles if str(p.identifier).replace(f"-{p.version}", '') == profile_identifier), None)
-    if not profile:
-        raise ProfileNotFound(profile_identifier)
-    return profile
+    return Profile.find_in_list(profiles, profile_identifier)

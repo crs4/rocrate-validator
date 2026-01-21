@@ -1,4 +1,4 @@
-# Copyright (c) 2024-2025 CRS4
+# Copyright (c) 2024-2026 CRS4
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@
 ro-crate:DataEntityRequiredProperties a sh:NodeShape ;
     sh:name "Data Entity: REQUIRED properties" ;
     sh:description """A Data Entity MUST be a `URI Path` relative to the ROCrate root,
-        or an sbsolute URI""" ;
+        or an absolute URI""" ;
     sh:targetClass ro-crate:DataEntity ;
 
     sh:property [
@@ -130,9 +130,9 @@ ro-crate:DirectoryDataEntity a sh:NodeShape ;
         sh:severity sh:Violation ;
     ] .
 
-ro-crate:DataEntityRquiredPropertiesShape a sh:NodeShape ;
+ro-crate:DataEntityRequiredPropertiesShape a sh:NodeShape ;
     sh:name "Data Entity: REQUIRED properties" ;
-    sh:description """A `DataEntity` MUST be linked, either directly or inderectly, from the Root Data Entity""" ;
+    sh:description """A `DataEntity` MUST be linked, either directly or indirectly, from the Root Data Entity""" ;
     sh:targetClass ro-crate:DataEntity ;
     sh:property
         [
@@ -141,7 +141,7 @@ ro-crate:DataEntityRquiredPropertiesShape a sh:NodeShape ;
             sh:node schema_org:Dataset ;
             sh:minCount 1 ;
             sh:name "Data Entity MUST be directly referenced" ;
-            sh:description """Check if the Data Entity is linked, either directly of inderectly, to the `Root Data Entity` using the `hasPart` (as defined in `schema.org`) property" """ ;
+            sh:description """Check if the Data Entity is linked, either directly or indirectly, to the `Root Data Entity` using the `hasPart` (as defined in `schema.org`) property" """ ;
             # sh:message "A Data Entity MUST be directly or indirectly linked to the `Root Data Entity` through the `hasPart` property" ;
         ] .
 

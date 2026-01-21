@@ -1,4 +1,4 @@
-# Copyright (c) 2024-2025 CRS4
+# Copyright (c) 2024-2026 CRS4
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ def test_main_workflow_bad_type():
         Severity.REQUIRED,
         False,
         ["Main Workflow definition"],
-        ["The Main Workflow must have types File, SoftwareSourceCode, ComputationalWorfklow"],
+        ["The Main Workflow must have types File, SoftwareSourceCode, ComputationalWorkflow"],
         profile_identifier="workflow-ro-crate"
     )
 

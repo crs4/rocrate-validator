@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "roc-validator"
-version = "0.7.3"
+version = "0.8.0"
 description = "A Python package to validate RO-Crates"
 authors = [
     "Marco Enrico Piras <kikkomep@crs4.it>",
@@ -70,6 +70,7 @@ requests = ">=2.32,<3.0"
 requests-cache = ">=1.2,<2.0"
 inquirerpy = ">=0.3.4,<0.4.0"
 enum-tools = ">=0.12,<0.13"
+typos = "^1.41.0"
 
 [tool.poetry.group.dev.dependencies]
 pyproject-flake8 = "^6.1.0"
@@ -88,6 +89,7 @@ enum-tools = "^0.12.0"
 sphinx-toolbox = "^3.8.1"
 myst-parser = "^4.0.0"
 sphinx-rtd-theme = "^3.0.2"
+sphinx-copybutton = "^0.5.2"
 
 [tool.flake8]
 max-line-length = 120
@@ -104,3 +106,6 @@ skip_dirs = [".git", ".github", ".vscode"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.typos.files]
+extend-exclude = ["tests/data","docs/diagrams","*.json","*.html","*__init__.py"]

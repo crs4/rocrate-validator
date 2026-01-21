@@ -1,4 +1,4 @@
-# Copyright (c) 2024-2025 CRS4
+# Copyright (c) 2024-2026 CRS4
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix validator: <https://github.com/crs4/rocrate-validator/> .
 
-workflow-ro-crate:MainEntityProperyMustExist a sh:NodeShape ;
+workflow-ro-crate:MainEntityPropertyMustExist a sh:NodeShape ;
     sh:name "Main Workflow entity existence" ;
     sh:description "The Main Workflow must be specified through a `mainEntity` property in the root data entity" ;
     sh:targetClass ro-crate:RootDataEntity ;
@@ -63,13 +63,13 @@ workflow-ro-crate:MainWorkflowRequiredProperties a sh:NodeShape ;
     sh:property [
         a sh:PropertyShape ;
         sh:name "Main Workflow type" ;
-        sh:description "The Main Workflow must have types File, SoftwareSourceCode, ComputationalWorfklow" ;
+        sh:description "The Main Workflow must have types File, SoftwareSourceCode, ComputationalWorkflow" ;
         sh:path rdf:type ;
         sh:hasValue schema:MediaObject ,
                     schema:SoftwareSourceCode ,
                     bioschemas:ComputationalWorkflow ;
         sh:minCount 1 ;
-        sh:message "The Main Workflow must have types File, SoftwareSourceCode, ComputationalWorfklow" ;
+        sh:message "The Main Workflow must have types File, SoftwareSourceCode, ComputationalWorkflow" ;
     ] ;
     sh:property [
         a sh:PropertyShape ;

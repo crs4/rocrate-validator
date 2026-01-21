@@ -1,4 +1,4 @@
-# Copyright (c) 2024-2025 CRS4
+# Copyright (c) 2024-2026 CRS4
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,10 +14,12 @@
 
 import os
 
+from rocrate_validator.utils import log as logging
+from rocrate_validator.models import (DEFAULT_PROFILES_PATH, LevelCollection,
+                                      Profile, ValidationSettings, ValidationStatistics)
 
-from rocrate_validator import log as logging
-from rocrate_validator.cli.commands.validate import __compute_profile_stats__
-from rocrate_validator.models import DEFAULT_PROFILES_PATH, LevelCollection, Profile
+# TODO: move to models section
+
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -25,17 +27,16 @@ logger = logging.getLogger(__name__)
 
 def test_compute_stats(fake_profiles_path):
 
-    settings = {
-        "fail_fast": False,
+    settings = ValidationSettings.parse({
         "profiles_path": fake_profiles_path,
         "profile_identifier": "a",
         "enable_profile_inheritance": True,
         "allow_requirement_check_override": True,
         "requirement_severity": "REQUIRED",
-    }
+    })
 
-    profiles_path = settings["profiles_path"]
-    logger.debug("The profiles path: %r", DEFAULT_PROFILES_PATH)
+    profiles_path = settings.profiles_path or DEFAULT_PROFILES_PATH
+    logger.debug("The profiles path: %r", profiles_path)
     assert os.path.exists(profiles_path)
     profiles = Profile.load_profiles(profiles_path)
     # The number of profiles should be greater than 0
@@ -49,11 +50,11 @@ def test_compute_stats(fake_profiles_path):
 
     # extract the list of not hidden requirements
     logger.error("The number of requirements: %r", len(profile.get_requirements()))
-    requirements = [r for r in profile.get_requirements() if not r.hidden]
+    requirements = {r for r in profile.get_requirements() if not r.hidden}
     logger.debug("The requirements: %r", requirements)
     assert len(requirements) > 0
 
-    stats = __compute_profile_stats__(settings)
+    stats = ValidationStatistics.__initialise__(validation_settings=settings)
 
     # Check severity
     assert stats["severity"].name == "REQUIRED"
@@ -61,20 +62,22 @@ def test_compute_stats(fake_profiles_path):
     # Check the number of profiles
     assert len(stats["profiles"]) == 1
 
-    # check the number of requirements in stats and the number of requirements in the profile
-    assert stats["total_requirements"] == len(requirements)
+    # check if the requirements match
+    assert stats["requirements"] == requirements, \
+        "The requirements in stats do not match the profile requirements"
 
     # Check if the number of requirements is greater than 0
-    assert stats["total_requirements"] > 0
+    assert len(stats["requirements"]) > 0, "There should be at least one requirement"
 
     # extract the first and unique requirement
-    requirement = requirements[0]
+    requirement = list(requirements)[0]
 
     # check the number of checks in the requirement
     assert len(requirement.get_checks()) == len(requirement.get_checks_by_level(LevelCollection.get("REQUIRED")))
 
     # check the number of requirement checks
-    assert stats["total_checks"] == len([_ for _ in requirements[0].get_checks() if not _.overridden or
-                                         _.requirement.profile.identifier == "a"])
+    requirements_list = list(requirements)
+    assert stats["checks"] == {_ for _ in requirements_list[0].get_checks() if not _.overridden or
+                               _.requirement.profile.identifier == "a"}
 
     logger.error(stats)

@@ -1,4 +1,4 @@
-# Copyright (c) 2024-2025 CRS4
+# Copyright (c) 2024-2026 CRS4
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -90,3 +90,17 @@ def test_validation_settings_requirement_severity():
 def test_validation_settings_abort_on_first():
     settings = ValidationSettings(abort_on_first=True)
     assert settings.abort_on_first is True
+
+
+def test_validation_settings_metadata_only():
+    settings = ValidationSettings(metadata_only=True)
+    assert settings.metadata_only is True
+
+    settings = ValidationSettings(metadata_only=False)
+    assert settings.metadata_only is False
+
+
+def test_validation_settings_metadata_dict():
+    metadata = {"@graph": []}
+    settings = ValidationSettings(metadata_dict=metadata)
+    assert settings.metadata_dict == metadata

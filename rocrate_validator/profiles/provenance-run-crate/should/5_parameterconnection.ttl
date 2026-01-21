@@ -1,4 +1,4 @@
-# Copyright (c) 2024-2025 CRS4
+# Copyright (c) 2024-2026 CRS4
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ provenance-run-crate:ProvRCParameterConnectionReferencesRecommended a sh:NodeSha
     sh:description "Recommended references for ParameterConnection entities" ;
     sh:targetClass wfrun:ParameterConnection ;
     sh:property [
-        sh:name "ParamenterConnection references" ;
+        sh:name "ParameterConnection references" ;
         sh:description """References to `ParameterConnection` instances
         SHOULD follow the CWL convention,
         where connections to workflow output parameters are referenced by the workflow
