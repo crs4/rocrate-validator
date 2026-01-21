@@ -20,6 +20,13 @@
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix validator: <https://github.com/crs4/rocrate-validator/> .
 
+
+#=== MUST shapes ===#
+# (none)
+
+
+#=== SHOULD shapes ===#
+
 process-run-crate:ProcRCCollectionRecommended a sh:NodeShape ;
     sh:name "Process Run Crate Collection SHOULD" ;
     sh:description "Recommended properties of the Process Run Crate Collection" ;
@@ -46,6 +53,7 @@ process-run-crate:ProcRCCollectionRecommended a sh:NodeShape ;
         sh:node ro-crate:RootDataEntity ;
         sh:minCount 1 ;
         sh:message "The Collection SHOULD be referenced from the Root Data Entity via mentions" ;
+        sh:severity sh:Warning ;
     ] ;
     sh:property [
         a sh:PropertyShape ;
@@ -54,6 +62,7 @@ process-run-crate:ProcRCCollectionRecommended a sh:NodeShape ;
         sh:path schema:hasPart ;
         sh:minCount 1 ;
         sh:message "The Collection SHOULD have a hasPart" ;
+        sh:severity sh:Warning ;
     ] ;
     sh:property [
         a sh:PropertyShape ;
@@ -62,4 +71,8 @@ process-run-crate:ProcRCCollectionRecommended a sh:NodeShape ;
         sh:path schema:mainEntity ;
         sh:minCount 1 ;
         sh:message "The Collection SHOULD have a mainEntity" ;
+        sh:severity sh:Warning ;
     ] .
+
+#=== MAY shapes ===#
+# (none)

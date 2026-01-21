@@ -19,6 +19,9 @@
 @prefix schema: <http://schema.org/> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 
+
+#=== MUST shapes ===#
+
 process-run-crate:ProcRCRootDataEntityMetadata a sh:NodeShape ;
     sh:name "Root Data Entity Metadata" ;
     sh:description "Properties of the Root Data Entity" ;
@@ -36,4 +39,14 @@ process-run-crate:ProcRCRootDataEntityMetadata a sh:NodeShape ;
         sh:qualifiedMinCount 1 ;
         sh:minCount 1 ;
         sh:message "The Root Data Entity MUST reference a CreativeWork entity with an @id URI that is consistent with the versioned permalink of the profile" ;
+        sh:severity sh:Violation ;
     ] .
+
+
+#=== SHOULD shapes ===#
+# (none)
+
+
+#=== MAY shapes ===#
+# (none)
+

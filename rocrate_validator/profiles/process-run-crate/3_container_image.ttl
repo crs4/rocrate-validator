@@ -20,6 +20,13 @@
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix wfrun: <https://w3id.org/ro/terms/workflow-run#> .
 
+
+#=== MUST shapes ===#
+# (none)
+
+
+#=== SHOULD shapes ===#
+
 process-run-crate:ProcRCContainerImageRecommended a sh:NodeShape ;
     sh:name "Process Run Crate ContainerImage SHOULD" ;
     sh:description "Recommended properties of the Process Run Crate ContainerImage" ;
@@ -35,6 +42,7 @@ process-run-crate:ProcRCContainerImageRecommended a sh:NodeShape ;
         ) ;
         sh:minCount 1 ;
         sh:message "The ContainerImage SHOULD have an additionalType pointing to <https://w3id.org/ro/terms/workflow-run#DockerImage> or <https://w3id.org/ro/terms/workflow-run#SIFImage>" ;
+        sh:severity sh:Warning ;
     ] ;
     sh:property [
         a sh:PropertyShape ;
@@ -43,6 +51,7 @@ process-run-crate:ProcRCContainerImageRecommended a sh:NodeShape ;
         sh:path wfrun:registry ;
         sh:minCount 1 ;
         sh:message "The ContainerImage SHOULD have a registry" ;
+        sh:severity sh:Warning ;
     ] ;
     sh:property [
         a sh:PropertyShape ;
@@ -51,4 +60,32 @@ process-run-crate:ProcRCContainerImageRecommended a sh:NodeShape ;
         sh:path schema:name ;
         sh:minCount 1 ;
         sh:message "The ContainerImage SHOULD have a name" ;
+        sh:severity sh:Warning ;
     ] .
+
+
+#=== MAY shapes ===#
+
+process-run-crate:ProcRCContainerImageOptional a sh:NodeShape ;
+    sh:name "Process Run Crate ContainerImage MAY" ;
+    sh:description "Optional properties of the Process Run Crate ContainerImage" ;
+    sh:targetClass wfrun:ContainerImage ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "ContainerImage tag" ;
+        sh:description "The ContainerImage MAY have a tag" ;
+        sh:path wfrun:tag ;
+        sh:minCount 1 ;
+        sh:message "The ContainerImage MAY have a tag" ;
+        sh:severity sh:Info ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "ContainerImage sha256" ;
+        sh:description "The ContainerImage MAY have a sha256" ;
+        sh:path wfrun:sha256 ;
+        sh:minCount 1 ;
+        sh:message "The ContainerImage MAY have a sha256" ;
+        sh:severity sh:Info ;
+    ] .
+
