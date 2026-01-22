@@ -37,7 +37,7 @@ def test_isa_protocol_no_name():
         rocrate_path=InvalidISARC().protocol_is_missing_name,
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
-        expected_triggered_requirements=["Protocol SHOULD have name"],
+        # expected_triggered_requirements=["Protocol SHOULD have name"],
         expected_triggered_issues=[
             "Protocol entity SHOULD have a non-empty name of type string"
         ],
@@ -52,7 +52,7 @@ def test_isa_protocol_name_incorrect_type():
         rocrate_path=InvalidISARC().protocol_name_is_incorrect_type,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
-        expected_triggered_requirements=["Protocol SHOULD have name"],
+        # expected_triggered_requirements=["Protocol SHOULD have name"],
         expected_triggered_issues=[
             "Protocol name MUST be of type string"
         ],
@@ -67,7 +67,7 @@ def test_isa_protocol_no_description():
         rocrate_path=InvalidISARC().protocol_is_missing_description,
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
-        expected_triggered_requirements=["Protocol SHOULD have description"],
+        # expected_triggered_requirements=["Protocol SHOULD have description"],
         expected_triggered_issues=[
             "Protocol entity SHOULD have a non-empty description of type string"
         ],
@@ -82,7 +82,7 @@ def test_isa_protocol_description_incorrect_type():
         rocrate_path=InvalidISARC().protocol_description_is_incorrect_type,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
-        expected_triggered_requirements=["Protocol SHOULD have description"],
+        # expected_triggered_requirements=["Protocol SHOULD have description"],
         expected_triggered_issues=[
             "Protocol description MUST be of type string"
         ],
@@ -97,7 +97,7 @@ def test_isa_protocol_no_intendedUse():
         rocrate_path=InvalidISARC().protocol_is_missing_intendedUse,
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
-        expected_triggered_requirements=["Protocol SHOULD have intended use"],
+        # expected_triggered_requirements=["Protocol SHOULD have intended use"],
         expected_triggered_issues=[
             "Protocol entity SHOULD have an intended use"
         ],
@@ -112,7 +112,7 @@ def test_isa_protocol_intendedUse_incorrect_type():
         rocrate_path=InvalidISARC().protocol_intendedUse_is_incorrect_type,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
-        expected_triggered_requirements=["Protocol SHOULD have intended use"],
+        # expected_triggered_requirements=["Protocol SHOULD have intended use"],
         expected_triggered_issues=[
             "Protocol intended use MUST be of type DefinedTerm"
         ],

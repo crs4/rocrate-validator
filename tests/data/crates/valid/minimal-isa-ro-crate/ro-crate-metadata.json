@@ -1,6 +1,6 @@
 {
   "@context": [
-    "https://w3id.org/ro/crate/1.1/context",
+    "https://w3id.org/ro/crate/1.2/context",
     {
       "Sample": "https://bioschemas.org/Sample",
       "LabProtocol": "https://bioschemas.org/LabProtocol",
@@ -11,7 +11,7 @@
       "intendedUse": "https://bioschemas.org/properties/intendedUse",
       "executesLabProtocol": "https://bioschemas.org/properties/executesLabProtocol",
       "parameterValue": "https://bioschemas.org/properties/parameterValue",
-      "measurementMethod": "http://schema.org/measurementMethod"
+      "additionalProperty": "https://bioschemas.org/properties/additionalProperty"
     }
   ],
   "@graph": [
@@ -42,13 +42,19 @@
       "@id": "#Sample_MyInputSample",
       "@type": "Sample",
       "additionalType": "Sample",
-      "name": "MyInputSample"
+      "name": "MyInputSample",
+      "additionalProperty": {
+        "@id": "#PV_MyParameterValue"
+      }
     },
     {
       "@id": "#Sample_MyOutputSample",
       "@type": "Sample",
       "additionalType": "Sample",
-      "name": "MyOutputSample"
+      "name": "MyOutputSample",
+      "additionalProperty": {
+        "@id": "#PV_MyParameterValue"
+      }
     },
     {
       "@id": "#Process_MyProcess",
@@ -140,7 +146,19 @@
     {
       "@id": "#Person_John_Doe",
       "@type": "Person",
-      "name": "John Doe"
+      "givenName": "John",
+      "familyName": "Doe",
+      "affiliation": {
+        "@id": "#Example_University"
+      },
+      "email": "abc",
+      "jobTitle": { "@id": "#Term_MyTerm" },
+      "identifier": "http://orcid.org/0000-0000-0000-0000"
+    },
+    {
+        "@type": "Organization",
+        "@id": "#Example_University",
+        "name": "Example University"
     },
     {
       "@id": "ro-crate-metadata.json",
