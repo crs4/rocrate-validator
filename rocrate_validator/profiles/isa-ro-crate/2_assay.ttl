@@ -212,4 +212,21 @@ isa-ro-crate:AssayRecommendedProperties a sh:NodeShape ;
         sh:message "Assay measurement technique MUST be of type string or DefinedTerm" ;
         sh:severity sh:Violation ;
     ] ;
+
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:about ;
+        sh:minCount 1 ;
+        sh:description "Check that assay does have at least one object in about" ;
+        sh:message "Assay entity SHOULD have about" ;
+        sh:severity sh:Warning ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:about ;
+        sh:class bioschemas:LabProcess ;
+        sh:description "Check that if assay does have at least one object in about, it MUST be of type LabProcess" ;
+        sh:message "Assay about MUST be of type LabProcess" ;
+        sh:severity sh:Violation ;
+    ] 
 .

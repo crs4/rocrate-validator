@@ -90,3 +90,108 @@ def test_isa_assay_directly_referenced_from_investigation():
         ],
         profile_identifier="isa-ro-crate",
     )
+
+def test_isa_assay_no_shoulds():
+    """
+    Test an ISA RO-Crate where the assay is missing should properties.
+    """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        DELETE {
+            ?dataset schema:name ?name .
+            ?dataset schema:description ?description .
+            ?dataset schema:creator ?creator .
+            ?dataset schema:about ?about .
+            ?dataset schema:measurementMethod ?measurementMethod .
+            ?dataset schema:measurementTechnique ?measurementTechnique .
+            ?dataset schema:hasPart ?hasPart .
+        }
+        WHERE {
+            ?dataset a schema:Dataset .
+            ?dataset schema:identifier "MyAssay" .
+            ?dataset schema:name ?name .
+            ?dataset schema:description ?description .
+            ?dataset schema:creator ?creator .
+            ?dataset schema:about ?about .
+            ?dataset schema:measurementMethod ?measurementMethod .
+            ?dataset schema:measurementTechnique ?measurementTechnique .
+            ?dataset schema:hasPart ?hasPart .
+        }
+        """
+    )
+
+    do_entity_test(
+        rocrate_path=ValidROC().isa_ro_crate_manual,
+        requirement_severity=Severity.RECOMMENDED,
+        expected_validation_result=False,
+        # expected_triggered_requirements=["Study MUST have base properties"],
+        expected_triggered_issues=[
+            "Assay entity SHOULD have a non-empty name of type string",
+            "Assay entity SHOULD have a non-empty description of type string",
+            "Assay entity SHOULD have a creator",
+            "Assay entity SHOULD have about",
+            "Assay entity SHOULD have a measurement method",
+            "Assay entity SHOULD have a measurement technique",
+            "Assay entity SHOULD have hasPart"
+        ],
+        profile_identifier="isa-ro-crate",
+        rocrate_entity_mod_sparql=sparql
+    )
+
+def test_isa_assay_shoulds_have_wrong_types():
+    """
+    Test an ISA RO-Crate where the assay has should properties with wrong types.
+    """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        DELETE {
+            ?dataset schema:name ?name .
+            ?dataset schema:description ?description .
+            ?dataset schema:creator ?creator .
+            ?dataset schema:about ?about .
+            ?dataset schema:measurementMethod ?measurementMethod .
+            ?dataset schema:measurementTechnique ?measurementTechnique .
+            ?dataset schema:hasPart ?hasPart .
+        }
+         INSERT {
+            ?dataset schema:name 42 .
+            ?dataset schema:description 42 .
+            ?dataset schema:creator 42 .
+            ?dataset schema:about 42 .
+            ?dataset schema:measurementMethod 42 .
+            ?dataset schema:measurementTechnique 42 .
+            ?dataset schema:hasPart 42 .
+        }
+        WHERE {
+            ?dataset a schema:Dataset .
+            ?dataset schema:identifier "MyAssay" .
+            ?dataset schema:name ?name .
+            ?dataset schema:description ?description .
+            ?dataset schema:creator ?creator .
+            ?dataset schema:about ?about .
+            ?dataset schema:measurementMethod ?measurementMethod .
+            ?dataset schema:measurementTechnique ?measurementTechnique .
+            ?dataset schema:hasPart ?hasPart .
+        }
+        """
+    )
+
+    do_entity_test(
+        rocrate_path=ValidROC().isa_ro_crate_manual,
+        requirement_severity=Severity.REQUIRED,
+        expected_validation_result=False,
+        # expected_triggered_requirements=["Study MUST have base properties"],
+        expected_triggered_issues=[
+            "Assay name MUST be of type string",
+            "Assay description MUST be of type string",
+            "Assay creator MUST be of type Person",
+            "Assay about MUST be of type LabProcess",
+            "Assay measurement method MUST be of type string or DefinedTerm",
+            "Assay measurement technique MUST be of type string or DefinedTerm",
+            "Assay hasPart MUST be of type Dataset or File"
+        ],
+        profile_identifier="isa-ro-crate",
+        rocrate_entity_mod_sparql=sparql
+    )
