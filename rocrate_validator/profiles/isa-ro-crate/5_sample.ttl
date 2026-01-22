@@ -1,0 +1,78 @@
+# Copyright (c) 2024 DataPLANT
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+@prefix ro: <./> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+@prefix isa-ro-crate: <https://github.com/crs4/rocrate-validator/profiles/isa-ro-crate/> .
+@prefix bioschemas: <https://bioschemas.org/> .
+@prefix bioschemas-prop: <https://bioschemas.org/properties/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix validator: <https://github.com/crs4/rocrate-validator/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+
+
+# check Sample attributes must have correct types
+
+isa-ro-crate:SampledMustHaveName a sh:NodeShape ;
+    sh:name "Sample MUST have name" ;
+    sh:description "A Sample MUST have a name" ;
+    sh:targetClass bioschemas:Sample ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:name ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ; 
+        sh:not [
+            sh:hasValue ""
+        ] ;
+        sh:description "Check that sample does have non-empty name and it's a string" ;
+        sh:message "Sample entity MUST have a non-empty name of type string" ;
+        sh:severity sh:Violation ;
+    ] 
+.
+
+isa-ro-crate:SampleShouldHaveAdditionalPropertyOfCorrectType a sh:NodeShape ;
+    sh:name "Sample SHOULD have additional properties" ;
+    sh:description "A Sample SHOULD have at least one additional property" ;
+    sh:targetClass bioschemas:Sample ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path bioschemas-prop:additionalProperty ;
+        sh:minCount 1 ;
+        sh:not [
+            sh:hasValue ""
+        ] ;
+        sh:description "Check that sample does have at least one additional property" ;
+        sh:message "Sample entity SHOULD have at least one additional property" ;
+        sh:severity sh:Warning ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path bioschemas-prop:additionalProperty ;
+        sh:class schema:PropertyValue ;
+        sh:description "The additional property of a sample MUST be a PropertyValue" ;
+        sh:message "Sample additional property MUST be of type PropertyValue" ;
+        sh:severity sh:Violation ;
+    ]
+.
