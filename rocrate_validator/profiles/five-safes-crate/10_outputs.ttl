@@ -22,6 +22,11 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 
+#=== MUST shapes ===#
+# (none)
+
+
+#=== SHOULD shapes ===#
 
 five-safes-crate:CreateActionHasResultIfActionCompleted
   a sh:NodeShape ;
@@ -87,3 +92,6 @@ five-safes-crate:CreateActionResultOutputsHaveAllowedTypes
       ]
     ) .
 
+
+#=== MAY shapes ===#
+# (none)
