@@ -91,7 +91,8 @@
     {
       "@type": "DefinedTerm",
       "@id": "#Term_MyTerm",
-      "name": "MyTerm"
+      "name": "MyTerm",
+      "termCode": "MT001"
     },
     {
       "@id": "assays/MyAssay/datafile.txt",
@@ -112,7 +113,37 @@
       },
       "about": {
         "@id": "#Process_MyProcess"
+      },
+      "citation": {
+        "@id": "https://doi.org/10.1000/mydoi"
       }
+    },
+    {
+      "@id": "https://doi.org/10.1000/mydoi",
+      "@type": "ScholarlyArticle",
+      "headline": "My Example DOI Article",
+      "author": {
+        "@id": "#Person_John_Doe"
+      },
+      "identifier": {
+        "@id": "#DOI_MyDOI"
+      },
+      "comment": {
+        "@id": "#Comment_MyComment"
+      }
+    },
+    {
+      "@id": "#Comment_MyComment",
+      "@type": "Comment",
+      "name": "This is a comment on the article.",
+      "text": "Great article!"
+    },
+    {
+      "@id": "#DOI_MyDOI",
+      "@type": "PropertyValue",
+      "propertyID": "http://purl.obolibrary.org/obo/OBI_0002110",
+      "name": "DOI",
+      "value": "10.1000/mydoi"
     },
     {
       "@id": "LICENSE",

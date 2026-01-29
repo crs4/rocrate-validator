@@ -1,0 +1,97 @@
+# Copyright (c) 2024 DataPLANT
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+@prefix ro: <./> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+@prefix isa-ro-crate: <https://github.com/crs4/rocrate-validator/profiles/isa-ro-crate/> .
+@prefix bioschemas: <https://bioschemas.org/> .
+@prefix bioschemas-prop: <https://bioschemas.org/properties/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix validator: <https://github.com/crs4/rocrate-validator/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+
+isa-ro-crate:ArticleMustHaveHeadline a sh:NodeShape ;
+    sh:name "Article MUST have a headline" ;
+    sh:description "An Article MUST have a headline" ;
+    sh:targetClass schema:ScholarlyArticle ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:headline ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ; 
+        sh:not [
+            sh:hasValue ""
+        ] ;
+        sh:description "Check that article does have non-empty headline and it's a string" ;
+        sh:message "Article entity MUST have a non-empty headline of type string" ;
+        sh:severity sh:Violation ;
+    ] 
+.
+
+isa-ro-crate:ArticleMustHaveIdentifier a sh:NodeShape ;
+    sh:name "Article MUST have an identifier" ;
+    sh:description "An Article MUST have an identifier" ;
+    sh:targetClass schema:ScholarlyArticle ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:identifier ;
+        sh:or(
+            [ sh:datatype xsd:string ] 
+            [ sh:class schema:PropertyValue ] 
+        ) ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ; 
+        sh:not [
+            sh:hasValue ""
+        ] ;
+        sh:description "Check that article does have non-empty identifier and it's a string or PropertyValue" ;
+        sh:message "Article entity MUST have a non-empty identifier of type string or PropertyValue" ;
+        sh:severity sh:Violation ;
+    ] 
+.
+
+isa-ro-crate:ArticleShouldHaveAuthorOfCorrectType a sh:NodeShape ;
+    sh:name "Article SHOULD have author" ;
+    sh:description "An Article SHOULD have at least one author" ;
+    sh:targetClass schema:ScholarlyArticle ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:author ;
+        sh:minCount 1 ;
+        sh:not [
+            sh:hasValue ""
+        ] ;
+        sh:description "Check that article does have at least one author" ;
+        sh:message "Article entity SHOULD have at least one author" ;
+        sh:severity sh:Warning ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:author ;
+        sh:class schema:Person ;
+        sh:description "The author of an article MUST be a Person" ;
+        sh:message "Article author MUST be of type Person" ;
+        sh:severity sh:Violation ;
+    ]
+.

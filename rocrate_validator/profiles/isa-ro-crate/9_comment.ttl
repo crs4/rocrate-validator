@@ -1,0 +1,81 @@
+# Copyright (c) 2024 DataPLANT
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+@prefix ro: <./> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+@prefix isa-ro-crate: <https://github.com/crs4/rocrate-validator/profiles/isa-ro-crate/> .
+@prefix bioschemas: <https://bioschemas.org/> .
+@prefix bioschemas-prop: <https://bioschemas.org/properties/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix validator: <https://github.com/crs4/rocrate-validator/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+
+isa-ro-crate:CommentShouldHaveName a sh:NodeShape ;
+    sh:name "Comment SHOULD have name" ;
+    sh:description "A Comment SHOULD have at least one name" ;
+    sh:targetClass schema:Comment ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:name ;
+        sh:minCount 1 ;
+        sh:not [
+            sh:hasValue ""
+        ] ;
+        sh:description "Check that comment does have at least one name" ;
+        sh:message "Comment entity SHOULD have at least one name" ;
+        sh:severity sh:Warning ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:name ;
+        sh:datatype xsd:string ;
+        sh:description "The name of a comment MUST be a string" ;
+        sh:message "Comment name MUST be of type string" ;
+        sh:severity sh:Violation ;
+    ]
+.
+
+isa-ro-crate:CommentShouldHaveText a sh:NodeShape ;
+    sh:name "Comment SHOULD have text" ;
+    sh:description "A Comment SHOULD have at least one text" ;
+    sh:targetClass schema:Comment ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:text ;
+        sh:minCount 1 ;
+        sh:not [
+            sh:hasValue ""
+        ] ;
+        sh:description "Check that comment does have at least one text" ;
+        sh:message "Comment entity SHOULD have at least one text" ;
+        sh:severity sh:Warning ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:text ;
+        sh:datatype xsd:string ;
+        sh:description "The text of a comment MUST be a string" ;
+        sh:message "Comment text MUST be of type string" ;
+        sh:severity sh:Violation ;
+    ]
+.
