@@ -77,7 +77,7 @@
       "@id": "#PV_MyParameterValue",
       "@type": "PropertyValue",
       "name": "MyParameter",
-      "value": "42"
+      "value": 7
     },
     {
       "@id": "#Protocol_MyProtocol",
