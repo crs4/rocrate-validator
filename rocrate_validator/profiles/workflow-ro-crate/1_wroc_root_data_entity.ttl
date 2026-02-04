@@ -36,4 +36,5 @@ workflow-ro-crate:WROCRootDataEntityRequiredProperties a sh:NodeShape ;
         ) ;
         sh:minCount 1 ;
         sh:message "The Crate (Root Data Entity) must specify a license, which should be a URL but can also be a string" ;
+        sh:severity sh:Violation;
     ] .

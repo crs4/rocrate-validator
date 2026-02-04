@@ -46,4 +46,5 @@ workflow-ro-crate:FindExamplesDir a sh:NodeShape ;
         sh:hasValue schema:Dataset ;
         sh:minCount 1 ;
         sh:message "The examples/ dir should be a Dataset" ;
+        sh:severity sh:Info;
     ] .

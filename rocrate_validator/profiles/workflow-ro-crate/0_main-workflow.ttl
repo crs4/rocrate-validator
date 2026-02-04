@@ -15,11 +15,77 @@
 @prefix ro: <./> .
 @prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
 @prefix workflow-ro-crate: <https://github.com/crs4/rocrate-validator/profiles/workflow-ro-crate/> .
+@prefix bioschemas: <https://bioschemas.org/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix schema: <http://schema.org/> .
-@prefix bioschemas: <https://bioschemas.org/> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix validator: <https://github.com/crs4/rocrate-validator/> .
 @prefix wroc: <https://w3id.org/workflowhub/workflow-ro-crate#> .
+
+
+workflow-ro-crate:MainEntityPropertyMustExist a sh:NodeShape ;
+    sh:name "Main Workflow entity existence" ;
+    sh:description "The Main Workflow must be specified through a `mainEntity` property in the root data entity" ;
+    sh:targetClass ro-crate:RootDataEntity ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:mainEntity ;
+        sh:minCount 1 ;
+        sh:description "Check if the Main Workflow is specified through a `mainEntity` property in the root data entity" ;
+        sh:message "The Main Workflow must be specified through a `mainEntity` property in the root data entity" ;
+        sh:severity sh:Violation;
+    ] .
+
+workflow-ro-crate:FindMainWorkflow a sh:NodeShape, validator:HiddenShape ;
+    sh:name "Identify Main Workflow" ;
+    sh:description "Identify the Main Workflow" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?root schema:mainEntity ?this .
+                ?root a schema:Dataset .
+                ?metadatafile schema:about ?root .
+                FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
+            }
+        """
+    ] ;
+    sh:rule [
+        a sh:TripleRule ;
+        sh:subject sh:this ;
+        sh:predicate rdf:type ;
+        sh:object workflow-ro-crate:MainWorkflow ;
+    ] .
+
+workflow-ro-crate:MainWorkflowRequiredProperties a sh:NodeShape ;
+    sh:name "Main Workflow definition" ;
+    sh:description """Main Workflow properties defined as MUST""";
+    sh:targetClass workflow-ro-crate:MainWorkflow ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Main Workflow type" ;
+        sh:description "The Main Workflow must have types File, SoftwareSourceCode, ComputationalWorkflow" ;
+        sh:path rdf:type ;
+        sh:hasValue schema:MediaObject ,
+                    schema:SoftwareSourceCode ,
+                    bioschemas:ComputationalWorkflow ;
+        sh:minCount 1 ;
+        sh:message "The Main Workflow must have types File, SoftwareSourceCode, ComputationalWorkflow" ;
+        sh:severity sh:Violation;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Main Workflow language" ;
+        sh:description "The Main Workflow must refer to its language via programmingLanguage" ;
+        sh:path schema:programmingLanguage ;
+        sh:class schema:ComputerLanguage ;
+        sh:minCount 1 ;
+        sh:message "The Main Workflow must refer to its language via programmingLanguage" ;
+        sh:severity sh:Violation;
+    ] .
+
 
 workflow-ro-crate:MainWorkflowOptionalProperties a sh:NodeShape ;
     sh:name "Main Workflow optional properties" ;
@@ -33,7 +99,7 @@ workflow-ro-crate:MainWorkflowOptionalProperties a sh:NodeShape ;
         sh:class schema:MediaObject, schema:ImageObject ;
         sh:minCount 1 ;
         sh:message "The Crate MAY contain a Main Workflow Diagram; if present it MUST be referred to via 'image'" ;
-         # sh:severity sh:Info ;
+        sh:severity sh:Info ;
     ] ;
     sh:property [
         a sh:PropertyShape ;
@@ -43,7 +109,7 @@ workflow-ro-crate:MainWorkflowOptionalProperties a sh:NodeShape ;
         sh:node workflow-ro-crate:CWLDescriptionProperties ;
         sh:minCount 1 ;
         sh:message "The Crate MAY contain a Main Workflow CWL Description; if present it MUST be referred to via 'subjectOf'" ;
-         # sh:severity sh:Info ;
+        sh:severity sh:Info ;
     ] .
 
 workflow-ro-crate:CWLDescriptionProperties a sh:NodeShape ;
@@ -56,7 +122,7 @@ workflow-ro-crate:CWLDescriptionProperties a sh:NodeShape ;
         sh:path rdf:type ;
         sh:hasValue schema:MediaObject, schema:SoftwareSourceCode, schema:HowTo ;
         sh:message "The CWL Description type must be File, SoftwareSourceCode, HowTo" ;
-        # sh:severity sh:Info ;
+        sh:severity sh:Info ;
     ] ;
     sh:property [
         a sh:PropertyShape ;
@@ -66,5 +132,5 @@ workflow-ro-crate:CWLDescriptionProperties a sh:NodeShape ;
         sh:hasValue wroc:cwl ;
         sh:class schema:ComputerLanguage ;
         sh:message "The CWL Description SHOULD have a language of https://w3id.org/workflowhub/workflow-ro-crate#cwl" ;
-        # sh:severity sh:Info ;
+        sh:severity sh:Info ;
     ] .

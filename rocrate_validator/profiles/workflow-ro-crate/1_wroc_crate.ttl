@@ -33,6 +33,7 @@ workflow-ro-crate:DescriptorProperties a sh:NodeShape ;
                     <https://w3id.org/workflowhub/workflow-ro-crate/1.0> ;
         sh:minCount 1 ;
         sh:message "The Metadata File Descriptor conformsTo SHOULD contain https://w3id.org/ro/crate/1.1 and https://w3id.org/workflowhub/workflow-ro-crate/1.0" ;
+        sh:severity sh:Warning;
     ] .
 
 workflow-ro-crate:FindReadme a sh:NodeShape ;
@@ -47,6 +48,7 @@ workflow-ro-crate:FindReadme a sh:NodeShape ;
         sh:class ro-crate:RootDataEntity ;
         sh:minCount 1 ;
         sh:message "The README.md SHOULD be about the crate" ;
+        sh:severity sh:Warning;
     ] ;
     sh:property [
         a sh:PropertyShape ;
@@ -56,4 +58,5 @@ workflow-ro-crate:FindReadme a sh:NodeShape ;
         sh:hasValue "text/markdown" ;
         sh:minCount 1 ;
         sh:message "The README.md SHOULD have text/markdown as its encodingFormat" ;
+        sh:severity sh:Warning;
     ] .
