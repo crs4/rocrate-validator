@@ -41,8 +41,6 @@ five-safes-crate:WorkflowMustHaveDescriptiveName
     ] .
 
 
-
-
 five-safes-crate:WorkflowMustHaveActionStatusWithAllowedValues
     a sh:NodeShape ;
     sh:name "WorkflowExecution" ;

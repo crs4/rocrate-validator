@@ -26,8 +26,11 @@
 # There SHOULD be a Sign-Off Phase
 five-safes-crate:SignOffPhase
     a sh:NodeShape ;
+    sh:name "SignOffPhase" ;
     sh:targetClass ro-crate:RootDataEntity ;
     sh:description "Check the Sign-Off Phase" ;
+    sh:severity sh:Warning ;
+
     sh:sparql [
         sh:select """
             PREFIX schema: <http://schema.org/>
@@ -39,9 +42,9 @@ five-safes-crate:SignOffPhase
                }
             }
         """ ;
-        sh:severity sh:Warning ;
         sh:message "There SHOULD be a Sign-Off Phase in the Final RO-Crate" ;         
     ] ;
+
     sh:sparql [
         sh:select """
             PREFIX schema: <http://schema.org/>
@@ -54,14 +57,16 @@ five-safes-crate:SignOffPhase
                 }
             }
         """ ;
-        sh:severity sh:Warning ;
         sh:message "The Root Data Entity SHOULD mention a Sign-Off Phase Object" ;
     ] .
 
 
 five-safes-crate:SignOffPhaseProperties
     a sh:NodeShape ;
+    sh:name "SignOffPhaseProperties" ;
     sh:description "Check Sign-Off Phase Properties" ;
+    sh:severity sh:Warning ;
+
     sh:target [
         a sh:SPARQLTarget ;
         sh:select """
@@ -73,6 +78,7 @@ five-safes-crate:SignOffPhaseProperties
             }
         """
     ] ;
+
     sh:property [
         sh:description "Check if the Sign Off phase has an actionStatus" ;
         sh:path schema:actionStatus ;
@@ -80,6 +86,7 @@ five-safes-crate:SignOffPhaseProperties
         sh:severity sh:Warning ;
         sh:message "The Sign-Off Phase SHOULD have an actionStatus" ;
     ] ;
+
     sh:property [
         sh:description "Check if the Sign Off phase has an agent" ;
         sh:path schema:agent ;
@@ -87,6 +94,7 @@ five-safes-crate:SignOffPhaseProperties
         sh:severity sh:Warning ;
         sh:message "The Sign-Off Phase SHOULD have an agent" ;
     ] ;
+
     sh:property [
         sh:description "Check if the Sign Off phase has an instrument (TRE Policy)" ;
         sh:path schema:instrument ;
@@ -96,6 +104,7 @@ five-safes-crate:SignOffPhaseProperties
         sh:severity sh:Warning ;
         sh:message "The Sign-Off Phase SHOULD have an TRE policy (instrument) with type CreativeWork" ;
     ] ;
+
     sh:property [
         sh:description "Check if the Sign Off phase has an instrument (TRE Policy)" ;
         sh:path ( schema:instrument schema:name ) ;
@@ -104,6 +113,7 @@ five-safes-crate:SignOffPhaseProperties
         sh:severity sh:Warning ;
         sh:message "The Sign-Off Phase SHOULD have an TRE policy (instrument) with a human-readable name" ;
     ] ;
+
     sh:sparql [
         a sh:SPARQLConstraint ;
         sh:description "Check if the Sign Off phase lists the workflow as an object" ;
@@ -120,9 +130,9 @@ five-safes-crate:SignOffPhaseProperties
                 }
             }
         """ ;
-        sh:severity sh:Warning ;
         sh:message "The Sign-Off Phase SHOULD list the workflow (mainEntity) as an object" ;
     ];
+
     sh:sparql [
         a sh:SPARQLConstraint ;
         sh:description "Check if the Sign Off phase lists the Responsible Project as an object" ;
@@ -139,13 +149,13 @@ five-safes-crate:SignOffPhaseProperties
                 }
             }
         """ ;
-        sh:severity sh:Warning ;
         sh:message "The Sign-Off Phase SHOULD list the Responsible Project (sourceOrganization) as an object" ;
     ].
 
 
 five-safes-crate:SignOffPhaseEndTime
     a sh:NodeShape ;
+    sh:name "SignOffPhaseEndTime" ;
     sh:description "Sign Off end time check" ;
 
     sh:target [

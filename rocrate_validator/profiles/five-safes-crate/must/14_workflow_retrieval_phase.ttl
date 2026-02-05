@@ -47,6 +47,8 @@ five-safes-crate:WorkflowSameAsAndRootDataEntityMainEntityMUSTBeTheSame
     a sh:NodeShape ;
     sh:name "Downloaded Workflow" ;
     sh:description "" ;
+    sh:severity sh:Violation ;
+
     sh:target [
         a sh:SPARQLTarget ;
         sh:select """
@@ -77,7 +79,7 @@ five-safes-crate:WorkflowSameAsAndRootDataEntityMainEntityMUSTBeTheSame
                 }
             }
         """ ;
-        sh:severity sh:Violation ;
+        
         sh:description "The property `sameAs` of the entity representing the downloaded workflow MUST point to the same entity as `RootDataEntity` --> `mainEntity`." ;
         sh:message "The property `sameAs` of the entity representing the downloaded workflow MUST point to the same entity as `RootDataEntity` --> `mainEntity`." ;
     ] .
@@ -87,6 +89,8 @@ five-safes-crate:DownloadedWorkflowDistributionAndDownloadActionObjectMUSTBeTheS
     a sh:NodeShape ;
     sh:name "Downloaded Workflow" ;
     sh:description "" ;
+    sh:severity sh:Violation ;
+    
     sh:target [
         a sh:SPARQLTarget ;
         sh:select """
@@ -118,7 +122,6 @@ five-safes-crate:DownloadedWorkflowDistributionAndDownloadActionObjectMUSTBeTheS
                 }
             }
         """  ;
-        sh:severity sh:Violation ;
         sh:message "DownloadedWorkflow --> `distribution` MUST reference the same entity as `DownloadAction` --> `object`." ;
     ] .
 

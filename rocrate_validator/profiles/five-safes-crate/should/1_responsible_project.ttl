@@ -26,6 +26,8 @@ five-safes-crate:ResponsibleProjectMemberAndSourceOrganizationIntersection
     a sh:NodeShape ;
     sh:name "Organizations (members of Responsible Project)" ;
     sh:description """At least one of the organisations that are members of the responsible project SHOULD be included in the Requesting Agent's affiliations, if such properties exist.""" ;
+    sh:severity sh:Warning ;
+
     sh:target [
         a sh:SPARQLTarget ;
         sh:prefixes ro-crate:sparqlPrefixes ;
@@ -40,6 +42,7 @@ five-safes-crate:ResponsibleProjectMemberAndSourceOrganizationIntersection
             }
         """
     ] ;
+    
     sh:sparql [
         a sh:SPARQLConstraint ;
         sh:name "Intersection with agent affiliations" ;
@@ -55,6 +58,5 @@ five-safes-crate:ResponsibleProjectMemberAndSourceOrganizationIntersection
               }
             }
         """ ;
-        sh:severity sh:Warning ;
         sh:message """At least one of the organisations that are members of the responsible project SHOULD be included in the Requesting Agent's affiliations, if such properties exist.""" ;
     ] .
