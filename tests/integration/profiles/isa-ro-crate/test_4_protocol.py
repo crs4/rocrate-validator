@@ -6,10 +6,10 @@
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included in all
 # copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -44,6 +44,7 @@ def test_isa_protocol_no_name():
         profile_identifier="isa-ro-crate",
     )
 
+
 def test_isa_protocol_name_incorrect_type():
     """
     Test an ISA RO-Crate where a Protocol has a name with the wrong type.
@@ -53,11 +54,10 @@ def test_isa_protocol_name_incorrect_type():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Protocol SHOULD have name"],
-        expected_triggered_issues=[
-            "Protocol name MUST be of type string"
-        ],
+        expected_triggered_issues=["Protocol name MUST be of type string"],
         profile_identifier="isa-ro-crate",
     )
+
 
 def test_isa_protocol_no_description():
     """
@@ -74,6 +74,7 @@ def test_isa_protocol_no_description():
         profile_identifier="isa-ro-crate",
     )
 
+
 def test_isa_protocol_description_incorrect_type():
     """
     Test an ISA RO-Crate where a Protocol has a description with the wrong type.
@@ -83,11 +84,10 @@ def test_isa_protocol_description_incorrect_type():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Protocol SHOULD have description"],
-        expected_triggered_issues=[
-            "Protocol description MUST be of type string"
-        ],
+        expected_triggered_issues=["Protocol description MUST be of type string"],
         profile_identifier="isa-ro-crate",
     )
+
 
 def test_isa_protocol_no_intendedUse():
     """
@@ -98,11 +98,10 @@ def test_isa_protocol_no_intendedUse():
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Protocol SHOULD have intended use"],
-        expected_triggered_issues=[
-            "Protocol entity SHOULD have an intended use"
-        ],
+        expected_triggered_issues=["Protocol entity SHOULD have an intended use"],
         profile_identifier="isa-ro-crate",
     )
+
 
 def test_isa_protocol_intendedUse_incorrect_type():
     """
@@ -113,8 +112,6 @@ def test_isa_protocol_intendedUse_incorrect_type():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Protocol SHOULD have intended use"],
-        expected_triggered_issues=[
-            "Protocol intended use MUST be of type DefinedTerm"
-        ],
+        expected_triggered_issues=["Protocol intended use MUST be of type DefinedTerm"],
         profile_identifier="isa-ro-crate",
     )

@@ -6,10 +6,10 @@
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included in all
 # copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -44,6 +44,7 @@ def test_isa_process_name():
         profile_identifier="isa-ro-crate",
     )
 
+
 def test_isa_process_not_correctly_referenced_from_dataset():
     """
     Test an ISA RO-Crate where a Process is referenced from a Dataset with wrong property.
@@ -52,12 +53,15 @@ def test_isa_process_not_correctly_referenced_from_dataset():
         rocrate_path=InvalidISARC().process_is_linked_through_illegal_property,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
-        expected_triggered_requirements=["Process MUST be directly referenced from a dataset"],
+        expected_triggered_requirements=[
+            "Process MUST be directly referenced from a dataset"
+        ],
         expected_triggered_issues=[
             "Process MUST be directly referenced in about on a Dataset"
         ],
         profile_identifier="isa-ro-crate",
     )
+
 
 def test_isa_process_no_object():
     """
@@ -68,11 +72,10 @@ def test_isa_process_no_object():
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
         expected_triggered_requirements=["Process SHOULD have an object"],
-        expected_triggered_issues=[
-            "Process entity SHOULD have an object"
-        ],
+        expected_triggered_issues=["Process entity SHOULD have an object"],
         profile_identifier="isa-ro-crate",
     )
+
 
 def test_isa_process_object_incorrect_type():
     """
@@ -89,6 +92,7 @@ def test_isa_process_object_incorrect_type():
         profile_identifier="isa-ro-crate",
     )
 
+
 def test_isa_process_no_result():
     """
     Test an ISA RO-Crate where a Process does not have a result.
@@ -98,11 +102,10 @@ def test_isa_process_no_result():
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
         expected_triggered_requirements=["Process SHOULD have a result"],
-        expected_triggered_issues=[
-            "Process entity SHOULD have a result"
-        ],
+        expected_triggered_issues=["Process entity SHOULD have a result"],
         profile_identifier="isa-ro-crate",
     )
+
 
 def test_isa_process_result_incorrect_type():
     """
@@ -119,6 +122,7 @@ def test_isa_process_result_incorrect_type():
         profile_identifier="isa-ro-crate",
     )
 
+
 def test_isa_process_no_value():
     """
     Test an ISA RO-Crate where a Process does not have a parameter value.
@@ -128,11 +132,10 @@ def test_isa_process_no_value():
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
         expected_triggered_requirements=["Process SHOULD have a parameter value"],
-        expected_triggered_issues=[
-            "Process entity SHOULD have a parameter value"
-        ],
+        expected_triggered_issues=["Process entity SHOULD have a parameter value"],
         profile_identifier="isa-ro-crate",
     )
+
 
 def test_isa_process_value_incorrect_type():
     """
@@ -149,6 +152,7 @@ def test_isa_process_value_incorrect_type():
         profile_identifier="isa-ro-crate",
     )
 
+
 def test_isa_process_no_protocol():
     """
     Test an ISA RO-Crate where a Process does not have a protocol.
@@ -158,11 +162,10 @@ def test_isa_process_no_protocol():
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
         expected_triggered_requirements=["Process SHOULD have a protocol"],
-        expected_triggered_issues=[
-            "Process entity SHOULD have a protocol"
-        ],
+        expected_triggered_issues=["Process entity SHOULD have a protocol"],
         profile_identifier="isa-ro-crate",
     )
+
 
 def test_isa_process_protocol_incorrect_type():
     """
@@ -173,8 +176,6 @@ def test_isa_process_protocol_incorrect_type():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["Process SHOULD have a protocol"],
-        expected_triggered_issues=[
-            "Process protocols MUST be of type LabProtocol"
-        ],
+        expected_triggered_issues=["Process protocols MUST be of type LabProtocol"],
         profile_identifier="isa-ro-crate",
     )

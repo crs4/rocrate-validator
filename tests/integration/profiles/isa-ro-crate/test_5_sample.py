@@ -6,10 +6,10 @@
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included in all
 # copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -56,8 +56,9 @@ def test_isa_sample_name():
             "Sample entity MUST have a non-empty name of type string"
         ],
         profile_identifier="isa-ro-crate",
-        rocrate_entity_mod_sparql=sparql
+        rocrate_entity_mod_sparql=sparql,
     )
+
 
 def test_isa_sample_name_of_incorrect_type():
     """
@@ -89,8 +90,9 @@ def test_isa_sample_name_of_incorrect_type():
             "Sample entity MUST have a non-empty name of type string"
         ],
         profile_identifier="isa-ro-crate",
-        rocrate_entity_mod_sparql=sparql
+        rocrate_entity_mod_sparql=sparql,
     )
+
 
 def test_isa_sample_no_additional_property():
     """
@@ -121,8 +123,9 @@ def test_isa_sample_no_additional_property():
             "Sample entity SHOULD have at least one additional property"
         ],
         profile_identifier="isa-ro-crate",
-        rocrate_entity_mod_sparql=sparql
+        rocrate_entity_mod_sparql=sparql,
     )
+
 
 def test_isa_sample_additional_property_of_incorrect_type():
     """
@@ -156,5 +159,5 @@ def test_isa_sample_additional_property_of_incorrect_type():
             "Sample additional property MUST be of type PropertyValue"
         ],
         profile_identifier="isa-ro-crate",
-        rocrate_entity_mod_sparql=sparql
+        rocrate_entity_mod_sparql=sparql,
     )

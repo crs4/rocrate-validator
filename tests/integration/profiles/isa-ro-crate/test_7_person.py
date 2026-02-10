@@ -6,10 +6,10 @@
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included in all
 # copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -55,8 +55,9 @@ def test_isa_person_given_name():
             "Person entity MUST have a non-empty given name of type string"
         ],
         profile_identifier="isa-ro-crate",
-        rocrate_entity_mod_sparql=sparql
+        rocrate_entity_mod_sparql=sparql,
     )
+
 
 def test_isa_person_given_name_of_incorrect_type():
     """
@@ -88,8 +89,9 @@ def test_isa_person_given_name_of_incorrect_type():
             "Person entity MUST have a non-empty given name of type string"
         ],
         profile_identifier="isa-ro-crate",
-        rocrate_entity_mod_sparql=sparql
+        rocrate_entity_mod_sparql=sparql,
     )
+
 
 def test_isa_person_family_name():
     """
@@ -117,8 +119,9 @@ def test_isa_person_family_name():
             "Person entity SHOULD have a non-empty family name of type string"
         ],
         profile_identifier="isa-ro-crate",
-        rocrate_entity_mod_sparql=sparql
+        rocrate_entity_mod_sparql=sparql,
     )
+
 
 def test_isa_person_family_name_of_incorrect_type():
     """
@@ -145,12 +148,11 @@ def test_isa_person_family_name_of_incorrect_type():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Study MUST have base properties"],
-        expected_triggered_issues=[
-            "Person family name MUST be of type string"
-        ],
+        expected_triggered_issues=["Person family name MUST be of type string"],
         profile_identifier="isa-ro-crate",
-        rocrate_entity_mod_sparql=sparql
+        rocrate_entity_mod_sparql=sparql,
     )
+
 
 def test_isa_person_email():
     """
@@ -178,8 +180,9 @@ def test_isa_person_email():
             "Person entity SHOULD have a non-empty email of type string"
         ],
         profile_identifier="isa-ro-crate",
-        rocrate_entity_mod_sparql=sparql
+        rocrate_entity_mod_sparql=sparql,
     )
+
 
 def test_isa_person_email_of_incorrect_type():
     """
@@ -206,12 +209,11 @@ def test_isa_person_email_of_incorrect_type():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Study MUST have base properties"],
-        expected_triggered_issues=[
-            "Person email MUST be of type string"
-        ],
+        expected_triggered_issues=["Person email MUST be of type string"],
         profile_identifier="isa-ro-crate",
-        rocrate_entity_mod_sparql=sparql
+        rocrate_entity_mod_sparql=sparql,
     )
+
 
 def test_isa_person_identifier():
     """
@@ -240,8 +242,9 @@ def test_isa_person_identifier():
             "Person entity SHOULD have a non-empty identifier of type string"
         ],
         profile_identifier="isa-ro-crate",
-        rocrate_entity_mod_sparql=sparql
+        rocrate_entity_mod_sparql=sparql,
     )
+
 
 def test_isa_person_identifier_of_incorrect_type():
     """
@@ -269,12 +272,11 @@ def test_isa_person_identifier_of_incorrect_type():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Study MUST have base properties"],
-        expected_triggered_issues=[
-            "Person identifier MUST be of type string"
-        ],
+        expected_triggered_issues=["Person identifier MUST be of type string"],
         profile_identifier="isa-ro-crate",
-        rocrate_entity_mod_sparql=sparql
+        rocrate_entity_mod_sparql=sparql,
     )
+
 
 def test_isa_person_affiliation():
     """
@@ -303,8 +305,9 @@ def test_isa_person_affiliation():
             "Person entity SHOULD have at least one affiliation"
         ],
         profile_identifier="isa-ro-crate",
-        rocrate_entity_mod_sparql=sparql
+        rocrate_entity_mod_sparql=sparql,
     )
+
 
 def test_isa_person_affiliation_of_incorrect_type():
     """
@@ -332,12 +335,11 @@ def test_isa_person_affiliation_of_incorrect_type():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Study MUST have base properties"],
-        expected_triggered_issues=[
-            "Person affiliation MUST be of type Organization"
-        ],
+        expected_triggered_issues=["Person affiliation MUST be of type Organization"],
         profile_identifier="isa-ro-crate",
-        rocrate_entity_mod_sparql=sparql
+        rocrate_entity_mod_sparql=sparql,
     )
+
 
 def test_isa_person_job_title():
     """
@@ -362,12 +364,11 @@ def test_isa_person_job_title():
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Study MUST have base properties"],
-        expected_triggered_issues=[
-            "Person entity SHOULD have at least one job title"
-        ],
+        expected_triggered_issues=["Person entity SHOULD have at least one job title"],
         profile_identifier="isa-ro-crate",
-        rocrate_entity_mod_sparql=sparql
+        rocrate_entity_mod_sparql=sparql,
     )
+
 
 def test_isa_person_job_title_of_incorrect_type():
     """
@@ -395,9 +396,7 @@ def test_isa_person_job_title_of_incorrect_type():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Study MUST have base properties"],
-        expected_triggered_issues=[
-            "Person job title MUST be of type DefinedTerm"
-        ],
+        expected_triggered_issues=["Person job title MUST be of type DefinedTerm"],
         profile_identifier="isa-ro-crate",
-        rocrate_entity_mod_sparql=sparql
+        rocrate_entity_mod_sparql=sparql,
     )

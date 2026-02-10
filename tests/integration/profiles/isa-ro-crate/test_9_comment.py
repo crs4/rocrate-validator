@@ -6,10 +6,10 @@
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included in all
 # copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -51,12 +51,11 @@ def test_isa_comment_text():
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Study MUST have base properties"],
-        expected_triggered_issues=[
-            "Comment entity SHOULD have at least one text"
-        ],
+        expected_triggered_issues=["Comment entity SHOULD have at least one text"],
         profile_identifier="isa-ro-crate",
-        rocrate_entity_mod_sparql=sparql
+        rocrate_entity_mod_sparql=sparql,
     )
+
 
 def test_isa_comment_text_of_incorrect_type():
     """
@@ -83,9 +82,7 @@ def test_isa_comment_text_of_incorrect_type():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Study MUST have base properties"],
-        expected_triggered_issues=[
-            "Comment text MUST be of type string"
-        ],
+        expected_triggered_issues=["Comment text MUST be of type string"],
         profile_identifier="isa-ro-crate",
-        rocrate_entity_mod_sparql=sparql
+        rocrate_entity_mod_sparql=sparql,
     )
