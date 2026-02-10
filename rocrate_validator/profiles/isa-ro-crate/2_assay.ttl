@@ -103,8 +103,9 @@ isa-ro-crate:AssayMustBeReferencedFromInvestigation a sh:NodeShape ;
   sh:targetClass isa-ro-crate:Assay ;
   sh:property[
         a sh:PropertyShape ;
-        sh:path [ sh:inversePath schema:hasPart ] ;
-        sh:class ro-crate:RootDataEntity ;
+        sh:path [ sh:oneOrMorePath [ sh:inversePath schema:hasPart ] ] ;
+        sh:qualifiedValueShape [ sh:class ro-crate:RootDataEntity ] ;
+        sh:qualifiedMinCount 1 ;
         sh:minCount 1 ;
         sh:name "Assay MUST be directly referenced from Investigation (Root Data Entity)" ;
         sh:description """Check if the Assay is directly linked to the Investigation (which is the Root Data Entity) using the `hasPart` (as defined in `schema.org`) property" """ ;
