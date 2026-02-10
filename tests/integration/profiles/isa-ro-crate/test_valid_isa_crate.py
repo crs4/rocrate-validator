@@ -31,9 +31,8 @@ logger.setLevel(logging.DEBUG)
 def test_valid_isa_ro_crate():
     """Test a valid ISA RO-Crate."""
     do_entity_test(
-        ValidROC().isa_ro_crate,
-        # InvalidISARC().process_is_missing_objects,
-        Severity.REQUIRED,
+        ValidROC().isa_ro_crate_manual,
+        Severity.RECOMMENDED,
         True,
         profile_identifier="isa-ro-crate",
         skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER],
