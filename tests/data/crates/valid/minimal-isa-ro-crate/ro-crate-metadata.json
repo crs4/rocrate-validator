@@ -116,7 +116,12 @@
       },
       "citation": {
         "@id": "https://doi.org/10.1000/mydoi"
-      }
+      },
+      "hasPart": [
+        {
+          "@id": "assays/MyAssay/"
+        }
+      ]
     },
     {
       "@id": "https://doi.org/10.1000/mydoi",

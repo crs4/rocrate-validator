@@ -49,7 +49,7 @@ def test_isa_additionaltype_not_investigation():
     )
 
     do_entity_test(
-        rocrate_path=ValidROC().isa_ro_crate,
+        rocrate_path=ValidROC().isa_ro_crate_manual,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["Root Data Entity must be Investigation"],
@@ -64,85 +64,16 @@ def test_isa_investigation_no_identifier():
     """
     Test an ISA RO-Crate where the investigation has no identifier.
     """
-
-    do_entity_test(
-        rocrate_path=InvalidISARC().investigation_is_missing_identifier,
-        requirement_severity=Severity.REQUIRED,
-        expected_validation_result=False,
-        # expected_triggered_requirements=["Investigation MUST have base properties"],
-        expected_triggered_issues=[
-            "The root data entity must have a non-empty identifier"
-        ],
-        profile_identifier="isa-ro-crate"
-    )
-
-def test_isa_investigation_identifier_not_string():
-    """
-    Test an ISA RO-Crate where the investigation has an identifier that is not a string.
-    """
-
-    do_entity_test(
-        rocrate_path=InvalidISARC().investigation_identifier_not_string,
-        requirement_severity=Severity.REQUIRED,
-        expected_validation_result=False,
-        # expected_triggered_requirements=["Investigation MUST have base properties"],
-        expected_triggered_issues=[
-            "The root data entity must have a non-empty identifier"
-        ],
-        profile_identifier="isa-ro-crate"
-    )
-
-def test_isa_investigation_no_shoulds():
-    """
-    Test an ISA RO-Crate where the investigation is missing should properties.
-    """
-
-    do_entity_test(
-        rocrate_path=InvalidISARC().investigation_is_missing_shoulds,
-        requirement_severity=Severity.RECOMMENDED,
-        expected_validation_result=False,
-        # expected_triggered_requirements=["Investigation MUST have base properties"],
-        expected_triggered_issues=[
-            "Investigation entity SHOULD have a dateCreated",
-            "Investigation entity SHOULD have a creator"
-        ],
-        profile_identifier="isa-ro-crate"
-    )
-
-def test_isa_investigation_shoulds_have_wrong_types():
-    """
-    Test an ISA RO-Crate where the investigation's should properties have wrong types.
-    """
-
-    do_entity_test(
-        rocrate_path=InvalidISARC().investigation_shoulds_have_wrong_types,
-        requirement_severity=Severity.REQUIRED,
-        expected_validation_result=False,
-        # expected_triggered_requirements=["Investigation MUST have base properties"],
-        expected_triggered_issues=[
-            "Investigation dateCreated MUST be a valid date literal",
-            "Investigation creator MUST be of type Person"
-        ],
-        profile_identifier="isa-ro-crate"
-    )
-
-def test_isa_sparql():
-    """
-    Test an ISA RO-Crate with sparql.
-    """
     sparql = (
         SPARQL_PREFIXES
         + """
         DELETE {
-            ?dataset schema:additionalType "Investigation" .
-            ?dataset schema:dateCreated "2025-12-09T16:11:16.8899868" .
-        }
-         INSERT {
-            ?dataset schema:dateCreated "abc" .
+            ?dataset schema:identifier ?id .
         }
         WHERE {
             ?dataset a schema:Dataset .
             ?dataset schema:additionalType "Investigation" .
+            ?dataset schema:identifier ?id .
         }
         """
     )
@@ -151,9 +82,113 @@ def test_isa_sparql():
         rocrate_path=ValidROC().isa_ro_crate_manual,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
+        # expected_triggered_requirements=["Investigation MUST have base properties"],
         expected_triggered_issues=[
-            "The root data entity must have additionalType of `Investigation`",
-            "Investigation dateCreated MUST be a valid date literal"
+            "The root data entity must have a non-empty identifier"
+        ],
+        profile_identifier="isa-ro-crate",
+        rocrate_entity_mod_sparql=sparql,
+    )
+
+def test_isa_investigation_identifier_not_string():
+    """
+    Test an ISA RO-Crate where the investigation has an identifier that is not a string.
+    """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        DELETE {
+            ?dataset schema:identifier ?id .
+        }
+        INSERT {
+            ?dataset schema:identifier 42 .
+        }
+        WHERE {
+            ?dataset a schema:Dataset .
+            ?dataset schema:additionalType "Investigation" .
+            ?dataset schema:identifier ?id .
+        }
+        """
+    )
+
+    do_entity_test(
+        rocrate_path=ValidROC().isa_ro_crate_manual,
+        requirement_severity=Severity.REQUIRED,
+        expected_validation_result=False,
+        # expected_triggered_requirements=["Investigation MUST have base properties"],
+        expected_triggered_issues=[
+            "The root data entity must have a non-empty identifier"
+        ],
+        profile_identifier="isa-ro-crate",
+        rocrate_entity_mod_sparql=sparql,
+    )
+
+def test_isa_investigation_no_shoulds():
+    """
+    Test an ISA RO-Crate where the investigation is missing should properties.
+    """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        DELETE {
+            ?dataset schema:dateCreated ?dc .
+            ?dataset schema:creator ?creator .
+        }
+        WHERE {
+            ?dataset a schema:Dataset .
+            ?dataset schema:additionalType "Investigation" .
+            ?creator a schema:Person .
+            ?creator schema:familyName "Doe" .
+            ?dataset schema:dateCreated ?dc .
+        }
+        """
+    )
+
+    do_entity_test(
+        rocrate_path=ValidROC().isa_ro_crate_manual,
+        requirement_severity=Severity.RECOMMENDED,
+        expected_validation_result=False,
+        # expected_triggered_requirements=["Investigation MUST have base properties"],
+        expected_triggered_issues=[
+            "Investigation entity SHOULD have a dateCreated",
+            "Investigation entity SHOULD have a creator"
+        ],
+        profile_identifier="isa-ro-crate",
+        rocrate_entity_mod_sparql=sparql,
+    )
+
+def test_isa_investigation_shoulds_have_wrong_types():
+    """
+    Test an ISA RO-Crate where the investigation's should properties have wrong types.
+    """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        DELETE {
+            ?dataset schema:dateCreated ?dc .
+            ?dataset schema:creator ?creator .
+        }
+        INSERT {
+            ?dataset schema:dateCreated 42 .
+            ?dataset schema:creator 42 .
+        }
+        WHERE {
+            ?dataset a schema:Dataset .
+            ?dataset schema:additionalType "Investigation" .
+            ?dataset schema:dateCreated ?dc .
+            ?dataset schema:creator ?creator .
+        }
+        """
+    )
+
+    do_entity_test(
+        rocrate_path=ValidROC().isa_ro_crate_manual,
+        requirement_severity=Severity.REQUIRED,
+        expected_validation_result=False,
+        # expected_triggered_requirements=["Investigation MUST have base properties"],
+        expected_triggered_issues=[
+            "Investigation dateCreated MUST be a valid date literal",
+            "Investigation creator MUST be of type Person"
         ],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
