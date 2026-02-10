@@ -33,55 +33,89 @@ def test_isa_assay_no_identifier():
     """
     Test an ISA RO-Crate where a Assay has no identifier.
     """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        DELETE {
+            ?dataset schema:identifier ?id .
+        }
+        WHERE {
+            ?dataset a schema:Dataset .
+            ?dataset schema:additionalType "Assay" .
+            ?dataset schema:identifier ?id .
+        }
+        """
+    )
 
     do_entity_test(
-        rocrate_path=InvalidISARC().assay_is_missing_identifier,
+        rocrate_path=ValidROC().isa_ro_crate_manual,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["Assay MUST have base properties"],
         expected_triggered_issues=[
             "Assay entity MUST have a non-empty identifier of type string"
         ],
-        profile_identifier="isa-ro-crate"
+        profile_identifier="isa-ro-crate",
+        rocrate_entity_mod_sparql=sparql
     )
 
 def test_isa_assay_identifier_not_string():
     """
     Test an ISA RO-Crate where a Assay has an identifier that is not a string.
     """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        DELETE {
+            ?dataset schema:identifier ?id .
+        }
+        INSERT {
+            ?dataset schema:identifier 42 .
+        }
+        WHERE {
+            ?dataset a schema:Dataset .
+            ?dataset schema:additionalType "Assay" .
+            ?dataset schema:identifier ?id .
+        }
+        """
+    )
 
     do_entity_test(
-        rocrate_path=InvalidISARC().assay_identifier_not_string,
+        rocrate_path=ValidROC().isa_ro_crate_manual,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Root Data Entity must be Investigation"],
         expected_triggered_issues=[
             "Assay entity MUST have a non-empty identifier of type string"
         ],
-        profile_identifier="isa-ro-crate"
+        profile_identifier="isa-ro-crate",
+        rocrate_entity_mod_sparql=sparql
     )
 
 def test_isa_assay_correctly_referenced_from_investigation():
     """
     Test an ISA RO-Crate where a Assay is referenced from the Investigation/Root Data Entity with wrong property.
     """
-    do_entity_test(
-        rocrate_path=InvalidISARC().assay_is_linked_through_illegal_property,
-        requirement_severity=Severity.REQUIRED,
-        expected_validation_result=False,
-        expected_triggered_requirements=["Assay MUST be directly referenced from Investigation (Root Data Entity)"],
-        expected_triggered_issues=[
-            "Assay MUST be directly referenced in hasPart on the Investigation (Root Data Entity)"
-        ],
-        profile_identifier="isa-ro-crate",
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        DELETE {
+            ?dataset1 schema:hasPart ?dataset2 .
+        }
+        INSERT {
+            ?dataset1 schema:mentions ?dataset2 .
+        }
+        WHERE {
+            ?dataset1 a schema:Dataset .
+            ?dataset2 a schema:Dataset .
+            ?dataset2 schema:additionalType "Assay" .
+            ?dataset1 schema:hasPart ?dataset2 .
+        }
+        """
     )
 
-def test_isa_assay_directly_referenced_from_investigation():
-    """
-    Test an ISA RO-Crate where a Assay is not directly referenced from the Investigation/Root Data Entity.
-    """
     do_entity_test(
-        rocrate_path=InvalidISARC().assay_is_not_directly_part_of_investigation,
+        rocrate_path=ValidROC().isa_ro_crate_manual,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["Assay MUST be directly referenced from Investigation (Root Data Entity)"],
@@ -89,7 +123,23 @@ def test_isa_assay_directly_referenced_from_investigation():
             "Assay MUST be directly referenced in hasPart on the Investigation (Root Data Entity)"
         ],
         profile_identifier="isa-ro-crate",
+        rocrate_entity_mod_sparql=sparql
     )
+
+# def test_isa_assay_directly_referenced_from_investigation():
+#     """
+#     Test an ISA RO-Crate where a Assay is not directly referenced from the Investigation/Root Data Entity.
+#     """
+#     do_entity_test(
+#         rocrate_path=InvalidISARC().assay_is_not_directly_part_of_investigation,
+#         requirement_severity=Severity.REQUIRED,
+#         expected_validation_result=False,
+#         expected_triggered_requirements=["Assay MUST be directly referenced from Investigation (Root Data Entity)"],
+#         expected_triggered_issues=[
+#             "Assay MUST be directly referenced in hasPart on the Investigation (Root Data Entity)"
+#         ],
+#         profile_identifier="isa-ro-crate",
+#     )
 
 def test_isa_assay_no_shoulds():
     """

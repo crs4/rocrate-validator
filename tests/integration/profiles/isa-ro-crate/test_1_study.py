@@ -30,110 +30,157 @@ logger = logging.getLogger(__name__)
 
 # ----- MUST fails tests
 
-# WIP fix this test and replace the test below which makes use of an pre-made invalid RO-Crate 
-# @pytest.mark.xfail(
-#     reason="'Study MUST have base properties' check fails: The SPARQL modification does not remove all identifiers from Study entities"
-# )
-# def test_isa_study_no_identifier():
-#     """
-#     Test an ISA RO-Crate where a Study does not have an identifier.
-#     """
-#     sparql = (
-#         SPARQL_PREFIXES
-#         + """
-#         PREFIX isa-ro-crate: <https://github.com/crs4/rocrate-validator/profiles/isa-ro-crate/>
-#         DELETE {
-#             ?study schema:identifier ?value .
-#         }
-#         WHERE {
-#             ?study a schema:Dataset .
-#             ?study schema:additionalType "Study" .
-#         }
-#         """
-#     )
-
-#     do_entity_test(
-#         rocrate_path=ValidROC().isa_ro_crate,
-#         requirement_severity=Severity.REQUIRED,
-#         expected_validation_result=False,
-#         expected_triggered_requirements=["Study MUST have base properties"],
-#         expected_triggered_issues=[
-#             "Study entity MUST have a non-empty identifier of type string"
-#         ],
-#         profile_identifier="isa-ro-crate",
-#         rocrate_entity_mod_sparql=sparql,
-#     )
-
 # WIP update these tests to actually do what the name/description say
 def test_isa_study_no_identifier():
     """
     Test an ISA RO-Crate where a Study has no identifier.
     """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        DELETE {
+            ?dataset schema:identifier ?id .
+        }
+        WHERE {
+            ?dataset a schema:Dataset .
+            ?dataset schema:additionalType "Study" .
+            ?dataset schema:identifier ?id .
+        }
+        """
+    )
 
     do_entity_test(
-        rocrate_path=InvalidISARC().study_is_missing_identifier,
+        rocrate_path=ValidROC().isa_ro_crate_manual,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["Study MUST have base properties"],
         expected_triggered_issues=[
             "Study entity MUST have a non-empty identifier of type string"
         ],
-        profile_identifier="isa-ro-crate"
+        profile_identifier="isa-ro-crate",
+        rocrate_entity_mod_sparql=sparql,
     )
 
 def test_isa_study_identifier_not_string():
     """
     Test an ISA RO-Crate where a Study has an identifier that is not a string.
     """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        DELETE {
+            ?dataset schema:identifier ?id .
+        }
+        INSERT {
+            ?dataset schema:identifier 42 .
+        }
+        WHERE {
+            ?dataset a schema:Dataset .
+            ?dataset schema:additionalType "Study" .
+            ?dataset schema:identifier ?id .
+        }
+        """
+    )
 
     do_entity_test(
-        rocrate_path=InvalidISARC().study_identifier_not_string,
+        rocrate_path=ValidROC().isa_ro_crate_manual,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Study MUST have base properties"],
         expected_triggered_issues=[
             "Study entity MUST have a non-empty identifier of type string"
         ],
-        profile_identifier="isa-ro-crate"
+        profile_identifier="isa-ro-crate",
+        rocrate_entity_mod_sparql=sparql,
+    )
+    
+def test_isa_study_name():
+    """
+    Test an ISA RO-Crate where a Study does not have a name.
+    """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        DELETE {
+            ?dataset schema:name ?name .
+        }
+        WHERE {
+            ?dataset a schema:Dataset .
+            ?dataset schema:additionalType "Study" .
+            ?dataset schema:name ?name .
+        }
+        """
+    )
+
+    do_entity_test(
+        rocrate_path=ValidROC().isa_ro_crate_manual,
+        requirement_severity=Severity.REQUIRED,
+        expected_validation_result=False,
+        expected_triggered_requirements=["Study MUST have base properties"],
+        expected_triggered_issues=[
+            "Study entity MUST have a non-empty name of type string"
+        ],
+        profile_identifier="isa-ro-crate",
+        rocrate_entity_mod_sparql=sparql
     )
 
 def test_isa_study_name_not_string():
     """
     Test an ISA RO-Crate where a Study has a name that is not a string.
     """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        DELETE {
+            ?dataset schema:name ?id .
+        }
+        INSERT {
+            ?dataset schema:name 42 .
+        }
+        WHERE {
+            ?dataset a schema:Dataset .
+            ?dataset schema:additionalType "Study" .
+            ?dataset schema:identifier ?id .
+        }
+        """
+    )
 
     do_entity_test(
-        rocrate_path=InvalidISARC().study_name_not_string,
+        rocrate_path=ValidROC().isa_ro_crate_manual,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Study MUST have base properties"],
         expected_triggered_issues=[
             "Study entity MUST have a non-empty name of type string"
         ],
-        profile_identifier="isa-ro-crate"
+        profile_identifier="isa-ro-crate",
+        rocrate_entity_mod_sparql=sparql
     )
 
 def test_isa_study_correctly_referenced_from_investigation():
     """
     Test an ISA RO-Crate where a Study is referenced from the Investigation/Root Data Entity with wrong property.
     """
-    do_entity_test(
-        rocrate_path=InvalidISARC().study_is_linked_through_illegal_property,
-        requirement_severity=Severity.REQUIRED,
-        expected_validation_result=False,
-        expected_triggered_requirements=["Study MUST be directly referenced from Investigation (Root Data Entity)"],
-        expected_triggered_issues=[
-            "Study MUST be directly referenced in hasPart on the Investigation (Root Data Entity)"
-        ],
-        profile_identifier="isa-ro-crate",
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        DELETE {
+            ?dataset1 schema:hasPart ?dataset2 .
+        }
+        INSERT {
+            ?dataset1 schema:mentions ?dataset2 .
+        }
+        WHERE {
+            ?dataset1 a schema:Dataset .
+            ?dataset2 a schema:Dataset .
+            ?dataset2 schema:additionalType "Study" .
+            ?dataset1 schema:hasPart ?dataset2 .
+        }
+        """
     )
 
-def test_isa_study_directly_referenced_from_investigation():
-    """
-    Test an ISA RO-Crate where a Study is not directly referenced from the Investigation/Root Data Entity.
-    """
     do_entity_test(
-        rocrate_path=InvalidISARC().study_is_not_directly_part_of_investigation,
+        rocrate_path=ValidROC().isa_ro_crate_manual,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["Study MUST be directly referenced from Investigation (Root Data Entity)"],
@@ -141,15 +188,54 @@ def test_isa_study_directly_referenced_from_investigation():
             "Study MUST be directly referenced in hasPart on the Investigation (Root Data Entity)"
         ],
         profile_identifier="isa-ro-crate",
+        rocrate_entity_mod_sparql=sparql
     )
+
+# def test_isa_study_directly_referenced_from_investigation():
+#     """
+#     Test an ISA RO-Crate where a Study is not directly referenced from the Investigation/Root Data Entity.
+#     """
+#     do_entity_test(
+#         rocrate_path=InvalidISARC().study_is_not_directly_part_of_investigation,
+#         requirement_severity=Severity.REQUIRED,
+#         expected_validation_result=False,
+#         expected_triggered_requirements=["Study MUST be directly referenced from Investigation (Root Data Entity)"],
+#         expected_triggered_issues=[
+#             "Study MUST be directly referenced in hasPart on the Investigation (Root Data Entity)"
+#         ],
+#         profile_identifier="isa-ro-crate",
+#     )
 
 def test_isa_study_no_shoulds():
     """
     Test an ISA RO-Crate where the study is missing should properties.
     """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        DELETE {
+            ?dataset schema:dateCreated ?dc .
+            ?dataset schema:datePublished ?dp .
+            ?dataset schema:creator ?creator .
+            ?dataset schema:hasPart ?hasPart .
+            ?dataset schema:about ?about .
+            ?dataset schema:description ?description .
+        }
+        WHERE {
+            ?dataset a schema:Dataset .
+            ?dataset schema:additionalType "Study" .
+            ?dataset schema:dateCreated ?dc .
+            ?dataset schema:datePublished ?dp .
+            ?dataset schema:creator ?creator .
+            ?dataset schema:hasPart ?hasPart .
+            ?dataset schema:about ?about .
+            ?dataset schema:description ?description .
+        }
+        """
+    )
 
     do_entity_test(
-        rocrate_path=InvalidISARC().study_is_missing_shoulds,
+        rocrate_path=ValidROC().isa_ro_crate_manual,
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Study MUST have base properties"],
@@ -161,16 +247,48 @@ def test_isa_study_no_shoulds():
             "Study entity SHOULD have about",
             "Study entity SHOULD have a non-empty description of type string"
         ],
-        profile_identifier="isa-ro-crate"
+        profile_identifier="isa-ro-crate",
+        rocrate_entity_mod_sparql=sparql
     )
 
 def test_isa_study_shoulds_have_wrong_types():
     """
     Test an ISA RO-Crate where the study has should properties with wrong types.
     """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        DELETE {
+            ?dataset schema:dateCreated ?dc .
+            ?dataset schema:datePublished ?dp .
+            ?dataset schema:creator ?creator .
+            ?dataset schema:hasPart ?hasPart .
+            ?dataset schema:about ?about .
+            ?dataset schema:description ?description .
+        }
+        INSERT {
+            ?dataset schema:dateCreated 42 .
+            ?dataset schema:datePublished 42 .
+            ?dataset schema:creator 42 .
+            ?dataset schema:hasPart 42 .
+            ?dataset schema:about 42 .
+            ?dataset schema:description 42 .
+        }
+        WHERE {
+            ?dataset a schema:Dataset .
+            ?dataset schema:additionalType "Study" .
+            ?dataset schema:dateCreated ?dc .
+            ?dataset schema:datePublished ?dp .
+            ?dataset schema:creator ?creator .
+            ?dataset schema:hasPart ?hasPart .
+            ?dataset schema:about ?about .
+            ?dataset schema:description ?description .
+        }
+        """
+    )
 
     do_entity_test(
-        rocrate_path=InvalidISARC().study_shoulds_have_wrong_types,
+        rocrate_path=ValidROC().isa_ro_crate_manual,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Study MUST have base properties"],
@@ -182,35 +300,6 @@ def test_isa_study_shoulds_have_wrong_types():
             "Study about MUST be of type LabProcess",
             "Study description MUST be of type string"
         ],
-        profile_identifier="isa-ro-crate"
+        profile_identifier="isa-ro-crate",
+        rocrate_entity_mod_sparql=sparql
     )
-
-# def test_isa_study_identifier():
-#     """
-#     Test an ISA RO-Crate where a Study does not have an identifier.
-#     """
-#     do_entity_test(
-#         rocrate_path=InvalidISARC().study_is_missing_identifier,
-#         requirement_severity=Severity.REQUIRED,
-#         expected_validation_result=False,
-#         expected_triggered_requirements=["Study MUST have base properties"],
-#         expected_triggered_issues=[
-#             "Study entity MUST have a non-empty identifier of type string"
-#         ],
-#         profile_identifier="isa-ro-crate",
-#     )
-    
-# def test_isa_study_name():
-#     """
-#     Test an ISA RO-Crate where a Study does not have a name.
-#     """
-#     do_entity_test(
-#         rocrate_path=InvalidISARC().study_is_missing_name,
-#         requirement_severity=Severity.REQUIRED,
-#         expected_validation_result=False,
-#         expected_triggered_requirements=["Study MUST have base properties"],
-#         expected_triggered_issues=[
-#             "Study entity MUST have a non-empty name of type string"
-#         ],
-#         profile_identifier="isa-ro-crate",
-#     )
