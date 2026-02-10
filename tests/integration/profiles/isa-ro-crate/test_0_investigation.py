@@ -6,10 +6,10 @@
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included in all
 # copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -60,6 +60,7 @@ def test_isa_additionaltype_not_investigation():
         rocrate_entity_mod_sparql=sparql,
     )
 
+
 def test_isa_investigation_no_identifier():
     """
     Test an ISA RO-Crate where the investigation has no identifier.
@@ -89,6 +90,7 @@ def test_isa_investigation_no_identifier():
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
     )
+
 
 def test_isa_investigation_identifier_not_string():
     """
@@ -123,6 +125,7 @@ def test_isa_investigation_identifier_not_string():
         rocrate_entity_mod_sparql=sparql,
     )
 
+
 def test_isa_investigation_no_shoulds():
     """
     Test an ISA RO-Crate where the investigation is missing should properties.
@@ -151,11 +154,12 @@ def test_isa_investigation_no_shoulds():
         # expected_triggered_requirements=["Investigation MUST have base properties"],
         expected_triggered_issues=[
             "Investigation entity SHOULD have a dateCreated",
-            "Investigation entity SHOULD have a creator"
+            "Investigation entity SHOULD have a creator",
         ],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
     )
+
 
 def test_isa_investigation_shoulds_have_wrong_types():
     """
@@ -188,7 +192,7 @@ def test_isa_investigation_shoulds_have_wrong_types():
         # expected_triggered_requirements=["Investigation MUST have base properties"],
         expected_triggered_issues=[
             "Investigation dateCreated MUST be a valid date literal",
-            "Investigation creator MUST be of type Person"
+            "Investigation creator MUST be of type Person",
         ],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
