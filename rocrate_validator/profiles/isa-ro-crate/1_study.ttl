@@ -40,29 +40,50 @@
 
 # check study must be pointed to by investigation through hasPart
 
+# # Find studies and add isa-ro-crate:Study type to them, for easier retrieval for checks
+# ro-crate:FindStudies a sh:NodeShape, validator:HiddenShape;
+#     sh:name "Identify Studies within the RO-Crate" ;
+#     sh:description "A Study has type Dataset and additionalType 'Study'." ;
+#     sh:target [
+#         a sh:SPARQLTarget ;
+#         sh:prefixes ro-crate:sparqlPrefixes ;
+#         sh:select """
+#             SELECT ?this
+#             WHERE {
+#                 ?this a schema:Dataset .
+#                 ?this schema:additionalType "Study" .
+#             }
+#         """
+#     ] ;
+
+#     # Expand data graph with triples from the file data entity
+#     sh:rule [
+#         a sh:TripleRule ;
+#         sh:subject sh:this ;
+#         sh:predicate rdf:type ;
+#         sh:object isa-ro-crate:Study ;
+#     ] .
+
 # Find studies and add isa-ro-crate:Study type to them, for easier retrieval for checks
 ro-crate:FindStudies a sh:NodeShape, validator:HiddenShape;
     sh:name "Identify Studies within the RO-Crate" ;
     sh:description "A Study has type Dataset and additionalType 'Study'." ;
-    sh:target [
-        a sh:SPARQLTarget ;
-        sh:prefixes ro-crate:sparqlPrefixes ;
-        sh:select """
-            SELECT ?this
-            WHERE {
-                ?this a schema:Dataset .
-                ?this schema:additionalType "Study" .
-            }
-        """
-    ] ;
-
+    sh:targetClass schema:Dataset ;
     # Expand data graph with triples from the file data entity
     sh:rule [
         a sh:TripleRule ;
         sh:subject sh:this ;
         sh:predicate rdf:type ;
         sh:object isa-ro-crate:Study ;
-    ] .
+        # The condition: additionalType == "Study"
+        sh:condition [
+            sh:property [
+                sh:path schema:additionalType ;
+                sh:hasValue "Study" ;
+            ] ;
+        ] ;
+    ]
+.
 
 # WIP
 isa-ro-crate:StudyMustHaveBaseDescriptors a sh:NodeShape ;

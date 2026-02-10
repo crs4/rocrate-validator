@@ -35,6 +35,22 @@ isa-ro-crate:Assay rdf:type owl:Class ;
   rdfs:subClassOf schema:Dataset ;
   rdfs:label "Assay"@en .
 
+isa-ro-crate:Parameter rdf:type owl:Class ;
+  rdfs:subClassOf schema:PropertyValue ;
+  rdfs:label "Parameter"@en .
+
+isa-ro-crate:Characteristic rdf:type owl:Class ;
+  rdfs:subClassOf schema:PropertyValue ;
+  rdfs:label "Characteristic"@en .
+
+isa-ro-crate:Factor rdf:type owl:Class ;
+  rdfs:subClassOf schema:PropertyValue ;
+  rdfs:label "Factor"@en .
+
+isa-ro-crate:Component rdf:type owl:Class ;
+  rdfs:subClassOf schema:PropertyValue ;
+  rdfs:label "Component"@en .
+
 ###  https://bioschemas.org/LabProcess
 bioschemas:LabProcess rdf:type owl:Class ;
                       rdfs:subClassOf schema:Action ;

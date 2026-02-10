@@ -30,6 +30,65 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 
+ro-crate:FindPropertyValueSubtypes a sh:NodeShape, validator:HiddenShape;
+    sh:name "Identify PropertyValue subtypes within the RO-Crate" ;
+    sh:description "A PropertyValue has type Parameter, Characteristic, Factor or Component if additionalType is set accordingly." ;
+    sh:targetClass schema:PropertyValue ;
+    # Expand data graph with triples from the file data entity
+    sh:rule [
+        a sh:TripleRule ;
+        sh:subject sh:this ;
+        sh:predicate rdf:type ;
+        sh:object isa-ro-crate:Parameter ;
+        # The condition: additionalType == "Parameter"
+        sh:condition [
+            sh:property [
+                sh:path schema:additionalType ;
+                sh:hasValue "Parameter" ;
+            ] ;
+        ] ;
+    ] ;
+    sh:rule [
+        a sh:TripleRule ;
+        sh:subject sh:this ;
+        sh:predicate rdf:type ;
+        sh:object isa-ro-crate:Characteristic ;
+        # The condition: additionalType == "Characteristic"
+        sh:condition [
+            sh:property [
+                sh:path schema:additionalType ;
+                sh:hasValue "Characteristic" ;
+            ] ;
+        ] ;
+    ] ;
+    sh:rule [
+        a sh:TripleRule ;
+        sh:subject sh:this ;
+        sh:predicate rdf:type ;
+        sh:object isa-ro-crate:Factor ;
+        # The condition: additionalType == "Factor"
+        sh:condition [
+            sh:property [
+                sh:path schema:additionalType ;
+                sh:hasValue "Factor" ;
+            ] ;
+        ] ;
+    ] ;
+    sh:rule [
+        a sh:TripleRule ;
+        sh:subject sh:this ;
+        sh:predicate rdf:type ;
+        sh:object isa-ro-crate:Component ;
+        # The condition: additionalType == "Component"
+        sh:condition [
+            sh:property [
+                sh:path schema:additionalType ;
+                sh:hasValue "Component" ;
+            ] ;
+        ] ;
+    ]
+.
+
 isa-ro-crate:PropertyValueMustHaveName a sh:NodeShape ;
     sh:name "PropertyValue MUST have a name" ;
     sh:description "A PropertyValue MUST have a name" ;
