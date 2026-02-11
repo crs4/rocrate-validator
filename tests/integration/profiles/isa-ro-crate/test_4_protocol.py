@@ -21,7 +21,7 @@
 import logging
 
 from rocrate_validator.models import Severity
-from tests.ro_crates import ValidROC, InvalidISARC
+from tests.ro_crates import ValidROC
 from tests.shared import do_entity_test, SPARQL_PREFIXES
 
 # set up logging
@@ -33,8 +33,23 @@ def test_isa_protocol_no_name():
     """
     Test an ISA RO-Crate where a Protocol does not have a name.
     """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        PREFIX bioschemas: <https://bioschemas.org/>
+        PREFIX bioschemas-prop: <https://bioschemas.org/properties/>
+        DELETE {
+            ?protocol schema:name ?name .
+        }
+        WHERE {
+            ?protocol a bioschemas:LabProtocol .
+            ?protocol schema:name ?name .
+        }
+        """
+    )
+
     do_entity_test(
-        rocrate_path=InvalidISARC().protocol_is_missing_name,
+        rocrate_path=ValidROC().isa_ro_crate_manual,
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Protocol SHOULD have name"],
@@ -42,6 +57,7 @@ def test_isa_protocol_no_name():
             "Protocol entity SHOULD have a non-empty name of type string"
         ],
         profile_identifier="isa-ro-crate",
+        rocrate_entity_mod_sparql=sparql,
     )
 
 
@@ -49,13 +65,32 @@ def test_isa_protocol_name_incorrect_type():
     """
     Test an ISA RO-Crate where a Protocol has a name with the wrong type.
     """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        PREFIX bioschemas: <https://bioschemas.org/>
+        PREFIX bioschemas-prop: <https://bioschemas.org/properties/>
+        DELETE {
+            ?protocol schema:name ?name .
+        }
+        INSERT {
+            ?protocol schema:name 42 .
+        }
+        WHERE {
+            ?protocol a bioschemas:LabProtocol .
+            ?protocol schema:name ?name .
+        }
+        """ 
+    
+    )
     do_entity_test(
-        rocrate_path=InvalidISARC().protocol_name_is_incorrect_type,
+        rocrate_path=ValidROC().isa_ro_crate_manual,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Protocol SHOULD have name"],
         expected_triggered_issues=["Protocol name MUST be of type string"],
         profile_identifier="isa-ro-crate",
+        rocrate_entity_mod_sparql=sparql,
     )
 
 
@@ -63,8 +98,23 @@ def test_isa_protocol_no_description():
     """
     Test an ISA RO-Crate where a Protocol does not have a description.
     """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        PREFIX bioschemas: <https://bioschemas.org/>
+        PREFIX bioschemas-prop: <https://bioschemas.org/properties/>
+        DELETE {
+            ?protocol schema:description ?description .
+        }
+        WHERE {
+            ?protocol a bioschemas:LabProtocol .
+            ?protocol schema:description ?description .
+        }
+        """
+    )
+
     do_entity_test(
-        rocrate_path=InvalidISARC().protocol_is_missing_description,
+        rocrate_path=ValidROC().isa_ro_crate_manual,
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Protocol SHOULD have description"],
@@ -72,6 +122,7 @@ def test_isa_protocol_no_description():
             "Protocol entity SHOULD have a non-empty description of type string"
         ],
         profile_identifier="isa-ro-crate",
+        rocrate_entity_mod_sparql=sparql,
     )
 
 
@@ -79,13 +130,32 @@ def test_isa_protocol_description_incorrect_type():
     """
     Test an ISA RO-Crate where a Protocol has a description with the wrong type.
     """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        PREFIX bioschemas: <https://bioschemas.org/>
+        PREFIX bioschemas-prop: <https://bioschemas.org/properties/>
+        DELETE {
+            ?protocol schema:description ?description .
+        }
+        INSERT {
+            ?protocol schema:description 42 .
+        }
+        WHERE {
+            ?protocol a bioschemas:LabProtocol .
+            ?protocol schema:description ?description .
+        }
+        """
+    )
+
     do_entity_test(
-        rocrate_path=InvalidISARC().protocol_description_is_incorrect_type,
+        rocrate_path=ValidROC().isa_ro_crate_manual,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Protocol SHOULD have description"],
         expected_triggered_issues=["Protocol description MUST be of type string"],
         profile_identifier="isa-ro-crate",
+        rocrate_entity_mod_sparql=sparql,
     )
 
 
@@ -93,13 +163,29 @@ def test_isa_protocol_no_intendedUse():
     """
     Test an ISA RO-Crate where a Protocol does not have an intended use.
     """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        PREFIX bioschemas: <https://bioschemas.org/>
+        PREFIX bioschemas-prop: <https://bioschemas.org/properties/>
+        DELETE {
+            ?protocol bioschemas-prop:intendedUse ?intendedUse .
+        }
+        WHERE {
+            ?protocol a bioschemas:LabProtocol .
+            ?protocol bioschemas-prop:intendedUse ?intendedUse .
+        }
+        """    
+    )
+
     do_entity_test(
-        rocrate_path=InvalidISARC().protocol_is_missing_intendedUse,
+        rocrate_path=ValidROC().isa_ro_crate_manual,
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Protocol SHOULD have intended use"],
         expected_triggered_issues=["Protocol entity SHOULD have an intended use"],
         profile_identifier="isa-ro-crate",
+        rocrate_entity_mod_sparql=sparql,
     )
 
 
@@ -107,11 +193,30 @@ def test_isa_protocol_intendedUse_incorrect_type():
     """
     Test an ISA RO-Crate where a Protocol has an intended use with the wrong type.
     """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        PREFIX bioschemas: <https://bioschemas.org/>
+        PREFIX bioschemas-prop: <https://bioschemas.org/properties/>
+        DELETE {
+            ?protocol bioschemas-prop:intendedUse ?intendedUse .
+        }
+        INSERT {
+            ?protocol bioschemas-prop:intendedUse 42 .
+        }
+        WHERE {
+            ?protocol a bioschemas:LabProtocol .
+            ?protocol bioschemas-prop:intendedUse ?intendedUse .
+        }
+        """
+    )
+
     do_entity_test(
-        rocrate_path=InvalidISARC().protocol_intendedUse_is_incorrect_type,
+        rocrate_path=ValidROC().isa_ro_crate_manual,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Protocol SHOULD have intended use"],
         expected_triggered_issues=["Protocol intended use MUST be of type DefinedTerm"],
         profile_identifier="isa-ro-crate",
+        rocrate_entity_mod_sparql=sparql,
     )
