@@ -33,7 +33,7 @@
 #     isAdditionalType"Study
 
 
-# check study must have identifer
+# check study must have identifier
 # check study must have name
 # check study must have description
 # check study should have about
