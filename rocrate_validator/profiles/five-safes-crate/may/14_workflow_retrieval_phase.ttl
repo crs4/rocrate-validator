@@ -37,7 +37,6 @@ five-safes-crate:DownloadedWorkflowSHOULDExistAndBeReferencedByDownloadActionRes
         sh:path schema:result ;
         sh:minCount 1 ;
         sh:nodeKind sh:IRI ;
-
         sh:sparql [
             a sh:SPARQLConstraint ;
             sh:select """
@@ -54,9 +53,9 @@ five-safes-crate:DownloadedWorkflowSHOULDExistAndBeReferencedByDownloadActionRes
                     }
                 }
             """ ;
-            sh:severity sh:Info ;
-            sh:message "The entity representing the downloaded workflow is not defined, OR is not referenced by `DownloadAction` --> `result`, OR is not of type `Dataset`." ;
         ] ;
+        sh:severity sh:Info ;
+        sh:message "The entity representing the downloaded workflow is not defined, OR is not referenced by `DownloadAction` --> `result`, OR is not of type `Dataset`." ;
     ] .
 
 
@@ -93,10 +92,10 @@ five-safes-crate:DownloadActionMayHaveStartTimeIfBegun
         sh:path schema:startTime ;
         sh:minCount 1 ;
         sh:maxCount 1 ;
-        sh:severity sh:Info ;
         sh:description (
             "`DownloadAction` MAY have the `startTime` property if `actionStatus` "
             "is either ActiveActionStatus, CompletedActionStatus or FailedActionStatus."
         );
+        sh:severity sh:Info ;
         sh:message "`DownloadAction` MAY have the `startTime` property if `actionStatus` is either ActiveActionStatus, CompletedActionStatus or FailedActionStatus." ;
     ] .

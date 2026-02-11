@@ -56,7 +56,7 @@ five-safes-crate:mainEntityHasProperConformsTo
     sh:name "mainEntity" ;
     sh:description "The mainEntity of the RootDataEntity MUST have a conformsTo property with an IRI starting with https://w3id.org/workflowhub/workflow-ro-crate" ;
     sh:targetObjectsOf schema:mainEntity ;
-        sh:property [
+    sh:property [
         a sh:PropertyShape ;
         sh:name "conformsTo" ;
         sh:path purl:conformsTo ;
@@ -65,16 +65,12 @@ five-safes-crate:mainEntityHasProperConformsTo
         sh:severity sh:Violation ;
         sh:message "mainEntity MUST have one and only one `conformsTo` property." ;
     ] ;
-    sh:sparql [
-        a sh:SPARQLConstraint ;
+    sh:property [
+        a sh:PropertyShape ;
         sh:name "conformsTo" ;
+        sh:path purl:conformsTo ;
+        sh:nodeKind sh:IRI ;
+        sh:pattern "^https://w3id\\.org/workflowhub/workflow-ro-crate" ;
+        sh:severity sh:Violation ;
         sh:message "conformsTo IRI must start with https://w3id.org/workflowhub/workflow-ro-crate" ;
-        sh:select """
-        PREFIX schema: <http://schema.org/>
-        PREFIX purl: <http://purl.org/dc/terms/>
-        SELECT $this WHERE {
-            $this purl:conformsTo ?iri .
-            FILTER(!STRSTARTS(STR(?iri), "https://w3id.org/workflowhub/workflow-ro-crate"))
-        }
-        """ ;
     ] .
