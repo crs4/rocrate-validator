@@ -16,9 +16,8 @@ import logging
 
 from rocrate_validator.models import Severity
 from tests.conftest import SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER
-from tests.ro_crates import ValidROC, InvalidISARC
+from tests.ro_crates import ValidROC
 from tests.shared import do_entity_test
-import pytest
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
