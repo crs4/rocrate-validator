@@ -80,8 +80,7 @@ def test_isa_protocol_name_incorrect_type():
             ?protocol a bioschemas:LabProtocol .
             ?protocol schema:name ?name .
         }
-        """ 
-    
+        """
     )
     do_entity_test(
         rocrate_path=ValidROC().isa_ro_crate_manual,
@@ -175,7 +174,7 @@ def test_isa_protocol_no_intendedUse():
             ?protocol a bioschemas:LabProtocol .
             ?protocol bioschemas-prop:intendedUse ?intendedUse .
         }
-        """    
+        """
     )
 
     do_entity_test(

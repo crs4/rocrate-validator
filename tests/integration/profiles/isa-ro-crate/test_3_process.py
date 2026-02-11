@@ -80,7 +80,7 @@ def test_isa_process_not_correctly_referenced_from_dataset():
         }
         """
     )
-    
+
     do_entity_test(
         rocrate_path=ValidROC().isa_ro_crate_manual,
         requirement_severity=Severity.REQUIRED,
