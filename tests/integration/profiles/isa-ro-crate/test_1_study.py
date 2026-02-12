@@ -199,20 +199,37 @@ def test_isa_study_correctly_referenced_from_investigation():
     )
 
 
-# def test_isa_study_directly_referenced_from_investigation():
-#     """
-#     Test an ISA RO-Crate where a Study is not directly referenced from the Investigation/Root Data Entity.
-#     """
-#     do_entity_test(
-#         rocrate_path=InvalidISARC().study_is_not_directly_part_of_investigation,
-#         requirement_severity=Severity.REQUIRED,
-#         expected_validation_result=False,
-#         expected_triggered_requirements=["Study MUST be directly referenced from Investigation (Root Data Entity)"],
-#         expected_triggered_issues=[
-#             "Study MUST be directly referenced in hasPart on the Investigation (Root Data Entity)"
-#         ],
-#         profile_identifier="isa-ro-crate",
-#     )
+def test_isa_study_directly_referenced_from_investigation():
+    """
+    Test an ISA RO-Crate where a Study is not directly referenced from the Investigation/Root Data Entity.
+    """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        DELETE {
+            ?dataset1 schema:hasPart ?dataset2 .
+        }
+        WHERE {
+            ?dataset1 a schema:Dataset .
+            ?dataset2 a schema:Dataset .
+            ?dataset1 schema:additionalType "Investigation" .
+            ?dataset2 schema:additionalType "Study" .
+            ?dataset1 schema:hasPart ?dataset2 .
+        }
+        """
+    )
+
+    do_entity_test(
+        rocrate_path=ValidROC().isa_ro_crate_manual,
+        requirement_severity=Severity.REQUIRED,
+        expected_validation_result=False,
+        expected_triggered_requirements=["Study MUST be directly referenced from Investigation (Root Data Entity)"],
+        expected_triggered_issues=[
+            "Study MUST be directly referenced in hasPart on the Investigation (Root Data Entity)"
+        ],
+        profile_identifier="isa-ro-crate",
+        rocrate_entity_mod_sparql=sparql,
+    )
 
 
 def test_isa_study_no_shoulds():

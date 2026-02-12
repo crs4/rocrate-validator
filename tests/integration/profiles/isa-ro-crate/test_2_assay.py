@@ -120,31 +120,56 @@ def test_isa_assay_correctly_referenced_from_investigation():
         rocrate_path=ValidROC().isa_ro_crate_manual,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
-        expected_triggered_requirements=[
-            "Assay MUST be directly referenced from Investigation (Root Data Entity)"
-        ],
         expected_triggered_issues=[
-            "Assay MUST be directly referenced in hasPart on the Investigation (Root Data Entity)"
+            "Assay MUST be directly referenced in hasPart on the Investigation (Root Data Entity) or a Study"
         ],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
     )
 
 
-# def test_isa_assay_directly_referenced_from_investigation():
-#     """
-#     Test an ISA RO-Crate where a Assay is not directly referenced from the Investigation/Root Data Entity.
-#     """
-#     do_entity_test(
-#         rocrate_path=InvalidISARC().assay_is_not_directly_part_of_investigation,
-#         requirement_severity=Severity.REQUIRED,
-#         expected_validation_result=False,
-#         expected_triggered_requirements=["Assay MUST be directly referenced from Investigation (Root Data Entity)"],
-#         expected_triggered_issues=[
-#             "Assay MUST be directly referenced in hasPart on the Investigation (Root Data Entity)"
-#         ],
-#         profile_identifier="isa-ro-crate",
-#     )
+def test_isa_assay_directly_referenced_from_investigation():
+    """
+    Test an ISA RO-Crate where a Assay is not directly referenced from the Investigation/Root Data Entity.
+    """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        DELETE {
+            ?dataset1 schema:hasPart ?dataset3 .
+            ?dataset2 schema:hasPart ?dataset3 .
+        }
+        INSERT {
+            <http://example.org/abc/> a schema:Dataset ;
+                schema:identifier "abc" ;
+                schema:name "A Dataset" ;
+                schema:hasPart ?dataset3 .
+            <http://example.org/abc/> schema:hasPart ?dataset3 .
+            ?dataset1 schema:hasPart <http://example.org/abc/> .
+        }
+        WHERE {
+            ?dataset1 a schema:Dataset .
+            ?dataset2 a schema:Dataset .
+            ?dataset3 a schema:Dataset .
+            ?dataset1 schema:additionalType "Investigation" .
+            ?dataset2 schema:additionalType "Study" .
+            ?dataset3 schema:additionalType "Assay" .
+            ?dataset1 schema:hasPart ?dataset2 .
+            ?dataset2 schema:hasPart ?dataset3 .
+        }
+        """
+    )
+
+    do_entity_test(
+        rocrate_path=ValidROC().isa_ro_crate_manual,
+        requirement_severity=Severity.REQUIRED,
+        expected_validation_result=False,
+        expected_triggered_issues=[
+            "Assay MUST be directly referenced in hasPart on the Investigation (Root Data Entity) or a Study"
+        ],
+        profile_identifier="isa-ro-crate",
+        rocrate_entity_mod_sparql=sparql,
+    )
 
 
 def test_isa_assay_no_shoulds():

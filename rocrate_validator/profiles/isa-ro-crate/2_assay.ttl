@@ -99,17 +99,21 @@ isa-ro-crate:AssayMustHaveBaseDescriptors a sh:NodeShape ;
 
 
 isa-ro-crate:AssayMustBeReferencedFromInvestigation a sh:NodeShape ;
-  sh:name "Assay MUST be directly referenced from Investigation (Root Data Entity)" ;
+  sh:name "Assay MUST be directly referenced from Investigation or Study (Root Data Entity)" ;
   sh:targetClass isa-ro-crate:Assay ;
   sh:property[
         a sh:PropertyShape ;
-        sh:path [ sh:oneOrMorePath [ sh:inversePath schema:hasPart ] ] ;
-        sh:qualifiedValueShape [ sh:class ro-crate:RootDataEntity ] ;
+        sh:path [ sh:inversePath schema:hasPart ] ;
+        sh:qualifiedValueShape [ 
+            sh:or (
+                [ sh:class ro-crate:RootDataEntity ] 
+                [ sh:class isa-ro-crate:Study ]
+            ) ;
+        ] ;
         sh:qualifiedMinCount 1 ;
-        sh:minCount 1 ;
-        sh:name "Assay MUST be directly referenced from Investigation (Root Data Entity)" ;
-        sh:description """Check if the Assay is directly linked to the Investigation (which is the Root Data Entity) using the `hasPart` (as defined in `schema.org`) property" """ ;
-        sh:message "Assay MUST be directly referenced in hasPart on the Investigation (Root Data Entity)"
+        sh:name "Assay MUST be directly referenced from Investigation or Study (Root Data Entity)" ;
+        sh:description """Check if the Assay is directly linked to the Investigation (which is the Root Data Entity) or a Study using the `hasPart` (as defined in `schema.org`) property" """ ;
+        sh:message "Assay MUST be directly referenced in hasPart on the Investigation (Root Data Entity) or a Study"
     ]
 .
 
@@ -188,7 +192,10 @@ isa-ro-crate:AssayRecommendedProperties a sh:NodeShape ;
     sh:property [
         a sh:PropertyShape ;
         sh:path schema:hasPart ;
-        sh:class schema:MediaObject ;
+        sh:or (
+            [sh:class schema:Dataset]
+            [sh:class schema:MediaObject]
+        );
         sh:description "Check that if assay does have at least one object in hasPart, it MUST be of type Dataset or File" ;
         sh:message "Assay hasPart MUST be of type Dataset or File" ;
         sh:severity sh:Violation ;

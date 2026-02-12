@@ -124,10 +124,9 @@ isa-ro-crate:StudyMustBeReferencedFromInvestigation a sh:NodeShape ;
   sh:targetClass isa-ro-crate:Study ;
   sh:property [
         a sh:PropertyShape ;
-        sh:path [ sh:oneOrMorePath [ sh:inversePath schema:hasPart ] ] ;
+        sh:path [ sh:inversePath schema:hasPart ] ;
         sh:qualifiedValueShape [ sh:class ro-crate:RootDataEntity ] ;
         sh:qualifiedMinCount 1 ;
-        sh:minCount 1 ;
         sh:name "Study MUST be directly referenced from Investigation (Root Data Entity)" ;
         sh:description """Check if the Study is directly linked to the Investigation (which is the Root Data Entity) using the `hasPart` (as defined in `schema.org`) property" """ ;
         sh:message "Study MUST be directly referenced in hasPart on the Investigation (Root Data Entity)"

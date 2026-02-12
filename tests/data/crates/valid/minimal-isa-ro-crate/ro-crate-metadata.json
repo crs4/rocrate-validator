@@ -34,9 +34,11 @@
       "measurementTechnique":{
         "@id": "#Term_MyTerm"
       },
-      "hasPart": {
-        "@id": "assays/MyAssay/datafile.txt"
-      }
+      "hasPart": [
+        {
+          "@id": "assays/MyAssay/datafile.txt"
+        }
+      ]
     },
     {
       "@id": "#Sample_MyInputSample",
