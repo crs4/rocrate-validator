@@ -21,7 +21,7 @@ from rocrate_validator.utils import log as logging
 from rocrate_validator.models import ValidationSettings
 from rocrate_validator.rocrate import ROCrateMetadata
 from rocrate_validator.services import detect_profiles, get_profiles, validate
-from tests.ro_crates import InvalidMultiProfileROC, ValidROC
+from tests.ro_crates import InvalidMultiProfileROC, ValidROC, InvalidFileDescriptorEntity
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -104,6 +104,64 @@ def test_valid_local_workflow_testing_ro_crate():
     assert len(profiles) == 1, "Expected a single profile"
     assert profiles[0].identifier == "workflow-testing-ro-crate-0.1", \
         "Expected the 'workflow-testing-ro-crate-0.1' profile"
+
+
+def test_disable_inherited_profiles_issue_reporting():
+    # Set the rocrate_uri to the workflow testing RO-Crate
+    crate_path = ValidROC().workflow_testing_ro_crate
+    logger.debug("Validating a local RO-Crate: %s", crate_path)
+
+    # First, validate with inherited profiles issue reporting enabled
+    settings = ValidationSettings(
+        rocrate_uri=crate_path,
+        disable_inherited_profiles_issue_reporting=False
+    )
+    result = validate(settings)
+    total_issues_with_inheritance = len(result.get_issues())
+    logger.debug("Total issues with inherited profiles issue reporting enabled: %d", total_issues_with_inheritance)
+
+    # Now, validate with inherited profiles issue reporting disabled
+    settings.disable_inherited_profiles_issue_reporting = True
+    result = validate(settings)
+    total_issues_without_inheritance = len(result.get_issues())
+    logger.debug("Total issues with inherited profiles issue reporting disabled: %d", total_issues_without_inheritance)
+
+    # Check that disabling inherited profiles issue reporting reduces the number of reported issues
+    assert total_issues_without_inheritance <= total_issues_with_inheritance, \
+        "Disabling inherited profiles issue reporting should not increase the number of reported issues"
+
+    # Check that all reported issues are from the main profile
+    main_profile_identifier = "workflow-testing-ro-crate-0.1"
+    for issue in result.get_issues():
+        assert issue.check.profile.identifier == main_profile_identifier, \
+            "All reported issues should belong to the main profile when inherited profiles issue reporting is disabled"
+
+
+def test_skip_pycheck_on_workflow_ro_crate():
+    # Set the rocrate_uri to the workflow testing RO-Crate
+    crate_path = InvalidFileDescriptorEntity().invalid_conforms_to
+    logger.debug("Validating a local RO-Crate: %s", crate_path)
+    settings = ValidationSettings(rocrate_uri=crate_path)
+    result = validate(settings)
+    assert not result.passed(), \
+        "The RO-Crate is expected to be invalid because of an incorrect conformsTo field and missing resources"
+    assert len(result.failed_checks) == 2, "No failed checks expected when skipping the problematic check"
+    assert any(check.identifier == "ro-crate-1.1_5.3" for check in result.failed_checks), \
+        "Expected the check 'ro-crate-1.1_5.3' to fail"
+    assert any(check.identifier == "ro-crate-1.1_12.1" for check in result.failed_checks), \
+        "Expected the check 'ro-crate-1.1_12.1' to fail"
+
+    # Perform a new validation skipping specific checks
+    settings.skip_checks = ["ro-crate-1.1_5.3", "ro-crate-1.1_12.1"]
+    result = validate(settings)
+    assert result.passed(), \
+        "The RO-Crate should be valid when skipping the checks related to the invalid file descriptor entity"
+
+    # Ensure that the skipped checks are indeed skipped
+    skipped_check_ids = {check.identifier for check in result.skipped_checks}
+    # logger.error("Skipped checks: %s", result.skipped_checks)
+    assert "ro-crate-1.1_5.3" in skipped_check_ids, "Expected check 'ro-crate-1.1_5.3' to be skipped"
+    assert "ro-crate-1.1_12.1" in skipped_check_ids, "Expected check 'ro-crate-1.1_12.1' to be skipped"
 
 
 def test_valid_local_multi_profile_crate():

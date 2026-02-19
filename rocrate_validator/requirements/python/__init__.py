@@ -55,6 +55,11 @@ class PyFunctionCheck(RequirementCheck):
         self._check_function = check_function
 
     def execute_check(self, context: ValidationContext) -> bool:
+        if self.requirement.profile.identifier != context.profile_identifier and \
+                context.settings.disable_inherited_profiles_issue_reporting:
+            logger.debug("Skipping requirement %s as it belongs to an inherited profile %s",
+                         self.requirement.identifier, self.requirement.profile.identifier)
+            return True
         return self._check_function(self, context)
 
 

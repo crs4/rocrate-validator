@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "roc-validator"
-version = "0.8.0"
+version = "0.8.1"
 description = "A Python package to validate RO-Crates"
 authors = [
     "Marco Enrico Piras <kikkomep@crs4.it>",
@@ -60,7 +60,7 @@ include = [
 [tool.poetry.dependencies]
 python = ">=3.10,<4.0"
 rdflib = ">=7.1,<8.0"
-pyshacl = ">=0.26,<0.31"
+pyshacl = ">=0.26"
 click = ">=8.2,<9.0"
 rich = ">=13.9,<14.0"
 toml = ">=0.10.2,<1.0"
@@ -106,6 +106,14 @@ skip_dirs = [".git", ".github", ".vscode"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+filterwarnings = [
+    # Ignore deprecation warnings from rdflib's JSON-LD parser,
+    # used internally by pyshacl. These warnings are unrelated to
+    # our code and currently noisy.
+    # See: https://github.com/RDFLib/rdflib/issues/3064
+    # Fix in progress: https://github.com/RDFLib/rdflib/issues/3302
+    "ignore::DeprecationWarning:rdflib.plugins.parsers.jsonld",
+]
 
 [tool.typos.files]
-extend-exclude = ["tests/data","docs/diagrams","*.json","*.html","*__init__.py"]
+extend-exclude = ["tests/data", "docs/diagrams", "*.json", "*.html", "*__init__.py"]
