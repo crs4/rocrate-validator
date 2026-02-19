@@ -185,7 +185,7 @@ def test_isa_investigation_shoulds_have_wrong_types():
         expected_validation_result=False,
         # expected_triggered_requirements=["Investigation MUST have base properties"],
         expected_triggered_issues=[
-            "Investigation dateCreated MUST be a valid date literal",
+            "Investigation dateCreated MUST be a valid ISO 8601 date",
             "Investigation creator MUST be of type Person",
         ],
         profile_identifier="isa-ro-crate",
