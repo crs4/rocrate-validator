@@ -1,0 +1,246 @@
+# Copyright (c) 2026 DataPLANT
+# Copyright (c) 2026 The University of Manchester
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+@prefix ro: <./> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+@prefix isa-ro-crate: <https://github.com/crs4/rocrate-validator/profiles/isa-ro-crate/> .
+@prefix bioschemas: <https://bioschemas.org/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix validator: <https://github.com/crs4/rocrate-validator/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# class:study
+#     isTypeDataset
+#     isAdditionalType"Study
+
+
+# check study must have identifier
+# check study must have name
+# check study must have description
+# check study should have about
+
+# check study must be pointed to by investigation through hasPart
+
+# # Find studies and add isa-ro-crate:Study type to them, for easier retrieval for checks
+# ro-crate:FindStudies a sh:NodeShape, validator:HiddenShape;
+#     sh:name "Identify Studies within the RO-Crate" ;
+#     sh:description "A Study has type Dataset and additionalType 'Study'." ;
+#     sh:target [
+#         a sh:SPARQLTarget ;
+#         sh:prefixes ro-crate:sparqlPrefixes ;
+#         sh:select """
+#             SELECT ?this
+#             WHERE {
+#                 ?this a schema:Dataset .
+#                 ?this schema:additionalType "Study" .
+#             }
+#         """
+#     ] ;
+
+#     # Expand data graph with triples from the file data entity
+#     sh:rule [
+#         a sh:TripleRule ;
+#         sh:subject sh:this ;
+#         sh:predicate rdf:type ;
+#         sh:object isa-ro-crate:Study ;
+#     ] .
+
+# Find studies and add isa-ro-crate:Study type to them, for easier retrieval for checks
+ro-crate:FindStudies a sh:NodeShape, validator:HiddenShape;
+    sh:name "Identify Studies within the RO-Crate" ;
+    sh:description "A Study has type Dataset and additionalType 'Study'." ;
+    sh:targetClass schema:Dataset ;
+    # Expand data graph with triples from the file data entity
+    sh:rule [
+        a sh:TripleRule ;
+        sh:subject sh:this ;
+        sh:predicate rdf:type ;
+        sh:object isa-ro-crate:Study ;
+        # The condition: additionalType == "Study"
+        sh:condition [
+            sh:property [
+                sh:path schema:additionalType ;
+                sh:hasValue "Study" ;
+            ] ;
+        ] ;
+    ]
+.
+
+# WIP
+isa-ro-crate:StudyMustHaveBaseDescriptors a sh:NodeShape ;
+    sh:name "Study MUST have base properties" ;
+    sh:description "A Study MUST have identifier, name and description" ;
+    sh:targetClass isa-ro-crate:Study ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:identifier ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ; 
+        sh:not [
+            sh:hasValue ""
+        ] ;
+        sh:description "Check that study does have non-empty identifier and it's a string" ;
+        sh:message "Study entity MUST have a non-empty identifier of type string" ;
+        sh:severity sh:Violation ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:name ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ; 
+        sh:not [
+            sh:hasValue ""
+        ] ;
+        sh:description "Check that study does have non-empty name and it's a string" ;
+        sh:message "Study entity MUST have a non-empty name of type string" ;
+        sh:severity sh:Violation ;
+    ] ;
+.
+
+
+isa-ro-crate:StudyMustBeReferencedFromInvestigation a sh:NodeShape ;
+  sh:name "Study MUST be directly referenced from Investigation (Root Data Entity)" ;
+  sh:targetClass isa-ro-crate:Study ;
+  sh:property [
+        a sh:PropertyShape ;
+        sh:path [ sh:inversePath schema:hasPart ] ;
+        sh:qualifiedValueShape [ sh:class ro-crate:RootDataEntity ] ;
+        sh:qualifiedMinCount 1 ;
+        sh:name "Study MUST be directly referenced from Investigation (Root Data Entity)" ;
+        sh:description """Check if the Study is directly linked to the Investigation (which is the Root Data Entity) using the `hasPart` (as defined in `schema.org`) property" """ ;
+        sh:message "Study MUST be directly referenced in hasPart on the Investigation (Root Data Entity)"
+    ]
+.
+
+isa-ro-crate:StudyRecommendedProperties a sh:NodeShape ;
+    sh:name "Study SHOULD have dateCreated, datePublished, hasPart, description, creator, and about" ;
+    sh:description "A Study SHOULD have a dateCreated" ;
+    sh:targetClass isa-ro-crate:Study ;
+    
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:dateCreated ;
+        sh:minCount 1 ;
+        sh:description "Check that study does have at least one dateCreated" ;
+        sh:message "Study entity SHOULD have a dateCreated" ;
+        sh:severity sh:Warning ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:dateCreated ;
+        sh:nodeKind sh:Literal ;
+        sh:pattern "^([\\+-]?\\d{4})((-?)((0[1-9]|1[0-2])(\\3([12]\\d|0[1-9]|3[01]))|W([0-4]\\d|5[0-2])(-?[1-7])|(00[1-9]|0[1-9]\\d|[12]\\d{2}|3([0-5]\\d|6[1-6])))([T\\s]((([01]\\d|2[0-3])((:?)?[0-5]\\d)?|24:?00)([\\.,]\\d+(?!:))?)?(\\17[0-5]\\d([\\.,]\\d+)?)?([zZ]|([\\+-])([01]\\d|2[0-3]):?([0-5]\\d)?)?)?)$" ;
+        sh:description "Check that if investigation does have at least one dateCreated, it MUST be of type Literal matching the date pattern" ;
+        sh:message "Study dateCreated MUST be a valid date literal" ;
+        sh:severity sh:Violation ;
+    ] ;
+
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:datePublished ;
+        sh:minCount 1 ;
+        sh:description "Check that study does have at least one datePublished" ;
+        sh:message "Study entity SHOULD have a datePublished" ;
+        sh:severity sh:Warning ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:datePublished ;
+        sh:nodeKind sh:Literal ;
+        sh:pattern "^([\\+-]?\\d{4})((-?)((0[1-9]|1[0-2])(\\3([12]\\d|0[1-9]|3[01]))|W([0-4]\\d|5[0-2])(-?[1-7])|(00[1-9]|0[1-9]\\d|[12]\\d{2}|3([0-5]\\d|6[1-6])))([T\\s]((([01]\\d|2[0-3])((:?)?[0-5]\\d)?|24:?00)([\\.,]\\d+(?!:))?)?(\\17[0-5]\\d([\\.,]\\d+)?)?([zZ]|([\\+-])([01]\\d|2[0-3]):?([0-5]\\d)?)?)?)$" ;
+        sh:description "Check that if investigation does have at least one dateCreated, it MUST be of type Literal matching the date pattern" ;
+        sh:message "Study datePublished MUST be a valid date literal" ;
+        sh:severity sh:Violation ;
+    ] ;
+
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:description ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ; 
+        sh:not [
+            sh:hasValue ""
+        ] ;
+        sh:description "Check that study does have non-empty description and it's a string" ;
+        sh:message "Study entity SHOULD have a non-empty description of type string" ;
+        sh:severity sh:Warning ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:description ;
+        sh:datatype xsd:string ;
+        sh:description "The description of a study MUST be a string" ;
+        sh:message "Study description MUST be of type string" ;
+        sh:severity sh:Violation ;
+    ] ;
+
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:creator ;
+        sh:minCount 1 ;
+        sh:description "Check that study does have at least one creator" ;
+        sh:message "Study entity SHOULD have a creator" ;
+        sh:severity sh:Warning ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:creator ;
+        sh:class schema:Person ;
+        sh:description "Check that if study does have at least one creator, it MUST be of type Person" ;
+        sh:message "Study creator MUST be of type Person" ;
+        sh:severity sh:Violation ;
+    ] ;
+
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:hasPart ;
+        sh:minCount 1 ;
+        sh:description "Check that study does have at least one object in hasPart" ;
+        sh:message "Study entity SHOULD have hasPart" ;
+        sh:severity sh:Warning ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:hasPart ;
+        sh:or (
+            [sh:class schema:MediaObject]
+            [sh:class schema:Dataset]
+        );
+        sh:description "Check that if study does have at least one object in hasPart, it MUST be of type Dataset or File" ;
+        sh:message "Study hasPart MUST be of type Dataset or File" ;
+        sh:severity sh:Violation ;
+    ] ;
+
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:about ;
+        sh:minCount 1 ;
+        sh:description "Check that study does have at least one object in about" ;
+        sh:message "Study entity SHOULD have about" ;
+        sh:severity sh:Warning ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:about ;
+        sh:class bioschemas:LabProcess ;
+        sh:description "Check that if study does have at least one object in about, it MUST be of type LabProcess" ;
+        sh:message "Study about MUST be of type LabProcess" ;
+        sh:severity sh:Violation ;
+    ] 
+.
