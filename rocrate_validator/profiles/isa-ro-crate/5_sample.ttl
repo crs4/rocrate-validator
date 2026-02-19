@@ -54,9 +54,6 @@ isa-ro-crate:SampleShouldHaveAdditionalPropertyOfCorrectType a sh:NodeShape ;
         a sh:PropertyShape ;
         sh:path bioschemas-prop:additionalProperty ;
         sh:minCount 1 ;
-        sh:not [
-            sh:hasValue ""
-        ] ;
         sh:description "Check that sample does have at least one additional property" ;
         sh:message "Sample entity SHOULD have at least one additional property" ;
         sh:severity sh:Warning ;

@@ -42,7 +42,7 @@ def test_isa_sample_name():
     )
 
     do_entity_test(
-        rocrate_path=ValidROC().isa_ro_crate_manual,
+        rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Study MUST have base properties"],
@@ -76,7 +76,7 @@ def test_isa_sample_name_of_incorrect_type():
     )
 
     do_entity_test(
-        rocrate_path=ValidROC().isa_ro_crate_manual,
+        rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Study MUST have base properties"],
@@ -109,7 +109,7 @@ def test_isa_sample_no_additional_property():
     )
 
     do_entity_test(
-        rocrate_path=ValidROC().isa_ro_crate_manual,
+        rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Study MUST have base properties"],
@@ -145,7 +145,7 @@ def test_isa_sample_additional_property_of_incorrect_type():
     )
 
     do_entity_test(
-        rocrate_path=ValidROC().isa_ro_crate_manual,
+        rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Study MUST have base properties"],

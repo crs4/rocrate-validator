@@ -98,8 +98,8 @@ isa-ro-crate:ProtocolShouldHaveIntendedUse a sh:NodeShape ;
             [sh:datatype xsd:string]
             [sh:class schema:DefinedTerm]
         ) ;
-        sh:description "Check that if protocol does have at least one intended use, it MUST be of type DefinedTerm" ;
-        sh:message "Protocol intended use MUST be of type DefinedTerm" ;
+        sh:description "Check that if protocol does have at least one intended use, it MUST be of type string or DefinedTerm" ;
+        sh:message "Protocol intended use MUST be of type string or DefinedTerm" ;
         sh:severity sh:Violation ;
     ]
 .

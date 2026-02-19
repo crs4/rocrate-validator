@@ -54,9 +54,6 @@ isa-ro-crate:PersonShouldHaveAffiliationOfCorrectType a sh:NodeShape ;
         a sh:PropertyShape ;
         sh:path schema:affiliation ;
         sh:minCount 1 ;
-        sh:not [
-            sh:hasValue ""
-        ] ;
         sh:description "Check that person does have at least one affiliation" ;
         sh:message "Person entity SHOULD have at least one affiliation" ;
         sh:severity sh:Warning ;
@@ -79,9 +76,6 @@ isa-ro-crate:PersonShouldHaveJobTitleOfCorrectType a sh:NodeShape ;
         a sh:PropertyShape ;
         sh:path schema:jobTitle ;
         sh:minCount 1 ;
-        sh:not [
-            sh:hasValue ""
-        ] ;
         sh:description "Check that person does have at least one job title" ;
         sh:message "Person entity SHOULD have at least one job title" ;
         sh:severity sh:Warning ;

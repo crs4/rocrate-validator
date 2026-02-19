@@ -26,7 +26,7 @@ logger.setLevel(logging.DEBUG)
 def test_valid_isa_ro_crate():
     """Test a valid ISA RO-Crate."""
     do_entity_test(
-        ValidROC().isa_ro_crate_manual,
+        ValidROC().isa_ro_crate,
         Severity.REQUIRED,
         True,
         profile_identifier="isa-ro-crate",

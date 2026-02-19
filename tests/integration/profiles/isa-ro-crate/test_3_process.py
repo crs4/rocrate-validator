@@ -42,7 +42,7 @@ def test_isa_process_name():
     )
 
     do_entity_test(
-        rocrate_path=ValidROC().isa_ro_crate_manual,
+        rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["Process MUST have name"],
@@ -76,7 +76,7 @@ def test_isa_process_not_correctly_referenced_from_dataset():
     )
 
     do_entity_test(
-        rocrate_path=ValidROC().isa_ro_crate_manual,
+        rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=[
@@ -109,7 +109,7 @@ def test_isa_process_no_object():
     )
 
     do_entity_test(
-        rocrate_path=ValidROC().isa_ro_crate_manual,
+        rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
         expected_triggered_requirements=["Process SHOULD have an object"],
@@ -141,7 +141,7 @@ def test_isa_process_object_incorrect_type():
     )
 
     do_entity_test(
-        rocrate_path=ValidROC().isa_ro_crate_manual,
+        rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["Process SHOULD have an object"],
@@ -172,7 +172,7 @@ def test_isa_process_no_result():
     )
 
     do_entity_test(
-        rocrate_path=ValidROC().isa_ro_crate_manual,
+        rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
         expected_triggered_requirements=["Process SHOULD have a result"],
@@ -204,7 +204,7 @@ def test_isa_process_result_incorrect_type():
     )
 
     do_entity_test(
-        rocrate_path=ValidROC().isa_ro_crate_manual,
+        rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["Process SHOULD have a result"],
@@ -236,7 +236,7 @@ def test_isa_process_no_value():
     )
 
     do_entity_test(
-        rocrate_path=ValidROC().isa_ro_crate_manual,
+        rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
         expected_triggered_requirements=["Process SHOULD have a parameter value"],
@@ -269,7 +269,7 @@ def test_isa_process_value_incorrect_type():
     )
 
     do_entity_test(
-        rocrate_path=ValidROC().isa_ro_crate_manual,
+        rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["Process SHOULD have a parameter value"],
@@ -301,7 +301,7 @@ def test_isa_process_no_protocol():
     )
 
     do_entity_test(
-        rocrate_path=ValidROC().isa_ro_crate_manual,
+        rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
         expected_triggered_requirements=["Process SHOULD have a protocol"],
@@ -334,7 +334,7 @@ def test_isa_process_protocol_incorrect_type():
     )
 
     do_entity_test(
-        rocrate_path=ValidROC().isa_ro_crate_manual,
+        rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["Process SHOULD have a protocol"],

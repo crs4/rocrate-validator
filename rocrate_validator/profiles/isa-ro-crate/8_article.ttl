@@ -73,9 +73,6 @@ isa-ro-crate:ArticleShouldHaveAuthorOfCorrectType a sh:NodeShape ;
         a sh:PropertyShape ;
         sh:path schema:author ;
         sh:minCount 1 ;
-        sh:not [
-            sh:hasValue ""
-        ] ;
         sh:description "Check that article does have at least one author" ;
         sh:message "Article entity SHOULD have at least one author" ;
         sh:severity sh:Warning ;

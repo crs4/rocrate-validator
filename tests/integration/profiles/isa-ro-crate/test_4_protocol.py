@@ -43,7 +43,7 @@ def test_isa_protocol_no_name():
     )
 
     do_entity_test(
-        rocrate_path=ValidROC().isa_ro_crate_manual,
+        rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Protocol SHOULD have name"],
@@ -77,7 +77,7 @@ def test_isa_protocol_name_incorrect_type():
         """
     )
     do_entity_test(
-        rocrate_path=ValidROC().isa_ro_crate_manual,
+        rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Protocol SHOULD have name"],
@@ -107,7 +107,7 @@ def test_isa_protocol_no_description():
     )
 
     do_entity_test(
-        rocrate_path=ValidROC().isa_ro_crate_manual,
+        rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Protocol SHOULD have description"],
@@ -142,7 +142,7 @@ def test_isa_protocol_description_incorrect_type():
     )
 
     do_entity_test(
-        rocrate_path=ValidROC().isa_ro_crate_manual,
+        rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Protocol SHOULD have description"],
@@ -172,7 +172,7 @@ def test_isa_protocol_no_intendedUse():
     )
 
     do_entity_test(
-        rocrate_path=ValidROC().isa_ro_crate_manual,
+        rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Protocol SHOULD have intended use"],
@@ -205,11 +205,11 @@ def test_isa_protocol_intendedUse_incorrect_type():
     )
 
     do_entity_test(
-        rocrate_path=ValidROC().isa_ro_crate_manual,
+        rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Protocol SHOULD have intended use"],
-        expected_triggered_issues=["Protocol intended use MUST be of type DefinedTerm"],
+        expected_triggered_issues=["Protocol intended use MUST be of type string or DefinedTerm"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
     )

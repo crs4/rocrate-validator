@@ -45,7 +45,7 @@ def test_isa_study_no_identifier():
     )
 
     do_entity_test(
-        rocrate_path=ValidROC().isa_ro_crate_manual,
+        rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["Study MUST have base properties"],
@@ -79,7 +79,7 @@ def test_isa_study_identifier_not_string():
     )
 
     do_entity_test(
-        rocrate_path=ValidROC().isa_ro_crate_manual,
+        rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Study MUST have base properties"],
@@ -110,7 +110,7 @@ def test_isa_study_name():
     )
 
     do_entity_test(
-        rocrate_path=ValidROC().isa_ro_crate_manual,
+        rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["Study MUST have base properties"],
@@ -144,7 +144,7 @@ def test_isa_study_name_not_string():
     )
 
     do_entity_test(
-        rocrate_path=ValidROC().isa_ro_crate_manual,
+        rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Study MUST have base properties"],
@@ -179,7 +179,7 @@ def test_isa_study_correctly_referenced_from_investigation():
     )
 
     do_entity_test(
-        rocrate_path=ValidROC().isa_ro_crate_manual,
+        rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=[
@@ -214,7 +214,7 @@ def test_isa_study_directly_referenced_from_investigation():
     )
 
     do_entity_test(
-        rocrate_path=ValidROC().isa_ro_crate_manual,
+        rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["Study MUST be directly referenced from Investigation (Root Data Entity)"],
@@ -255,7 +255,7 @@ def test_isa_study_no_shoulds():
     )
 
     do_entity_test(
-        rocrate_path=ValidROC().isa_ro_crate_manual,
+        rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Study MUST have base properties"],
@@ -309,7 +309,7 @@ def test_isa_study_shoulds_have_wrong_types():
     )
 
     do_entity_test(
-        rocrate_path=ValidROC().isa_ro_crate_manual,
+        rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Study MUST have base properties"],
