@@ -19,6 +19,12 @@ authors:
   - family-names: Bauer
     given-names: Daniel
     orcid: https://orcid.org/0000-0001-9447-460X
+  - family-names: "Wetzels"
+    given-names: "Florian"
+    orcid: https://orcid.org/0000-0002-5526-7138
+  - family-names: "Weil"
+    given-names: "Heinrich Lukas"
+    orcid: https://orcid.org/0000-0003-1945-6342
 repository-code: "https://github.com/crs4/rocrate-validator"
 url: "https://github.com/crs4/rocrate-validator"
 keywords:
