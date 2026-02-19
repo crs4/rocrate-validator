@@ -1,4 +1,4 @@
-# Copyright (c) 2026 DataPLANT
+# Copyright (c) 2026 DataPLANT, The University of Manchester
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
