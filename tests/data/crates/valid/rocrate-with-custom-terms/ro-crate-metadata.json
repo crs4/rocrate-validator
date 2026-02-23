@@ -2,7 +2,7 @@
     "@context": [
         "https://w3id.org/ro/crate/1.1/context",
         "https://w3id.org/ro/terms/workflow-run/context",
-        "https://schema.org/",
+        "http://schema.org/",
         { "myCustomTerm": "https://example.org#myCustomTerm" }
     ],
     "@graph": [
