@@ -29,7 +29,7 @@ __all__ = ["cli", "click"]
 
 
 @click.group(invoke_without_command=True)
-@click.rich_config(help_config=click.RichHelpConfiguration(use_rich_markup=True))
+@click.rich_config(help_config=click.RichHelpConfiguration(text_markup="rich"))
 @click.option(
     '--debug',
     is_flag=True,

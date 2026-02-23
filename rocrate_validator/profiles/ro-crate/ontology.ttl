@@ -22,7 +22,7 @@
 @prefix rocrate: <https://w3id.org/ro/crate/1.1/> .
 @prefix bioschemas: <https://bioschemas.org/> .
 @prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
-# @base <./.> .
+@prefix isa-ro-crate: <https://github.com/crs4/rocrate-validator/profiles/isa-ro-crate/> .
 
 <urn:absolute:.> rdf:type owl:Ontology ;
                   owl:versionIRI <urn:absolute:1.0> .
