@@ -89,46 +89,53 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
     """
 
     def __get_remote_context__(self, context_uri: str) -> object:
-        raw_data = HttpRequester().get(context_uri, headers={"Accept": "application/ld+json"})
+        raw_data = HttpRequester().get(context_uri, headers={"Accept": "application/ld+json, application/json"})
         if raw_data.status_code != 200:
             raise RuntimeError(f"Unable to retrieve the JSON-LD context '{context_uri}'", self)
         logger.debug(f"Retrieved context from {context_uri}")
 
         # Check if the response header contains the correct content type
         content_type = raw_data.headers.get("Content-Type", "")
-        # If the content type is not application/ld+json...
-        if "application/ld+json" not in content_type:
+        is_valid_content_type = "application/ld+json" in content_type or "application/json" in content_type
+        # If the content type is not application/ld+json or application/json,
+        # try to find an alternate link for the JSON-LD context in the response header
+        if not is_valid_content_type:
             logger.debug(
                 f"The retrieved context from {context_uri} "
-                f"does not have a Content-Type of application/ld+json: "
+                f"does not have a Content-Type of application/ld+json or application/json: "
                 f"the actual Content-Type is {content_type}. "
-                f"This may indicate that the retrieved context is not a valid JSON-LD context."
             )
             # check if the response header contains an alternate link location for the JSON-LD context
-            link_header = raw_data.headers.get("Link", "") or raw_data.headers.get("link", "")
+            # (https headers are case-insensitive, according to RFC 7230,
+            #  so we can use .get() without worrying about the case)
+            link_header = raw_data.headers.get("Link", "")
             logger.debug(f"Checking Link header for alternate JSON-LD context: {link_header}")
-            if 'rel="alternate"' in link_header and 'type="application/ld+json"' in link_header:
+            has_alternate_link = ('rel="alternate"' in link_header and
+                                  ('type="application/ld+json"' in link_header or
+                                   'type="application/json"' in link_header))
+
+            if has_alternate_link:
                 logger.debug(f"Found alternate link for JSON-LD context in Link header: {link_header}")
                 # extract the URL of the alternate link
-                match = re.search(r'<([^>]+)>;\s*rel="alternate";\s*type="application/ld\+json"', link_header)
+                match = re.search(r'<([^>]+)>;\s*rel="alternate";\s*type="application/(ld\+json|json)"', link_header)
                 if match:
                     alternate_url = match.group(1)
                     # If the alternate URL is relative, resolve it against the original context URI
                     if not alternate_url.startswith("http"):
                         alternate_url = urljoin(context_uri, alternate_url)
                     logger.debug(f"Trying to retrieve JSON-LD context from alternate URL: {alternate_url}")
-                    raw_data = HttpRequester().get(alternate_url, headers={"Accept": "application/ld+json"})
+                    raw_data = HttpRequester().get(alternate_url, headers={
+                        "Accept": "application/ld+json, application/json"})
                     if raw_data.status_code != 200:
                         raise RuntimeError(
                             f"Unable to retrieve the JSON-LD context from alternate URL '{alternate_url}'", self)
                     logger.debug(f"Retrieved context from alternate URL {alternate_url}")
                     content_type = raw_data.headers.get("Content-Type", "")
-                    if "application/ld+json" not in content_type:
+                    if "application/ld+json" not in content_type and "application/json" not in content_type:
                         raise RuntimeError(
                             f"The retrieved context from alternate URL {alternate_url} "
-                            f"does not have a Content-Type of application/ld+json: "
-                            f"the actual Content-Type is {content_type}. "
-                            f"This may indicate that the retrieved context is not a valid JSON-LD context.", self)
+                            "does not have a Content-Type of application/ld+json or application/json: "
+                            f"the actual Content-Type is {content_type}. ", self)
                 else:
                     logger.debug(f"No valid alternate link found in Link header: {link_header}")
                     raise RuntimeError(
