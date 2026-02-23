@@ -432,7 +432,7 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
                     # Check if k is a term or a URI
                     if k.startswith("http"):
                         context.result.add_issue(
-                            f'The The {v} occurrence{suffix} of the "{k}" URI cannot be used as a key{suffix} "'
+                            f'The {v} occurrence{suffix} of the "{k}" URI cannot be used as a key{suffix} "'
                             'because the compacted format requires simple terms as keys '
                             '(see https://www.w3.org/TR/json-ld-api/#compaction for more details).', self)
                     else:
