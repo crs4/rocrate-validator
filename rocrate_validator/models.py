@@ -1007,26 +1007,43 @@ class Requirement(ABC):
 
         logger.debug("Running %s checks for Requirement '%s'", len(self._checks), self.name)
         all_passed = True
-        for check in [_ for _ in self._checks
-                      if not context.settings.skip_checks
-                      or _.identifier not in context.settings.skip_checks]:
-
+        checks_to_perform = [
+            _ for _ in self._checks
+            if not context.settings.skip_checks
+            or _.identifier not in context.settings.skip_checks
+        ]
+        for check in checks_to_perform:
             try:
                 if check.overridden and not check.requirement.profile.identifier == context.profile_identifier:
                     logger.debug("Skipping check '%s' because overridden by '%r'",
                                  check.identifier, [_.identifier for _ in check.overridden_by])
                     continue
-                context.validator.notify(RequirementCheckValidationEvent(
-                    EventType.REQUIREMENT_CHECK_VALIDATION_START, check))
+                # Determine whether to skip event notification for inherited profiles
+                skip_event_notify = False
+                if check.requirement.profile.identifier != context.profile_identifier and \
+                        context.settings.disable_inherited_profiles_issue_reporting:
+                    logger.debug("Inherited profiles reporting disabled. "
+                                 "Skipping requirement %s as it belongs to an inherited profile %s",
+                                 check.requirement.identifier, check.requirement.profile.identifier)
+                    skip_event_notify = True
+                # Notify the start of the check execution if not skip_event_notify is set to True
+                if not skip_event_notify:
+                    context.validator.notify(RequirementCheckValidationEvent(
+                        EventType.REQUIREMENT_CHECK_VALIDATION_START, check))
+                # Execute the check
                 check_result = check.execute_check(context)
                 logger.debug("Result of check %s: %s", check.identifier, check_result)
                 context.result._add_executed_check(check, check_result)
-                context.validator.notify(RequirementCheckValidationEvent(
-                    EventType.REQUIREMENT_CHECK_VALIDATION_END, check, validation_result=check_result))
+                # Notify the end of the check execution if not skip_event_notify is set to True
+                if not skip_event_notify:
+                    context.validator.notify(RequirementCheckValidationEvent(
+                        EventType.REQUIREMENT_CHECK_VALIDATION_END, check, validation_result=check_result))
                 logger.debug("Ran check '%s'. Got result %s", check.identifier, check_result)
+                # Ensure the check result is a boolean
                 if not isinstance(check_result, bool):
                     logger.warning("Ignoring the check %s as it returned the value %r instead of a boolean", check.name)
                     raise RuntimeError(f"Ignoring invalid result from check {check.name}")
+                # Aggregate the check result
                 all_passed = all_passed and check_result
                 if not all_passed and context.fail_fast:
                     break
@@ -1040,7 +1057,8 @@ class Requirement(ABC):
                 logger.warning("Consider reporting this as a bug.")
                 if logger.isEnabledFor(logging.DEBUG):
                     logger.exception(e)
-
+        skipped_checks = set(self._checks) - set(checks_to_perform)
+        context.result.skipped_checks.update(skipped_checks)
         logger.debug("Checks for Requirement '%s' completed. Checks passed? %s", self.name, all_passed)
         return all_passed
 
@@ -1625,7 +1643,7 @@ class ValidationStatistics(Subscriber):
         profiles = [profile]
 
         # add inherited profiles if enabled
-        if validation_settings.enable_profile_inheritance:
+        if not validation_settings.disable_inherited_profiles_issue_reporting:
             profiles.extend(profile.inherited_profiles)
         logger.debug("Inherited profiles: %r", profile.inherited_profiles)
 
@@ -1656,9 +1674,20 @@ class ValidationStatistics(Subscriber):
                     if severity < severity_validation:
                         continue
                     # count the checks
-                    requirement_checks = [_ for _ in requirement.get_checks_by_level(LevelCollection.get(severity.name))
-                                          if not _.overridden or
-                                          _.requirement.profile.identifier == target_profile_identifier]
+                    requirement_checks = [
+                        _
+                        for _ in requirement.get_checks_by_level(
+                            LevelCollection.get(severity.name)
+                        )
+                        if (
+                            not validation_settings.skip_checks
+                            or _.identifier not in validation_settings.skip_checks
+                        )
+                        and (
+                            not _.overridden
+                            or _.requirement.profile.identifier == target_profile_identifier
+                        )
+                    ]
                     num_checks = len(requirement_checks)
                     requirement_checks_count += num_checks
                     if num_checks > 0:
@@ -2325,12 +2354,20 @@ class ValidationSettings:
     #: The profile identifier to validate against
     profile_identifier: str = DEFAULT_PROFILE_IDENTIFIER
     #: Flag to enable profile inheritance
+    # Use the `enable_profile_inheritance` flag with caution: disable inheritance only if the
+    # target validation profile is fully self-contained and does not rely on definitions
+    # from inherited profiles (e.g., entities defined upstream). For modularization
+    # purposes, some base entities and properties are defined in the base RO-Crate
+    # profile and are intentionally not redefined in specialized profiles; they are
+    # required for validations targeting those specializations and therefore cannot be skipped.
+    # Nevertheless, the validator can still suppress issue reporting for checks defined
+    # in inherited profiles by setting disable_inherited_profiles_issue_reporting to `True`.
     enable_profile_inheritance: bool = True
     # Validation settings
     #: Flag to abort on first error
     abort_on_first: Optional[bool] = False
-    #: Flag to disable inherited profiles reporting
-    disable_inherited_profiles_reporting: bool = False
+    #: Flag to disable reporting of issues related to inherited profiles
+    disable_inherited_profiles_issue_reporting: bool = False
     #: Flag to disable remote crate download
     disable_remote_crate_download: bool = True
     # Requirement settings

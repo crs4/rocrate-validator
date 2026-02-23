@@ -1,0 +1,161 @@
+# Copyright (c) 2026 DataPLANT
+# Copyright (c) 2026 The University of Manchester
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+@prefix ro: <./> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+@prefix isa-ro-crate: <https://github.com/crs4/rocrate-validator/profiles/isa-ro-crate/> .
+@prefix bioschemas: <https://bioschemas.org/> .
+@prefix bioschemas-prop: <https://bioschemas.org/properties/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix validator: <https://github.com/crs4/rocrate-validator/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+
+
+# check process must have name
+# check process should have object
+# check process should have result
+
+isa-ro-crate:ProcessMustHaveName a sh:NodeShape ;
+    sh:name "Process MUST have name" ;
+    sh:description "A Process MUST have a name" ;
+    sh:targetClass bioschemas:LabProcess ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:name ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ; 
+        sh:not [
+            sh:hasValue ""
+        ] ;
+        sh:description "Check that process does have non-empty name and it's a string" ;
+        sh:message "Process entity MUST have a non-empty name of type string" ;
+        sh:severity sh:Violation ;
+    ] ;
+.
+
+isa-ro-crate:ProcessMustBeReferencedFromDataset a sh:NodeShape ;
+  sh:name "Process MUST be directly referenced from a dataset" ;
+  sh:targetClass bioschemas:LabProcess ;
+  sh:property
+        [
+            a sh:PropertyShape ;
+            sh:path [ sh:inversePath schema:about ] ;
+            sh:node schema:Dataset ;
+            sh:minCount 1 ;
+            sh:name "Process MUST be directly referenced from a dataset" ;
+            sh:description """Check if the Process is directly linked to a Dataset using the `about` (as defined in `schema.org`) property" """ ;
+            sh:message "Process MUST be directly referenced in about on a Dataset" ;
+            sh:severity sh:Violation ;
+         ] .
+
+isa-ro-crate:ProcessShouldHaveObject a sh:NodeShape ;
+    sh:name "Process SHOULD have an object" ;
+    sh:description "A Process SHOULD have an object" ;
+    sh:targetClass bioschemas:LabProcess ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:object ;
+        sh:minCount 1 ;
+        sh:description "Check that process does have at least one object" ;
+        sh:message "Process entity SHOULD have an object" ;
+        sh:severity sh:Warning ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:object ;
+        sh:or (
+            [sh:class schema:MediaObject]
+            [sh:class bioschemas:Sample]
+            [sh:class bioschemas:BioSample]
+        );
+        sh:description "Check that if process does have at least one object, it MUST be of type File, Sample or BioSample" ;
+        sh:message "Process objects MUST be of type File, Sample or BioSample" ;
+        sh:severity sh:Violation ;
+    ]
+.
+
+isa-ro-crate:ProcessShouldHaveResult a sh:NodeShape ;
+    sh:name "Process SHOULD have a result" ;
+    sh:description "A Process SHOULD have a result" ;
+    sh:targetClass bioschemas:LabProcess ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:result ;
+        sh:minCount 1 ;
+        sh:description "Check that process does have at least one result" ;
+        sh:message "Process entity SHOULD have a result" ;
+        sh:severity sh:Warning ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:result ;
+        sh:or (
+            [sh:class schema:MediaObject]
+            [sh:class bioschemas:Sample]
+            [sh:class bioschemas:BioSample]
+        );
+        sh:description "Check that if process does have at least one result, it MUST be of type File, Sample or BioSample" ;
+        sh:message "Process results MUST be of type File, Sample or BioSample" ;
+        sh:severity sh:Violation ;
+    ]
+.
+
+isa-ro-crate:ProcessShouldHaveProtocol a sh:NodeShape ;
+    sh:name "Process SHOULD have a protocol" ;
+    sh:description "A Process SHOULD have a protocol" ;
+    sh:targetClass bioschemas:LabProcess ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path bioschemas-prop:executesLabProtocol ;
+        sh:minCount 1 ;
+        sh:description "Check that process does have at least one protocol" ;
+        sh:message "Process entity SHOULD have a protocol" ;
+        sh:severity sh:Warning ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path bioschemas-prop:executesLabProtocol ;
+        sh:class bioschemas:LabProtocol;
+        sh:description "Check that if process does have at least one protocol, it MUST be of type LabProtocol" ;
+        sh:message "Process protocols MUST be of type LabProtocol" ;
+        sh:severity sh:Violation ;
+    ]
+.
+
+isa-ro-crate:ProcessShouldHaveParamValue a sh:NodeShape ;
+    sh:name "Process SHOULD have a parameter value" ;
+    sh:description "A Process SHOULD have a parameter value" ;
+    sh:targetClass bioschemas:LabProcess ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path bioschemas-prop:parameterValue ;
+        sh:minCount 1 ;
+        sh:description "Check that process does have at least one parameter value" ;
+        sh:message "Process entity SHOULD have a parameter value" ;
+        sh:severity sh:Warning ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path bioschemas-prop:parameterValue ;
+        sh:class schema:PropertyValue;
+        sh:description "Check that if process does have at least one parameter value, it MUST be of type PropertyValue" ;
+        sh:message "Process parameter values MUST be of type PropertyValue" ;
+        sh:severity sh:Violation ;
+    ]
+.

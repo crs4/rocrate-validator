@@ -200,11 +200,13 @@ class SHACLCheck(RequirementCheck):
             assert shape is not None, "Unable to map the violation to a shape"
             requirementCheck = SHACLCheck.get_instance(shape)
             assert requirementCheck is not None, "The requirement check cannot be None"
-            failed_requirements_checks.add(requirementCheck)
-            violations = failed_requirements_checks_violations.get(requirementCheck.identifier, None)
-            if violations is None:
-                failed_requirements_checks_violations[requirementCheck.identifier] = violations = []
-            violations.append(violation)
+            if (not shacl_context.settings.skip_checks or
+                    requirementCheck.identifier not in shacl_context.settings.skip_checks):
+                failed_requirements_checks.add(requirementCheck)
+                violations = failed_requirements_checks_violations.get(requirementCheck.identifier, None)
+                if violations is None:
+                    failed_requirements_checks_violations[requirementCheck.identifier] = (violations := [])
+                violations.append(violation)
         # sort the failed checks by identifier and severity
         # to ensure a consistent order of the issues
         # and to make the fail fast mode deterministic
@@ -212,7 +214,7 @@ class SHACLCheck(RequirementCheck):
             # if the check is not in the current profile
             # and the disable_inherited_profiles_reporting is enabled, skip it
             if requirementCheck.requirement.profile != shacl_context.current_validation_profile and \
-                    shacl_context.settings.disable_inherited_profiles_reporting:
+                    shacl_context.settings.disable_inherited_profiles_issue_reporting:
                 continue
             for violation in failed_requirements_checks_violations[requirementCheck.identifier]:
                 violating_entity = make_uris_relative(violation.focusNode.toPython(), shacl_context.publicID)
@@ -273,6 +275,9 @@ class SHACLCheck(RequirementCheck):
             if requirementCheck.identifier not in failed_requirement_checks_notified:
                 failed_requirement_checks_notified.append(requirementCheck.identifier)
                 shacl_context.result._add_executed_check(requirementCheck, True)
+                if requirementCheck.requirement.profile != shacl_context.target_profile and \
+                        shacl_context.settings.disable_inherited_profiles_issue_reporting:
+                    continue
                 shacl_context.validator.notify(RequirementCheckValidationEvent(
                     EventType.REQUIREMENT_CHECK_VALIDATION_END, requirementCheck, validation_result=True))
                 logger.debug("Added skipped check to the context: %s", requirementCheck.identifier)

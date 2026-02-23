@@ -23,12 +23,16 @@ def test_validation_settings_parse_dict():
         "profiles_path": "/path/to/profiles",
         "requirement_severity": "RECOMMENDED",
         "enable_profile_inheritance": False,
+        "disable_inherited_profiles_issue_reporting": True,
+        "skip_checks": ["check1", "check2"]
     }
     settings = ValidationSettings.parse(settings_dict)
     assert str(settings.rocrate_uri) == "/path/to/data"
     assert settings.profiles_path == "/path/to/profiles"
     assert settings.requirement_severity == Severity.RECOMMENDED
     assert settings.enable_profile_inheritance is False
+    assert settings.disable_inherited_profiles_issue_reporting is True
+    assert settings.skip_checks == ["check1", "check2"]
 
 
 def test_validation_settings_parse_object():
@@ -36,13 +40,17 @@ def test_validation_settings_parse_object():
         rocrate_uri="/path/to/data",
         profiles_path="/path/to/profiles",
         requirement_severity=Severity.RECOMMENDED,
-        enable_profile_inheritance=False
+        enable_profile_inheritance=False,
+        disable_inherited_profiles_issue_reporting=True,
+        skip_checks=["check1", "check2"]
     )
     settings = ValidationSettings.parse(existing_settings)
     assert str(settings.rocrate_uri) == "/path/to/data"
     assert settings.profiles_path == "/path/to/profiles"
     assert settings.requirement_severity == Severity.RECOMMENDED
     assert settings.enable_profile_inheritance is False
+    assert settings.disable_inherited_profiles_issue_reporting is True
+    assert settings.skip_checks == ["check1", "check2"]
 
 
 def test_validation_settings_parse_invalid_type():
@@ -70,6 +78,17 @@ def test_validation_settings_enable_profile_inheritance():
 
     settings = ValidationSettings(enable_profile_inheritance=False)
     assert settings.enable_profile_inheritance is False
+
+
+def test_validation_settings_disable_inherited_profiles_issue_reporting():
+    settings = ValidationSettings()
+    assert settings.disable_inherited_profiles_issue_reporting is False
+
+    settings = ValidationSettings(disable_inherited_profiles_issue_reporting=True)
+    assert settings.disable_inherited_profiles_issue_reporting is True
+
+    settings = ValidationSettings(disable_inherited_profiles_issue_reporting=False)
+    assert settings.disable_inherited_profiles_issue_reporting is False
 
 
 def test_validation_settings_data_path():

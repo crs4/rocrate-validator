@@ -1,0 +1,76 @@
+# Copyright (c) 2026 DataPLANT
+# Copyright (c) 2026 The University of Manchester
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+@prefix ro: <./> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+@prefix isa-ro-crate: <https://github.com/crs4/rocrate-validator/profiles/isa-ro-crate/> .
+@prefix bioschemas: <https://bioschemas.org/> .
+@prefix bioschemas-prop: <https://bioschemas.org/properties/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix validator: <https://github.com/crs4/rocrate-validator/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+
+isa-ro-crate:CommentShouldHaveName a sh:NodeShape ;
+    sh:name "Comment SHOULD have name" ;
+    sh:description "A Comment SHOULD have at least one name" ;
+    sh:targetClass schema:Comment ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:name ;
+        sh:minCount 1 ;
+        sh:not [
+            sh:hasValue ""
+        ] ;
+        sh:description "Check that comment does have at least one name" ;
+        sh:message "Comment entity SHOULD have at least one name" ;
+        sh:severity sh:Warning ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:name ;
+        sh:datatype xsd:string ;
+        sh:description "The name of a comment MUST be a string" ;
+        sh:message "Comment name MUST be of type string" ;
+        sh:severity sh:Violation ;
+    ]
+.
+
+isa-ro-crate:CommentShouldHaveText a sh:NodeShape ;
+    sh:name "Comment SHOULD have text" ;
+    sh:description "A Comment SHOULD have at least one text" ;
+    sh:targetClass schema:Comment ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:text ;
+        sh:minCount 1 ;
+        sh:not [
+            sh:hasValue ""
+        ] ;
+        sh:description "Check that comment does have at least one text" ;
+        sh:message "Comment entity SHOULD have at least one text" ;
+        sh:severity sh:Warning ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:text ;
+        sh:datatype xsd:string ;
+        sh:description "The text of a comment MUST be a string" ;
+        sh:message "Comment text MUST be of type string" ;
+        sh:severity sh:Violation ;
+    ]
+.
