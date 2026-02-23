@@ -150,14 +150,11 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
     def __check_remote_context__(self, context_uri: str) -> bool:
         # Try to retrieve the context
         try:
-            raw_data = HttpRequester().get(context_uri, headers={"Accept": "application/ld+json"})
-            if raw_data.status_code != 200:
-                raise RuntimeError(f"Unable to retrieve the JSON-LD context '{context_uri}'", self)
-            logger.debug(f"Retrieved context from {context_uri}")
-
             # Try to parse the JSON-LD and access the context
-            jsonLD = raw_data.json()["@context"]
-            assert isinstance(jsonLD, dict)
+            jsonLD = self.__get_remote_context__(context_uri)
+            assert isinstance(
+                jsonLD, dict), f"The retrieved context from {context_uri} is not \
+                a valid JSON-LD context: it is not a dictionary"
             return True
         except Exception as e:
             if logger.isEnabledFor(logging.DEBUG):
@@ -367,16 +364,8 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
         """ Get the keys of the context URI """
 
         logger.debug(f"Retrieving context from {context_uri}...")
-        # Try to retrieve the context
-        raw_data = HttpRequester().get(context_uri, headers={"Accept": "application/ld+json"})
-        if raw_data.status_code != 200:
-            raise RuntimeError(f"Unable to retrieve the JSON-LD context '{context_uri}'")
-
-        logger.debug(f"Retrieved context from {context_uri}")
-
         # Get the keys of the context
-        jsonLD = raw_data.json()
-        jsonLD_ctx = jsonLD["@context"]
+        jsonLD_ctx = self.__get_remote_context__(context_uri)
         if not isinstance(jsonLD_ctx, dict):
             raise RuntimeError("The context is not a dictionary", self)
         return set(jsonLD_ctx.keys())
