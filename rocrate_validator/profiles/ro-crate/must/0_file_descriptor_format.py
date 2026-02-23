@@ -339,9 +339,20 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
         # If the entity is a dictionary, check each key
         if isinstance(entity, dict):
             for k, v in entity.items():
-                if k not in context_keys and k not in SKIP_KEYS:
+                if k in SKIP_KEYS:
+                    logger.debug(f"Key {k} is a reserved JSON-LD keyword, skipping")
+                    continue
+                if k not in context_keys:
                     logger.debug(f"Key {k} not in context keys")
-                    add_unexpected_key(k, unexpected_keys)
+                    if ":" in k:
+                        logger.debug(f"Key {k} contains a colon, checking if the prefix is in context keys")
+                        prefix = k.split(":")[0]
+                        if prefix in context_keys:
+                            logger.debug(f"Prefix {prefix} of key {k} is in context keys, skipping")
+                            continue
+                    else:
+                        logger.debug(f"Key {k} does not contain a colon, checking if it is in context keys")
+                        add_unexpected_key(k, unexpected_keys)
                 if isinstance(v, (dict, list)):
                     self.__check_entity_keys__(v, context_keys, unexpected_keys)
 
