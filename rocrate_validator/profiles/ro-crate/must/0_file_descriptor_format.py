@@ -14,10 +14,10 @@
 
 from typing import Any
 
-from rocrate_validator.utils import log as logging
 from rocrate_validator.models import ValidationContext
 from rocrate_validator.requirements.python import (PyFunctionCheck, check,
                                                    requirement)
+from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.http import HttpRequester
 
 # set up logging
@@ -339,20 +339,27 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
         # If the entity is a dictionary, check each key
         if isinstance(entity, dict):
             for k, v in entity.items():
+                # If the key is in the skip keys, skip it
                 if k in SKIP_KEYS:
                     logger.debug(f"Key {k} is a reserved JSON-LD keyword, skipping")
-                    continue
-                if k not in context_keys:
+
+                # If the key is not in the context keys,
+                # it can be used in compacted format only if it is a valid compact IRI
+                # with a prefix that is in the context
+                elif k not in context_keys:
                     logger.debug(f"Key {k} not in context keys")
-                    if ":" in k:
-                        logger.debug(f"Key {k} contains a colon, checking if the prefix is in context keys")
-                        prefix = k.split(":")[0]
-                        if prefix in context_keys:
-                            logger.debug(f"Prefix {prefix} of key {k} is in context keys, skipping")
-                            continue
-                    else:
-                        logger.debug(f"Key {k} does not contain a colon, checking if it is in context keys")
+
+                    # Try to get the prefix of the compact IRI, if it has one
+                    prefix = k.split(":", 1)[0] if ":" in k else None
+                    logger.debug(f"Checking prefix {prefix} of key {k}")
+                    # If the key does not have a prefix (no colon) or the prefix is not in the context keys,
+                    # it cannot be used as a key in compacted format
+                    if prefix is None or prefix not in context_keys:
+                        logger.debug(
+                            f"Key {k} does not have a valid prefix in context keys, adding to unexpected keys")
                         add_unexpected_key(k, unexpected_keys)
+
+                # If the value is a dictionary or a list, check its keys recursively
                 if isinstance(v, (dict, list)):
                     self.__check_entity_keys__(v, context_keys, unexpected_keys)
 
