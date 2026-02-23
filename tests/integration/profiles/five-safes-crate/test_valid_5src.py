@@ -98,7 +98,7 @@ def test_valid_five_safes_crate_result_recommended():
             SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER,
             SKIP_WEB_RESOURCE_AVAILABILITY_IDENTIFIER,
         ],
-        disable_inherited_profiles_reporting=True,
+        disable_inherited_profiles_issue_reporting=True,
     )
 
 
