@@ -32,7 +32,8 @@ ro-crate:FindROCrateMetadataFileDescriptorEntity a sh:NodeShape, validator:Hidde
         sh:select """
             SELECT ?this
             WHERE {
-                ?this a schema:CreativeWork ;
+                ?crate a schema:Dataset .
+                ?this schema:about ?crate .
                 FILTER(contains(str(?this), "ro-crate-metadata.json"))
             }
         """
