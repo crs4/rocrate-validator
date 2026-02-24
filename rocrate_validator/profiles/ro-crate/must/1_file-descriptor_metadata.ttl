@@ -21,6 +21,32 @@
 @prefix validator: <https://github.com/crs4/rocrate-validator/> .
 
 
+ro-crate:ROCrateMetadataFileDescriptorExistence
+    a sh:NodeShape ;
+    sh:targetNode sh:Graph ;
+    sh:name "RO-Crate Metadata File Descriptor entity existence" ;
+    sh:description "The RO-Crate JSON-LD MUST contain a Metadata File Descriptor entity named `ro-crate-metadata.json` and typed as `schema:CreativeWork`" ;
+    
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:name "RO-Crate Metadata File Descriptor entity existence" ;
+        sh:description """Check if the RO-Crate Metadata File Descriptor entity exists,
+            i.e., if there exists an entity with @id `ro-crate-metadata.json` and type `schema:CreativeWork`""" ;
+        sh:message "The root of the document MUST have an entity with @id `ro-crate-metadata.json`" ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT $this
+            WHERE {
+                FILTER NOT EXISTS {
+                    ?crate a schema:Dataset .
+                    ?md schema:about ?crate .
+                    ?md a schema:CreativeWork .
+                    FILTER( STRENDS(STR(?md), "ro-crate-metadata.json") )
+                }
+            }
+        """ ;
+    ] .
+
 ro-crate:FindROCrateMetadataFileDescriptorEntity a sh:NodeShape, validator:HiddenShape;
     sh:name "Identify the RO-Crate Metadata File Descriptor" ;
     sh:description """The RO-Crate Metadata File Descriptor entity describes the RO-Crate itself, and it is named as `ro-crate-metadata.json`.
@@ -45,22 +71,6 @@ ro-crate:FindROCrateMetadataFileDescriptorEntity a sh:NodeShape, validator:Hidde
         sh:subject sh:this ;
         sh:predicate rdf:type ;
         sh:object ro-crate:ROCrateMetadataFileDescriptor ;
-    ] .
-
-ro-crate:ROCrateMetadataFileDescriptorExistence
-    a sh:NodeShape ;
-    sh:name "RO-Crate Metadata File Descriptor entity existence" ;
-    sh:description "The RO-Crate JSON-LD MUST contain a Metadata File Descriptor entity named `ro-crate-metadata.json` and typed as `schema:CreativeWork`" ;
-    sh:targetClass ro-crate:ROCrateMetadataFileDescriptor ;
-    sh:property [
-        a sh:PropertyShape ;
-        sh:name "RO-Crate Metadata File Descriptor entity existence" ;
-        sh:description """Check if the RO-Crate Metadata File Descriptor entity exists,
-            i.e., if there exists an entity with @id `ro-crate-metadata.json` and type `schema:CreativeWork`""" ;
-        sh:path rdf:type ;
-        sh:hasValue ro-crate:ROCrateMetadataFileDescriptor ;
-        sh:minCount 1 ;
-        sh:message "The root of the document MUST have an entity with @id `ro-crate-metadata.json`" ;
     ] .
 
 ro-crate:ROCrateMetadataFileDescriptorRecommendedProperties a sh:NodeShape ;
