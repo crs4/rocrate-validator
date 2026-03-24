@@ -25,7 +25,7 @@ from rich.padding import Padding
 from rich.rule import Rule
 
 from rocrate_validator.utils import log as logging
-from rocrate_validator import services
+from rocrate_validator import constants, services
 from rocrate_validator.cli.commands.errors import handle_error
 from rocrate_validator.cli.main import cli
 from rocrate_validator.cli.ui.text.validate import ValidationCommandView
@@ -205,6 +205,29 @@ def validate_uri(ctx, param, value):
     show_default=True,
     help="Width of the output line",
 )
+@click.option(
+    '--cache-max-age',
+    type=click.INT,
+    default=constants.DEFAULT_HTTP_CACHE_MAX_AGE,
+    show_default=True,
+    help="Maximum age of the HTTP cache in seconds ([bold green]-1[/bold green] for no expiration)",
+)
+@click.option(
+    '--cache-path',
+    type=click.Path(),
+    default=None,
+    show_default=True,
+    help="Path to the HTTP cache directory",
+)
+@click.option(
+    '-nc',
+    '--no-cache',
+    is_flag=True,
+    help="Disable the HTTP cache",
+    default=False,
+    show_default=True,
+    hidden=True
+)
 @click.pass_context
 def validate(ctx,
              profiles_path: Path = DEFAULT_PROFILES_PATH,
@@ -223,7 +246,10 @@ def validate(ctx,
              verbose: bool = False,
              output_format: str = "text",
              output_file: Optional[Path] = None,
-             output_line_width: Optional[int] = None):
+             output_line_width: Optional[int] = None,
+             cache_max_age: int = constants.DEFAULT_HTTP_CACHE_MAX_AGE,
+             cache_path: Optional[Path] = None,
+             no_cache: bool = False):
     """
     [magenta]rocrate-validator:[/magenta] Validate a RO-Crate against a profile
     """
@@ -246,6 +272,11 @@ def validate(ctx,
     logger.debug("rocrate_uri: %s", rocrate_uri)
     logger.debug("fail_fast: %s", fail_fast)
     logger.debug("no fail fast: %s", not fail_fast)
+
+    # Cache settings
+    logger.debug("cache_max_age: %s", cache_max_age)
+    logger.debug("cache_path: %s", os.path.abspath(cache_path) if cache_path else None)
+    logger.debug("no_cache: %s", no_cache)
 
     if rocrate_uri:
         logger.debug("rocrate_path: %s", os.path.abspath(rocrate_uri))
@@ -282,7 +313,9 @@ def validate(ctx,
             "rocrate_relative_root_path": relative_root_path,
             "abort_on_first": fail_fast,
             "skip_checks": skip_checks_list,
-            "metadata_only": metadata_only
+            "metadata_only": metadata_only,
+            "cache_max_age": cache_max_age if not no_cache else -1,
+            "cache_path": cache_path
         }
 
         # Print the application header
