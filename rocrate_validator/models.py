@@ -31,7 +31,6 @@ from urllib.error import HTTPError
 import enum_tools
 from rdflib import RDF, RDFS, Graph, Namespace, URIRef
 
-from rocrate_validator.utils import log as logging
 from rocrate_validator import __version__
 from rocrate_validator.constants import (DEFAULT_HTTP_CACHE_MAX_AGE,
                                          DEFAULT_ONTOLOGY_FILE,
@@ -49,11 +48,13 @@ from rocrate_validator.errors import (DuplicateRequirementCheck,
                                       ROCrateMetadataNotFoundError)
 from rocrate_validator.events import Event, EventType, Publisher, Subscriber
 from rocrate_validator.rocrate import ROCrate
-from rocrate_validator.utils.collections import (MapIndex)
+from rocrate_validator.utils import log as logging
+from rocrate_validator.utils.collections import MapIndex, MultiIndexMap
+from rocrate_validator.utils.http import HttpRequester
 from rocrate_validator.utils.paths import get_profiles_path
-from rocrate_validator.utils.python_helpers import get_requirement_name_from_file
+from rocrate_validator.utils.python_helpers import \
+    get_requirement_name_from_file
 from rocrate_validator.utils.uri import URI
-from rocrate_validator.utils.collections import MultiIndexMap
 
 # set the default profiles path
 DEFAULT_PROFILES_PATH = get_profiles_path()
@@ -2399,8 +2400,6 @@ class ValidationSettings:
         if isinstance(self.requirement_severity, str):
             self.requirement_severity = Severity[self.requirement_severity]
         # initialize the HTTP cache
-        from rocrate_validator.utils import HttpRequester
-        # HttpRequester.initialize_cache(cache_path=self.cache_path, cache_max_age=self.cache_max_age)
         HttpRequester.initialize_cache(cache_path=self.cache_path, cache_max_age=self.cache_max_age)
         logger.debug("HTTP cache initialized at %s with max age %s seconds",
                      self.cache_path, self.cache_max_age)
