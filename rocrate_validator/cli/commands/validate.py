@@ -210,7 +210,7 @@ def validate_uri(ctx, param, value):
     type=click.INT,
     default=constants.DEFAULT_HTTP_CACHE_MAX_AGE,
     show_default=True,
-    help="Maximum age of the HTTP cache in seconds",
+    help="Maximum age of the HTTP cache in seconds ([bold green]-1[/bold green] for no expiration)",
 )
 @click.option(
     '--cache-path',
