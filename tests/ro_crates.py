@@ -247,6 +247,10 @@ class InvalidDataEntity:
         return self.base_path / "valid_direct_hasPart_reference"
 
     @property
+    def dataset_not_linked_to_root(self) -> Path:
+        return self.base_path / "cyclic_datasets"
+
+    @property
     def indirect_hasPart_data_entity_reference(self) -> Path:
         return self.base_path / "valid_indirect_hasPart_reference"
 
