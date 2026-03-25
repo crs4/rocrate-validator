@@ -76,7 +76,11 @@ class ProgressMonitor(EventDispatcher):
     def _on_requirement_check_validation_end(
         self, event: RequirementCheckValidationEvent, ctx: ValidationContext | None
     ) -> None:
-        self.__progress.update(task_id=self.requirement_check_validation, advance=1)
+        assert ctx is not None, "Validation context must be provided"
+        # Only advance the progress for checks at or above the requested severity threshold,
+        # so the bar matches the set of checks actually reported.
+        if event.requirement_check.severity >= ctx.settings.requirement_severity:
+            self.__progress.update(task_id=self.requirement_check_validation, advance=1)
 
     def _on_requirement_validation_end(self, event: RequirementValidationEvent, ctx: ValidationContext | None) -> None:
         self.__progress.update(task_id=self.requirement_validation, advance=1)
