@@ -20,7 +20,6 @@ from urllib.error import HTTPError
 
 from rdflib import Graph
 
-from rocrate_validator.constants import ROCRATE_METADATA_FILE
 from rocrate_validator.errors import (
     ProfileNotFound,
     ROCrateMetadataNotFoundError,
@@ -435,7 +434,7 @@ class ValidationContext:
         :return: The relative path to the file descriptor
         :rtype: Path
         """
-        return Path(ROCRATE_METADATA_FILE)
+        return Path(self.ro_crate.metadata_descriptor_id)
 
     def __load_data_graph__(self) -> Graph:
         data_graph = Graph()

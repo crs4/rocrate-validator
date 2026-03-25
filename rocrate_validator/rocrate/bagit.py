@@ -125,7 +125,7 @@ class BagitROCrate(ROCrate, ABC):
 class ROCrateBagitLocalFolder(BagitROCrate, ROCrateLocalFolder):
     def __init__(self, uri: str | Path | URI, relative_root_path: Path | None = None):
         # initialize the parent classes
-        super(ROCrateLocalFolder, self).__init__(uri, relative_root_path=relative_root_path)
+        super().__init__(uri, relative_root_path=relative_root_path)
         # check if the path is a BagIt-wrapped crate
         assert self.is_bagit_wrapping_crate(uri), "Not a BagIt-wrapped RO-Crate"
 
@@ -134,6 +134,15 @@ class ROCrateBagitLocalFolder(BagitROCrate, ROCrateLocalFolder):
         # if search_path and root_path are set, adjust the path
         if search_path and root_path:
             path = root_path / Path("data") / search_path
+            if not path.exists():
+                path = Path(unquote(str(path)))
+            return path
+        if not path.is_absolute():
+            base_path = self.uri.as_path() if self.uri.is_local_resource() else Path()
+            try:
+                path.relative_to(base_path)
+            except ValueError:
+                path = base_path / path
             if not path.exists():
                 path = Path(unquote(str(path)))
         return path

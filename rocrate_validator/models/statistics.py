@@ -393,16 +393,18 @@ class ValidationStatistics(Subscriber):
         assert isinstance(event, RequirementCheckValidationEvent)
         assert ctx is not None
         target_profile = ctx.target_validation_profile
+        requirement_severity = self._settings.requirement_severity
         if not event.requirement_check.requirement.hidden and (
             not event.requirement_check.overridden
             or target_profile.identifier == event.requirement_check.requirement.profile.identifier
         ):
             if event.validation_result is not None:
-                if event.validation_result:
-                    self._stats["passed_checks"].append(event.requirement_check)
-                else:
-                    self._stats["failed_checks"].append(event.requirement_check)
-                self._stats["validated_checks"].append(event.requirement_check)
+                if event.requirement_check.severity >= requirement_severity:
+                    if event.validation_result:
+                        self._stats["passed_checks"].append(event.requirement_check)
+                    else:
+                        self._stats["failed_checks"].append(event.requirement_check)
+                    self._stats["validated_checks"].append(event.requirement_check)
                 self.notify_listeners()
             else:
                 logger.debug(

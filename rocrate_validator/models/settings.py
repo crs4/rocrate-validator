@@ -100,6 +100,12 @@ class ValidationSettings:
     offline: bool = False
     #: Flag to disable the HTTP cache entirely: every request hits the network
     no_cache: bool = False
+    #: Flag to indicate validation at creation time
+    creation_time: bool = False
+    #: Flag to enforce availability checks regardless of creation time
+    enforce_availability: bool = False
+    #: Flag to skip availability checks
+    skip_availability_check: bool = False
 
     def __post_init__(self):
         # if requirement_severity is a str, convert to Severity
