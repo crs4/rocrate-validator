@@ -40,7 +40,7 @@ from rocrate_validator.constants import (DEFAULT_HTTP_CACHE_MAX_AGE,
                                          JSON_OUTPUT_FORMAT_VERSION, PROF_NS,
                                          PROFILE_FILE_EXTENSIONS,
                                          PROFILE_SPECIFICATION_FILE,
-                                         ROCRATE_METADATA_FILE, SCHEMA_ORG_NS)
+                                         SCHEMA_ORG_NS)
 from rocrate_validator.errors import (DuplicateRequirementCheck,
                                       InvalidProfilePath, ProfileNotFound,
                                       ProfileSpecificationError,
