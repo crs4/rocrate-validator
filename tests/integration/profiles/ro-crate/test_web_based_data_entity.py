@@ -51,5 +51,5 @@ def test_invalid_recommended_sdDatePublished(invalid_datetime):
             "Web-based Data Entities SHOULD have "
             "a `sdDatePublished` property to indicate when the absolute URL was accessed"
         ],
-        rocrate_entity_patch={"https://sort-and-change-case.cwl": {"datePublished": invalid_datetime}},
+        rocrate_entity_patch={"https://sort-and-change-case.cwl": {"sdDatePublished": invalid_datetime}},
     )
