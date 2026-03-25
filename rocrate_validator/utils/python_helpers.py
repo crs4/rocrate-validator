@@ -15,8 +15,9 @@
 import inspect
 import os
 import re
+import hashlib
 import sys
-from importlib import import_module
+from importlib import import_module, util
 from pathlib import Path
 from typing import Optional
 
@@ -43,15 +44,19 @@ def get_classes_from_file(file_path: Path,
     if file_path.suffix != ".py":
         raise ValueError("The file is not a Python file")
 
-    # Get the module name from the file path
-    module_name = file_path.stem
+    # Build a unique module name from the file path to avoid collisions
+    module_hash = hashlib.sha256(str(file_path).encode("utf-8")).hexdigest()[:12]
+    module_name = f"rocrate_validator.dynamic.{file_path.stem}_{module_hash}"
     logger.debug("Module: %r", module_name)
 
-    # Add the directory containing the file to the system path
-    sys.path.insert(0, os.path.dirname(file_path))
-
-    # Import the module
-    module = import_module(module_name)
+    module = sys.modules.get(module_name)
+    if module is None:
+        spec = util.spec_from_file_location(module_name, file_path)
+        if spec is None or spec.loader is None:
+            raise RuntimeError(f"Unable to load module from {file_path}")
+        module = util.module_from_spec(spec)
+        sys.modules[module_name] = module
+        spec.loader.exec_module(module)
     logger.debug("Module: %r", module)
 
     # Get all classes in the module that are subclasses of filter_class
