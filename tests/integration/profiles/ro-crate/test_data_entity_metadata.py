@@ -204,5 +204,5 @@ def test_valid_rocrate_with_data_entities():
         ValidROC().rocrate_with_data_entities,
         models.Severity.REQUIRED,
         True,
-        profile_identifier="ro-crate"
+        profile_identifier="ro-crate-1.1"
     )

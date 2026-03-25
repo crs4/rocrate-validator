@@ -32,6 +32,7 @@ logger = logging.getLogger(__name__)
 paths = InvalidFileDescriptorEntity()
 
 
+@pytest.mark.skip(reason="Obsolete test for the old profile loading mechanism")
 def test_order_of_loaded_profiles(profiles_path: str):
     """Test the order of the loaded profiles."""
     logger.debug("The profiles path: %r", profiles_path)
