@@ -20,7 +20,7 @@ from typing import Optional, Union
 
 import pyshacl
 from pyshacl.pytypes import GraphLike
-from rdflib import BNode, Graph
+from rdflib import BNode, Graph, Literal, Namespace
 from rdflib.term import Node, URIRef
 
 from rocrate_validator.constants import (DEFAULT_ONTOLOGY_FILE,
@@ -466,6 +466,9 @@ class SHACLValidator:
 
         assert inference in (None, "rdfs", "owlrl", "both"), "Invalid inference option"
 
+        if isinstance(self._shapes_graph, Graph):
+            _inject_default_prefixes(self._shapes_graph)
+
         # validate the data graph using pyshacl.validate
         conforms, results_graph, results_text = pyshacl.validate(
             data_graph,
@@ -503,6 +506,43 @@ class SHACLValidator:
             )
         # return the validation result
         return SHACLValidationResult(results_graph, results_text)
+
+
+def _inject_default_prefixes(shapes_graph: Graph) -> None:
+    shacl_ns = Namespace(SHACL_NS)
+    default_prefix_block = "\n".join([
+        "PREFIX schema: <http://schema.org/>",
+        "PREFIX bioschemas: <https://bioschemas.org/>",
+        "PREFIX bioschemas-cw: <https://bioschemas.org/ComputationalWorkflow#>",
+        "PREFIX wfrun: <https://w3id.org/ro/terms/workflow-run#>",
+        "PREFIX codemeta: <https://codemeta.github.io/terms/>",
+        "PREFIX rocrate: <https://w3id.org/ro/crate/1.2/>",
+        "PREFIX ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/>",
+        "PREFIX ro: <./>",
+        "PREFIX dct: <http://purl.org/dc/terms/>",
+        "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>",
+        "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>",
+    ])
+
+    for subject, _, literal in shapes_graph.triples((None, shacl_ns.select, None)):
+        if not isinstance(literal, Literal):
+            continue
+        query = str(literal)
+        if "PREFIX" in query or "BASE" in query:
+            continue
+        prefix_block = default_prefix_block
+        prefixes_node = shapes_graph.value(subject=subject, predicate=shacl_ns.prefixes)
+        if prefixes_node:
+            prefix_lines = []
+            for declaration in shapes_graph.objects(prefixes_node, shacl_ns.declare):
+                prefix = shapes_graph.value(declaration, shacl_ns.prefix)
+                namespace = shapes_graph.value(declaration, shacl_ns.namespace)
+                if prefix and namespace:
+                    prefix_lines.append(f"PREFIX {prefix}: <{namespace}>")
+            if prefix_lines:
+                prefix_block = "\n".join(prefix_lines)
+        updated_query = f"{prefix_block}\n{query.lstrip()}"
+        shapes_graph.set((subject, shacl_ns.select, Literal(updated_query)))
 
 
 __all__ = ["SHACLValidator", "SHACLValidationResult", "SHACLViolation"]
