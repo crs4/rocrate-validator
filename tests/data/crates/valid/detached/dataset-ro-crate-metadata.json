@@ -1,0 +1,37 @@
+{
+  "@context": "https://w3id.org/ro/crate/1.2/context",
+  "@graph": [
+    {
+      "@id": "ro-crate-metadata.json",
+      "@type": "CreativeWork",
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.2"
+      },
+      "about": {
+        "@id": "https://example.org/ro-crate/detached"
+      }
+    },
+    {
+      "@id": "https://example.org/ro-crate/detached",
+      "@type": "Dataset",
+      "name": "Detached RO-Crate 1.2",
+      "description": "Detached RO-Crate metadata-only file.",
+      "license": {
+        "@id": "https://creativecommons.org/publicdomain/zero/1.0/"
+      },
+      "datePublished": "2024-01-01",
+      "hasPart": [
+        {
+          "@id": "https://example.org/data/file1.txt"
+        }
+      ]
+    },
+    {
+      "@id": "https://example.org/data/file1.txt",
+      "@type": "File",
+      "name": "file1.txt",
+      "description": "Remote file in detached RO-Crate.",
+      "encodingFormat": "text/plain"
+    }
+  ]
+}
