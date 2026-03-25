@@ -1,0 +1,33 @@
+# Copyright (c) 2024-2026 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# @prefix ro: <./> .
+# @prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.2/> .
+# @prefix schema_org: <http://schema.org/> .
+# @prefix sh: <http://www.w3.org/ns/shacl#> .
+
+# ro-crate:PreviewFilesNotInHasPart a sh:NodeShape ;
+#     sh:name "RO-Crate Website files exclusion" ;
+#     sh:description """`ro-crate-preview.html` and `ro-crate-preview_files/` SHOULD NOT be included in `hasPart`.""" ;
+#     sh:targetClass schema_org:Dataset ;
+#     sh:sparql [
+#         sh:message "RO-Crate Website files SHOULD NOT be included in `hasPart`" ;
+#         sh:select """
+#             SELECT ?this
+#             WHERE {
+#                 ?this schema:hasPart ?part .
+#                 FILTER(str(?part) = "ro-crate-preview.html" || str(?part) = "ro-crate-preview_files/")
+#             }
+#         """ ;
+#     ] .
