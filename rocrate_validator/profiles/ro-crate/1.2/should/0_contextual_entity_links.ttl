@@ -1,0 +1,55 @@
+# Copyright (c) 2024-2026 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+@prefix ro: <./> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.2/> .
+@prefix schema_org: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+
+ro-crate:ContextualEntitiesShouldBeLinked a sh:NodeShape ;
+    sh:name "Contextual Entities should be linked" ;
+    sh:description """Contextual entities in the graph SHOULD be linked to from at least one other entity.""" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?this a ?type .
+                FILTER(contains(str(?this), "ro-crate-metadata.json"))
+                FILTER NOT EXISTS { ?this a schema:Dataset }
+                FILTER NOT EXISTS { ?this a schema:MediaObject }
+                FILTER NOT EXISTS { ?s ?p ?this . }
+            }
+        """
+    ] ;
+    sh:message "Contextual entities SHOULD be linked to from another entity" .
+
+ro-crate:ReferencedContextualEntitiesShouldBeDescribed a sh:NodeShape ;
+    sh:name "Referenced contextual entities should be described" ;
+    sh:description """Contextual entities referenced by other entities SHOULD be described in the same graph.""" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?s ?p ?this .
+                FILTER(isIRI(?this))
+                FILTER NOT EXISTS { ?this a ?type }
+                FILTER(!regex(str(?this), "^https?://", "i"))
+            }
+        """
+    ] ;
+    sh:message "Referenced contextual entities SHOULD be described in the @graph" .

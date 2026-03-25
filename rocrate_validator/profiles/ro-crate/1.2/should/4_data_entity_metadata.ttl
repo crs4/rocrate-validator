@@ -1,0 +1,227 @@
+# Copyright (c) 2024-2026 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+@prefix ro: <./> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.2/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema_org: <http://schema.org/> .
+@prefix prof: <http://www.w3.org/ns/dx/prof/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+ro-crate:FileRecommendedProperties a sh:NodeShape ;
+    sh:targetClass ro-crate:File ;
+    sh:name "File Data Entity: RECOMMENDED properties";
+    sh:description """A `File` Data Entity SHOULD have detailed descriptions encodings through the `encodingFormat` property""" ;
+    sh:property [
+        sh:minCount 1 ;
+        sh:maxCount 2 ;
+        sh:path schema_org:encodingFormat ;
+        sh:severity sh:Warning ;
+        sh:name "File Data Entity: RECOMMENDED `encodingFormat` property" ;
+        sh:description """Check if the File Data Entity has a detailed description of encodings through the `encodingFormat` property.
+        The `encodingFormat` property SHOULD be a PRONOM identifier (e.g., application/pdf) or,
+        to add more detail, SHOULD be linked using a `PRONOM` to  a `Contextual Entity` of type `WebPage`
+        (see [Adding detailed descriptions of encodings](https://www.researchobject.org/ro-crate/1.2/data-entities.html#adding-detailed-descriptions-of-encodings)).
+        """ ;
+        sh:message "Missing or invalid `encodingFormat` linked to the `File Data Entity`";
+        sh:or (
+            [
+                sh:datatype xsd:string ;
+                sh:pattern "^(\\w*)\\/(\\w[\\w\\.-]*)(?:\\+(\\w[\\w\\.-]*))?(?:;(\\w+=[^;]+))*$" ;
+                sh:name "File Data Entity: RECOMMENDED `PRONOM` for the `encodingFormat` property" ;
+                sh:description """Check if the File Data Entity is linked to its `encodingFormat` through a PRONOM identifier 
+                (e.g., application/pdf, application/text, image/svg+xml, image/svg;q=0.9,/;q=0.8,image/svg+xml;q=0.9,/;q=0.8, application/vnd.uplanet.listcmd-wbxml;charset=utf-8).
+                """ ;
+                sh:message "The `encodingFormat` SHOULD be linked using a PRONOM identifier (e.g., application/pdf).";
+            ]
+            [
+                sh:nodeKind sh:IRI ;
+                sh:class schema_org:WebPage ;
+                sh:name "File Data Entity: RECOMMENDED `Contextual Entity` linked to the `encodingFormat` property";
+                sh:description "Check if the File Data Entity `encodingFormat` is linked to a `Contextual Entity of type `WebPage`." ;
+                sh:message "The `encodingFormat` SHOULD be linked to a `Contextual Entity` of type `WebPage`." ;
+            ]
+        )
+    ] .
+
+ro-crate:FileContentSizeRecommendedProperties a sh:NodeShape ;
+    sh:targetClass ro-crate:File ;
+    sh:name "File Data Entity: RECOMMENDED contentSize" ;
+    sh:description """A `File` Data Entity SHOULD have `contentSize` set to the size in bytes.""" ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:minCount 1 ;
+        sh:name "File Data Entity: RECOMMENDED `contentSize` property" ;
+        sh:path schema_org:contentSize ;
+        sh:datatype xsd:string ;
+        sh:severity sh:Warning ;
+        sh:message "File Data Entities SHOULD have a `contentSize` property" ;
+        # sh:sparql [
+        #     sh:message "If the value is a string it must be a string representing an integer." ;
+        #     sh:prefixes ro-crate:sparqlPrefixes ;
+        #     sh:select """
+        #         SELECT ?this ?value
+        #         WHERE {
+        #             ?this schema:contentSize ?value .
+        #             FILTER (!regex(str(?value), "^[0-9]+$"))
+        #         }
+        #     """ ;
+        # ] ;
+    ] .
+
+ro-crate:DataEntityRecommendedProperties a sh:NodeShape ;
+    sh:targetClass ro-crate:DataEntity ;
+    sh:name "Data Entity: RECOMMENDED properties" ;
+    sh:description """Data Entities SHOULD have `name` and `description` properties.""" ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Data Entity: RECOMMENDED `name` property" ;
+        sh:path schema_org:name ;
+        sh:minCount 1 ;
+        sh:nodeKind sh:Literal ;
+        sh:severity sh:Warning ;
+        sh:message "Data Entities SHOULD have a `name` property" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Data Entity: RECOMMENDED `description` property" ;
+        sh:path schema_org:description ;
+        sh:minCount 1 ;
+        sh:nodeKind sh:Literal ;
+        sh:severity sh:Warning ;
+        sh:message "Data Entities SHOULD have a `description` property" ;
+    ] ;
+    sh:property [
+        sh:name "Data Entity: RECOMMENDED `license` reference" ;
+        sh:description """If present, `license` SHOULD reference a CreativeWork entity.""" ;
+        sh:path schema_org:license ;
+        sh:class schema_org:CreativeWork ;
+        sh:severity sh:Warning ;
+        sh:message "Data Entity `license` SHOULD reference a CreativeWork entity" ;
+    ] ;
+    sh:property [
+        sh:name "Data Entity: RECOMMENDED `contentLocation`/`spatialCoverage` reference" ;
+        sh:description """If present, `contentLocation` or `spatialCoverage` SHOULD reference a Place.""" ;
+        sh:or (
+            [ sh:path schema_org:contentLocation ; sh:class schema_org:Place ]
+            [ sh:path schema_org:spatialCoverage ; sh:class schema_org:Place ]
+        ) ;
+        sh:severity sh:Warning ;
+        sh:message "Data Entity location properties SHOULD reference a Place" ;
+    ] ;
+    sh:property [
+        sh:name "Data Entity: RECOMMENDED `citation` reference" ;
+        sh:description """If present, `citation` SHOULD reference a ScholarlyArticle or CreativeWork.""" ;
+        sh:path schema_org:citation ;
+        sh:or (
+            [ sh:class schema_org:ScholarlyArticle ]
+            [ sh:class schema_org:CreativeWork ]
+        ) ;
+        sh:severity sh:Warning ;
+        sh:message "Data Entity `citation` SHOULD reference a ScholarlyArticle or CreativeWork" ;
+    ] ;
+    sh:property [
+        sh:name "Data Entity: RECOMMENDED `author` reference" ;
+        sh:description """If present, `author` SHOULD reference Person entities.""" ;
+        sh:path schema_org:author ;
+        sh:class schema_org:Person ;
+        sh:severity sh:Warning ;
+        sh:message "Data Entity `author` SHOULD reference a Person entity" ;
+    ] .
+
+ro-crate:DirectoryDataEntityRequiredValueRestriction a sh:NodeShape ;
+    sh:name "Directory Data Entity: RECOMMENDED value restriction" ;
+    sh:description """A Directory Data Entity SHOULD end with `/`""" ;
+    sh:targetNode ro-crate:Directory ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Directory Data Entity: RECOMMENDED value restriction" ;
+        sh:description """Check if the Directory Data Entity ends with `/`""" ;
+        sh:path [ sh:inversePath rdf:type ] ;
+        sh:message """Every Data Entity Directory URI SHOULD end with `/`""" ;
+        sh:pattern "/$" ;
+    ] .
+
+ro-crate:DatasetRecommendedProperties a sh:NodeShape ;
+    sh:targetClass schema_org:Dataset ;
+    sh:name "Dataset: RECOMMENDED properties" ;
+    sh:description """Datasets SHOULD include `hasPart` and may include nested Datasets.""" ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Dataset: RECOMMENDED `hasPart` property" ;
+        sh:path schema_org:hasPart ;
+        sh:minCount 1 ;
+        sh:severity sh:Warning ;
+        sh:message "Dataset entities SHOULD include `hasPart`" ;
+    ] .
+
+# ro-crate:DatasetRelativeIdShouldEndWithSlash a sh:NodeShape ;
+#     sh:name "Dataset: RECOMMENDED trailing slash" ;
+#     sh:description """If a Dataset has a relative @id, it SHOULD end with `/`.""" ;
+#     sh:target [
+#         a sh:SPARQLTarget ;
+#         sh:prefixes ro-crate:sparqlPrefixes ;
+#         sh:select """
+#             SELECT ?this
+#             WHERE {
+#                 ?this a schema:Dataset .
+#                 FILTER(!regex(str(?this), "^[A-Za-z][A-Za-z0-9+\\.-]*:")) .
+#                 FILTER(!regex(str(?this), "#$")) .
+#                 FILTER(!regex(str(?this), "/$")) .
+#             }
+#         """
+#     ] ;
+#     sh:message "Dataset entities with relative @id SHOULD end with '/'" .
+
+ro-crate:DatasetIdShouldEndWithSlash a sh:NodeShape ;
+    sh:name "Dataset: RECOMMENDED trailing slash" ;
+    sh:description "Dataset IRI SHOULD end with `/`." ;
+    sh:targetClass schema_org:Dataset ;
+    sh:nodeKind sh:IRI ;
+    sh:pattern "/$" ;
+    sh:message "Dataset IRI SHOULD end with '/'" .
+
+ro-crate:WebDatasetDistributionRecommended a sh:NodeShape ;
+    sh:name "Dataset: RECOMMENDED `distribution` for web datasets" ;
+    sh:description """If a Dataset has a web URI, it SHOULD include `distribution`.""" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?this a schema:Dataset .
+                FILTER regex(str(?this), "^https?://", "i")
+            }
+        """ ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema_org:distribution ;
+        sh:minCount 1 ;
+        sh:severity sh:Warning ;
+        sh:message "Web-based Dataset entities SHOULD include `distribution`" ;
+    ] .
+
+ro-crate:FileConformsToProfile a sh:NodeShape ;
+    sh:name "File: RECOMMENDED `conformsTo` profile" ;
+    sh:description """If present, `conformsTo` SHOULD reference a Profile entity.""" ;
+    sh:targetClass ro-crate:File ;
+    sh:property [
+        sh:path schema_org:conformsTo ;
+        sh:class prof:Profile ;
+        sh:severity sh:Warning ;
+        sh:message "File `conformsTo` SHOULD reference a Profile entity" ;
+    ] .
