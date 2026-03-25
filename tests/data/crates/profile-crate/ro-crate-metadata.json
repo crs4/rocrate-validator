@@ -1,6 +1,6 @@
 {
     "@context": [
-        "https://w3id.org/ro/crate/1.2-DRAFT/context",
+        "https://w3id.org/ro/crate/1.2/context",
         {
             "@base": "https://www.researchobject.org/workflow-run-crate/profiles/0.5/process_run_crate/"
         }
@@ -10,7 +10,7 @@
             "@id": "ro-crate-metadata.json",
             "@type": "CreativeWork",
             "license": { "@id": "http://spdx.org/licenses/CC0-1.0" },
-            "conformsTo": { "@id": "https://w3id.org/ro/crate/1.2-DRAFT" },
+            "conformsTo": { "@id": "https://w3id.org/ro/crate/1.2" },
             "about": { "@id": "https://w3id.org/ro/wfrun/process/0.5" }
         },
         {
@@ -25,7 +25,7 @@
         {
             "@id": "https://w3id.org/ro/wfrun/process/0.5",
             "@type": ["Dataset", "Profile"],
-            "isProfileOf": [{ "@id": "https://w3id.org/ro/crate/1.2-DRAFT" }],
+            "isProfileOf": [{ "@id": "https://w3id.org/ro/crate/1.2" }],
             "identifier": "https://w3id.org/ro/wfrun/process/0.5",
             "name": "Process Run Crate profile",
             "version": "0.5",

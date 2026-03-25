@@ -33,7 +33,7 @@
                     "@id": "pics/2018-06-11%2012.56.14.jpg"
                 },
                 {
-                    "@id": "pics/2019-06-11 12.56.14.jpg"
+                    "@id": "pics/2019-06-11%2012.56.14.jpg"
                 },
                 {
                     "@id": "data%2520set/"
@@ -42,7 +42,7 @@
                     "@id": "data%20set2/"
                 },
                 {
-                    "@id": "data set3/"
+                    "@id": "data%20set3/"
                 },
                 {
                     "@id": "pics/sepia_fence.jpg"
@@ -200,7 +200,7 @@
             }
         },
         {
-            "@id": "data set3/",
+            "@id": "data%20set3/",
             "@type": "Dataset",
             "name": "Data set 3",
             "description": "A dataset",
