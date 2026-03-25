@@ -138,21 +138,24 @@ def validate_rocrate_uri(uri: Union[str, Path, URI], silent: bool = False) -> bo
         try:
             # parse the value to extract the scheme
             uri = URI(str(uri)) if isinstance(uri, str) or isinstance(uri, Path) else uri
+            uri_str = str(uri)
             # check if the URI is a remote resource or local directory or local file
             if not uri.is_remote_resource() and not uri.is_local_directory() and not uri.is_local_file():
-                raise errors.ROCrateInvalidURIError(uri)
-            # check if the local file is a ZIP file
-            if uri.is_local_file() and uri.as_path().suffix != ".zip":
-                raise errors.ROCrateInvalidURIError(uri)
+                raise errors.ROCrateInvalidURIError(uri_str)
+            # check if the local file is a ZIP file or a metadata file
+            if uri.is_local_file():
+                suffix = uri.as_path().suffix.lower()
+                if suffix not in (".zip", ".json", ".jsonld"):
+                    raise errors.ROCrateInvalidURIError(uri_str)
             # check if the resource is available
             if not uri.is_available():
-                raise errors.ROCrateInvalidURIError(uri, message=f"The RO-crate at the URI \"{uri}\" is not available")
+                raise errors.ROCrateInvalidURIError(uri_str, message=f"The RO-crate at the URI \"{uri}\" is not available")
             return True
         except ValueError as e:
             logger.error(e)
             if logger.isEnabledFor(logging.DEBUG):
                 logger.exception(e)
-            raise errors.ROCrateInvalidURIError(uri)
+            raise errors.ROCrateInvalidURIError(str(uri))
     except Exception as e:
         if not silent:
             raise e
