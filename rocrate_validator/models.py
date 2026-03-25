@@ -1744,15 +1744,17 @@ class ValidationStatistics(Subscriber):
             logger.debug("Requirement check validation start")
         elif event.event_type == EventType.REQUIREMENT_CHECK_VALIDATION_END:
             target_profile = ctx.target_validation_profile
+            requirement_severity = self._settings.requirement_severity
             if not event.requirement_check.requirement.hidden and \
                     (not event.requirement_check.overridden
                      or target_profile.identifier == event.requirement_check.requirement.profile.identifier):
                 if event.validation_result is not None:
-                    if event.validation_result:
-                        self._stats["passed_checks"].append(event.requirement_check)
-                    else:
-                        self._stats["failed_checks"].append(event.requirement_check)
-                    self._stats["validated_checks"].append(event.requirement_check)
+                    if event.requirement_check.severity >= requirement_severity:
+                        if event.validation_result:
+                            self._stats["passed_checks"].append(event.requirement_check)
+                        else:
+                            self._stats["failed_checks"].append(event.requirement_check)
+                        self._stats["validated_checks"].append(event.requirement_check)
                     self.notify_listeners()
                 else:
                     logger.debug("Requirement check validation result is None: %s",
@@ -2394,6 +2396,12 @@ class ValidationSettings:
     cache_max_age: Optional[int] = DEFAULT_HTTP_CACHE_MAX_AGE
     #: Cache path
     cache_path: Optional[Path] = None
+    #: Flag to indicate validation at creation time
+    creation_time: bool = False
+    #: Flag to enforce availability checks regardless of creation time
+    enforce_availability: bool = False
+    #: Flag to skip availability checks
+    skip_availability_check: bool = False
 
     def __post_init__(self):
         # if requirement_severity is a str, convert to Severity
@@ -2895,7 +2903,7 @@ class ValidationContext:
         :return: The relative path to the file descriptor
         :rtype: Path
         """
-        return Path(ROCRATE_METADATA_FILE)
+        return Path(self.ro_crate.metadata_descriptor_id)
 
     def __load_data_graph__(self) -> Graph:
         data_graph = Graph()
