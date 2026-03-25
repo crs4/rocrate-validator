@@ -90,22 +90,51 @@ def inject_attributes(obj: object, node_graph: Graph, node: Node, exclude: list 
     return obj
 
 
-def __compute_values__(g: Graph, s: Node) -> list[tuple]:
+def __compute_values__(g: Graph, s: Node, seen: set | None = None) -> list[tuple]:
     """
     Compute the values of the triples in the graph (excluding BNodes)
     starting from the given subject node `s`.
     """
 
-    # Collect the values of the triples in the graph (excluding BNodes)
     values = []
-    # Assuming the list of triples values is stored in a variable called 'triples_values'
-    triples_values = [(_, x, _) for (_, x, _) in g.triples((s, None, None)) if x != RDF.type]
+    seen = seen if seen is not None else set()
+    if s in seen:
+        return values
+    seen.add(s)
 
-    for subj, pred, obj in triples_values:
+    triples_values = [
+        (subject, predicate, obj) for (subject, predicate, obj) in g.triples((s, None, None)) if predicate != RDF.type
+    ]
+
+    for subject, predicate, obj in triples_values:
         if isinstance(obj, BNode):
-            values.extend(__compute_values__(g, obj))
+            values.extend(__compute_values__(g, obj, seen))
         else:
-            values.append((subj, pred, obj) if not isinstance(subj, BNode) else (pred, obj))
+            values.append((subject, predicate, obj) if not isinstance(subject, BNode) else (predicate, obj))
+    return values
+
+
+def __compute_context_values__(g: Graph, s: Node, seen: set | None = None) -> list[tuple]:
+    """
+    Compute contextual values for node `s` by traversing incoming triples.
+    This helps disambiguate structurally equivalent BNodes attached to different parent shapes.
+    """
+
+    values = []
+    seen = seen if seen is not None else set()
+    if s in seen:
+        return values
+    seen.add(s)
+
+    for subject, predicate, _ in g.triples((None, None, s)):
+        if predicate == RDF.type:
+            continue
+        if isinstance(subject, BNode):
+            values.extend(__compute_values__(g, subject, seen))
+            values.extend(__compute_context_values__(g, subject, seen))
+        else:
+            values.append((subject, predicate))
+
     return values
 
 
@@ -116,7 +145,7 @@ def compute_hash(g: Graph, s: Node):
     """
 
     # Collect the values of the triples in the graph (excluding BNodes)
-    triples_values = sorted(__compute_values__(g, s))
+    triples_values = sorted(__compute_values__(g, s) + __compute_context_values__(g, s))
     # Convert the list of triples values to a string representation
     triples_string = str(triples_values)
     # Calculate and return the hash of the triples string
