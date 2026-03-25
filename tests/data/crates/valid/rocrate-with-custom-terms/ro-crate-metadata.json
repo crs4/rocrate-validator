@@ -2,8 +2,10 @@
     "@context": [
         "https://w3id.org/ro/crate/1.1/context",
         "https://w3id.org/ro/terms/workflow-run/context",
-        "http://schema.org/",
-        { "myCustomTerm": "https://example.org#myCustomTerm" }
+        { 
+            "myCustomTerm": "https://example.org#myCustomTerm",
+            "rdfs": "http://www.w3.org/2000/01/rdf-schema#"
+        }
     ],
     "@graph": [
         {
@@ -15,7 +17,9 @@
             "about": {
                 "@id": "./"
             },
-            "myCustomTerm": "custom term value"
+            "myCustomTerm": "custom term value",
+            "rdfs:label": "RO-Crate with custom terms",
+            "rdfs:comment": "This is a comment using a term from the rdfs namespace"
         },
         {
             "@id": "./",

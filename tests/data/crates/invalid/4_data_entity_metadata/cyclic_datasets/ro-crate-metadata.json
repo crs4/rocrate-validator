@@ -1,0 +1,69 @@
+{
+    "@context": [
+        "https://w3id.org/ro/crate/1.1/context"
+    ],
+    "@graph": [
+        {
+            "@id": "ro-crate-metadata.json",
+            "@type": "CreativeWork",
+            "conformsTo": {
+                "@id": "https://w3id.org/ro/crate/1.1"
+            },
+            "about": {
+                "@id": "./"
+            }
+        },
+        {
+            "@id": "./",
+            "@type": "Dataset",
+            "name": "Root",
+            "description": "Root Dataset",
+            "datePublished": "2024-05-17T01:04:52+01:00",
+            "hasPart": [
+            ],
+            "license": "CC-BY-4.0"
+        },
+        {
+            "@id": "dataset1/file1.txt",
+            "@type": "File",
+            "description": "A file",
+            "encodingFormat": "text/plain",
+            "name": "file1.txt"
+        },
+        {
+            "@id": "dataset2/file2.txt",
+            "@type": "File",
+            "description": "Another file",
+            "encodingFormat": "text/plain",
+            "name": "file2.txt"
+        },
+        {
+            "@id": "dataset1/",
+            "@type": "Dataset",
+            "name": "Dataset 1",
+            "description": "First dataset",
+            "hasPart": [
+                {
+                    "@id": "dataset1/file1.txt"
+                },
+                {
+                    "@id": "dataset2/"
+                }
+            ]
+        },
+        {
+            "@id": "dataset2/",
+            "@type": "Dataset",
+            "name": "Dataset 2",
+            "description": "Second dataset",
+            "hasPart": [
+                {
+                    "@id": "dataset2/file2.txt"
+                },
+                {
+                    "@id": "dataset1/"
+                }
+            ]
+        }
+    ]
+}

@@ -48,6 +48,16 @@ def test_data_entity_must_be_directly_linked():
     )
 
 
+def test_data_entity_not_linked():
+    """Test a RO-Crate with datasets not linked to the root data entity."""
+    do_entity_test(
+        paths.dataset_not_linked_to_root,
+        models.Severity.REQUIRED,
+        False,
+        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER]
+    )
+
+
 def test_data_entity_must_be_indirectly_linked():
     """Test a RO-Crate without a root data entity."""
     do_entity_test(

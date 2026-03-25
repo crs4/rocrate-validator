@@ -20,9 +20,11 @@ import json
 import logging
 import shutil
 import tempfile
+import rdflib
 from collections.abc import Collection
 from pathlib import Path
 from typing import Optional, TypeVar, Union
+from urllib.parse import urljoin
 
 from rocrate_validator import models, services
 from rocrate_validator.constants import DEFAULT_PROFILE_IDENTIFIER
@@ -32,9 +34,61 @@ logger = logging.getLogger(__name__)
 
 T = TypeVar("T")
 
+SPARQL_PREFIXES = """PREFIX schema: <http://schema.org/>
+"""
+
 
 def first(c: Collection[T]) -> T:
     return next(iter(c))
+
+
+def load_graph_and_preserve_relative_ids(json_data, base="http://example.org/"):
+
+    rel_ids = set()
+
+    def collect_ids(obj):
+        if isinstance(obj, dict):
+            if "@id" in obj:
+                idv = obj["@id"]
+                if isinstance(idv, str) and (
+                    idv.startswith("./") or idv.startswith("../") or idv.startswith("#")
+                ):
+                    rel_ids.add(idv)
+            for v in obj.values():
+                collect_ids(v)
+        elif isinstance(obj, list):
+            for item in obj:
+                collect_ids(item)
+
+    collect_ids(json_data)
+
+    g = rdflib.Graph()
+    g.parse(data=json_data, format="json-ld", publicID=base)
+
+    mapping = {}
+    for rid in rel_ids:
+        expanded = urljoin(base, rid)
+        mapping[expanded] = rid
+
+    def replace_uri_in_graph(graph, old_uri_str, new_uri_str):
+        new = rdflib.URIRef(new_uri_str)
+        triples_to_add = []
+        triples_to_remove = []
+        for s, p, o in graph.triples((None, None, None)):
+            s2 = new if (isinstance(s, rdflib.URIRef) and str(s) == old_uri_str) else s
+            o2 = new if (isinstance(o, rdflib.URIRef) and str(o) == old_uri_str) else o
+            if (s2, p, o2) != (s, p, o):
+                triples_to_remove.append((s, p, o))
+                triples_to_add.append((s2, p, o2))
+        for t in triples_to_remove:
+            graph.remove(t)
+        for t in triples_to_add:
+            graph.add(t)
+
+    for expanded, rel in mapping.items():
+        replace_uri_in_graph(g, expanded, rel)
+
+    return g
 
 
 def do_entity_test(
@@ -46,6 +100,7 @@ def do_entity_test(
     abort_on_first: bool = False,
     profile_identifier: str = DEFAULT_PROFILE_IDENTIFIER,
     rocrate_entity_patch: Optional[dict] = None,
+    rocrate_entity_mod_sparql: Optional[str] = None,
     skip_checks: Optional[list[str]] = (),
     rocrate_relative_root_path: Optional[str] = None,
     metadata_only: bool = False,
@@ -57,6 +112,10 @@ def do_entity_test(
 
     Additional keyword arguments (kwargs) are passed along to initialise ValidationSettings.
     """
+    assert not (
+        rocrate_entity_patch and rocrate_entity_mod_sparql
+    ), "Cannot use rocrate_entity_patch and rocrate_entity_mod_sparql together"
+
     # declare variables
     failed_requirements = None
     detected_issues = None
@@ -65,7 +124,7 @@ def do_entity_test(
         rocrate_path = Path(rocrate_path)
 
     temp_rocrate_path = None
-    if rocrate_entity_patch is not None and rocrate_path.is_dir():
+    if any([rocrate_entity_patch, rocrate_entity_mod_sparql]) and rocrate_path.is_dir():
         # create a temporary copy of the RO-Crate
         temp_rocrate_path = Path(tempfile.TemporaryDirectory().name)
         # copy the RO-Crate to the temporary path using shutil
@@ -74,14 +133,30 @@ def do_entity_test(
         with open(temp_rocrate_path / "ro-crate-metadata.json", "r") as f:
             rocrate = json.load(f)
         # update the RO-Crate metadata with the patch
-        for key, value in rocrate_entity_patch.items():
-            for entity in rocrate["@graph"]:
-                if entity["@id"] == key:
-                    entity.update(value)
-                    break
-        # save the updated RO-Crate metadata
-        with open(temp_rocrate_path / "ro-crate-metadata.json", "w") as f:
-            json.dump(rocrate, f)
+        if rocrate_entity_patch is not None:
+            for key, value in rocrate_entity_patch.items():
+                for entity in rocrate["@graph"]:
+                    if entity["@id"] == key:
+                        entity.update(value)
+                        break
+            # save the updated RO-Crate metadata
+            with open(temp_rocrate_path / "ro-crate-metadata.json", "w") as f:
+                json.dump(rocrate, f)
+        # update the RO-Crate metadata using SPARQL, if required
+        if rocrate_entity_mod_sparql is not None:
+            rocrate_graph = load_graph_and_preserve_relative_ids(rocrate)
+
+            rocrate_graph.update(rocrate_entity_mod_sparql)
+
+            # save the updated RO-Crate metadata
+            context = "https://w3id.org/ro/crate/1.1/context"
+            rocrate_graph.serialize(
+                Path(temp_rocrate_path, "ro-crate-metadata.json"),
+                format="json-ld",
+                context=context,
+                indent=2,
+                use_native_types=True,
+            )
         rocrate_path = temp_rocrate_path
 
     if expected_triggered_requirements is None:

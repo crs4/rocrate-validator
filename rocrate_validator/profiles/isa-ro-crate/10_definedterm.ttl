@@ -1,0 +1,70 @@
+# Copyright (c) 2026 DataPLANT
+# Copyright (c) 2026 The University of Manchester
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+@prefix ro: <./> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+@prefix isa-ro-crate: <https://github.com/crs4/rocrate-validator/profiles/isa-ro-crate/> .
+@prefix bioschemas: <https://bioschemas.org/> .
+@prefix bioschemas-prop: <https://bioschemas.org/properties/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix validator: <https://github.com/crs4/rocrate-validator/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+
+isa-ro-crate:DefinedTermMustHaveName a sh:NodeShape ;
+    sh:name "DefinedTerm MUST have a name" ;
+    sh:description "A DefinedTerm MUST have a name" ;
+    sh:targetClass schema:DefinedTerm ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:name ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ; 
+        sh:not [
+            sh:hasValue ""
+        ] ;
+        sh:description "Check that DefinedTerm does have non-empty name and it's a string" ;
+        sh:message "DefinedTerm entity MUST have a non-empty name of type string" ;
+        sh:severity sh:Violation ;
+    ] 
+.
+
+isa-ro-crate:DefinedTermShouldHaveTermCodeOfCorrectType a sh:NodeShape ;
+    sh:name "DefinedTerm SHOULD have termCode of correct type" ;
+    sh:description "A DefinedTerm SHOULD have at least one termCode of correct type" ;
+    sh:targetClass schema:DefinedTerm ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:termCode ;
+        sh:minCount 1 ;
+        sh:not [
+            sh:hasValue ""
+        ] ;
+        sh:description "Check that DefinedTerm does have at least one termCode" ;
+        sh:message "DefinedTerm entity SHOULD have at least one termCode" ;
+        sh:severity sh:Warning ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:termCode ;
+        sh:datatype xsd:string ;
+        sh:description "The termCode of a DefinedTerm MUST be of type string" ;
+        sh:message "DefinedTerm termCode MUST be of type string" ;
+        sh:severity sh:Violation ;
+    ]
+.

@@ -1,0 +1,70 @@
+# Copyright (c) 2026 DataPLANT
+# Copyright (c) 2026 The University of Manchester
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+@prefix ro: <./> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+@prefix isa-ro-crate: <https://github.com/crs4/rocrate-validator/profiles/isa-ro-crate/> .
+@prefix bioschemas: <https://bioschemas.org/> .
+@prefix bioschemas-prop: <https://bioschemas.org/properties/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix validator: <https://github.com/crs4/rocrate-validator/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+
+
+# check Sample attributes must have correct types
+
+isa-ro-crate:SampledMustHaveName a sh:NodeShape ;
+    sh:name "Sample MUST have name" ;
+    sh:description "A Sample MUST have a name" ;
+    sh:targetClass bioschemas:Sample ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:name ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ; 
+        sh:not [
+            sh:hasValue ""
+        ] ;
+        sh:description "Check that sample does have non-empty name and it's a string" ;
+        sh:message "Sample entity MUST have a non-empty name of type string" ;
+        sh:severity sh:Violation ;
+    ] 
+.
+
+isa-ro-crate:SampleShouldHaveAdditionalPropertyOfCorrectType a sh:NodeShape ;
+    sh:name "Sample SHOULD have additional properties" ;
+    sh:description "A Sample SHOULD have at least one additional property" ;
+    sh:targetClass bioschemas:Sample ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path bioschemas-prop:additionalProperty ;
+        sh:minCount 1 ;
+        sh:description "Check that sample does have at least one additional property" ;
+        sh:message "Sample entity SHOULD have at least one additional property" ;
+        sh:severity sh:Warning ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path bioschemas-prop:additionalProperty ;
+        sh:class schema:PropertyValue ;
+        sh:description "The additional property of a sample MUST be a PropertyValue" ;
+        sh:message "Sample additional property MUST be of type PropertyValue" ;
+        sh:severity sh:Violation ;
+    ]
+.
