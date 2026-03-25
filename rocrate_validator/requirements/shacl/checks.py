@@ -196,12 +196,33 @@ class SHACLCheck(RequirementCheck):
         logger.debug("Parsing Validation with result: %s", shacl_result)
         # process the failed checks to extract the requirement checks involved
         for violation in shacl_result.violations:
-            shape = shapes_registry.get_shape(Shape.compute_key(shapes_graph, violation.sourceShape))
-            assert shape is not None, "Unable to map the violation to a shape"
+            shape = None
+            try:
+                shape = shapes_registry.get_shape(Shape.compute_key(shapes_graph, violation.sourceShape))
+            except (ValueError, KeyError):
+                # sourceShape may be a BNode (e.g. an inline sh:sparql constraint).
+                # Attempt to resolve the owning NodeShape/PropertyShape via the graph.
+                shape = resolve_parent_shape(shapes_graph, violation.sourceShape, shapes_registry)
+                if shape is None:
+                    logger.warning(
+                        "Unable to map violation to a shape (sourceShape: %s); skipping",
+                        violation.sourceShape,
+                    )
+                    continue
+            if shape is None:
+                logger.warning(
+                    "Shape not found for violation (sourceShape: %s)",
+                    violation.sourceShape,
+                )
+                continue
             requirementCheck = SHACLCheck.get_instance(shape)
-            assert requirementCheck is not None, "The requirement check cannot be None"
-            if (not shacl_context.settings.skip_checks or
-                    requirementCheck.identifier not in shacl_context.settings.skip_checks):
+            if requirementCheck is None:
+                logger.warning("No check instance found for shape: %s", shape.key)
+                continue
+            if (
+                not shacl_context.settings.skip_checks
+                or requirementCheck.identifier not in shacl_context.settings.skip_checks
+            ):
                 failed_requirements_checks.add(requirementCheck)
                 violations = failed_requirements_checks_violations.get(requirementCheck.identifier, None)
                 if violations is None:
