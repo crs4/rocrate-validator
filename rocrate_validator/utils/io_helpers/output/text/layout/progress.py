@@ -89,10 +89,12 @@ class ProgressMonitor(Subscriber):
             logger.debug("Requirement check validation start")
         elif event.event_type == EventType.REQUIREMENT_CHECK_VALIDATION_END:
             target_profile = ctx.target_validation_profile
+            requirement_severity = ctx.settings.requirement_severity
             if not event.requirement_check.requirement.hidden and \
                     (not event.requirement_check.overridden
                      or target_profile.identifier == event.requirement_check.requirement.profile.identifier):
-                self.progress.update(task_id=self.requirement_check_validation, advance=1)
+                if event.requirement_check.severity >= requirement_severity:
+                    self.progress.update(task_id=self.requirement_check_validation, advance=1)
             else:
                 logger.debug("Skipping requirement check validation: %s", event.requirement_check.identifier)
         elif event.event_type == EventType.REQUIREMENT_VALIDATION_END:
