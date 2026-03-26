@@ -11,28 +11,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-@prefix dct: <http://purl.org/dc/terms/> .
+@prefix schema: <http://schema.org/> .
 @prefix ro-crate: <https://w3id.org/ro/crate/1.1#> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-# Test shape for SPARQL constraint with BNode sourceShape resolution
-# This shape ALWAYS produces a violation to test the handling of SPARQL constraints
-# with BNode sourceShape (sh:sparql creates a BNode constraint node)
-
-ro-crate:AlwaysFailShape a sh:NodeShape ;
-    sh:name "Always Fail Test" ;
-    sh:description "Test shape that always produces a violation to test SPARQL constraint handling." ;
-    sh:targetNode ro-crate:ROCrateMetadataFileDescriptor ;
+ro-crate:AgentProjectIntersection a sh:NodeShape ;
+    sh:name "Agent Project Membership Validation" ;
+    sh:description """Check that all the agents defined in the RO-Crate metadata file descriptor are also defined as members of the project, if a project is defined.""" ;
+    sh:targetClass schema:Dataset ;
     sh:sparql [
         a sh:SPARQLConstraint ;
-        sh:message "This is a test violation to verify SPARQL constraint handling" ;
+        sh:message "SPARQL constraint violation: testing BNode sourceShape resolution" ;
         sh:select """
             SELECT $this
             WHERE {
-                BIND($this AS ?fail)
+                FILTER(true)
             }
         """ ;
         sh:severity sh:Violation ;
+        
     ] .
