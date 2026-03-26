@@ -16,19 +16,27 @@ import json
 from timeit import default_timer as timer
 from typing import Optional
 
-from rocrate_validator.utils import log as logging
 from rocrate_validator.errors import ROCrateMetadataNotFoundError
 from rocrate_validator.events import EventType
-from rocrate_validator.models import (LevelCollection, Requirement,
-                                      RequirementCheck,
-                                      RequirementCheckValidationEvent,
-                                      SkipRequirementCheck, ValidationContext)
+from rocrate_validator.models import (
+    LevelCollection,
+    Requirement,
+    RequirementCheck,
+    RequirementCheckValidationEvent,
+    SkipRequirementCheck,
+    ValidationContext,
+)
 from rocrate_validator.requirements.shacl.models import Shape
-from rocrate_validator.requirements.shacl.utils import make_uris_relative
+from rocrate_validator.requirements.shacl.utils import make_uris_relative, resolve_parent_shape
 from rocrate_validator.requirements.shacl.validator import (
-    SHACLValidationAlreadyProcessed, SHACLValidationContext,
-    SHACLValidationContextManager, SHACLValidationSkip, SHACLValidator,
-    SHACLViolation)
+    SHACLValidationAlreadyProcessed,
+    SHACLValidationContext,
+    SHACLValidationContextManager,
+    SHACLValidationSkip,
+    SHACLValidator,
+    SHACLViolation,
+)
+from rocrate_validator.utils import log as logging
 
 logger = logging.getLogger(__name__)
 
@@ -41,25 +49,27 @@ class SHACLCheck(RequirementCheck):
     # Map shape to requirement check instances
     __instances__ = {}
 
-    def __init__(self,
-                 requirement: Requirement,
-                 shape: Shape,
-                 name: Optional[str] = None,
-                 root: bool = False,
-                 hidden: Optional[bool] = None,
-                 level: Optional[bool] = None) -> None:
+    def __init__(
+        self,
+        requirement: Requirement,
+        shape: Shape,
+        name: Optional[str] = None,
+        root: bool = False,
+        hidden: Optional[bool] = None,
+        level: Optional[bool] = None,
+    ) -> None:
         self._shape = shape
         self._root = root
         # init the check
-        super().__init__(requirement,
-                         name or shape.name if shape and shape.name
-                         else shape.parent.name if shape.parent
-                         else None,
-                         description=shape.description if shape and shape.description
-                         else shape.parent.description if shape.parent
-                         else None,
-                         level=level,
-                         hidden=hidden)
+        super().__init__(
+            requirement,
+            (name or shape.name if shape and shape.name else shape.parent.name if shape.parent else None),
+            description=(
+                shape.description if shape and shape.description else shape.parent.description if shape.parent else None
+            ),
+            level=level,
+            hidden=hidden,
+        )
         # store the instance
         SHACLCheck.__add_instance__(shape, self)
 
@@ -69,10 +79,14 @@ class SHACLCheck(RequirementCheck):
             declared_level = shape.get_declared_level()
             if declared_level:
                 if shape.level.severity != requirement_level_from_path.severity:
-                    logger.warning("Mismatch in requirement level for check \"%s\": "
-                                   "shape level %s does not match the level from the containing folder %s. "
-                                   "Consider moving the shape property or removing the severity property.",
-                                   self.name, shape.level, requirement_level_from_path)
+                    logger.warning(
+                        'Mismatch in requirement level for check "%s": '
+                        "shape level %s does not match the level from the containing folder %s. "
+                        "Consider moving the shape property or removing the severity property.",
+                        self.name,
+                        shape.level,
+                        requirement_level_from_path,
+                    )
         self._level = level
 
     @property
@@ -85,7 +99,11 @@ class SHACLCheck(RequirementCheck):
 
     @property
     def description(self) -> str:
-        return self._shape.description
+        if self._shape.description:
+            return self._shape.description
+        if self._shape.parent and self._shape.parent.description:
+            return self._shape.parent.description
+        return f"Check for {self._shape.name}" if self._shape.name else "SHACL validation check"
 
     def __compute_requirement_level__(self) -> LevelCollection:
         if self._shape and self._shape.get_declared_level():
@@ -107,31 +125,50 @@ class SHACLCheck(RequirementCheck):
     def execute_check(self, context: ValidationContext):
         logger.debug("Starting check %s", self)
         try:
-            logger.debug("SHACL Validation of profile %s requirement %s started",
-                         self.requirement.profile.identifier, self.identifier)
+            logger.debug(
+                "SHACL Validation of profile %s requirement %s started",
+                self.requirement.profile.identifier,
+                self.identifier,
+            )
             with SHACLValidationContextManager(self, context) as ctx:
                 # The check is executed only if the profile is the most specific one
-                logger.debug("SHACL Validation of requirement check %s (profile: %s) started",
-                             self.requirement.profile.identifier, self.identifier)
+                logger.debug(
+                    "SHACL Validation of requirement check %s (profile: %s) started",
+                    self.requirement.profile.identifier,
+                    self.identifier,
+                )
                 result = self.__do_execute_check__(ctx)
                 ctx.current_validation_result = self.identifier not in result
-                logger.debug("SHACL Validation of requirement check %s (profile: %s) finished with result %s",
-                             self.requirement.profile.identifier, self.identifier, ctx.current_validation_result)
+                logger.debug(
+                    "SHACL Validation of requirement check %s (profile: %s) finished with result %s",
+                    self.requirement.profile.identifier,
+                    self.identifier,
+                    ctx.current_validation_result,
+                )
                 return ctx.current_validation_result
         except SHACLValidationAlreadyProcessed:
-            logger.debug("SHACL Validation of requirement check %s (profile: %s) already processed",
-                         self.requirement.identifier, self.requirement.profile.identifier)
+            logger.debug(
+                "SHACL Validation of requirement check %s (profile: %s) already processed",
+                self.requirement.identifier,
+                self.requirement.profile.identifier,
+            )
             # The check belongs to a profile which has already been processed
             # so we can skip the validation and return the specific result for the check
             return self.identifier not in [i.check.identifier for i in context.result.get_issues()]
         except SHACLValidationSkip as e:
-            logger.debug("SHACL Validation of profile %s requirement %s skipped",
-                         self.requirement.profile.identifier, self.identifier)
+            logger.debug(
+                "SHACL Validation of profile %s requirement %s skipped",
+                self.requirement.profile.identifier,
+                self.identifier,
+            )
             # The validation is postponed to the more specific profiles
             # so the check is not considered as failed.
             raise SkipRequirementCheck(self, str(e))
         except ROCrateMetadataNotFoundError as e:
-            logger.debug("Unable to perform metadata validation due to missing metadata file: %s", e)
+            logger.debug(
+                "Unable to perform metadata validation due to missing metadata file: %s",
+                e,
+            )
             return False
 
     def __do_execute_check__(self, shacl_context: SHACLValidationContext):
@@ -151,12 +188,17 @@ class SHACLCheck(RequirementCheck):
             end_time = timer()
             logger.debug(f"Execution time for getting data graph: {end_time - start_time} seconds")
         except json.decoder.JSONDecodeError as e:
-            logger.debug("Unable to perform metadata validation "
-                         "due to one or more errors in the JSON-LD data file: %s", e)
+            logger.debug(
+                "Unable to perform metadata validation " "due to one or more errors in the JSON-LD data file: %s",
+                e,
+            )
             shacl_context.result.add_issue(
-                "Unable to perform metadata validation due to one or more errors in the JSON-LD data file", self)
+                "Unable to perform metadata validation due to one or more errors in the JSON-LD data file",
+                self,
+            )
             raise ROCrateMetadataNotFoundError(
-                "Unable to perform metadata validation due to one or more errors in the JSON-LD data file")
+                "Unable to perform metadata validation due to one or more errors in the JSON-LD data file"
+            )
 
         # Begin the timer
         start_time = timer()
@@ -177,7 +219,10 @@ class SHACLCheck(RequirementCheck):
         start_time = timer()
         shacl_validator = SHACLValidator(shapes_graph=shapes_graph, ont_graph=ontology_graph)
         shacl_result = shacl_validator.validate(
-            data_graph=data_graph, ontology_graph=ontology_graph, **shacl_context.settings.to_dict())
+            data_graph=data_graph,
+            ontology_graph=ontology_graph,
+            **shacl_context.settings.to_dict(),
+        )
         # shacl_result.results_graph.serialize("logs/validation_results.ttl", format="turtle")
         # parse the validation result
         end_time = timer()
@@ -190,8 +235,10 @@ class SHACLCheck(RequirementCheck):
         # if the validation fails, process the failed checks
         failed_requirements_checks = set()
         failed_requirements_checks_violations: dict[str, SHACLViolation] = {}
-        failed_requirement_checks_notified = [_.check.identifier for _ in shacl_context.result.get_issues(
-            min_severity=shacl_context.settings.requirement_severity)]
+        failed_requirement_checks_notified = [
+            _.check.identifier
+            for _ in shacl_context.result.get_issues(min_severity=shacl_context.settings.requirement_severity)
+        ]
 
         logger.debug("Parsing Validation with result: %s", shacl_result)
         # process the failed checks to extract the requirement checks involved
@@ -234,8 +281,10 @@ class SHACLCheck(RequirementCheck):
         for requirementCheck in sorted(failed_requirements_checks, key=lambda x: (x.identifier, x.severity)):
             # if the check is not in the current profile
             # and the disable_inherited_profiles_reporting is enabled, skip it
-            if requirementCheck.requirement.profile != shacl_context.current_validation_profile and \
-                    shacl_context.settings.disable_inherited_profiles_issue_reporting:
+            if (
+                requirementCheck.requirement.profile != shacl_context.current_validation_profile
+                and shacl_context.settings.disable_inherited_profiles_issue_reporting
+            ):
                 continue
             for violation in failed_requirements_checks_violations[requirementCheck.identifier]:
                 violating_entity = make_uris_relative(violation.focusNode.toPython(), shacl_context.publicID)
@@ -246,13 +295,18 @@ class SHACLCheck(RequirementCheck):
                 # check if the violation is already registered
                 # and skip the requirement check if it is
                 for check_issue in registered_check_issues:
-                    if check_issue.message == violation_message and \
-                            check_issue.violatingProperty == violating_property and \
-                            check_issue.violatingEntity == violating_entity and \
-                            check_issue.violatingPropertyValue == violation.value:
+                    if (
+                        check_issue.message == violation_message
+                        and check_issue.violatingProperty == violating_property
+                        and check_issue.violatingEntity == violating_entity
+                        and check_issue.violatingPropertyValue == violation.value
+                    ):
                         skip_requirement_check = True
-                        logger.debug("Skipping requirement check %s: %s", requirementCheck.identifier,
-                                     violation_message)
+                        logger.debug(
+                            "Skipping requirement check %s: %s",
+                            requirementCheck.identifier,
+                            violation_message,
+                        )
                         break
                 # if the check is not to be skipped, add the issue to the context
                 if not skip_requirement_check:
@@ -261,7 +315,9 @@ class SHACLCheck(RequirementCheck):
                         check=requirementCheck,
                         violatingProperty=violating_property,
                         violatingEntity=violating_entity,
-                        violatingPropertyValue=violation.value)
+                        violatingPropertyValue=violation.value,
+                    )
+                    logger.debug("Added validation issue to the context: %s", c)
                 # if the fail fast mode is enabled, stop the validation after the first issue
                 if shacl_context.fail_fast:
                     break
@@ -279,7 +335,10 @@ class SHACLCheck(RequirementCheck):
                     shacl_context.validator.notify(RequirementCheckValidationEvent(
                         EventType.REQUIREMENT_CHECK_VALIDATION_END,
                         requirementCheck, validation_result=False))
-                    logger.debug("Added validation issue to the context: %s", c)
+                    logger.debug(
+                        "Added failed check to the context: %s",
+                        requirementCheck.identifier,
+                    )
 
             # if the fail fast mode is enabled, stop the validation after the first failed check
             if shacl_context.fail_fast:
@@ -296,16 +355,30 @@ class SHACLCheck(RequirementCheck):
             if requirementCheck.identifier not in failed_requirement_checks_notified:
                 failed_requirement_checks_notified.append(requirementCheck.identifier)
                 shacl_context.result._add_executed_check(requirementCheck, True)
-                if requirementCheck.requirement.profile != shacl_context.target_profile and \
-                        shacl_context.settings.disable_inherited_profiles_issue_reporting:
+                if (
+                    requirementCheck.requirement.profile != shacl_context.target_profile
+                    and shacl_context.settings.disable_inherited_profiles_issue_reporting
+                ):
                     continue
-                shacl_context.validator.notify(RequirementCheckValidationEvent(
-                    EventType.REQUIREMENT_CHECK_VALIDATION_END, requirementCheck, validation_result=True))
-                logger.debug("Added skipped check to the context: %s", requirementCheck.identifier)
+                shacl_context.validator.notify(
+                    RequirementCheckValidationEvent(
+                        EventType.REQUIREMENT_CHECK_VALIDATION_END,
+                        requirementCheck,
+                        validation_result=True,
+                    )
+                )
+                logger.debug(
+                    "Added skipped check to the context: %s",
+                    requirementCheck.identifier,
+                )
 
         logger.debug("Remaining skipped checks: %r", len(shacl_context.result.skipped_checks))
         for requirementCheck in shacl_context.result.skipped_checks:
-            logger.debug("Remaining skipped check: %r - %s", requirementCheck.identifier, requirementCheck.name)
+            logger.debug(
+                "Remaining skipped check: %r - %s",
+                requirementCheck.identifier,
+                requirementCheck.name,
+            )
         end_time = timer()
         logger.debug(f"Execution time for parsing the validation result: {end_time - start_time} seconds")
 
