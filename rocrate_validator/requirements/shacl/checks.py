@@ -317,7 +317,6 @@ class SHACLCheck(RequirementCheck):
                         violatingEntity=violating_entity,
                         violatingPropertyValue=violation.value,
                     )
-                    logger.debug("Added validation issue to the context: %s", c)
                 # if the fail fast mode is enabled, stop the validation after the first issue
                 if shacl_context.fail_fast:
                     break
