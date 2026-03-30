@@ -56,6 +56,10 @@ class ValidROC:
         return VALID_CRATES_DATA_PATH / "rocrate-relative-root"
 
     @property
+    def rocrate_with_at_base_set(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "rocrate-with-at-base-set"
+
+    @property
     def bagit(self) -> Path:
         return VALID_CRATES_DATA_PATH / "bagit"
 
