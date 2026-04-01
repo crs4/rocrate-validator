@@ -33,7 +33,6 @@
 
 # Declare the ROCrateMetadataFileDescriptor class
 ro-crate:ROCrateMetadataFileDescriptor rdf:type owl:Class ;
-  rdfs:subClassOf schema:CreativeWork ;
   rdfs:label "ROCrateMetadataFileDescriptor"@en .
 
 # Declare the RootDataEntity class
