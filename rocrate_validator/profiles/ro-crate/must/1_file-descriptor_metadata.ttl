@@ -73,17 +73,7 @@ ro-crate:ROCrateMetadataFileDescriptorRecommendedProperties a sh:NodeShape ;
     sh:name "RO-Crate Metadata File Descriptor REQUIRED properties" ;
     sh:description """RO-Crate Metadata Descriptor MUST be defined
     according with the requirements details defined in [RO-Crate Metadata File Descriptor](https://www.researchobject.org/ro-crate/1.1/root-data-entity.html#ro-crate-metadata-file-descriptor)""" ;
-    sh:target [
-        a sh:SPARQLTarget ;
-        sh:prefixes ro-crate:sparqlPrefixes ;
-        sh:select """
-            SELECT ?this
-            WHERE {
-                ?this ?p ?o .
-                FILTER( STRENDS(STR(?this), "ro-crate-metadata.json") )
-            }
-        """ ;
-    ] ;
+    sh:targetClass ro-crate:ROCrateMetadataFileDescriptor ;
     sh:property [
         a sh:PropertyShape ;
         sh:name "Metadata File Descriptor entity type" ;

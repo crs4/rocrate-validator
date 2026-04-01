@@ -31,6 +31,11 @@
 # # #    Classes
 # # #################################################################
 
+# Declare the ROCrateMetadataFileDescriptor class
+ro-crate:ROCrateMetadataFileDescriptor rdf:type owl:Class ;
+  rdfs:subClassOf schema:CreativeWork ;
+  rdfs:label "ROCrateMetadataFileDescriptor"@en .
+
 # Declare the RootDataEntity class
 ro-crate:RootDataEntity rdf:type owl:Class ;
   rdfs:subClassOf schema:Dataset ;
@@ -65,3 +70,12 @@ ro-crate:DataEntity rdf:type owl:Class ;
 ro-crate:Directory rdf:type owl:Class ;
                 rdfs:subClassOf schema:Dataset ;
                 rdfs:label "Directory"@en .
+
+
+# # #################################################################
+# # #    Individuals
+# # ##############################################################
+
+# Declare the individual representing the RO-Crate Metadata File Descriptor entity
+ro:ro-crate-metadata.json a owl:NamedIndividual, ro-crate:ROCrateMetadataFileDescriptor .
+
