@@ -23,7 +23,6 @@ from pyshacl.pytypes import GraphLike
 from rdflib import BNode, Graph
 from rdflib.term import Node, URIRef
 
-from rocrate_validator.utils import log as logging
 from rocrate_validator.constants import (DEFAULT_ONTOLOGY_FILE,
                                          RDF_SERIALIZATION_FORMATS,
                                          RDF_SERIALIZATION_FORMATS_TYPES,
@@ -34,6 +33,8 @@ from rocrate_validator.models import (Profile, RequirementCheck, Severity,
 from rocrate_validator.requirements.shacl.models import ShapesRegistry
 from rocrate_validator.requirements.shacl.utils import (make_uris_relative,
                                                         map_severity)
+from rocrate_validator.utils import log as logging
+from rocrate_validator.utils.rdf import extract_base_from_jsonld
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -189,6 +190,22 @@ class SHACLValidationContext(ValidationContext):
             self._ontology_path = Path(f"{profile_path}/{ontology_filename}")
         return self._ontology_path
 
+    def __get_data_graph_base__(self) -> Optional[str]:
+        """
+        Get the @base from the RO-Crate metadata JSON-LD.
+
+        This extracts the @base from the @context of the data graph metadata,
+        which can be used to align the ontology graph's base URI with the data graph.
+
+        :return: The @base value if found, None otherwise
+        """
+        try:
+            metadata_dict = self.ro_crate.metadata.as_dict()
+            return extract_base_from_jsonld(metadata_dict)
+        except Exception as e:
+            logger.debug("Unable to extract @base from data graph metadata: %s", e)
+            return None
+
     def __load_ontology_graph__(self, profile_path: Path,
                                 ontology_filename: Optional[str] = DEFAULT_ONTOLOGY_FILE) -> Graph:
         # load the graph of ontologies
@@ -197,8 +214,20 @@ class SHACLValidationContext(ValidationContext):
         if os.path.exists(ontology_path):
             logger.debug("Loading ontologies: %s", ontology_path)
             ontology_graph = Graph()
+
+            # Determine the publicID to use:
+            # 1. First, try to get @base from the data graph metadata
+            # 2. Fall back to the default publicID (RO-Crate URI)
+            data_graph_base = self.__get_data_graph_base__()
+            public_id = data_graph_base if data_graph_base else self.publicID
+
+            if data_graph_base:
+                logger.debug("Using @base from data graph metadata: %s", data_graph_base)
+            else:
+                logger.debug("Using default publicID: %s", self.publicID)
+
             ontology_graph.parse(ontology_path, format="ttl",
-                                 publicID=self.publicID)
+                                 publicID=public_id)
             logger.debug("Ontologies loaded: %s", ontology_graph)
         return ontology_graph
 
