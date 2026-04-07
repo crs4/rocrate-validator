@@ -1776,7 +1776,7 @@ class ValidationStatistics(Subscriber):
             logger.debug("Validation ended with result: %s", event.validation_result)
 
     def to_dict(self) -> dict:
-        """"
+        """
         Get the computed validation statistics as a dictionary
         """
         return {

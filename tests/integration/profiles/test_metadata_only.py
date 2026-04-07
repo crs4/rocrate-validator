@@ -34,7 +34,12 @@ def valid_roc_paths():
         value
         for attr in dir(valid_roc)
         if not attr.startswith('_')
-        and not any(excluded in attr for excluded in ('bagit', 'multi_profile_crate', 'rocrate_with_relative_root'))
+        and not any(excluded in attr for excluded in (
+            'bagit',
+            'multi_profile_crate',
+            'rocrate_with_relative_root',
+            'rocrate_with_at_base_set'  # Excluded: has dedicated test with skip_checks
+        ))
         and not str(value := getattr(valid_roc, attr)).endswith('.zip')
     ]
 

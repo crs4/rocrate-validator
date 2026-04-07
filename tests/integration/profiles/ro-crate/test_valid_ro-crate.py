@@ -102,3 +102,14 @@ def test_valid_roc_remote_bagit_required():
         Severity.REQUIRED,
         True
     )
+
+
+def test_valid_roc_with_at_base_set():
+    """Test a valid RO-Crate."""
+    do_entity_test(
+        ValidROC().rocrate_with_at_base_set,
+        Severity.REQUIRED,
+        True,
+        # Skipping check: Root Data Entity URI ending with / is not required in RO-Crate 1.2
+        skip_checks=["ro-crate-1.1_10.1"]
+    )
