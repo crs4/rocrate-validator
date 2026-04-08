@@ -431,7 +431,6 @@ def __process_property_group__(groups: dict[str, PropertyGroup], property_shape:
     if group_name:
         if group_name not in groups:
             groups[group_name] = PropertyGroup(URIRef(property_shape.group), property_shape.graph)
-        property_shape.graph.serialize("logs/property_shape.ttl", format="turtle")
         groups[group_name].add_property(property_shape)
         property_shape._property_group = groups[group_name]
         return groups[group_name]
