@@ -214,8 +214,20 @@ class ROCrateEntity:
         try:
             # check if the entity points to an external file
             if self.id.startswith("http"):
+                # If the identifier ends with a slash,
+                # it is a directory and we cannot always check its availability,
+                # so we assume it is available
+                if self.id.endswith("/"):
+                    logger.debug("Entity '%s' with identifier '%s' is a directory, assuming it is available at '%s'",
+                                 self.name, self.id, self.id_as_uri)
+                    return True
+                # check if the file is available at the remote location
                 logger.debug("Checking the availability of a remote entity")
-                return self.ro_crate.get_external_file_size(self.id) > 0
+                is_available = self.ro_crate.get_external_file_size(self.id) > 0
+                logger.debug("Entity '%s' with identifier '%s' is %savailable at '%s'",
+                             self.name, self.id, "" if is_available else "not ", self.id_as_uri)
+
+                return is_available
 
             # check if the entity is part of the local RO-Crate
             if self.ro_crate.uri.is_local_resource():
