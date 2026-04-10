@@ -220,6 +220,24 @@ class ROCrate(ABC):
         logger.debug("Checking for metadata descriptor at path: %s", path)
         return self.has_file(path)
 
+    def get_descriptor_path(self) -> Path | None:
+        """
+        Get the path to the metadata descriptor file if it exists.
+
+        :return: the path to the metadata descriptor file if it exists, `None` otherwise
+        :rtype: Path | None
+        """
+        try:
+            path = self.__parse_path__(Path(self.metadata_descriptor_id))
+            logger.debug("Checking for metadata descriptor at path: %s", path)
+            if self.has_file(path):
+                return path
+            return None
+        except Exception:
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.exception("Error getting the metadata descriptor path")
+            return None
+
     def has_file(self, path: Path) -> bool:
         """
         Check if the RO-Crate has a file.
