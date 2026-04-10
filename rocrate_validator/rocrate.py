@@ -525,6 +525,11 @@ class ROCrate(ABC):
         return self._metadata
 
     def is_detached(self) -> bool:
+        root = self.metadata.get_root_data_entity()
+        if root and root.has_type("Dataset") and root.id == "./":
+            return False
+        if root and root.id_as_uri.is_remote_resource():
+            return True
         return False
 
     @property
