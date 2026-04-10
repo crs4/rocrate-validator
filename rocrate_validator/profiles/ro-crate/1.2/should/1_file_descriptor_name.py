@@ -46,7 +46,6 @@ class FileDescriptorExistence(PyFunctionCheck):
             message = f'file descriptor "{context.rel_fd_path}" is not present'
             context.result.add_issue(message, self)
             return False
-        assert context.ro_crate.is_detached(), "File descriptor naming convention check is only applicable to detached RO-Crates"
         if context.ro_crate.is_detached():
             # Check if the filename follows the convention
             fd_filename = context.ro_crate.get_descriptor_path()
