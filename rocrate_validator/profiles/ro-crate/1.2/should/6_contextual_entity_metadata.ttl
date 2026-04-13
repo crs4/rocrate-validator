@@ -20,6 +20,73 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix dct: <http://purl.org/dc/terms/> .
 
+ro-crate:ContextualEntityReferences a sh:NodeShape ;
+    sh:name "Contextual Entity RECOMMENDED references" ;
+    sh:description "Contextual entities SHOULD be referenced by other entities and described in the same graph." ;
+    sh:targetClass ro-crate:ContextualEntity ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:name "Contextual Entity references" ;
+        sh:description "Check that Contextual Entities are referenced by other entities." ;
+        sh:message "Contextual entities SHOULD be referenced by other entities." ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                FILTER NOT EXISTS {
+                    ?other ?pr ?this .
+                    FILTER (?other != ?this)
+                }
+            }
+        """ ;
+    ] .
+
+ro-crate:ReferencedContextualEntitiesShouldBeDescribed a sh:NodeShape ;
+    sh:name "Contextual Entity RECOMMENDED description" ;
+    sh:description """Contextual entities referenced by other entities SHOULD be described in the same graph.""" ;
+    # sh:targetClass ro-crate:ContextualEntity ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT DISTINCT ?this
+            WHERE {
+                ?other ?pr ?this .
+                FILTER(isIRI(?this))
+                FILTER NOT EXISTS { ?this schema:about ?anyRoot }
+                FILTER NOT EXISTS { ?anyMF schema:about ?this }
+                FILTER NOT EXISTS { ?this a schema:MediaObject }
+                FILTER NOT EXISTS { ?this a owl:Ontology }
+                FILTER NOT EXISTS {
+                    ?root schema:hasPart ?this .
+                    ?anyAbout schema:about ?root .
+                }
+                FILTER(!STRSTARTS(STR(?this), "http://www.w3.org/"))
+                FILTER(!STRSTARTS(STR(?this), "https://w3id.org/ro/crate/"))
+                FILTER(!STRSTARTS(STR(?this), "http://schema.org/"))
+                FILTER(!STRSTARTS(STR(?this), "https://schema.org/"))
+                FILTER(!STRSTARTS(STR(?this), "http://purl.org/"))
+                FILTER(!STRSTARTS(STR(?this), "https://bioschemas.org/"))
+                FILTER(!STRSTARTS(STR(?this), "https://github.com/crs4/rocrate-validator/"))
+                FILTER(!STRSTARTS(STR(?this), "urn:"))
+            }
+        """
+    ] ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:name "Referenced contextual entities should be described: RDF type" ;
+        sh:description "Check that contextual entities referenced by other entities have an RDF type specified." ;
+        sh:message "Referenced contextual entities SHOULD be described in the same @graph" ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                FILTER NOT EXISTS {
+                    ?this a ?type .
+                }
+            }
+        """ ;
+    ] .
+
 ro-crate:CreativeWorkAuthorMinimumRecommendedProperties a sh:NodeShape ;
     sh:name "CreativeWork Author: minimum RECOMMENDED properties" ;
     sh:description """The minimum recommended properties for a `CreativeWork Author` are `name` and `affiliation`.""" ;
