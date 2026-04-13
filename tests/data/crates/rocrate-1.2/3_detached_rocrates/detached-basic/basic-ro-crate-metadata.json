@@ -8,11 +8,11 @@
         "@id": "https://w3id.org/ro/crate/1.2"
       },
       "about": {
-        "@id": "https://raw.githubusercontent.com/crs4/rocrate-validator/refs/heads/develop/tests/data/crates/valid/workflow-roc/"
+        "@id": "https://example.org/ro-crate/detached/basic"
       }
     },
     {
-      "@id": "https://raw.githubusercontent.com/crs4/rocrate-validator/refs/heads/develop/tests/data/crates/valid/workflow-roc/",
+      "@id": "https://example.org/ro-crate/detached/basic",
       "@type": "Dataset",
       "name": "Detached RO-Crate (basic)",
       "description": "Minimal detached RO-Crate referencing a remote file.",
@@ -20,23 +20,18 @@
       "license": {
         "@id": "http://spdx.org/licenses/CC0-1.0"
       },
-      "distribution": {
-        "@id": "http://spdx.org/licenses/CC0-1.0"
-      },
       "hasPart": [
         {
-          "@id": "http://spdx.org/licenses/CC0-1.0"
+          "@id": "https://www.w3.org/TR/PNG/iso_8859-1.txt"
         }
       ]
     },
     {
-      "@id": "http://spdx.org/licenses/CC0-1.0",
+      "@id": "https://www.w3.org/TR/PNG/iso_8859-1.txt",
       "@type": "File",
-      "name": "CC0 1.0 Universal (CC0 1.0) Public Domain Dedication",
+      "name": "iso_8859-1.txt",
       "description": "Remote text file referenced by the detached RO-Crate.",
-      "encodingFormat": "text/plain",
-      "contentSize": "167",
-      "sdDatePublished": "2024-05-17"
+      "encodingFormat": "text/plain"
     }
   ]
 }
