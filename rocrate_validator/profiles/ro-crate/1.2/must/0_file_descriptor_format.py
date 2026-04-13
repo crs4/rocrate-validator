@@ -63,6 +63,33 @@ class FileDescriptorExistence(PyFunctionCheck):
         return True
 
 
+@requirement(name="File Descriptor UTF-8 encoding")
+class FileDescriptorEncodingCheck(PyFunctionCheck):
+    """
+    The file descriptor MUST be UTF-8 encoded
+    """
+
+    @check(name="File Descriptor UTF-8 encoding")
+    def check(self, context: ValidationContext) -> bool:
+        """
+        Check if the file descriptor is UTF-8 encoded
+        """
+        try:
+            raw_data = context.ro_crate.get_file_content(
+                Path(context.ro_crate.metadata_descriptor_id), binary_mode=True
+            )
+            if isinstance(raw_data, str):
+                return True
+            raw_data.decode("utf-8")
+            return True
+        except Exception as e:
+            context.result.add_issue(
+                f'RO-Crate file descriptor "{context.rel_fd_path}" is not UTF-8 encoded', self)
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.exception(e)
+            return False
+
+
 @requirement(name="File Descriptor JSON format")
 class FileDescriptorJsonFormat(PyFunctionCheck):
     """
@@ -78,30 +105,6 @@ class FileDescriptorJsonFormat(PyFunctionCheck):
         except Exception as e:
             context.result.add_issue(
                 f'RO-Crate file descriptor "{context.rel_fd_path}" is not in the correct format', self)
-            if logger.isEnabledFor(logging.DEBUG):
-                logger.exception(e)
-            return False
-
-
-@requirement(name="File Descriptor UTF-8 encoding")
-class FileDescriptorEncodingCheck(PyFunctionCheck):
-    """
-    The file descriptor MUST be UTF-8 encoded
-    """
-
-    @check(name="File Descriptor UTF-8 encoding")
-    def check(self, context: ValidationContext) -> bool:
-        try:
-            raw_data = context.ro_crate.get_file_content(
-                Path(context.ro_crate.metadata_descriptor_id), binary_mode=True
-            )
-            if isinstance(raw_data, str):
-                return True
-            raw_data.decode("utf-8")
-            return True
-        except Exception as e:
-            context.result.add_issue(
-                f'RO-Crate file descriptor "{context.rel_fd_path}" is not UTF-8 encoded', self)
             if logger.isEnabledFor(logging.DEBUG):
                 logger.exception(e)
             return False
