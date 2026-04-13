@@ -20,12 +20,15 @@
 ro-crate:ROCrateMetadataFileDescriptorConformsTo
     a sh:NodeShape ;
     sh:name "RO-Crate Metadata File Descriptor RECOMMENDED conformsTo" ;
-    sh:description """The RO-Crate Metadata Descriptor SHOULD indicate the versioned RO-Crate specification URI""" ;
+    sh:description """The RO-Crate Metadata Descriptor SHOULD indicate the versioned RO-Crate specification URI.
+        In RO-Crate 1.2, conformsTo SHOULD have a single value which is a versioned permalink URI
+        of the RO-Crate specification that the RO-Crate JSON-LD conforms to.
+        The URI SHOULD start with https://w3id.org/ro/crate/.""" ;
     sh:targetClass ro-crate:ROCrateMetadataFileDescriptor ;
     sh:property [
         a sh:PropertyShape ;
         sh:minCount 1 ;
-        sh:name "Metadata File Descriptor entity: RECOMMENDED `conformsTo` value" ;
+        sh:name "Metadata File Descriptor: RECOMMENDED `conformsTo` value" ;
         sh:description """Check if the RO-Crate Metadata File Descriptor has a versioned RO-Crate specification URI""" ;
         sh:severity sh:Warning ;
         sh:nodeKind sh:IRI ;
@@ -35,7 +38,7 @@ ro-crate:ROCrateMetadataFileDescriptorConformsTo
     ] ;
     sh:property [
         a sh:PropertyShape ;
-        sh:name "Metadata File Descriptor entity: RECOMMENDED single `conformsTo` value" ;
+        sh:name "Metadata File Descriptor: RECOMMENDED single `conformsTo` value" ;
         sh:description """Check if the RO-Crate Metadata File Descriptor has a single `conformsTo` value""" ;
         sh:severity sh:Warning ;
         sh:path dct:conformsTo ;
@@ -44,10 +47,10 @@ ro-crate:ROCrateMetadataFileDescriptorConformsTo
     ] ;
     sh:property [
         a sh:PropertyShape ;
-        sh:name "Metadata File Descriptor entity: RECOMMENDED `conformsTo` URI prefix" ;
+        sh:name "Metadata File Descriptor: RECOMMENDED `conformsTo` URI prefix" ;
         sh:description """Check if the `conformsTo` URI starts with https://w3id.org/ro/crate/""" ;
         sh:severity sh:Warning ;
         sh:path dct:conformsTo ;
-        sh:pattern "^https://w3id.org/ro/crate/" ;
+        sh:pattern "^https://w3id\\.org/ro/crate/" ;
         sh:message "The RO-Crate metadata file descriptor `conformsTo` URI SHOULD start with https://w3id.org/ro/crate/" ;
     ] .
