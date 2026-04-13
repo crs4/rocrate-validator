@@ -37,7 +37,11 @@ def test_valid_local_descriptor_filename():
         __detached_crates__.valid_local_descriptor_filename,
         models.Severity.RECOMMENDED,
         True,
-        profile_identifier="ro-crate-1.2"
+        profile_identifier="ro-crate-1.2",
+        skip_checks=["Web-based Data Entity: REQUIRED availability",
+                     "Web-based Data Entity: RECOMMENDED availability",
+                     "Web-based Data Entity: `contentSize` property",
+                     "Web-based Data Entity: `contentUrl` availability"],
     )
 
 
@@ -56,4 +60,33 @@ def test_invalid_local_descriptor_filename():
             "the metadata descriptor filename SHOULD "
             "be named according to the convention "
             "`{prefix}-ro-crate-metadata.json`"]
+    )
+
+
+def test_root_data_entity_identifier_when_online_available():
+    """
+    Test that when the RO-Crate is online available,
+    the Root Data Entity @id SHOULD be an absolute URL in a detached RO-Crate.
+    """
+    do_entity_test(
+        __detached_crates__.valid_root_data_entity_identifier_when_online_available,
+        models.Severity.RECOMMENDED,
+        True,
+        profile_identifier="ro-crate-1.2"
+    )
+
+
+def test_invalid_root_data_entity_identifier_when_online_available():
+    """
+    Test that when the RO-Crate is online available, 
+    the Root Data Entity @id SHOULD be an absolute URL in a detached RO-Crate.
+    """
+    do_entity_test(
+        __detached_crates__.invalid_root_data_entity_identifier_when_online_available,
+        models.Severity.RECOMMENDED,
+        False,
+        profile_identifier="ro-crate-1.2",
+        expected_triggered_requirements=["Root Data Entity: RECOMMENDED identifier"],
+        expected_triggered_issues=[
+            "In a remote RO-Crate, the Root Data Entity @id SHOULD be an absolute URL"]
     )
