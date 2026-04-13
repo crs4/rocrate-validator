@@ -11,23 +11,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+@prefix ro: <./> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.2/> .
+@prefix schema_org: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
 
-# @prefix ro: <./> .
-# @prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.2/> .
-# @prefix schema_org: <http://schema.org/> .
-# @prefix sh: <http://www.w3.org/ns/shacl#> .
-
-# ro-crate:PreviewFilesNotInHasPart a sh:NodeShape ;
-#     sh:name "RO-Crate Website files exclusion" ;
-#     sh:description """`ro-crate-preview.html` and `ro-crate-preview_files/` SHOULD NOT be included in `hasPart`.""" ;
-#     sh:targetClass schema_org:Dataset ;
-#     sh:sparql [
-#         sh:message "RO-Crate Website files SHOULD NOT be included in `hasPart`" ;
-#         sh:select """
-#             SELECT ?this
-#             WHERE {
-#                 ?this schema:hasPart ?part .
-#                 FILTER(str(?part) = "ro-crate-preview.html" || str(?part) = "ro-crate-preview_files/")
-#             }
-#         """ ;
-#     ] .
+ro-crate:PreviewFilesNotInHasPart a sh:NodeShape ;
+    sh:name "Preview file descriptor should not be included in `hasPart`" ;
+    sh:description """`ro-crate-preview.html` and `ro-crate-preview_files/` SHOULD NOT be included in `hasPart`.""" ;
+    sh:targetClass ro-crate:RootDataEntity ;
+    sh:property [
+        sh:path schema_org:hasPart ;
+        sh:nodeKind sh:IRI ;
+        sh:description "Check that `ro-crate-preview.html` and `ro-crate-preview_files/` are not included in `hasPart`" ;
+        sh:message "RO-Crate Website files SHOULD NOT be included in `hasPart`" ;
+        sh:pattern "^(?!.*(ro-crate-preview\\.html|ro-crate-preview_files/)).*$" ;
+    ] .
