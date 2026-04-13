@@ -1,0 +1,31 @@
+{
+    "@context": "https://w3id.org/ro/crate/1.1/context",
+    "@graph": [
+        {
+            "@type": "CreativeWork",
+            "@id": "ro-crate-metadata.json",
+            "conformsTo": {
+                "@id": "https://w3id.org/ro/crate/1.1"
+            },
+            "about": {
+                "@id": "./"
+            }
+        },
+        {
+            "@id": "./",
+            "@type": "Dataset",
+            "name": "This is a test dataset",
+            "description": "This is a test dataset",
+            "license": {
+                "@id": "https://creativecommons.org/licenses/by/4.0/"
+            },
+            "datePublished": "2024-11-05",
+            "hasPart": [
+                {
+                    "@type": "File",
+                    "name": "File in a nested entity"
+                }
+            ]
+        }
+    ]
+}
