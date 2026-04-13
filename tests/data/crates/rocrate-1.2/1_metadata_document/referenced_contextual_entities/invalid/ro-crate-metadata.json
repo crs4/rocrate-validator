@@ -1,0 +1,49 @@
+{
+  "@context": "https://w3id.org/ro/crate/1.2/context",
+  "@graph": [
+    {
+      "@id": "ro-crate-metadata.json",
+      "@type": "CreativeWork",
+      "about": {
+        "@id": "./"
+      },
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.2"
+      }
+    },
+    {
+      "@id": "./",
+      "@type": "Dataset",
+      "name": "Counterexample: orphaned contextual entity",
+      "description": "This RO-Crate INCORRECTLY includes a contextual entity (the Person below) that is NOT linked from any other entity in the @graph. In RO-Crate 1.2, any contextual entity in the @graph SHOULD be linked to from at least one of the other entities using its @id. The Person entity is orphaned - nothing references https://orcid.org/0000-0002-1825-0097.",
+      "datePublished": "2024-01-01",
+      "license": {
+        "@id": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "hasPart": [
+        {
+          "@id": "data.csv"
+        }
+      ]
+    },
+    {
+      "@id": "https://creativecommons.org/licenses/by/4.0/",
+      "@type": "CreativeWork",
+      "name": "Creative Commons Attribution 4.0 International",
+      "description": "A Creative Commons license that lets others distribute, remix, adapt, and build upon your work, even commercially."
+    },
+    {
+      "@id": "https://orcid.org/0000-0002-1825-0097",
+      "@type": "Person",
+      "name": "Josiah Carberry"
+    },
+    {
+      "@id": "data.csv",
+      "@type": "File",
+      "name": "Sample data",
+      "description": "A sample data file.",
+      "encodingFormat": "text/csv",
+      "contentSize": "42"
+    }
+  ]
+}
