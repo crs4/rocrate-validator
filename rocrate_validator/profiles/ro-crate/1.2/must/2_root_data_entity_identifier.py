@@ -19,11 +19,10 @@ from rocrate_validator.models import ValidationContext
 from rocrate_validator.requirements.python import (PyFunctionCheck, check,
                                                    requirement)
 
-# set up logging
 logger = logging.getLogger(__name__)
 
 
-@requirement(name="Root Data Entity: identifier")
+@requirement(name="Root Data Entity identifier restriction")
 class RootDataEntityIdentifierChecker(PyFunctionCheck):
     """
     In an attached RO-Crate, the Root Data Entity @id MUST be ./ or an absolute URI.
@@ -40,7 +39,8 @@ class RootDataEntityIdentifierChecker(PyFunctionCheck):
             if re.match(r"^[A-Za-z][A-Za-z0-9+\.-]*:", root_entity.id):
                 return True
             context.result.add_issue(
-                'Root Data Entity @id MUST be `./` or an absolute URI for attached RO-Crates', self)
+                'The Root Data Entity MUST be a `Dataset` (as per `schema.org`) '
+                'and use an IRI or `./` as identifier', self)
             return False
         except Exception as e:
             context.result.add_issue(
