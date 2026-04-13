@@ -1,0 +1,44 @@
+{
+  "@context": "https://w3id.org/ro/crate/1.2/context",
+  "@graph": [
+    {
+      "@id": "ro-crate-metadata.json",
+      "@type": "CreativeWork",
+      "about": {
+        "@id": "./"
+      },
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.2"
+      }
+    },
+    {
+      "@id": "./",
+      "@type": "Dataset",
+      "name": "Example: preview not in hasPart",
+      "description": "This RO-Crate correctly omits ro-crate-preview.html from hasPart, following the new RO-Crate 1.2 requirement.",
+      "datePublished": "2024-01-01",
+      "license": {
+        "@id": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "hasPart": [
+        {
+          "@id": "data.csv"
+        }
+      ]
+    },
+    {
+      "@id": "https://creativecommons.org/licenses/by/4.0/",
+      "@type": "CreativeWork",
+      "name": "Creative Commons Attribution 4.0 International",
+      "description": "A Creative Commons license that lets others distribute, remix, adapt, and build upon your work, even commercially."
+    },
+    {
+      "@id": "data.csv",
+      "@type": "File",
+      "name": "Sample data file",
+      "description": "A sample CSV data file.",
+      "encodingFormat": "text/csv",
+      "contentSize": "42"
+    }
+  ]
+}
