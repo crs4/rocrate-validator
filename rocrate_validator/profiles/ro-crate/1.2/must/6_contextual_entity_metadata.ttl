@@ -1,0 +1,64 @@
+# Copyright (c) 2024-2026 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+@prefix ro: <./> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.2/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix validator: <https://github.com/crs4/rocrate-validator/> .
+
+
+ro-crate:ContextualEntityDefinition a sh:NodeShape, validator:HiddenShape ;
+    sh:name "Identify Contextual Entities" ;
+    sh:description """Mark entities as Contextual Entities if they are in the RO-Crate
+        metadata but are not Data Entities, not the Root Data Entity,
+        and not the Metadata File Descriptor.""" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT DISTINCT ?this
+            WHERE {
+                ?this ?p ?o .
+                FILTER(isIRI(?this))
+                FILTER NOT EXISTS { ?this schema:about ?anyRoot }
+                FILTER NOT EXISTS { ?anyMF schema:about ?this }
+                FILTER NOT EXISTS { ?this a schema:MediaObject }
+                FILTER NOT EXISTS { ?this a owl:Ontology }
+                FILTER NOT EXISTS {
+                    ?root schema:hasPart ?this .
+                    ?anyAbout schema:about ?root .
+                }
+                FILTER EXISTS { ?this ?p ?o . FILTER(?p NOT IN (owl:sameAs, rdf:type)) }
+                FILTER(!STRSTARTS(STR(?this), "http://www.w3.org/"))
+                FILTER(!STRSTARTS(STR(?this), "https://w3id.org/ro/crate/"))
+                FILTER(!STRSTARTS(STR(?this), "http://schema.org/"))
+                FILTER(!STRSTARTS(STR(?this), "https://schema.org/"))
+                FILTER(!STRSTARTS(STR(?this), "http://purl.org/"))
+                FILTER(!STRSTARTS(STR(?this), "https://bioschemas.org/"))
+                FILTER(!STRSTARTS(STR(?this), "https://github.com/crs4/rocrate-validator/"))
+                FILTER(!STRSTARTS(STR(?this), "urn:"))
+            }
+        """
+    ] ;
+    sh:rule [
+        a sh:TripleRule ;
+        sh:subject sh:this ;
+        sh:predicate rdf:type ;
+        sh:object ro-crate:ContextualEntity ;
+    ] .
+
