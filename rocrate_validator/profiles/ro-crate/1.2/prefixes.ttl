@@ -50,6 +50,10 @@ ro-crate:sparqlPrefixes sh:declare [
         sh:namespace "https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.2/"^^xsd:anyURI ;
     ] ;
     sh:declare [
+        sh:prefix "dct" ;
+        sh:namespace "http://purl.org/dc/terms/"^^xsd:anyURI ;
+    ] ;
+    sh:declare [
         sh:prefix "ro" ;
         sh:namespace "./"^^xsd:anyURI ;
     ] .
