@@ -104,6 +104,7 @@ def test_invalid_recommended_properties():
         expected_triggered_requirements=["Data Entity: RECOMMENDED properties"],
         expected_triggered_issues=[
             "Data Entities SHOULD have a `name` property",
-            "Data Entities SHOULD have a `description` property"
+            "Data Entities SHOULD have a `description` property",
+            "Data Entities SHOULD have a `contentLocation` or `spatialCoverage` property referencing a Place"
         ]
     )
