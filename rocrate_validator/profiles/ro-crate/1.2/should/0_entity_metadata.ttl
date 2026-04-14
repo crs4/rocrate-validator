@@ -73,3 +73,42 @@ ro-crate:ROCrateMetadataEntityRecommendedType a sh:NodeShape ;
         sh:severity sh:Warning ;
         sh:message "Entities SHOULD have a human-readable name" ;
     ] .
+
+ro-crate:RecommendedEntityReachability a sh:NodeShape ;
+    sh:name "RO-Crate Metadata Entity: RECOMMENDED reachability" ;
+    sh:description """Check if the RO-Crate Metadata Entity is directly or indirectly reachable from the Root Data Entity.""" ;
+    sh:targetClass ro-crate:RootDataEntity ;
+    sh:sparql [
+        sh:name "RO-Crate Metadata Entity: RECOMMENDED reachability from the Root Data Entity" ;
+        sh:description """Check if the RO-Crate Metadata Entity is directly or indirectly reachable from the Root Data Entity.""" ;
+        sh:message "RO-Crate Metadata Entity SHOULD be directly or indirectly reachable from the Root Data Entity" ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT $this ?unreachable
+            WHERE {
+                ?unreachable a ?type .
+
+                # Exclude Root and RO-Crate Metadata File entities
+                ?root a schema:Dataset .
+                ?metadatafile schema:about ?root .
+                FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
+                FILTER(?unreachable != ?metadatafile)
+                FILTER (?unreachable != ?root)
+                FILTER (isIRI(?unreachable))
+                FILTER (?unreachable != $this)
+
+                # Exclude entities with non-IRI identifiers or those from specific namespaces
+                FILTER (
+                    !STRSTARTS(STR(?type), "http://www.w3.org/1999/02/22-rdf-syntax-ns#") &&
+                    !STRSTARTS(STR(?type), "http://www.w3.org/2000/01/rdf-schema#") &&
+                    !STRSTARTS(STR(?type), "http://www.w3.org/2002/07/owl#") &&
+                    !STRSTARTS(STR(?type), "http://www.w3.org/2001/XMLSchema#") &&
+                    !STRSTARTS(STR(?type), "http://www.w3.org/ns/shacl#")
+                )
+                # Select entities which are not directly or indirectly reachable from the Root Data Entity
+                FILTER NOT EXISTS {
+                    $this (<urn:any>|!<urn:any>)+ ?unreachable .
+                }
+            }
+        """ ;
+    ] .
