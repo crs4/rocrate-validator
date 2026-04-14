@@ -97,7 +97,7 @@ def test_detached_bad_filename_recommended():
         paths.detached_bad_filename,
         models.Severity.RECOMMENDED,
         False,
-        ["Detached RO-Crate metadata filename"],
-        ["Detached RO-Crate metadata file SHOULD be named ${prefix}-ro-crate-metadata.json"],
+        ["File Descriptor naming convention"],
+        ["metadata descriptor filename"],
         profile_identifier="ro-crate-1.2",
     )
