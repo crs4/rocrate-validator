@@ -113,10 +113,22 @@ class DataEntityIdentifierChecker(PyFunctionCheck):
     Data Entity identifiers must be valid URI references and use relative paths for payload files.
     """
 
-    @check(name="Data Entity: @id validity")
+    @check(name="Data Entity: @id value requirements")
     def check_identifiers(self, context: ValidationContext) -> bool:
         result = True
+        root_entity_id = None
+        root_entity_is_local = False
+        root_entity_absolute_path = None
+        try:
+            root_data_entity = context.ro_crate.metadata.get_root_data_entity()
+            root_entity_id = root_data_entity.id
+            root_entity_is_local = root_data_entity.id_as_uri.is_local_resource if root_data_entity.id_as_uri else False
+            root_entity_absolute_path = root_data_entity.id_as_path if root_data_entity.has_absolute_path() else None
+        except Exception:
+            pass
         for entity in context.ro_crate.metadata.get_data_entities():
+            if root_entity_id and entity.id == root_entity_id:
+                continue
             if entity.has_local_identifier():
                 continue
             if "\\" in entity.id or " " in entity.id:
@@ -125,13 +137,19 @@ class DataEntityIdentifierChecker(PyFunctionCheck):
                 result = False
                 if context.fail_fast:
                     return False
-                continue
-            if not re.match(r"^[A-Za-z][A-Za-z0-9+\.-]*:", entity.id) and not entity.has_relative_path():
-                context.result.add_issue(
-                    f"Data Entity '{entity.id}' does not use a valid absolute or relative URI", self)
-                result = False
-                if context.fail_fast:
-                    return False
+            if (root_entity_is_local and
+                    not str(entity.id_as_path).startswith(str(root_entity_absolute_path))):
+                logger.error(
+                    f"Entity ID as Path: {entity.id_as_path}, Root Entity Absolute Path: {root_entity_absolute_path}")
+                if (root_entity_is_local and not str(entity.id).startswith("./") and (
+                    str(entity.id).startswith("/") or
+                    str(entity.id).startswith("file://")
+                )):
+                    context.result.add_issue(
+                        f"Data Entity '{entity.id}' MUST use a relative @id within the RO-Crate root", self)
+                    result = False
+                    if context.fail_fast:
+                        return False
         return result
 
     @check(name="Data Entity: relative @id for payload files")
