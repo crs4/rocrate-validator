@@ -13,10 +13,12 @@
 # limitations under the License.
 @prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.2/> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix schema: <http://schema.org/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 ro-crate:ROCrateMetadataEntityRecommendedType a sh:NodeShape ;
-    sh:name "RO-Crate Metadata Entity RECOMMENDED type" ;
-    sh:description """Each entity should include at least one Schema.org type that accurately describes the entity""" ;
+    sh:name "RO-Crate Metadata Entity: RECOMMENDED properties" ;
+    sh:description """Check if the RO-Crate Metadata Entity includes at least one Schema.org type and a human-readable name""" ;
     sh:target [
         a sh:SPARQLTarget ;
         sh:prefixes ro-crate:sparqlPrefixes ;
@@ -61,4 +63,13 @@ ro-crate:ROCrateMetadataEntityRecommendedType a sh:NodeShape ;
                 }
             }
         """ ;
+    ] ;
+    sh:property [
+        sh:name "RO-Crate Metadata Entity: name" ;
+        sh:description """Check if the RO-Crate Metadata Entity includes a human-readable name""" ;
+        sh:path schema:name ;
+        sh:minCount 1 ;
+        sh:dataType xsd:string ;
+        sh:severity sh:Warning ;
+        sh:message "Entities SHOULD have a human-readable name" ;
     ] .
