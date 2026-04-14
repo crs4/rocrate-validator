@@ -50,3 +50,31 @@ def test_invalid_local_entity_reference():
             "MUST use a relative @id within the RO-Crate root"
         ]
     )
+
+
+def test_valid_detached_rocrate_dataEntities():
+    """
+    Test that a Data Entity is valid when it references a remote file using an absolute URI in its `@id`.
+    """
+    do_entity_test(
+        __metadata_root_data_entity_crates__.valid_detached_rocrate_dataEntities,
+        models.Severity.REQUIRED,
+        True,
+        profile_identifier="ro-crate-1.2"
+    )
+
+
+def test_invalid_detached_rocrate_dataEntities():
+    """
+    Test that a Data Entity is invalid when it references a remote file using a relative path in its `@id`.
+    """
+    do_entity_test(
+        __metadata_root_data_entity_crates__.invalid_detached_rocrate_dataEntities,
+        models.Severity.REQUIRED,
+        False,
+        profile_identifier="ro-crate-1.2",
+        expected_triggered_requirements=["Data Entity: identifier requirements"],
+        expected_triggered_issues=[
+            "has a local identifier but the Root Data Entity does not have a local identifier"
+        ]
+    )
