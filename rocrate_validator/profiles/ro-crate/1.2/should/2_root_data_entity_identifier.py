@@ -53,3 +53,45 @@ class DetachedROCrateRootDataEntityIdentifierChecker(PyFunctionCheck):
             context.result.add_issue(
                 f'Error checking Root Data Entity @id: {str(e)}', self)
             return False
+
+
+@requirement(name="Root Data Entity: use cite-as for resolvable identifiers")
+class RootDataEntityCiteAsIdentifierChecker(PyFunctionCheck):
+    """
+    If the Root Data Entity has a resolvable identifier, it SHOULD be included in the `cite-as` property of the RO-Crate Metadata Entity.
+    """
+
+    @check(name="Root Data Entity: use cite-as for resolvable identifiers")
+    def check_cite_as_reference(self, context: ValidationContext) -> bool:
+        """
+        If the Root Data Entity has a resolvable identifier,
+        it SHOULD be included in the `cite-as` property of the RO-Crate Metadata Entity.
+        """
+        try:
+            if not context.ro_crate.is_detached():
+                return True
+            root_entity = context.ro_crate.metadata.get_root_data_entity()
+            if not root_entity.is_remote():
+                return True
+
+            # Check if the `cite-as` property is present and references the Root Data Entity
+            cite_as = root_entity.get_property('cite-as')
+            if root_entity.id_as_uri.is_remote_resource():
+                if not cite_as:
+                    context.result.add_issue(
+                        'If the Root Data Entity has a resolvable identifier, '
+                        'it SHOULD be included in the `cite-as` property of the RO-Crate Metadata Entity.', self)
+                    return False
+
+            # If the `cite-as` property is present, check that it references the Root Data Entity
+            if cite_as.id != root_entity.id:
+                context.result.add_issue(
+                    'If the Root Data Entity has a resolvable identifier, '
+                    'it SHOULD be included in the `cite-as` property of the RO-Crate Metadata Entity.', self)
+                return False
+
+            return True
+        except Exception as e:
+            context.result.add_issue(
+                f'Error checking Root Data Entity `cite-as` reference: {str(e)}', self)
+            return False
