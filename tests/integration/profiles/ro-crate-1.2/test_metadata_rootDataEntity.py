@@ -52,3 +52,33 @@ def test_invalid_required_datePublished():
             "property (as specified by schema.org) with a valid ISO 8601 date"
         ]
     )
+
+
+def test_valid_required_downloadable_citeAs():
+    """
+    Test that the Root Data Entity is valid when it includes a `cite-as` property that references a downloadable item.
+    """
+    do_entity_test(
+        __metadata_root_data_entity_crates__.valid_required_downloadable_citeAs,
+        models.Severity.REQUIRED,
+        True,
+        profile_identifier="ro-crate-1.2"
+
+    )
+
+
+def test_invalid_required_downloadable_citeAs():
+    """
+    Test that the Root Data Entity is invalid when it includes a `cite-as` property
+    that does not reference a downloadable item.
+    """
+    do_entity_test(
+        __metadata_root_data_entity_crates__.invalid_required_downloadable_citeAs,
+        models.Severity.REQUIRED,
+        False,
+        profile_identifier="ro-crate-1.2",
+        expected_triggered_requirements=["RO-Crate Metadata Entity: REQUIRED `citeAs` reference"],
+        expected_triggered_issues=[
+            "If the RO-Crate Metadata Entity includes a `cite-as` property, it MUST reference a downloadable item"
+        ]
+    )
