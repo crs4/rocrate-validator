@@ -55,3 +55,33 @@ def test_invalid_single_value_conformsTo():
             "The RO-Crate metadata file descriptor SHOULD have a single `conformsTo` value"
         ]
     )
+
+
+def test_valid_recommended_prefix_conformsTo():
+    """
+    Test that the metadata descriptor is valid when the `conformsTo` property
+    includes a value with the recommended prefix.
+    """
+    do_entity_test(
+        __metadata_descriptor_crates__.valid_recommended_prefix_conformsTo,
+        models.Severity.RECOMMENDED,
+        True,
+        profile_identifier="ro-crate-1.2"
+    )
+
+
+def test_invalid_recommended_prefix_conformsTo():
+    """
+    Test that the metadata descriptor is invalid when the `conformsTo` property
+    includes a value with an incorrect prefix.
+    """
+    do_entity_test(
+        __metadata_descriptor_crates__.invalid_recommended_prefix_conformsTo,
+        models.Severity.RECOMMENDED,
+        False,
+        profile_identifier="ro-crate-1.2",
+        expected_triggered_requirements=["RO-Crate Metadata File Descriptor RECOMMENDED conformsTo"],
+        expected_triggered_issues=[
+            "The RO-Crate metadata file descriptor `conformsTo` URI SHOULD start with https://w3id.org/ro/crate/"
+        ]
+    )
