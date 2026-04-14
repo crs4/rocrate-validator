@@ -87,6 +87,26 @@ ro-crate:DataEntityRecommendedProperties a sh:NodeShape ;
         sh:severity sh:Warning ;
         sh:message "Data Entity `license` SHOULD reference a CreativeWork entity" ;
     ] ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+
+        sh:select """
+            SELECT ?this
+            WHERE {
+                FILTER NOT EXISTS {
+                    ?this (schema:contentLocation|schema:spatialCoverage) ?location .
+                    ?location a schema:Place .
+                }
+            }
+        """ ;
+        sh:name "Data Entity: RECOMMENDED `contentLocation`/`spatialCoverage` reference" ;
+        sh:description """If present, `contentLocation` or `spatialCoverage` SHOULD reference a Place.""" ;
+        sh:message "Data Entities SHOULD have a `contentLocation` or `spatialCoverage` property referencing a Place" ;
+        sh:severity sh:Warning ;
+    ] ;
+
+
     # sh:property [
     #     sh:name "Data Entity: RECOMMENDED `contentLocation`/`spatialCoverage` reference" ;
     #     sh:description """If present, `contentLocation` or `spatialCoverage` SHOULD reference a Place.""" ;
