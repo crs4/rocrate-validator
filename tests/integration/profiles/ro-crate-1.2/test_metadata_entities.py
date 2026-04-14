@@ -15,16 +15,11 @@
 import logging
 
 from rocrate_validator import models
-from tests.ro_crates_1_2 import AttachedROCrates, MetadataDocument, MetadataDocumentFormat, MetadataEntities
+from tests.ro_crates_1_2 import MetadataEntities
 from tests.shared import do_entity_test
 
 logger = logging.getLogger(__name__)
 
-
-__metadata_document_crates__ = MetadataDocument()
-__metadata_document_format_crates__ = MetadataDocumentFormat()
-
-__attached_crates__ = AttachedROCrates()
 
 __metadata_entities__ = MetadataEntities()
 
@@ -52,7 +47,36 @@ def test_invalid_recommended_schema_type_warning():
         models.Severity.RECOMMENDED,
         False,
         profile_identifier="ro-crate-1.2",
-        expected_triggered_requirements=["RO-Crate Metadata Entity RECOMMENDED type"],
+        expected_triggered_requirements=["RO-Crate Metadata Entity: RECOMMENDED properties"],
         expected_triggered_issues=[
             "RO-Crate Metadata Entity SHOULD include at least one Schema.org type"]
+    )
+
+
+def test_valid_recommended_entity_name():
+    """
+    Test that the metadata document includes a `name` property for at least one entity.
+    """
+    do_entity_test(
+        __metadata_entities__.valid_recommended_name,
+        models.Severity.RECOMMENDED,
+        True,
+        profile_identifier="ro-crate-1.2"
+
+    )
+
+
+def test_invalid_recommended_entity_name_warning():
+    """
+    Test that a warning is triggered when the metadata document
+    does not include a `name` property for at least one entity.
+    """
+    do_entity_test(
+        __metadata_entities__.invalid_recommended_name,
+        models.Severity.RECOMMENDED,
+        False,
+        profile_identifier="ro-crate-1.2",
+        expected_triggered_requirements=["RO-Crate Metadata Entity: RECOMMENDED properties"],
+        expected_triggered_issues=[
+            "Entities SHOULD have a human-readable name"]
     )
