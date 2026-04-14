@@ -12,17 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-@prefix ro: <./> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.2/> .
 
 # Define the prefixes used in the SPARQL queries
-ro-crate:sparqlPrefixes
-    sh:declare [
-        sh:prefix "schema" ;
-        sh:namespace "http://schema.org/"^^xsd:anyURI ;
-    ] ;
+ro-crate:sparqlPrefixes sh:declare [
+    sh:prefix "schema" ;
+    sh:namespace "http://schema.org/"^^xsd:anyURI ;
+] ;
     sh:declare [
         sh:prefix "bioschemas" ;
         sh:namespace "https://bioschemas.org/"^^xsd:anyURI ;
@@ -42,6 +40,10 @@ ro-crate:sparqlPrefixes
     sh:declare [
         sh:prefix "codemeta" ;
         sh:namespace "https://codemeta.github.io/terms/"^^xsd:anyURI ;
+    ] ;
+    sh:declare [
+        sh:prefix "iana-relation" ;
+        sh:namespace "http://www.iana.org/assignments/relation/"^^xsd:anyURI ;
     ] ;
     sh:declare [
         sh:prefix "ro-crate" ;

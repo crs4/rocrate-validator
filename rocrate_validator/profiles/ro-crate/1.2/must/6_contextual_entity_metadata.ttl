@@ -62,3 +62,24 @@ ro-crate:ContextualEntityDefinition a sh:NodeShape, validator:HiddenShape ;
         sh:object ro-crate:ContextualEntity ;
     ] .
 
+
+ro-crate:RequiredDownloadableCiteAs a sh:NodeShape ;
+    sh:name "RO-Crate Metadata Entity: REQUIRED `citeAs` reference" ;
+    sh:description """If the RO-Crate Metadata Entity includes a `cite-as` property, it MUST reference a downloadable item.""" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?e iana-relation:cite-as ?this .
+            }
+        """
+    ] ;
+    sh:property [
+        sh:name "RO-Crate Metadata Entity: REQUIRED `cite-as` reference" ;
+        sh:description """Check if the RO-Crate Metadata Entity's `cite-as` property references a downloadable item.""" ;
+        sh:path schema_org:url ;
+        sh:minCount 1 ;
+        sh:message "If the RO-Crate Metadata Entity includes a `cite-as` property, it MUST reference a downloadable item" ;
+    ] .
