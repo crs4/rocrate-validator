@@ -82,3 +82,35 @@ def test_invalid_required_downloadable_citeAs():
             "If the RO-Crate Metadata Entity includes a `cite-as` property, it MUST reference a downloadable item"
         ]
     )
+
+
+def test_valid_recommended_citeAs_for_resolvable_id():
+    """
+    Test that the Root Data Entity is valid when it has a resolvable identifier
+    and includes a `cite-as` property that references the Root Data Entity.
+    """
+    do_entity_test(
+        __metadata_root_data_entity_crates__.valid_recommended_citeAs_for_resolvable_id,
+        models.Severity.RECOMMENDED,
+        True,
+        profile_identifier="ro-crate-1.2"
+    )
+
+
+def test_invalid_recommended_citeAs_for_resolvable_id():
+    """
+    Test that the Root Data Entity is invalid when it has a resolvable identifier
+    and does not include a `cite-as` property that references the Root Data Entity.
+    """
+    do_entity_test(
+        __metadata_root_data_entity_crates__.invalid_recommended_citeAs_for_resolvable_id,
+        models.Severity.RECOMMENDED,
+        False,
+        profile_identifier="ro-crate-1.2",
+        expected_triggered_requirements=[
+            "Root Data Entity: use cite-as for resolvable identifiers"],
+        expected_triggered_issues=[
+            "If the Root Data Entity has a resolvable identifier, "
+            "it SHOULD be included in the `cite-as` property of the RO-Crate Metadata Entity."
+        ]
+    )
