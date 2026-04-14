@@ -122,13 +122,19 @@ class DataEntityIdentifierChecker(PyFunctionCheck):
         try:
             root_data_entity = context.ro_crate.metadata.get_root_data_entity()
             root_entity_id = root_data_entity.id
-            root_entity_is_local = root_data_entity.id_as_uri.is_local_resource if root_data_entity.id_as_uri else False
+            root_entity_is_local = root_data_entity.id_as_uri.is_local_resource() if root_data_entity.id_as_uri else False
             root_entity_absolute_path = root_data_entity.id_as_path if root_data_entity.has_absolute_path() else None
         except Exception:
             pass
         for entity in context.ro_crate.metadata.get_data_entities():
             if root_entity_id and entity.id == root_entity_id:
                 continue
+            if not root_entity_is_local and not entity.is_remote():
+                context.result.add_issue(
+                    f"Data Entity '{entity.id}' has a local identifier but the Root Data Entity does not have a local identifier", self)
+                result = False
+                if context.fail_fast:
+                    return False
             if entity.has_local_identifier():
                 continue
             if "\\" in entity.id or " " in entity.id:
@@ -139,8 +145,6 @@ class DataEntityIdentifierChecker(PyFunctionCheck):
                     return False
             if (root_entity_is_local and
                     not str(entity.id_as_path).startswith(str(root_entity_absolute_path))):
-                logger.error(
-                    f"Entity ID as Path: {entity.id_as_path}, Root Entity Absolute Path: {root_entity_absolute_path}")
                 if (root_entity_is_local and not str(entity.id).startswith("./") and (
                     str(entity.id).startswith("/") or
                     str(entity.id).startswith("file://")
