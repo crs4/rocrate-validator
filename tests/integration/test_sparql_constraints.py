@@ -155,7 +155,7 @@ def test_resolve_parent_shape_with_sparql_bnode():
     SHACL = Namespace("http://www.w3.org/ns/shacl#")
 
     registry = ShapesRegistry()
-    profiles_path = "rocrate_validator/profiles/ro-crate/must"
+    profiles_path = "rocrate_validator/profiles/ro-crate/1.1/must"
 
     # Load shapes from profile
     for filename in os.listdir(profiles_path):
