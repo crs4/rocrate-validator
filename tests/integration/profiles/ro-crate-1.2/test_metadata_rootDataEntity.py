@@ -114,3 +114,33 @@ def test_invalid_recommended_citeAs_for_resolvable_id():
             "it SHOULD be included in the `cite-as` property of the RO-Crate Metadata Entity."
         ]
     )
+
+
+def test_valid_additional_conformsTo_reference():
+    """
+    Test that the Root Data Entity is valid when it includes
+    an additional `conformsTo` property that references a Profile entity.
+    """
+    do_entity_test(
+        __metadata_root_data_entity_crates__.valid_additional_conformsTo_reference,
+        models.Severity.REQUIRED,
+        True,
+        profile_identifier="ro-crate-1.2"
+    )
+
+
+def test_invalid_additional_conformsTo_reference():
+    """
+    Test that the Root Data Entity is invalid when it includes
+    an additional `conformsTo` property that does not reference a Profile entity.
+    """
+    do_entity_test(
+        __metadata_root_data_entity_crates__.invalid_additional_conformsTo_reference,
+        models.Severity.REQUIRED,
+        False,
+        profile_identifier="ro-crate-1.2",
+        expected_triggered_requirements=["RO-Crate Root Data Entity: optional `conformsTo` property value restriction"],
+        expected_triggered_issues=[
+            "If the Root Data Entity includes a `conformsTo` property, its values MUST reference Profile entities."
+        ]
+    )
