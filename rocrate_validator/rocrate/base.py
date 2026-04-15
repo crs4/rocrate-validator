@@ -114,7 +114,12 @@ class ROCrate(ABC):
         root = self.metadata.get_root_data_entity()
         if root and root.has_type("Dataset") and root.id == "./":
             return False
-        return bool(root and root.id_as_uri.is_remote_resource())
+        if root and root.id_as_uri.is_remote_resource():
+            # An absolute root @id doesn't necessarily mean detached;
+            # check if there are any local (non-web) data entities
+            local_data_entities = self.metadata.get_data_entities(exclude_web_data_entities=True)
+            return all(entity.id == root.id for entity in local_data_entities)
+        return False
 
     @property
     def metadata_descriptor_id(self) -> str:
@@ -318,21 +323,24 @@ class ROCrate(ABC):
         return response.content if binary_mode else response.text
 
     @staticmethod
-    def get_external_file_size(uri: str) -> int:
+    def get_external_file_size(uri: str) -> int | None:
         """
         Get the size of an external file.
 
         :param uri: the URI of the file
         :type uri: str
 
-        :return: the size of the file
-        :rtype: int
+        :return: the size of the file, or None if the server did not provide a Content-Length header
+        :rtype: int | None
 
         :raises requests.HTTPError: if the request fails
         """
         response = HttpRequester().head(str(uri))
         response.raise_for_status()
-        return int(response.headers.get("Content-Length"))
+        content_length = response.headers.get("Content-Length")
+        if content_length is None:
+            return None
+        return int(content_length)
 
     @staticmethod
     def from_metadata_dict(metadata_dict: dict) -> ROCrate:
