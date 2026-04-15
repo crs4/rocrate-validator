@@ -32,6 +32,12 @@
       "name": "file1.txt",
       "description": "Remote file in detached RO-Crate.",
       "encodingFormat": "text/plain"
+    },
+    {
+      "@id": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "@type": "CreativeWork",
+      "name": "Creative Commons Zero 1.0 Universal",
+      "description": "A Creative Commons license that allows others to copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission. This is the most permissive of the Creative Commons licenses, effectively placing the work in the public domain."
     }
   ]
 }
