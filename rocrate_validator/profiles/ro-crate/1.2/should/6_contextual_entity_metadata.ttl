@@ -50,23 +50,34 @@ ro-crate:ReferencedContextualEntitiesShouldBeDescribed a sh:NodeShape ;
         sh:select """
             SELECT DISTINCT ?this
             WHERE {
-                ?other ?pr ?this .
+                ?this ?p ?o .
                 FILTER(isIRI(?this))
                 FILTER NOT EXISTS { ?this schema:about ?anyRoot }
                 FILTER NOT EXISTS { ?anyMF schema:about ?this }
                 FILTER NOT EXISTS { ?this a schema:MediaObject }
+                FILTER NOT EXISTS { ?this a schema:Dataset }
                 FILTER NOT EXISTS { ?this a owl:Ontology }
                 FILTER NOT EXISTS {
                     ?root schema:hasPart ?this .
                     ?anyAbout schema:about ?root .
                 }
                 FILTER(!STRSTARTS(STR(?this), "http://www.w3.org/"))
-                FILTER(!STRSTARTS(STR(?this), "https://w3id.org/ro/crate/"))
+                FILTER(!STRSTARTS(STR(?this), "https://www.w3.org/"))
+                FILTER(!STRSTARTS(STR(?this), "https://w3id.org/ro/"))
                 FILTER(!STRSTARTS(STR(?this), "http://schema.org/"))
                 FILTER(!STRSTARTS(STR(?this), "https://schema.org/"))
                 FILTER(!STRSTARTS(STR(?this), "http://purl.org/"))
                 FILTER(!STRSTARTS(STR(?this), "https://bioschemas.org/"))
+                FILTER(!STRSTARTS(STR(?this), "https://codemeta.github.io/"))
+                FILTER(!STRSTARTS(STR(?this), "http://www.opengis.net/"))
+                FILTER(!STRSTARTS(STR(?this), "http://pcdm.org/"))
+                FILTER(!STRSTARTS(STR(?this), "http://xmlns.com/foaf/"))
+                FILTER(!STRSTARTS(STR(?this), "http://creativecommons.org/ns"))
+                FILTER(!STRSTARTS(STR(?this), "http://www.iana.org/"))
+                FILTER(!STRSTARTS(STR(?this), "https://www.iana.org/"))
                 FILTER(!STRSTARTS(STR(?this), "https://github.com/crs4/rocrate-validator/"))
+                FILTER(!STRSTARTS(STR(?this), "https://nationaalarchief.nl/archieven/archief/"))
+                FILTER(!STRSTARTS(STR(?this), "https://www.nationalarchives.gov.uk"))
                 FILTER(!STRSTARTS(STR(?this), "urn:"))
             }
         """
