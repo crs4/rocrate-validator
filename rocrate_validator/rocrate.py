@@ -374,6 +374,8 @@ class ROCrateMetadata:
     def get_entities_by_type(
         self, entity_type: Union[str, list[str]]
     ) -> list[ROCrateEntity]:
+        if isinstance(entity_type, str):
+            entity_type = [entity_type]
         entities = []
         for e in self.get_entities():
             if e.has_types(entity_type):
