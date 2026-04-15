@@ -39,6 +39,26 @@ ro-crate:ContextualEntityReferences a sh:NodeShape ;
         """ ;
     ] .
 
+ro-crate:ContextualEntityProperties a sh:NodeShape ;
+    sh:name "Contextual Entity Properties" ;
+    sh:description """Contextual Entities MUST have a `name` property and SHOULD have a `description` property.""" ;
+    sh:targetClass ro-crate:ContextualEntity ;
+    sh:property [
+        sh:path schema:name ;
+        sh:minCount 1 ;
+        sh:dataType xsd:string ;
+        sh:name "Contextual Entity: REQUIRED `name` property" ;
+        sh:description "Check if the Contextual Entity has a `name` property" ;
+        sh:message "A Contextual Entity MUST have a `name` property" ;
+    ] ;
+    sh:property [
+        sh:path schema:description ;
+        sh:dataType xsd:string ;
+        sh:name "Contextual Entity: OPTIONAL `description` property" ;
+        sh:description "Check if the Contextual Entity has a `description` property" ;
+        sh:message "A Contextual Entity SHOULD have a `description` property" ;
+    ] .
+
 ro-crate:ReferencedContextualEntitiesShouldBeDescribed a sh:NodeShape ;
     sh:name "Contextual Entity RECOMMENDED description" ;
     sh:description """Contextual entities referenced by other entities SHOULD be described in the same graph.""" ;
@@ -53,6 +73,21 @@ ro-crate:ReferencedContextualEntitiesShouldBeDescribed a sh:NodeShape ;
         sh:path rdf:type ;
         sh:minCount 2 ;
     ] .
+
+# ro-crate:EntityNameRecommendedProperties a sh:NodeShape ;
+#     sh:name "Entity: RECOMMENDED name" ;
+#     sh:description """Entities SHOULD have a human-readable `name`, in particular if its `@id` does not go to a human-readable Web page.
+#         This follows the RO-Crate 1.2 Common Principles for RO-Crate entities.""" ;
+#     sh:targetClass ro-crate:ContextualEntity ;
+#     sh:property [
+#         sh:path schema:name ;
+#         sh:minCount 1 ;
+#         sh:datatype xsd:string ;
+#         sh:severity sh:Warning ;
+#         sh:name "Contextual Entity: RECOMMENDED `name` property" ;
+#         sh:description "Check if the Contextual Entity has a `name` property" ;
+#         sh:message "A Contextual Entity SHOULD have a `name` property" ;
+#     ] .
 
 ro-crate:CreativeWorkAuthorMinimumRecommendedProperties a sh:NodeShape ;
     sh:name "CreativeWork Author: minimum RECOMMENDED properties" ;
@@ -70,8 +105,12 @@ ro-crate:CreativeWorkAuthorMinimumRecommendedProperties a sh:NodeShape ;
         sh:path schema:affiliation ;
         sh:minCount 1 ;
         sh:or (
-            [ sh:dataType xsd:string ; ]
-            [ sh:class schema:Organization ;]
+            [
+                sh:dataType xsd:string ;
+            ]
+            [
+                sh:class schema:Organization ;
+            ]
         ) ;
         sh:severity sh:Warning ;
         sh:name "CreativeWork Author: RECOMMENDED affiliation property" ;
@@ -87,7 +126,6 @@ ro-crate:CreativeWorkAuthorMinimumRecommendedProperties a sh:NodeShape ;
         sh:description "Check if the author has a Contextual Entity for the organizational `affiliation` property." ;
         sh:message "The author SHOULD have a Contextual Entity which specifies the organizational `affiliation`." ;
     ] .
-
 
 ro-crate:OrganizationRecommendedProperties a sh:NodeShape ;
     sh:name "Organization: RECOMMENDED properties" ;
@@ -188,8 +226,12 @@ ro-crate:EncodingFormatRecommendedTypes a sh:NodeShape ;
     sh:property [
         sh:path rdf:type ;
         sh:or (
-            [ sh:hasValue schema:WebPage ]
-            [ sh:hasValue dct:Standard ]
+            [
+                sh:hasValue schema:WebPage
+            ]
+            [
+                sh:hasValue dct:Standard
+            ]
         ) ;
         sh:severity sh:Warning ;
         sh:message "Encoding format entities SHOULD include WebPage and/or Standard types" ;

@@ -71,24 +71,66 @@ ro-crate:ContextualEntityDefinition a sh:NodeShape, validator:HiddenShape ;
         sh:object ro-crate:ContextualEntity ;
     ] .
 
-
-ro-crate:RequiredDownloadableCiteAs a sh:NodeShape ;
-    sh:name "RO-Crate Metadata Entity: REQUIRED `citeAs` reference" ;
-    sh:description """If the RO-Crate Metadata Entity includes a `cite-as` property, it MUST reference a downloadable item.""" ;
+ro-crate:FindLicenseEntity a sh:NodeShape, validator:HiddenShape ;
+    sh:name "Identify License Entity" ;
+    sh:description """Mark a license entity any Data Entity referenced by the `schema:license` property that is defined in the RO-Crate metadata.""" ;
     sh:target [
         a sh:SPARQLTarget ;
         sh:prefixes ro-crate:sparqlPrefixes ;
         sh:select """
             SELECT ?this
             WHERE {
-                ?e iana-relation:cite-as ?this .
+                ?subject schema:license ?this .
+                FILTER EXISTS { ?this ?p ?o . FILTER(?p NOT IN (owl:sameAs, rdf:type)) }
             }
         """
     ] ;
+    
+    # Expand data graph with triples from the file data entity
+    sh:rule [
+        a sh:TripleRule ;
+        sh:subject sh:this ;
+        sh:predicate rdf:type ;
+        sh:object ro-crate:ContextualEntity ;
+    ] .
+
+ro-crate:WebSiteRecommendedProperties a sh:NodeShape ;
+    sh:name "WebSite RECOMMENDED Properties" ;
+    sh:description """A `WebSite` MUST be identified by a valid IRI and MUST have a `name` property.""" ;
+    sh:targetClass schema:WebSite ;
     sh:property [
-        sh:name "RO-Crate Metadata Entity: REQUIRED `cite-as` reference" ;
-        sh:description """Check if the RO-Crate Metadata Entity's `cite-as` property references a downloadable item.""" ;
-        sh:path schema_org:url ;
+        sh:path [
+            sh:inversePath rdf:type
+        ] ; sh:datType sh:IRI ; sh:name "WebSite: value restriction of its identifier" ; sh:description "Check if the WebSite has a valid IRI" ; sh:message "A WebSite MUST have a valid IRI" ;
+    ] ; sh:property [
+        sh:path schema:name ;
         sh:minCount 1 ;
-        sh:message "If the RO-Crate Metadata Entity includes a `cite-as` property, it MUST reference a downloadable item" ;
+        sh:dataType xsd:string ;
+        sh:name "WebSite: REQUIRED `name` property" ;
+        sh:description "Check if the WebSite has a `name` property" ;
+        sh:message "A WebSite MUST have a `name` property" ;
+    ] .
+
+ro-crate:CreativeWorkAuthorDefinition a sh:NodeShape, validator:HiddenShape ;
+    sh:name "CreativeWork Author Definition" ;
+    sh:description """Define the `CreativeWorkAuthor` as the `Person` object of the `schema:author` predicate.""" ;
+    sh:targetObjectsOf schema:author ;
+    sh:rule [
+        a sh:TripleRule ;
+        sh:subject sh:this ;
+        sh:predicate rdf:type ;
+        sh:object ro-crate:CreativeWorkAuthor ;
+        sh:condition [
+            sh:property [
+                sh:path rdf:type ; sh:hasValue schema:Person ; sh:minCount 1
+            ] ;] ;] .
+
+ro-crate:ThumbnailReferencesFile a sh:NodeShape ;
+    sh:name "Thumbnail reference" ;
+    sh:description """If `thumbnail` is present, it MUST reference a File data entity.""" ;
+    sh:targetSubjectsOf schema:thumbnail ;
+    sh:property [
+        sh:path schema:thumbnail ;
+        sh:class schema:MediaObject ;
+        sh:message "If present, `thumbnail` MUST reference a File data entity" ;
     ] .
