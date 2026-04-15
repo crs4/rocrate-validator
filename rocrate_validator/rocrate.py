@@ -223,7 +223,9 @@ class ROCrateEntity:
                     return True
                 # check if the file is available at the remote location
                 logger.debug("Checking the availability of a remote entity")
-                is_available = self.ro_crate.get_external_file_size(self.id) > 0
+                size = self.ro_crate.get_external_file_size(self.id)
+                # None means the server responded successfully but did not provide Content-Length
+                is_available = size is None or size > 0
                 logger.debug("Entity '%s' with identifier '%s' is %savailable at '%s'",
                              self.name, self.id, "" if is_available else "not ", self.id_as_uri)
 
@@ -529,6 +531,12 @@ class ROCrate(ABC):
         if root and root.has_type("Dataset") and root.id == "./":
             return False
         if root and root.id_as_uri.is_remote_resource():
+            # An absolute root @id doesn't necessarily mean detached;
+            # check if there are any local (non-web) data entities
+            local_data_entities = self.metadata.get_data_entities(exclude_web_data_entities=True)
+            for entity in local_data_entities:
+                if entity.id != root.id:
+                    return False
             return True
         return False
 
@@ -748,21 +756,24 @@ class ROCrate(ABC):
         return response.content if binary_mode else response.text
 
     @staticmethod
-    def get_external_file_size(uri: str) -> int:
+    def get_external_file_size(uri: str) -> Optional[int]:
         """
         Get the size of an external file.
 
         :param uri: the URI of the file
         :type uri: str
 
-        :return: the size of the file
-        :rtype: int
+        :return: the size of the file, or None if the server did not provide a Content-Length header
+        :rtype: Optional[int]
 
         :raises requests.HTTPError: if the request fails
         """
         response = HttpRequester().head(str(uri))
         response.raise_for_status()
-        return int(response.headers.get("Content-Length"))
+        content_length = response.headers.get("Content-Length")
+        if content_length is None:
+            return None
+        return int(content_length)
 
     @staticmethod
     def from_metadata_dict(

@@ -61,7 +61,8 @@ class WebDataEntityRecommendedChecker(PyFunctionCheck):
             assert entity.id is not None, "Entity has no @id"
             if entity.is_available():
                 content_size = entity.get_property("contentSize")
-                if content_size and int(content_size) != context.ro_crate.get_external_file_size(entity.id):
+                external_size = context.ro_crate.get_external_file_size(entity.id)
+                if content_size and external_size is not None and int(content_size) != external_size:
                     context.result.add_issue(
                         f'The property contentSize={content_size} of the Web-based Data Entity '
                         f'{entity.id} does not match the actual size of '
