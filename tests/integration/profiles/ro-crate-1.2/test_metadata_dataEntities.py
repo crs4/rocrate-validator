@@ -108,3 +108,31 @@ def test_invalid_recommended_properties():
             "Data Entities SHOULD have a `contentLocation` or `spatialCoverage` property referencing a Place"
         ]
     )
+
+
+def test_valid_recommended_encoding_format():
+    """
+    Test that a Data Entity is valid when it includes the recommended `encodingFormat` property.
+    """
+    do_entity_test(
+        __metadata_root_data_entity_crates__.valid_recommended_encoding_format,
+        models.Severity.RECOMMENDED,
+        True,
+        profile_identifier="ro-crate-1.2"
+    )
+
+
+def test_invalid_recommended_encoding_format():
+    """
+    Test that a Data Entity is invalid when it includes an invalid value for the recommended `encodingFormat` property.
+    """
+    do_entity_test(
+        __metadata_root_data_entity_crates__.invalid_recommended_encoding_format,
+        models.Severity.RECOMMENDED,
+        False,
+        profile_identifier="ro-crate-1.2",
+        expected_triggered_requirements=["File Data Entity: RECOMMENDED `encodingFormat` property"],
+        expected_triggered_issues=[
+            "Missing or invalid `encodingFormat` linked to the `File Data Entity`"
+        ]
+    )
