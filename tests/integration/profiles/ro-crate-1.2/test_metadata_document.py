@@ -171,5 +171,6 @@ def test_not_described_contextual_entity():
         profile_identifier="ro-crate-1.2",
         expected_triggered_requirements=["Contextual Entity RECOMMENDED description"],
         expected_triggered_issues=[
-            "Referenced contextual entities SHOULD be described in the same @graph"]
+            "Contextual entities that are referenced by other entities SHOULD be "
+            "described in the same @graph, with at least an RDF type specified."]
     )
