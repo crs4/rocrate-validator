@@ -22,12 +22,12 @@
       "datePublished": "2024-01-01",
       "hasPart": [
         {
-          "@id": "data.txt"
+          "@id": "https://example.org/ro-crate/123/data.txt"
         }
       ]
     },
     {
-      "@id": "data.txt",
+      "@id": "https://example.org/ro-crate/123/data.txt",
       "@type": "File",
       "name": "data.txt",
       "description": "Example data file.",
