@@ -2,7 +2,7 @@
   "@context": "https://w3id.org/ro/crate/1.2/context",
   "@graph": [
     {
-      "@id": "ro-crate-metadata.json",
+      "@id": "basic-ro-crate-metadata.json",
       "@type": "CreativeWork",
       "conformsTo": {
         "@id": "https://w3id.org/ro/crate/1.2"
@@ -15,28 +15,22 @@
       "@id": "https://raw.githubusercontent.com/crs4/rocrate-validator/refs/heads/develop/tests/data/crates/valid/workflow-roc/",
       "@type": "Dataset",
       "name": "Detached RO-Crate (basic)",
-      "description": "Minimal detached RO-Crate referencing a remote file.",
+      "description": "Minimal detached RO-Crate with a non-standard metadata descriptor filename.",
       "datePublished": "2024-05-17",
       "license": {
-        "@id": "http://spdx.org/licenses/CC0-1.0"
+        "@id": "https://creativecommons.org/licenses/by/4.0/"
       },
-      "distribution": {
-        "@id": "http://spdx.org/licenses/CC0-1.0"
+      "cite-as": {
+        "@id": "https://raw.githubusercontent.com/crs4/rocrate-validator/refs/heads/develop/tests/data/crates/valid/workflow-roc/"
       },
-      "hasPart": [
-        {
-          "@id": "http://spdx.org/licenses/CC0-1.0"
-        }
-      ]
+      "url": "https://raw.githubusercontent.com/crs4/rocrate-validator/refs/heads/develop/tests/data/crates/valid/workflow-roc/",
+      "hasPart": []
     },
     {
-      "@id": "http://spdx.org/licenses/CC0-1.0",
-      "@type": "File",
-      "name": "CC0 1.0 Universal (CC0 1.0) Public Domain Dedication",
-      "description": "Remote text file referenced by the detached RO-Crate.",
-      "encodingFormat": "text/plain",
-      "contentSize": "167",
-      "sdDatePublished": "2024-05-17"
+      "@id": "https://creativecommons.org/licenses/by/4.0/",
+      "@type": "CreativeWork",
+      "name": "Creative Commons Attribution 4.0 International",
+      "description": "A Creative Commons license that lets others distribute, remix, adapt, and build upon your work, even commercially."
     }
   ]
 }
