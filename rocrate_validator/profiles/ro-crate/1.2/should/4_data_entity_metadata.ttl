@@ -105,39 +105,24 @@ ro-crate:DataEntityRecommendedProperties a sh:NodeShape ;
         sh:message "Data Entities SHOULD have a `contentLocation` or `spatialCoverage` property referencing a Place" ;
         sh:severity sh:Warning ;
     ] ;
-
-
-    # sh:property [
-    #     sh:name "Data Entity: RECOMMENDED `contentLocation`/`spatialCoverage` reference" ;
-    #     sh:description """If present, `contentLocation` or `spatialCoverage` SHOULD reference a Place.""" ;
-    #     sh:or (
-    #         [
-    #             sh:path schema_org:contentLocation ;
-    #             sh:class schema_org:Place
-    #         ]
-    #         [
-    #             sh:path schema_org:spatialCoverage ;
-    #             sh:class schema_org:Place
-    #         ]
-    #     ) ;
-    #     sh:severity sh:Warning ;
-    #     sh:message "Data Entity location properties SHOULD reference a Place" ;
-    # ] ;
-    # sh:property [
-    #     sh:name "Data Entity: RECOMMENDED `citation` reference" ;
-    #     sh:description """If present, `citation` SHOULD reference a ScholarlyArticle or CreativeWork.""" ;
-    #     sh:path schema_org:citation ;
-    #     sh:or (
-    #         [
-    #             sh:class schema_org:ScholarlyArticle
-    #         ]
-    #         [
-    #             sh:class schema_org:CreativeWork
-    #         ]
-    #     ) ;
-    #     sh:severity sh:Warning ;
-    #     sh:message "Data Entity `citation` SHOULD reference a ScholarlyArticle or CreativeWork" ;
-    # ] ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?this schema:citation ?citation .
+                FILTER NOT EXISTS {
+                    ?citation a ?type .
+                    FILTER (?type IN (schema:ScholarlyArticle, schema:CreativeWork))
+                }
+            }
+        """ ;
+        sh:name "Data Entity: RECOMMENDED `citation` reference" ;
+        sh:description """If present, `citation` SHOULD reference a ScholarlyArticle or CreativeWork.""" ;
+        sh:message "Data Entity `citation` SHOULD reference a ScholarlyArticle or CreativeWork" ;
+        sh:severity sh:Warning ;
+    ] ;
     sh:property [
         sh:name "Data Entity: RECOMMENDED `author` reference" ;
         sh:description """If present, `author` SHOULD reference Person entities.""" ;
