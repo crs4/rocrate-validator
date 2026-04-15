@@ -36,9 +36,71 @@
       "@id": "data.csv",
       "@type": "File",
       "name": "Sample data file",
-      "description": "A sample CSV data file.",
-      "encodingFormat": "text/csv",
-      "contentSize": "42"
+      "description": "A sample CSV data file containing temperature readings.",
+      "encodingFormat": [
+        "text/csv",
+        {
+          "@id": "https://www.nationalarchives.gov.uk/PRONOM/x-fmt/18"
+        }
+      ],
+      "contentSize": "42",
+      "contentLocation": {
+        "@id": "#bologna"
+      },
+      "conformsTo": {
+        "@id": "#csv-profile"
+      },
+      "dateCreated": "2025-06-15",
+      "dateModified": "2025-12-01",
+      "author": {
+        "@id": "https://orcid.org/0000-0001-2345-6789"
+      },
+      "license": {
+        "@id": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "sdDatePublished": "2026-04-15"
+    },
+    {
+      "@id": "#csv-profile",
+      "@type": "CreativeWork",
+      "name": "CSV Profile for RO-Crate 1.2",
+      "description": "A profile describing the expected structure and content of CSV files used in RO-Crates.",
+      "conformsTo": {
+        "@id": "https://www.iana.org/assignments/media-types/text/csv"
+      }
+    },
+    {
+      "@id": "#bologna",
+      "@type": "Place",
+      "name": "Bologna, Italy",
+      "geo": {
+        "@id": "#bologna-geo"
+      }
+    },
+    {
+      "@id": "#bologna-geo",
+      "@type": [
+        "GeoCoordinates",
+        "Geometry"
+      ],
+      "name": "Geographical coordinates of Bologna",
+      "latitude": 44.4949,
+      "longitude": 11.3426,
+      "asWKT": "POINT(11.3426 44.4949)"
+    },
+    {
+      "@id": "https://orcid.org/0000-0001-2345-6789",
+      "@type": "Person",
+      "name": "Dr. Jane Doe",
+      "affiliation": {
+        "@id": "https://ror.org/12345"
+      }
+    },
+    {
+      "@id": "https://ror.org/12345",
+      "@type": "Organization",
+      "name": "Example University",
+      "url": "https://www.exampleuniversity.edu"
     }
   ]
 }
