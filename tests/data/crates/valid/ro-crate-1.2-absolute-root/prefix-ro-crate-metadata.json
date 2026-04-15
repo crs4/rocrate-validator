@@ -1,0 +1,97 @@
+{
+  "@context": "https://w3id.org/ro/crate/1.2/context",
+  "@graph": [
+    {
+      "@id": "ro-crate-metadata.json",
+      "@type": "CreativeWork",
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.2"
+      },
+      "about": {
+        "@id": "https://github.com/crs4/pydoop/tree/develop/"
+      }
+    },
+    {
+      "@id": "https://github.com/crs4/pydoop/tree/develop/",
+      "@type": "Dataset",
+      "name": "Example RO-Crate 1.2 (absolute root)",
+      "description": "Attached RO-Crate using an absolute root @id.",
+      "license": {
+        "@id": "https://creativecommons.org/publicdomain/zero/1.0/"
+      },
+      "datePublished": "2024-01-01",
+      "hasPart": [
+        {
+          "@id": "https://raw.githubusercontent.com/crs4/pydoop/refs/heads/develop/README.md"
+        }
+      ],
+      "cite-as": {
+        "@id": "https://github.com/crs4/pydoop/tree/develop/"
+      },
+      "url": "https://github.com/crs4/pydoop/tree/develop/"
+    },
+    {
+      "@id": "https://raw.githubusercontent.com/crs4/pydoop/refs/heads/develop/README.md",
+      "@type": "File",
+      "name": "README.md",
+      "description": "Example data file.",
+      "encodingFormat": "text/plain",
+      "contentSize": "221",
+      "contentLocation": {
+        "@id": "#bologna"
+      },
+      "conformsTo": {
+        "@id": "#csv-profile"
+      },
+      "dateCreated": "2025-06-15",
+      "dateModified": "2025-12-01",
+      "author": {
+        "@id": "https://orcid.org/0000-0001-2345-6789"
+      },
+      "license": {
+        "@id": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "sdDatePublished": "2026-04-15"
+    },
+    {
+      "@id": "#csv-profile",
+      "@type": "CreativeWork",
+      "name": "Example CSV Profile",
+      "description": "An example profile describing CSV files."
+    },
+    {
+      "@id": "#bologna",
+      "@type": "Place",
+      "name": "Bologna, Italy",
+      "description": "The city of Bologna in Italy."
+    },
+    {
+      "@id": "https://orcid.org/0000-0001-2345-6789",
+      "@type": "Person",
+      "name": "Jane Doe",
+      "description": "An example author with an ORCID identifier.",
+      "affiliation": {
+        "@id": "https://ror.org/123456789"
+      }
+    },
+    {
+      "@id": "https://ror.org/123456789",
+      "@type": "Organization",
+      "name": "Example University",
+      "description": "An example university affiliated with the author.",
+      "url": "https://exampleuniversity.edu"
+    },
+    {
+      "@id": "https://creativecommons.org/licenses/by/4.0/",
+      "@type": "CreativeWork",
+      "name": "Creative Commons Attribution 4.0 International",
+      "description": "A Creative Commons license that lets others distribute, remix, adapt, and build upon your work, even commercially."
+    },
+    {
+      "@id": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "@type": "CreativeWork",
+      "name": "Creative Commons CC0 1.0 Universal (CC0 1.0) Public Domain Dedication",
+      "description": "A Creative Commons license that allows creators to waive all their copyright and related rights in their works, effectively placing them in the public domain."
+    }
+  ]
+}
