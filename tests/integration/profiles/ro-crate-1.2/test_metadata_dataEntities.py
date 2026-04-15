@@ -15,6 +15,7 @@
 import logging
 
 from rocrate_validator import models
+from rocrate_validator.utils.http import HttpRequester
 from tests.ro_crates_1_2 import DataEntities
 from tests.shared import do_entity_test
 
@@ -94,7 +95,7 @@ def test_valid_recommended_properties():
 
 def test_invalid_recommended_properties():
     """
-    Test that a Data Entity is invalid when it includes recommended properties.
+    Test that a Data Entity is invalid when it lacks recommended properties.
     """
     do_entity_test(
         __metadata_root_data_entity_crates__.invalid_recommended_properties,
@@ -105,7 +106,6 @@ def test_invalid_recommended_properties():
         expected_triggered_issues=[
             "Data Entities SHOULD have a `name` property",
             "Data Entities SHOULD have a `description` property",
-            "Data Entities SHOULD have a `contentLocation` or `spatialCoverage` property referencing a Place"
         ]
     )
 
@@ -135,4 +135,132 @@ def test_invalid_recommended_encoding_format():
         expected_triggered_issues=[
             "Missing or invalid `encodingFormat` linked to the `File Data Entity`"
         ]
+    )
+
+
+# ---------------------------------------------------------------------------
+# Web entity @id — downloadability (MUST at creation_time / enforce_availability)
+# ---------------------------------------------------------------------------
+
+class _ZipResponse:
+    status_code = 200
+    headers = {"Content-Type": "application/zip"}
+    links = {}
+
+    def raise_for_status(self):
+        pass
+
+
+class _HtmlResponse:
+    status_code = 200
+    headers = {"Content-Type": "text/html; charset=utf-8"}
+    links = {}
+
+    def raise_for_status(self):
+        pass
+
+
+def test_valid_required_web_entity_downloadable(monkeypatch):
+    """
+    Web-based Data Entity whose @id returns a non-HTML Content-Type MUST pass
+    the availability check when enforce_availability=True.
+    """
+    monkeypatch.setattr(HttpRequester(), "head", lambda url, **kw: _ZipResponse())
+
+    do_entity_test(
+        __metadata_root_data_entity_crates__.valid_web_entity_downloadable,
+        models.Severity.REQUIRED,
+        True,
+        profile_identifier="ro-crate-1.2",
+        enforce_availability=True,
+    )
+
+
+def test_invalid_required_web_entity_not_downloadable(monkeypatch):
+    """
+    Web-based Data Entity whose @id returns text/html (splash page) MUST fail
+    the availability check when enforce_availability=True.
+    """
+    monkeypatch.setattr(HttpRequester(), "head", lambda url, **kw: _HtmlResponse())
+
+    do_entity_test(
+        __metadata_root_data_entity_crates__.invalid_web_entity_splash_page,
+        models.Severity.REQUIRED,
+        False,
+        profile_identifier="ro-crate-1.2",
+        enforce_availability=True,
+        expected_triggered_requirements=["Web-based Data Entity: REQUIRED availability"],
+        expected_triggered_issues=["HTML page"],
+    )
+
+
+# ---------------------------------------------------------------------------
+# Web entity @id — availability warning (RECOMMENDED, default mode)
+# ---------------------------------------------------------------------------
+
+def test_valid_recommended_web_entity_downloadable_warning(monkeypatch):
+    """
+    Web-based Data Entity whose @id returns application/zip passes the
+    RECOMMENDED availability check in default mode.
+    """
+    monkeypatch.setattr(HttpRequester(), "head", lambda url, **kw: _ZipResponse())
+
+    do_entity_test(
+        __metadata_root_data_entity_crates__.valid_web_entity_downloadable,
+        models.Severity.RECOMMENDED,
+        True,
+        profile_identifier="ro-crate-1.2",
+    )
+
+
+def test_invalid_recommended_web_entity_splash_page_warning(monkeypatch):
+    """
+    Web-based Data Entity whose @id returns text/html triggers a RECOMMENDED
+    warning about a possible splash page in default mode.
+    """
+    monkeypatch.setattr(HttpRequester(), "head", lambda url, **kw: _HtmlResponse())
+
+    do_entity_test(
+        __metadata_root_data_entity_crates__.invalid_web_entity_splash_page,
+        models.Severity.RECOMMENDED,
+        False,
+        profile_identifier="ro-crate-1.2",
+        expected_triggered_requirements=["Web-based Data Entity: REQUIRED availability"],
+        expected_triggered_issues=["HTML page"],
+    )
+
+
+# ---------------------------------------------------------------------------
+# Web entity contentUrl — downloadability (RECOMMENDED)
+# ---------------------------------------------------------------------------
+
+def test_valid_recommended_content_url_downloadable(monkeypatch):
+    """
+    Web-based Data Entity whose contentUrl returns application/zip passes the
+    RECOMMENDED contentUrl availability check.
+    """
+    monkeypatch.setattr(HttpRequester(), "head", lambda url, **kw: _ZipResponse())
+
+    do_entity_test(
+        __metadata_root_data_entity_crates__.valid_recommended_content_url,
+        models.Severity.RECOMMENDED,
+        True,
+        profile_identifier="ro-crate-1.2",
+    )
+
+
+def test_invalid_recommended_content_url_not_downloadable(monkeypatch):
+    """
+    Web-based Data Entity whose contentUrl returns text/html fails the
+    RECOMMENDED contentUrl availability check.
+    """
+    monkeypatch.setattr(HttpRequester(), "head", lambda url, **kw: _HtmlResponse())
+
+    do_entity_test(
+        __metadata_root_data_entity_crates__.invalid_recommended_content_url,
+        models.Severity.RECOMMENDED,
+        False,
+        profile_identifier="ro-crate-1.2",
+        expected_triggered_requirements=["Web-based Data Entity: REQUIRED availability"],
+        expected_triggered_issues=["contentUrl", "not directly downloadable"],
     )

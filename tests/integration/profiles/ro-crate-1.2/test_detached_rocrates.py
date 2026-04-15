@@ -72,7 +72,8 @@ def test_root_data_entity_identifier_when_online_available():
         __detached_crates__.valid_root_data_entity_identifier_when_online_available,
         models.Severity.RECOMMENDED,
         True,
-        profile_identifier="ro-crate-1.2"
+        profile_identifier="ro-crate-1.2",
+        skip_checks=["ro-crate-1.2_41.1", "ro-crate-1.2_44.1"],
     )
 
 

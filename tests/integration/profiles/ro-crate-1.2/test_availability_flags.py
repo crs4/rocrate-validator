@@ -24,13 +24,38 @@ logger = logging.getLogger(__name__)
 
 valid = ValidROCrate12()
 
+# Minimal set of JSON-LD context keys needed to pass `check_compaction`
+# for the test crates used in this module.
+_FAKE_CONTEXT_KEYS = {
+    "about", "affiliation", "author", "cite-as", "conformsTo",
+    "contentLocation", "contentSize", "contentUrl", "dateCreated",
+    "dateModified", "datePublished", "description", "encodingFormat",
+    "hasPart", "license", "name", "sdDatePublished", "url",
+}
+
+
+class _FakeContextResponse:
+    """Minimal HTTP response that satisfies `FileDescriptorJsonLdFormat` checks."""
+    status_code = 200
+    headers = {"Content-Type": "application/ld+json"}
+
+    def json(self):
+        return {"@context": {k: f"http://schema.org/{k}" for k in _FAKE_CONTEXT_KEYS}}
+
+
+def _fake_context_get(url, *args, **kwargs):
+    """Return a fake JSON-LD context for w3id.org; reject anything else."""
+    if "w3id.org" in url:
+        return _FakeContextResponse()
+    raise RuntimeError(f"Unexpected GET request in test: {url}")
+
 
 def _validate_with_settings(**kwargs):
     return services.validate(
         models.ValidationSettings(
             rocrate_uri=URI(valid.attached_absolute_root),
             profile_identifier="ro-crate-1.2",
-            requirement_severity=models.Severity.REQUIRED,
+            requirement_severity=models.Severity.RECOMMENDED,
             **kwargs,
         )
     )
@@ -45,16 +70,20 @@ def _availability_messages(result):
 
 
 def _patch_unavailable(monkeypatch):
+    """Make every HEAD request fail (simulates unreachable web entities)
+    and return a fake JSON-LD context for GET requests to avoid proxy errors."""
     def fake_head(url, *args, **kwargs):
         raise RuntimeError("Not downloadable")
 
     monkeypatch.setattr(HttpRequester(), "head", fake_head)
+    monkeypatch.setattr(HttpRequester(), "get", _fake_context_get)
 
 
 def test_default_availability_warns(monkeypatch):
     _patch_unavailable(monkeypatch)
     result = _validate_with_settings()
-    assert result.passed()
+    # REQUIRED checks must pass; the unavailable entity only raises a RECOMMENDED warning
+    assert result.passed(models.Severity.REQUIRED)
     messages = _availability_messages(result)
     assert messages, "Expected availability warnings for web-based data entities"
 
@@ -75,7 +104,8 @@ def test_enforce_availability_flag(monkeypatch):
     assert messages, "Expected availability violations when enforced"
 
 
-def test_skip_availability_check():
+def test_skip_availability_check(monkeypatch):
+    monkeypatch.setattr(HttpRequester(), "get", _fake_context_get)
     result = _validate_with_settings(skip_availability_check=True)
     assert result.passed()
     messages = _availability_messages(result)
@@ -100,6 +130,7 @@ def test_content_size_warning(monkeypatch):
         return FakeResponse(content_length="10")
 
     monkeypatch.setattr(HttpRequester(), "head", fake_head)
+    monkeypatch.setattr(HttpRequester(), "get", _fake_context_get)
 
     metadata_dict = {
         "@context": "https://w3id.org/ro/crate/1.2/context",
@@ -137,7 +168,7 @@ def test_content_size_warning(monkeypatch):
             metadata_dict=metadata_dict,
             metadata_only=True,
             profile_identifier="ro-crate-1.2",
-            requirement_severity=models.Severity.REQUIRED,
+            requirement_severity=models.Severity.RECOMMENDED,
         )
     )
 

@@ -30,12 +30,6 @@
       ]
     },
     {
-      "@id": "https://creativecommons.org/licenses/by/4.0/",
-      "@type": "CreativeWork",
-      "name": "Creative Commons Attribution 4.0 International",
-      "description": "A Creative Commons license that lets others distribute, remix, adapt, and build upon your work, even commercially."
-    },
-    {
       "@id": "data.csv",
       "@type": "File",
       "name": "Sample data",
