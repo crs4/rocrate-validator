@@ -10,19 +10,13 @@
     {
       "@id": "./",
       "@type": "Dataset",
-      "name": "Dataset distribution — valid",
-      "description": "RO-Crate whose Root Data Entity declares a distribution pointing to a downloadable DataDownload archive.",
+      "name": "Parent traversal — invalid",
+      "description": "RO-Crate with a contextual entity whose @id uses ../ to climb out of the RO-Crate Root.",
       "datePublished": "2024-01-01",
       "license": {"@id": "https://creativecommons.org/licenses/by/4.0/"},
       "publisher": {"@id": "#publisher-org"},
       "hasPart": [],
-      "distribution": {"@id": "https://example.com/rocrate.zip"}
-    },
-    {
-      "@id": "#publisher-org",
-      "@type": "Organization",
-      "name": "Example Research Institute",
-      "url": "https://example.org"
+      "citation": {"@id": "../external-publication.html"}
     },
     {
       "@id": "https://creativecommons.org/licenses/by/4.0/",
@@ -31,11 +25,16 @@
       "description": "CC BY 4.0 license."
     },
     {
-      "@id": "https://example.com/rocrate.zip",
-      "@type": "DataDownload",
-      "name": "RO-Crate archive",
-      "description": "A ZIP archive of the RO-Crate, directly downloadable.",
-      "encodingFormat": "application/zip"
+      "@id": "#publisher-org",
+      "@type": "Organization",
+      "name": "Example Research Institute",
+      "url": "https://example.org"
+    },
+    {
+      "@id": "../external-publication.html",
+      "@type": "ScholarlyArticle",
+      "name": "A publication outside the crate root",
+      "description": "A contextual entity referenced via ../ — demonstrates parent directory traversal."
     }
   ]
 }

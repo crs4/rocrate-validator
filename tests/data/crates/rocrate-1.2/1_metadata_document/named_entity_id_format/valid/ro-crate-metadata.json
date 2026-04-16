@@ -10,19 +10,13 @@
     {
       "@id": "./",
       "@type": "Dataset",
-      "name": "Dataset distribution — valid",
-      "description": "RO-Crate whose Root Data Entity declares a distribution pointing to a downloadable DataDownload archive.",
+      "name": "Named entity #-prefix — valid",
+      "description": "RO-Crate where all local Person and Organization entities use '#'-prefixed @id.",
       "datePublished": "2024-01-01",
       "license": {"@id": "https://creativecommons.org/licenses/by/4.0/"},
       "publisher": {"@id": "#publisher-org"},
-      "hasPart": [],
-      "distribution": {"@id": "https://example.com/rocrate.zip"}
-    },
-    {
-      "@id": "#publisher-org",
-      "@type": "Organization",
-      "name": "Example Research Institute",
-      "url": "https://example.org"
+      "author": {"@id": "#alice"},
+      "hasPart": []
     },
     {
       "@id": "https://creativecommons.org/licenses/by/4.0/",
@@ -31,11 +25,16 @@
       "description": "CC BY 4.0 license."
     },
     {
-      "@id": "https://example.com/rocrate.zip",
-      "@type": "DataDownload",
-      "name": "RO-Crate archive",
-      "description": "A ZIP archive of the RO-Crate, directly downloadable.",
-      "encodingFormat": "application/zip"
+      "@id": "#alice",
+      "@type": "Person",
+      "name": "Alice Researcher",
+      "affiliation": {"@id": "#publisher-org"}
+    },
+    {
+      "@id": "#publisher-org",
+      "@type": "Organization",
+      "name": "Example University",
+      "url": "https://example.edu"
     }
   ]
 }

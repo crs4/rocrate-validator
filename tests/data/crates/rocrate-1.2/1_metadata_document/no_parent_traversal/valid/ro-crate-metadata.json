@@ -10,19 +10,12 @@
     {
       "@id": "./",
       "@type": "Dataset",
-      "name": "Dataset distribution — valid",
-      "description": "RO-Crate whose Root Data Entity declares a distribution pointing to a downloadable DataDownload archive.",
+      "name": "No parent traversal — valid",
+      "description": "RO-Crate with no @id values that use ../ to climb out of the root.",
       "datePublished": "2024-01-01",
       "license": {"@id": "https://creativecommons.org/licenses/by/4.0/"},
       "publisher": {"@id": "#publisher-org"},
-      "hasPart": [],
-      "distribution": {"@id": "https://example.com/rocrate.zip"}
-    },
-    {
-      "@id": "#publisher-org",
-      "@type": "Organization",
-      "name": "Example Research Institute",
-      "url": "https://example.org"
+      "hasPart": []
     },
     {
       "@id": "https://creativecommons.org/licenses/by/4.0/",
@@ -31,11 +24,10 @@
       "description": "CC BY 4.0 license."
     },
     {
-      "@id": "https://example.com/rocrate.zip",
-      "@type": "DataDownload",
-      "name": "RO-Crate archive",
-      "description": "A ZIP archive of the RO-Crate, directly downloadable.",
-      "encodingFormat": "application/zip"
+      "@id": "#publisher-org",
+      "@type": "Organization",
+      "name": "Example Research Institute",
+      "url": "https://example.org"
     }
   ]
 }

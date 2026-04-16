@@ -10,25 +10,29 @@
     {
       "@id": "./",
       "@type": "Dataset",
-      "name": "Root identifier resolution — valid",
-      "description": "RO-Crate whose Root Data Entity has an identifier URL that resolves to RO-Crate content via Signposting.",
+      "name": "Named entity without #-prefix — invalid",
+      "description": "RO-Crate where a local Person entity uses a bare relative @id instead of '#'-prefixed.",
       "datePublished": "2024-01-01",
       "license": {"@id": "https://creativecommons.org/licenses/by/4.0/"},
-      "hasPart": [],
-      "publisher": {"@id": "#publisher-org"},
-      "identifier": "https://doi.org/10.1234/resolvable-rocrate"
-    },
-    {
-      "@id": "#publisher-org",
-      "@type": "Organization",
-      "name": "Example Research Institute",
-      "url": "https://example.org"
+      "author": {"@id": "alice"},
+      "hasPart": []
     },
     {
       "@id": "https://creativecommons.org/licenses/by/4.0/",
       "@type": "CreativeWork",
       "name": "Creative Commons Attribution 4.0 International",
       "description": "CC BY 4.0 license."
+    },
+    {
+      "@id": "alice",
+      "@type": "Person",
+      "name": "Alice Researcher",
+      "affiliation": {"@id": "example-org"}
+    },
+    {
+      "@id": "example-org",
+      "@type": "Organization",
+      "name": "Example University"
     }
   ]
 }

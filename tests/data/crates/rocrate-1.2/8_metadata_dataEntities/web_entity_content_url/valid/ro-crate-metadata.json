@@ -14,7 +14,14 @@
       "description": "RO-Crate with a web-based File Data Entity that declares a downloadable contentUrl.",
       "datePublished": "2024-01-01",
       "license": {"@id": "https://creativecommons.org/licenses/by/4.0/"},
+      "publisher": {"@id": "#publisher-org"},
       "hasPart": [{"@id": "https://example.com/landing/dataset"}]
+    },
+    {
+      "@id": "#publisher-org",
+      "@type": "Organization",
+      "name": "Example Research Institute",
+      "url": "https://example.org"
     },
     {
       "@id": "https://creativecommons.org/licenses/by/4.0/",

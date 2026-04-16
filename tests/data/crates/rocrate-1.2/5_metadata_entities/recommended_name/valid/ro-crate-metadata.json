@@ -24,7 +24,14 @@
         {
           "@id": "my-data-file.txt"
         }
-      ]
+      ],
+      "publisher": {"@id": "#publisher-org"}
+    },
+    {
+      "@id": "#publisher-org",
+      "@type": "Organization",
+      "name": "Example Research Institute",
+      "url": "https://example.org"
     },
     {
       "@id": "https://creativecommons.org/licenses/by/4.0/",

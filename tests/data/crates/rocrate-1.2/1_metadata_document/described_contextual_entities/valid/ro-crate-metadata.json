@@ -23,6 +23,7 @@
       "author": {
         "@id": "https://orcid.org/0000-0002-1825-0097"
       },
+      "publisher": {"@id": "https://ror.org/05f9q8d28"},
       "hasPart": [
         {
           "@id": "data.csv"

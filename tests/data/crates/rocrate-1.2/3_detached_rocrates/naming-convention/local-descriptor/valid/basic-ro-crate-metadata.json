@@ -24,7 +24,14 @@
         "@id": "https://raw.githubusercontent.com/crs4/rocrate-validator/refs/heads/develop/tests/data/crates/valid/workflow-roc/"
       },
       "url": "https://raw.githubusercontent.com/crs4/rocrate-validator/refs/heads/develop/tests/data/crates/valid/workflow-roc/",
-      "hasPart": []
+      "hasPart": [],
+      "publisher": {"@id": "#publisher-org"}
+    },
+    {
+      "@id": "#publisher-org",
+      "@type": "Organization",
+      "name": "Example Research Institute",
+      "url": "https://example.org"
     },
     {
       "@id": "https://creativecommons.org/licenses/by/4.0/",
