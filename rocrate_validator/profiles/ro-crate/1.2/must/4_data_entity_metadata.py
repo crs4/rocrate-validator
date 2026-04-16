@@ -307,7 +307,7 @@ class WebDataEntityRequiredChecker(PyFunctionCheck):
                     except Exception:
                         content_int = None
                     external_size = context.ro_crate.get_external_file_size(entity.id)
-                    if content_int is not None and content_int != external_size:
+                    if external_size is not None and content_int is not None and content_int != external_size:
                         context.result.add_issue(
                             f'The property contentSize={content_size} of the Web-based Data Entity '
                             f'{entity.id} does not match the actual size of '
@@ -330,18 +330,22 @@ class WebDataEntityRequiredChecker(PyFunctionCheck):
                 continue
             urls = content_url if isinstance(content_url, list) else [content_url]
             for url in urls:
+                url_value = url if isinstance(url, str) else url.id if hasattr(url, "id") else None
+                if not url_value or not url_value.startswith("http"):
+                    continue
                 try:
-                    url_value = url if isinstance(url, str) else url.id
-                    if not context.ro_crate.get_external_file_size(url_value):
-                        context.result.add_issue(
-                            f"contentUrl {url_value} for Web-based Data Entity {entity.id} "
-                            "is not directly downloadable",
-                            self)
+                    dl = check_downloadable(url_value)
+                    if not dl.is_downloadable:
+                        msg = (f"contentUrl '{url_value}' for Web-based Data Entity '{entity.id}' "
+                               "is not directly downloadable")
+                        if dl.reason:
+                            msg += f": {dl.reason}"
+                        context.result.add_issue(msg, self)
                         result = False
                 except Exception as e:
                     context.result.add_issue(
-                        f"contentUrl {url} for Web-based Data Entity {entity.id} is not directly downloadable: {e}",
-                        self)
+                        f"contentUrl '{url_value}' for Web-based Data Entity '{entity.id}' "
+                        f"availability check failed: {e}", self)
                     result = False
                 if not result and context.fail_fast:
                     return result
