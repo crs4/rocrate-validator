@@ -277,7 +277,8 @@ def test_valid_missing_file_local_path():
         True,
         profile_identifier="ro-crate-1.2",
         skip_checks=["ro-crate-1.2_16.1", "ro-crate-1.2_38.1",
-                     "ro-crate-1.2_17.1", "ro-crate-1.2_39.0", "ro-crate-1.2_39.1"],
+                     "ro-crate-1.2_17.1", "ro-crate-1.2_39.0", "ro-crate-1.2_39.1",
+                     "ro-crate-1.2_18.1"],
     )
 
 

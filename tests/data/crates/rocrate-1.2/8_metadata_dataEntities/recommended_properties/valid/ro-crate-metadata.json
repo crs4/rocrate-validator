@@ -33,7 +33,17 @@
       ],
       "funder": {
         "@id": "https://ror.org/05f9q8d28"
+      },
+      "identifier": {
+        "@id": "#uuid"
       }
+    },
+    {
+      "@id": "#uuid",
+      "@type": "PropertyValue",
+      "name": "UUID",
+      "propertyID": "UUID",
+      "value": "550e8400-e29b-41d4-a716-446655440000"
     },
     {
       "@id": "https://creativecommons.org/licenses/by/4.0/",

@@ -1,0 +1,59 @@
+{
+  "@context": "https://w3id.org/ro/crate/1.2/context",
+  "@graph": [
+    {
+      "@id": "ro-crate-metadata.json",
+      "@type": ["CreativeWork", "schema:Book"],
+      "about": {
+        "@id": "https://example.org/crate1"
+      },
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.2"
+      }
+    },
+    {
+      "@id": "https://example.org/crate1",
+      "@type": "Dataset",
+      "name": "Test RO-Crate: identifier missing with absolute URI",
+      "description": "This RO-Crate has an absolute URI as @id but does NOT include an identifier property",
+      "datePublished": "2024-01-15",
+      "license": {
+        "@id": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "publisher": {
+        "@id": "#publisher-org"
+      },
+      "funder": {
+        "@id": "#funder-org"
+      },
+      "hasPart": []
+    },
+    {
+      "@id": "https://creativecommons.org/licenses/by/4.0/",
+      "@type": "CreativeWork",
+      "name": "Creative Commons Attribution 4.0 International",
+      "description": "A Creative Commons license"
+    },
+    {
+      "@id": "#publisher-org",
+      "@type": "Organization",
+      "name": "Example Research Institute",
+      "url": "https://example.org"
+    },
+    {
+      "@id": "#funder-org",
+      "@type": "Organization",
+      "name": "European Commission",
+      "url": "https://ec.europa.eu",
+      "funder": {
+        "@id": "https://ror.org/00k4n6c32"
+      }
+    },
+    {
+      "@id": "https://ror.org/00k4n6c32",
+      "@type": "Organization",
+      "name": "External Funder",
+      "url": "https://ror.org"
+    }
+  ]
+}
