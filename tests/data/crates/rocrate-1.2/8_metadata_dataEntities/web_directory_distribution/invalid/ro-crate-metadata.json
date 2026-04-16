@@ -1,0 +1,32 @@
+{
+  "@context": "https://w3id.org/ro/crate/1.2/context",
+  "@graph": [
+    {
+      "@id": "ro-crate-metadata.json",
+      "@type": "CreativeWork",
+      "about": {"@id": "./"},
+      "conformsTo": {"@id": "https://w3id.org/ro/crate/1.2"}
+    },
+    {
+      "@id": "./",
+      "@type": "Dataset",
+      "name": "Web directory without distribution — invalid",
+      "description": "RO-Crate containing a web-based Directory Data Entity that does not declare a distribution.",
+      "datePublished": "2024-01-01",
+      "license": {"@id": "https://creativecommons.org/licenses/by/4.0/"},
+      "hasPart": [{"@id": "https://example.com/dataset-dir/"}]
+    },
+    {
+      "@id": "https://creativecommons.org/licenses/by/4.0/",
+      "@type": "CreativeWork",
+      "name": "Creative Commons Attribution 4.0 International",
+      "description": "CC BY 4.0 license."
+    },
+    {
+      "@id": "https://example.com/dataset-dir/",
+      "@type": "Dataset",
+      "name": "Web dataset directory (no distribution)",
+      "description": "A web-based directory that does not declare a distribution property."
+    }
+  ]
+}
