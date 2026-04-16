@@ -11,114 +11,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-@prefix ro: <./> .
 @prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.2/> .
-@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix schema_org: <http://schema.org/> .
-@prefix prof: <http://www.w3.org/ns/dx/prof/> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
-@prefix validator: <https://github.com/crs4/rocrate-validator/> .
 
-ro-crate:RootDataEntityDirectRecommendedProperties a sh:NodeShape ;
-    sh:name "RO-Crate Root Data Entity RECOMMENDED properties" ;
-    sh:description """The Root Data Entity SHOULD have 
-    the properties `name`, `description` and `license` defined as described
-    in the RO-Crate specification <https://www.researchobject.org/ro-crate/1.2/root-data-entity.html>""";
+ro-crate:RootDataEntityDatePublishedDayPrecision a sh:NodeShape ;
+    sh:name "Root Data Entity: datePublished SHOULD specify at least day precision" ;
+    sh:description """The Root Data Entity SHOULD specify datePublished to at least
+        the precision of a day (YYYY-MM-DD) per RO-Crate 1.2.""" ;
     sh:targetClass ro-crate:RootDataEntity ;
     sh:property [
         a sh:PropertyShape ;
-        sh:name "Root Data Entity: `name` property" ;
-        sh:description """Check if the Root Data Entity includes a `name` (as specified by schema.org) 
-        to clearly identify the dataset and distinguish it from other datasets.""" ;
-        sh:minCount 1 ;
-        sh:nodeKind sh:Literal ;
-        sh:path schema_org:name;
-        sh:message "The Root Data Entity SHOULD have a `name` property (as specified by schema.org)" ;
-    ] ;
-    sh:property [
-        a sh:PropertyShape ;
-        sh:name "Root Data Entity: `description` property" ;
-        sh:description """Check if the Root Data Entity includes a `description` (as specified by schema.org)
-        to provide a human-readable description of the dataset.""" ;
-        sh:minCount 1 ;
-        sh:nodeKind sh:Literal ;
-        sh:path schema_org:description;
-        sh:message "The Root Data Entity SHOULD have a `description` property (as specified by schema.org)" ;
-    ] ;
-    sh:property [
-        a sh:PropertyShape ;
-        sh:name "Root Data Entity: `license` SHOULD link to a Contextual Entity" ;
-        sh:description """Check if the Root Data Entity includes a `license` property 
-        that links to a Contextual Entity with type `schema_org:CreativeWork` to describe the license.""" ;
-        sh:nodeKind sh:BlankNodeOrIRI ;
-        sh:or (
-            [ sh:class schema_org:CreativeWork ]
-            [ sh:class schema_org:MediaObject ]
-            [ sh:class schema_org:Dataset ]
-        ) ;
-        sh:path schema_org:license;
-        sh:minCount 1 ;
-        sh:message """The Root Data Entity SHOULD have a link to a Contextual Entity representing the schema_org:license type""" ;
-    ] ;
-    sh:property [
-        a sh:PropertyShape ;
-        sh:name "Root Data Entity: `author` property" ;
-        sh:description """Check if the Root Data Entity includes a `author` property (as specified by schema.org)
-        to provide information about its author.""" ;
-        sh:or (
-            [ sh:class schema_org:Person ;]
-            [ sh:class schema_org:Organization ;]
-        ) ;
-        sh:path schema_org:author;
-        sh:minCount 1 ;
-        sh:message """The Root Data Entity SHOULD have a link to a Contextual Entity representing the `author` of the RO-Crate""" ;
-    ] ;
-    sh:property [
-        sh:minCount 1 ;
-        sh:maxCount 1 ;
-        sh:path schema_org:publisher ;
-        sh:severity sh:Warning ;
-        sh:name "Root Data Entity: `publisher` property" ;
-        sh:description """Check if the Root Data Entity has a `publisher` property of type `Organization`.""" ;
-        sh:message "The `publisher` property of a `Root Data Entity` SHOULD be an `Organization`";
-        sh:nodeKind sh:IRI ;
-        sh:class schema_org:Organization ;
-    ] ;
-    sh:property [
-        sh:severity sh:Warning ;
-        sh:name "Root Data Entity: `funder` property" ;
-        sh:description """Check if the Root Data Entity has `funder` properties referencing Organizations.""" ;
-        sh:path schema_org:funder ;
-        sh:class schema_org:Organization ;
-        sh:message "The Root Data Entity SHOULD reference funders using `funder`" ;
-    ] ;
-    sh:property [
-        a sh:PropertyShape ;
-        sh:name "Root Data Entity: RECOMMENDED `datePublished` property" ;
-        sh:description """Check if the Root Data Entity includes a `datePublished` (as specified by schema.org)
-        to provide the date when the dataset was published. The datePublished MUST be a valid ISO 8601 date.
-        It SHOULD be specified to at least the day level, but MAY include a time component.""" ;
-        sh:minCount 1 ;
-        sh:nodeKind sh:Literal ;
+        sh:name "Root Data Entity: RECOMMENDED datePublished day precision" ;
         sh:path schema_org:datePublished ;
-        sh:pattern "^([\\+-]?\\d{4})((-?)((0[1-9]|1[0-2])(\\3([12]\\d|0[1-9]|3[01]))|W([0-4]\\d|5[0-2])(-?[1-7])|(00[1-9]|0[1-9]\\d|[12]\\d{2}|3([0-5]\\d|6[1-6])))([T\\s]((([01]\\d|2[0-3])((:?)?[0-5]\\d)?|24:?00)([\\.,]\\d+(?!:))?)?(\\17[0-5]\\d([\\.,]\\d+)?)?([zZ]|([\\+-])([01]\\d|2[0-3]):?([0-5]\\d)?)?)?)$" ;
-        sh:message "The Root Data Entity MUST have a `datePublished` property (as specified by schema.org) with a valid ISO 8601 date and the precision of at least the day level" ;
-    ] .
-
-ro-crate:RootDataEntityIdentifierRecommendedValue
-    a sh:NodeShape ;
-    sh:name "RO-Crate Root Data Entity RECOMMENDED value" ;
-    sh:description "The Root Data Entity SHOULD be identified by `./` or an absolute URI" ;
-    sh:targetNode ro-crate:RootDataEntity ;
-    sh:property [
-        a sh:PropertyShape ;
-        sh:name "Root Data Entity URI value" ;
-        sh:description "Check if the Root Data Entity identifier is `./` or an absolute URI" ;
-        sh:path [ sh:inversePath rdf:type ] ;
-        sh:message """The Root Data Entity SHOULD be identified by `./` or an absolute URI""" ;
-        sh:or (
-            [ sh:pattern "^\\./$" ]
-            [ sh:pattern "^[A-Za-z][A-Za-z0-9+\\.-]*:" ]
-        ) ;
+        sh:pattern "^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])" ;
+        sh:severity sh:Warning ;
+        sh:message "The Root Data Entity SHOULD specify datePublished to at least the precision of a day (YYYY-MM-DD)" ;
     ] .
