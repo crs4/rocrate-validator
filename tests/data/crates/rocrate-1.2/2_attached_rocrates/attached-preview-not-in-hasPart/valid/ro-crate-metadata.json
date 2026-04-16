@@ -20,12 +20,17 @@
       "license": {
         "@id": "https://creativecommons.org/licenses/by/4.0/"
       },
-      "publisher": {"@id": "#publisher-org"},
+      "publisher": {
+        "@id": "#publisher-org"
+      },
       "hasPart": [
         {
           "@id": "data.csv"
         }
-      ]
+      ],
+      "funder": {
+        "@id": "https://ror.org/00k4n6c32"
+      }
     },
     {
       "@id": "#publisher-org",
@@ -108,6 +113,13 @@
       "@type": "Organization",
       "name": "Example University",
       "url": "https://www.exampleuniversity.edu"
+    },
+    {
+      "@id": "https://ror.org/00k4n6c32",
+      "@type": "Organization",
+      "name": "European Commission",
+      "description": "The European Commission funds research and innovation programmes.",
+      "url": "https://ec.europa.eu"
     }
   ]
 }

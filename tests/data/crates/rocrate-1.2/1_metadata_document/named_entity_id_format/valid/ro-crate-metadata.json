@@ -4,19 +4,32 @@
     {
       "@id": "ro-crate-metadata.json",
       "@type": "CreativeWork",
-      "about": {"@id": "./"},
-      "conformsTo": {"@id": "https://w3id.org/ro/crate/1.2"}
+      "about": {
+        "@id": "./"
+      },
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.2"
+      }
     },
     {
       "@id": "./",
       "@type": "Dataset",
-      "name": "Named entity #-prefix — valid",
+      "name": "Named entity #-prefix \u2014 valid",
       "description": "RO-Crate where all local Person and Organization entities use '#'-prefixed @id.",
       "datePublished": "2024-01-01",
-      "license": {"@id": "https://creativecommons.org/licenses/by/4.0/"},
-      "publisher": {"@id": "#publisher-org"},
-      "author": {"@id": "#alice"},
-      "hasPart": []
+      "license": {
+        "@id": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "publisher": {
+        "@id": "#publisher-org"
+      },
+      "author": {
+        "@id": "#alice"
+      },
+      "hasPart": [],
+      "funder": {
+        "@id": "https://ror.org/00k4n6c32"
+      }
     },
     {
       "@id": "https://creativecommons.org/licenses/by/4.0/",
@@ -28,13 +41,22 @@
       "@id": "#alice",
       "@type": "Person",
       "name": "Alice Researcher",
-      "affiliation": {"@id": "#publisher-org"}
+      "affiliation": {
+        "@id": "#publisher-org"
+      }
     },
     {
       "@id": "#publisher-org",
       "@type": "Organization",
       "name": "Example University",
       "url": "https://example.edu"
+    },
+    {
+      "@id": "https://ror.org/00k4n6c32",
+      "@type": "Organization",
+      "name": "European Commission",
+      "description": "The European Commission funds research and innovation programmes.",
+      "url": "https://ec.europa.eu"
     }
   ]
 }

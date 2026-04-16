@@ -4,19 +4,30 @@
     {
       "@id": "ro-crate-metadata.json",
       "@type": "CreativeWork",
-      "about": {"@id": "./"},
-      "conformsTo": {"@id": "https://w3id.org/ro/crate/1.2"}
+      "about": {
+        "@id": "./"
+      },
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.2"
+      }
     },
     {
       "@id": "./",
       "@type": "Dataset",
-      "name": "Root identifier resolution — valid",
+      "name": "Root identifier resolution \u2014 valid",
       "description": "RO-Crate whose Root Data Entity has an identifier URL that resolves to RO-Crate content via Signposting.",
       "datePublished": "2024-01-01",
-      "license": {"@id": "https://creativecommons.org/licenses/by/4.0/"},
+      "license": {
+        "@id": "https://creativecommons.org/licenses/by/4.0/"
+      },
       "hasPart": [],
-      "publisher": {"@id": "#publisher-org"},
-      "identifier": "https://doi.org/10.1234/resolvable-rocrate"
+      "publisher": {
+        "@id": "#publisher-org"
+      },
+      "identifier": "https://doi.org/10.1234/resolvable-rocrate",
+      "funder": {
+        "@id": "https://ror.org/00k4n6c32"
+      }
     },
     {
       "@id": "#publisher-org",
@@ -29,6 +40,13 @@
       "@type": "CreativeWork",
       "name": "Creative Commons Attribution 4.0 International",
       "description": "CC BY 4.0 license."
+    },
+    {
+      "@id": "https://ror.org/00k4n6c32",
+      "@type": "Organization",
+      "name": "European Commission",
+      "description": "The European Commission funds research and innovation programmes.",
+      "url": "https://ec.europa.eu"
     }
   ]
 }

@@ -25,7 +25,12 @@
           "@id": "my-data-file.txt"
         }
       ],
-      "publisher": {"@id": "#publisher-org"}
+      "publisher": {
+        "@id": "#publisher-org"
+      },
+      "funder": {
+        "@id": "https://ror.org/00k4n6c32"
+      }
     },
     {
       "@id": "#publisher-org",
@@ -45,6 +50,13 @@
       "name": "My Data File",
       "description": "A data file that is part of the RO-Crate.",
       "encodingFormat": "text/plain"
+    },
+    {
+      "@id": "https://ror.org/00k4n6c32",
+      "@type": "Organization",
+      "name": "European Commission",
+      "description": "The European Commission funds research and innovation programmes.",
+      "url": "https://ec.europa.eu"
     }
   ]
 }

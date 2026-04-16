@@ -21,7 +21,12 @@
         "@id": "https://creativecommons.org/licenses/by/4.0/"
       },
       "hasPart": [],
-      "publisher": {"@id": "#publisher-org"}
+      "publisher": {
+        "@id": "#publisher-org"
+      },
+      "funder": {
+        "@id": "https://ror.org/00k4n6c32"
+      }
     },
     {
       "@id": "#publisher-org",
@@ -34,6 +39,13 @@
       "@type": "CreativeWork",
       "name": "Creative Commons Attribution 4.0 International",
       "description": "A Creative Commons license that lets others distribute, remix, adapt, and build upon your work, even commercially."
+    },
+    {
+      "@id": "https://ror.org/00k4n6c32",
+      "@type": "Organization",
+      "name": "European Commission",
+      "description": "The European Commission funds research and innovation programmes.",
+      "url": "https://ec.europa.eu"
     }
   ]
 }
