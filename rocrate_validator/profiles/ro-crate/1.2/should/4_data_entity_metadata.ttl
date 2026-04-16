@@ -1,16 +1,16 @@
-# # Copyright (c) 2024-2026 CRS4
-# #
-# # Licensed under the Apache License, Version 2.0 (the "License");
-# # you may not use this file except in compliance with the License.
-# # You may obtain a copy of the License at
-# #
-# # http://www.apache.org/licenses/LICENSE-2.0
-# #
-# # Unless required by applicable law or agreed to in writing, software
-# # distributed under the License is distributed on an "AS IS" BASIS,
-# # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# # See the License for the specific language governing permissions and
-# # limitations under the License.
+# Copyright (c) 2024-2026 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 @prefix ro: <./> .
 @prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.2/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
@@ -19,29 +19,29 @@
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-# ro-crate:FileRecommendedProperties a sh:NodeShape ;
-#     sh:name "File Data Entity: RECOMMENDED properties" ;
-#     sh:description """A `File` Data Entity SHOULD have detailed descriptions of encodings through the `encodingFormat` property.""" ;
-#     sh:targetClass ro-crate:File ;
-#     sh:property [
-#         sh:minCount 1 ;
-#         sh:maxCount 2 ;
-#         sh:path schema_org:encodingFormat ;
-#         sh:severity sh:Warning ;
-#         sh:name "File Data Entity: RECOMMENDED `encodingFormat` property" ;
-#         sh:description """Check if the File Data Entity has a detailed description of encodings through the `encodingFormat` property.
-#         The `encodingFormat` property SHOULD be a PRONOM identifier (e.g., application/pdf) or,
-#         to add more detail, SHOULD be linked using a `PRONOM` identifier to a `Contextual Entity` of type `WebPage`.""" ;
-#         sh:message "Missing or invalid `encodingFormat` linked to the `File Data Entity`" ;
-#         sh:or (
-#             [
-#                 sh:datatype xsd:string ;
-#                 sh:pattern "^(\\w*)\\/(\\w[\\w\\.-]*)(?:\\+(\\w[\\w\\.-]*))?(?:;(\\w+=[^;]+))*$" ;
-#             ]
-#             [
-#                 sh:nodeKind sh:IRI ;
-#             ]
-#         )] .
+ro-crate:FileRecommendedProperties a sh:NodeShape ;
+    sh:name "File Data Entity: RECOMMENDED `encodingFormat` property" ;
+    sh:description """A `File` Data Entity SHOULD have detailed descriptions of encodings through the `encodingFormat` property.""" ;
+    sh:targetClass ro-crate:File ;
+    sh:property [
+        sh:minCount 1 ;
+        sh:maxCount 2 ;
+        sh:path schema_org:encodingFormat ;
+        sh:severity sh:Warning ;
+        sh:name "File Data Entity: RECOMMENDED `encodingFormat` property" ;
+        sh:description """Check if the File Data Entity has a detailed description of encodings through the `encodingFormat` property.
+        The `encodingFormat` property SHOULD be a PRONOM identifier (e.g., application/pdf) or,
+        to add more detail, SHOULD be linked using a `PRONOM` identifier to a `Contextual Entity` of type `WebPage`.""" ;
+        sh:message "Missing or invalid `encodingFormat` linked to the `File Data Entity`" ;
+        sh:or (
+            [
+                sh:datatype xsd:string ;
+                sh:pattern "^(\\w*)\\/(\\w[\\w\\.-]*)(?:\\+(\\w[\\w\\.-]*))?(?:;(\\w+=[^;]+))*$" ;
+            ]
+            [
+                sh:nodeKind sh:IRI ;
+            ]
+        )] .
 
 # ro-crate:FileContentSizeRecommendedProperties a sh:NodeShape ;
 #     sh:name "File Data Entity: RECOMMENDED contentSize" ;
@@ -59,7 +59,7 @@
 
 ro-crate:DataEntityRecommendedProperties a sh:NodeShape ;
     sh:name "Data Entity: RECOMMENDED properties" ;
-    sh:description """Data Entities SHOULD have `name` and `description` properties.""" ;
+    sh:description """Data Entities SHOULD have `name`, `description`, `license`, `contentLocation`, `spatialCoverage`, and `citation` properties.""" ;
     sh:targetClass ro-crate:DataEntity ;
     sh:property [
         a sh:PropertyShape ;
@@ -90,19 +90,18 @@ ro-crate:DataEntityRecommendedProperties a sh:NodeShape ;
     sh:sparql [
         a sh:SPARQLConstraint ;
         sh:prefixes ro-crate:sparqlPrefixes ;
-
         sh:select """
             SELECT ?this
             WHERE {
+                ?this (schema:contentLocation|schema:spatialCoverage) ?location .
                 FILTER NOT EXISTS {
-                    ?this (schema:contentLocation|schema:spatialCoverage) ?location .
                     ?location a schema:Place .
                 }
             }
         """ ;
         sh:name "Data Entity: RECOMMENDED `contentLocation`/`spatialCoverage` reference" ;
         sh:description """If present, `contentLocation` or `spatialCoverage` SHOULD reference a Place.""" ;
-        sh:message "Data Entities SHOULD have a `contentLocation` or `spatialCoverage` property referencing a Place" ;
+        sh:message "If present, `contentLocation` or `spatialCoverage` SHOULD reference a Place" ;
         sh:severity sh:Warning ;
     ] ;
     sh:sparql [
@@ -153,27 +152,36 @@ ro-crate:DataEntityRecommendedProperties a sh:NodeShape ;
 #     sh:pattern "/$" ;
 #     sh:message "Dataset IRI SHOULD end with '/'" .
 
-# ro-crate:WebDatasetDistributionRecommended a sh:NodeShape ;
-#     sh:name "Dataset: RECOMMENDED `distribution` for web datasets" ;
-#     sh:description """If a Dataset has a web URI, it SHOULD include `distribution`.""" ;
-#     sh:target [
-#         a sh:SPARQLTarget ;
-#         sh:prefixes ro-crate:sparqlPrefixes ;
-#         sh:select """
-#             SELECT ?this
-#             WHERE {
-#                 ?this a schema:Dataset .
-#                 FILTER regex(str(?this), "^https?://", "i")
-#             }
-#         """
-#     ] ;
-#     sh:property [
-#         a sh:PropertyShape ;
-#         sh:path schema_org:distribution ;
-#         sh:minCount 1 ;
-#         sh:severity sh:Warning ;
-#         sh:message "Web-based Dataset entities SHOULD include `distribution`" ;
-#     ] .
+ro-crate:WebDirectoryDistributionRecommended a sh:NodeShape ;
+    sh:name "Web-based Directory Data Entity: recommended distribution" ;
+    sh:description """If a non-root Dataset Data Entity has a web URI (absolute https?://),
+        it SHOULD include a `distribution` property pointing to a downloadable archive
+        (RO-Crate 1.2, Data Entities — Directories on the web).""" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?this a schema:Dataset .
+                ?metadatafile schema:about ?root .
+                FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
+                FILTER(?this != ?root)
+                FILTER(!STRSTARTS(STR(?this), CONCAT(STR(?root), "#")))
+                FILTER regex(str(?this), "^https?://", "i")
+            }
+        """
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Web-based Directory Data Entity: RECOMMENDED `distribution` property" ;
+        sh:description """Check if the web-based Directory Data Entity has a `distribution`
+            property pointing to a downloadable archive.""" ;
+        sh:path schema_org:distribution ;
+        sh:minCount 1 ;
+        sh:severity sh:Warning ;
+        sh:message "Web-based Directory Data Entities SHOULD include a `distribution` property pointing to a downloadable archive" ;
+    ] .
 
 # ro-crate:FileConformsToProfile a sh:NodeShape ;
 #     sh:name "File: RECOMMENDED `conformsTo` profile" ;
