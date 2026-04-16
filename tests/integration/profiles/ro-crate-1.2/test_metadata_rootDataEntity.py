@@ -261,3 +261,65 @@ def test_invalid_recommended_publisher():
         expected_triggered_requirements=["Root Data Entity: recommended publisher"],
         expected_triggered_issues=["SHOULD have a `publisher` property"],
     )
+
+
+# ---------------------------------------------------------------------------
+# Root Data Entity: funder SHOULD be present (RECOMMENDED — K1/K2/K3)
+# ---------------------------------------------------------------------------
+
+def test_valid_recommended_funding():
+    """
+    Root Data Entity with a funder Organization (which itself references an
+    external funder) passes all RECOMMENDED funding checks.
+    """
+    do_entity_test(
+        __metadata_root_data_entity_crates__.valid_recommended_funding,
+        models.Severity.RECOMMENDED,
+        True,
+        profile_identifier="ro-crate-1.2",
+    )
+
+
+def test_invalid_recommended_funding_no_funder():
+    """
+    Root Data Entity with no `funder` property fails the RECOMMENDED
+    direct-funder check (K3).
+    """
+    do_entity_test(
+        __metadata_root_data_entity_crates__.invalid_recommended_funding_no_funder,
+        models.Severity.RECOMMENDED,
+        False,
+        profile_identifier="ro-crate-1.2",
+        expected_triggered_requirements=["Root Data Entity: recommended funder"],
+        expected_triggered_issues=["SHOULD reference funders directly via the `funder` property"],
+    )
+
+
+def test_invalid_recommended_funding_non_org_funder():
+    """
+    Root Data Entity whose `funder` references a Person (not an Organization)
+    fails the RECOMMENDED funder-type check (K1).
+    """
+    do_entity_test(
+        __metadata_root_data_entity_crates__.invalid_recommended_funding_non_org_funder,
+        models.Severity.RECOMMENDED,
+        False,
+        profile_identifier="ro-crate-1.2",
+        expected_triggered_requirements=["Funder entity: recommended Organization type"],
+        expected_triggered_issues=["SHOULD be of type `Organization`"],
+    )
+
+
+def test_invalid_recommended_funding_no_project_funder():
+    """
+    Root Data Entity whose local project Organization (`funder`) does not itself
+    reference an external funder fails the RECOMMENDED project-org funder check (K2).
+    """
+    do_entity_test(
+        __metadata_root_data_entity_crates__.invalid_recommended_funding_no_project_funder,
+        models.Severity.RECOMMENDED,
+        False,
+        profile_identifier="ro-crate-1.2",
+        expected_triggered_requirements=["Project Organization: recommended funder reference"],
+        expected_triggered_issues=["SHOULD itself reference an external `funder`"],
+    )

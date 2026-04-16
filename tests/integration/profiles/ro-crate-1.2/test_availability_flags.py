@@ -27,7 +27,7 @@ valid = ValidROCrate12()
 # Minimal set of JSON-LD context keys needed to pass `check_compaction`
 # for the test crates used in this module.
 _FAKE_CONTEXT_KEYS = {
-    "about", "affiliation", "author", "cite-as", "conformsTo",
+    "about", "affiliation", "author", "cite-as", "conformsTo", "funder",
     "contentLocation", "contentSize", "contentUrl", "dateCreated",
     "dateModified", "datePublished", "description", "encodingFormat",
     "hasPart", "license", "name", "publisher", "sdDatePublished", "url",
