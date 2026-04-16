@@ -4,18 +4,33 @@
     {
       "@id": "ro-crate-metadata.json",
       "@type": "CreativeWork",
-      "about": {"@id": "./"},
-      "conformsTo": {"@id": "https://w3id.org/ro/crate/1.2"}
+      "about": {
+        "@id": "./"
+      },
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.2"
+      }
     },
     {
       "@id": "./",
       "@type": "Dataset",
-      "name": "Web entity downloadable — valid",
+      "name": "Web entity downloadable \u2014 valid",
       "description": "RO-Crate with a web-based File Data Entity whose @id returns a non-HTML Content-Type (directly downloadable).",
       "datePublished": "2024-01-01",
-      "license": {"@id": "https://creativecommons.org/licenses/by/4.0/"},
-      "publisher": {"@id": "#publisher-org"},
-      "hasPart": [{"@id": "https://example.com/data.csv"}]
+      "license": {
+        "@id": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "publisher": {
+        "@id": "#publisher-org"
+      },
+      "hasPart": [
+        {
+          "@id": "https://example.com/data.csv"
+        }
+      ],
+      "funder": {
+        "@id": "https://ror.org/00k4n6c32"
+      }
     },
     {
       "@id": "#publisher-org",
@@ -37,6 +52,13 @@
       "encodingFormat": "text/csv",
       "contentSize": "512",
       "sdDatePublished": "2024-01-01"
+    },
+    {
+      "@id": "https://ror.org/00k4n6c32",
+      "@type": "Organization",
+      "name": "European Commission",
+      "description": "The European Commission funds research and innovation programmes.",
+      "url": "https://ec.europa.eu"
     }
   ]
 }

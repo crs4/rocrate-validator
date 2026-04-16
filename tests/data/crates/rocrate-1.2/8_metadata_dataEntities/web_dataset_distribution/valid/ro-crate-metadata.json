@@ -4,19 +4,32 @@
     {
       "@id": "ro-crate-metadata.json",
       "@type": "CreativeWork",
-      "about": {"@id": "./"},
-      "conformsTo": {"@id": "https://w3id.org/ro/crate/1.2"}
+      "about": {
+        "@id": "./"
+      },
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.2"
+      }
     },
     {
       "@id": "./",
       "@type": "Dataset",
-      "name": "Dataset distribution — valid",
+      "name": "Dataset distribution \u2014 valid",
       "description": "RO-Crate whose Root Data Entity declares a distribution pointing to a downloadable DataDownload archive.",
       "datePublished": "2024-01-01",
-      "license": {"@id": "https://creativecommons.org/licenses/by/4.0/"},
-      "publisher": {"@id": "#publisher-org"},
+      "license": {
+        "@id": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "publisher": {
+        "@id": "#publisher-org"
+      },
       "hasPart": [],
-      "distribution": {"@id": "https://example.com/rocrate.zip"}
+      "distribution": {
+        "@id": "https://example.com/rocrate.zip"
+      },
+      "funder": {
+        "@id": "https://ror.org/00k4n6c32"
+      }
     },
     {
       "@id": "#publisher-org",
@@ -36,6 +49,13 @@
       "name": "RO-Crate archive",
       "description": "A ZIP archive of the RO-Crate, directly downloadable.",
       "encodingFormat": "application/zip"
+    },
+    {
+      "@id": "https://ror.org/00k4n6c32",
+      "@type": "Organization",
+      "name": "European Commission",
+      "description": "The European Commission funds research and innovation programmes.",
+      "url": "https://ec.europa.eu"
     }
   ]
 }
