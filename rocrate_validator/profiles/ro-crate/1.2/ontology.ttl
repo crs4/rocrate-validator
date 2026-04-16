@@ -54,6 +54,18 @@ schema:SoftwareSourceCode rdf:type owl:Class ;
 bioschemas:ComputationalWorkflow rdf:type owl:Class .
 
 
+###  https://github.com/crs4/rocrate-validator/profiles/ro-crate/1.2/Script
+ro-crate:Script rdf:type owl:Class ;
+  rdfs:subClassOf schema:SoftwareSourceCode, schema:MediaObject ;
+  rdfs:label "Script"@en .
+
+
+###  https://github.com/crs4/rocrate-validator/profiles/ro-crate/1.2/Workflow
+ro-crate:Workflow rdf:type owl:Class ;
+  rdfs:subClassOf schema:SoftwareSourceCode, schema:MediaObject, bioschemas:ComputationalWorkflow ;
+  rdfs:label "Workflow"@en .
+
+
 ###  https://w3id.org/ro/crate/1.2/DataEntity
 ro-crate:DataEntity rdf:type owl:Class ;
                    rdfs:subClassOf schema:CreativeWork ;
