@@ -15,7 +15,10 @@
       "license": {"@id": "https://creativecommons.org/licenses/by/4.0/"},
       "datePublished": "2024-01-01",
       "publisher": {"@id": "https://ror.org/012345678"},
-      "hasPart": [{"@id": "data/research-data.csv"}]
+      "hasPart": [{"@id": "data/research-data.csv"}],
+      "funder": {"@id": "https://ror.org/012345678"},
+      "cite-as": {"@id": "./"},
+      "url": "./"
     },
     {
       "@id": "data/research-data.csv",

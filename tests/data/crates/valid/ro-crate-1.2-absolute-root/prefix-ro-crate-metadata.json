@@ -22,6 +22,9 @@
       "publisher": {
         "@id": "https://orcid.org/0000-0001-2345-6789"
       },
+      "funder": {
+        "@id": "https://ror.org/123456789"
+      },
       "datePublished": "2024-01-01",
       "hasPart": [
         {
