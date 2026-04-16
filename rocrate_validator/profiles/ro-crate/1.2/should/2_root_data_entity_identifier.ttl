@@ -1,0 +1,58 @@
+# Copyright (c) 2024-2026 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.2/> .
+@prefix schema_org: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# Root Data Entity: identifier SHOULD be present if its @id is an absolute URI
+ro-crate:RootDataEntityIdentifierIfPid a sh:NodeShape ;
+    sh:name "Root Data Entity: identifier SHOULD be present if PID exists" ;
+    sh:description """If the Root Data Entity has a persistent identifier
+        (e.g., its @id is an absolute URI), it SHOULD include an identifier property.""" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?this a ro-crate:RootDataEntity .
+                FILTER(regex(str(?this), "^https?://", "i"))
+            }
+        """
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Root Data Entity: RECOMMENDED identifier if persistent ID exists" ;
+        sh:path schema_org:identifier ;
+        sh:minCount 1 ;
+        sh:severity sh:Warning ;
+        sh:message "The Root Data Entity SHOULD have an `identifier` property if it has a persistent identifier" ;
+    ] .
+
+# Root Data Entity: identifier SHOULD use PropertyValue approach (Science On Schema.org)
+ro-crate:RootDataEntityIdentifierPropertyValueApproach a sh:NodeShape ;
+    sh:name "Root Data Entity: identifier SHOULD use PropertyValue approach" ;
+    sh:description """If the Root Data Entity has an identifier, it SHOULD use
+        the PropertyValue approach as per Science On Schema.org guides.""" ;
+    sh:targetClass ro-crate:RootDataEntity ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Root Data Entity: RECOMMENDED PropertyValue approach for identifier" ;
+        sh:path schema_org:identifier ;
+        sh:class schema_org:PropertyValue ;
+        sh:minCount 1 ;
+        sh:severity sh:Warning ;
+        sh:message "The Root Data Entity SHOULD use PropertyValue entities for identifiers (Science On Schema.org approach)" ;
+    ] .
