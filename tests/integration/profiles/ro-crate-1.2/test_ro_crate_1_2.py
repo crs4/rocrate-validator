@@ -87,7 +87,7 @@ def test_invalid_detached_relative_entity():
         paths.detached_relative_entity,
         models.Severity.REQUIRED,
         False,
-        ["Detached RO-Crate Data Entities"],
+        ["Detached RO-Crate: data entities MUST be web-based"],
         profile_identifier="ro-crate-1.2",
     )
 

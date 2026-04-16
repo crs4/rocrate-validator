@@ -174,3 +174,93 @@ def test_not_described_contextual_entity():
             "Contextual entities that are referenced by other entities SHOULD be "
             "described in the same @graph, with at least an RDF type specified."]
     )
+
+
+# ---------------------------------------------------------------------------
+# @id format: no ../ parent traversal (RECOMMENDED)
+# ---------------------------------------------------------------------------
+
+def test_valid_no_parent_traversal():
+    """
+    Crate with clean relative @id paths passes the no-../  check.
+    """
+    do_entity_test(
+        __metadata_document_crates__.valid_no_parent_traversal,
+        models.Severity.RECOMMENDED,
+        True,
+        profile_identifier="ro-crate-1.2",
+    )
+
+
+def test_invalid_no_parent_traversal():
+    """
+    Crate with an entity @id containing ../ fails the RECOMMENDED check.
+    """
+    do_entity_test(
+        __metadata_document_crates__.invalid_no_parent_traversal,
+        models.Severity.RECOMMENDED,
+        False,
+        profile_identifier="ro-crate-1.2",
+        expected_triggered_requirements=["Entity identifier: format recommendations"],
+        expected_triggered_issues=["SHOULD NOT contain '../'"],
+    )
+
+
+# ---------------------------------------------------------------------------
+# @id format: native UTF-8, not percent-encoded (RECOMMENDED)
+# ---------------------------------------------------------------------------
+
+def test_valid_utf8_identifiers():
+    """
+    Crate with native UTF-8 characters in @id passes the encoding check.
+    """
+    do_entity_test(
+        __metadata_document_crates__.valid_utf8_identifiers,
+        models.Severity.RECOMMENDED,
+        True,
+        profile_identifier="ro-crate-1.2",
+    )
+
+
+def test_invalid_utf8_identifiers():
+    """
+    Crate with percent-encoded non-ASCII bytes in @id fails the RECOMMENDED check.
+    """
+    do_entity_test(
+        __metadata_document_crates__.invalid_utf8_identifiers,
+        models.Severity.RECOMMENDED,
+        False,
+        profile_identifier="ro-crate-1.2",
+        expected_triggered_requirements=["Entity identifier: format recommendations"],
+        expected_triggered_issues=["percent-encoded non-ASCII characters"],
+    )
+
+
+# ---------------------------------------------------------------------------
+# @id format: named contextual entity SHOULD use # prefix (RECOMMENDED)
+# ---------------------------------------------------------------------------
+
+def test_valid_named_entity_id_format():
+    """
+    Crate where local Person/Organization entities use '#'-prefixed @id passes.
+    """
+    do_entity_test(
+        __metadata_document_crates__.valid_named_entity_id_format,
+        models.Severity.RECOMMENDED,
+        True,
+        profile_identifier="ro-crate-1.2",
+    )
+
+
+def test_invalid_named_entity_id_format():
+    """
+    Crate where a local Person entity uses a bare relative @id (no '#') fails.
+    """
+    do_entity_test(
+        __metadata_document_crates__.invalid_named_entity_id_format,
+        models.Severity.RECOMMENDED,
+        False,
+        profile_identifier="ro-crate-1.2",
+        expected_triggered_requirements=["Entity identifier: format recommendations"],
+        expected_triggered_issues=["named local entities SHOULD use a '#'-prefixed @id"],
+    )
