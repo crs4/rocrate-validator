@@ -42,17 +42,24 @@ ro-crate:RootDataEntityIdentifierIfPid a sh:NodeShape ;
     ] .
 
 # Root Data Entity: identifier SHOULD use PropertyValue approach (Science On Schema.org)
+# This shape only fires when an identifier IS present but is not a PropertyValue entity.
 ro-crate:RootDataEntityIdentifierPropertyValueApproach a sh:NodeShape ;
     sh:name "Root Data Entity: identifier SHOULD use PropertyValue approach" ;
     sh:description """If the Root Data Entity has an identifier, it SHOULD use
         the PropertyValue approach as per Science On Schema.org guides.""" ;
     sh:targetClass ro-crate:RootDataEntity ;
-    sh:property [
-        a sh:PropertyShape ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
         sh:name "Root Data Entity: RECOMMENDED PropertyValue approach for identifier" ;
-        sh:path schema_org:identifier ;
-        sh:class schema_org:PropertyValue ;
-        sh:minCount 1 ;
+        sh:description """Check that if an identifier is present it is a PropertyValue entity.""" ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?this schema:identifier ?id .
+                FILTER NOT EXISTS { ?id a schema:PropertyValue }
+            }
+        """ ;
         sh:severity sh:Warning ;
         sh:message "The Root Data Entity SHOULD use PropertyValue entities for identifiers (Science On Schema.org approach)" ;
     ] .
