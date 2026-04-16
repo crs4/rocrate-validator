@@ -1,0 +1,50 @@
+# Copyright (c) 2024-2026 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.2/> .
+@prefix schema_org: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+
+ro-crate:RootDataEntityHasPartAllDataEntities a sh:NodeShape ;
+    sh:name "Root Data Entity: hasPart MUST reference all Data Entities" ;
+    sh:description """The Root Data Entity MUST directly or indirectly reference
+        all Data Entities in the RO-Crate via hasPart (RO-Crate 1.2).""" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?this a ro-crate:RootDataEntity .
+            }
+        """
+    ] ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT $this ?unreferenced
+            WHERE {
+                $this a ro-crate:RootDataEntity .
+                ?unreferenced a ?entityType .
+                FILTER(?entityType IN (schema:MediaObject, schema:Dataset))
+                FILTER(?unreferenced != $this)
+                FILTER(!strstarts(str(?unreferenced), "#"))
+                FILTER NOT EXISTS {
+                    $this schema:hasPart+ ?unreferenced
+                }
+            }
+        """ ;
+        sh:name "Root Data Entity: hasPart MUST reference all Data Entities" ;
+        sh:message "The Root Data Entity MUST reference all Data Entities via hasPart (directly or indirectly)" ;
+    ] .
