@@ -62,7 +62,9 @@ class DataEntityCitationChecker(PyFunctionCheck):
 @requirement(name="Web-based Data Entity: REQUIRED availability")
 class WebDataEntityRequiredChecker(PyFunctionCheck):
     """
-    Web-based Data Entities MUST be directly downloadable at the time of creation.
+    Web-based Data Entities SHOULD be directly downloadable (RO-Crate 1.2).
+    Downloadability is checked via Signposting, Content-Type, and content negotiation.
+    Entities returning an HTML page (splash page / viewer) are also flagged.
     """
 
     @check(name="Web-based Data Entity: RECOMMENDED resource availability", severity=Severity.RECOMMENDED)
@@ -76,10 +78,22 @@ class WebDataEntityRequiredChecker(PyFunctionCheck):
         result = True
         for entity in context.ro_crate.metadata.get_web_data_entities():
             assert entity.id is not None, "Entity has no @id"
+            if entity.id.endswith("/"):
+                continue
             try:
-                if not entity.is_available():
-                    context.result.add_issue(
-                        f"Web-based Data Entity '{entity.id}' is not directly downloadable", self)
+                dl = check_downloadable(entity.id)
+                if not dl.is_downloadable:
+                    if dl.reason and "HTML" in dl.reason:
+                        msg = (
+                            f"Web-based Data Entity '{entity.id}' references an HTML page "
+                            f"(possible splash page or viewer application) and is not "
+                            f"directly downloadable"
+                        )
+                    else:
+                        msg = f"Web-based Data Entity '{entity.id}' is not directly downloadable"
+                        if dl.reason:
+                            msg += f": {dl.reason}"
+                    context.result.add_issue(msg, self)
                     result = False
             except Exception as e:
                 context.result.add_issue(
@@ -133,13 +147,21 @@ class WebDataEntityRequiredChecker(PyFunctionCheck):
                 continue
             urls = content_url if isinstance(content_url, list) else [content_url]
             for url in urls:
+                url_value = url if isinstance(url, str) else url.id if hasattr(url, "id") else None
+                if not url_value or not url_value.startswith("http"):
+                    continue
                 try:
-                    url_value = url if isinstance(url, str) else url.id
-                    context.ro_crate.get_external_file_size(url_value)
+                    dl = check_downloadable(url_value)
+                    if not dl.is_downloadable:
+                        msg = f"contentUrl '{url_value}' for Web-based Data Entity '{entity.id}' is not directly downloadable"
+                        if dl.reason:
+                            msg += f": {dl.reason}"
+                        context.result.add_issue(msg, self)
+                        result = False
                 except Exception as e:
                     context.result.add_issue(
-                        f"contentUrl {url_value} for Web-based Data Entity {entity.id} is not directly downloadable: {e}",
-                        self)
+                        f"contentUrl '{url_value}' for Web-based Data Entity '{entity.id}' "
+                        f"availability check failed: {e}", self)
                     result = False
                 if not result and context.fail_fast:
                     return result
