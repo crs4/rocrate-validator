@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 @prefix ro: <./> .
 @prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.2/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
@@ -25,14 +24,12 @@ ro-crate:DataEntityRequiredProperties a sh:NodeShape ;
     sh:description """A Data Entity MUST be a `URI Path` relative to the ROCrate root,
         or an absolute URI""" ;
     sh:targetClass ro-crate:DataEntity ;
-
     sh:property [
         sh:name "Data Entity: @id value restriction" ;
         sh:description """Check if the Data Entity has an absolute or relative URI as `@id`""" ;
-        sh:path [sh:inversePath rdf:type ] ;
-        sh:nodeKind sh:IRI ;
-        sh:severity sh:Violation ;
-        sh:message """Data Entities MUST have an absolute or relative URI as @id.""" ;
+        sh:path [
+            sh:inversePath rdf:type
+        ] ; sh:nodeKind sh:IRI ; sh:severity sh:Violation ; sh:message """Data Entities MUST have an absolute or relative URI as @id.""" ;
     ] .
 
 ro-crate:FileDataEntity a sh:NodeShape ;
@@ -54,17 +51,21 @@ ro-crate:FileDataEntity a sh:NodeShape ;
             }
         """
     ] ;
-
-    sh:property [
-        sh:name "File Data Entity: REQUIRED type" ;
-        sh:description """Check if the File Data Entity has `File` as `@type`.
-        `File` is an RO-Crate alias for the schema.org `MediaObject`.
-        """ ;
-        sh:path rdf:type ;
-        sh:hasValue ro-crate:File ;
-        sh:severity sh:Violation ;
-        sh:message """File Data Entities MUST have "File" as a value for @type.""" ;
-    ] ;
+    
+    # Irrelevant for validation, but useful for debugging
+    # sh:property [
+    #     sh:name "File Data Entity: REQUIRED type" ;
+    #     sh:description """Check if the File Data Entity has `File` as `@type`.
+    #     `File` is an RO-Crate alias for the schema.org `MediaObject`.
+    #     """ ;
+    #     sh:path rdf:type ;
+    #     sh:or (
+    #         [ sh:hasValue ro-crate:File ]
+    #         [ sh:hasValue schema_org:MediaObject ]
+    #     ) ;
+    #     sh:severity sh:Violation ;
+    #     sh:message """File Data Entities MUST have "File" as a value for @type.""" ;
+    # ] ;
 
     # Expand data graph with triples to mark the matching entities as File instances
     sh:rule [
@@ -136,20 +137,20 @@ ro-crate:DirectoryDataEntity a sh:NodeShape ;
         sh:severity sh:Violation ;
     ] .
 
-ro-crate:DataEntityRequiredPropertiesShape a sh:NodeShape ;
-    sh:name "Data Entity: REQUIRED properties" ;
-    sh:description """A `DataEntity` MUST be linked, either directly or indirectly, from the Root Data Entity""" ;
-    sh:targetClass ro-crate:DataEntity ;
-    sh:property
-        [
-            a sh:PropertyShape ;
-            sh:path [ sh:inversePath schema_org:hasPart ] ;
-            sh:node schema_org:Dataset ;
-            sh:minCount 1 ;
-            sh:name "Data Entity MUST be directly referenced" ;
-            sh:description """Check if the Data Entity is linked, either directly or indirectly, to the `Root Data Entity` using the `hasPart` (as defined in `schema.org`) property" """ ;
-            # sh:message "A Data Entity MUST be directly or indirectly linked to the `Root Data Entity` through the `hasPart` property" ;
-        ] .
+# ro-crate:DataEntityRequiredPropertiesShape a sh:NodeShape ;
+#     sh:name "Data Entity: REQUIRED properties" ;
+#     sh:description """A `DataEntity`The file descriptor MUST be a valid JSON-LD file MUST be linked, either directly or indirectly, from the Root Data Entity""" ;
+#     sh:targetClass ro-crate:DataEntity ;
+#     sh:property
+#         [
+#             a sh:PropertyShape ;
+#             sh:path [ sh:oneOrMorePath [ sh:inversePath schema_org:hasPart ] ] ;
+#             sh:qualifiedValueShape [ sh:class ro-crate:RootDataEntity ] ;
+#             sh:qualifiedMinCount 1 ;
+#             sh:name "Data Entity MUST be directly referenced" ;
+#             sh:description """Check if the Data Entity is linked, either directly or indirectly, to the `Root Data Entity` using the `hasPart` (as defined in `schema.org`) property" """ ;
+#             # sh:message "A Data Entity MUST be directly or indirectly linked to the `Root Data Entity` through the `hasPart` property" ;
+#         ] .
 
 ro-crate:GenericDataEntityRequiredProperties a sh:NodeShape ;
     sh:name "Generic Data Entity: REQUIRED properties" ;
@@ -172,7 +173,7 @@ ro-crate:GenericDataEntityRequiredProperties a sh:NodeShape ;
             }
         """
     ] ;
-
+    
     # Expand data graph with triples to mark the matching entities as GenericDataEntity instances
     sh:rule [
         a sh:TripleRule ;
@@ -180,7 +181,7 @@ ro-crate:GenericDataEntityRequiredProperties a sh:NodeShape ;
         sh:predicate rdf:type ;
         sh:object ro-crate:GenericDataEntity ;
     ] ;
-
+    
     # Expand data graph with triples to mark the matching entities as DataEntity instances
     sh:rule [
         a sh:TripleRule ;
@@ -188,7 +189,6 @@ ro-crate:GenericDataEntityRequiredProperties a sh:NodeShape ;
         sh:predicate rdf:type ;
         sh:object ro-crate:DataEntity ;
     ] .
-
 
 # Uncomment for debugging
 # ro-crate:TestGenericDataEntity a sh:NodeShape ;
@@ -205,7 +205,6 @@ ro-crate:GenericDataEntityRequiredProperties a sh:NodeShape ;
 #         sh:datatype xsd:string ;
 #         sh:message "Testing for the invalidProperty of the generic data entity";
 #     ] .
-
 
 # Uncomment for debugging
 # ro:testDirectory a sh:NodeShape ;

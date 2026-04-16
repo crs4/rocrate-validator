@@ -18,6 +18,7 @@ from rocrate_validator.utils import log as logging
 from rocrate_validator.models import Severity, ValidationContext
 from rocrate_validator.requirements.python import (PyFunctionCheck, check,
                                                    requirement)
+from rocrate_validator.utils.signposting import check_downloadable
 
 # set up logging
 logger = logging.getLogger(__name__)

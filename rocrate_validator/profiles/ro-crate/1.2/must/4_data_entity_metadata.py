@@ -81,27 +81,31 @@ class DataEntityRequiredChecker(PyFunctionCheck):
         return result
 
 
-@requirement(name="Detached RO-Crate Data Entities")
+@requirement(name="Detached RO-Crate: data entities MUST be web-based")
 class DetachedDataEntityChecker(PyFunctionCheck):
     """
-    Detached RO-Crate Packages MUST only declare Web-based Data Entities
+    In a detached RO-Crate, all Data Entities MUST be web-based
+    resources (i.e., have an absolute URL as @id).
     """
 
-    @check(name="Detached RO-Crate Data Entity: MUST be web-based")
+    @check(name="Detached RO-Crate: data entities MUST be web-based")
     def check_detached_entities(self, context: ValidationContext) -> bool:
         if not context.ro_crate.is_detached():
             return True
         result = True
+        root_entity_id = None
         try:
             root_entity_id = context.ro_crate.metadata.get_root_data_entity().id
         except Exception:
-            root_entity_id = None
+            pass
         for entity in context.ro_crate.metadata.get_data_entities():
             if root_entity_id and entity.id == root_entity_id:
                 continue
             if not entity.is_remote():
                 context.result.add_issue(
-                    f"Detached RO-Crate includes a non web-based Data Entity '{entity.id}'", self)
+                    f"Data Entity '{entity.id}' is not web-based, "
+                    f"but in a detached RO-Crate all Data Entities "
+                    f"MUST have an absolute URL as @id", self)
                 result = False
                 if context.fail_fast:
                     return False
