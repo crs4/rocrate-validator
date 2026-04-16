@@ -1,0 +1,175 @@
+# Copyright (c) 2024-2026 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+@prefix ro: <./> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.2/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema: <http://schema.org/> .
+@prefix bioschemas: <https://bioschemas.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix validator: <https://github.com/crs4/rocrate-validator/> .
+
+# ---------------------------------------------------------------
+# Identify Script entities
+#
+# A Script is an entity with schema:SoftwareSourceCode in @type
+# that is NOT a Workflow (no bioschemas:ComputationalWorkflow).
+# ---------------------------------------------------------------
+ro-crate:ScriptDefinition a sh:NodeShape, validator:HiddenShape ;
+    sh:name "Identify Script entities" ;
+    sh:description """Mark entities as Scripts if they have schema:SoftwareSourceCode
+        in @type but NOT bioschemas:ComputationalWorkflow.""" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?this a schema:SoftwareSourceCode .
+                ?metadatafile schema:about ?root .
+                FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
+                FILTER NOT EXISTS { ?this a bioschemas:ComputationalWorkflow }
+            }
+        """
+    ] ;
+    sh:rule [
+        a sh:TripleRule ;
+        sh:subject sh:this ;
+        sh:predicate rdf:type ;
+        sh:object ro-crate:Script ;
+    ] .
+
+# ---------------------------------------------------------------
+# Identify Workflow entities
+#
+# A Workflow is an entity with bioschemas:ComputationalWorkflow
+# in @type.
+# ---------------------------------------------------------------
+ro-crate:WorkflowDefinition a sh:NodeShape, validator:HiddenShape ;
+    sh:name "Identify Workflow entities" ;
+    sh:description """Mark entities as Workflows if they have
+        bioschemas:ComputationalWorkflow in @type.""" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?this a bioschemas:ComputationalWorkflow .
+                ?metadatafile schema:about ?root .
+                FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
+            }
+        """
+    ] ;
+    sh:rule [
+        a sh:TripleRule ;
+        sh:subject sh:this ;
+        sh:predicate rdf:type ;
+        sh:object ro-crate:Workflow ;
+    ] .
+
+# ---------------------------------------------------------------
+# Script: MUST include `File` (schema:MediaObject) in @type
+# ---------------------------------------------------------------
+ro-crate:ScriptRequiredFileType a sh:NodeShape ;
+    sh:name "Script: REQUIRED `File` type" ;
+    sh:description """A Script entity MUST include `File` (schema:MediaObject)
+        in its @type alongside `SoftwareSourceCode`
+        (RO-Crate 1.2, Workflows and Scripts — Script).""" ;
+    sh:targetClass ro-crate:Script ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Script: REQUIRED `File` type" ;
+        sh:description """Check that the Script entity includes `File`
+            (schema:MediaObject) in its @type.""" ;
+        sh:path rdf:type ;
+        sh:hasValue schema:MediaObject ;
+        sh:minCount 1 ;
+        sh:severity sh:Violation ;
+        sh:message "A Script MUST include `File` in its `@type` (schema:MediaObject / schema:SoftwareSourceCode)" ;
+    ] .
+
+# ---------------------------------------------------------------
+# Workflow: MUST include `File` (schema:MediaObject) in @type
+# ---------------------------------------------------------------
+ro-crate:WorkflowRequiredFileType a sh:NodeShape ;
+    sh:name "Workflow: REQUIRED `File` type" ;
+    sh:description """A Workflow entity MUST include `File` (schema:MediaObject)
+        in its @type alongside `SoftwareSourceCode` and `ComputationalWorkflow`
+        (RO-Crate 1.2, Workflows and Scripts — Workflow).""" ;
+    sh:targetClass ro-crate:Workflow ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Workflow: REQUIRED `File` type" ;
+        sh:description """Check that the Workflow entity includes `File`
+            (schema:MediaObject) in its @type.""" ;
+        sh:path rdf:type ;
+        sh:hasValue schema:MediaObject ;
+        sh:minCount 1 ;
+        sh:severity sh:Violation ;
+        sh:message "A Workflow MUST include `File` in its `@type` (schema:MediaObject / schema:SoftwareSourceCode / bioschemas:ComputationalWorkflow)" ;
+    ] .
+
+# ---------------------------------------------------------------
+# Workflow: MUST include `SoftwareSourceCode` in @type
+# ---------------------------------------------------------------
+ro-crate:WorkflowRequiredSoftwareSourceCodeType a sh:NodeShape ;
+    sh:name "Workflow: REQUIRED `SoftwareSourceCode` type" ;
+    sh:description """A Workflow entity MUST include `SoftwareSourceCode`
+        in its @type alongside `File` and `ComputationalWorkflow`
+        (RO-Crate 1.2, Workflows and Scripts — Workflow).""" ;
+    sh:targetClass ro-crate:Workflow ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Workflow: REQUIRED `SoftwareSourceCode` type" ;
+        sh:description """Check that the Workflow entity includes
+            `SoftwareSourceCode` in its @type.""" ;
+        sh:path rdf:type ;
+        sh:hasValue schema:SoftwareSourceCode ;
+        sh:minCount 1 ;
+        sh:severity sh:Violation ;
+        sh:message "A Workflow MUST include `SoftwareSourceCode` in its `@type` (schema:MediaObject / schema:SoftwareSourceCode / bioschemas:ComputationalWorkflow)" ;
+    ] .
+
+# ---------------------------------------------------------------
+# Script or Workflow: MUST have a `name` property
+# ---------------------------------------------------------------
+ro-crate:ScriptOrWorkflowRequiredName a sh:NodeShape ;
+    sh:name "Script or Workflow: REQUIRED `name`" ;
+    sh:description """Scripts and Workflows MUST have a human-readable `name`
+        property (RO-Crate 1.2, Workflows and Scripts).""" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?this a schema:SoftwareSourceCode .
+                ?metadatafile schema:about ?root .
+                FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
+            }
+        """
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Script or Workflow: REQUIRED `name` property" ;
+        sh:description """Check that the Script or Workflow entity has a
+            human-readable `name` property.""" ;
+        sh:path schema:name ;
+        sh:minCount 1 ;
+        sh:nodeKind sh:Literal ;
+        sh:severity sh:Violation ;
+        sh:message "Scripts and Workflows MUST have a human-readable `name` property" ;
+    ] .
