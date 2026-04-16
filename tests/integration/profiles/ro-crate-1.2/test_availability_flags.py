@@ -30,7 +30,7 @@ _FAKE_CONTEXT_KEYS = {
     "about", "affiliation", "author", "cite-as", "conformsTo",
     "contentLocation", "contentSize", "contentUrl", "dateCreated",
     "dateModified", "datePublished", "description", "encodingFormat",
-    "hasPart", "license", "name", "sdDatePublished", "url",
+    "hasPart", "license", "name", "publisher", "sdDatePublished", "url",
 }
 
 
