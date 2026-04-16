@@ -73,3 +73,39 @@ def test_invalid_recommended_distribution_not_downloadable(monkeypatch):
         expected_triggered_requirements=["Dataset: distribution downloadability"],
         expected_triggered_issues=["SHOULD be downloadable"],
     )
+
+
+# ---------------------------------------------------------------------------
+# Web-based Directory Data Entity: distribution SHOULD be present (RECOMMENDED)
+# ---------------------------------------------------------------------------
+
+def test_valid_recommended_web_directory_has_distribution(monkeypatch):
+    """
+    Web-based Directory Data Entity that declares a distribution passes the
+    RECOMMENDED distribution-presence check.
+    HTTP mocked so the distribution downloadability check does not make real requests.
+    """
+    monkeypatch.setattr(HttpRequester(), "head", lambda url, **kw: _ZipResponse())
+
+    do_entity_test(
+        __metadata_data_entities_crates__.valid_web_directory_distribution,
+        models.Severity.RECOMMENDED,
+        True,
+        profile_identifier="ro-crate-1.2",
+    )
+
+
+def test_invalid_recommended_web_directory_missing_distribution():
+    """
+    Web-based Directory Data Entity without a distribution fails the RECOMMENDED
+    distribution-presence check (no HTTP call needed — only metadata structure checked).
+    """
+    do_entity_test(
+        __metadata_data_entities_crates__.invalid_web_directory_distribution,
+        models.Severity.RECOMMENDED,
+        False,
+        profile_identifier="ro-crate-1.2",
+        skip_availability_check=True,
+        expected_triggered_requirements=["Web-based Directory Data Entity: recommended distribution"],
+        expected_triggered_issues=["SHOULD include a `distribution` property"],
+    )
