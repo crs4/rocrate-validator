@@ -14,7 +14,7 @@
 
 import re
 
-from rocrate_validator.models import ValidationContext
+from rocrate_validator.models import Severity, ValidationContext
 from rocrate_validator.requirements.python import (PyFunctionCheck, check,
                                                    requirement)
 from rocrate_validator.utils import log as logging
@@ -127,8 +127,10 @@ class DataEntityIdentifierChecker(PyFunctionCheck):
         try:
             root_data_entity = context.ro_crate.metadata.get_root_data_entity()
             root_entity_id = root_data_entity.id
-            root_entity_is_local = root_data_entity.id_as_uri.is_local_resource() if root_data_entity.id_as_uri else False
-            root_entity_absolute_path = root_data_entity.id_as_path if root_data_entity.has_absolute_path() else None
+            root_entity_is_local = root_data_entity.id_as_uri.is_local_resource() \
+                if root_data_entity.id_as_uri else False
+            root_entity_absolute_path = root_data_entity.id_as_path \
+                if root_data_entity.has_absolute_path() else None
         except Exception:
             pass
         for entity in context.ro_crate.metadata.get_data_entities():
@@ -136,7 +138,8 @@ class DataEntityIdentifierChecker(PyFunctionCheck):
                 continue
             if not root_entity_is_local and not entity.is_remote():
                 context.result.add_issue(
-                    f"Data Entity '{entity.id}' has a local identifier but the Root Data Entity does not have a local identifier", self)
+                    f"Data Entity '{entity.id}' has a local identifier but the Root Data Entity "
+                    "does not have a local identifier", self)
                 result = False
                 if context.fail_fast:
                     return False
@@ -331,7 +334,8 @@ class WebDataEntityRequiredChecker(PyFunctionCheck):
                     url_value = url if isinstance(url, str) else url.id
                     if not context.ro_crate.get_external_file_size(url_value):
                         context.result.add_issue(
-                            f"contentUrl {url_value} for Web-based Data Entity {entity.id} is not directly downloadable",
+                            f"contentUrl {url_value} for Web-based Data Entity {entity.id} "
+                            "is not directly downloadable",
                             self)
                         result = False
                 except Exception as e:
