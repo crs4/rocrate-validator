@@ -264,3 +264,37 @@ def test_invalid_recommended_content_url_not_downloadable(monkeypatch):
         expected_triggered_requirements=["Web-based Data Entity: REQUIRED availability"],
         expected_triggered_issues=["contentUrl", "not directly downloadable"],
     )
+
+
+def test_valid_missing_file_local_path():
+    """
+    A missing local file that declares localPath, and a deliberately absent
+    file (#id) that declares localPath, SHOULD both pass the RECOMMENDED check.
+    """
+    do_entity_test(
+        __metadata_root_data_entity_crates__.valid_missing_file_local_path,
+        models.Severity.RECOMMENDED,
+        True,
+        profile_identifier="ro-crate-1.2",
+        skip_checks=["ro-crate-1.2_16.1", "ro-crate-1.2_38.1"],
+    )
+
+
+def test_invalid_missing_file_no_local_path():
+    """
+    A missing local file without localPath and a deliberately absent file (#id)
+    without localPath SHOULD each trigger a RECOMMENDED warning.
+    """
+    do_entity_test(
+        __metadata_root_data_entity_crates__.invalid_missing_file_local_path,
+        models.Severity.RECOMMENDED,
+        False,
+        profile_identifier="ro-crate-1.2",
+        skip_checks=["ro-crate-1.2_16.1"],
+        expected_triggered_requirements=[
+            "Data Entity: missing file SHOULD use localPath"
+        ],
+        expected_triggered_issues=[
+            "localPath"
+        ],
+    )
