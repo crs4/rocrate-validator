@@ -34,6 +34,7 @@
       "name": "open-data.csv",
       "description": "Open data file under CC0.",
       "encodingFormat": "text/csv",
+      "contentSize": "1024",
       "license": {"@id": "http://spdx.org/licenses/CC0-1.0"}
     },
     {

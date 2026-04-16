@@ -49,7 +49,8 @@
       "@type": "File",
       "name": "My Data File",
       "description": "A data file that is part of the RO-Crate.",
-      "encodingFormat": "text/plain"
+      "encodingFormat": "text/plain",
+      "contentSize": "0"
     },
     {
       "@id": "https://ror.org/00k4n6c32",

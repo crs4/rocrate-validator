@@ -14,7 +14,7 @@
     {
       "@id": "./",
       "@type": "Dataset",
-      "name": "Named entity #-prefix \u2014 valid",
+      "name": "Named entity #-prefix — valid",
       "description": "RO-Crate where all local Person and Organization entities use '#'-prefixed @id.",
       "datePublished": "2024-01-01",
       "license": {
@@ -29,7 +29,17 @@
       "hasPart": [],
       "funder": {
         "@id": "https://ror.org/00k4n6c32"
+      },
+      "identifier": {
+        "@id": "#uuid"
       }
+    },
+    {
+      "@id": "#uuid",
+      "@type": "PropertyValue",
+      "name": "UUID",
+      "propertyID": "UUID",
+      "value": "550e8400-e29b-41d4-a716-446655440000"
     },
     {
       "@id": "https://creativecommons.org/licenses/by/4.0/",
