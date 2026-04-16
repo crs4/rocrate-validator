@@ -298,3 +298,58 @@ def test_invalid_missing_file_no_local_path():
             "localPath"
         ],
     )
+
+
+def test_valid_data_entity_license_divergence():
+    """
+    A Data Entity with a different license from the Root SHOULD pass
+    the RECOMMENDED check (the entity is correctly overriding the
+    default license).
+    """
+    do_entity_test(
+        __metadata_root_data_entity_crates__.valid_data_entity_license_divergence,
+        models.Severity.RECOMMENDED,
+        True,
+        profile_identifier="ro-crate-1.2",
+        skip_checks=["ro-crate-1.2_16.1", "ro-crate-1.2_38.1"],
+    )
+
+
+def test_invalid_data_entity_redundant_license():
+    """
+    A Data Entity that declares the same license as the Root SHOULD
+    still pass validation, but a warning SHOULD be logged about the
+    redundant license declaration.
+    """
+    do_entity_test(
+        __metadata_root_data_entity_crates__.invalid_data_entity_license_divergence,
+        models.Severity.RECOMMENDED,
+        True,
+        profile_identifier="ro-crate-1.2",
+        skip_checks=["ro-crate-1.2_16.1", "ro-crate-1.2_38.1"],
+    )
+
+
+def test_redundant_license_logs_warning():
+    """
+    When a Data Entity declares the same license as the Root, a warning
+    message SHOULD be logged (not a validation issue).  The validation
+    result MUST pass, and the warning MUST appear in the log stream.
+    """
+    from rocrate_validator.utils.log import __log_stream__
+
+    # Clear any previous log output
+    __log_stream__.truncate(0)
+    __log_stream__.seek(0)
+
+    result = do_entity_test(
+        __metadata_root_data_entity_crates__.invalid_data_entity_license_divergence,
+        models.Severity.RECOMMENDED,
+        True,
+        profile_identifier="ro-crate-1.2",
+        skip_checks=["ro-crate-1.2_16.1", "ro-crate-1.2_38.1"],
+    )
+
+    log_contents = __log_stream__.getvalue()
+    assert "redundant" in log_contents.lower(), \
+        f"Expected a warning log about redundant license, got:\n{log_contents}"
