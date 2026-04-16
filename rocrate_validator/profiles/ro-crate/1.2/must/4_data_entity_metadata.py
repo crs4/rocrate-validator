@@ -14,10 +14,11 @@
 
 import re
 
-from rocrate_validator.utils import log as logging
-from rocrate_validator.models import Severity, ValidationContext
+from rocrate_validator.models import ValidationContext
 from rocrate_validator.requirements.python import (PyFunctionCheck, check,
                                                    requirement)
+from rocrate_validator.utils import log as logging
+from rocrate_validator.utils.signposting import check_downloadable
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -212,7 +213,9 @@ class DataEntityCitationChecker(PyFunctionCheck):
 @requirement(name="Web-based Data Entity: REQUIRED availability")
 class WebDataEntityRequiredChecker(PyFunctionCheck):
     """
-    Web-based Data Entities MUST be directly downloadable at the time of creation.
+    Web-based Data Entities MUST be directly downloadable at the time of creation
+    (RO-Crate 1.2). Downloadability is verified via Signposting (rel=item,
+    rel=describedby), direct Content-Type inspection, and content negotiation.
     """
 
     @check(name="Web-based Data Entity: REQUIRED resource availability")
@@ -226,10 +229,23 @@ class WebDataEntityRequiredChecker(PyFunctionCheck):
         result = True
         for entity in context.ro_crate.metadata.get_web_data_entities():
             assert entity.id is not None, "Entity has no @id"
+            # Skip directory URIs: assumed available, not directly downloadable by spec
+            if entity.id.endswith("/"):
+                logger.debug("Skipping downloadability check for directory entity '%s'", entity.id)
+                continue
             try:
-                if not entity.is_available():
-                    context.result.add_issue(
-                        f"Web-based Data Entity '{entity.id}' is not directly downloadable", self)
+                dl = check_downloadable(entity.id)
+                if not dl.is_downloadable:
+                    msg = f"Web-based Data Entity '{entity.id}' is not directly downloadable"
+                    if dl.reason and "HTML" in dl.reason:
+                        msg = (
+                            f"Web-based Data Entity '{entity.id}' references an HTML page "
+                            f"(possible splash page or viewer application); "
+                            f"it MUST be directly downloadable"
+                        )
+                    elif dl.reason:
+                        msg += f": {dl.reason}"
+                    context.result.add_issue(msg, self)
                     result = False
             except Exception as e:
                 context.result.add_issue(
