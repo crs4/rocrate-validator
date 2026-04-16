@@ -183,13 +183,26 @@ ro-crate:WebDirectoryDistributionRecommended a sh:NodeShape ;
         sh:message "Web-based Directory Data Entities SHOULD include a `distribution` property pointing to a downloadable archive" ;
     ] .
 
-# ro-crate:FileConformsToProfile a sh:NodeShape ;
-#     sh:name "File: RECOMMENDED `conformsTo` profile" ;
-#     sh:description """If present, `conformsTo` SHOULD reference a Profile entity.""" ;
-#     sh:targetClass ro-crate:File ;
-#     sh:property [
-#         sh:path schema_org:conformsTo ;
-#         sh:class prof:Profile ;
-#         sh:severity sh:Warning ;
-#         sh:message "File `conformsTo` SHOULD reference a Profile entity" ;
-#     ] .
+ro-crate:FileConformsToProfile a sh:NodeShape ;
+    sh:name "File: RECOMMENDED `conformsTo` profile" ;
+    sh:description """If present, `conformsTo` SHOULD reference a Profile or CreativeWork entity.""" ;
+    sh:targetClass ro-crate:File ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?this dct:conformsTo ?target .
+                FILTER NOT EXISTS {
+                    ?target a schema:CreativeWork .
+                }
+                FILTER NOT EXISTS {
+                    ?target a <http://www.w3.org/ns/dx/prof/Profile> .
+                }
+            }
+        """ ;
+        sh:name "File: RECOMMENDED `conformsTo` profile" ;
+        sh:message "File `conformsTo` SHOULD reference a Profile or CreativeWork entity" ;
+        sh:severity sh:Warning ;
+    ] .
