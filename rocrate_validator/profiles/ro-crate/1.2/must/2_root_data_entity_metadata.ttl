@@ -147,3 +147,33 @@ ro-crate:RootDataEntityOptionalConformsToProperty a sh:NodeShape ;
         sh:class prof:Profile ;
         sh:message """If the Root Data Entity includes a `conformsTo` property, its values MUST reference Profile entities.""" ;
     ] .
+
+ro-crate:RootDataEntityVersionlessProfileProhibition a sh:NodeShape ;
+    sh:name "RO-Crate Root Data Entity: MUST NOT declare version-less conformsTo profile" ;
+    sh:description """The Root Data Entity MUST NOT declare the version-less generic RO-Crate profile URI
+        (https://w3id.org/ro/crate) in its conformsTo property.
+        Only versioned profile URIs (e.g., https://w3id.org/ro/crate/1.2) are permitted on the Root Data Entity.
+        The version-less URI is reserved for referenced RO-Crate data entities.""" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?metadatafile schema:about ?this .
+                FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
+            }
+        """
+    ] ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?this dct:conformsTo <https://w3id.org/ro/crate> .
+            }
+        """ ;
+        sh:name "Root Data Entity: MUST NOT declare version-less conformsTo" ;
+        sh:message "The Root Data Entity MUST NOT declare the version-less RO-Crate profile URI (https://w3id.org/ro/crate) in its conformsTo property. Use a versioned URI such as https://w3id.org/ro/crate/1.2 instead." ;
+    ] .
