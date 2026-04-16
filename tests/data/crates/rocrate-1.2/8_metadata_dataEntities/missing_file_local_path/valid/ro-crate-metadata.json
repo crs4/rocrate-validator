@@ -38,6 +38,7 @@
       "name": "missing-file.csv",
       "description": "A CSV file that is not included in the payload but has localPath.",
       "encodingFormat": "text/csv",
+      "contentSize": "1024",
       "localPath": "/mnt/archive/data/missing-file.csv"
     },
     {
@@ -46,6 +47,7 @@
       "name": "output-file.csv",
       "description": "A deliberately absent file with localPath.",
       "encodingFormat": "text/csv",
+      "contentSize": "2048",
       "localPath": "/tmp/output-file.csv"
     },
     {

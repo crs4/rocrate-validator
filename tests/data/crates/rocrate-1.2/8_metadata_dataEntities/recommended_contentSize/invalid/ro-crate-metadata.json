@@ -4,37 +4,20 @@
     {
       "@id": "ro-crate-metadata.json",
       "@type": "CreativeWork",
-      "about": {
-        "@id": "./"
-      },
-      "conformsTo": {
-        "@id": "https://w3id.org/ro/crate/1.2"
-      }
+      "about": {"@id": "./"},
+      "conformsTo": {"@id": "https://w3id.org/ro/crate/1.2"}
     },
     {
       "@id": "./",
       "@type": "Dataset",
-      "name": "Funded RO-Crate — valid",
-      "description": "RO-Crate whose Root Data Entity references both a project Organization and an external funder directly via `funder`.",
+      "name": "File without contentSize — invalid",
+      "description": "This RO-Crate has a File Data Entity missing the recommended contentSize property.",
       "datePublished": "2024-01-01",
-      "license": {
-        "@id": "https://creativecommons.org/licenses/by/4.0/"
-      },
-      "publisher": {
-        "@id": "#publisher-org"
-      },
-      "funder": [
-        {
-          "@id": "#project-org"
-        },
-        {
-          "@id": "https://ror.org/00k4n6c32"
-        }
-      ],
-      "hasPart": [],
-      "identifier": {
-        "@id": "#uuid"
-      }
+      "license": {"@id": "https://creativecommons.org/licenses/by/4.0/"},
+      "publisher": {"@id": "#publisher-org"},
+      "funder": {"@id": "https://ror.org/00k4n6c32"},
+      "hasPart": [{"@id": "data.csv"}],
+      "identifier": {"@id": "#uuid"}
     },
     {
       "@id": "#uuid",
@@ -50,16 +33,6 @@
       "url": "https://example.org"
     },
     {
-      "@id": "#project-org",
-      "@type": "Organization",
-      "name": "Example Research Project",
-      "description": "The research project associated with this RO-Crate.",
-      "url": "https://example.org/projects/example-project",
-      "funder": {
-        "@id": "https://ror.org/00k4n6c32"
-      }
-    },
-    {
       "@id": "https://ror.org/00k4n6c32",
       "@type": "Organization",
       "name": "European Commission",
@@ -71,6 +44,13 @@
       "@type": "CreativeWork",
       "name": "Creative Commons Attribution 4.0 International",
       "description": "CC BY 4.0 license."
+    },
+    {
+      "@id": "data.csv",
+      "@type": "File",
+      "name": "Sample data file",
+      "description": "A sample CSV data file without contentSize.",
+      "encodingFormat": "text/csv"
     }
   ]
 }

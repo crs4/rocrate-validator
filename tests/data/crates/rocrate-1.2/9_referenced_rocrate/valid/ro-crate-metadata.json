@@ -4,8 +4,12 @@
     {
       "@id": "ro-crate-metadata.json",
       "@type": "CreativeWork",
-      "conformsTo": {"@id": "https://w3id.org/ro/crate/1.2"},
-      "about": {"@id": "./"},
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.2"
+      },
+      "about": {
+        "@id": "./"
+      },
       "name": "RO-Crate Metadata Descriptor"
     },
     {
@@ -13,13 +17,31 @@
       "@type": "Dataset",
       "name": "Crate referencing another RO-Crate",
       "description": "An RO-Crate that references another RO-Crate as a data entity.",
-      "license": {"@id": "https://creativecommons.org/licenses/by/4.0/"},
+      "license": {
+        "@id": "https://creativecommons.org/licenses/by/4.0/"
+      },
       "datePublished": "2024-01-01",
-      "publisher": {"@id": "https://ror.org/012345678"},
-      "funder": {"@id": "https://ror.org/012345678"},
+      "publisher": {
+        "@id": "https://ror.org/012345678"
+      },
+      "funder": {
+        "@id": "https://ror.org/012345678"
+      },
       "hasPart": [
-        {"@id": "https://example.org/other-ro-crate/"}
-      ]
+        {
+          "@id": "https://example.org/other-ro-crate/"
+        }
+      ],
+      "identifier": {
+        "@id": "#uuid"
+      }
+    },
+    {
+      "@id": "#uuid",
+      "@type": "PropertyValue",
+      "name": "UUID",
+      "propertyID": "UUID",
+      "value": "550e8400-e29b-41d4-a716-446655440000"
     },
     {
       "@id": "https://example.org/other-ro-crate/",
@@ -27,11 +49,19 @@
       "name": "Other RO-Crate",
       "description": "A referenced RO-Crate.",
       "conformsTo": [
-        {"@id": "https://w3id.org/ro/crate"},
-        {"@id": "https://w3id.org/ro/crate/1.2"}
+        {
+          "@id": "https://w3id.org/ro/crate"
+        },
+        {
+          "@id": "https://w3id.org/ro/crate/1.2"
+        }
       ],
-      "subjectOf": {"@id": "#other-ro-crate-metadata"},
-      "distribution": {"@id": "https://example.org/other-ro-crate/archive.tar.gz"}
+      "subjectOf": {
+        "@id": "#other-ro-crate-metadata"
+      },
+      "distribution": {
+        "@id": "https://example.org/other-ro-crate/archive.tar.gz"
+      }
     },
     {
       "@id": "#other-ro-crate-metadata",

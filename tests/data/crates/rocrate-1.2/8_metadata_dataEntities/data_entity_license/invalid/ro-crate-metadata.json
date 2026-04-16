@@ -34,6 +34,7 @@
       "name": "research-data.csv",
       "description": "Research data under the same license as the Root.",
       "encodingFormat": "text/csv",
+      "contentSize": "2048",
       "license": {"@id": "https://creativecommons.org/licenses/by/4.0/"}
     },
     {
