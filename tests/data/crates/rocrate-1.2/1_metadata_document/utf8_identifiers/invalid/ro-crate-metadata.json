@@ -10,19 +10,12 @@
     {
       "@id": "./",
       "@type": "Dataset",
-      "name": "Dataset distribution — valid",
-      "description": "RO-Crate whose Root Data Entity declares a distribution pointing to a downloadable DataDownload archive.",
+      "name": "Percent-encoded UTF-8 — invalid",
+      "description": "RO-Crate where a contextual entity @id uses percent-encoded non-ASCII bytes instead of native UTF-8.",
       "datePublished": "2024-01-01",
       "license": {"@id": "https://creativecommons.org/licenses/by/4.0/"},
       "publisher": {"@id": "#publisher-org"},
-      "hasPart": [],
-      "distribution": {"@id": "https://example.com/rocrate.zip"}
-    },
-    {
-      "@id": "#publisher-org",
-      "@type": "Organization",
-      "name": "Example Research Institute",
-      "url": "https://example.org"
+      "hasPart": []
     },
     {
       "@id": "https://creativecommons.org/licenses/by/4.0/",
@@ -31,11 +24,16 @@
       "description": "CC BY 4.0 license."
     },
     {
-      "@id": "https://example.com/rocrate.zip",
-      "@type": "DataDownload",
-      "name": "RO-Crate archive",
-      "description": "A ZIP archive of the RO-Crate, directly downloadable.",
-      "encodingFormat": "application/zip"
+      "@id": "#publisher-org",
+      "@type": "Organization",
+      "name": "Example Research Institute",
+      "url": "https://example.org"
+    },
+    {
+      "@id": "#donn%C3%A9es-schema",
+      "@type": "DefinedTerm",
+      "name": "Données (percent-encoded)",
+      "description": "A contextual entity whose @id uses %C3%A9 (percent-encoded é) instead of native UTF-8."
     }
   ]
 }

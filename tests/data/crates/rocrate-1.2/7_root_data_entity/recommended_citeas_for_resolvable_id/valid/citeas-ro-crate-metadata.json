@@ -21,13 +21,17 @@
         "@id": "https://creativecommons.org/licenses/by/4.0/"
       },
       "hasPart": [],
+      "publisher": {"@id": "#publisher-org"},
       "cite-as": {
         "@id": "https://example.org/ro-crate/detached/citable-root-data-entity/"
       },
-      "url": "https://example.org/ro-crate/detached/citable-root-data-entity/",
-      "distribution": {
-        "@id": "https://example.org/ro-crate/detached/citable-root-data-entity/"
-      }
+      "url": "https://example.org/ro-crate/detached/citable-root-data-entity/"
+    },
+    {
+      "@id": "#publisher-org",
+      "@type": "Organization",
+      "name": "Example Research Institute",
+      "url": "https://example.org"
     },
     {
       "@id": "https://creativecommons.org/licenses/by/4.0/",

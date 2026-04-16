@@ -20,11 +20,18 @@
       "license": {
         "@id": "https://creativecommons.org/licenses/by/4.0/"
       },
+      "publisher": {"@id": "#publisher-org"},
       "hasPart": [
         {
           "@id": "data.csv"
         }
       ]
+    },
+    {
+      "@id": "#publisher-org",
+      "@type": "Organization",
+      "name": "Example Research Institute",
+      "url": "https://example.org"
     },
     {
       "@id": "https://creativecommons.org/licenses/by/4.0/",
