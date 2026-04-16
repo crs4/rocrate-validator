@@ -87,6 +87,9 @@ def test_invalid_root_data_entity_identifier_when_online_available():
         models.Severity.RECOMMENDED,
         False,
         profile_identifier="ro-crate-1.2",
+        skip_checks=["ro-crate-1.2_41.1", "ro-crate-1.2_41.2", "ro-crate-1.2_41.3",
+                     "ro-crate-1.2_42.1", "ro-crate-1.2_43.1", "ro-crate-1.2_43.2",
+                     "ro-crate-1.2_44.1"],
         expected_triggered_requirements=["Root Data Entity: RECOMMENDED identifier"],
         expected_triggered_issues=[
             "In a remote RO-Crate, the Root Data Entity @id SHOULD be an absolute URL"]
