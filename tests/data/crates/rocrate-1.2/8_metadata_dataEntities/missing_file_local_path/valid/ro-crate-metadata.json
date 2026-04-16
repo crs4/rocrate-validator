@@ -15,7 +15,16 @@
       "license": {"@id": "https://creativecommons.org/licenses/by/4.0/"},
       "datePublished": "2024-01-01",
       "publisher": {"@id": "https://ror.org/012345678"},
-      "hasPart": [{"@id": "data/missing-file.csv"}, {"@id": "#output-file.csv"}]
+      "funder": {"@id": "https://ror.org/012345678"},
+      "hasPart": [{"@id": "data/missing-file.csv"}, {"@id": "#output-file.csv"}],
+      "identifier": {"@id": "#uuid"}
+    },
+    {
+      "@id": "#uuid",
+      "@type": "PropertyValue",
+      "name": "UUID",
+      "propertyID": "UUID",
+      "value": "550e8400-e29b-41d4-a716-446655440000"
     },
     {
       "@id": "https://ror.org/012345678",

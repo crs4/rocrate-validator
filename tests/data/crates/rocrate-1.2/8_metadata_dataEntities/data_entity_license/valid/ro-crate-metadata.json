@@ -18,7 +18,15 @@
       "hasPart": [{"@id": "data/open-data.csv"}],
       "funder": {"@id": "https://ror.org/012345678"},
       "cite-as": {"@id": "./"},
-      "url": "./"
+      "url": "./",
+      "identifier": {"@id": "#uuid"}
+    },
+    {
+      "@id": "#uuid",
+      "@type": "PropertyValue",
+      "name": "UUID",
+      "propertyID": "UUID",
+      "value": "550e8400-e29b-41d4-a716-446655440000"
     },
     {
       "@id": "data/open-data.csv",

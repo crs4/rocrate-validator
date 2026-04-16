@@ -323,3 +323,176 @@ def test_invalid_recommended_funding_no_project_funder():
         expected_triggered_requirements=["Project Organization: recommended funder reference"],
         expected_triggered_issues=["SHOULD itself reference an external `funder`"],
     )
+
+
+# ---------------------------------------------------------------------------
+# Root Data Entity: datePublished SHOULD specify at least day precision
+# ---------------------------------------------------------------------------
+
+def test_valid_recommended_datePublished_day_precision():
+    """
+    Root Data Entity with datePublished in YYYY-MM-DD format passes the
+    RECOMMENDED day precision check.
+    """
+    do_entity_test(
+        __metadata_root_data_entity_crates__.valid_recommended_datePublished_day_precision,
+        models.Severity.RECOMMENDED,
+        True,
+        profile_identifier="ro-crate-1.2",
+        skip_checks=["ro-crate-1.2_35.1"],
+    )
+
+
+def test_invalid_recommended_datePublished_day_precision():
+    """
+    Root Data Entity with datePublished as just year (YYYY) fails the
+    RECOMMENDED day precision check.
+    """
+    do_entity_test(
+        __metadata_root_data_entity_crates__.invalid_recommended_datePublished_day_precision,
+        models.Severity.RECOMMENDED,
+        False,
+        profile_identifier="ro-crate-1.2",
+        expected_triggered_requirements=["Root Data Entity: datePublished SHOULD specify at least day precision"],
+        expected_triggered_issues=["SHOULD specify datePublished to at least the precision of a day"],
+        skip_checks=["ro-crate-1.2_35.1"],
+    )
+
+
+# ---------------------------------------------------------------------------
+# Root Data Entity: hasPart MUST reference all Data Entities
+# ---------------------------------------------------------------------------
+
+def test_valid_required_hasPart_all_data_entities():
+    """
+    Root Data Entity that references all Data Entities via hasPart (directly
+    or indirectly) passes the REQUIRED check.
+    """
+    do_entity_test(
+        __metadata_root_data_entity_crates__.valid_required_hasPart_all_data_entities,
+        models.Severity.REQUIRED,
+        True,
+        profile_identifier="ro-crate-1.2",
+        skip_checks=["ro-crate-1.2_46.1"],
+    )
+
+
+def test_invalid_required_hasPart_all_data_entities():
+    """
+    Root Data Entity that does NOT reference all Data Entities via hasPart
+    fails the REQUIRED check.
+    """
+    do_entity_test(
+        __metadata_root_data_entity_crates__.invalid_required_hasPart_all_data_entities,
+        models.Severity.REQUIRED,
+        False,
+        profile_identifier="ro-crate-1.2",
+        expected_triggered_requirements=["Root Data Entity: hasPart MUST reference all Data Entities"],
+        expected_triggered_issues=["MUST reference all Data Entities via hasPart"],
+        skip_checks=["ro-crate-1.2_46.1"],
+    )
+
+
+# ---------------------------------------------------------------------------
+# Root Data Entity: identifier SHOULD be present if PID exists (RECOMMENDED)
+# ---------------------------------------------------------------------------
+
+def test_valid_recommended_identifier_if_pid():
+    """
+    Root Data Entity with absolute URI @id and identifier property passes
+    the RECOMMENDED check.
+    """
+    do_entity_test(
+        __metadata_root_data_entity_crates__.valid_recommended_identifier_if_pid,
+        models.Severity.RECOMMENDED,
+        True,
+        profile_identifier="ro-crate-1.2",
+        skip_checks=["ro-crate-1.2_35.1", "ro-crate-1.2_38.1", "ro-crate-1.2_41.1",
+                     "ro-crate-1.2_41.2", "ro-crate-1.2_41.3", "ro-crate-1.2_42.1",
+                     "ro-crate-1.2_43.1", "ro-crate-1.2_43.2", "ro-crate-1.2_44.1",
+                     "Root Data Entity: use cite-as for resolvable identifiers",
+                     "Root Data Entity: persistent identifier resolution",
+                     "Root Data Entity: identifier SHOULD be present if PID exists"],
+        skip_availability_check=True,
+    )
+
+
+def test_invalid_recommended_identifier_if_pid():
+    """
+    Root Data Entity with absolute URI @id but no identifier property fails
+    the RECOMMENDED check.
+    """
+    do_entity_test(
+        __metadata_root_data_entity_crates__.invalid_recommended_identifier_if_pid,
+        models.Severity.RECOMMENDED,
+        False,
+        profile_identifier="ro-crate-1.2",
+        expected_triggered_requirements=["Root Data Entity: identifier SHOULD be present if PID exists"],
+        expected_triggered_issues=["SHOULD have an `identifier` property if it has a persistent identifier"],
+    )
+
+
+# ---------------------------------------------------------------------------
+# Root Data Entity: identifier SHOULD use PropertyValue approach (RECOMMENDED)
+# ---------------------------------------------------------------------------
+
+def test_valid_recommended_identifier_propertyvalue():
+    """
+    Root Data Entity that uses PropertyValue for identifier passes the
+    RECOMMENDED check per Science On Schema.org.
+    """
+    do_entity_test(
+        __metadata_root_data_entity_crates__.valid_recommended_identifier_propertyvalue,
+        models.Severity.RECOMMENDED,
+        True,
+        profile_identifier="ro-crate-1.2",
+        skip_checks=["ro-crate-1.2_35.1"],
+    )
+
+
+def test_invalid_recommended_identifier_propertyvalue():
+    """
+    Root Data Entity that uses plain string for identifier fails the
+    RECOMMENDED PropertyValue approach check.
+    """
+    do_entity_test(
+        __metadata_root_data_entity_crates__.invalid_recommended_identifier_propertyvalue,
+        models.Severity.RECOMMENDED,
+        False,
+        profile_identifier="ro-crate-1.2",
+        expected_triggered_requirements=["Root Data Entity: identifier SHOULD use PropertyValue approach"],
+        expected_triggered_issues=["SHOULD use PropertyValue entities for identifiers"],
+    )
+
+
+# ---------------------------------------------------------------------------
+# Root Data Entity: conformsTo SHOULD be present if profiles exist (RECOMMENDED)
+# ---------------------------------------------------------------------------
+
+def test_valid_recommended_conformsto_if_profiles():
+    """
+    Root Data Entity that has a Profile entity in the graph and includes
+    conformsTo on the Root passes the RECOMMENDED check.
+    """
+    do_entity_test(
+        __metadata_root_data_entity_crates__.valid_recommended_conformsto_if_profiles,
+        models.Severity.RECOMMENDED,
+        True,
+        profile_identifier="ro-crate-1.2",
+        skip_checks=["ro-crate-1.2_35.1"],
+    )
+
+
+def test_invalid_recommended_conformsto_if_profiles():
+    """
+    Root Data Entity that has a Profile entity in the graph but does NOT
+    include conformsTo on the Root fails the RECOMMENDED check.
+    """
+    do_entity_test(
+        __metadata_root_data_entity_crates__.invalid_recommended_conformsto_if_profiles,
+        models.Severity.RECOMMENDED,
+        False,
+        profile_identifier="ro-crate-1.2",
+        expected_triggered_requirements=["Root Data Entity: conformsTo SHOULD be present if profiles exist"],
+        expected_triggered_issues=["SHOULD have a `conformsTo` property if the RO-Crate conforms to profiles"],
+    )

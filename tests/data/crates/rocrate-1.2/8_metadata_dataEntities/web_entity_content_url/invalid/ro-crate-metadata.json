@@ -14,7 +14,23 @@
       "description": "RO-Crate with a web-based File Data Entity whose contentUrl is not downloadable (returns HTML).",
       "datePublished": "2024-01-01",
       "license": {"@id": "https://creativecommons.org/licenses/by/4.0/"},
-      "hasPart": [{"@id": "https://example.com/landing/dataset"}]
+      "hasPart": [{"@id": "https://example.com/landing/dataset"}],
+      "publisher": {"@id": "#publisher-org"},
+      "funder": {"@id": "#publisher-org"},
+      "identifier": {"@id": "#uuid"}
+    },
+    {
+      "@id": "#publisher-org",
+      "@type": "Organization",
+      "name": "Example Research Institute",
+      "url": "https://example.org"
+    },
+    {
+      "@id": "#uuid",
+      "@type": "PropertyValue",
+      "name": "UUID",
+      "propertyID": "UUID",
+      "value": "550e8400-e29b-41d4-a716-446655440000"
     },
     {
       "@id": "https://creativecommons.org/licenses/by/4.0/",

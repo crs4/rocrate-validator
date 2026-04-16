@@ -30,7 +30,17 @@
       ],
       "funder": {
         "@id": "https://ror.org/00k4n6c32"
+      },
+      "identifier": {
+        "@id": "#uuid"
       }
+    },
+    {
+      "@id": "#uuid",
+      "@type": "PropertyValue",
+      "name": "UUID",
+      "propertyID": "UUID",
+      "value": "550e8400-e29b-41d4-a716-446655440000"
     },
     {
       "@id": "#publisher-org",
@@ -66,9 +76,6 @@
       "dateModified": "2025-12-01",
       "author": {
         "@id": "https://orcid.org/0000-0001-2345-6789"
-      },
-      "license": {
-        "@id": "https://creativecommons.org/licenses/by/4.0/"
       },
       "sdDatePublished": "2026-04-15"
     },
