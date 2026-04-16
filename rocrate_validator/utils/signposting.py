@@ -99,7 +99,7 @@ def check_downloadable(url: str) -> DownloadabilityResult:
 
         item_link = links.get("item")
         if item_link:
-            logger.error("cite-as '%s' is downloadable via Signposting rel=item: %s",
+            logger.debug("cite-as '%s' is downloadable via Signposting rel=item: %s",
                          url, item_link.get("url"))
             return DownloadabilityResult(
                 is_downloadable=True,
@@ -109,7 +109,7 @@ def check_downloadable(url: str) -> DownloadabilityResult:
 
         describedby_link = links.get("describedby")
         if describedby_link:
-            logger.error("cite-as '%s' is downloadable via Signposting rel=describedby: %s",
+            logger.debug("cite-as '%s' is downloadable via Signposting rel=describedby: %s",
                          url, describedby_link.get("url"))
             return DownloadabilityResult(
                 is_downloadable=True,
@@ -120,7 +120,7 @@ def check_downloadable(url: str) -> DownloadabilityResult:
         # -- 2. Direct download -----------------------------------------------
         content_type = response.headers.get("Content-Type", "").split(";")[0].strip()
         if content_type and content_type not in _HTML_MIME_TYPES:
-            logger.error("cite-as '%s' is directly downloadable (Content-Type: %s)",
+            logger.debug("cite-as '%s' is directly downloadable (Content-Type: %s)",
                          url, content_type)
             return DownloadabilityResult(
                 is_downloadable=True,
@@ -137,7 +137,7 @@ def check_downloadable(url: str) -> DownloadabilityResult:
         if neg_response.status_code == 200:
             neg_ct = neg_response.headers.get("Content-Type", "").split(";")[0].strip()
             if neg_ct and neg_ct not in _HTML_MIME_TYPES:
-                logger.error(
+                logger.debug(
                     "cite-as '%s' is downloadable via content negotiation (Content-Type: %s)",
                     url, neg_ct,
                 )
