@@ -230,3 +230,34 @@ def test_invalid_recommended_identifier_resolution(monkeypatch):
         expected_triggered_requirements=["Root Data Entity: persistent identifier resolution"],
         expected_triggered_issues=["SHOULD resolve to the RO-Crate Metadata Document or an archive"],
     )
+
+
+# ---------------------------------------------------------------------------
+# Root Data Entity: publisher SHOULD be present (RECOMMENDED)
+# ---------------------------------------------------------------------------
+
+def test_valid_recommended_publisher():
+    """
+    Root Data Entity with a publisher Organization passes the RECOMMENDED
+    publisher check.
+    """
+    do_entity_test(
+        __metadata_root_data_entity_crates__.valid_recommended_publisher,
+        models.Severity.RECOMMENDED,
+        True,
+        profile_identifier="ro-crate-1.2",
+    )
+
+
+def test_invalid_recommended_publisher():
+    """
+    Root Data Entity without a publisher fails the RECOMMENDED publisher check.
+    """
+    do_entity_test(
+        __metadata_root_data_entity_crates__.invalid_recommended_publisher,
+        models.Severity.RECOMMENDED,
+        False,
+        profile_identifier="ro-crate-1.2",
+        expected_triggered_requirements=["Root Data Entity: recommended publisher"],
+        expected_triggered_issues=["SHOULD have a `publisher` property"],
+    )
