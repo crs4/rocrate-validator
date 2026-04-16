@@ -69,6 +69,7 @@ def test_valid_required_downloadable_citeAs(monkeypatch):
             pass
 
     def _fake_head(url, *args, **kwargs):
+        logger.debug("Mock HEAD request to %s with args: %s, kwargs: %s", url, args, kwargs)
         return _DownloadableResponse()
 
     monkeypatch.setattr(HttpRequester(), "head", _fake_head)
@@ -96,6 +97,7 @@ def test_invalid_required_downloadable_citeAs(monkeypatch):
             pass
 
     def _fake_head(url, *args, **kwargs):
+        logger.debug("Mock HEAD request to %s with args: %s, kwargs: %s", url, args, kwargs)
         return _HtmlResponse()
 
     monkeypatch.setattr(HttpRequester(), "head", _fake_head)
@@ -173,4 +175,58 @@ def test_invalid_additional_conformsTo_reference():
         expected_triggered_issues=[
             "If the Root Data Entity includes a `conformsTo` property, its values MUST reference Profile entities."
         ]
+    )
+
+
+# ---------------------------------------------------------------------------
+# Root Data Entity identifier — persistent identifier resolution (RECOMMENDED)
+# ---------------------------------------------------------------------------
+
+class _ZipResponse:
+    status_code = 200
+    headers = {"Content-Type": "application/zip"}
+    links = {}
+
+    def raise_for_status(self):
+        pass
+
+
+class _HtmlResponse:
+    status_code = 200
+    headers = {"Content-Type": "text/html; charset=utf-8"}
+    links = {}
+
+    def raise_for_status(self):
+        pass
+
+
+def test_valid_recommended_identifier_resolution(monkeypatch):
+    """
+    Root Data Entity whose identifier URL resolves to a downloadable resource
+    (mocked as application/zip) passes the RECOMMENDED identifier resolution check.
+    """
+    monkeypatch.setattr(HttpRequester(), "head", lambda url, **kw: _ZipResponse())
+
+    do_entity_test(
+        __metadata_root_data_entity_crates__.valid_recommended_identifier_resolution,
+        models.Severity.RECOMMENDED,
+        True,
+        profile_identifier="ro-crate-1.2",
+    )
+
+
+def test_invalid_recommended_identifier_resolution(monkeypatch):
+    """
+    Root Data Entity whose identifier URL returns text/html (landing page) fails
+    the RECOMMENDED identifier resolution check.
+    """
+    monkeypatch.setattr(HttpRequester(), "head", lambda url, **kw: _HtmlResponse())
+
+    do_entity_test(
+        __metadata_root_data_entity_crates__.invalid_recommended_identifier_resolution,
+        models.Severity.RECOMMENDED,
+        False,
+        profile_identifier="ro-crate-1.2",
+        expected_triggered_requirements=["Root Data Entity: persistent identifier resolution"],
+        expected_triggered_issues=["SHOULD resolve to the RO-Crate Metadata Document or an archive"],
     )
