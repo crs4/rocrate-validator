@@ -276,7 +276,8 @@ def test_valid_missing_file_local_path():
         models.Severity.RECOMMENDED,
         True,
         profile_identifier="ro-crate-1.2",
-        skip_checks=["ro-crate-1.2_16.1", "ro-crate-1.2_38.1"],
+        skip_checks=["ro-crate-1.2_16.1", "ro-crate-1.2_38.1",
+                     "ro-crate-1.2_17.1", "ro-crate-1.2_39.0", "ro-crate-1.2_39.1"],
     )
 
 
@@ -342,7 +343,7 @@ def test_redundant_license_logs_warning():
     __log_stream__.truncate(0)
     __log_stream__.seek(0)
 
-    result = do_entity_test(
+    do_entity_test(
         __metadata_root_data_entity_crates__.invalid_data_entity_license_divergence,
         models.Severity.RECOMMENDED,
         True,

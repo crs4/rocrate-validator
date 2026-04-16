@@ -4,8 +4,12 @@
     {
       "@id": "ro-crate-metadata.json",
       "@type": "CreativeWork",
-      "conformsTo": {"@id": "https://w3id.org/ro/crate/1.2"},
-      "about": {"@id": "https://example.org/ro-crate/detached/citable-root-data-entity/"}
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.2"
+      },
+      "about": {
+        "@id": "https://example.org/ro-crate/detached/citable-root-data-entity/"
+      }
     },
     {
       "@id": "https://example.org/ro-crate/detached/citable-root-data-entity/",
@@ -13,11 +17,20 @@
       "name": "Detached RO-Crate with absolute root @id",
       "description": "A detached RO-Crate whose Root Data Entity has an absolute URL as @id.",
       "datePublished": "2024-01-01",
-      "license": {"@id": "https://creativecommons.org/licenses/by/4.0/"},
+      "license": {
+        "@id": "https://creativecommons.org/licenses/by/4.0/"
+      },
       "hasPart": [],
-      "cite-as": {"@id": "https://example.org/ro-crate/detached/citable-root-data-entity/"},
+      "cite-as": {
+        "@id": "https://example.org/ro-crate/detached/citable-root-data-entity/"
+      },
       "url": "https://example.org/ro-crate/detached/citable-root-data-entity/",
-      "publisher": {"@id": "https://ror.org/012345678"}
+      "publisher": {
+        "@id": "https://ror.org/012345678"
+      },
+      "funder": {
+        "@id": "https://ror.org/012345678"
+      }
     },
     {
       "@id": "https://ror.org/012345678",
