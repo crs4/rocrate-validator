@@ -15,8 +15,8 @@
     {
       "@id": "./",
       "@type": "Dataset",
-      "name": "Crate referencing another RO-Crate",
-      "description": "An RO-Crate that references another RO-Crate as a data entity.",
+      "name": "Attached crate referencing a nested RO-Crate by relative path",
+      "description": "An attached RO-Crate (A) referencing another nested RO-Crate (B) via a relative path (case #2): no sdDatePublished required.",
       "license": {
         "@id": "https://creativecommons.org/licenses/by/4.0/"
       },
@@ -32,7 +32,7 @@
       },
       "hasPart": [
         {
-          "@id": "https://example.org/other-ro-crate/"
+          "@id": "subcrate/"
         }
       ],
       "identifier": {
@@ -47,10 +47,10 @@
       "value": "550e8400-e29b-41d4-a716-446655440000"
     },
     {
-      "@id": "https://example.org/other-ro-crate/",
+      "@id": "subcrate/",
       "@type": "Dataset",
-      "name": "Other RO-Crate",
-      "description": "A referenced RO-Crate.",
+      "name": "Nested RO-Crate",
+      "description": "A referenced RO-Crate nested within A, identified by relative path.",
       "conformsTo": [
         {
           "@id": "https://w3id.org/ro/crate"
@@ -59,25 +59,28 @@
           "@id": "https://w3id.org/ro/crate/1.2"
         }
       ],
+      "hasPart": [
+        {
+          "@id": "subcrate/data.txt"
+        }
+      ],
       "subjectOf": {
-        "@id": "#other-ro-crate-metadata"
-      },
-      "sdDatePublished": "2024-01-01",
-      "distribution": {
-        "@id": "https://example.org/other-ro-crate/archive.tar.gz"
+        "@id": "#subcrate-metadata"
       }
     },
     {
-      "@id": "#other-ro-crate-metadata",
-      "@type": "CreativeWork",
-      "name": "Other RO-Crate Metadata Descriptor",
-      "encodingFormat": "application/ld+json"
+      "@id": "subcrate/data.txt",
+      "@type": "File",
+      "name": "Nested data file",
+      "description": "A data file inside the nested RO-Crate.",
+      "encodingFormat": "text/plain",
+      "contentSize": "0"
     },
     {
-      "@id": "https://example.org/other-ro-crate/archive.tar.gz",
-      "@type": "DataDownload",
-      "name": "Other RO-Crate Archive",
-      "encodingFormat": "application/gzip"
+      "@id": "#subcrate-metadata",
+      "@type": "CreativeWork",
+      "name": "Nested RO-Crate Metadata Descriptor",
+      "encodingFormat": "application/ld+json"
     },
     {
       "@id": "https://ror.org/012345678",
