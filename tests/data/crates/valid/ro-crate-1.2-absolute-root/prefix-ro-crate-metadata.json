@@ -34,7 +34,17 @@
       "cite-as": {
         "@id": "https://github.com/crs4/pydoop/tree/develop/"
       },
-      "url": "https://github.com/crs4/pydoop/tree/develop/"
+      "url": "https://github.com/crs4/pydoop/tree/develop/",
+      "identifier": {
+        "@id": "#pydoop-pid"
+      }
+    },
+    {
+      "@id": "#pydoop-pid",
+      "@type": "PropertyValue",
+      "name": "Pydoop repository URL",
+      "propertyID": "URL",
+      "value": "https://github.com/crs4/pydoop/tree/develop/"
     },
     {
       "@id": "https://raw.githubusercontent.com/crs4/pydoop/refs/heads/develop/README.md",
@@ -78,6 +88,9 @@
       "description": "An example author with an ORCID identifier.",
       "affiliation": {
         "@id": "https://ror.org/123456789"
+      },
+      "contactPoint": {
+        "@id": "#contact-point"
       }
     },
     {
@@ -85,7 +98,18 @@
       "@type": "Organization",
       "name": "Example University",
       "description": "An example university affiliated with the author.",
-      "url": "https://exampleuniversity.edu"
+      "url": "https://exampleuniversity.edu",
+      "contactPoint": {
+        "@id": "#contact-point"
+      }
+    },
+    {
+      "@id": "#contact-point",
+      "@type": "ContactPoint",
+      "name": "Contact",
+      "contactType": "customer support",
+      "email": "info@exampleuniversity.edu",
+      "url": "https://exampleuniversity.edu/contact"
     },
     {
       "@id": "https://creativecommons.org/licenses/by/4.0/",
