@@ -4,22 +4,40 @@
     {
       "@id": "ro-crate-metadata.json",
       "@type": "CreativeWork",
-      "conformsTo": {"@id": "https://w3id.org/ro/crate/1.2"},
-      "about": {"@id": "./"}
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.2"
+      },
+      "about": {
+        "@id": "./"
+      }
     },
     {
       "@id": "./",
       "@type": "Dataset",
       "name": "Test crate with divergent licenses",
       "description": "The Root Data Entity has CC-BY-4.0; a Data Entity has CC0.",
-      "license": {"@id": "https://creativecommons.org/licenses/by/4.0/"},
+      "license": {
+        "@id": "https://creativecommons.org/licenses/by/4.0/"
+      },
       "datePublished": "2024-01-01",
-      "publisher": {"@id": "https://ror.org/012345678"},
-      "hasPart": [{"@id": "data/open-data.csv"}],
-      "funder": {"@id": "https://ror.org/012345678"},
-      "cite-as": {"@id": "./"},
+      "publisher": {
+        "@id": "https://ror.org/012345678"
+      },
+      "hasPart": [
+        {
+          "@id": "data/open-data.csv"
+        }
+      ],
+      "funder": {
+        "@id": "https://ror.org/012345678"
+      },
+      "cite-as": {
+        "@id": "./"
+      },
       "url": "./",
-      "identifier": {"@id": "#uuid"}
+      "identifier": {
+        "@id": "#uuid"
+      }
     },
     {
       "@id": "#uuid",
@@ -35,13 +53,18 @@
       "description": "Open data file under CC0.",
       "encodingFormat": "text/csv",
       "contentSize": "1024",
-      "license": {"@id": "http://spdx.org/licenses/CC0-1.0"}
+      "license": {
+        "@id": "http://spdx.org/licenses/CC0-1.0"
+      }
     },
     {
       "@id": "https://ror.org/012345678",
       "@type": "Organization",
       "name": "Example Research Institute",
-      "url": "https://example.org"
+      "url": "https://example.org",
+      "contactPoint": {
+        "@id": "#contact-point"
+      }
     },
     {
       "@id": "https://creativecommons.org/licenses/by/4.0/",
@@ -54,6 +77,12 @@
       "@type": "CreativeWork",
       "name": "CC0 1.0 Universal",
       "description": "Public domain dedication."
+    },
+    {
+      "@id": "#contact-point",
+      "@type": "ContactPoint",
+      "name": "Contact for Example Research Institute",
+      "email": "mailto:contact@example.org"
     }
   ]
 }

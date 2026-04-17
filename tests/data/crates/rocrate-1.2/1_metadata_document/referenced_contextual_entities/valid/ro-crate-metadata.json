@@ -73,7 +73,10 @@
       "@type": "Organization",
       "name": "Example University",
       "description": "An example university that the Person entity is affiliated with.",
-      "url": "https://www.exampleuniversity.edu"
+      "url": "https://www.exampleuniversity.edu",
+      "contactPoint": {
+        "@id": "#contact-point"
+      }
     },
     {
       "@id": "data.csv",
@@ -82,6 +85,12 @@
       "description": "A sample data file.",
       "encodingFormat": "text/csv",
       "contentSize": "42"
+    },
+    {
+      "@id": "#contact-point",
+      "@type": "ContactPoint",
+      "name": "Contact for Example University",
+      "email": "mailto:contact@example.org"
     }
   ]
 }

@@ -21,7 +21,7 @@
         "@id": "https://creativecommons.org/licenses/by/4.0/"
       },
       "publisher": {
-        "@id": "#publisher-org"
+        "@id": "https://ror.org/05f9q8d28"
       },
       "author": {
         "@id": "#alice"
@@ -52,21 +52,39 @@
       "@type": "Person",
       "name": "Alice Researcher",
       "affiliation": {
-        "@id": "#publisher-org"
+        "@id": "https://ror.org/05f9q8d28"
       }
     },
     {
-      "@id": "#publisher-org",
+      "@id": "https://ror.org/05f9q8d28",
       "@type": "Organization",
       "name": "Example University",
-      "url": "https://example.edu"
+      "url": "https://example.edu",
+      "contactPoint": {
+        "@id": "#contact-point"
+      }
     },
     {
       "@id": "https://ror.org/00k4n6c32",
       "@type": "Organization",
       "name": "European Commission",
       "description": "The European Commission funds research and innovation programmes.",
-      "url": "https://ec.europa.eu"
+      "url": "https://ec.europa.eu",
+      "contactPoint": {
+        "@id": "#contact-point-1"
+      }
+    },
+    {
+      "@id": "#contact-point",
+      "@type": "ContactPoint",
+      "name": "Contact for Example University",
+      "email": "mailto:contact@example.org"
+    },
+    {
+      "@id": "#contact-point-1",
+      "@type": "ContactPoint",
+      "name": "Contact for European Commission",
+      "email": "mailto:contact@example.org"
     }
   ]
 }
