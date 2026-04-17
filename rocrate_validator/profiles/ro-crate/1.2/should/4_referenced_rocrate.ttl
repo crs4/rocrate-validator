@@ -116,6 +116,41 @@ ro-crate:ReferencedROCrateSubjectOfRecommended a sh:NodeShape ;
     ] .
 
 # ---------------------------------------------------------------
+#  Referenced RO-Crate data entity whose @id is an absolute URI
+#  without a declared persistent identifier SHOULD include
+#  `sdDatePublished` to indicate when the absolute URI was
+#  accessed (unless Signposting rel=cite-as is declared — that
+#  conditional refinement is verified separately by the Python
+#  check `ReferencedROCrateSignpostingCiteAsChecker`).
+#  (RO-Crate 1.2, § 4.5 — Determining entity identifier for a
+#  referenced RO-Crate, step #3.)
+# ---------------------------------------------------------------
+ro-crate:ReferencedROCrateSdDatePublishedRecommended a sh:NodeShape ;
+    sh:name "Referenced RO-Crate: SHOULD have sdDatePublished when @id is an absolute URI without persistent identifier" ;
+    sh:description """A data entity that represents a referenced RO-Crate
+        whose @id is an absolute HTTP(S) URI — and that does not declare a
+        persistent identifier via `identifier` — SHOULD include the
+        `sdDatePublished` timestamp to indicate when the URI was accessed
+        (RO-Crate 1.2, § 4.5).  This structural check does not inspect
+        Signposting `Link: rel=cite-as` headers; that refinement is performed
+        by a separate network-aware Python check.""" ;
+    sh:target ro-crate:ReferencedROCrateDataEntityTarget ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT $this
+            WHERE {
+                FILTER(STRSTARTS(STR($this), "http://") || STRSTARTS(STR($this), "https://"))
+                FILTER NOT EXISTS { $this schema:identifier ?id }
+                FILTER NOT EXISTS { $this schema:sdDatePublished ?date }
+            }
+        """ ;
+        sh:severity sh:Warning ;
+        sh:message "A Referenced RO-Crate data entity with an absolute URI @id and no declared persistent identifier SHOULD include `sdDatePublished` to indicate when the URI was accessed (unless Signposting `Link: rel=cite-as` is declared on that URI)" ;
+    ] .
+
+# ---------------------------------------------------------------
 # Metadata descriptor of a referenced RO-Crate
 #
 # All three constraints (encodingFormat, no conformsTo, no about)
