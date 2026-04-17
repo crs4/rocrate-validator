@@ -29,6 +29,12 @@ _GENERIC_RECOMMENDED_SKIP = [
     "ro-crate-1.2_54.1",   # Root Data Entity: RECOMMENDED publisher
 ]
 
+# Correct IDs for funder/publisher checks (used in person entity tests).
+_PERSON_VALID_SKIP = [
+    "ro-crate-1.2_47.1",   # Root Data Entity: RECOMMENDED funder
+    "ro-crate-1.2_54.1",   # Root Data Entity: RECOMMENDED publisher
+]
+
 
 # ---------------------------------------------------------------------------
 # License entity: SHOULD be typed as CreativeWork (SHOULD)

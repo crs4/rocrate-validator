@@ -20,6 +20,15 @@
       "license": {
         "@id": "https://creativecommons.org/licenses/by/4.0/"
       },
+      "publisher": {
+        "@id": "https://ror.org/05f9q8d28"
+      },
+      "funder": {
+        "@id": "https://ror.org/05f9q8d28"
+      },
+      "conformsTo": {
+        "@id": "https://bioschemas.org/profiles/ComputationalWorkflow/1.0-RELEASE"
+      },
       "hasPart": [
         {
           "@id": "workflow.ga"
@@ -42,7 +51,23 @@
     {
       "@id": "https://creativecommons.org/licenses/by/4.0/",
       "@type": "CreativeWork",
-      "name": "CC BY 4.0"
+      "name": "CC BY 4.0",
+      "description": "Creative Commons Attribution 4.0 International license."
+    },
+    {
+      "@id": "https://ror.org/05f9q8d28",
+      "@type": "Organization",
+      "name": "Example University",
+      "url": "https://example.edu",
+      "contactPoint": {
+        "@id": "#contact-point"
+      }
+    },
+    {
+      "@id": "#contact-point",
+      "@type": "ContactPoint",
+      "name": "Example University Contact",
+      "email": "contact@example.edu"
     },
     {
       "@id": "workflow.ga",
@@ -54,6 +79,7 @@
       "name": "My Workflow",
       "description": "A Galaxy workflow with a diagram image.",
       "encodingFormat": "application/json",
+      "contentSize": "2048",
       "programmingLanguage": {
         "@id": "#galaxy"
       },
@@ -68,9 +94,7 @@
       "@id": "#galaxy",
       "@type": "ComputerLanguage",
       "name": "Galaxy",
-      "url": {
-        "@id": "https://galaxyproject.org/"
-      }
+      "url": "https://galaxyproject.org/"
     },
     {
       "@id": "diagram.png",
@@ -81,9 +105,16 @@
       "name": "Workflow diagram",
       "description": "A diagram with about referencing the workflow.",
       "encodingFormat": "image/png",
+      "contentSize": "10240",
       "about": {
         "@id": "workflow.ga"
       }
+    },
+    {
+      "@id": "https://bioschemas.org/profiles/ComputationalWorkflow/1.0-RELEASE",
+      "@type": ["CreativeWork", "Profile"],
+      "name": "Bioschemas ComputationalWorkflow Profile 1.0-RELEASE",
+      "description": "Bioschemas profile for computational workflows."
     }
   ]
 }

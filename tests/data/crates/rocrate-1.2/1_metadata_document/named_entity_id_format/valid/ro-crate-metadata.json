@@ -24,7 +24,7 @@
         "@id": "https://ror.org/05f9q8d28"
       },
       "author": {
-        "@id": "#alice"
+        "@id": "https://orcid.org/0000-0001-0000-0001"
       },
       "hasPart": [],
       "funder": {
@@ -48,11 +48,14 @@
       "description": "CC BY 4.0 license."
     },
     {
-      "@id": "#alice",
+      "@id": "https://orcid.org/0000-0001-0000-0001",
       "@type": "Person",
       "name": "Alice Researcher",
       "affiliation": {
         "@id": "https://ror.org/05f9q8d28"
+      },
+      "contactPoint": {
+        "@id": "#contact-point"
       }
     },
     {

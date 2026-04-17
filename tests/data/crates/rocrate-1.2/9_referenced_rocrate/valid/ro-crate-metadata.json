@@ -3,7 +3,7 @@
   "@graph": [
     {
       "@id": "ro-crate-metadata.json",
-      "@type": ["CreativeWork", "Dataset"],
+      "@type": "CreativeWork",
       "conformsTo": {
         "@id": "https://w3id.org/ro/crate/1.2"
       },
@@ -95,12 +95,12 @@
     },
     {
       "@id": "https://w3id.org/ro/crate",
-      "@type": "Profile",
+      "@type": ["CreativeWork", "Profile"],
       "name": "RO-Crate"
     },
     {
       "@id": "https://w3id.org/ro/crate/1.2",
-      "@type": "Profile",
+      "@type": ["CreativeWork", "Profile"],
       "name": "RO-Crate 1.2"
     },
     {
