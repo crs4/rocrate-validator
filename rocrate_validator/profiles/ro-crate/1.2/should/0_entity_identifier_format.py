@@ -16,7 +16,7 @@
 RECOMMENDED checks on entity @id values:
   - @id SHOULD NOT use ../ to climb out of the RO-Crate Root
   - International characters SHOULD be native UTF-8, not percent-encoded
-  - Named contextual entities (Person, Organization) SHOULD use #-prefixed @id
+  - Contextual entities SHOULD use absolute URI (permalink) or #-prefixed @id
 """
 
 import re
@@ -31,8 +31,9 @@ logger = logging.getLogger(__name__)
 # These are UTF-8 continuation / leading bytes for multi-byte code-points.
 _PCT_NON_ASCII_RE = re.compile(r"%[89A-Fa-f][0-9A-Fa-f]")
 
-# Types for which a non-absolute @id SHOULD start with '#'
-_NAMED_ENTITY_TYPES = frozenset({"Person", "Organization"})
+# RFC 3986 absolute URI scheme prefix: scheme = ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
+# e.g. http:, https:, mailto:, urn:, doi:, ftp:, file:
+_ABSOLUTE_URI_RE = re.compile(r"^[a-zA-Z][a-zA-Z0-9+\-.]*:")
 
 
 @requirement(name="Entity identifier: format recommendations")
@@ -88,34 +89,52 @@ class EntityIdentifierFormatChecker(PyFunctionCheck):
         return result
 
     @check(
-        name="Named contextual entity @id SHOULD use '#' prefix",
+        name="Contextual entity @id SHOULD be absolute URI or '#'-prefixed",
         severity=Severity.RECOMMENDED,
     )
     def check_named_entity_id_format(self, context: ValidationContext) -> bool:
         """
-        Named entities such as Person or Organization that are referenced locally
-        SHOULD use an @id starting with '#' rather than a bare relative path
-        (RO-Crate 1.2, JSON-LD appendix).
+        Any Contextual Entity (Person, Organization, ContactPoint, PropertyValue,
+        Place, etc.) SHOULD use an @id that is an absolute URI (permalink),
+        a '#'-prefixed local identifier, or a blank node — not a bare relative
+        path (RO-Crate 1.2, 5.1 Any Contextual Entity).
         """
         result = True
-        for entity in context.ro_crate.metadata.as_dict().get("@graph", []):
+        ro_crate_metadata = context.ro_crate.metadata
+        non_contextual_ids = set()
+        try:
+            non_contextual_ids.add(ro_crate_metadata.get_file_descriptor_entity().id)
+        except Exception:
+            pass
+        try:
+            non_contextual_ids.add(ro_crate_metadata.get_root_data_entity().id)
+        except Exception:
+            pass
+        try:
+            non_contextual_ids.update(e.id for e in ro_crate_metadata.get_data_entities())
+        except Exception:
+            pass
+
+        for entity in ro_crate_metadata.as_dict().get("@graph", []):
             entity_id = entity.get("@id", "")
-            raw_type = entity.get("@type", "")
-            types = [raw_type] if isinstance(raw_type, str) else raw_type
-            if not _NAMED_ENTITY_TYPES.intersection(types):
+            if entity_id in non_contextual_ids:
                 continue
-            # Absolute IRIs and blank nodes are fine; only flag bare relative paths
+            raw_type = entity.get("@type")
+            if not raw_type:
+                # Reference-only stub (no @type) — out of scope for this check
+                continue
+            # Absolute URIs (any scheme), fragment-prefixed IDs, and blank nodes
+            # are all valid; only flag bare relative paths
             if (
-                entity_id.startswith("http://")
-                or entity_id.startswith("https://")
-                or entity_id.startswith("#")
+                entity_id.startswith("#")
                 or entity_id.startswith("_:")
+                or _ABSOLUTE_URI_RE.match(entity_id)
             ):
                 continue
             context.result.add_issue(
                 f"Entity @id '{entity_id}' of type '{raw_type}' is a local identifier "
                 f"that does not start with '#'; named local entities SHOULD use a "
-                f"'#'-prefixed @id (e.g. '#alice')",
+                f"'#'-prefixed @id (e.g. '#alice') or an absolute URI (permalink)",
                 self,
             )
             result = False
