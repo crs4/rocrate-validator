@@ -33,9 +33,9 @@ _GENERIC_RECOMMENDED_SKIP = [
     "ro-crate-1.2_54.1",   # Root Data Entity: recommended publisher
     "ro-crate-1.2_61.1",   # File Data Entity: RECOMMENDED contentSize
     "ro-crate-1.2_62.0",   # File: RECOMMENDED conformsTo profile
-    "ro-crate-1.2_70.1",   # Contextual Entity Properties
-    "ro-crate-1.2_71.1",   # Contextual Entity RECOMMENDED description
-    "ro-crate-1.2_76.2",   # License entity: RECOMMENDED properties
+    "ro-crate-1.2_72.1",   # Contextual Entity Properties
+    "ro-crate-1.2_73.1",   # Contextual Entity RECOMMENDED description
+    "ro-crate-1.2_78.2",   # License entity: RECOMMENDED properties
 ]
 
 

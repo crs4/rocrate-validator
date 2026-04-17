@@ -125,7 +125,9 @@ def test_valid_recommended_citeAs_for_resolvable_id():
         models.Severity.RECOMMENDED,
         True,
         profile_identifier="ro-crate-1.2",
-        skip_checks=["ro-crate-1.2_44.1"],
+        # The test crate focuses on cite-as, not identifier format;
+        # skip the identifier-presence and PropertyValue-approach checks.
+        skip_checks=["ro-crate-1.2_51.1", "ro-crate-1.2_52.1"],
     )
 
 
@@ -212,6 +214,9 @@ def test_valid_recommended_identifier_resolution(monkeypatch):
         models.Severity.RECOMMENDED,
         True,
         profile_identifier="ro-crate-1.2",
+        # The identifier uses a plain URL string rather than a PropertyValue entity;
+        # that format check is not the focus of this test (resolution is).
+        skip_checks=["ro-crate-1.2_52.0"],
     )
 
 
