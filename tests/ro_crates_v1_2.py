@@ -663,6 +663,19 @@ class ContextualEntities:
     def invalid_person_affiliation_not_org(self) -> Path:
         return self.CONTEXTUAL_ENTITIES_CRATES_PATH / "person_entity" / "invalid_affiliation_not_org"
 
+    # --- Any Contextual Entity: SHOULD have absolute URI or '#'-prefixed @id ---
+    @property
+    def valid_contextual_entity_id_format(self) -> Path:
+        return self.CONTEXTUAL_ENTITIES_CRATES_PATH / "contextual_entity_id_format" / "valid"
+
+    @property
+    def invalid_contextual_entity_bare_contactpoint(self) -> Path:
+        return self.CONTEXTUAL_ENTITIES_CRATES_PATH / "contextual_entity_id_format" / "invalid_bare_contactpoint"
+
+    @property
+    def invalid_contextual_entity_bare_propertyvalue(self) -> Path:
+        return self.CONTEXTUAL_ENTITIES_CRATES_PATH / "contextual_entity_id_format" / "invalid_bare_propertyvalue"
+
 
 class InvalidMultiProfileROC:
 
@@ -702,6 +715,18 @@ class ReferencedROCrates:
     @property
     def invalid_md_about(self) -> Path:
         return self.REFERENCED_ROCRATES_CRATES_PATH / "invalid_md_about"
+
+    @property
+    def invalid_missing_sddatepublished(self) -> Path:
+        return self.REFERENCED_ROCRATES_CRATES_PATH / "invalid_missing_sddatepublished"
+
+    @property
+    def valid_with_identifier(self) -> Path:
+        return self.REFERENCED_ROCRATES_CRATES_PATH / "valid_with_identifier"
+
+    @property
+    def valid_with_relative_path(self) -> Path:
+        return self.REFERENCED_ROCRATES_CRATES_PATH / "valid_with_relative_path"
 
 
 class ValidROCrate12:

@@ -15,8 +15,8 @@
     {
       "@id": "./",
       "@type": "Dataset",
-      "name": "Crate referencing another RO-Crate",
-      "description": "An RO-Crate that references another RO-Crate as a data entity.",
+      "name": "Crate referencing another RO-Crate with declared identifier",
+      "description": "An RO-Crate referencing another RO-Crate whose @id is a declared persistent identifier (case #1): no sdDatePublished required.",
       "license": {
         "@id": "https://creativecommons.org/licenses/by/4.0/"
       },
@@ -32,7 +32,7 @@
       },
       "hasPart": [
         {
-          "@id": "https://example.org/other-ro-crate/"
+          "@id": "https://example.org/persistent-crate/"
         }
       ],
       "identifier": {
@@ -47,10 +47,10 @@
       "value": "550e8400-e29b-41d4-a716-446655440000"
     },
     {
-      "@id": "https://example.org/other-ro-crate/",
+      "@id": "https://example.org/persistent-crate/",
       "@type": "Dataset",
-      "name": "Other RO-Crate",
-      "description": "A referenced RO-Crate.",
+      "name": "Other RO-Crate with persistent identifier",
+      "description": "A referenced RO-Crate whose @id IS a declared persistent identifier (DOI).",
       "conformsTo": [
         {
           "@id": "https://w3id.org/ro/crate"
@@ -59,25 +59,25 @@
           "@id": "https://w3id.org/ro/crate/1.2"
         }
       ],
+      "identifier": "10.5281/zenodo.1234567",
       "subjectOf": {
         "@id": "#other-ro-crate-metadata"
       },
-      "sdDatePublished": "2024-01-01",
       "distribution": {
-        "@id": "https://example.org/other-ro-crate/archive.tar.gz"
+        "@id": "https://example.org/persistent-crate//archive.zip"
       }
+    },
+    {
+      "@id": "https://example.org/persistent-crate//archive.zip",
+      "@type": "DataDownload",
+      "name": "Other RO-Crate Archive",
+      "encodingFormat": "application/zip"
     },
     {
       "@id": "#other-ro-crate-metadata",
       "@type": "CreativeWork",
       "name": "Other RO-Crate Metadata Descriptor",
       "encodingFormat": "application/ld+json"
-    },
-    {
-      "@id": "https://example.org/other-ro-crate/archive.tar.gz",
-      "@type": "DataDownload",
-      "name": "Other RO-Crate Archive",
-      "encodingFormat": "application/gzip"
     },
     {
       "@id": "https://ror.org/012345678",

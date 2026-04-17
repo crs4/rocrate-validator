@@ -15,8 +15,8 @@
     {
       "@id": "./",
       "@type": "Dataset",
-      "name": "Crate referencing another RO-Crate",
-      "description": "An RO-Crate that references another RO-Crate as a data entity.",
+      "name": "Crate referencing another RO-Crate (missing sdDatePublished)",
+      "description": "An RO-Crate referencing another RO-Crate whose @id is an absolute URI not declared as a persistent identifier; the referenced entity lacks sdDatePublished.",
       "license": {
         "@id": "https://creativecommons.org/licenses/by/4.0/"
       },
@@ -50,7 +50,7 @@
       "@id": "https://example.org/other-ro-crate/",
       "@type": "Dataset",
       "name": "Other RO-Crate",
-      "description": "A referenced RO-Crate.",
+      "description": "A referenced RO-Crate with neither identifier nor sdDatePublished.",
       "conformsTo": [
         {
           "@id": "https://w3id.org/ro/crate"
@@ -62,7 +62,6 @@
       "subjectOf": {
         "@id": "#other-ro-crate-metadata"
       },
-      "sdDatePublished": "2024-01-01",
       "distribution": {
         "@id": "https://example.org/other-ro-crate/archive.tar.gz"
       }
