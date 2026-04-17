@@ -31,7 +31,7 @@ _FAKE_CONTEXT_KEYS = {
     "contentLocation", "contentSize", "contentUrl", "dateCreated",
     "dateModified", "datePublished", "description", "encodingFormat",
     "hasPart", "identifier", "license", "name", "propertyID", "publisher",
-    "sdDatePublished", "url", "value",
+    "sdDatePublished", "url", "value", "contactPoint", "contactType", "email",
 }
 
 

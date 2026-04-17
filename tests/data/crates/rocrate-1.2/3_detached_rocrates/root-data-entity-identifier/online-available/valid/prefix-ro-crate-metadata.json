@@ -46,7 +46,17 @@
       "@id": "https://ror.org/012345678",
       "@type": "Organization",
       "name": "Example Research Institute",
-      "url": "https://example.org"
+      "url": "https://example.org",
+      "contactPoint": {
+        "@id": "mailto:contact@example.org"
+      }
+    },
+    {
+      "@id": "mailto:contact@example.org",
+      "@type": "ContactPoint",
+      "contactType": "customer service",
+      "email": "contact@example.org",
+      "name": "Example Research Institute contact point"
     },
     {
       "@id": "https://creativecommons.org/licenses/by/4.0/",
