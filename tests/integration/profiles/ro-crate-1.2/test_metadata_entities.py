@@ -15,7 +15,7 @@
 import logging
 
 from rocrate_validator import models
-from tests.ro_crates_1_2 import MetadataEntities
+from tests.ro_crates_v1_2 import MetadataEntities
 from tests.shared import do_entity_test
 
 logger = logging.getLogger(__name__)

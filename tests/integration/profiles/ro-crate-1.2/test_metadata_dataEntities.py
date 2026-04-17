@@ -16,7 +16,7 @@ import logging
 
 from rocrate_validator import models
 from rocrate_validator.utils.http import HttpRequester
-from tests.ro_crates_1_2 import DataEntities
+from tests.ro_crates_v1_2 import DataEntities
 from tests.shared import do_entity_test
 
 logger = logging.getLogger(__name__)
