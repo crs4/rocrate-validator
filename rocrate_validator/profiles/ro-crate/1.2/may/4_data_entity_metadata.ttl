@@ -75,7 +75,7 @@ ro-crate:FileDataEntityWebOptionalProperties a sh:NodeShape ;
 ro-crate:DirectoryDataEntityWebOptionalDistribution a sh:NodeShape ;
     sh:name "Directory Data Entity: OPTIONAL `distribution` property" ;
     sh:description """A Directory Data Entity MAY have a `distribution` property to denote the distribution of the files within the directory""" ;
-    sh:targetClass ro-crate:File ;
+    sh:targetClass ro-crate:Directory ;
     # Check if the Web-based Data Entity has a contentSize property
     sh:property [
         a sh:PropertyShape ;
