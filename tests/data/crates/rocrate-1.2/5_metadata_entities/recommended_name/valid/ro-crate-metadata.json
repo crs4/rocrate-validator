@@ -26,17 +26,20 @@
         }
       ],
       "publisher": {
-        "@id": "#publisher-org"
+        "@id": "https://ror.org/05f9q8d28"
       },
       "funder": {
         "@id": "https://ror.org/00k4n6c32"
       }
     },
     {
-      "@id": "#publisher-org",
+      "@id": "https://ror.org/05f9q8d28",
       "@type": "Organization",
       "name": "Example Research Institute",
-      "url": "https://example.org"
+      "url": "https://example.org",
+      "contactPoint": {
+        "@id": "#contact-point"
+      }
     },
     {
       "@id": "https://creativecommons.org/licenses/by/4.0/",
@@ -57,7 +60,22 @@
       "@type": "Organization",
       "name": "European Commission",
       "description": "The European Commission funds research and innovation programmes.",
-      "url": "https://ec.europa.eu"
+      "url": "https://ec.europa.eu",
+      "contactPoint": {
+        "@id": "#contact-point-1"
+      }
+    },
+    {
+      "@id": "#contact-point",
+      "@type": "ContactPoint",
+      "name": "Contact for Example Research Institute",
+      "email": "mailto:contact@example.org"
+    },
+    {
+      "@id": "#contact-point-1",
+      "@type": "ContactPoint",
+      "name": "Contact for European Commission",
+      "email": "mailto:contact@example.org"
     }
   ]
 }

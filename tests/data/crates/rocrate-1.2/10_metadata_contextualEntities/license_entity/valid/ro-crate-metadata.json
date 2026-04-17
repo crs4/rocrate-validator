@@ -4,8 +4,12 @@
     {
       "@id": "ro-crate-metadata.json",
       "@type": "CreativeWork",
-      "about": { "@id": "./" },
-      "conformsTo": { "@id": "https://w3id.org/ro/crate/1.2" }
+      "about": {
+        "@id": "./"
+      },
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.2"
+      }
     },
     {
       "@id": "./",
@@ -13,7 +17,31 @@
       "name": "License entity — valid",
       "description": "RO-Crate with a well-formed license entity: absolute HTTPS URL @id, CreativeWork type, name and description.",
       "datePublished": "2024-01-01",
-      "license": { "@id": "https://spdx.org/licenses/MIT.html" }
+      "license": {
+        "@id": "https://spdx.org/licenses/MIT.html"
+      },
+      "funder": {
+        "@id": "https://ror.org/03yrm5c26"
+      },
+      "publisher": {
+        "@id": "https://ror.org/03yrm5c26"
+      }
+    },
+    {
+      "@id": "https://ror.org/03yrm5c26",
+      "@type": "Organization",
+      "name": "Wellcome Trust",
+      "description": "The Wellcome Trust is a global charitable foundation dedicated to improving health by supporting scientific research and innovation.",
+      "url": "https://wellcome.org/",
+      "contactPoint": {
+        "@id": "mailto:info@wellcome.org"
+      }
+    },
+    {
+      "@id": "mailto:info@wellcome.org",
+      "@type": "ContactPoint",
+      "contactType": "general inquiries",
+      "name": "Wellcome Trust Contact"
     },
     {
       "@id": "https://spdx.org/licenses/MIT.html",

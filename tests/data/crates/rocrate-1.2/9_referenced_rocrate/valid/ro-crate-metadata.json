@@ -3,7 +3,7 @@
   "@graph": [
     {
       "@id": "ro-crate-metadata.json",
-      "@type": "CreativeWork",
+      "@type": ["CreativeWork", "Dataset"],
       "conformsTo": {
         "@id": "https://w3id.org/ro/crate/1.2"
       },
@@ -21,6 +21,9 @@
         "@id": "https://creativecommons.org/licenses/by/4.0/"
       },
       "datePublished": "2024-01-01",
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.2"
+      },
       "publisher": {
         "@id": "https://ror.org/012345678"
       },
@@ -79,7 +82,10 @@
       "@id": "https://ror.org/012345678",
       "@type": "Organization",
       "name": "Example Research Institute",
-      "url": "https://example.org"
+      "url": "https://example.org",
+      "contactPoint": {
+        "@id": "#contact-point"
+      }
     },
     {
       "@id": "https://creativecommons.org/licenses/by/4.0/",
@@ -96,6 +102,12 @@
       "@id": "https://w3id.org/ro/crate/1.2",
       "@type": "Profile",
       "name": "RO-Crate 1.2"
+    },
+    {
+      "@id": "#contact-point",
+      "@type": "ContactPoint",
+      "name": "Contact for Example Research Institute",
+      "email": "mailto:contact@example.org"
     }
   ]
 }

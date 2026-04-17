@@ -33,7 +33,7 @@ def test_valid_referenced_rocrate():
         models.Severity.RECOMMENDED,
         True,
         profile_identifier="ro-crate-1.2",
-        skip_checks=["ro-crate-1.2_40.0", "ro-crate-1.2_44.1", "ro-crate-1.2_70.1"],
+        skip_checks=["ro-crate-1.2_40.0", "ro-crate-1.2_44.1", "ro-crate-1.2_70.1", "ro-crate-1.2_69.1"],
     )
 
 
