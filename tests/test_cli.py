@@ -149,6 +149,7 @@ def test_extra_profiles_list(cli_runner: CliRunner, fake_profiles_path: Path):
     """
     Test the list of extra profiles.
     """
-    result = cli_runner.invoke(cli, ["profiles", "--extra-profiles-path", fake_profiles_path, "list", "--no-paging"], env={"COLUMNS": "200"})
+    result = cli_runner.invoke(cli, ["profiles", "--extra-profiles-path", fake_profiles_path,
+                                     "list", "--no-paging"], env={"COLUMNS": "200"})
     assert result.exit_code == 0
     assert "Profile A" in result.output

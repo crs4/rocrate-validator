@@ -153,7 +153,8 @@ class WebDataEntityRequiredChecker(PyFunctionCheck):
                 try:
                     dl = check_downloadable(url_value)
                     if not dl.is_downloadable:
-                        msg = f"contentUrl '{url_value}' for Web-based Data Entity '{entity.id}' is not directly downloadable"
+                        msg = f"contentUrl '{url_value}' for Web-based Data Entity '{entity.id}' " \
+                            "is not directly downloadable"
                         if dl.reason:
                             msg += f": {dl.reason}"
                         context.result.add_issue(msg, self)
