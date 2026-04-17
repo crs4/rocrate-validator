@@ -97,3 +97,21 @@ ro-crate:AuthorPublisherContactPoint a sh:NodeShape ;
         sh:severity sh:Warning ;
         sh:message "At least one author or publisher Person/Organization SHOULD have a contactPoint property" ;
     ] .
+
+ro-crate:PersonOrcidIdentifier a sh:NodeShape ;
+    sh:name "Person: SHOULD have ORCID identifier" ;
+    sh:description """A Person entity SHOULD use an ORCID identifier as its @id.
+        (RO-Crate 1.2, Contextual Entities — People)""" ;
+    sh:targetClass schema:Person ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                FILTER(!STRSTARTS(STR(?this), "https://orcid.org/"))
+            }
+        """ ;
+        sh:severity sh:Warning ;
+        sh:message "A Person entity SHOULD have an ORCID identifier as its @id (e.g., https://orcid.org/0000-0001-2345-6789)" ;
+    ] .
