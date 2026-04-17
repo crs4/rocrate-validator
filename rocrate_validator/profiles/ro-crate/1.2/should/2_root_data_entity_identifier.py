@@ -59,7 +59,8 @@ class DetachedROCrateRootDataEntityIdentifierChecker(PyFunctionCheck):
 @requirement(name="Root Data Entity: use cite-as for resolvable identifiers")
 class RootDataEntityCiteAsIdentifierChecker(PyFunctionCheck):
     """
-    If the Root Data Entity has a resolvable identifier, it SHOULD be included in the `cite-as` property of the RO-Crate Metadata Entity.
+    If the Root Data Entity has a resolvable identifier,
+    it SHOULD be included in the `cite-as` property of the RO-Crate Metadata Entity.
     """
 
     @check(name="Root Data Entity: use cite-as for resolvable identifiers")

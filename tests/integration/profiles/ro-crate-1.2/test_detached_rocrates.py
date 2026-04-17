@@ -79,7 +79,7 @@ def test_root_data_entity_identifier_when_online_available():
 
 def test_invalid_root_data_entity_identifier_when_online_available():
     """
-    Test that when the RO-Crate is online available, 
+    Test that when the RO-Crate is online available,
     the Root Data Entity @id SHOULD be an absolute URL in a detached RO-Crate.
     """
     do_entity_test(

@@ -13,7 +13,6 @@
 # limitations under the License.
 
 from pathlib import Path
-from tempfile import TemporaryDirectory
 
 from pytest import fixture
 
@@ -155,15 +154,18 @@ class DetachedROCrates:
 
     @property
     def invalid_root_data_entity_identifier_when_online_available(self) -> Path:
-        return f"https://bitbucket.org/kikkomep/ro-crates/raw/{self.__remote_sha__}/online-available/invalid/basic-ro-crate-metadata.json"
+        return f"https://bitbucket.org/kikkomep/ro-crates/raw/{self.__remote_sha__}"\
+            "/online-available/invalid/basic-ro-crate-metadata.json"
 
     @property
     def valid_web_data_entity(self) -> Path:
-        return f"https://bitbucket.org/kikkomep/ro-crates/raw/{self.__remote_sha__}/online-available/valid/basic-ro-crate-metadata.json"
+        return f"https://bitbucket.org/kikkomep/ro-crates/raw/{self.__remote_sha__}"\
+            "/online-available/valid/basic-ro-crate-metadata.json"
 
     @property
     def invalid_web_data_entity(self) -> Path:
-        return f"https://bitbucket.org/kikkomep/ro-crates/raw/{self.__remote_sha__}/online-available/invalid/basic-ro-crate-metadata.json"
+        return f"https://bitbucket.org/kikkomep/ro-crates/raw/{self.__remote_sha__}"\
+            "/online-available/invalid/basic-ro-crate-metadata.json"
 
 
 class MetadataEntities:
@@ -352,15 +354,18 @@ class RootDataEntity:
 
     @property
     def invalid_hasPart_workflow_not_in_haspart(self) -> Path:
-        return self.ROOT_DATA_ENTITY_CRATES_PATH / "required_haspart_all_data_entities" / "invalid_workflow_not_in_haspart"
+        return self.ROOT_DATA_ENTITY_CRATES_PATH \
+            / "required_haspart_all_data_entities" / "invalid_workflow_not_in_haspart"
 
     @property
     def invalid_hasPart_web_entity_not_in_haspart(self) -> Path:
-        return self.ROOT_DATA_ENTITY_CRATES_PATH / "required_haspart_all_data_entities" / "invalid_web_entity_not_in_haspart"
+        return self.ROOT_DATA_ENTITY_CRATES_PATH \
+            / "required_haspart_all_data_entities" / "invalid_web_entity_not_in_haspart"
 
     @property
     def invalid_hasPart_dataset_not_in_haspart(self) -> Path:
-        return self.ROOT_DATA_ENTITY_CRATES_PATH / "required_haspart_all_data_entities" / "invalid_dataset_not_in_haspart"
+        return self.ROOT_DATA_ENTITY_CRATES_PATH \
+            / "required_haspart_all_data_entities" / "invalid_dataset_not_in_haspart"
 
     # R3: identifier SHOULD be present if PID exists (SHOULD)
     @property
@@ -638,7 +643,8 @@ class ContextualEntities:
 
     @property
     def invalid_organization_contactpoint_no_entity(self) -> Path:
-        return self.CONTEXTUAL_ENTITIES_CRATES_PATH / "organization_entity" / "invalid_contactpoint_no_contactpoint_entity"
+        return self.CONTEXTUAL_ENTITIES_CRATES_PATH \
+            / "organization_entity" / "invalid_contactpoint_no_contactpoint_entity"
 
     @property
     def invalid_no_author_publisher_contactpoint(self) -> Path:

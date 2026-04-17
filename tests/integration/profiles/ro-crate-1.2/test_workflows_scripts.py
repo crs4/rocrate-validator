@@ -322,6 +322,7 @@ def test_invalid_image_about():
         profile_identifier="ro-crate-1.2",
         expected_triggered_requirements=["Script/Workflow ImageObject: RECOMMENDED `about` reference"],
         expected_triggered_issues=[
-            "An ImageObject referenced via `image` from a Script or Workflow SHOULD have an `about` property referencing the script or workflow"
+            "An ImageObject referenced via `image` from a Script or Workflow SHOULD have an `about` property "
+            "referencing the script or workflow"
         ],
     )
