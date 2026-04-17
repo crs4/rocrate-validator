@@ -209,6 +209,45 @@ ro-crate:GeometryWktRecommendedProperties a sh:NodeShape ;
         sh:message "Geometry entities SHOULD provide `asWKT`" ;
     ] .
 
+ro-crate:LicenseEntityAbsoluteUrl a sh:NodeShape ;
+    sh:name "License entity: SHOULD have absolute URL @id" ;
+    sh:description """A License entity SHOULD be identified by an absolute HTTP(S) URL,
+        for example an SPDX license URI (https://spdx.org/licenses/).
+        (RO-Crate 1.2, Contextual Entities — License)""" ;
+    sh:targetClass ro-crate:License ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                FILTER(!regex(str(?this), "^https?://", "i"))
+            }
+        """ ;
+        sh:severity sh:Warning ;
+        sh:message "A License entity SHOULD have an absolute HTTP(S) URL as its @id (e.g., an SPDX license URI such as https://spdx.org/licenses/MIT.html)" ;
+    ] .
+
+ro-crate:LicenseEntityCreativeWorkType a sh:NodeShape ;
+    sh:name "License entity: SHOULD be typed as CreativeWork" ;
+    sh:description """A License entity SHOULD include `schema:CreativeWork` in its `@type`.
+        (RO-Crate 1.2, Contextual Entities — License)""" ;
+    sh:targetClass ro-crate:License ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                FILTER NOT EXISTS {
+                    ?this a schema:CreativeWork .
+                }
+            }
+        """ ;
+        sh:severity sh:Warning ;
+        sh:message "A License entity SHOULD have `CreativeWork` in its `@type`" ;
+    ] .
+
 ro-crate:EncodingFormatRecommendedTypes a sh:NodeShape ;
     sh:name "Encoding format: RECOMMENDED types" ;
     sh:description """Encoding format contextual entities SHOULD include WebPage and/or Standard types.""" ;
