@@ -163,3 +163,23 @@ def check_downloadable(url: str) -> DownloadabilityResult:
             is_downloadable=False,
             reason=str(e),
         )
+
+
+def has_signposting_cite_as(url: str) -> Optional[bool]:
+    """
+    Probe *url* for a Signposting ``Link: rel="cite-as"`` header (RFC 8574).
+
+    :param url: The URL to probe via HTTP HEAD.
+    :returns: ``True`` if the response declares a ``rel="cite-as"`` link,
+              ``False`` if the response succeeds but no such link is declared,
+              ``None`` if the request fails (caller can treat as "unknown" and
+              skip network-dependent checks).
+    """
+    try:
+        response = HttpRequester().head(url, allow_redirects=True)
+        response.raise_for_status()
+        cite_as = response.links.get("cite-as")
+        return cite_as is not None
+    except Exception as e:
+        logger.debug("Error checking Signposting cite-as for '%s': %s", url, e)
+        return None
