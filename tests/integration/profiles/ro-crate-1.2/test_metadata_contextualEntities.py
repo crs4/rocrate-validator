@@ -118,3 +118,104 @@ def test_invalid_license_entity_no_description():
             "License entities SHOULD have a description"
         ],
     )
+
+
+# ---------------------------------------------------------------------------
+# Organization entity: SHOULD have ROR identifier as @id (SHOULD)
+# ---------------------------------------------------------------------------
+
+def test_valid_organization_entity():
+    """
+    An Organization entity with a ROR @id, contactPoint referencing ContactPoint,
+    and author with contactPoint SHOULD pass RECOMMENDED validation.
+    """
+    do_entity_test(
+        __contextual_entities_crates__.valid_organization_entity,
+        models.Severity.RECOMMENDED,
+        True,
+        profile_identifier="ro-crate-1.2",
+        skip_checks=_GENERIC_RECOMMENDED_SKIP,
+    )
+
+
+def test_invalid_organization_no_ror_id():
+    """
+    An Organization entity whose @id is not a ROR identifier SHOULD trigger a
+    RECOMMENDED warning.
+    """
+    do_entity_test(
+        __contextual_entities_crates__.invalid_organization_no_ror_id,
+        models.Severity.RECOMMENDED,
+        False,
+        profile_identifier="ro-crate-1.2",
+        expected_triggered_requirements=["Organization: SHOULD have ROR identifier"],
+        expected_triggered_issues=[
+            "An Organization entity SHOULD have a ROR identifier as its @id"
+        ],
+    )
+
+
+# ---------------------------------------------------------------------------
+# Organization/Person contactPoint: SHOULD reference ContactPoint entity (SHOULD)
+# ---------------------------------------------------------------------------
+
+def test_invalid_organization_contactpoint_no_entity():
+    """
+    An Organization whose contactPoint does not reference a ContactPoint entity
+    SHOULD trigger a RECOMMENDED warning.
+    """
+    do_entity_test(
+        __contextual_entities_crates__.invalid_organization_contactpoint_no_entity,
+        models.Severity.RECOMMENDED,
+        False,
+        profile_identifier="ro-crate-1.2",
+        expected_triggered_requirements=[
+            "Organization: SHOULD have contactPoint referencing ContactPoint"
+        ],
+        expected_triggered_issues=[
+            "An Organization's contactPoint SHOULD reference a ContactPoint contextual entity"
+        ],
+    )
+
+
+def test_invalid_organization_no_contactpoint():
+    """
+    An Organization without a contactPoint property (where the author still has
+    contactPoint so only the Organization-specific check fires).
+    """
+    do_entity_test(
+        __contextual_entities_crates__.invalid_organization_no_contactpoint,
+        models.Severity.RECOMMENDED,
+        False,
+        profile_identifier="ro-crate-1.2",
+        expected_triggered_requirements=[
+            "Organization: SHOULD have contactPoint referencing ContactPoint"
+        ],
+        expected_triggered_issues=[
+            "An Organization's contactPoint SHOULD reference a ContactPoint contextual entity"
+        ],
+    )
+
+
+# ---------------------------------------------------------------------------
+# Author/Publisher: at least one SHOULD have contactPoint (SHOULD)
+# ---------------------------------------------------------------------------
+
+def test_invalid_no_author_publisher_contactpoint():
+    """
+    When neither the author nor the publisher Person/Organization has a
+    contactPoint property, the Root Data Entity SHOULD trigger a
+    RECOMMENDED warning.
+    """
+    do_entity_test(
+        __contextual_entities_crates__.invalid_no_author_publisher_contactpoint,
+        models.Severity.RECOMMENDED,
+        False,
+        profile_identifier="ro-crate-1.2",
+        expected_triggered_requirements=[
+            "Root Data Entity: at least one author/publisher SHOULD have contactPoint"
+        ],
+        expected_triggered_issues=[
+            "At least one author or publisher Person/Organization SHOULD have a contactPoint property"
+        ],
+    )
