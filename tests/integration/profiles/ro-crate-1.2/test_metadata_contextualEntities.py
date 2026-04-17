@@ -277,3 +277,55 @@ def test_invalid_person_affiliation_not_org():
             "Persons SHOULD reference an Organization for affiliation"
         ],
     )
+
+
+# ---------------------------------------------------------------------------
+# Any Contextual Entity: @id SHOULD be absolute URI or '#'-prefixed (SHOULD)
+# ---------------------------------------------------------------------------
+
+def test_valid_contextual_entity_id_format():
+    """
+    A crate whose contextual entities all use absolute URI permalinks or
+    '#'-prefixed local identifiers SHOULD pass RECOMMENDED validation.
+    """
+    do_entity_test(
+        __contextual_entities_crates__.valid_contextual_entity_id_format,
+        models.Severity.RECOMMENDED,
+        True,
+        profile_identifier="ro-crate-1.2",
+        skip_checks=_PERSON_VALID_SKIP,
+    )
+
+
+def test_invalid_bare_contactpoint_id():
+    """
+    A ContactPoint contextual entity with a bare relative @id (no '#', not an
+    absolute URI) SHOULD trigger a RECOMMENDED warning.
+    """
+    do_entity_test(
+        __contextual_entities_crates__.invalid_contextual_entity_bare_contactpoint,
+        models.Severity.RECOMMENDED,
+        False,
+        profile_identifier="ro-crate-1.2",
+        expected_triggered_requirements=["Entity identifier: format recommendations"],
+        expected_triggered_issues=[
+            "named local entities SHOULD use a '#'-prefixed @id"
+        ],
+    )
+
+
+def test_invalid_bare_propertyvalue_id():
+    """
+    A PropertyValue contextual entity with a bare relative @id (no '#', not an
+    absolute URI) SHOULD trigger a RECOMMENDED warning.
+    """
+    do_entity_test(
+        __contextual_entities_crates__.invalid_contextual_entity_bare_propertyvalue,
+        models.Severity.RECOMMENDED,
+        False,
+        profile_identifier="ro-crate-1.2",
+        expected_triggered_requirements=["Entity identifier: format recommendations"],
+        expected_triggered_issues=[
+            "named local entities SHOULD use a '#'-prefixed @id"
+        ],
+    )
