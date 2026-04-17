@@ -21,6 +21,17 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix dct: <http://purl.org/dc/terms/> .
 
+# Selects the Root Data Entity (the Dataset that the metadata file is `about`).
+ro-crate:MetadataAboutTarget a sh:SPARQLTarget ;
+    sh:prefixes ro-crate:sparqlPrefixes ;
+    sh:select """
+        SELECT ?this
+        WHERE {
+            ?metadatafile schema:about ?this .
+            FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
+        }
+    """ .
+
 ro-crate:FindRootDataEntity a sh:NodeShape, validator:HiddenShape ;
     sh:name "Identify the Root Data Entity of the RO-Crate" ;
     sh:description """The Root Data Entity is the top-level Data Entity in the RO-Crate and serves as the starting point for the description of the RO-Crate.
@@ -51,17 +62,7 @@ ro-crate:FindRootDataEntity a sh:NodeShape, validator:HiddenShape ;
 ro-crate:RootDataEntityType a sh:NodeShape ;
     sh:name "RO-Crate Root Data Entity type" ;
     sh:description "The Root Data Entity MUST be a `Dataset` (as per `schema.org`)" ;
-    sh:target [
-        a sh:SPARQLTarget ;
-        sh:prefixes ro-crate:sparqlPrefixes ;
-        sh:select """
-            SELECT ?this
-            WHERE {
-                ?metadatafile schema:about ?this .
-                FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
-            }
-        """
-    ] ;
+    sh:target ro-crate:MetadataAboutTarget ;
     sh:property [
         a sh:PropertyShape ;
         sh:name "Root Data Entity type" ;
@@ -154,17 +155,7 @@ ro-crate:RootDataEntityVersionlessProfileProhibition a sh:NodeShape ;
         (https://w3id.org/ro/crate) in its conformsTo property.
         Only versioned profile URIs (e.g., https://w3id.org/ro/crate/1.2) are permitted on the Root Data Entity.
         The version-less URI is reserved for referenced RO-Crate data entities.""" ;
-    sh:target [
-        a sh:SPARQLTarget ;
-        sh:prefixes ro-crate:sparqlPrefixes ;
-        sh:select """
-            SELECT ?this
-            WHERE {
-                ?metadatafile schema:about ?this .
-                FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
-            }
-        """
-    ] ;
+    sh:target ro-crate:MetadataAboutTarget ;
     sh:sparql [
         a sh:SPARQLConstraint ;
         sh:prefixes ro-crate:sparqlPrefixes ;

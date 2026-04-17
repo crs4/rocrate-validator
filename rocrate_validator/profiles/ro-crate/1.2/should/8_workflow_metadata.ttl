@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 @prefix ro: <./> .
 @prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.2/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
@@ -22,6 +21,19 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix validator: <https://github.com/crs4/rocrate-validator/> .
 
+# Selects ImageObject entities referenced via `image` from a Script or Workflow.
+ro-crate:ScriptOrWorkflowImageTarget a sh:SPARQLTarget ;
+    sh:prefixes ro-crate:sparqlPrefixes ;
+    sh:select """
+        SELECT ?this
+        WHERE {
+            ?sw a schema:SoftwareSourceCode .
+            ?sw schema:image ?this .
+            ?metadatafile schema:about ?root .
+            FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
+        }
+    """ .
+
 # ---------------------------------------------------------------
 # Script or Workflow: programmingLanguage SHOULD reference a
 # ComputerLanguage entity
@@ -31,18 +43,7 @@ ro-crate:ScriptOrWorkflowProgrammingLanguage a sh:NodeShape ;
     sh:description """Scripts and Workflows SHOULD have a `programmingLanguage`
         property referencing a contextual entity of type `ComputerLanguage`
         (RO-Crate 1.2, Workflows and Scripts).""" ;
-    sh:target [
-        a sh:SPARQLTarget ;
-        sh:prefixes ro-crate:sparqlPrefixes ;
-        sh:select """
-            SELECT ?this
-            WHERE {
-                ?this a schema:SoftwareSourceCode .
-                ?metadatafile schema:about ?root .
-                FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
-            }
-        """
-    ] ;
+    sh:target ro-crate:SoftwareSourceCodeTarget ;
     sh:property [
         a sh:PropertyShape ;
         sh:name "Script or Workflow: RECOMMENDED `programmingLanguage` property" ;
@@ -121,19 +122,7 @@ ro-crate:ScriptOrWorkflowImageEncodingFormat a sh:NodeShape ;
         Script or Workflow SHOULD have an `encodingFormat` property with an
         IANA media type string and/or a Pronom identifier reference
         (RO-Crate 1.2, Workflows and Scripts — related ImageObject).""" ;
-    sh:target [
-        a sh:SPARQLTarget ;
-        sh:prefixes ro-crate:sparqlPrefixes ;
-        sh:select """
-            SELECT ?this
-            WHERE {
-                ?sw a schema:SoftwareSourceCode .
-                ?sw schema:image ?this .
-                ?metadatafile schema:about ?root .
-                FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
-            }
-        """
-    ] ;
+    sh:target ro-crate:ScriptOrWorkflowImageTarget ;
     sh:property [
         a sh:PropertyShape ;
         sh:name "Script/Workflow ImageObject: RECOMMENDED `encodingFormat` property" ;
@@ -155,19 +144,7 @@ ro-crate:ScriptOrWorkflowImageAbout a sh:NodeShape ;
         Script or Workflow SHOULD have an `about` property that references
         the script or workflow entity
         (RO-Crate 1.2, Workflows and Scripts — related ImageObject).""" ;
-    sh:target [
-        a sh:SPARQLTarget ;
-        sh:prefixes ro-crate:sparqlPrefixes ;
-        sh:select """
-            SELECT ?this
-            WHERE {
-                ?sw a schema:SoftwareSourceCode .
-                ?sw schema:image ?this .
-                ?metadatafile schema:about ?root .
-                FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
-            }
-        """
-    ] ;
+    sh:target ro-crate:ScriptOrWorkflowImageTarget ;
     sh:sparql [
         a sh:SPARQLConstraint ;
         sh:prefixes ro-crate:sparqlPrefixes ;
