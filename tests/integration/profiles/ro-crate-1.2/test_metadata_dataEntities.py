@@ -355,3 +355,168 @@ def test_redundant_license_logs_warning():
     log_contents = __log_stream__.getvalue()
     assert "redundant" in log_contents.lower(), \
         f"Expected a warning log about redundant license, got:\n{log_contents}"
+
+
+# ---------------------------------------------------------------------------
+# File Data Entity — contentSize (SHOULD)
+# ---------------------------------------------------------------------------
+
+def test_valid_recommended_contentSize():
+    """
+    A File Data Entity with the recommended `contentSize` property SHOULD pass
+    the RECOMMENDED check.
+    """
+    do_entity_test(
+        __metadata_root_data_entity_crates__.valid_recommended_contentSize,
+        models.Severity.RECOMMENDED,
+        True,
+        profile_identifier="ro-crate-1.2"
+    )
+
+
+def test_invalid_recommended_contentSize():
+    """
+    A File Data Entity without the recommended `contentSize` property SHOULD
+    fail the RECOMMENDED check.
+    """
+    do_entity_test(
+        __metadata_root_data_entity_crates__.invalid_recommended_contentSize,
+        models.Severity.RECOMMENDED,
+        False,
+        profile_identifier="ro-crate-1.2",
+        expected_triggered_requirements=["File Data Entity: RECOMMENDED contentSize"],
+        expected_triggered_issues=["contentSize"]
+    )
+
+
+# ---------------------------------------------------------------------------
+# File Data Entity — conformsTo profile (SHOULD)
+# ---------------------------------------------------------------------------
+
+def test_valid_recommended_conformsto():
+    """
+    A File Data Entity whose `conformsTo` references a CreativeWork or Profile
+    SHOULD pass the RECOMMENDED check.
+    """
+    do_entity_test(
+        __metadata_root_data_entity_crates__.valid_recommended_conformsto,
+        models.Severity.RECOMMENDED,
+        True,
+        profile_identifier="ro-crate-1.2"
+    )
+
+
+def test_invalid_recommended_conformsto():
+    """
+    A File Data Entity whose `conformsTo` references a non-Profile/non-CreativeWork
+    entity SHOULD fail the RECOMMENDED check.
+    """
+    do_entity_test(
+        __metadata_root_data_entity_crates__.invalid_recommended_conformsto,
+        models.Severity.RECOMMENDED,
+        False,
+        profile_identifier="ro-crate-1.2",
+        expected_triggered_requirements=["File: RECOMMENDED `conformsTo` profile"],
+        expected_triggered_issues=["conformsTo"]
+    )
+
+
+# ---------------------------------------------------------------------------
+# Web-based File Data Entity — sdDatePublished (SHOULD)
+# ---------------------------------------------------------------------------
+
+def test_valid_recommended_sdDatePublished(monkeypatch):
+    """
+    A web-based File Data Entity with the recommended `sdDatePublished` property
+    SHOULD pass the RECOMMENDED check.
+    """
+    monkeypatch.setattr(HttpRequester(), "head", lambda url, **kw: _ZipResponse())
+
+    do_entity_test(
+        __metadata_root_data_entity_crates__.valid_recommended_sdDatePublished,
+        models.Severity.RECOMMENDED,
+        True,
+        profile_identifier="ro-crate-1.2",
+    )
+
+
+def test_invalid_recommended_sdDatePublished(monkeypatch):
+    """
+    A web-based File Data Entity without the recommended `sdDatePublished` property
+    SHOULD fail the RECOMMENDED check.
+    """
+    monkeypatch.setattr(HttpRequester(), "head", lambda url, **kw: _ZipResponse())
+
+    do_entity_test(
+        __metadata_root_data_entity_crates__.invalid_recommended_sdDatePublished,
+        models.Severity.RECOMMENDED,
+        False,
+        profile_identifier="ro-crate-1.2",
+        expected_triggered_requirements=["Web-based Data Entity: RECOMMENDED properties"],
+        expected_triggered_issues=["sdDatePublished"]
+    )
+
+
+# ---------------------------------------------------------------------------
+# 4.3 Dataset (Directory) Data Entity — trailing slash (RECOMMENDED)
+# ---------------------------------------------------------------------------
+
+def test_valid_recommended_dataset_trailing_slash():
+    """
+    A local Dataset Data Entity whose @id ends with '/' passes the RECOMMENDED check.
+    """
+    do_entity_test(
+        __metadata_root_data_entity_crates__.valid_recommended_dataset_trailing_slash,
+        models.Severity.RECOMMENDED,
+        True,
+        profile_identifier="ro-crate-1.2",
+        metadata_only=True,
+    )
+
+
+def test_invalid_recommended_dataset_trailing_slash():
+    """
+    A local Dataset Data Entity whose @id does NOT end with '/' fails the RECOMMENDED check.
+    """
+    do_entity_test(
+        __metadata_root_data_entity_crates__.invalid_recommended_dataset_trailing_slash,
+        models.Severity.RECOMMENDED,
+        False,
+        profile_identifier="ro-crate-1.2",
+        metadata_only=True,
+        expected_triggered_requirements=["Dataset Data Entity: SHOULD end with trailing slash"],
+        expected_triggered_issues=["The @id of a local Dataset Data Entity SHOULD end with '/'"],
+    )
+
+
+# ---------------------------------------------------------------------------
+# 4.3 Dataset (Directory) Data Entity — hasPart (RECOMMENDED)
+# ---------------------------------------------------------------------------
+
+def test_valid_recommended_dataset_has_part():
+    """
+    A local Dataset Data Entity that lists its contents via hasPart passes
+    the RECOMMENDED check.
+    """
+    do_entity_test(
+        __metadata_root_data_entity_crates__.valid_recommended_dataset_has_part,
+        models.Severity.RECOMMENDED,
+        True,
+        profile_identifier="ro-crate-1.2",
+        metadata_only=True,
+    )
+
+
+def test_invalid_recommended_dataset_has_part():
+    """
+    A local Dataset Data Entity without a hasPart property fails the RECOMMENDED check.
+    """
+    do_entity_test(
+        __metadata_root_data_entity_crates__.invalid_recommended_dataset_has_part,
+        models.Severity.RECOMMENDED,
+        False,
+        profile_identifier="ro-crate-1.2",
+        metadata_only=True,
+        expected_triggered_requirements=["Dataset Data Entity: SHOULD have hasPart"],
+        expected_triggered_issues=["Local Dataset Data Entities SHOULD list their contents via `hasPart`"],
+    )
