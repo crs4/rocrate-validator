@@ -208,10 +208,10 @@ class SHACLCheck(RequirementCheck):
 
         # # uncomment to save the graphs to the logs folder (for debugging purposes)
         start_time = timer()
-        data_graph.serialize("logs/data_graph.ttl", format="turtle")
-        shapes_graph.serialize("logs/shapes_graph.ttl", format="turtle")
-        if ontology_graph:
-            ontology_graph.serialize("logs/ontology_graph.ttl", format="turtle")
+        # data_graph.serialize("logs/data_graph.ttl", format="turtle")
+        # shapes_graph.serialize("logs/shapes_graph.ttl", format="turtle")
+        # if ontology_graph:
+        #     ontology_graph.serialize("logs/ontology_graph.ttl", format="turtle")
         end_time = timer()
         logger.debug(f"Execution time for saving graphs: {end_time - start_time} seconds")
 
