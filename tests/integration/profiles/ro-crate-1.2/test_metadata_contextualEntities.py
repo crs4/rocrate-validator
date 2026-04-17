@@ -225,3 +225,55 @@ def test_invalid_no_author_publisher_contactpoint():
             "At least one author or publisher Person/Organization SHOULD have a contactPoint property"
         ],
     )
+
+
+# ---------------------------------------------------------------------------
+# Person entity: SHOULD have ORCID identifier as @id (SHOULD)
+# ---------------------------------------------------------------------------
+
+def test_valid_person_entity():
+    """
+    A Person entity with an ORCID @id, contactPoint referencing ContactPoint,
+    and affiliation referencing Organization SHOULD pass RECOMMENDED validation.
+    """
+    do_entity_test(
+        __contextual_entities_crates__.valid_person_entity,
+        models.Severity.RECOMMENDED,
+        True,
+        profile_identifier="ro-crate-1.2",
+        skip_checks=_PERSON_VALID_SKIP,
+    )
+
+
+def test_invalid_person_no_orcid():
+    """
+    A Person entity whose @id is not an ORCID identifier SHOULD trigger a
+    RECOMMENDED warning.
+    """
+    do_entity_test(
+        __contextual_entities_crates__.invalid_person_no_orcid,
+        models.Severity.RECOMMENDED,
+        False,
+        profile_identifier="ro-crate-1.2",
+        expected_triggered_requirements=["Person: SHOULD have ORCID identifier"],
+        expected_triggered_issues=[
+            "A Person entity SHOULD have an ORCID identifier as its @id"
+        ],
+    )
+
+
+def test_invalid_person_affiliation_not_org():
+    """
+    A Person entity whose affiliation does not reference an Organization
+    SHOULD trigger a RECOMMENDED warning.
+    """
+    do_entity_test(
+        __contextual_entities_crates__.invalid_person_affiliation_not_org,
+        models.Severity.RECOMMENDED,
+        False,
+        profile_identifier="ro-crate-1.2",
+        expected_triggered_requirements=["Person: RECOMMENDED affiliation"],
+        expected_triggered_issues=[
+            "Persons SHOULD reference an Organization for affiliation"
+        ],
+    )
