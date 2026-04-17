@@ -398,6 +398,51 @@ def test_invalid_required_hasPart_all_data_entities():
     )
 
 
+def test_invalid_hasPart_workflow_not_in_haspart():
+    """
+    A Workflow File entity (typed as File/SoftwareSourceCode/ComputationalWorkflow)
+    that is not referenced via hasPart triggers the REQUIRED hasPart check.
+    """
+    do_entity_test(
+        __metadata_root_data_entity_crates__.invalid_hasPart_workflow_not_in_haspart,
+        models.Severity.REQUIRED,
+        False,
+        profile_identifier="ro-crate-1.2",
+        expected_triggered_requirements=["Root Data Entity: hasPart MUST reference all Data Entities"],
+        expected_triggered_issues=["MUST reference all Data Entities via hasPart"],
+    )
+
+
+def test_invalid_hasPart_web_entity_not_in_haspart():
+    """
+    A Web Data Entity (absolute URL @id) that is not referenced via hasPart
+    triggers the REQUIRED hasPart check.
+    """
+    do_entity_test(
+        __metadata_root_data_entity_crates__.invalid_hasPart_web_entity_not_in_haspart,
+        models.Severity.REQUIRED,
+        False,
+        profile_identifier="ro-crate-1.2",
+        expected_triggered_requirements=["Root Data Entity: hasPart MUST reference all Data Entities"],
+        expected_triggered_issues=["MUST reference all Data Entities via hasPart"],
+    )
+
+
+def test_invalid_hasPart_dataset_not_in_haspart():
+    """
+    A sub-Dataset Directory Data Entity that is not referenced via hasPart
+    triggers the REQUIRED hasPart check.
+    """
+    do_entity_test(
+        __metadata_root_data_entity_crates__.invalid_hasPart_dataset_not_in_haspart,
+        models.Severity.REQUIRED,
+        False,
+        profile_identifier="ro-crate-1.2",
+        expected_triggered_requirements=["Root Data Entity: hasPart MUST reference all Data Entities"],
+        expected_triggered_issues=["MUST reference all Data Entities via hasPart"],
+    )
+
+
 # ---------------------------------------------------------------------------
 # Root Data Entity: identifier SHOULD be present if PID exists (RECOMMENDED)
 # ---------------------------------------------------------------------------

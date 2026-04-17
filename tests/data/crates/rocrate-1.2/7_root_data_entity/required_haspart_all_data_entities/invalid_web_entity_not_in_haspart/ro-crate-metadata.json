@@ -1,0 +1,44 @@
+{
+  "@context": "https://w3id.org/ro/crate/1.2/context",
+  "@graph": [
+    {
+      "@id": "ro-crate-metadata.json",
+      "@type": "CreativeWork",
+      "about": {
+        "@id": "./"
+      },
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.2"
+      }
+    },
+    {
+      "@id": "./",
+      "@type": "Dataset",
+      "name": "Test RO-Crate: Web Data Entity not in hasPart",
+      "description": "This RO-Crate has a web-based File entity (absolute URL @id) that is missing from hasPart.",
+      "datePublished": "2024-01-15",
+      "license": {
+        "@id": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "hasPart": [
+        { "@id": "local.txt" }
+      ]
+    },
+    {
+      "@id": "https://creativecommons.org/licenses/by/4.0/",
+      "@type": "CreativeWork",
+      "name": "Creative Commons Attribution 4.0 International"
+    },
+    {
+      "@id": "local.txt",
+      "@type": "File",
+      "name": "Local file"
+    },
+    {
+      "@id": "https://example.org/data/remote.tsv",
+      "@type": "File",
+      "name": "Remote web-based data file",
+      "encodingFormat": "text/tab-separated-values"
+    }
+  ]
+}
