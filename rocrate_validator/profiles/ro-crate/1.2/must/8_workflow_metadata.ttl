@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 @prefix ro: <./> .
 @prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.2/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
@@ -20,6 +19,18 @@
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix validator: <https://github.com/crs4/rocrate-validator/> .
+
+# Selects every SoftwareSourceCode entity (Scripts and Workflows).
+ro-crate:SoftwareSourceCodeTarget a sh:SPARQLTarget ;
+    sh:prefixes ro-crate:sparqlPrefixes ;
+    sh:select """
+        SELECT ?this
+        WHERE {
+            ?this a schema:SoftwareSourceCode .
+            ?metadatafile schema:about ?root .
+            FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
+        }
+    """ .
 
 # ---------------------------------------------------------------
 # Identify Script entities
@@ -150,18 +161,7 @@ ro-crate:ScriptOrWorkflowRequiredName a sh:NodeShape ;
     sh:name "Script or Workflow: REQUIRED `name`" ;
     sh:description """Scripts and Workflows MUST have a human-readable `name`
         property (RO-Crate 1.2, Workflows and Scripts).""" ;
-    sh:target [
-        a sh:SPARQLTarget ;
-        sh:prefixes ro-crate:sparqlPrefixes ;
-        sh:select """
-            SELECT ?this
-            WHERE {
-                ?this a schema:SoftwareSourceCode .
-                ?metadatafile schema:about ?root .
-                FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
-            }
-        """
-    ] ;
+    sh:target ro-crate:SoftwareSourceCodeTarget ;
     sh:property [
         a sh:PropertyShape ;
         sh:name "Script or Workflow: REQUIRED `name` property" ;
