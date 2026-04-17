@@ -81,9 +81,18 @@ ro-crate:FindLicenseEntity a sh:NodeShape, validator:HiddenShape ;
             SELECT ?this
             WHERE {
                 ?subject schema:license ?this .
-                FILTER EXISTS { ?this ?p ?o . FILTER(?p NOT IN (owl:sameAs, rdf:type)) }
+                FILTER(isIRI(?this))
+                # FILTER EXISTS { ?this ?p ?o . FILTER(?p NOT IN (owl:sameAs, rdf:type)) }
             }
         """
+    ] ;
+
+    # Expand data graph with triples to mark the matching entities as License instances
+    sh:rule [
+        a sh:TripleRule ;
+        sh:subject sh:this ;
+        sh:predicate rdf:type ;
+        sh:object ro-crate:License ;
     ] ;
     
     # Expand data graph with triples from the file data entity
