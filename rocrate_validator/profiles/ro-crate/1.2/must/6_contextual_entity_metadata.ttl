@@ -25,42 +25,63 @@ ro-crate:ContextualEntityDefinition a sh:NodeShape, validator:HiddenShape ;
     sh:name "Identify Contextual Entities" ;
     sh:description """Mark entities as Contextual Entities if they are in the RO-Crate
         metadata but are not Data Entities, not the Root Data Entity,
-        and not the Metadata File Descriptor.""" ;
+        and not the Metadata File Descriptor.  The query uses `?this ?p ?o`
+        (subject of any triple) — SHACL rules from earlier shapes (e.g.
+        CreativeWorkAuthorDefinition) tag referenced-but-undescribed entities
+        with rdf:type, so they appear as subjects and are therefore captured.
+        Vocabulary namespaces loaded from ontologies (RDF/RDFS/OWL/XSD,
+        schema.org, bioschemas, w3id.org/ro, …) are excluded at the query
+        level; domain-specific legacy filters that wrongly excluded legitimate
+        crate identifiers (iana, urn, foaf, …) have been removed.""" ;
     sh:target [
         a sh:SPARQLTarget ;
         sh:prefixes ro-crate:sparqlPrefixes ;
         sh:select """
             SELECT DISTINCT ?this
             WHERE {
+                # Structural criteria: IRI or blank node, subject of some triple.
+                # SHACL rules from earlier shapes (e.g. CreativeWorkAuthorDefinition)
+                # tag even referenced-but-undescribed entities so they become
+                # subjects and are correctly classified as Contextual Entities.
                 ?this ?p ?o .
-                FILTER(isIRI(?this))
+                FILTER(isIRI(?this) || isBlank(?this))
+
+                # Structural exclusions — Metadata Descriptor, Root Data Entity,
+                # Data Entities (File/Dataset or ro-crate:DataEntity), Ontology.
                 FILTER NOT EXISTS { ?this schema:about ?anyRoot }
                 FILTER NOT EXISTS { ?anyMF schema:about ?this }
+                FILTER NOT EXISTS { ?this a ro-crate:DataEntity }
                 FILTER NOT EXISTS { ?this a schema:MediaObject }
                 FILTER NOT EXISTS { ?this a schema:Dataset }
                 FILTER NOT EXISTS { ?this a owl:Ontology }
-                FILTER NOT EXISTS {
-                    ?root schema:hasPart ?this .
-                    ?anyAbout schema:about ?root .
-                }
+
+                # Vocabulary / profile namespace exclusions.  Required because
+                # the RO-Crate 1.2 profile loads ontology.ttl into the same data
+                # graph as the metadata file; terms from those vocabularies
+                # appear as subjects with rdf:type + rdfs:label and would
+                # otherwise be misclassified.
                 FILTER(!STRSTARTS(STR(?this), "http://www.w3.org/"))
                 FILTER(!STRSTARTS(STR(?this), "https://www.w3.org/"))
-                FILTER(!STRSTARTS(STR(?this), "https://w3id.org/ro/"))
                 FILTER(!STRSTARTS(STR(?this), "http://schema.org/"))
                 FILTER(!STRSTARTS(STR(?this), "https://schema.org/"))
                 FILTER(!STRSTARTS(STR(?this), "http://purl.org/"))
                 FILTER(!STRSTARTS(STR(?this), "https://bioschemas.org/"))
-                FILTER(!STRSTARTS(STR(?this), "https://codemeta.github.io/"))
                 FILTER(!STRSTARTS(STR(?this), "http://www.opengis.net/"))
+                FILTER(!STRSTARTS(STR(?this), "https://w3id.org/"))
+                FILTER(!STRSTARTS(STR(?this), "https://github.com/crs4/rocrate-validator/"))
+                FILTER(!STRSTARTS(STR(?this), "https://codemeta.github.io/"))
                 FILTER(!STRSTARTS(STR(?this), "http://pcdm.org/"))
                 FILTER(!STRSTARTS(STR(?this), "http://xmlns.com/foaf/"))
                 FILTER(!STRSTARTS(STR(?this), "http://creativecommons.org/ns"))
                 FILTER(!STRSTARTS(STR(?this), "http://www.iana.org/"))
                 FILTER(!STRSTARTS(STR(?this), "https://www.iana.org/"))
-                FILTER(!STRSTARTS(STR(?this), "https://github.com/crs4/rocrate-validator/"))
                 FILTER(!STRSTARTS(STR(?this), "https://nationaalarchief.nl/archieven/archief/"))
                 FILTER(!STRSTARTS(STR(?this), "https://www.nationalarchives.gov.uk"))
-                FILTER(!STRSTARTS(STR(?this), "urn:"))
+
+                # Narrow urn: exclusion — only the internal ontology versionIRI.
+                # Unlike the legacy blanket `urn:` filter, this keeps legitimate
+                # `urn:uuid:*` contextual entities (e.g. DigitalDocument) in play.
+                FILTER(!STRSTARTS(STR(?this), "urn:absolute:"))
             }
         """
     ] ;
