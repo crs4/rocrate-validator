@@ -1,0 +1,38 @@
+{
+  "@context": "https://w3id.org/ro/crate/1.2/context",
+  "@graph": [
+    {
+      "@id": "ro-crate-metadata.json",
+      "@type": "CreativeWork",
+      "about": { "@id": "./" },
+      "conformsTo": { "@id": "https://w3id.org/ro/crate/1.2" }
+    },
+    {
+      "@id": "./",
+      "@type": "Dataset",
+      "name": "Organization entity — no author/publisher contactPoint",
+      "description": "RO-Crate where neither author nor publisher has a contactPoint property.",
+      "datePublished": "2024-01-01",
+      "license": { "@id": "https://spdx.org/licenses/MIT.html" },
+      "publisher": { "@id": "https://ror.org/03f0f6041" },
+      "author": { "@id": "https://orcid.org/0000-0001-6121-5409" }
+    },
+    {
+      "@id": "https://ror.org/03f0f6041",
+      "@type": "Organization",
+      "name": "University of Technology Sydney",
+      "url": "https://ror.org/03f0f6041"
+    },
+    {
+      "@id": "https://orcid.org/0000-0001-6121-5409",
+      "@type": "Person",
+      "name": "Tim Luckett"
+    },
+    {
+      "@id": "https://spdx.org/licenses/MIT.html",
+      "@type": "CreativeWork",
+      "name": "MIT License",
+      "description": "A permissive license."
+    }
+  ]
+}
