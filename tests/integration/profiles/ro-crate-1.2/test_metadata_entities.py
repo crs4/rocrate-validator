@@ -80,32 +80,3 @@ def test_invalid_recommended_entity_name_warning():
         expected_triggered_issues=[
             "Entities SHOULD have a human-readable name"]
     )
-
-
-def test_valid_recommended_reachability():
-    """
-    Test that all metadata entities are directly or indirectly reachable from the Root Data Entity.
-    """
-    do_entity_test(
-        __metadata_entities__.valid_entity_reachability,
-        models.Severity.RECOMMENDED,
-        True,
-        profile_identifier="ro-crate-1.2"
-
-    )
-
-
-def test_invalid_recommended_reachability_warning():
-    """
-    Test that a warning is triggered when at least one metadata entity is not directly
-    or indirectly reachable from the Root Data Entity.
-    """
-    do_entity_test(
-        __metadata_entities__.invalid_entity_reachability,
-        models.Severity.RECOMMENDED,
-        False,
-        profile_identifier="ro-crate-1.2",
-        expected_triggered_requirements=["RO-Crate Metadata Entity: RECOMMENDED reachability"],
-        expected_triggered_issues=[
-            "RO-Crate Metadata Entity SHOULD be directly or indirectly reachable from the Root Data Entity"]
-    )

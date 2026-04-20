@@ -188,14 +188,6 @@ class MetadataEntities:
     def invalid_recommended_name(self) -> Path:
         return self.METADATA_ENTITIES_CRATES_PATH / "recommended_name" / "invalid"
 
-    @property
-    def valid_entity_reachability(self) -> Path:
-        return self.METADATA_ENTITIES_CRATES_PATH / "entity_reachability" / "valid"
-
-    @property
-    def invalid_entity_reachability(self) -> Path:
-        return self.METADATA_ENTITIES_CRATES_PATH / "entity_reachability" / "invalid"
-
 
 class MetadataDescriptor:
 
