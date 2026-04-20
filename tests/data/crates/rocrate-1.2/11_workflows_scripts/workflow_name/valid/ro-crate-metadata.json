@@ -4,17 +4,27 @@
     {
       "@id": "ro-crate-metadata.json",
       "@type": "CreativeWork",
-      "about": { "@id": "./" },
-      "conformsTo": { "@id": "https://w3id.org/ro/crate/1.2" }
+      "about": {
+        "@id": "./"
+      },
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.2"
+      }
     },
     {
       "@id": "./",
       "@type": "Dataset",
-      "name": "Workflow name — valid",
+      "name": "Workflow name \u2014 valid",
       "description": "RO-Crate with a Workflow entity that has the required name property.",
       "datePublished": "2024-01-01",
-      "license": { "@id": "https://creativecommons.org/licenses/by/4.0/" },
-      "hasPart": [{ "@id": "workflow.ga" }]
+      "license": {
+        "@id": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "hasPart": [
+        {
+          "@id": "workflow.ga"
+        }
+      ]
     },
     {
       "@id": "https://creativecommons.org/licenses/by/4.0/",
@@ -23,18 +33,29 @@
     },
     {
       "@id": "workflow.ga",
-      "@type": ["File", "SoftwareSourceCode", "ComputationalWorkflow"],
+      "@type": [
+        "File",
+        "SoftwareSourceCode",
+        "ComputationalWorkflow"
+      ],
       "name": "My Workflow",
       "description": "A Galaxy workflow with all required types and name.",
       "encodingFormat": "application/json",
-      "programmingLanguage": { "@id": "#galaxy" },
-      "conformsTo": { "@id": "https://bioschemas.org/profiles/ComputationalWorkflow/1.0-RELEASE" }
+      "programmingLanguage": {
+        "@id": "#galaxy"
+      },
+      "conformsTo": {
+        "@id": "https://bioschemas.org/profiles/ComputationalWorkflow/1.0-RELEASE"
+      }
     },
     {
       "@id": "#galaxy",
       "@type": "ComputerLanguage",
       "name": "Galaxy",
-      "url": { "@id": "https://galaxyproject.org/" }
+      "url": {
+        "@id": "https://galaxyproject.org/"
+      },
+      "version": "1.0"
     }
   ]
 }

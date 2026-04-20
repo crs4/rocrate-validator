@@ -14,8 +14,8 @@
     {
       "@id": "./",
       "@type": "Dataset",
-      "name": "Programming language \u2014 valid",
-      "description": "RO-Crate with a Script that declares programmingLanguage referencing a ComputerLanguage entity.",
+      "name": "Root contactPoint missing — invalid",
+      "description": "RO-Crate whose Root Data Entity omits the `contactPoint` property entirely.",
       "datePublished": "2024-01-01",
       "license": {
         "@id": "https://creativecommons.org/licenses/by/4.0/"
@@ -26,11 +26,7 @@
       "funder": {
         "@id": "https://ror.org/05f9q8d28"
       },
-      "hasPart": [
-        {
-          "@id": "script.sh"
-        }
-      ],
+      "hasPart": [],
       "identifier": {
         "@id": "#uuid"
       }
@@ -45,44 +41,23 @@
     {
       "@id": "https://creativecommons.org/licenses/by/4.0/",
       "@type": "CreativeWork",
-      "name": "CC BY 4.0",
-      "description": "Creative Commons Attribution 4.0 International license."
+      "name": "Creative Commons Attribution 4.0 International",
+      "description": "CC BY 4.0 license."
     },
     {
       "@id": "https://ror.org/05f9q8d28",
       "@type": "Organization",
-      "name": "Example University",
-      "url": "https://example.edu",
+      "name": "Example Research Institute",
+      "url": "https://example.org",
       "contactPoint": {
-        "@id": "#contact-point"
+        "@id": "#org-contact"
       }
     },
     {
-      "@id": "#contact-point",
+      "@id": "#org-contact",
       "@type": "ContactPoint",
-      "name": "Example University Contact",
-      "email": "contact@example.edu"
-    },
-    {
-      "@id": "script.sh",
-      "@type": [
-        "File",
-        "SoftwareSourceCode"
-      ],
-      "name": "My Script",
-      "description": "A script with proper programmingLanguage declaration.",
-      "encodingFormat": "application/x-sh",
-      "contentSize": "1024",
-      "programmingLanguage": {
-        "@id": "#bash"
-      }
-    },
-    {
-      "@id": "#bash",
-      "@type": "ComputerLanguage",
-      "name": "Bash",
-      "url": "https://www.gnu.org/software/bash/",
-      "version": "1.0"
+      "name": "Contact for Example Research Institute",
+      "email": "mailto:contact@example.org"
     }
   ]
 }

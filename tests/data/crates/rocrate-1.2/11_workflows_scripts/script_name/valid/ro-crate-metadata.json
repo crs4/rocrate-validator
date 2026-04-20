@@ -4,17 +4,27 @@
     {
       "@id": "ro-crate-metadata.json",
       "@type": "CreativeWork",
-      "about": { "@id": "./" },
-      "conformsTo": { "@id": "https://w3id.org/ro/crate/1.2" }
+      "about": {
+        "@id": "./"
+      },
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.2"
+      }
     },
     {
       "@id": "./",
       "@type": "Dataset",
-      "name": "Script name — valid",
+      "name": "Script name \u2014 valid",
       "description": "RO-Crate containing a Script entity with a required name property.",
       "datePublished": "2024-01-01",
-      "license": { "@id": "https://creativecommons.org/licenses/by/4.0/" },
-      "hasPart": [{ "@id": "script.sh" }]
+      "license": {
+        "@id": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "hasPart": [
+        {
+          "@id": "script.sh"
+        }
+      ]
     },
     {
       "@id": "https://creativecommons.org/licenses/by/4.0/",
@@ -23,17 +33,25 @@
     },
     {
       "@id": "script.sh",
-      "@type": ["File", "SoftwareSourceCode"],
+      "@type": [
+        "File",
+        "SoftwareSourceCode"
+      ],
       "name": "My Script",
       "description": "A sample shell script with a proper name.",
       "encodingFormat": "application/x-sh",
-      "programmingLanguage": { "@id": "#bash" }
+      "programmingLanguage": {
+        "@id": "#bash"
+      }
     },
     {
       "@id": "#bash",
       "@type": "ComputerLanguage",
       "name": "Bash",
-      "url": { "@id": "https://www.gnu.org/software/bash/" }
+      "url": {
+        "@id": "https://www.gnu.org/software/bash/"
+      },
+      "version": "1.0"
     }
   ]
 }
