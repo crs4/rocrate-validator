@@ -1,0 +1,51 @@
+# Copyright (c) 2024-2026 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.2/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+
+# RO-Crate 1.2, Encoding Format Entity — MAY include `WebPageElement` in
+# `@type` if the `@id` links to a section of a webpage (i.e. the URI carries
+# a fragment identifier such as `https://example.org/page.html#section-foo`).
+# This is purely optional; the shape emits an `sh:Info` suggestion — never a
+# violation — so users can see the permissive recommendation without their
+# crate being marked invalid.
+ro-crate:EncodingFormatOptionalWebPageElement a sh:NodeShape ;
+    sh:name "Encoding format: OPTIONAL `WebPageElement` type for section references" ;
+    sh:description """An encoding format contextual entity whose `@id` links to
+        a section of a webpage (the URI contains a fragment identifier) MAY
+        include `WebPageElement` in its `@type`
+        (RO-Crate 1.2, Encoding Format Entity).""" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?s schema:encodingFormat ?this .
+                FILTER(isIRI(?this))
+                FILTER(CONTAINS(STR(?this), "#"))
+            }
+        """
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Encoding format: OPTIONAL `WebPageElement` @type" ;
+        sh:description "Check if the encoding format entity includes `WebPageElement` in its `@type`." ;
+        sh:path rdf:type ;
+        sh:hasValue schema:WebPageElement ;
+        sh:severity sh:Info ;
+        sh:message "An encoding format entity whose `@id` is a section of a webpage MAY include `WebPageElement` in its `@type`" ;
+    ] .
