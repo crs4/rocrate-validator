@@ -49,3 +49,34 @@ ro-crate:EncodingFormatOptionalWebPageElement a sh:NodeShape ;
         sh:severity sh:Info ;
         sh:message "An encoding format entity whose `@id` is a section of a webpage MAY include `WebPageElement` in its `@type`" ;
     ] .
+
+# RO-Crate 1.2, Software Applications / ComputerLanguage — `alternateName`
+# MAY be present if there is a shorter colloquial name for the software or
+# language (e.g. `"alternateName": "GNU Bourne-Again Shell"` for Bash).
+# Emits an `sh:Info` suggestion when the property is missing.
+ro-crate:SoftwareApplicationOrComputerLanguageOptionalAlternateName a sh:NodeShape ;
+    sh:name "SoftwareApplication or ComputerLanguage: OPTIONAL `alternateName`" ;
+    sh:description """A contextual entity representing a `SoftwareApplication`
+        or a `ComputerLanguage` MAY declare an `alternateName` property to
+        provide a shorter colloquial name for the software or language
+        (RO-Crate 1.2, Provenance — Software Applications).""" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?this a ?t .
+                FILTER(?t IN (schema:SoftwareApplication, schema:ComputerLanguage))
+            }
+        """
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "SoftwareApplication/ComputerLanguage: OPTIONAL `alternateName`" ;
+        sh:description "Check if the entity declares an `alternateName` property." ;
+        sh:path schema:alternateName ;
+        sh:minCount 1 ;
+        sh:severity sh:Info ;
+        sh:message "A SoftwareApplication or ComputerLanguage MAY declare an `alternateName` property to provide a shorter colloquial name" ;
+    ] .
