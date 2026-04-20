@@ -11,10 +11,11 @@
       "@id": "./",
       "@type": "Dataset",
       "name": "Funded RO-Crate — missing funder",
-      "description": "RO-Crate whose Root Data Entity has no `funder` property, triggering the RECOMMENDED funder check.",
+      "description": "RO-Crate that describes a research project (Grant entity) but whose Root Data Entity has no `funder` property, triggering the conditional RECOMMENDED funder check.",
       "datePublished": "2024-01-01",
       "license": {"@id": "https://creativecommons.org/licenses/by/4.0/"},
       "publisher": {"@id": "#publisher-org"},
+      "mentions": {"@id": "#grant-eu-2024"},
       "hasPart": []
     },
     {
@@ -22,6 +23,12 @@
       "@type": "Organization",
       "name": "Example Research Institute",
       "url": "https://example.org"
+    },
+    {
+      "@id": "#grant-eu-2024",
+      "@type": "Grant",
+      "name": "EU Horizon 2024 Grant",
+      "description": "A research grant referenced in the crate; the Root SHOULD declare the corresponding funder."
     },
     {
       "@id": "https://creativecommons.org/licenses/by/4.0/",
