@@ -56,6 +56,10 @@ class ValidROC:
         return VALID_CRATES_DATA_PATH / "rocrate-relative-root"
 
     @property
+    def rocrate_with_at_base_set(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "rocrate-with-at-base-set"
+
+    @property
     def bagit(self) -> Path:
         return VALID_CRATES_DATA_PATH / "bagit"
 
@@ -109,6 +113,10 @@ class ValidROC:
     @property
     def provenance_run_crate(self) -> Path:
         return VALID_CRATES_DATA_PATH / "provenance-run-crate"
+
+    @property
+    def isa_ro_crate(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "minimal-isa-ro-crate"
 
     @property
     def multi_profile_crate(self) -> Path:
@@ -241,6 +249,10 @@ class InvalidDataEntity:
     @property
     def direct_hasPart_data_entity_reference(self) -> Path:
         return self.base_path / "valid_direct_hasPart_reference"
+
+    @property
+    def dataset_not_linked_to_root(self) -> Path:
+        return self.base_path / "cyclic_datasets"
 
     @property
     def indirect_hasPart_data_entity_reference(self) -> Path:

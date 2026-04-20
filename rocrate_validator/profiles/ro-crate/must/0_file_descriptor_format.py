@@ -12,12 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import re
 from typing import Any
+from urllib.parse import urljoin
 
-from rocrate_validator.utils import log as logging
 from rocrate_validator.models import ValidationContext
 from rocrate_validator.requirements.python import (PyFunctionCheck, check,
                                                    requirement)
+from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.http import HttpRequester
 
 # set up logging
@@ -86,17 +88,80 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
     The file descriptor MUST be a valid JSON-LD file
     """
 
+    def __get_remote_context__(self, context_uri: str) -> object:
+        raw_data = HttpRequester().get(context_uri, headers={"Accept": "application/ld+json, application/json"})
+        if raw_data.status_code != 200:
+            raise RuntimeError(f"Unable to retrieve the JSON-LD context '{context_uri}'", self)
+        logger.debug(f"Retrieved context from {context_uri}")
+
+        # Check if the response header contains the correct content type
+        content_type = raw_data.headers.get("Content-Type", "")
+        is_valid_content_type = "application/ld+json" in content_type or "application/json" in content_type
+        # If the content type is not application/ld+json or application/json,
+        # try to find an alternate link for the JSON-LD context in the response header
+        if not is_valid_content_type:
+            logger.debug(
+                f"The retrieved context from {context_uri} "
+                f"does not have a Content-Type of application/ld+json or application/json: "
+                f"the actual Content-Type is {content_type}. "
+            )
+            # check if the response header contains an alternate link location for the JSON-LD context
+            # (https headers are case-insensitive, according to RFC 7230,
+            #  so we can use .get() without worrying about the case)
+            link_header = raw_data.headers.get("Link", "")
+            logger.debug(f"Checking Link header for alternate JSON-LD context: {link_header}")
+            has_alternate_link = ('rel="alternate"' in link_header and
+                                  ('type="application/ld+json"' in link_header or
+                                   'type="application/json"' in link_header))
+
+            if has_alternate_link:
+                logger.debug(f"Found alternate link for JSON-LD context in Link header: {link_header}")
+                # extract the URL of the alternate link
+                match = re.search(r'<([^>]+)>;\s*rel="alternate";\s*type="application/(ld\+json|json)"', link_header)
+                if match:
+                    alternate_url = match.group(1)
+                    # If the alternate URL is relative, resolve it against the original context URI
+                    if not alternate_url.startswith("http"):
+                        alternate_url = urljoin(context_uri, alternate_url)
+                    logger.debug(f"Trying to retrieve JSON-LD context from alternate URL: {alternate_url}")
+                    raw_data = HttpRequester().get(alternate_url, headers={
+                        "Accept": "application/ld+json, application/json"})
+                    if raw_data.status_code != 200:
+                        raise RuntimeError(
+                            f"Unable to retrieve the JSON-LD context from alternate URL '{alternate_url}'", self)
+                    logger.debug(f"Retrieved context from alternate URL {alternate_url}")
+                    content_type = raw_data.headers.get("Content-Type", "")
+                    if "application/ld+json" not in content_type and "application/json" not in content_type:
+                        raise RuntimeError(
+                            f"The retrieved context from alternate URL {alternate_url} "
+                            "does not have a Content-Type of application/ld+json or application/json: "
+                            f"the actual Content-Type is {content_type}. ", self)
+                else:
+                    logger.debug(f"No valid alternate link found in Link header: {link_header}")
+                    raise RuntimeError(
+                        f"Unable to retrieve the JSON-LD context from {context_uri} and no valid "
+                        f"alternate link found in Link header: {link_header}", self)
+            else:
+                logger.debug(f"No alternate link for JSON-LD context found in Link header: {link_header}")
+                raise RuntimeError(
+                    f"Unable to retrieve the JSON-LD context from {context_uri} "
+                    f"and no alternate link found in Link header: {link_header}", self)
+
+        # Try to parse the JSON-LD and access the context
+        jsonLD = raw_data.json()["@context"]
+        # logger.warning(f"Retrieved JSON-LD context: {jsonLD}")
+        assert isinstance(jsonLD, dict)
+        # return the JSON-LD context
+        return jsonLD
+
     def __check_remote_context__(self, context_uri: str) -> bool:
         # Try to retrieve the context
         try:
-            raw_data = HttpRequester().get(context_uri, headers={"Accept": "application/ld+json"})
-            if raw_data.status_code != 200:
-                raise RuntimeError(f"Unable to retrieve the JSON-LD context '{context_uri}'", self)
-            logger.debug(f"Retrieved context from {context_uri}")
-
             # Try to parse the JSON-LD and access the context
-            jsonLD = raw_data.json()["@context"]
-            assert isinstance(jsonLD, dict)
+            jsonLD = self.__get_remote_context__(context_uri)
+            assert isinstance(
+                jsonLD, dict), f"The retrieved context from {context_uri} is not \
+                a valid JSON-LD context: it is not a dictionary"
             return True
         except Exception as e:
             if logger.isEnabledFor(logging.DEBUG):
@@ -306,16 +371,8 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
         """ Get the keys of the context URI """
 
         logger.debug(f"Retrieving context from {context_uri}...")
-        # Try to retrieve the context
-        raw_data = HttpRequester().get(context_uri, headers={"Accept": "application/ld+json"})
-        if raw_data.status_code != 200:
-            raise RuntimeError(f"Unable to retrieve the JSON-LD context '{context_uri}'")
-
-        logger.debug(f"Retrieved context from {context_uri}")
-
         # Get the keys of the context
-        jsonLD = raw_data.json()
-        jsonLD_ctx = jsonLD["@context"]
+        jsonLD_ctx = self.__get_remote_context__(context_uri)
         if not isinstance(jsonLD_ctx, dict):
             raise RuntimeError("The context is not a dictionary", self)
         return set(jsonLD_ctx.keys())
@@ -339,9 +396,27 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
         # If the entity is a dictionary, check each key
         if isinstance(entity, dict):
             for k, v in entity.items():
-                if k not in context_keys and k not in SKIP_KEYS:
+                # If the key is in the skip keys, skip it
+                if k in SKIP_KEYS:
+                    logger.debug(f"Key {k} is a reserved JSON-LD keyword, skipping")
+
+                # If the key is not in the context keys,
+                # it can be used in compacted format only if it is a valid compact IRI
+                # with a prefix that is in the context
+                elif k not in context_keys:
                     logger.debug(f"Key {k} not in context keys")
-                    add_unexpected_key(k, unexpected_keys)
+
+                    # Try to get the prefix of the compact IRI, if it has one
+                    prefix = k.split(":", 1)[0] if ":" in k else None
+                    logger.debug(f"Checking prefix {prefix} of key {k}")
+                    # If the key does not have a prefix (no colon) or the prefix is not in the context keys,
+                    # it cannot be used as a key in compacted format
+                    if prefix is None or prefix not in context_keys:
+                        logger.debug(
+                            f"Key {k} does not have a valid prefix in context keys, adding to unexpected keys")
+                        add_unexpected_key(k, unexpected_keys)
+
+                # If the value is a dictionary or a list, check its keys recursively
                 if isinstance(v, (dict, list)):
                     self.__check_entity_keys__(v, context_keys, unexpected_keys)
 
@@ -382,7 +457,7 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
                     # Check if k is a term or a URI
                     if k.startswith("http"):
                         context.result.add_issue(
-                            f'The The {v} occurrence{suffix} of the "{k}" URI cannot be used as a key{suffix} "'
+                            f'The {v} occurrence{suffix} of the "{k}" URI cannot be used as a key{suffix} "'
                             'because the compacted format requires simple terms as keys '
                             '(see https://www.w3.org/TR/json-ld-api/#compaction for more details).', self)
                     else:

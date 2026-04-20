@@ -12,11 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import annotations
+
 import atexit
 import os
 import random
 import string
 import threading
+from typing import Optional
 
 import requests
 
@@ -34,8 +37,9 @@ class HttpRequester:
     _instance = None
     _lock = threading.Lock()
 
-    def __new__(cls):
+    def __new__(cls, *args, **kwargs) -> HttpRequester:
         if cls._instance is None:
+            logger.debug(f"Creating instance of {cls.__name__} with args: {args}, kwargs: {kwargs}")
             with cls._lock:
                 if cls._instance is None:
                     logger.debug(f"Creating instance of {cls.__name__}")
@@ -44,7 +48,10 @@ class HttpRequester:
                     logger.debug(f"Instance created: {cls._instance.__class__.__name__}")
         return cls._instance
 
-    def __init__(self):
+    def __init__(self,
+                 cache_max_age: int = constants.DEFAULT_HTTP_CACHE_MAX_AGE,
+                 cache_path: Optional[str] = None):
+        logger.debug(f"Initializing instance of {self.__class__.__name__} {self}")
         # check if the instance is already initialized
         if not hasattr(self, "_initialized"):
             # check if the instance is already initialized
@@ -52,14 +59,23 @@ class HttpRequester:
                 if not getattr(self, "_initialized", False):
                     # set the initialized flag
                     self._initialized = False
+                    # store the parameters
+                    try:
+                        logger.debug(f"Setting cache_max_age to {cache_max_age}")
+                        self.cache_max_age = int(cache_max_age)
+                    except ValueError:
+                        raise TypeError("cache_max_age must be an integer")
+                    self.cache_path_prefix = cache_path
+                    # flag to indicate if the cache is permanent or temporary
+                    self.permanent_cache = cache_path is not None
                     # initialize the session
-                    self.__initialize_session__()
+                    self.__initialize_session__(cache_max_age, cache_path)
                     # set the initialized flag
                     self._initialized = True
         else:
             logger.debug(f"Instance of {self} already initialized")
 
-    def __initialize_session__(self):
+    def __initialize_session__(self, cache_max_age: int, cache_path: Optional[str] = None):
         # initialize the session
         self.session = None
         logger.debug(f"Initializing instance of {self.__class__.__name__}")
@@ -67,17 +83,24 @@ class HttpRequester:
         # check if requests_cache is installed
         # and set up the cached session
         try:
-            if constants.DEFAULT_HTTP_CACHE_TIMEOUT > 0:
+            if cache_max_age >= 0:
                 from requests_cache import CachedSession
 
-                # Generate a random path for the cache
-                # to avoid conflicts with other instances
-                random_suffix = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+                # If cache_path is not provided, use the default path prefix
+                if not cache_path:
+                    # Generate a random path for the cache
+                    # to avoid conflicts with other instances
+                    random_suffix = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+                    cache_path = constants.DEFAULT_HTTP_CACHE_PATH_PREFIX + f"_{random_suffix}"
+                    logger.debug(f"Using default cache path: {cache_path}")
+                else:
+                    logger.debug(f"Using provided cache path: {cache_path}")
+                    self.permanent_cache = True
                 # Initialize the session with a cache
                 self.session = CachedSession(
                     # Cache name with random suffix
-                    cache_name=f"{constants.DEFAULT_HTTP_CACHE_PATH_PREFIX}_{random_suffix}",
-                    expire_after=constants.DEFAULT_HTTP_CACHE_TIMEOUT,  # Cache expiration time in seconds
+                    cache_name=cache_path,
+                    expire_after=cache_max_age,  # Cache expiration time in seconds
                     backend='sqlite',  # Use SQLite backend
                     allowable_methods=('GET',),  # Cache GET
                     allowable_codes=(200, 302, 404)  # Cache responses with these status codes
@@ -86,15 +109,23 @@ class HttpRequester:
             logger.warning("requests_cache is not installed. Using requests instead.")
         except Exception as e:
             logger.error("Error initializing requests_cache: %s", e)
-            logger.warning("Using requests instead of requests_cache")
-        # if requests_cache is not installed or an error occurred, use requests
-        # instead of requests_cache
+
+        # if requests_cache is not installed or an error occurred,
+        # use requests instead of requests_cache
         # and create a new session
         if not self.session:
-            logger.debug("Using requests instead of requests_cache")
+            logger.debug("Cache disabled: using requests instead of requests_cache")
             self.session = requests.Session()
 
     def __del__(self):
+        """
+        Destructor to clean up the cache file used by CachedSession.
+        """
+        logger.debug(f"Deleting instance of {self.__class__.__name__}")
+        if hasattr(self, "permanent_cache") and not self.permanent_cache:
+            self.cleanup()
+
+    def cleanup(self):
         """
         Destructor to clean up the cache file used by CachedSession.
         """
@@ -119,3 +150,15 @@ class HttpRequester:
         if name.upper() in {"GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS", "PATCH"}:
             return getattr(self.session, name.lower())
         raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
+
+    @classmethod
+    def initialize_cache(cls,
+                         cache_max_age: int = constants.DEFAULT_HTTP_CACHE_MAX_AGE,
+                         cache_path: Optional[str] = None) -> HttpRequester:
+        """
+        Initialize the HttpRequester singleton with cache settings.
+
+        :param max_age: The maximum age of the cache in seconds.
+        :param cache_path: The path to the cache directory.
+        """
+        return cls(cache_max_age=cache_max_age, cache_path=cache_path)

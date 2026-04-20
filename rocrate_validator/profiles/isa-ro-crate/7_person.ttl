@@ -1,0 +1,170 @@
+# Copyright (c) 2026 DataPLANT
+# Copyright (c) 2026 The University of Manchester
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+@prefix ro: <./> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+@prefix isa-ro-crate: <https://github.com/crs4/rocrate-validator/profiles/isa-ro-crate/> .
+@prefix bioschemas: <https://bioschemas.org/> .
+@prefix bioschemas-prop: <https://bioschemas.org/properties/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix validator: <https://github.com/crs4/rocrate-validator/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+
+
+# check Person attributes must have correct types
+
+isa-ro-crate:PersonMustHaveGivenName a sh:NodeShape ;
+    sh:name "Person MUST have a given name" ;
+    sh:description "A Person MUST have a given name" ;
+    sh:targetClass schema:Person ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:givenName ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ; 
+        sh:not [
+            sh:hasValue ""
+        ] ;
+        sh:description "Check that person does have non-empty given name and it's a string" ;
+        sh:message "Person entity MUST have a non-empty given name of type string" ;
+        sh:severity sh:Violation ;
+    ] 
+.
+
+isa-ro-crate:PersonShouldHaveAffiliationOfCorrectType a sh:NodeShape ;
+    sh:name "Person SHOULD have affiliation" ;
+    sh:description "A Person SHOULD have at least one affiliation" ;
+    sh:targetClass schema:Person ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:affiliation ;
+        sh:minCount 1 ;
+        sh:description "Check that person does have at least one affiliation" ;
+        sh:message "Person entity SHOULD have at least one affiliation" ;
+        sh:severity sh:Warning ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:affiliation ;
+        sh:class schema:Organization ;
+        sh:description "The affiliation of a person MUST be an Organization" ;
+        sh:message "Person affiliation MUST be of type Organization" ;
+        sh:severity sh:Violation ;
+    ]
+.
+
+isa-ro-crate:PersonShouldHaveJobTitleOfCorrectType a sh:NodeShape ;
+    sh:name "Person SHOULD have job title" ;
+    sh:description "A Person SHOULD have at least one job title" ;
+    sh:targetClass schema:Person ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:jobTitle ;
+        sh:minCount 1 ;
+        sh:description "Check that person does have at least one job title" ;
+        sh:message "Person entity SHOULD have at least one job title" ;
+        sh:severity sh:Warning ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:jobTitle ;
+        sh:class schema:DefinedTerm ;
+        sh:description "The job title of a person MUST be a defined term" ;
+        sh:message "Person job title MUST be of type DefinedTerm" ;
+        sh:severity sh:Violation ;
+    ]
+.
+
+isa-ro-crate:PersonShouldHaveEmailOfCorrectType a sh:NodeShape ;
+    sh:name "Person SHOULD have email" ;
+    sh:description "A Person SHOULD have at least one email" ;
+    sh:targetClass schema:Person ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:email ;
+        sh:minCount 1 ;
+        sh:not [
+            sh:hasValue ""
+        ] ;
+        sh:description "Check that person does have non-empty email and it's a string" ;
+        sh:message "Person entity SHOULD have a non-empty email of type string" ;
+        sh:severity sh:Warning ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:email ;
+        sh:datatype xsd:string ;
+        sh:description "The email of a person MUST be a string" ;
+        sh:message "Person email MUST be of type string" ;
+        sh:severity sh:Violation ;
+    ]
+.
+
+isa-ro-crate:PersonShouldHaveFamilyNameOfCorrectType a sh:NodeShape ;
+    sh:name "Person SHOULD have family name" ;
+    sh:description "A Person SHOULD have at least one family name" ;
+    sh:targetClass schema:Person ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:familyName ;
+        sh:minCount 1 ;
+        sh:not [
+            sh:hasValue ""
+        ] ;
+        sh:description "Check that person does have non-empty family name and it's a string" ;
+        sh:message "Person entity SHOULD have a non-empty family name of type string" ;
+        sh:severity sh:Warning ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:familyName ;
+        sh:datatype xsd:string ;
+        sh:description "The family name of a person MUST be a string" ;
+        sh:message "Person family name MUST be of type string" ;
+        sh:severity sh:Violation ;
+    ]
+.
+
+isa-ro-crate:PersonShouldHaveIdentifierOfCorrectType a sh:NodeShape ;
+    sh:name "Person SHOULD have identifier" ;
+    sh:description "A Person SHOULD have at least one identifier" ;
+    sh:targetClass schema:Person ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:identifier ;
+        sh:minCount 1 ;
+        sh:not [
+            sh:hasValue ""
+        ] ;
+        sh:description "Check that person does have non-empty identifier and it's a string" ;
+        sh:message "Person entity SHOULD have a non-empty identifier of type string" ;
+        sh:severity sh:Warning ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:identifier ;
+        sh:or (
+            [sh:datatype xsd:string]
+            [sh:class schema:PropertyValue]
+        ) ;
+        sh:description "The identifier of a person MUST be a string or a PropertyValue" ;
+        sh:message "Person identifier MUST be of type string or PropertyValue" ;
+        sh:severity sh:Violation ;
+    ]
+.

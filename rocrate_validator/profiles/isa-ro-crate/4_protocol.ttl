@@ -1,0 +1,106 @@
+# Copyright (c) 2026 DataPLANT
+# Copyright (c) 2026 The University of Manchester
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+@prefix ro: <./> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+@prefix isa-ro-crate: <https://github.com/crs4/rocrate-validator/profiles/isa-ro-crate/> .
+@prefix bioschemas: <https://bioschemas.org/> .
+@prefix bioschemas-prop: <https://bioschemas.org/properties/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix validator: <https://github.com/crs4/rocrate-validator/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+
+
+# check protocol attributes must have correct types
+
+isa-ro-crate:ProtocolShouldHaveNameOfCorrectType a sh:NodeShape ;
+    sh:name "Protocol SHOULD have name" ;
+    sh:description "A Protocol SHOULD have a name" ;
+    sh:targetClass bioschemas:LabProtocol ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:name ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ; 
+        sh:not [
+            sh:hasValue ""
+        ] ;
+        sh:description "Check that protocol does have non-empty name and it's a string" ;
+        sh:message "Protocol entity SHOULD have a non-empty name of type string" ;
+        sh:severity sh:Warning ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:name ;
+        sh:datatype xsd:string ;
+        sh:description "The name of a protocol MUST be a string" ;
+        sh:message "Protocol name MUST be of type string" ;
+        sh:severity sh:Violation ;
+    ]
+.
+
+isa-ro-crate:ProtocolShouldHaveDescriptionOfCorrectType a sh:NodeShape ;
+    sh:name "Protocol SHOULD have description" ;
+    sh:description "A Protocol SHOULD have a description" ;
+    sh:targetClass bioschemas:LabProtocol ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:description ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ; 
+        sh:not [
+            sh:hasValue ""
+        ] ;
+        sh:description "Check that protocol does have non-empty description and it's a string" ;
+        sh:message "Protocol entity SHOULD have a non-empty description of type string" ;
+        sh:severity sh:Warning ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path schema:description ;
+        sh:datatype xsd:string ;
+        sh:description "The description of a protocol MUST be a string" ;
+        sh:message "Protocol description MUST be of type string" ;
+        sh:severity sh:Violation ;
+    ]
+.
+
+isa-ro-crate:ProtocolShouldHaveIntendedUse a sh:NodeShape ;
+    sh:name "Protocol SHOULD have intended use" ;
+    sh:description "A Protocol SHOULD have an intended use" ;
+    sh:targetClass bioschemas:LabProtocol ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path bioschemas-prop:intendedUse ;
+        sh:minCount 1 ;
+        sh:description "Check that protocol does have at least one intended use" ;
+        sh:message "Protocol entity SHOULD have an intended use" ;
+        sh:severity sh:Warning ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:path bioschemas-prop:intendedUse ;
+        sh:or (
+            [sh:datatype xsd:string]
+            [sh:class schema:DefinedTerm]
+        ) ;
+        sh:description "Check that if protocol does have at least one intended use, it MUST be of type string or DefinedTerm" ;
+        sh:message "Protocol intended use MUST be of type string or DefinedTerm" ;
+        sh:severity sh:Violation ;
+    ]
+.
