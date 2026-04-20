@@ -689,6 +689,19 @@ class ContextualEntities:
     def valid_computer_language(self) -> Path:
         return self.CONTEXTUAL_ENTITIES_CRATES_PATH / "software_application" / "valid_computer_language"
 
+    # --- Encoding Format entity: MAY include `WebPageElement` when @id has a fragment (5.8) ---
+    @property
+    def valid_encoding_format_webpageelement(self) -> Path:
+        return self.CONTEXTUAL_ENTITIES_CRATES_PATH / "encoding_format" / "valid"
+
+    @property
+    def info_encoding_format_no_webpageelement(self) -> Path:
+        return self.CONTEXTUAL_ENTITIES_CRATES_PATH / "encoding_format" / "info_no_webpageelement"
+
+    @property
+    def encoding_format_no_fragment(self) -> Path:
+        return self.CONTEXTUAL_ENTITIES_CRATES_PATH / "encoding_format" / "no_fragment"
+
 
 class InvalidMultiProfileROC:
 

@@ -417,3 +417,75 @@ def test_valid_computer_language():
         True,
         profile_identifier="ro-crate-1.2",
     )
+
+
+# ---------------------------------------------------------------------------
+# Encoding format entity: MAY include `WebPageElement` when @id is a section
+# of a webpage (sh:Info — optional suggestion) [5.8]
+# ---------------------------------------------------------------------------
+
+_ENCODING_FORMAT_MAY_REQUIREMENT = (
+    "Encoding format: OPTIONAL `WebPageElement` type for section references"
+)
+
+
+def test_info_encoding_format_no_webpageelement():
+    """
+    An encoding format entity whose `@id` contains a fragment identifier
+    (section of a webpage) but whose `@type` does NOT include `WebPageElement`
+    triggers an `sh:Info` suggestion at OPTIONAL severity (RO-Crate 1.2, § 5.8).
+    """
+    do_entity_test(
+        __contextual_entities_crates__.info_encoding_format_no_webpageelement,
+        models.Severity.OPTIONAL,
+        False,
+        profile_identifier="ro-crate-1.2",
+        expected_triggered_requirements=[_ENCODING_FORMAT_MAY_REQUIREMENT],
+        expected_triggered_issues=[
+            "MAY include `WebPageElement` in its `@type`"
+        ],
+    )
+
+
+def test_valid_encoding_format_with_webpageelement():
+    """
+    An encoding format entity whose `@id` contains a fragment identifier AND
+    whose `@type` already includes `WebPageElement` does NOT trigger the MAY
+    suggestion (the optional recommendation is satisfied).
+    """
+    from rocrate_validator import services
+    result = services.validate({
+        "rocrate_uri": str(
+            __contextual_entities_crates__.valid_encoding_format_webpageelement
+        ),
+        "profile_identifier": "ro-crate-1.2",
+        "requirement_severity": models.Severity.OPTIONAL,
+    })
+    failed_requirement_names = {
+        issue.check.requirement.name for issue in result.get_issues()
+    }
+    assert _ENCODING_FORMAT_MAY_REQUIREMENT not in failed_requirement_names, (
+        f"The MAY requirement {_ENCODING_FORMAT_MAY_REQUIREMENT!r} should NOT fire "
+        f"when the encoding format entity already includes `WebPageElement` in its @type"
+    )
+
+
+def test_encoding_format_no_fragment_not_triggered():
+    """
+    An encoding format entity whose `@id` does NOT contain a fragment
+    identifier is outside the target of the MAY shape; the suggestion must
+    not fire.
+    """
+    from rocrate_validator import services
+    result = services.validate({
+        "rocrate_uri": str(__contextual_entities_crates__.encoding_format_no_fragment),
+        "profile_identifier": "ro-crate-1.2",
+        "requirement_severity": models.Severity.OPTIONAL,
+    })
+    failed_requirement_names = {
+        issue.check.requirement.name for issue in result.get_issues()
+    }
+    assert _ENCODING_FORMAT_MAY_REQUIREMENT not in failed_requirement_names, (
+        f"The MAY requirement {_ENCODING_FORMAT_MAY_REQUIREMENT!r} should NOT fire "
+        f"when the encoding format entity @id does not contain a fragment identifier"
+    )
