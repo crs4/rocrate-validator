@@ -29,13 +29,13 @@ __workflows_scripts_crates__ = WorkflowsScripts()
 _GENERIC_RECOMMENDED_SKIP = [
     "ro-crate-1.2_40.0",   # RO-Crate Metadata Entity: RECOMMENDED properties (check 0)
     "ro-crate-1.2_40.1",   # RO-Crate Metadata Entity: RECOMMENDED properties (check 1)
-    "ro-crate-1.2_47.1",   # Root Data Entity: recommended funder
-    "ro-crate-1.2_54.1",   # Root Data Entity: recommended publisher
-    "ro-crate-1.2_61.1",   # File Data Entity: RECOMMENDED contentSize
-    "ro-crate-1.2_62.0",   # File: RECOMMENDED conformsTo profile
-    "ro-crate-1.2_74.1",   # Contextual Entity Properties
-    "ro-crate-1.2_75.1",   # Contextual Entity RECOMMENDED description
-    "ro-crate-1.2_80.2",   # License entity: RECOMMENDED properties
+    "ro-crate-1.2_48.1",   # Root Data Entity: recommended funder
+    "ro-crate-1.2_55.1",   # Root Data Entity: recommended publisher
+    "ro-crate-1.2_62.1",   # File Data Entity: RECOMMENDED contentSize
+    "ro-crate-1.2_63.0",   # File: RECOMMENDED conformsTo profile
+    "ro-crate-1.2_75.1",   # Contextual Entity Properties
+    "ro-crate-1.2_76.1",   # Contextual Entity RECOMMENDED description
+    "ro-crate-1.2_81.2",   # License entity: RECOMMENDED properties
 ]
 
 
