@@ -16,20 +16,32 @@
 @prefix schema_org: <http://schema.org/> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 
-# Root Data Entity SHOULD reference funders directly via `funder`
 ro-crate:RootDataEntityRecommendedFunder a sh:NodeShape ;
     sh:name "Root Data Entity: recommended funder" ;
-    sh:description """The Root Data Entity SHOULD reference funders directly via the `funder`
-        property, using Organization (or Person) entities (RO-Crate 1.2, Funding and Grants).""" ;
+    sh:description """If the RO-Crate describes a research project, grant, or
+        monetary grant (via a `schema:Project`, `schema:Grant`, or
+        `schema:MonetaryGrant` entity in the @graph), the Root Data Entity
+        SHOULD reference the funding source via the `funder` property
+        (RO-Crate 1.2, Funding and Grants).""" ;
     sh:targetClass ro-crate:RootDataEntity ;
-    sh:property [
-        a sh:PropertyShape ;
-        sh:name "Root Data Entity: RECOMMENDED `funder` property" ;
-        sh:description """Check if the Root Data Entity references funders directly via `funder`.""" ;
-        sh:path schema_org:funder ;
-        sh:minCount 1 ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:name "Root Data Entity: RECOMMENDED `funder` property (conditional)" ;
+        sh:description """Fire a warning only if the crate contains project or
+            grant entities AND the Root Data Entity has no `funder` property.""" ;
+        sh:select """
+            SELECT $this
+            WHERE {
+                # Trigger: at least one project/grant entity is present.
+                ?project a ?projectType .
+                FILTER(?projectType IN (schema:Project, schema:Grant, schema:MonetaryGrant))
+                # Violation condition: the Root has no `funder` property.
+                FILTER NOT EXISTS { $this schema:funder ?f }
+            }
+        """ ;
         sh:severity sh:Warning ;
-        sh:message "The Root Data Entity SHOULD reference funders directly via the `funder` property" ;
+        sh:message "The Root Data Entity SHOULD reference funders directly via the `funder` property when the crate describes a research project, grant, or monetary grant" ;
     ] .
 
 # funder values SHOULD be Organization entities;
