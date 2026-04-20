@@ -209,22 +209,6 @@ ro-crate:GeometryWktRecommendedProperties a sh:NodeShape ;
         sh:message "Geometry entities SHOULD provide `asWKT`" ;
     ] .
 
-ro-crate:SoftwareApplicationVersionRecommended a sh:NodeShape ;
-    sh:name "SoftwareApplication: SHOULD have `version`" ;
-    sh:description """A SoftwareApplication contextual entity SHOULD declare a
-        `version` property identifying the specific release used (RO-Crate 1.2,
-        Provenance — Software Applications).""" ;
-    sh:targetClass schema:SoftwareApplication ;
-    sh:property [
-        a sh:PropertyShape ;
-        sh:name "SoftwareApplication: RECOMMENDED `version` property" ;
-        sh:description "Check that a SoftwareApplication entity declares a `version` property." ;
-        sh:path schema:version ;
-        sh:minCount 1 ;
-        sh:severity sh:Warning ;
-        sh:message "A SoftwareApplication SHOULD have a `version` property" ;
-    ] .
-
 ro-crate:LicenseEntityAbsoluteUrl a sh:NodeShape ;
     sh:name "License entity: SHOULD have absolute URL @id" ;
     sh:description """A License entity SHOULD be identified by an absolute HTTP(S) URL,

@@ -107,7 +107,7 @@ ro-crate:FindLicenseEntity a sh:NodeShape, validator:HiddenShape ;
             }
         """
     ] ;
-
+    
     # Expand data graph with triples to mark the matching entities as License instances
     sh:rule [
         a sh:TripleRule ;
@@ -163,4 +163,51 @@ ro-crate:ThumbnailReferencesFile a sh:NodeShape ;
         sh:path schema:thumbnail ;
         sh:class schema:MediaObject ;
         sh:message "If present, `thumbnail` MUST reference a File data entity" ;
+    ] .
+
+# A contextual entity representing a `ComputerLanguage` and/or `SoftwareApplication`
+# MUST have `name`, `url`, and `version`.
+ro-crate:SoftwareApplicationOrComputerLanguageRequiredProperties a sh:NodeShape ;
+    sh:name "SoftwareApplication or ComputerLanguage: REQUIRED `name`, `url`, `version`" ;
+    sh:description """A contextual entity representing a `SoftwareApplication`
+        or a `ComputerLanguage` MUST declare `name`, `url`, and `version`
+        properties (RO-Crate 1.2, Provenance — Software Applications;
+        Workflows — programmingLanguage).""" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?this a ?t .
+                FILTER(?t IN (schema:SoftwareApplication, schema:ComputerLanguage))
+            }
+        """
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "SoftwareApplication/ComputerLanguage: REQUIRED `name`" ;
+        sh:description "Check that the entity declares a `name` property." ;
+        sh:path schema:name ;
+        sh:minCount 1 ;
+        sh:severity sh:Violation ;
+        sh:message "A SoftwareApplication or ComputerLanguage MUST have a `name` property" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "SoftwareApplication/ComputerLanguage: REQUIRED `url`" ;
+        sh:description "Check that the entity declares a `url` property." ;
+        sh:path schema:url ;
+        sh:minCount 1 ;
+        sh:severity sh:Violation ;
+        sh:message "A SoftwareApplication or ComputerLanguage MUST have a `url` property" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "SoftwareApplication/ComputerLanguage: REQUIRED `version`" ;
+        sh:description "Check that the entity declares a `version` property indicating a known release." ;
+        sh:path schema:version ;
+        sh:minCount 1 ;
+        sh:severity sh:Violation ;
+        sh:message "A SoftwareApplication or ComputerLanguage MUST have a `version` property (SHOULD indicate a known version that linked workflows/scripts were developed/tested with)" ;
     ] .
