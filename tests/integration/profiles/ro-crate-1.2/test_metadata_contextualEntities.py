@@ -329,3 +329,38 @@ def test_invalid_bare_propertyvalue_id():
             "named local entities SHOULD use a '#'-prefixed @id"
         ],
     )
+
+
+# ---------------------------------------------------------------------------
+# SoftwareApplication: SHOULD have `version` (SHOULD)
+# ---------------------------------------------------------------------------
+
+def test_valid_software_application():
+    """
+    A SoftwareApplication contextual entity that declares a `version` property
+    SHOULD pass RECOMMENDED validation.
+    """
+    do_entity_test(
+        __contextual_entities_crates__.valid_software_application,
+        models.Severity.RECOMMENDED,
+        True,
+        profile_identifier="ro-crate-1.2",
+        skip_checks=_GENERIC_RECOMMENDED_SKIP,
+    )
+
+
+def test_invalid_software_application_no_version():
+    """
+    A SoftwareApplication contextual entity missing the `version` property
+    SHOULD trigger a RECOMMENDED warning.
+    """
+    do_entity_test(
+        __contextual_entities_crates__.invalid_software_application_no_version,
+        models.Severity.RECOMMENDED,
+        False,
+        profile_identifier="ro-crate-1.2",
+        expected_triggered_requirements=["SoftwareApplication: SHOULD have `version`"],
+        expected_triggered_issues=[
+            "A SoftwareApplication SHOULD have a `version` property"
+        ],
+    )
