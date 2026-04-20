@@ -1,0 +1,102 @@
+{
+  "@context": "https://w3id.org/ro/crate/1.2/context",
+  "@graph": [
+    {
+      "@id": "ro-crate-metadata.json",
+      "@type": "CreativeWork",
+      "about": {
+        "@id": "./"
+      },
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.2"
+      }
+    },
+    {
+      "@id": "./",
+      "@type": "Dataset",
+      "name": "Dataset hasPart — valid",
+      "description": "RO-Crate where the local Dataset sub-entity declares hasPart listing its contents.",
+      "datePublished": "2024-01-01",
+      "license": {
+        "@id": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "publisher": {
+        "@id": "https://ror.org/05f9q8d28"
+      },
+      "funder": {
+        "@id": "https://ror.org/00k4n6c32"
+      },
+      "identifier": {
+        "@id": "#uuid"
+      },
+      "hasPart": [
+        {
+          "@id": "subdir/"
+        }
+      ]
+    },
+    {
+      "@id": "#uuid",
+      "@type": "PropertyValue",
+      "name": "UUID",
+      "propertyID": "UUID",
+      "value": "550e8400-e29b-41d4-a716-446655440000"
+    },
+    {
+      "@id": "subdir/",
+      "@type": "Dataset",
+      "name": "Sub-directory with hasPart",
+      "description": "A local Dataset sub-entity that correctly lists its contents via hasPart.",
+      "hasPart": [
+        {
+          "@id": "subdir/data.csv"
+        }
+      ]
+    },
+    {
+      "@id": "subdir/data.csv",
+      "@type": "File",
+      "name": "Data file",
+      "description": "A data file listed via hasPart.",
+      "encodingFormat": "text/csv",
+      "contentSize": "1024"
+    },
+    {
+      "@id": "https://ror.org/05f9q8d28",
+      "@type": "Organization",
+      "name": "Example Research Institute",
+      "url": "https://example.org",
+      "contactPoint": {
+        "@id": "#contact-point"
+      }
+    },
+    {
+      "@id": "https://ror.org/00k4n6c32",
+      "@type": "Organization",
+      "name": "European Commission",
+      "description": "The European Commission funds research and innovation programmes.",
+      "url": "https://ec.europa.eu",
+      "contactPoint": {
+        "@id": "#contact-point-1"
+      }
+    },
+    {
+      "@id": "https://creativecommons.org/licenses/by/4.0/",
+      "@type": "CreativeWork",
+      "name": "Creative Commons Attribution 4.0 International",
+      "description": "CC BY 4.0 license."
+    },
+    {
+      "@id": "#contact-point",
+      "@type": "ContactPoint",
+      "name": "Contact for Example Research Institute",
+      "email": "mailto:contact@example.org"
+    },
+    {
+      "@id": "#contact-point-1",
+      "@type": "ContactPoint",
+      "name": "Contact for European Commission",
+      "email": "mailto:contact@example.org"
+    }
+  ]
+}

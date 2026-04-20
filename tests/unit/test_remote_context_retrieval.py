@@ -24,7 +24,7 @@ def fd_format():
     """Load the module with numeric prefix."""
     spec = importlib.util.spec_from_file_location(
         "fd_format",
-        "rocrate_validator/profiles/ro-crate/must/0_file_descriptor_format.py"
+        "rocrate_validator/profiles/ro-crate/1.2/must/0_file_descriptor_format.py"
     )
     module = importlib.util.module_from_spec(spec)
     sys.modules["fd_format"] = module
@@ -47,8 +47,8 @@ class TestGetRemoteContextLogic:
 
         try:
             checker = object.__new__(fd_format.FileDescriptorJsonLdFormat)
-            result = checker.__get_remote_context__("https://example.com/context.json")
-            assert result == {"name": "https://schema.org/name"}
+            result = checker.__check_remote_context__("https://example.com/context.json")
+            assert result is True
         finally:
             fd_format.HttpRequester = original_requester
 

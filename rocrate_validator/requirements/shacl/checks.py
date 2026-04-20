@@ -207,13 +207,13 @@ class SHACLCheck(RequirementCheck):
         logger.debug(f"Execution time for getting shapes: {end_time - start_time} seconds")
 
         # # uncomment to save the graphs to the logs folder (for debugging purposes)
-        # start_time = timer()
+        start_time = timer()
         # data_graph.serialize("logs/data_graph.ttl", format="turtle")
         # shapes_graph.serialize("logs/shapes_graph.ttl", format="turtle")
         # if ontology_graph:
         #     ontology_graph.serialize("logs/ontology_graph.ttl", format="turtle")
-        # end_time = timer()
-        # logger.debug(f"Execution time for saving graphs: {end_time - start_time} seconds")
+        end_time = timer()
+        logger.debug(f"Execution time for saving graphs: {end_time - start_time} seconds")
 
         # validate the data graph
         start_time = timer()
@@ -317,7 +317,10 @@ class SHACLCheck(RequirementCheck):
                         violatingEntity=violating_entity,
                         violatingPropertyValue=violation.value,
                     )
-                    logger.debug("Added validation issue to the context: %s", c)
+                    logger.debug(
+                        "Added issue %s for requirement check %s: %s",
+                        c, requirementCheck.identifier, violation_message,
+                    )
                 # if the fail fast mode is enabled, stop the validation after the first issue
                 if shacl_context.fail_fast:
                     break

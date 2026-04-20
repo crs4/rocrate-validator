@@ -33,8 +33,10 @@ def test_no_recommended_sdDatePublished():
         models.Severity.RECOMMENDED,
         False,
         ["Web-based Data Entity: RECOMMENDED properties"],
-        ["Web-based Data Entities SHOULD have "
-         "a `sdDatePublished` property to indicate when the absolute URL was accessed"]
+        [
+            "Web-based Data Entities SHOULD have a `sdDatePublished` "
+            "property to indicate when the absolute URL was accessed"
+        ]
     )
 
 
@@ -45,7 +47,9 @@ def test_invalid_recommended_sdDatePublished(invalid_datetime):
         models.Severity.RECOMMENDED,
         False,
         ["Web-based Data Entity: RECOMMENDED properties"],
-        ["Web-based Data Entities SHOULD have "
-         "a `sdDatePublished` property to indicate when the absolute URL was accessed"],
-        rocrate_entity_patch={"https://sort-and-change-case.cwl": {"datePublished": invalid_datetime}}
+        [
+            "Web-based Data Entities SHOULD have a `sdDatePublished` "
+            "property to indicate when the absolute URL was accessed"
+        ],
+        rocrate_entity_patch={"https://sort-and-change-case.cwl": {"sdDatePublished": invalid_datetime}}
     )

@@ -1,0 +1,199 @@
+# Copyright (c) 2024-2026 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+@prefix ro: <./> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.2/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema_org: <http://schema.org/> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix prof: <http://www.w3.org/ns/dx/prof/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# ---------------------------------------------------------------
+# Shared SPARQL target: Referenced RO-Crate Data Entity
+#
+# Selects Dataset entities that declare conformsTo pointing to an
+# RO-Crate specification URI (starting with https://w3id.org/ro/crate)
+# and are not the Root Data Entity.
+# ---------------------------------------------------------------
+ro-crate:ReferencedROCrateDataEntityTarget a sh:SPARQLTarget ;
+    sh:prefixes ro-crate:sparqlPrefixes ;
+    sh:select """
+        SELECT ?this
+        WHERE {
+            ?this a schema:Dataset ;
+                dct:conformsTo ?profile .
+            FILTER(STRSTARTS(STR(?profile), "https://w3id.org/ro/crate"))
+            ?metadatafile schema:about ?root .
+            FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
+            FILTER(?this != ?root)
+        }
+    """ .
+
+# ---------------------------------------------------------------
+# Shared SPARQL target: Referenced RO-Crate Metadata Descriptor
+#
+# Selects entities referenced by subjectOf of a Referenced RO-Crate
+# Data Entity.
+# ---------------------------------------------------------------
+ro-crate:ReferencedROCrateMetadataDescriptorTarget a sh:SPARQLTarget ;
+    sh:prefixes ro-crate:sparqlPrefixes ;
+    sh:select """
+        SELECT ?this
+        WHERE {
+            ?crate a schema:Dataset ;
+                dct:conformsTo ?profile ;
+                schema:subjectOf ?this .
+            FILTER(STRSTARTS(STR(?profile), "https://w3id.org/ro/crate"))
+            ?metadatafile schema:about ?root .
+            FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
+            FILTER(?crate != ?root)
+        }
+    """ .
+
+# These shapes validate data entities that represent referenced RO-Crates.
+# A "referenced RO-Crate" is a Dataset entity whose conformsTo property
+# includes an RO-Crate specification URI (starting with
+# https://w3id.org/ro/crate).  The RO-Crate 1.2 specification requires
+# that such entities follow specific conventions regarding conformsTo,
+# subjectOf, and the structure of their associated metadata descriptor.
+
+# ---------------------------------------------------------------
+#  Referenced RO-Crate data entity SHOULD include the
+#  version-less RO-Crate base profile URI in conformsTo
+# ---------------------------------------------------------------
+ro-crate:ReferencedROCrateConformsToVersionlessProfile a sh:NodeShape ;
+    sh:name "Referenced RO-Crate: SHOULD include version-less profile in conformsTo" ;
+    sh:description """A data entity that represents a referenced RO-Crate
+        SHOULD include the version-less RO-Crate base profile URI
+        (https://w3id.org/ro/crate) in its conformsTo property, to indicate
+        that it is an RO-Crate.  Specific profile versions are also permitted
+        in addition to the version-less URI.""" ;
+    sh:target ro-crate:ReferencedROCrateDataEntityTarget ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Referenced RO-Crate: SHOULD include version-less conformsTo" ;
+        sh:description """A referenced RO-Crate data entity SHOULD include the
+            version-less RO-Crate base profile URI
+            (https://w3id.org/ro/crate) in its conformsTo property.""" ;
+        sh:path dct:conformsTo ;
+        sh:hasValue <https://w3id.org/ro/crate> ;
+        sh:severity sh:Warning ;
+        sh:message "Referenced RO-Crate data entity SHOULD include the version-less RO-Crate base profile URI (https://w3id.org/ro/crate) in its conformsTo property" ;
+    ] .
+
+# ---------------------------------------------------------------
+#  Referenced RO-Crate data entity SHOULD have subjectOf
+#  pointing to a metadata descriptor contextual entity
+# ---------------------------------------------------------------
+ro-crate:ReferencedROCrateSubjectOfRecommended a sh:NodeShape ;
+    sh:name "Referenced RO-Crate: SHOULD have subjectOf" ;
+    sh:description """A data entity that represents a referenced RO-Crate
+        SHOULD have a subjectOf property linking to a contextual entity
+        representing the metadata descriptor of the referenced RO-Crate.""" ;
+    sh:target ro-crate:ReferencedROCrateDataEntityTarget ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Referenced RO-Crate: SHOULD have subjectOf" ;
+        sh:description """A referenced RO-Crate data entity SHOULD have a
+            subjectOf property linking to a contextual entity representing
+            the metadata descriptor of the referenced RO-Crate.""" ;
+        sh:path schema_org:subjectOf ;
+        sh:minCount 1 ;
+        sh:severity sh:Warning ;
+        sh:message "Referenced RO-Crate data entity SHOULD have a subjectOf property linking to the referenced crate metadata descriptor" ;
+    ] .
+
+# ---------------------------------------------------------------
+#  Referenced RO-Crate data entity whose @id is an absolute URI
+#  without a declared persistent identifier SHOULD include
+#  `sdDatePublished` to indicate when the absolute URI was
+#  accessed (unless Signposting rel=cite-as is declared — that
+#  conditional refinement is verified separately by the Python
+#  check `ReferencedROCrateSignpostingCiteAsChecker`).
+#  (RO-Crate 1.2, § 4.5 — Determining entity identifier for a
+#  referenced RO-Crate, step #3.)
+# ---------------------------------------------------------------
+ro-crate:ReferencedROCrateSdDatePublishedRecommended a sh:NodeShape ;
+    sh:name "Referenced RO-Crate: SHOULD have sdDatePublished when @id is an absolute URI without persistent identifier" ;
+    sh:description """A data entity that represents a referenced RO-Crate
+        whose @id is an absolute HTTP(S) URI — and that does not declare a
+        persistent identifier via `identifier` — SHOULD include the
+        `sdDatePublished` timestamp to indicate when the URI was accessed
+        (RO-Crate 1.2, § 4.5).  This structural check does not inspect
+        Signposting `Link: rel=cite-as` headers; that refinement is performed
+        by a separate network-aware Python check.""" ;
+    sh:target ro-crate:ReferencedROCrateDataEntityTarget ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT $this
+            WHERE {
+                FILTER(STRSTARTS(STR($this), "http://") || STRSTARTS(STR($this), "https://"))
+                FILTER NOT EXISTS { $this schema:identifier ?id }
+                FILTER NOT EXISTS { $this schema:sdDatePublished ?date }
+            }
+        """ ;
+        sh:severity sh:Warning ;
+        sh:message "A Referenced RO-Crate data entity with an absolute URI @id and no declared persistent identifier SHOULD include `sdDatePublished` to indicate when the URI was accessed (unless Signposting `Link: rel=cite-as` is declared on that URI)" ;
+    ] .
+
+# ---------------------------------------------------------------
+# Metadata descriptor of a referenced RO-Crate
+#
+# All three constraints (encodingFormat, no conformsTo, no about)
+# share the same SPARQL target.
+# ---------------------------------------------------------------
+ro-crate:ReferencedROCrateMetadataDescriptorProperties a sh:NodeShape ;
+    sh:name "Referenced RO-Crate metadata descriptor: recommended properties" ;
+    sh:description """The contextual entity representing the metadata descriptor
+        of a referenced RO-Crate SHOULD have encodingFormat set to
+        'application/ld+json' and SHOULD NOT have conformsTo or about
+        properties.  Profile declarations belong on the data entity, and
+        the about property is reserved for the crate's own metadata
+        descriptor.""" ;
+    sh:target ro-crate:ReferencedROCrateMetadataDescriptorTarget ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Referenced RO-Crate metadata descriptor: SHOULD have encodingFormat application/ld+json" ;
+        sh:description """The metadata descriptor of a referenced RO-Crate
+            SHOULD declare encodingFormat as 'application/ld+json'.""" ;
+        sh:path schema_org:encodingFormat ;
+        sh:hasValue "application/ld+json" ;
+        sh:severity sh:Warning ;
+        sh:message "Referenced RO-Crate metadata descriptor SHOULD have encodingFormat 'application/ld+json'" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Referenced RO-Crate metadata descriptor: SHOULD NOT have conformsTo" ;
+        sh:description """The metadata descriptor of a referenced RO-Crate
+            SHOULD NOT have a conformsTo property.  Profile declarations belong
+            on the data entity.""" ;
+        sh:path dct:conformsTo ;
+        sh:maxCount 0 ;
+        sh:severity sh:Warning ;
+        sh:message "Referenced RO-Crate metadata descriptor SHOULD NOT have a conformsTo property" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Referenced RO-Crate metadata descriptor: SHOULD NOT have about" ;
+        sh:description """The metadata descriptor of a referenced RO-Crate
+            SHOULD NOT have an about property.  The about property belongs
+            on the crate's own metadata descriptor.""" ;
+        sh:path schema_org:about ;
+        sh:maxCount 0 ;
+        sh:severity sh:Warning ;
+        sh:message "Referenced RO-Crate metadata descriptor SHOULD NOT have an about property" ;
+    ] .

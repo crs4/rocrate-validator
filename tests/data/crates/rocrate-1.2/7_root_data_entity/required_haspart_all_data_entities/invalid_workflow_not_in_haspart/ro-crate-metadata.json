@@ -1,0 +1,43 @@
+{
+  "@context": "https://w3id.org/ro/crate/1.2/context",
+  "@graph": [
+    {
+      "@id": "ro-crate-metadata.json",
+      "@type": "CreativeWork",
+      "about": {
+        "@id": "./"
+      },
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.2"
+      }
+    },
+    {
+      "@id": "./",
+      "@type": "Dataset",
+      "name": "Test RO-Crate: Workflow not in hasPart",
+      "description": "This RO-Crate has a workflow File entity (File/SoftwareSourceCode/ComputationalWorkflow) that is missing from hasPart.",
+      "datePublished": "2024-01-15",
+      "license": {
+        "@id": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "hasPart": [
+        { "@id": "data.txt" }
+      ]
+    },
+    {
+      "@id": "https://creativecommons.org/licenses/by/4.0/",
+      "@type": "CreativeWork",
+      "name": "Creative Commons Attribution 4.0 International"
+    },
+    {
+      "@id": "data.txt",
+      "@type": "File",
+      "name": "Data File"
+    },
+    {
+      "@id": "workflow.ga",
+      "@type": ["File", "SoftwareSourceCode", "ComputationalWorkflow"],
+      "name": "My Workflow"
+    }
+  ]
+}

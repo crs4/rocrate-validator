@@ -1,0 +1,170 @@
+# Copyright (c) 2024-2026 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+@prefix ro: <./> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.2/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema_org: <http://schema.org/> .
+@prefix prof: <http://www.w3.org/ns/dx/prof/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix validator: <https://github.com/crs4/rocrate-validator/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix dct: <http://purl.org/dc/terms/> .
+
+# Selects the Root Data Entity (the Dataset that the metadata file is `about`).
+ro-crate:MetadataAboutTarget a sh:SPARQLTarget ;
+    sh:prefixes ro-crate:sparqlPrefixes ;
+    sh:select """
+        SELECT ?this
+        WHERE {
+            ?metadatafile schema:about ?this .
+            FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
+        }
+    """ .
+
+ro-crate:FindRootDataEntity a sh:NodeShape, validator:HiddenShape ;
+    sh:name "Identify the Root Data Entity of the RO-Crate" ;
+    sh:description """The Root Data Entity is the top-level Data Entity in the RO-Crate and serves as the starting point for the description of the RO-Crate.
+        It is a schema:Dataset and is indirectly identified by the about property of the metadata descriptor in the RO-Crate 
+        (see the definition at [Finding RO-Crate Root in RDF triple stores](https://www.researchobject.org/ro-crate/1.2/appendix/relative-uris.html#finding-ro-crate-root-in-rdf-triple-stores)).
+    """ ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?this a schema:Dataset .
+                ?metadatafile schema:about ?this .
+                FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
+            }
+        """
+    ] ;
+    
+    # Expand data graph with triples from the file data entity
+    sh:rule [
+        a sh:TripleRule ;
+        sh:subject sh:this ;
+        sh:predicate rdf:type ;
+        sh:object ro-crate:RootDataEntity ;
+    ] .
+
+ro-crate:RootDataEntityType a sh:NodeShape ;
+    sh:name "RO-Crate Root Data Entity type" ;
+    sh:description "The Root Data Entity MUST be a `Dataset` (as per `schema.org`)" ;
+    sh:target ro-crate:MetadataAboutTarget ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Root Data Entity type" ;
+        sh:description "Check if the Root Data Entity is a `Dataset` (as per `schema.org`)" ;
+        sh:path rdf:type ;
+        sh:hasValue schema_org:Dataset ;
+        sh:minCount 1 ;
+        sh:message """The Root Data Entity MUST be a `Dataset` (as per `schema.org`)""" ;
+    ] ;
+    # Validate that if the publisher is specified, it is an Organization or a Person
+    sh:property [
+        sh:path schema_org:publisher ;
+        sh:severity sh:Violation ;
+        sh:name "Root Data Entity: `publisher` property" ;
+        sh:description """Check if the Root Data Entity has a `publisher` property of type `Organization` or `Person`.""" ;
+        sh:or (
+            [
+                sh:class schema_org:Organization
+            ]
+            [
+                sh:class schema_org:Person
+            ]
+        ) ;
+        sh:message """The Root Data Entity MUST have a `publisher` property of type `Organization` or `Person`.""" ;
+    ] .
+
+ro-crate:RootDataEntityRequiredProperties a sh:NodeShape ;
+    sh:name "RO-Crate Root Data Entity REQUIRED properties" ;
+    sh:description "The Root Data Entity MUST have a `name`, `description`, `license` and `datePublished`" ;
+    sh:targetClass ro-crate:RootDataEntity ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Root Data Entity: `name` property" ;
+        sh:description """Check if the Root Data Entity includes a `name` (as specified by schema.org) 
+        to clearly identify the dataset and distinguish it from other datasets.""" ;
+        sh:minCount 1 ;
+        sh:nodeKind sh:Literal ;
+        sh:path schema_org:name ;
+        sh:message "The Root Data Entity MUST have a `name` property (as specified by schema.org)" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Root Data Entity: `description` property" ;
+        sh:description """Check if the Root Data Entity includes a `description` (as specified by schema.org)
+        to provide a human-readable description of the dataset.""" ;
+        sh:minCount 1 ;
+        sh:nodeKind sh:Literal ;
+        sh:path schema_org:description ;
+        sh:message "The Root Data Entity MUST have a `description` property (as specified by schema.org)" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Root Data Entity: `license` property" ;
+        sh:description """Check if the Root Data Entity includes a `license` property (as specified by schema.org)
+        to provide information about the license of the dataset.""" ;
+        sh:path schema_org:license ;
+        sh:minCount 1 ;
+        sh:nodeKind sh:IRIOrLiteral ;
+        sh:message """The Root Data Entity MUST have a `license` property (as specified by schema.org).""" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Root Data Entity: `datePublished` property" ;
+        sh:description """Check if the Root Data Entity includes a `datePublished` (as specified by schema.org)
+        to provide the date when the dataset was published. The datePublished MUST be a valid ISO 8601 date.""" ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:nodeKind sh:Literal ;
+        sh:datatype xsd:string ;
+        sh:path schema_org:datePublished ;
+        sh:pattern "^([\\+-]?\\d{4})((-?)((0[1-9]|1[0-2])(\\3([12]\\d|0[1-9]|3[01]))?|W([0-4]\\d|5[0-2])(-?[1-7])?|(00[1-9]|0[1-9]\\d|[12]\\d{2}|3([0-5]\\d|6[1-6])))([T\\s]((([01]\\d|2[0-3])((:?)?[0-5]\\d)?|24:?00)([\\.,]\\d+(?!:))?)?(\\17[0-5]\\d([\\.,]\\d+)?)?([zZ]|([\\+-])([01]\\d|2[0-3]):?([0-5]\\d)?)?)?)?$" ;
+        sh:message "The Root Data Entity MUST have a `datePublished` property (as specified by schema.org) with a valid ISO 8601 date" ;
+    ] .
+
+ro-crate:RootDataEntityOptionalConformsToProperty a sh:NodeShape ;
+    sh:name "RO-Crate Root Data Entity: optional `conformsTo` property value restriction" ;
+    sh:description """If the Root Data Entity includes a `conformsTo` property, its values MUST reference Profile entities.""" ;
+    sh:targetClass ro-crate:RootDataEntity ;
+    sh:property [
+        sh:name "Root Data Entity: optional `conformsTo` property value restriction" ;
+        sh:description """Check if the Root Data Entity's `conformsTo` property values reference Profile entities.""" ;
+        sh:path dct:conformsTo ;
+        sh:class prof:Profile ;
+        sh:message """If the Root Data Entity includes a `conformsTo` property, its values MUST reference Profile entities.""" ;
+    ] .
+
+ro-crate:RootDataEntityVersionlessProfileProhibition a sh:NodeShape ;
+    sh:name "RO-Crate Root Data Entity: MUST NOT declare version-less conformsTo profile" ;
+    sh:description """The Root Data Entity MUST NOT declare the version-less generic RO-Crate profile URI
+        (https://w3id.org/ro/crate) in its conformsTo property.
+        Only versioned profile URIs (e.g., https://w3id.org/ro/crate/1.2) are permitted on the Root Data Entity.
+        The version-less URI is reserved for referenced RO-Crate data entities.""" ;
+    sh:target ro-crate:MetadataAboutTarget ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?this dct:conformsTo <https://w3id.org/ro/crate> .
+            }
+        """ ;
+        sh:name "Root Data Entity: MUST NOT declare version-less conformsTo" ;
+        sh:message "The Root Data Entity MUST NOT declare the version-less RO-Crate profile URI (https://w3id.org/ro/crate) in its conformsTo property. Use a versioned URI such as https://w3id.org/ro/crate/1.2 instead." ;
+    ] .

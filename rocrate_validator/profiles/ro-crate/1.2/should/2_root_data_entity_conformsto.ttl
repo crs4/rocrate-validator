@@ -1,0 +1,47 @@
+# Copyright (c) 2024-2026 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.2/> .
+@prefix schema_org: <http://schema.org/> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix prof: <http://www.w3.org/ns/dx/prof/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+
+# Root Data Entity: conformsTo SHOULD be present if profiles exist in the crate
+ro-crate:RootDataEntityConformsToIfProfiles a sh:NodeShape ;
+    sh:name "Root Data Entity: conformsTo SHOULD be present if profiles exist" ;
+    sh:description """If the RO-Crate conforms to additional profiles,
+        the Root Data Entity SHOULD have a conformsTo property referencing
+        Profile entities (RO-Crate 1.2).""" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?this a ro-crate:RootDataEntity .
+                FILTER EXISTS {
+                    ?profile a prof:Profile .
+                    FILTER(?profile != <https://w3id.org/ro/crate/1.2>)
+                }
+            }
+        """
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Root Data Entity: RECOMMENDED conformsTo if profiles exist" ;
+        sh:path dct:conformsTo ;
+        sh:minCount 1 ;
+        sh:severity sh:Warning ;
+        sh:message "The Root Data Entity SHOULD have a `conformsTo` property if the RO-Crate conforms to profiles" ;
+    ] .

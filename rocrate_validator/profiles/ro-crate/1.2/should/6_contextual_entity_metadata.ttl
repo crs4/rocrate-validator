@@ -1,0 +1,277 @@
+# Copyright (c) 2024-2026 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+@prefix ro: <./> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.2/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix dct: <http://purl.org/dc/terms/> .
+
+ro-crate:ContextualEntityReferences a sh:NodeShape ;
+    sh:name "Contextual Entity RECOMMENDED references" ;
+    sh:description "Contextual entities SHOULD be referenced by other entities and described in the same graph." ;
+    sh:targetClass ro-crate:ContextualEntity ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:name "Contextual Entity references" ;
+        sh:description "Check that Contextual Entities are referenced by other entities." ;
+        sh:message "Contextual entities SHOULD be referenced by other entities." ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                FILTER NOT EXISTS {
+                    ?other ?pr ?this .
+                    FILTER (?other != ?this)
+                }
+            }
+        """ ;
+    ] .
+
+ro-crate:ContextualEntityProperties a sh:NodeShape ;
+    sh:name "Contextual Entity Properties" ;
+    sh:description """Contextual Entities MUST have a `name` property and SHOULD have a `description` property.""" ;
+    sh:targetClass ro-crate:ContextualEntity ;
+    sh:property [
+        sh:path schema:name ;
+        sh:minCount 1 ;
+        sh:dataType xsd:string ;
+        sh:name "Contextual Entity: REQUIRED `name` property" ;
+        sh:description "Check if the Contextual Entity has a `name` property" ;
+        sh:message "A Contextual Entity MUST have a `name` property" ;
+    ] ;
+    sh:property [
+        sh:path schema:description ;
+        sh:dataType xsd:string ;
+        sh:name "Contextual Entity: OPTIONAL `description` property" ;
+        sh:description "Check if the Contextual Entity has a `description` property" ;
+        sh:message "A Contextual Entity SHOULD have a `description` property" ;
+    ] .
+
+ro-crate:ReferencedContextualEntitiesShouldBeDescribed a sh:NodeShape ;
+    sh:name "Contextual Entity RECOMMENDED description" ;
+    sh:description """Contextual entities referenced by other entities SHOULD be described in the same graph.""" ;
+    sh:targetClass ro-crate:ContextualEntity ;
+    sh:property [
+        sh:name "Contextual Entity: REQUIRED RDF type" ;
+        sh:description "Check if the Contextual Entity is described in the same graph with at least an RDF type specified." ;
+        sh:message "Contextual entities that are referenced by other entities SHOULD be described in the same @graph, with at least an RDF type specified." ;
+        # One rdf:type triple is automatically added to the data graph for each Contextual Entity 
+        # by the `ContextualEntityDefinition` shape, so this constraint checks 
+        # that at least that triple is present in the graph for the Contextual Entity.
+        sh:path rdf:type ;
+        sh:minCount 2 ;
+    ] .
+
+# ro-crate:EntityNameRecommendedProperties a sh:NodeShape ;
+#     sh:name "Entity: RECOMMENDED name" ;
+#     sh:description """Entities SHOULD have a human-readable `name`, in particular if its `@id` does not go to a human-readable Web page.
+#         This follows the RO-Crate 1.2 Common Principles for RO-Crate entities.""" ;
+#     sh:targetClass ro-crate:ContextualEntity ;
+#     sh:property [
+#         sh:path schema:name ;
+#         sh:minCount 1 ;
+#         sh:datatype xsd:string ;
+#         sh:severity sh:Warning ;
+#         sh:name "Contextual Entity: RECOMMENDED `name` property" ;
+#         sh:description "Check if the Contextual Entity has a `name` property" ;
+#         sh:message "A Contextual Entity SHOULD have a `name` property" ;
+#     ] .
+
+ro-crate:CreativeWorkAuthorMinimumRecommendedProperties a sh:NodeShape ;
+    sh:name "CreativeWork Author: minimum RECOMMENDED properties" ;
+    sh:description """The minimum recommended properties for a `CreativeWork Author` are `name` and `affiliation`.""" ;
+    sh:targetClass ro-crate:CreativeWorkAuthor ;
+    sh:property [
+        sh:path schema:name ;
+        sh:minCount 1 ;
+        sh:dataType xsd:string ;
+        sh:name "CreativeWork Author: RECOMMENDED name property" ;
+        sh:description "Check if the author has a name." ;
+        sh:message "The author SHOULD have a name." ;
+    ] ;
+    sh:property [
+        sh:path schema:affiliation ;
+        sh:minCount 1 ;
+        sh:or (
+            [
+                sh:dataType xsd:string ;
+            ]
+            [
+                sh:class schema:Organization ;
+            ]
+        ) ;
+        sh:severity sh:Warning ;
+        sh:name "CreativeWork Author: RECOMMENDED affiliation property" ;
+        sh:description "Check if the author has an organizational affiliation." ;
+        sh:message "The author SHOULD have an organizational affiliation." ;
+    ] ;
+    sh:property [
+        sh:path schema:affiliation ;
+        sh:minCount 1 ;
+        sh:class schema:Organization ;
+        sh:severity sh:Warning ;
+        sh:name "CreativeWork Author: RECOMMENDED Contextual Entity linked for the organizational `affiliation` property" ;
+        sh:description "Check if the author has a Contextual Entity for the organizational `affiliation` property." ;
+        sh:message "The author SHOULD have a Contextual Entity which specifies the organizational `affiliation`." ;
+    ] .
+
+ro-crate:OrganizationRecommendedProperties a sh:NodeShape ;
+    sh:name "Organization: RECOMMENDED properties" ;
+    sh:description """The recommended properties for an `Organization` are `name` and `url`.""" ;
+    sh:targetClass schema:Organization ;
+    sh:property [
+        sh:path schema:name ;
+        sh:minCount 1 ;
+        sh:dataType xsd:string ;
+        sh:name "Organization: RECOMMENDED name property" ;
+        sh:description "Check if the `organization` has a name." ;
+        sh:message "The organization SHOULD have a name." ;
+    ] ;
+    sh:property [
+        sh:path schema:url ;
+        sh:minCount 1 ;
+        sh:dataType xsd:anyURI ;
+        sh:name "Organization: RECOMMENDED url property" ;
+        sh:description "Check if the `organization` has a URL." ;
+        sh:message "The organization SHOULD have a URL." ;
+    ] .
+
+ro-crate:PersonAffiliationRecommendedProperties a sh:NodeShape ;
+    sh:name "Person: RECOMMENDED affiliation" ;
+    sh:description """Persons SHOULD reference an Organization for affiliation.""" ;
+    sh:targetClass schema:Person ;
+    sh:property [
+        sh:path schema:affiliation ;
+        sh:class schema:Organization ;
+        sh:severity sh:Warning ;
+        sh:message "Persons SHOULD reference an Organization for affiliation" ;
+    ] .
+
+ro-crate:LicenseEntityRecommendedProperties a sh:NodeShape ;
+    sh:name "License entity: RECOMMENDED properties" ;
+    sh:description """License entities SHOULD have `name` and `description`.""" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?subject schema:license ?this .
+            }
+        """
+    ] ;
+    sh:property [
+        sh:path schema:name ;
+        sh:minCount 1 ;
+        sh:dataType xsd:string ;
+        sh:severity sh:Warning ;
+        sh:message "License entities SHOULD have a name" ;
+    ] ;
+    sh:property [
+        sh:path schema:description ;
+        sh:minCount 1 ;
+        sh:dataType xsd:string ;
+        sh:severity sh:Warning ;
+        sh:message "License entities SHOULD have a description" ;
+    ] .
+
+ro-crate:PlaceGeoRecommendedProperties a sh:NodeShape ;
+    sh:name "Place: RECOMMENDED geo" ;
+    sh:description """Places SHOULD reference Geometry via `geo` when geometry is provided.""" ;
+    sh:targetClass schema:Place ;
+    sh:property [
+        sh:path schema:geo ;
+        sh:class <http://www.opengis.net/ont/geosparql#Geometry> ;
+        sh:severity sh:Warning ;
+        sh:message "Places SHOULD reference a Geometry entity via `geo`" ;
+    ] .
+
+ro-crate:GeometryWktRecommendedProperties a sh:NodeShape ;
+    sh:name "Geometry: RECOMMENDED asWKT" ;
+    sh:description """Geometry entities SHOULD provide `asWKT`.""" ;
+    sh:targetClass <http://www.opengis.net/ont/geosparql#Geometry> ;
+    sh:property [
+        sh:path <http://www.opengis.net/ont/geosparql#asWKT> ;
+        sh:minCount 1 ;
+        sh:severity sh:Warning ;
+        sh:message "Geometry entities SHOULD provide `asWKT`" ;
+    ] .
+
+ro-crate:LicenseEntityAbsoluteUrl a sh:NodeShape ;
+    sh:name "License entity: SHOULD have absolute URL @id" ;
+    sh:description """A License entity SHOULD be identified by an absolute HTTP(S) URL,
+        for example an SPDX license URI (https://spdx.org/licenses/).
+        (RO-Crate 1.2, Contextual Entities — License)""" ;
+    sh:targetClass ro-crate:License ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                FILTER(!regex(str(?this), "^https?://", "i"))
+            }
+        """ ;
+        sh:severity sh:Warning ;
+        sh:message "A License entity SHOULD have an absolute HTTP(S) URL as its @id (e.g., an SPDX license URI such as https://spdx.org/licenses/MIT.html)" ;
+    ] .
+
+ro-crate:LicenseEntityCreativeWorkType a sh:NodeShape ;
+    sh:name "License entity: SHOULD be typed as CreativeWork" ;
+    sh:description """A License entity SHOULD include `schema:CreativeWork` in its `@type`.
+        (RO-Crate 1.2, Contextual Entities — License)""" ;
+    sh:targetClass ro-crate:License ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                FILTER NOT EXISTS {
+                    ?this a schema:CreativeWork .
+                }
+            }
+        """ ;
+        sh:severity sh:Warning ;
+        sh:message "A License entity SHOULD have `CreativeWork` in its `@type`" ;
+    ] .
+
+ro-crate:EncodingFormatRecommendedTypes a sh:NodeShape ;
+    sh:name "Encoding format: RECOMMENDED types" ;
+    sh:description """Encoding format contextual entities SHOULD include WebPage and/or Standard types.""" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?s schema:encodingFormat ?this .
+                FILTER(isIRI(?this))
+            }
+        """
+    ] ;
+    sh:property [
+        sh:path rdf:type ;
+        sh:or (
+            [
+                sh:hasValue schema:WebPage
+            ]
+            [
+                sh:hasValue dct:Standard
+            ]
+        ) ;
+        sh:severity sh:Warning ;
+        sh:message "Encoding format entities SHOULD include WebPage and/or Standard types" ;
+    ] .

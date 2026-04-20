@@ -1,0 +1,166 @@
+# Copyright (c) 2024-2026 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+@prefix ro: <./> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.2/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema: <http://schema.org/> .
+@prefix bioschemas: <https://bioschemas.org/> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix validator: <https://github.com/crs4/rocrate-validator/> .
+
+# Selects ImageObject entities referenced via `image` from a Script or Workflow.
+ro-crate:ScriptOrWorkflowImageTarget a sh:SPARQLTarget ;
+    sh:prefixes ro-crate:sparqlPrefixes ;
+    sh:select """
+        SELECT ?this
+        WHERE {
+            ?sw a schema:SoftwareSourceCode .
+            ?sw schema:image ?this .
+            ?metadatafile schema:about ?root .
+            FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
+        }
+    """ .
+
+# ---------------------------------------------------------------
+# Script or Workflow: programmingLanguage SHOULD reference a
+# ComputerLanguage entity
+# ---------------------------------------------------------------
+ro-crate:ScriptOrWorkflowProgrammingLanguage a sh:NodeShape ;
+    sh:name "Script or Workflow: RECOMMENDED `programmingLanguage`" ;
+    sh:description """Scripts and Workflows SHOULD have a `programmingLanguage`
+        property referencing a contextual entity of type `ComputerLanguage`
+        (RO-Crate 1.2, Workflows and Scripts).""" ;
+    sh:target ro-crate:SoftwareSourceCodeTarget ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Script or Workflow: RECOMMENDED `programmingLanguage` property" ;
+        sh:description """Check that the Script or Workflow has a `programmingLanguage`
+            property.""" ;
+        sh:path schema:programmingLanguage ;
+        sh:minCount 1 ;
+        sh:severity sh:Warning ;
+        sh:message "Scripts and Workflows SHOULD have a `programmingLanguage` property referencing a `ComputerLanguage` entity" ;
+    ] ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:name "Script or Workflow: `programmingLanguage` SHOULD reference ComputerLanguage" ;
+        sh:description """Check that the `programmingLanguage` property references
+            an entity of type `ComputerLanguage`.""" ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?this schema:programmingLanguage ?lang .
+                FILTER NOT EXISTS { ?lang a schema:ComputerLanguage }
+            }
+        """ ;
+        sh:severity sh:Warning ;
+        sh:message "The `programmingLanguage` of a Script or Workflow SHOULD reference a `ComputerLanguage` entity" ;
+    ] .
+
+# ---------------------------------------------------------------
+# Workflow: conformsTo SHOULD include a versioned Bioschemas
+# ComputationalWorkflow profile URI
+# ---------------------------------------------------------------
+ro-crate:WorkflowRecommendedConformsTo a sh:NodeShape ;
+    sh:name "Workflow: RECOMMENDED Bioschemas `conformsTo`" ;
+    sh:description """A Workflow SHOULD declare `conformsTo` pointing to a
+        versioned Bioschemas ComputationalWorkflow profile URI
+        (https://bioschemas.org/profiles/ComputationalWorkflow/)
+        (RO-Crate 1.2, Workflows and Scripts).""" ;
+    sh:targetClass ro-crate:Workflow ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Workflow: RECOMMENDED `conformsTo` Bioschemas profile" ;
+        sh:description """Check that the Workflow has a `conformsTo` pointing
+            to a Bioschemas ComputationalWorkflow profile URI.""" ;
+        sh:path dct:conformsTo ;
+        sh:minCount 1 ;
+        sh:severity sh:Warning ;
+        sh:message "Workflows SHOULD declare `conformsTo` referencing a versioned Bioschemas ComputationalWorkflow profile URI (https://bioschemas.org/profiles/ComputationalWorkflow/)" ;
+    ] ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:name "Workflow `conformsTo` SHOULD reference Bioschemas profile" ;
+        sh:description """If `conformsTo` is present, at least one value SHOULD
+            start with the Bioschemas ComputationalWorkflow profile URI.""" ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?this dct:conformsTo ?profile .
+                FILTER NOT EXISTS {
+                    ?this dct:conformsTo ?bioprofile .
+                    FILTER(STRSTARTS(STR(?bioprofile), "https://bioschemas.org/profiles/ComputationalWorkflow/"))
+                }
+            }
+        """ ;
+        sh:severity sh:Warning ;
+        sh:message "Workflow `conformsTo` SHOULD include a versioned Bioschemas ComputationalWorkflow profile URI (https://bioschemas.org/profiles/ComputationalWorkflow/)" ;
+    ] .
+
+# ---------------------------------------------------------------
+# ImageObject linked from Script/Workflow: encodingFormat SHOULD
+# be present
+# ---------------------------------------------------------------
+ro-crate:ScriptOrWorkflowImageEncodingFormat a sh:NodeShape ;
+    sh:name "Script/Workflow ImageObject: RECOMMENDED `encodingFormat`" ;
+    sh:description """ImageObject entities referenced via `image` from a
+        Script or Workflow SHOULD have an `encodingFormat` property with an
+        IANA media type string and/or a Pronom identifier reference
+        (RO-Crate 1.2, Workflows and Scripts — related ImageObject).""" ;
+    sh:target ro-crate:ScriptOrWorkflowImageTarget ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Script/Workflow ImageObject: RECOMMENDED `encodingFormat` property" ;
+        sh:description """Check that the ImageObject has an `encodingFormat`
+            property.""" ;
+        sh:path schema:encodingFormat ;
+        sh:minCount 1 ;
+        sh:severity sh:Warning ;
+        sh:message "An ImageObject referenced via `image` from a Script or Workflow SHOULD have an `encodingFormat` property (IANA media type and/or Pronom identifier)" ;
+    ] .
+
+# ---------------------------------------------------------------
+# ImageObject linked from Script/Workflow: `about` SHOULD
+# reference the script/workflow
+# ---------------------------------------------------------------
+ro-crate:ScriptOrWorkflowImageAbout a sh:NodeShape ;
+    sh:name "Script/Workflow ImageObject: RECOMMENDED `about` reference" ;
+    sh:description """ImageObject entities referenced via `image` from a
+        Script or Workflow SHOULD have an `about` property that references
+        the script or workflow entity
+        (RO-Crate 1.2, Workflows and Scripts — related ImageObject).""" ;
+    sh:target ro-crate:ScriptOrWorkflowImageTarget ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:name "Script/Workflow ImageObject: `about` SHOULD reference the script/workflow" ;
+        sh:description """Check that the ImageObject's `about` property references
+            the script or workflow that includes it via `image`.""" ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?sw a schema:SoftwareSourceCode .
+                ?sw schema:image ?this .
+                FILTER NOT EXISTS {
+                    ?this schema:about ?sw .
+                }
+            }
+        """ ;
+        sh:severity sh:Warning ;
+        sh:message "An ImageObject referenced via `image` from a Script or Workflow SHOULD have an `about` property referencing the script or workflow" ;
+    ] .

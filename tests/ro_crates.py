@@ -1010,3 +1010,45 @@ class InvalidMultiProfileROC:
     @property
     def invalid_multi_profile_crate(self) -> Path:
         return INVALID_CRATES_DATA_PATH / "0_multi_profile_crate"
+
+
+class ValidROCrate12:
+
+    base_path = VALID_CRATES_DATA_PATH
+
+    @property
+    def attached(self) -> Path:
+        return self.base_path / "ro-crate-1.2-attached"
+
+    @property
+    def attached_absolute_root(self) -> Path:
+        return self.base_path / "ro-crate-1.2-absolute-root"
+
+    @property
+    def detached(self) -> Path:
+        return self.base_path / "detached" / "dataset-ro-crate-metadata.json"
+
+    @property
+    def detached_prefixed(self) -> Path:
+        return self.base_path / "detached" / "test-ro-crate-metadata.json"
+
+
+class InvalidROCrate12:
+
+    base_path = INVALID_CRATES_DATA_PATH / "ro-crate-1.2"
+
+    @property
+    def invalid_context(self) -> Path:
+        return self.base_path / "invalid-context"
+
+    @property
+    def invalid_date_published(self) -> Path:
+        return self.base_path / "invalid-date-published"
+
+    @property
+    def detached_relative_entity(self) -> Path:
+        return self.base_path / "detached-relative-entity" / "dataset-ro-crate-metadata.json"
+
+    @property
+    def detached_bad_filename(self) -> Path:
+        return self.base_path / "detached-bad-filename" / "ro-crate-metadata.json"

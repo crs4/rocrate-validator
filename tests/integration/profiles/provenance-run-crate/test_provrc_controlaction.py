@@ -14,8 +14,9 @@
 
 import logging
 
+from rocrate_validator import models, services
 from rocrate_validator.models import Severity
-from tests.ro_crates import InvalidProvRC
+from tests.ro_crates import InvalidProcRC, InvalidProvRC
 from tests.shared import do_entity_test
 
 # set up logging
@@ -140,4 +141,27 @@ def test_provrc_controlaction_error_not_failed_status():
         ["Provenance Run Crate ControlAction and OrganizeAction error"],
         ["error SHOULD NOT be specified unless actionStatus is set to FailedActionStatus"],
         profile_identifier="provenance-run-crate"
+    )
+
+
+def test_provrc_error_violation_maps_to_process_run_crate_check():
+    """Ensure inherited Process Run Crate error checks are mapped correctly."""
+    result = services.validate(
+        models.ValidationSettings(
+            rocrate_uri=InvalidProcRC().action_no_error,
+            profile_identifier="provenance-run-crate",
+            requirement_severity=Severity.OPTIONAL,
+            abort_on_first=False,
+        )
+    )
+
+    matching_issues = [
+        issue
+        for issue in result.get_issues()
+        if issue.message and "error MAY be specified if actionStatus is set to FailedActionStatus" in issue.message
+    ]
+    assert matching_issues, "Expected at least one error MAY issue"
+    assert all(
+        issue.check.requirement.profile.identifier.startswith("process-run-crate")
+        for issue in matching_issues
     )

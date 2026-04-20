@@ -152,6 +152,8 @@ class ROCrateEntity:
         return self.get_id_as_uri(self.id, self.ro_crate)
 
     def has_absolute_path(self) -> bool:
+        if self.id_as_uri.is_remote_resource():
+            return True
         return self.get_id_as_path(self.id).is_absolute()
 
     def has_relative_path(self) -> bool:
@@ -212,8 +214,22 @@ class ROCrateEntity:
         try:
             # check if the entity points to an external file
             if self.id.startswith("http"):
+                # If the identifier ends with a slash,
+                # it is a directory and we cannot always check its availability,
+                # so we assume it is available
+                if self.id.endswith("/"):
+                    logger.debug("Entity '%s' with identifier '%s' is a directory, assuming it is available at '%s'",
+                                 self.name, self.id, self.id_as_uri)
+                    return True
+                # check if the file is available at the remote location
                 logger.debug("Checking the availability of a remote entity")
-                return self.ro_crate.get_external_file_size(self.id) > 0
+                size = self.ro_crate.get_external_file_size(self.id)
+                # None means the server responded successfully but did not provide Content-Length
+                is_available = size is None or size > 0
+                logger.debug("Entity '%s' with identifier '%s' is %savailable at '%s'",
+                             self.name, self.id, "" if is_available else "not ", self.id_as_uri)
+
+                return is_available
 
             # check if the entity is part of the local RO-Crate
             if self.ro_crate.uri.is_local_resource():
@@ -303,10 +319,17 @@ class ROCrateMetadata:
             return 0
 
     def get_file_descriptor_entity(self) -> ROCrateEntity:
-        metadata_file_descriptor = self.get_entity(self.METADATA_FILE_DESCRIPTOR)
-        if not metadata_file_descriptor:
-            raise ValueError("no metadata file descriptor in crate")
-        return metadata_file_descriptor
+        metadata_file_descriptor = self.get_entity(self.ro_crate.metadata_descriptor_id)
+        if metadata_file_descriptor:
+            return metadata_file_descriptor
+
+        for entity in self.get_entities():
+            if not entity.id or not entity.id.endswith(self.METADATA_FILE_DESCRIPTOR):
+                continue
+            if entity.has_type("CreativeWork"):
+                return entity
+
+        raise ValueError("no metadata file descriptor in crate")
 
     def get_root_data_entity(self) -> ROCrateEntity:
         metadata_file_descriptor = self.get_file_descriptor_entity()
@@ -351,6 +374,8 @@ class ROCrateMetadata:
     def get_entities_by_type(
         self, entity_type: Union[str, list[str]]
     ) -> list[ROCrateEntity]:
+        if isinstance(entity_type, str):
+            entity_type = [entity_type]
         entities = []
         for e in self.get_entities():
             if e.has_types(entity_type):
@@ -399,7 +424,7 @@ class ROCrateMetadata:
     def as_json(self) -> str:
         if not self._json:
             self._json = self.ro_crate.get_file_content(
-                Path(self.METADATA_FILE_DESCRIPTOR), binary_mode=False
+                Path(self.ro_crate.metadata_descriptor_id), binary_mode=False
             )
         return self._json
 
@@ -502,6 +527,24 @@ class ROCrate(ABC):
         if not self._metadata:
             self._metadata = ROCrateMetadata(self)
         return self._metadata
+
+    def is_detached(self) -> bool:
+        root = self.metadata.get_root_data_entity()
+        if root and root.has_type("Dataset") and root.id == "./":
+            return False
+        if root and root.id_as_uri.is_remote_resource():
+            # An absolute root @id doesn't necessarily mean detached;
+            # check if there are any local (non-web) data entities
+            local_data_entities = self.metadata.get_data_entities(exclude_web_data_entities=True)
+            for entity in local_data_entities:
+                if entity.id != root.id:
+                    return False
+            return True
+        return False
+
+    @property
+    def metadata_descriptor_id(self) -> str:
+        return ROCrateMetadata.METADATA_FILE_DESCRIPTOR
 
     @abstractmethod
     def size(self) -> int:
@@ -611,6 +654,24 @@ class ROCrate(ABC):
         logger.debug("Checking for metadata descriptor at path: %s", path)
         return self.has_file(path)
 
+    def get_descriptor_path(self) -> Optional[Path]:
+        """
+        Get the path to the metadata descriptor file if it exists.
+
+        :return: the path to the metadata descriptor file if it exists, `None` otherwise
+        :rtype: Optional[Path]
+        """
+        try:
+            path = self.__parse_path__(Path(self.metadata.METADATA_FILE_DESCRIPTOR))
+            logger.debug("Checking for metadata descriptor at path: %s", path)
+            if self.has_file(path):
+                return path
+            return None
+        except Exception as e:
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.exception(e)
+            return None
+
     def has_file(self, path: Path) -> bool:
         """
         Check if the RO-Crate has a file.
@@ -697,21 +758,24 @@ class ROCrate(ABC):
         return response.content if binary_mode else response.text
 
     @staticmethod
-    def get_external_file_size(uri: str) -> int:
+    def get_external_file_size(uri: str) -> Optional[int]:
         """
         Get the size of an external file.
 
         :param uri: the URI of the file
         :type uri: str
 
-        :return: the size of the file
-        :rtype: int
+        :return: the size of the file, or None if the server did not provide a Content-Length header
+        :rtype: Optional[int]
 
         :raises requests.HTTPError: if the request fails
         """
         response = HttpRequester().head(str(uri))
         response.raise_for_status()
-        return int(response.headers.get("Content-Length"))
+        content_length = response.headers.get("Content-Length")
+        if content_length is None:
+            return None
+        return int(content_length)
 
     @staticmethod
     def from_metadata_dict(
@@ -764,18 +828,24 @@ class ROCrate(ABC):
             )
         # check if the URI is a local zip file
         if uri.is_local_file():
-            return (
-                ROCrateBagitLocalZip(uri, relative_root_path=relative_root_path)
-                if is_bagit_crate
-                else ROCrateLocalZip(uri, relative_root_path=relative_root_path)
-            )
+            suffix = uri.as_path().suffix.lower()
+            if suffix == ".zip":
+                return (
+                    ROCrateBagitLocalZip(uri, relative_root_path=relative_root_path)
+                    if is_bagit_crate
+                    else ROCrateLocalZip(uri, relative_root_path=relative_root_path)
+                )
+            return ROCrateLocalMetadataFile(uri, relative_root_path=relative_root_path)
         # check if the URI is a remote zip file
         if uri.is_remote_resource():
-            return (
-                ROCrateBagitRemoteZip(uri, relative_root_path=relative_root_path)
-                if is_bagit_crate
-                else ROCrateRemoteZip(uri, relative_root_path=relative_root_path)
-            )
+            path_suffix = Path(uri.get_path()).suffix.lower()
+            if path_suffix == ".zip":
+                return (
+                    ROCrateBagitRemoteZip(uri, relative_root_path=relative_root_path)
+                    if is_bagit_crate
+                    else ROCrateRemoteZip(uri, relative_root_path=relative_root_path)
+                )
+            return ROCrateRemoteMetadataFile(uri, relative_root_path=relative_root_path)
         # if the URI is not supported, raise an error
         raise ROCrateInvalidURIError(uri=uri, message="Unsupported RO-Crate URI")
 
@@ -790,6 +860,7 @@ class ROCrateLocalFolder(ROCrate):
 
         # cache the list of files
         self._files = None
+        self._metadata_descriptor_id = None
 
         # check if the path is a directory
         if not self.has_directory(self.uri.as_path()):
@@ -799,6 +870,21 @@ class ROCrateLocalFolder(ROCrate):
     def size(self) -> int:
         return sum(f.stat().st_size for f in self.list_files() if f.is_file())
 
+    @property
+    def metadata_descriptor_id(self) -> str:
+        if self._metadata_descriptor_id:
+            return self._metadata_descriptor_id
+        base_path = self.uri.as_path()
+        candidates = sorted(
+            (p for p in base_path.rglob(f"*{ROCrateMetadata.METADATA_FILE_DESCRIPTOR}") if p.is_file()),
+            key=lambda p: (len(p.relative_to(base_path).parts), str(p))
+        )
+        if not candidates:
+            self._metadata_descriptor_id = ROCrateMetadata.METADATA_FILE_DESCRIPTOR
+            return self._metadata_descriptor_id
+        self._metadata_descriptor_id = str(candidates[0].relative_to(base_path))
+        return self._metadata_descriptor_id
+
     def list_files(self) -> list[Path]:
         if not self._files:
             self._files = []
@@ -807,6 +893,11 @@ class ROCrateLocalFolder(ROCrate):
                 if file.is_file():
                     self._files.append(base_path / file)
         return self._files
+
+    def has_descriptor(self) -> bool:
+        path = self.__parse_path__(Path(self.metadata_descriptor_id))
+        logger.debug("Checking for metadata descriptor at path: %s", path)
+        return self.has_file(path)
 
     def get_file_size(self, path: Path) -> int:
         path = self.__parse_path__(path)
@@ -839,6 +930,7 @@ class ROCrateLocalZip(ROCrate):
 
         # cache the list of files
         self._files = None
+        self._metadata_descriptor_id = None
 
     def __del__(self):
         try:
@@ -881,8 +973,23 @@ class ROCrateLocalZip(ROCrate):
         Check if the RO-Crate has a metadata descriptor file.
         :rtype: bool
         """
-        path = self.__parse_path__(Path(self.metadata.METADATA_FILE_DESCRIPTOR))
+        path = self.__parse_path__(Path(self.metadata_descriptor_id))
         return str(path) in [str(_) for _ in self.list_files()]
+
+    @property
+    def metadata_descriptor_id(self) -> str:
+        if self._metadata_descriptor_id:
+            return self._metadata_descriptor_id
+        candidates = sorted(
+            (p for p in self.list_files()
+             if str(p).endswith(ROCrateMetadata.METADATA_FILE_DESCRIPTOR)),
+            key=lambda p: (len(p.parts), str(p))
+        )
+        if not candidates:
+            self._metadata_descriptor_id = ROCrateMetadata.METADATA_FILE_DESCRIPTOR
+            return self._metadata_descriptor_id
+        self._metadata_descriptor_id = str(candidates[0])
+        return self._metadata_descriptor_id
 
     def has_file(self, path: Path) -> bool:
         path = self.__parse_path__(path)
@@ -928,6 +1035,101 @@ class ROCrateLocalZip(ROCrate):
             raise FileNotFoundError(f"File not found: {path}")
         data = self._zipref.read(str(path))
         return data if binary_mode else data.decode("utf-8")
+
+
+class ROCrateLocalMetadataFile(ROCrate):
+    def __init__(self, path: Union[str, Path, URI], relative_root_path: Path = None):
+        super().__init__(path, relative_root_path=relative_root_path)
+
+        if not self.uri.is_local_file():
+            raise ROCrateInvalidURIError(uri=path)
+
+        suffix = self.uri.as_path().suffix.lower()
+        if suffix not in (".json", ".jsonld"):
+            raise ROCrateInvalidURIError(uri=path, message="Unsupported metadata file format")
+
+    def is_detached(self) -> bool:
+        return True
+
+    @property
+    def metadata_descriptor_id(self) -> str:
+        return self.uri.as_path().name
+
+    @property
+    def size(self) -> int:
+        return self.uri.as_path().stat().st_size
+
+    @property
+    def list_files(self) -> list[Path]:
+        return [Path(self.metadata_descriptor_id)]
+
+    def has_descriptor(self) -> bool:
+        return True
+
+    def has_file(self, path: Path) -> bool:
+        if path.name == self.metadata_descriptor_id:
+            return True
+        return False
+
+    def get_file_size(self, path: Path) -> int:
+        if path.name != self.metadata_descriptor_id:
+            raise FileNotFoundError(f"File not found: {path}")
+        return self.uri.as_path().stat().st_size
+
+    def get_file_content(
+        self, path: Path, binary_mode: bool = True
+    ) -> Union[str, bytes]:
+        if path.name != self.metadata_descriptor_id:
+            raise FileNotFoundError(f"File not found: {path}")
+        return self.uri.as_path().read_bytes() if binary_mode else self.uri.as_path().read_text()
+
+
+class ROCrateRemoteMetadataFile(ROCrate):
+    def __init__(self, uri: Union[str, Path, URI], relative_root_path: Path = None):
+        super().__init__(uri, relative_root_path=relative_root_path)
+
+        if not self.uri.is_remote_resource():
+            raise ROCrateInvalidURIError(uri=uri)
+
+    def is_detached(self) -> bool:
+        return True
+
+    @property
+    def metadata_descriptor_id(self) -> str:
+        return Path(self.uri.get_path()).name
+
+    @property
+    def size(self) -> int:
+        response = HttpRequester().head(str(self.uri))
+        response.raise_for_status()
+        file_size = response.headers.get("Content-Length")
+        if file_size is None:
+            raise Exception("Could not determine the file size from the headers")
+        return int(file_size)
+
+    @property
+    def list_files(self) -> list[Path]:
+        return [Path(self.metadata_descriptor_id)]
+
+    def has_descriptor(self) -> bool:
+        return True
+
+    def has_file(self, path: Path) -> bool:
+        return path.name == self.metadata_descriptor_id
+
+    def get_file_size(self, path: Path) -> int:
+        if path.name != self.metadata_descriptor_id:
+            raise FileNotFoundError(f"File not found: {path}")
+        return self.size
+
+    def get_file_content(
+        self, path: Path, binary_mode: bool = True
+    ) -> Union[str, bytes]:
+        if path.name != self.metadata_descriptor_id:
+            raise FileNotFoundError(f"File not found: {path}")
+        response = HttpRequester().get(str(self.uri), headers={"Accept": "application/ld+json"})
+        response.raise_for_status()
+        return response.content if binary_mode else response.text
 
 
 class ROCrateRemoteZip(ROCrateLocalZip):
@@ -1096,7 +1298,7 @@ class ROCrateBagitLocalFolder(BagitROCrate, ROCrateLocalFolder):
 
     def __init__(self, uri: Union[str, Path, URI], relative_root_path: Path = None):
         # initialize the parent classes
-        super(ROCrateLocalFolder, self).__init__(uri, relative_root_path=relative_root_path)
+        super().__init__(uri, relative_root_path=relative_root_path)
         # check if the path is a BagIt-wrapped crate
         assert self.is_bagit_wrapping_crate(uri), "Not a BagIt-wrapped RO-Crate"
 
@@ -1105,6 +1307,15 @@ class ROCrateBagitLocalFolder(BagitROCrate, ROCrateLocalFolder):
         # if search_path and root_path are set, adjust the path
         if search_path and root_path:
             path = root_path / Path("data") / search_path
+            if not path.exists():
+                path = Path(unquote(str(path)))
+            return path
+        if not path.is_absolute():
+            base_path = self.uri.as_path() if self.uri.is_local_resource() else Path(".")
+            try:
+                path.relative_to(base_path)
+            except ValueError:
+                path = base_path / path
             if not path.exists():
                 path = Path(unquote(str(path)))
         return path

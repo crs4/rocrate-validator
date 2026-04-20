@@ -88,7 +88,7 @@ def sparql_test_rocrate():
 
 
 def test_sparql_profile_shape_loaded_correctly(sparql_test_profiles_path):
-    """Test that the sparql-test profile loads the test shape with SPARQL constraint."""
+    """Test that the sparql-test profile loads the AgentProjectIntersection shape."""
     registry = ShapesRegistry()
     shape_file = os.path.join(
         sparql_test_profiles_path, "must", "agent_project_intersection.ttl"
@@ -98,20 +98,18 @@ def test_sparql_profile_shape_loaded_correctly(sparql_test_profiles_path):
 
     assert len(shapes) > 0, "Should load at least one shape"
 
-    # Find the test shape (AlwaysFailShape or similar name)
-    test_shape = None
+    # Find the AgentProjectIntersection shape
+    agent_shape = None
     for shape in shapes:
-        if (
-            "Always" in shape.name
-            or "Test" in shape.name
-            or "test" in shape.name.lower()
-        ):
-            test_shape = shape
+        if "Agent" in shape.name or "agent" in shape.name.lower():
+            agent_shape = shape
             break
 
-    assert test_shape is not None, "Should find the test SPARQL shape"
-    assert test_shape.description is not None
-    assert len(test_shape.description) > 0
+    assert agent_shape is not None, "Should find AgentProjectIntersection shape"
+    assert agent_shape.description is not None
+    assert (
+        "Agent" in agent_shape.description or "agent" in agent_shape.description.lower()
+    )
 
 
 def test_sparql_constraint_with_bnode_sourceShape(
@@ -143,10 +141,8 @@ def test_sparql_constraint_with_bnode_sourceShape(
     assert issues[0].check.description is not None, "Check should have a description"
     assert issues[0].message is not None, "Issue should have a message"
     assert len(issues[0].message) > 0, "Issue message should not be empty"
-    assert (
-        "SPARQL constraint violation" in issues[0].message
-        or "SPARQL" in issues[0].check.description
-    ), "Check description should reference parent shape"
+    assert "SPARQL constraint violation" in issues[0].message or "SPARQL" in issues[
+        0].check.description, "Check description should reference parent shape"
 
 
 def test_resolve_parent_shape_with_sparql_bnode():
@@ -159,7 +155,7 @@ def test_resolve_parent_shape_with_sparql_bnode():
     SHACL = Namespace("http://www.w3.org/ns/shacl#")
 
     registry = ShapesRegistry()
-    profiles_path = "rocrate_validator/profiles/ro-crate/must"
+    profiles_path = "rocrate_validator/profiles/ro-crate/1.1/must"
 
     # Load shapes from profile
     for filename in os.listdir(profiles_path):

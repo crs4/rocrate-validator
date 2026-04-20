@@ -1,0 +1,38 @@
+{
+  "@context": "https://w3id.org/ro/crate/1.2/context",
+  "@graph": [
+    {
+      "@id": "ro-crate-metadata.json",
+      "@type": "CreativeWork",
+      "about": {"@id": "./"},
+      "conformsTo": {"@id": "https://w3id.org/ro/crate/1.2"}
+    },
+    {
+      "@id": "./",
+      "@type": "Dataset",
+      "name": "Named entity without #-prefix — invalid",
+      "description": "RO-Crate where a local Person entity uses a bare relative @id instead of '#'-prefixed.",
+      "datePublished": "2024-01-01",
+      "license": {"@id": "https://creativecommons.org/licenses/by/4.0/"},
+      "author": {"@id": "alice"},
+      "hasPart": []
+    },
+    {
+      "@id": "https://creativecommons.org/licenses/by/4.0/",
+      "@type": "CreativeWork",
+      "name": "Creative Commons Attribution 4.0 International",
+      "description": "CC BY 4.0 license."
+    },
+    {
+      "@id": "alice",
+      "@type": "Person",
+      "name": "Alice Researcher",
+      "affiliation": {"@id": "example-org"}
+    },
+    {
+      "@id": "example-org",
+      "@type": "Organization",
+      "name": "Example University"
+    }
+  ]
+}
