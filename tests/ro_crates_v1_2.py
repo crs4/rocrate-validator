@@ -689,6 +689,10 @@ class ContextualEntities:
     def valid_computer_language(self) -> Path:
         return self.CONTEXTUAL_ENTITIES_CRATES_PATH / "software_application" / "valid_computer_language"
 
+    @property
+    def valid_computer_language_with_alternatename(self) -> Path:
+        return self.CONTEXTUAL_ENTITIES_CRATES_PATH / "software_application" / "valid_with_alternatename"
+
     # --- Encoding Format entity: MAY include `WebPageElement` when @id has a fragment (5.8) ---
     @property
     def valid_encoding_format_webpageelement(self) -> Path:

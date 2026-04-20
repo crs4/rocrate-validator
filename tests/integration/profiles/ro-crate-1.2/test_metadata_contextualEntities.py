@@ -489,3 +489,61 @@ def test_encoding_format_no_fragment_not_triggered():
         f"The MAY requirement {_ENCODING_FORMAT_MAY_REQUIREMENT!r} should NOT fire "
         f"when the encoding format entity @id does not contain a fragment identifier"
     )
+
+
+# ---------------------------------------------------------------------------
+# SoftwareApplication / ComputerLanguage: MAY have `alternateName` [5.7]
+# ---------------------------------------------------------------------------
+
+_SOFTWAREAPP_COMPUTERLANG_ALTERNATENAME_REQ = (
+    "SoftwareApplication or ComputerLanguage: OPTIONAL `alternateName`"
+)
+
+
+def test_info_software_application_no_alternatename():
+    """
+    A SoftwareApplication contextual entity without an `alternateName`
+    property triggers an `sh:Info` suggestion at OPTIONAL severity
+    (RO-Crate 1.2, § 5.7).  The existing `valid` SoftwareApplication crate
+    (used by `test_valid_software_application` at REQUIRED severity) is
+    reused here: at REQUIRED it passes, at OPTIONAL the MAY suggestion fires.
+    """
+    do_entity_test(
+        __contextual_entities_crates__.valid_software_application,
+        models.Severity.OPTIONAL,
+        False,
+        profile_identifier="ro-crate-1.2",
+        expected_triggered_requirements=[_SOFTWAREAPP_COMPUTERLANG_ALTERNATENAME_REQ],
+        expected_triggered_issues=[
+            "MAY declare an `alternateName` property"
+        ],
+    )
+
+
+def test_valid_computer_language_with_alternatename_no_info():
+    """
+    A ComputerLanguage contextual entity that already declares an
+    `alternateName` property does NOT trigger the MAY suggestion — the
+    optional recommendation is satisfied.
+    """
+    do_entity_test(
+        __contextual_entities_crates__.valid_computer_language_with_alternatename,
+        models.Severity.OPTIONAL,
+        True,
+        profile_identifier="ro-crate-1.2",
+    )
+
+
+def test_valid_computer_language_alternatename_passes_at_optional():
+    """
+    A minimal, fully-specified crate with a
+    ComputerLanguage declaring `name`, `url`, `version`, and the MAY
+    `alternateName` passes ALL validation checks including OPTIONAL-level
+    INFO suggestions.
+    """
+    do_entity_test(
+        __contextual_entities_crates__.valid_computer_language_with_alternatename,
+        models.Severity.OPTIONAL,
+        True,
+        profile_identifier="ro-crate-1.2",
+    )
