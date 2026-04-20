@@ -137,20 +137,20 @@ ro-crate:DirectoryDataEntity a sh:NodeShape ;
         sh:severity sh:Violation ;
     ] .
 
-# ro-crate:DataEntityRequiredPropertiesShape a sh:NodeShape ;
-#     sh:name "Data Entity: REQUIRED properties" ;
-#     sh:description """A `DataEntity`The file descriptor MUST be a valid JSON-LD file MUST be linked, either directly or indirectly, from the Root Data Entity""" ;
-#     sh:targetClass ro-crate:DataEntity ;
-#     sh:property
-#         [
-#             a sh:PropertyShape ;
-#             sh:path [ sh:oneOrMorePath [ sh:inversePath schema_org:hasPart ] ] ;
-#             sh:qualifiedValueShape [ sh:class ro-crate:RootDataEntity ] ;
-#             sh:qualifiedMinCount 1 ;
-#             sh:name "Data Entity MUST be directly referenced" ;
-#             sh:description """Check if the Data Entity is linked, either directly or indirectly, to the `Root Data Entity` using the `hasPart` (as defined in `schema.org`) property" """ ;
-#             # sh:message "A Data Entity MUST be directly or indirectly linked to the `Root Data Entity` through the `hasPart` property" ;
-#         ] .
+ro-crate:DataEntityRequiredPropertiesShape a sh:NodeShape ;
+    sh:name "Data Entity: REQUIRED properties" ;
+    sh:description """A `DataEntity`The file descriptor MUST be a valid JSON-LD file MUST be linked, either directly or indirectly, from the Root Data Entity""" ;
+    sh:targetClass ro-crate:DataEntity ;
+    sh:property
+        [
+            a sh:PropertyShape ;
+            sh:path [ sh:oneOrMorePath [ sh:inversePath schema_org:hasPart ] ] ;
+            sh:qualifiedValueShape [ sh:class ro-crate:RootDataEntity ] ;
+            sh:qualifiedMinCount 1 ;
+            sh:name "Data Entity MUST be directly referenced" ;
+            sh:description """Check if the Data Entity is linked, either directly or indirectly, to the `Root Data Entity` using the `hasPart` (as defined in `schema.org`) property" """ ;
+            sh:message "A Data Entity MUST be directly or indirectly linked to the `Root Data Entity` through the `hasPart` property" ;
+        ] .
 
 ro-crate:GenericDataEntityRequiredProperties a sh:NodeShape ;
     sh:name "Generic Data Entity: REQUIRED properties" ;
