@@ -58,7 +58,7 @@ class ValidationResultTextOutputFormatter(OutputFormatter):
                 yield Padding(
                     f"[bold][{issue_color}][ {check.identifier.center(16)} ][/{issue_color}] "
                     f"[magenta]{check.name}[/magenta][/bold]:",
-                    (0, 7)
+                    (1, 8, 0, 8)
                 )
                 yield Padding(Markdown(check.description), (0, 0, 0, len(check.identifier) + 13))
                 yield Padding("[u] Detected issues [/u]", (0, 8))
@@ -74,7 +74,7 @@ class ValidationResultTextOutputFormatter(OutputFormatter):
                     if issue.violatingEntity:
                         path = f"{path} on [cyan]<{issue.violatingEntity}>[/cyan]"
                     yield Padding(f"- [[red]Violation[/red]{path}]: "
-                                  f"{Markdown(issue.message).markup}", (0, 9))
+                                  f"{Markdown(issue.message).markup}", (0, 9, 1, 9))
                     if console.no_color:
                         yield Padding("\n", (0, 0))
             yield Padding("\n", (0, 0))

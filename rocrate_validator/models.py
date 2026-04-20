@@ -2647,7 +2647,7 @@ class Validator(Publisher):
             if len(unmatched_profiles) > 0:
                 logger.warning(
                     "The conformance to the following profiles could not be verified: %s",
-                    unmatched_profiles,
+                    ", ".join(unmatched_profiles),
                 )
             return candidate_profiles
 
