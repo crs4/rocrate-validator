@@ -14,7 +14,7 @@
     {
       "@id": "./",
       "@type": "Dataset",
-      "name": "Workflow conformsTo — valid",
+      "name": "Workflow conformsTo \u2014 valid",
       "description": "RO-Crate with a Workflow that declares conformsTo referencing a versioned Bioschemas profile URI.",
       "datePublished": "2024-01-01",
       "license": {
@@ -88,11 +88,15 @@
       "@id": "#galaxy",
       "@type": "ComputerLanguage",
       "name": "Galaxy",
-      "url": "https://galaxyproject.org/"
+      "url": "https://galaxyproject.org/",
+      "version": "1.0"
     },
     {
       "@id": "https://bioschemas.org/profiles/ComputationalWorkflow/1.0-RELEASE",
-      "@type": ["CreativeWork", "Profile"],
+      "@type": [
+        "CreativeWork",
+        "Profile"
+      ],
       "name": "Bioschemas ComputationalWorkflow Profile 1.0-RELEASE",
       "description": "Bioschemas profile for computational workflows."
     }

@@ -676,7 +676,7 @@ class ContextualEntities:
     def invalid_contextual_entity_bare_propertyvalue(self) -> Path:
         return self.CONTEXTUAL_ENTITIES_CRATES_PATH / "contextual_entity_id_format" / "invalid_bare_propertyvalue"
 
-    # --- SoftwareApplication: SHOULD have version (5.7) ---
+    # --- SoftwareApplication / ComputerLanguage: MUST have name, url, version (5.7) ---
     @property
     def valid_software_application(self) -> Path:
         return self.CONTEXTUAL_ENTITIES_CRATES_PATH / "software_application" / "valid"
@@ -684,6 +684,18 @@ class ContextualEntities:
     @property
     def invalid_software_application_no_version(self) -> Path:
         return self.CONTEXTUAL_ENTITIES_CRATES_PATH / "software_application" / "invalid_no_version"
+
+    @property
+    def invalid_software_application_no_name(self) -> Path:
+        return self.CONTEXTUAL_ENTITIES_CRATES_PATH / "software_application" / "invalid_no_name"
+
+    @property
+    def invalid_software_application_no_url(self) -> Path:
+        return self.CONTEXTUAL_ENTITIES_CRATES_PATH / "software_application" / "invalid_no_url"
+
+    @property
+    def valid_computer_language(self) -> Path:
+        return self.CONTEXTUAL_ENTITIES_CRATES_PATH / "software_application" / "valid_computer_language"
 
 
 class InvalidMultiProfileROC:

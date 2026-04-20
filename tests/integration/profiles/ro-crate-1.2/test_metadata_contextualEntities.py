@@ -25,14 +25,14 @@ __contextual_entities_crates__ = ContextualEntities()
 # Generic RECOMMENDED checks that fire on minimal test crates regardless of the
 # contextual-entity-specific property being tested.
 _GENERIC_RECOMMENDED_SKIP = [
-    "ro-crate-1.2_47.1",   # Root Data Entity: RECOMMENDED funder
-    "ro-crate-1.2_54.1",   # Root Data Entity: RECOMMENDED publisher
+    "ro-crate-1.2_48.1",   # Root Data Entity: RECOMMENDED funder
+    "ro-crate-1.2_55.1",   # Root Data Entity: RECOMMENDED publisher
 ]
 
 # Correct IDs for funder/publisher checks (used in person entity tests).
 _PERSON_VALID_SKIP = [
-    "ro-crate-1.2_47.1",   # Root Data Entity: RECOMMENDED funder
-    "ro-crate-1.2_54.1",   # Root Data Entity: RECOMMENDED publisher
+    "ro-crate-1.2_48.1",   # Root Data Entity: RECOMMENDED funder
+    "ro-crate-1.2_55.1",   # Root Data Entity: RECOMMENDED publisher
 ]
 
 
@@ -332,35 +332,88 @@ def test_invalid_bare_propertyvalue_id():
 
 
 # ---------------------------------------------------------------------------
-# SoftwareApplication: SHOULD have `version` (SHOULD)
+# SoftwareApplication / ComputerLanguage: MUST have name, url, version (REQUIRED)
 # ---------------------------------------------------------------------------
 
 def test_valid_software_application():
     """
-    A SoftwareApplication contextual entity that declares a `version` property
-    SHOULD pass RECOMMENDED validation.
+    A SoftwareApplication contextual entity that declares `name`, `url`, and
+    `version` MUST pass REQUIRED validation.
     """
     do_entity_test(
         __contextual_entities_crates__.valid_software_application,
-        models.Severity.RECOMMENDED,
+        models.Severity.REQUIRED,
         True,
         profile_identifier="ro-crate-1.2",
-        skip_checks=_GENERIC_RECOMMENDED_SKIP,
     )
 
 
 def test_invalid_software_application_no_version():
     """
     A SoftwareApplication contextual entity missing the `version` property
-    SHOULD trigger a RECOMMENDED warning.
+    MUST trigger a REQUIRED violation.
     """
     do_entity_test(
         __contextual_entities_crates__.invalid_software_application_no_version,
-        models.Severity.RECOMMENDED,
+        models.Severity.REQUIRED,
         False,
         profile_identifier="ro-crate-1.2",
-        expected_triggered_requirements=["SoftwareApplication: SHOULD have `version`"],
-        expected_triggered_issues=[
-            "A SoftwareApplication SHOULD have a `version` property"
+        expected_triggered_requirements=[
+            "SoftwareApplication or ComputerLanguage: REQUIRED `name`, `url`, `version`"
         ],
+        expected_triggered_issues=[
+            "A SoftwareApplication or ComputerLanguage MUST have a `version` property"
+        ],
+    )
+
+
+def test_invalid_software_application_no_name():
+    """
+    A SoftwareApplication contextual entity missing the `name` property MUST
+    trigger a REQUIRED violation.
+    """
+    do_entity_test(
+        __contextual_entities_crates__.invalid_software_application_no_name,
+        models.Severity.REQUIRED,
+        False,
+        profile_identifier="ro-crate-1.2",
+        expected_triggered_requirements=[
+            "SoftwareApplication or ComputerLanguage: REQUIRED `name`, `url`, `version`"
+        ],
+        expected_triggered_issues=[
+            "A SoftwareApplication or ComputerLanguage MUST have a `name` property"
+        ],
+    )
+
+
+def test_invalid_software_application_no_url():
+    """
+    A SoftwareApplication contextual entity missing the `url` property MUST
+    trigger a REQUIRED violation.
+    """
+    do_entity_test(
+        __contextual_entities_crates__.invalid_software_application_no_url,
+        models.Severity.REQUIRED,
+        False,
+        profile_identifier="ro-crate-1.2",
+        expected_triggered_requirements=[
+            "SoftwareApplication or ComputerLanguage: REQUIRED `name`, `url`, `version`"
+        ],
+        expected_triggered_issues=[
+            "A SoftwareApplication or ComputerLanguage MUST have a `url` property"
+        ],
+    )
+
+
+def test_valid_computer_language():
+    """
+    A ComputerLanguage contextual entity (referenced as `programmingLanguage`
+    of a Script) that declares `name`, `url`, `version`, and an optional
+    `alternateName` MUST pass REQUIRED validation.
+    """
+    do_entity_test(
+        __contextual_entities_crates__.valid_computer_language,
+        models.Severity.REQUIRED,
+        True,
+        profile_identifier="ro-crate-1.2",
     )
