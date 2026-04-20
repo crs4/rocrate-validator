@@ -25,14 +25,14 @@ __contextual_entities_crates__ = ContextualEntities()
 # Generic RECOMMENDED checks that fire on minimal test crates regardless of the
 # contextual-entity-specific property being tested.
 _GENERIC_RECOMMENDED_SKIP = [
-    "ro-crate-1.2_47.1",   # Root Data Entity: RECOMMENDED funder
-    "ro-crate-1.2_54.1",   # Root Data Entity: RECOMMENDED publisher
+    "ro-crate-1.2_48.1",   # Root Data Entity: RECOMMENDED funder
+    "ro-crate-1.2_55.1",   # Root Data Entity: RECOMMENDED publisher
 ]
 
 # Correct IDs for funder/publisher checks (used in person entity tests).
 _PERSON_VALID_SKIP = [
-    "ro-crate-1.2_47.1",   # Root Data Entity: RECOMMENDED funder
-    "ro-crate-1.2_54.1",   # Root Data Entity: RECOMMENDED publisher
+    "ro-crate-1.2_48.1",   # Root Data Entity: RECOMMENDED funder
+    "ro-crate-1.2_55.1",   # Root Data Entity: RECOMMENDED publisher
 ]
 
 
