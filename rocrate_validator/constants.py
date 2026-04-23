@@ -89,3 +89,9 @@ JSON_OUTPUT_FORMAT_VERSION = "0.2"
 # Http Cache Settings
 DEFAULT_HTTP_CACHE_MAX_AGE = 300  # in seconds
 DEFAULT_HTTP_CACHE_PATH_PREFIX = '/tmp/rocrate_validator_cache'
+# Directory name used under the user's cache root for the persistent HTTP cache
+USER_CACHE_DIR_NAME = "rocrate-validator"
+# Filename (without extension) of the persistent HTTP cache under the user cache dir
+USER_CACHE_FILE_NAME = "http_cache"
+# Environment variable to disable automatic warm-up of the HTTP cache
+AUTO_WARM_ENV_VAR = "ROCRATE_VALIDATOR_AUTO_WARM"

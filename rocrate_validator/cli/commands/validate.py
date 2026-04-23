@@ -223,10 +223,22 @@ def validate_uri(ctx, param, value):
     '-nc',
     '--no-cache',
     is_flag=True,
-    help="Disable the HTTP cache",
+    help=(
+        "Disable the HTTP cache entirely: every request goes to the network "
+        "and nothing is persisted. Incompatible with [bold]--offline[/bold]."
+    ),
     default=False,
     show_default=True,
-    hidden=True
+)
+@click.option(
+    '--offline',
+    is_flag=True,
+    help=(
+        "Offline mode: HTTP requests are served only from the cache. "
+        "Pre-populate the cache with [bold]rocrate-validator cache warm[/bold]."
+    ),
+    default=False,
+    show_default=True,
 )
 @click.pass_context
 def validate(ctx,
@@ -249,7 +261,8 @@ def validate(ctx,
              output_line_width: Optional[int] = None,
              cache_max_age: int = constants.DEFAULT_HTTP_CACHE_MAX_AGE,
              cache_path: Optional[Path] = None,
-             no_cache: bool = False):
+             no_cache: bool = False,
+             offline: bool = False):
     """
     [magenta]rocrate-validator:[/magenta] Validate a RO-Crate against a profile
     """
@@ -277,9 +290,35 @@ def validate(ctx,
     logger.debug("cache_max_age: %s", cache_max_age)
     logger.debug("cache_path: %s", os.path.abspath(cache_path) if cache_path else None)
     logger.debug("no_cache: %s", no_cache)
+    logger.debug("offline: %s", offline)
+
+    # --no-cache and --offline are contradictory: offline mode requires a cache
+    # to serve requests from, while no-cache disables caching entirely.
+    if no_cache and offline:
+        raise click.UsageError(
+            "The --no-cache and --offline flags are mutually exclusive: "
+            "offline mode relies on the HTTP cache to serve resources."
+        )
 
     if rocrate_uri:
         logger.debug("rocrate_path: %s", os.path.abspath(rocrate_uri))
+
+    # Warn the user when a remote RO-Crate is about to be validated in offline mode:
+    # the cached copy (if any) will be used, and it may be out of sync with the remote.
+    if offline and isinstance(rocrate_uri, str) and rocrate_uri.split(":", 1)[0].lower() in ("http", "https", "ftp"):
+        console.print(
+            Padding(
+                Rule(
+                    "[bold yellow]WARNING:[/bold yellow] "
+                    "[bold]The target RO-Crate is remote and offline mode is enabled.[/bold]\n"
+                    "The cached version of the RO-Crate will be used if available.\n"
+                    "The cached copy may be out of sync with the version currently published remotely.",
+                    align="center",
+                    style="bold yellow",
+                ),
+                (1, 2, 0, 2),
+            )
+        )
 
     # Parse the skip_checks option
     logger.debug("skip_checks: %s", skip_checks)
@@ -314,8 +353,13 @@ def validate(ctx,
             "abort_on_first": fail_fast,
             "skip_checks": skip_checks_list,
             "metadata_only": metadata_only,
-            "cache_max_age": cache_max_age if not no_cache else -1,
-            "cache_path": cache_path
+            "cache_max_age": cache_max_age,
+            "cache_path": cache_path,
+            "offline": offline,
+            "no_cache": no_cache,
+            # When offline is requested, remote crate fetching must use the cache
+            # instead of the "disable download" short-circuit.
+            "disable_remote_crate_download": False if offline else True,
         }
 
         # Print the application header

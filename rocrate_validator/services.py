@@ -150,8 +150,26 @@ def __initialise_validator__(settings: Union[dict, ValidationSettings],
         logger.debug("RO-Crate is a remote RO-Crate")
         # create a temp folder to store the downloaded RO-Crate
         with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
-            # download the remote RO-Crate
-            with HttpRequester().get(rocrate_path.uri, stream=True, allow_redirects=True) as r:
+            requester = HttpRequester()
+            offline = bool(getattr(settings, "offline", False))
+            # In offline mode, the cache is the only source of truth. Otherwise,
+            # bypass the cache to refresh the stored copy so that subsequent
+            # offline runs validate against the latest known remote state.
+            if offline:
+                response = requester.get(rocrate_path.uri, stream=True, allow_redirects=True)
+            else:
+                response = requester.fetch_fresh(rocrate_path.uri, stream=True, allow_redirects=True)
+            with response as r:
+                if r.status_code >= 400:
+                    if offline and r.status_code == 504:
+                        raise FileNotFoundError(
+                            f"Remote RO-Crate '{rocrate_path.uri}' is not available in the HTTP cache. "
+                            f"Validate it online first, or run "
+                            f"`rocrate-validator cache warm --crate '{rocrate_path.uri}'`."
+                        )
+                    raise FileNotFoundError(
+                        f"Failed to download remote RO-Crate '{rocrate_path.uri}' (status {r.status_code})."
+                    )
                 with open(tmp_file.name, 'wb') as f:
                     shutil.copyfileobj(r.raw, f)
             logger.debug("RO-Crate downloaded to temporary file: %s", tmp_file.name)
