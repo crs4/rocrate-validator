@@ -16,6 +16,7 @@
 # and add it to the system path
 import os
 
+import pytest
 from pytest import fixture
 
 from rocrate_validator.utils import log as logging
@@ -46,6 +47,41 @@ check_local_data_entity_existence = \
 assert check_local_data_entity_existence, \
     "Unable to find the requirement 'Data Entity: REQUIRED resource availability'"
 SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER = check_local_data_entity_existence.identifier
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _session_isolated_xdg(tmp_path_factory):
+    """
+    Redirect the XDG user cache to a per-session temporary directory so that
+    tests do not write to, or read from, the developer's real ~/.cache. The
+    directory is shared across tests in the same session so that HTTP responses
+    fetched by one test remain available to subsequent ones (mirroring the
+    behavior users see in practice and preserving the HTTP-cache hit pattern
+    the existing test suite relies on).
+    """
+    xdg_dir = tmp_path_factory.mktemp("rocrate_validator_xdg")
+    previous_xdg = os.environ.get("XDG_CACHE_HOME")
+    os.environ["XDG_CACHE_HOME"] = str(xdg_dir)
+    try:
+        yield xdg_dir
+    finally:
+        if previous_xdg is None:
+            os.environ.pop("XDG_CACHE_HOME", None)
+        else:
+            os.environ["XDG_CACHE_HOME"] = previous_xdg
+
+
+@pytest.fixture(autouse=True)
+def _per_test_auto_warm(monkeypatch):
+    """
+    Disable the synchronous HTTP cache auto warm-up by default so tests do not
+    hit the network unexpectedly. Tests that exercise the warm-up opt in by
+    setting the environment variable before instantiating ValidationSettings.
+    """
+    monkeypatch.setenv(
+        "ROCRATE_VALIDATOR_AUTO_WARM",
+        os.environ.get("ROCRATE_VALIDATOR_AUTO_WARM", "0"),
+    )
 
 
 @fixture
