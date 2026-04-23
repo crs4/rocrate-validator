@@ -359,6 +359,13 @@ class Profile:
         return self.label or f"Profile {self.uri}"
 
     @property
+    def profile_specification_graph(self) -> Graph:
+        """
+        The RDF graph of the profile specification.
+        """
+        return self._profile_specification_graph  # type: ignore
+
+    @property
     def profile_node(self):
         return self._profile_node
 
