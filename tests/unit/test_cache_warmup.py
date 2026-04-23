@@ -17,7 +17,6 @@
 from __future__ import annotations
 
 import io
-from pathlib import Path
 
 import pytest
 import urllib3
@@ -28,7 +27,6 @@ from rocrate_validator.utils.cache_warmup import (
     discover_profile_cacheable_urls, warm_up_urls)
 from rocrate_validator.utils.http import HttpRequester
 from rocrate_validator.utils.paths import get_profiles_path
-
 
 PROFILE_TTL_TEMPLATE = """
 @prefix dct: <http://purl.org/dc/terms/> .
