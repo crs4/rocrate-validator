@@ -93,3 +93,5 @@ DEFAULT_HTTP_CACHE_PATH_PREFIX = '/tmp/rocrate_validator_cache'
 USER_CACHE_DIR_NAME = "rocrate-validator"
 # Filename (without extension) of the persistent HTTP cache under the user cache dir
 USER_CACHE_FILE_NAME = "http_cache"
+# Environment variable to disable automatic warm-up of the HTTP cache
+AUTO_WARM_ENV_VAR = "ROCRATE_VALIDATOR_AUTO_WARM"
