@@ -56,7 +56,6 @@ def _log_cache_outcome(method: str, url: str, response, *, offline: bool, forced
         # No from_cache attribute: plain requests.Session or offline fallback stub.
         outcome = "fetched from remote (no cache backend)"
 
-    # Emitted at WARNING for now, pending a downgrade to DEBUG once the feature stabilizes.
     logger.debug("CachedHttpRequester: %s %s %s", method, url, outcome)
 
 
