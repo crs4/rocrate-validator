@@ -49,9 +49,12 @@ from rocrate_validator.errors import (DuplicateRequirementCheck,
 from rocrate_validator.events import Event, EventType, Publisher, Subscriber
 from rocrate_validator.rocrate import ROCrate
 from rocrate_validator.utils import log as logging
+from rocrate_validator.utils.cache_warmup import auto_warm_up_for_settings
 from rocrate_validator.utils.collections import MapIndex, MultiIndexMap
+from rocrate_validator.utils.document_loader import install_document_loader
 from rocrate_validator.utils.http import HttpRequester
-from rocrate_validator.utils.paths import get_profiles_path
+from rocrate_validator.utils.paths import (get_default_http_cache_path,
+                                           get_profiles_path)
 from rocrate_validator.utils.python_helpers import \
     get_requirement_name_from_file
 from rocrate_validator.utils.uri import URI
@@ -250,7 +253,7 @@ class Profile:
         self._profile_node = None
 
         # init property to store the RDF graph of the profile specification
-        self._profile_specification_graph = None
+        self._profile_specification_graph: Optional[Graph] = None
 
         # check if the profile specification file exists
         spec_file = self.profile_specification_file_path
@@ -2397,19 +2400,63 @@ class ValidationSettings:
     metadata_dict: dict = None
     #: Verbose output
     verbose: bool = False
-    #: Cache max age in seconds
+    #: Cache max age in seconds (negative values mean "never expire")
     cache_max_age: Optional[int] = DEFAULT_HTTP_CACHE_MAX_AGE
     #: Cache path
     cache_path: Optional[Path] = None
+    #: Flag to enable offline mode: HTTP requests are served only from the cache
+    offline: bool = False
+    #: Flag to disable the HTTP cache entirely: every request hits the network
+    no_cache: bool = False
 
     def __post_init__(self):
         # if requirement_severity is a str, convert to Severity
         if isinstance(self.requirement_severity, str):
             self.requirement_severity = Severity[self.requirement_severity]
+        # Offline mode needs the cache to serve responses, so it cannot be
+        # combined with an explicit cache disable.
+        if self.offline and self.no_cache:
+            raise ValueError(
+                "Offline mode requires the HTTP cache to be enabled; "
+                "no_cache=True is incompatible with offline=True."
+            )
+        # Default to the persistent user cache whenever caching is enabled so that
+        # consecutive runs (online then offline) share the same HTTP cache: this
+        # is what lets the offline mode find the resources fetched online.
+        if self.cache_path is None and not self.no_cache:
+            default_path = get_default_http_cache_path()
+            default_path.parent.mkdir(parents=True, exist_ok=True)
+            self.cache_path = default_path
+            logger.debug("Cache path not set: defaulting to persistent user cache %s", self.cache_path)
+        if self.offline and self.cache_path is None:
+            logger.warning(
+                "Offline mode enabled without a persistent cache path: "
+                "all HTTP-backed resources will fail unless pre-populated."
+            )
+        # Reset any previously initialized singleton so new settings take effect.
+        HttpRequester.reset()
         # initialize the HTTP cache
-        HttpRequester.initialize_cache(cache_path=self.cache_path, cache_max_age=self.cache_max_age)
-        logger.debug("HTTP cache initialized at %s with max age %s seconds",
-                     self.cache_path, self.cache_max_age)
+        HttpRequester.initialize_cache(
+            cache_path=str(self.cache_path) if self.cache_path is not None else None,
+            cache_max_age=self.cache_max_age,
+            offline=self.offline,
+            no_cache=self.no_cache,
+        )
+        logger.debug(
+            "HTTP cache initialized at %s with max age %s seconds (offline=%s, no_cache=%s)",
+            self.cache_path, self.cache_max_age, self.offline, self.no_cache,
+        )
+        # Install the JSON-LD document loader so context resolution goes through the cache.
+        try:
+            install_document_loader()
+        except Exception as e:
+            logger.debug("Could not install JSON-LD document loader: %s", e)
+        # Best-effort synchronous warm-up of profile-declared URLs.
+        if not self.offline:
+            try:
+                auto_warm_up_for_settings(self)
+            except Exception as e:
+                logger.debug("Auto warm-up skipped: %s", e)
 
     def to_dict(self):
         """
