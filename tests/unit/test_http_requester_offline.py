@@ -194,14 +194,14 @@ class _RecordCollector:
         from rocrate_validator.utils import http as http_module
         self.records.clear()
         self.handler = _logging.Handler()
-        self.handler.setLevel(_logging.WARNING)
+        self.handler.setLevel(_logging.DEBUG)
         self.handler.emit = lambda record: self.records.append(record)  # type: ignore[assignment]
         # Force initialization of the underlying logger via the proxy.
         http_module.logger.warning  # noqa: B018
         self._target = http_module.logger._instance
         self._target.addHandler(self.handler)
         self._previous_level = self._target.level
-        self._target.setLevel(_logging.WARNING)
+        self._target.setLevel(_logging.DEBUG)
         return self
 
     def __exit__(self, exc_type, exc, tb):
