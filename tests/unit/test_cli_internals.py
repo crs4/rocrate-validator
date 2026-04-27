@@ -81,3 +81,22 @@ def test_compute_stats(fake_profiles_path):
                                _.requirement.profile.identifier == "a"}
 
     logger.error(stats)
+
+
+def test_compute_stats_resolves_profile_from_extra_profiles_path(fake_profiles_path):
+    # ValidationStatistics.__initialise__ used to call Profile.load_profiles
+    # without forwarding extra_profiles_path, so any profile that lived only
+    # under --extra-profiles-path raised ProfileNotFound.
+    settings = ValidationSettings.parse({
+        "profiles_path": DEFAULT_PROFILES_PATH,
+        "extra_profiles_path": fake_profiles_path,
+        "profile_identifier": "a",
+        "enable_profile_inheritance": True,
+        "allow_requirement_check_override": True,
+        "requirement_severity": "REQUIRED",
+    })
+
+    stats = ValidationStatistics.__initialise__(validation_settings=settings)
+
+    assert any(p.identifier == "a" for p in stats["profiles"]), \
+        "Profile 'a' from extra_profiles_path was not resolved by ValidationStatistics"
