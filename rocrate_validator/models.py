@@ -1638,7 +1638,10 @@ class ValidationStatistics(Subscriber):
         # extract the validation settings
         severity_validation = validation_settings.requirement_severity
         profiles: list[Profile] = Profile.load_profiles(
-            validation_settings.profiles_path, severity=severity_validation)
+            validation_settings.profiles_path,
+            extra_profiles_path=validation_settings.extra_profiles_path,
+            severity=severity_validation,
+            allow_requirement_check_override=validation_settings.allow_requirement_check_override)
         profile: Profile = Profile.find_in_list(profiles, validation_settings.profile_identifier)
         target_profile_identifier = profile.identifier
         # initialize the profiles list
