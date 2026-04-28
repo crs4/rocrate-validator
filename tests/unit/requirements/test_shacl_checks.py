@@ -17,17 +17,20 @@ import logging
 from rdflib import BNode, Graph, Namespace, URIRef
 
 from rocrate_validator.constants import SHACL_NS
+from rocrate_validator.models import LevelCollection
 from rocrate_validator.requirements.shacl.checks import SHACLCheck
-from rocrate_validator.requirements.shacl.models import Shape, ShapesRegistry
+from rocrate_validator.requirements.shacl.models import (NodeShape,
+                                                         PropertyShape, Shape,
+                                                         ShapesRegistry)
 from rocrate_validator.requirements.shacl.utils import resolve_parent_shape
 
 logger = logging.getLogger(__name__)
 
 
 class MockRequirement:
-    def __init__(self):
+    def __init__(self, requirement_level_from_path=None):
         self.profile = None
-        self.requirement_level_from_path = None
+        self.requirement_level_from_path = requirement_level_from_path
 
 
 class MockParentShape:
@@ -220,3 +223,98 @@ def test_resolve_parent_shape_with_property_bnode():
 
     assert result is not None, "Should resolve parent shape for property BNode"
     assert result.key == shape.key
+
+
+def _make_property(graph: Graph, severity_term: str = None) -> PropertyShape:
+    """Build a PropertyShape on a fresh BNode, optionally setting sh:severity."""
+    prop = PropertyShape(BNode(), graph)
+    if severity_term is not None:
+        prop.severity = severity_term
+    return prop
+
+
+def test_derive_level_picks_most_stringent_declared_property_severity():
+    """
+    Flat NodeShape with no declared severity inherits the highest severity
+    declared by its nested properties.
+    """
+    g = Graph()
+    shape = NodeShape(URIRef("http://example.org/NodeShape"), g)
+    shape.add_property(_make_property(g, f"{SHACL_NS}Info"))
+    shape.add_property(_make_property(g, f"{SHACL_NS}Warning"))
+    shape.add_property(_make_property(g, f"{SHACL_NS}Info"))
+
+    check = SHACLCheck(MockRequirement(), shape)
+
+    assert check.level == LevelCollection.RECOMMENDED
+
+
+def test_derive_level_with_uniform_property_severity():
+    """When every property declares the same severity, derive that severity."""
+    g = Graph()
+    shape = NodeShape(URIRef("http://example.org/NodeShape"), g)
+    shape.add_property(_make_property(g, f"{SHACL_NS}Info"))
+    shape.add_property(_make_property(g, f"{SHACL_NS}Info"))
+
+    check = SHACLCheck(MockRequirement(), shape)
+
+    assert check.level == LevelCollection.OPTIONAL
+
+
+def test_derive_level_ignores_properties_without_declared_severity():
+    """Properties without sh:severity are skipped; only declared ones drive the result."""
+    g = Graph()
+    shape = NodeShape(URIRef("http://example.org/NodeShape"), g)
+    shape.add_property(_make_property(g))  # no severity declared
+    shape.add_property(_make_property(g, f"{SHACL_NS}Warning"))
+
+    check = SHACLCheck(MockRequirement(), shape)
+
+    assert check.level == LevelCollection.RECOMMENDED
+
+
+def test_derive_level_falls_back_to_required_when_no_property_declares_severity():
+    """If no nested property declares a severity, fall back to REQUIRED."""
+    g = Graph()
+    shape = NodeShape(URIRef("http://example.org/NodeShape"), g)
+    shape.add_property(_make_property(g))
+    shape.add_property(_make_property(g))
+
+    check = SHACLCheck(MockRequirement(), shape)
+
+    assert check.level == LevelCollection.REQUIRED
+
+
+def test_shape_declared_severity_takes_precedence_over_derivation():
+    """An explicit severity on the NodeShape wins over property-based derivation."""
+    g = Graph()
+    shape = NodeShape(URIRef("http://example.org/NodeShape"), g)
+    shape.severity = f"{SHACL_NS}Warning"
+    shape.add_property(_make_property(g, f"{SHACL_NS}Violation"))
+
+    check = SHACLCheck(MockRequirement(), shape)
+
+    assert check.level == LevelCollection.RECOMMENDED
+
+
+def test_path_based_level_takes_precedence_over_derivation():
+    """When the requirement file is in a must/should/may folder the path level wins."""
+    g = Graph()
+    shape = NodeShape(URIRef("http://example.org/NodeShape"), g)
+    shape.add_property(_make_property(g, f"{SHACL_NS}Info"))
+
+    check = SHACLCheck(
+        MockRequirement(requirement_level_from_path=LevelCollection.SHOULD), shape
+    )
+
+    assert check.level == LevelCollection.SHOULD
+
+
+def test_derive_level_for_node_shape_without_properties():
+    """A NodeShape with no nested properties falls back to REQUIRED."""
+    g = Graph()
+    shape = NodeShape(URIRef("http://example.org/NodeShape"), g)
+
+    check = SHACLCheck(MockRequirement(), shape)
+
+    assert check.level == LevelCollection.REQUIRED
