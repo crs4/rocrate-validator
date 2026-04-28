@@ -282,6 +282,18 @@ class SHACLCheck(RequirementCheck):
             if requirementCheck is None:
                 logger.warning("No check instance found for shape: %s", shape.key)
                 continue
+            # Drop violations whose check severity is below the requested
+            # `requirement_severity`: pyshacl still emits sh:ValidationResult
+            # nodes for sh:Warning / sh:Info, but they are not actionable at a
+            # stricter validation level.
+            if requirementCheck.severity < shacl_context.settings.requirement_severity:
+                logger.debug(
+                    "Dropping violation for check %s: severity %s below requested %s",
+                    requirementCheck.identifier,
+                    requirementCheck.severity,
+                    shacl_context.settings.requirement_severity,
+                )
+                continue
             if (
                 not shacl_context.settings.skip_checks
                 or requirementCheck.identifier not in shacl_context.settings.skip_checks
