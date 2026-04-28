@@ -39,25 +39,25 @@ five-safes-crate:RootDatasetConformsToFiveSafes
         sh:message "Root Dataset SHOULD include `conformsTo` https://w3id.org/5s-crate/0.4" ;
     ] .
 
-# five-safes-crate:RootDatasetDatePublishedWhenPublished
-#     a sh:NodeShape ;
-#     sh:name "datePublished present on published crates" ;
-#     sh:description "If the root dataset is published (has schema:publisher), it SHOULD have schema:datePublished." ;
-#     sh:targetNode ro: ;
-#     sh:severity sh:Warning ;
-#     sh:message "Published crates SHOULD include schema:datePublished." ;
-#     sh:or (
-#         # datePublished not required if no publisher:
-#         [ sh:not [ sh:property [
-#             sh:path schema:publisher ;
-#             sh:minCount 1 ;
-#         ]]]
-#         # datePublished required if publisher present:
-#         [ sh:property [
-#             sh:path schema:datePublished ;
-#             sh:minCount 1 ;
-#         ]]
-#     ) .
+five-safes-crate:RootDatasetDatePublishedWhenPublished
+    a sh:NodeShape ;
+    sh:name "datePublished present on published crates" ;
+    sh:description "If the root dataset is published (has schema:publisher), it SHOULD have schema:datePublished." ;
+    sh:targetClass ro-crate:RootDataEntity ;
+    sh:severity sh:Warning ;
+    sh:message "Published crates SHOULD include schema:datePublished." ;
+    sh:or (
+        # datePublished not required if no publisher:
+        [ sh:not [ sh:property [
+            sh:path schema:publisher ;
+            sh:minCount 1 ;
+        ]]]
+        # datePublished required if publisher present:
+        [ sh:property [
+            sh:path schema:datePublished ;
+            sh:minCount 1 ;
+        ]]
+    ) .
 
 # five-safes-crate:RootDatasetLicenseWhenPublished
 #     a sh:NodeShape ;
