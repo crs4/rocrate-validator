@@ -23,6 +23,7 @@ from rocrate_validator.models import (
     Requirement,
     RequirementCheck,
     RequirementCheckValidationEvent,
+    RequirementLevel,
     SkipRequirementCheck,
     ValidationContext,
 )
@@ -105,12 +106,27 @@ class SHACLCheck(RequirementCheck):
             return self._shape.parent.description
         return f"Check for {self._shape.name}" if self._shape.name else "SHACL validation check"
 
-    def __compute_requirement_level__(self) -> LevelCollection:
+    def __compute_requirement_level__(self) -> RequirementLevel:
         if self._shape and self._shape.get_declared_level():
             return self._shape.get_declared_level()
         if self.requirement and self.requirement.requirement_level_from_path:
             return self.requirement.requirement_level_from_path
+        # When the shape file lives in the profile root and the NodeShape
+        # itself does not declare sh:severity, derive the level from the
+        # most severe nested PropertyShape instead of defaulting to REQUIRED.
+        derived = self.__derive_level_from_properties__()
+        if derived:
+            return derived
         return LevelCollection.REQUIRED
+
+    def __derive_level_from_properties__(self) -> Optional[RequirementLevel]:
+        properties = getattr(self._shape, "properties", None)
+        if not properties:
+            return None
+        declared_levels = [lvl for lvl in (p.get_declared_level() for p in properties) if lvl]
+        if not declared_levels:
+            return None
+        return max(declared_levels, key=lambda lvl: lvl.severity.value)
 
     @property
     def level(self) -> str:
