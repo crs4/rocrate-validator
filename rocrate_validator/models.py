@@ -2250,17 +2250,21 @@ class ValidationResult:
     @property
     def failed_requirements(self) -> Collection[Requirement]:
         """
-        Get the requirements that failed
+        Get the requirements that failed at or above the configured `requirement_severity`.
         """
-        return set(issue.check.requirement for issue in self._issues)
+        min_severity = self.context.requirement_severity
+        return set(issue.check.requirement for issue in self._issues
+                   if issue.severity >= min_severity)
 
     #  --- Checks ---
     @property
     def failed_checks(self) -> Collection[RequirementCheck]:
         """
-        Get the checks that failed
+        Get the checks that failed at or above the configured `requirement_severity`.
         """
-        return set(issue.check for issue in self._issues)
+        min_severity = self.context.requirement_severity
+        return set(issue.check for issue in self._issues
+                   if issue.severity >= min_severity)
 
     def get_failed_checks_by_requirement(self, requirement: Requirement) -> Collection[RequirementCheck]:
         """
