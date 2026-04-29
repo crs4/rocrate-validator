@@ -59,22 +59,22 @@ five-safes-crate:RootDatasetDatePublishedWhenPublished
         ]]
     ) .
 
-# five-safes-crate:RootDatasetLicenseWhenPublished
-#     a sh:NodeShape ;
-#     sh:name "License present on published crates" ;
-#     sh:description "If the root dataset is published (has schema:publisher), it SHOULD declare a license." ;
-#     sh:targetNode ro: ;
-#     sh:severity sh:Warning ;
-#     sh:message "Profile Conformance: Published crates SHOULD include a license." ;
-#     sh:or (
-#         # license not required if no publisher:
-#         [ sh:not [ sh:property [
-#             sh:path schema:publisher ;
-#             sh:minCount 1 ;
-#         ]]]
-#         # license required if publisher present:
-#         [ sh:property [
-#             sh:path schema:license ;
-#             sh:minCount 1 ;
-#         ]]
-#     ) .
+five-safes-crate:RootDatasetLicenseWhenPublished
+    a sh:NodeShape ;
+    sh:name "License present on published crates" ;
+    sh:description "If the root dataset is published (has schema:publisher), it SHOULD declare a license." ;
+    sh:targetNode ro: ;
+    sh:severity sh:Warning ;
+    sh:message "Profile Conformance: Published crates SHOULD include a license." ;
+    sh:or (
+        # license not required if no publisher:
+        [ sh:not [ sh:property [
+            sh:path schema:publisher ;
+            sh:minCount 1 ;
+        ]]]
+        # license required if publisher present:
+        [ sh:property [
+            sh:path schema:license ;
+            sh:minCount 1 ;
+        ]]
+    ) .

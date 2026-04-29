@@ -126,4 +126,36 @@ def test_5src_root_data_entity_has_publisher_but_not_date_published():
     )
 
 
+def test_5src_root_data_entity_has_publisher_but_not_license():
+    """
+    Test a Five Safes Crate where the RootDataEntity has publisher but not license.
+    """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        DELETE {
+            ?rootdataentity schema:license ?license .
+        }
+        WHERE {
+            ?metadatafile a schema:CreativeWork ;
+                          schema:about ?rootdataentity .
+            ?rootdataentity schema:publisher ?publisher ;
+                            schema:license ?license .
+        }
+        """
+    )
+
+    do_entity_test(
+        rocrate_path=ValidROC().five_safes_crate_result,
+        requirement_severity=Severity.RECOMMENDED,
+        expected_validation_result=False,
+        expected_triggered_requirements=["License present on published crates"],
+        expected_triggered_issues=[
+            "Profile Conformance: Published crates SHOULD include a license."
+        ],
+        profile_identifier="five-safes-crate",
+        rocrate_entity_mod_sparql=sparql,
+    )
+
+
 # ----- MAY fails tests
