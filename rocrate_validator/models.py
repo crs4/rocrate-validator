@@ -1374,6 +1374,19 @@ class RequirementLoader:
         return requirements
 
 
+@dataclass(frozen=True)
+class SourceSnippet:
+    """
+    A snippet of source code backing a :class:`RequirementCheck`.
+    :ivar language: language tag for syntax highlighting (e.g. ``"python"``, ``"turtle"``).
+    :ivar code: the source code as text.
+    :ivar source_path: path to the file the snippet was extracted from, when available.
+    """
+    language: str
+    code: str
+    source_path: Optional[Path] = None
+
+
 @total_ordering
 class RequirementCheck(ABC):
 
@@ -1471,6 +1484,14 @@ class RequirementCheck(ABC):
     @abstractmethod
     def execute_check(self, context: ValidationContext) -> bool:
         raise NotImplementedError()
+
+    def get_source_snippet(self) -> Optional[SourceSnippet]:
+        """
+        Return the source code that implements this check, or ``None`` if the
+        backing source cannot be extracted for this check kind.
+        Concrete subclasses should override this method.
+        """
+        return None
 
     def to_dict(self, with_requirement: bool = True, with_profile: bool = True) -> dict:
         result = {
