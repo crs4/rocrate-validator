@@ -1144,6 +1144,32 @@ class RequirementLoader:
         return loader_instance
 
     @staticmethod
+    def __get_requirement_classes__() -> list[Type[Requirement]]:
+
+        # Ensure known requirement modules are imported so subclasses are registered.
+        for requirement_type in ("python", "shacl"):
+            module_name = f"rocrate_validator.requirements.{requirement_type}"
+            try:
+                importlib.import_module(module_name)
+            except Exception:
+                logger.debug(
+                    "Unable to import requirement module: %s",
+                    module_name,
+                    exc_info=True,
+                )
+
+        def all_subclasses(
+            base_class: Type[Requirement],
+        ) -> list[Type[Requirement]]:
+            result: list[Type[Requirement]] = []
+            for subcls in base_class.__subclasses__():
+                result.append(subcls)
+                result.extend(all_subclasses(subcls))
+            return result
+
+        return all_subclasses(Requirement)
+
+    @staticmethod
     def load_requirements(profile: Profile, severity: Severity = None) -> list[Requirement]:
         """
         Load the requirements related to the profile
@@ -2682,7 +2708,8 @@ class Validator(Publisher):
         # register the current context
         self.__current_context__ = context
 
-        try:
+        # initialize the requirement types
+        self.__invoke_pre_validation_hooks__(context)
 
             # set the profiles to validate against
             profiles = context.profiles
@@ -2720,13 +2747,30 @@ class Validator(Publisher):
                 self.notify(ProfileValidationEvent(EventType.PROFILE_VALIDATION_END, profile=profile))
                 if terminate:
                     break
-            self.notify(ValidationEvent(EventType.VALIDATION_END,
-                        validation_result=context.result))
 
+            # finalize the requirement types
+            self.__invoke_post_validation_hooks__(context)
+            # notify the end of the validation
+            self.notify(ValidationEvent(EventType.VALIDATION_END, validation_result=context.result))
+            # return the validation result
             return context.result
         finally:
             # clear the current context
             self.__current_context__ = None
+
+    def __invoke_pre_validation_hooks__(self, context: ValidationContext):
+        logger.debug("Initializing requirement types: starting...")
+        requirements_types = RequirementLoader.__get_requirement_classes__()
+        for requirement_type in requirements_types:
+            requirement_type.initialize(context)
+        logger.debug("Initializing requirement types: completed")
+
+    def __invoke_post_validation_hooks__(self, context: ValidationContext):
+        logger.debug("Finalizing requirement types: starting...")
+        requirements_types = RequirementLoader.__get_requirement_classes__()
+        for requirement_type in requirements_types:
+            requirement_type.finalize(context)
+        logger.debug("Finalizing requirement types: completed")
 
     def notify(self, event: Union[Event, EventType]):
         """ Override notify to update statistics """
