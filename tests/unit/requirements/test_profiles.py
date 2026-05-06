@@ -16,13 +16,11 @@ import logging
 import os
 
 import pytest
+from requirements.shacl.checks import SHACLCheck
 
 from rocrate_validator.constants import DEFAULT_PROFILE_IDENTIFIER
-from rocrate_validator.errors import (DuplicateRequirementCheck,
-                                      InvalidProfilePath,
-                                      ProfileSpecificationError)
-from rocrate_validator.models import (Profile, ValidationContext,
-                                      ValidationSettings, Validator)
+from rocrate_validator.errors import DuplicateRequirementCheck, InvalidProfilePath, ProfileSpecificationError
+from rocrate_validator.models import Profile, ValidationContext, ValidationSettings, Validator
 from tests.ro_crates import InvalidFileDescriptorEntity, ValidROC
 
 # set up logging
@@ -295,6 +293,32 @@ def test_load_valid_profile_with_override_on_inherited_profile(fake_profiles_pat
     # the number of checks should be 2
     requirements_checks = [requirement for profile in profiles for requirement in profile.requirements]
     assert len(requirements_checks) == 3, "The number of requirements should be 2"
+
+
+def test_zero_shape_target_profile_triggers_pyshacl_run(fake_profiles_path: str):
+    """Regression test for the 0-shape profile bug: 
+    when the target profile has no SHACL checks of its own, 
+    Validator must still drive a single pyshacl run
+    on the merged shapes graph so inherited shapes get evaluated. 
+    Without the fix in `Validator.__ensure_target_shacl_run__`, 
+    no SHACLCheck would be recorded as executed for the wrapper target."""
+    
+    settings = ValidationSettings(**{
+        "profiles_path": fake_profiles_path,
+        "profile_identifier": "c-wrapper",
+        "rocrate_uri": ValidROC().wrroc_paper,
+        "enable_profile_inheritance": True,
+        "allow_requirement_check_override": True,
+        "disable_check_for_duplicates": True,
+    })
+    result = Validator(settings).validate()
+
+    executed_shacl = [c for c in result.executed_checks
+                      if isinstance(c, SHACLCheck)]
+    assert executed_shacl, (
+        "Expected at least one inherited SHACLCheck to be executed for the "
+        "c-wrapper target. None recorded — the zero-shape pyshacl run was "
+        "skipped.")
 
 
 def test_profile_parents(check_overriding_profiles_path: str):
