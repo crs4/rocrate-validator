@@ -35,16 +35,11 @@ logger = logging.getLogger(__name__)
 
 
 class SHACLRequirement(Requirement):
-
-    def __init__(self,
-                 shape: Shape,
-                 profile: Profile,
-                 path: Path):
+    def __init__(self, shape: Shape, profile: Profile, path: Path):
         self._shape = shape
-        super().__init__(profile,
-                         shape.name if shape.name else "",
-                         shape.description if shape.description else "",
-                         path)
+        super().__init__(
+            profile, shape.name if shape.name else "", shape.description if shape.description else "", path
+        )
         # init checks
         self._checks = self.__init_checks__()
         # assign check IDs
@@ -65,8 +60,15 @@ class SHACLRequirement(Requirement):
         # check if the shape has nested properties
         has_properties = hasattr(self.shape, "properties") and len(self.shape.properties) > 0
         # create a check for the shape itself, hidden if the shape has nested properties
-        checks.append(SHACLCheck(self, self.shape, name=f"Check {self.shape.name}" if has_properties else None,
-                                 hidden=has_properties, root=True))
+        checks.append(
+            SHACLCheck(
+                self,
+                self.shape,
+                name=f"Check {self.shape.name}" if has_properties else None,
+                hidden=has_properties,
+                root=True,
+            )
+        )
         # create a check for each property if the shape has nested properties
         if has_properties:
             for prop in self.shape.properties:
@@ -159,9 +161,9 @@ class SHACLRequirementLoader(RequirementLoader):
     def shapes_registry(self) -> ShapesRegistry:
         return self._shape_registry
 
-    def load(self, profile: Profile,
-             requirement_level: RequirementLevel,
-             file_path: Path, publicID: Optional[str] = None) -> list[Requirement]:
+    def load(
+        self, profile: Profile, requirement_level: RequirementLevel, file_path: Path, publicID: Optional[str] = None
+    ) -> list[Requirement]:
         assert file_path is not None, "The file path cannot be None"
         shapes: list[Shape] = self.shapes_registry.load_shapes(file_path, publicID)
         logger.debug("Loaded %s shapes: %s", len(shapes), shapes)

@@ -16,11 +16,11 @@ import logging
 import os
 
 import pytest
-from requirements.shacl.checks import SHACLCheck
 
 from rocrate_validator.constants import DEFAULT_PROFILE_IDENTIFIER
 from rocrate_validator.errors import DuplicateRequirementCheck, InvalidProfilePath, ProfileSpecificationError
 from rocrate_validator.models import Profile, ValidationContext, ValidationSettings, Validator
+from rocrate_validator.requirements.shacl.checks import SHACLCheck
 from tests.ro_crates import InvalidFileDescriptorEntity, ValidROC
 
 # set up logging
@@ -55,7 +55,7 @@ def test_load_invalid_profile_from_validation_context(fake_profiles_path: str):
         "profiles_path": "/tmp/random_path_xxx",
         "profile_identifier": DEFAULT_PROFILE_IDENTIFIER,
         "rocrate_uri": ValidROC().wrroc_paper,
-        "enable_profile_inheritance": False
+        "enable_profile_inheritance": False,
     }
 
     settings = ValidationSettings(**settings)
@@ -77,7 +77,7 @@ def test_load_valid_profile_without_inheritance_from_validation_context(fake_pro
         "profiles_path": fake_profiles_path,
         "profile_identifier": "c",
         "rocrate_uri": ValidROC().wrroc_paper,
-        "enable_profile_inheritance": False
+        "enable_profile_inheritance": False,
     }
 
     settings = ValidationSettings(**settings)
@@ -126,7 +126,8 @@ def test_profile_spec_properties(fake_profiles_path: str):
     assert profile.version == "1.0.0", "The profile version should be 1.0.0"
     assert profile.is_profile_of == ["https://w3id.org/a"], "The profileOf property should be ['a']"
     assert profile.is_transitive_profile_of == [
-        "https://w3id.org/a"], "The transitiveProfileOf property should be ['a']"
+        "https://w3id.org/a"
+    ], "The transitiveProfileOf property should be ['a']"
 
 
 def test_profiles_loading_free_folder_structure(profiles_with_free_folder_structure_path: str):
@@ -204,8 +205,9 @@ def test_loaded_valid_profile_with_inheritance_from_validator_context(fake_profi
 
         # The number of profiles should be 1
         profiles_names = [_.token for _ in profile.inherited_profiles]
-        assert profiles_names == expected_inherited_profiles, \
-            f"The number of profiles should be {expected_inherited_profiles}"
+        assert (
+            profiles_names == expected_inherited_profiles
+        ), f"The number of profiles should be {expected_inherited_profiles}"
 
     # Test the inheritance mode with 1 profile
     __perform_test__("a", [])
@@ -250,7 +252,7 @@ def test_load_invalid_profile_with_override_on_same_profile(fake_profiles_path: 
         "profile_identifier": "invalid-duplicated-shapes",
         "rocrate_uri": ValidROC().wrroc_paper,
         "enable_profile_inheritance": True,
-        "allow_requirement_check_override": False
+        "allow_requirement_check_override": False,
     }
 
     settings = ValidationSettings(**settings)
@@ -273,7 +275,7 @@ def test_load_valid_profile_with_override_on_inherited_profile(fake_profiles_pat
         "profile_identifier": "c-overridden",
         "rocrate_uri": ValidROC().wrroc_paper,
         "enable_profile_inheritance": True,
-        "allow_requirement_check_override": True
+        "allow_requirement_check_override": True,
     }
 
     settings = ValidationSettings(**settings)
@@ -296,29 +298,31 @@ def test_load_valid_profile_with_override_on_inherited_profile(fake_profiles_pat
 
 
 def test_zero_shape_target_profile_triggers_pyshacl_run(fake_profiles_path: str):
-    """Regression test for the 0-shape profile bug: 
-    when the target profile has no SHACL checks of its own, 
+    """Regression test for the 0-shape profile bug:
+    when the target profile has no SHACL checks of its own,
     Validator must still drive a single pyshacl run
-    on the merged shapes graph so inherited shapes get evaluated. 
-    Without the fix in `Validator.__ensure_target_shacl_run__`, 
+    on the merged shapes graph so inherited shapes get evaluated.
+    Without the fix in `Validator.__ensure_target_shacl_run__`,
     no SHACLCheck would be recorded as executed for the wrapper target."""
-    
-    settings = ValidationSettings(**{
-        "profiles_path": fake_profiles_path,
-        "profile_identifier": "c-wrapper",
-        "rocrate_uri": ValidROC().wrroc_paper,
-        "enable_profile_inheritance": True,
-        "allow_requirement_check_override": True,
-        "disable_check_for_duplicates": True,
-    })
+
+    settings = ValidationSettings(
+        **{
+            "profiles_path": fake_profiles_path,
+            "profile_identifier": "c-wrapper",
+            "rocrate_uri": ValidROC().wrroc_paper,
+            "enable_profile_inheritance": True,
+            "allow_requirement_check_override": True,
+            "disable_check_for_duplicates": True,
+        }
+    )
     result = Validator(settings).validate()
 
-    executed_shacl = [c for c in result.executed_checks
-                      if isinstance(c, SHACLCheck)]
+    executed_shacl = [c for c in result.executed_checks if isinstance(c, SHACLCheck)]
     assert executed_shacl, (
         "Expected at least one inherited SHACLCheck to be executed for the "
         "c-wrapper target. None recorded — the zero-shape pyshacl run was "
-        "skipped.")
+        "skipped."
+    )
 
 
 def test_profile_parents(check_overriding_profiles_path: str):
@@ -390,29 +394,31 @@ def test_profile_check_overriding(check_overriding_profiles_path: str):
 
     def check_profile(profile, check, inherited_profiles, overridden_by, override):
         # Check inherited profiles
-        assert len(profile.inherited_profiles) == len(inherited_profiles), \
-            f"The number of inherited profiles should be {len(inherited_profiles)}"
+        assert len(profile.inherited_profiles) == len(
+            inherited_profiles
+        ), f"The number of inherited profiles should be {len(inherited_profiles)}"
         inherited_profiles_tokens = [_.token for _ in profile.inherited_profiles]
-        assert set(inherited_profiles_tokens) == set(inherited_profiles), \
-            f"The inherited profiles should be {inherited_profiles}"
+        assert set(inherited_profiles_tokens) == set(
+            inherited_profiles
+        ), f"The inherited profiles should be {inherited_profiles}"
 
         # Check overridden status
-        logger.debug("%r overridden by: %r", check.identifier, [
-                     _.requirement.profile.identifier for _ in check.overridden_by])
-        assert check.overridden == (len(overridden_by) > 0), \
-            f"The check overridden status should be {len(overridden_by) > 0}"
-        assert len(check.overridden_by) == len(overridden_by), \
-            f"The number of overridden checks should be {len(overridden_by)}"
+        logger.debug(
+            "%r overridden by: %r", check.identifier, [_.requirement.profile.identifier for _ in check.overridden_by]
+        )
+        assert check.overridden == (
+            len(overridden_by) > 0
+        ), f"The check overridden status should be {len(overridden_by) > 0}"
+        assert len(check.overridden_by) == len(
+            overridden_by
+        ), f"The number of overridden checks should be {len(overridden_by)}"
         overridden_by_tokens = [_.requirement.profile.identifier for _ in check.overridden_by]
-        assert set(overridden_by_tokens) == set(overridden_by), \
-            f"The overridden checks should be {overridden_by}"
+        assert set(overridden_by_tokens) == set(overridden_by), f"The overridden checks should be {overridden_by}"
 
         # Check override status
-        assert len(check.overrides) == len(override), \
-            f"The number of overridden checks should be {len(override)}"
+        assert len(check.overrides) == len(override), f"The number of overridden checks should be {len(override)}"
         override_tokens = [_.requirement.profile.identifier for _ in check.overrides]
-        assert set(override_tokens) == set(override), \
-            f"The overridden checks should be {override}"
+        assert set(override_tokens) == set(override), f"The overridden checks should be {override}"
 
     # Check the number of requirements and checks of each profile
     for profile in profiles:
