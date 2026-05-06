@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import bisect
 import enum
+import importlib
 import inspect
 import json
 import re
@@ -25,35 +26,43 @@ from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from functools import total_ordering
 from pathlib import Path
-from typing import Optional, Protocol, Tuple, Union
+from typing import Optional, Protocol, Tuple, Type, Union
 from urllib.error import HTTPError
 
 import enum_tools
 from rdflib import RDF, RDFS, Graph, Namespace, URIRef
 
 from rocrate_validator import __version__
-from rocrate_validator.constants import (DEFAULT_HTTP_CACHE_MAX_AGE,
-                                         DEFAULT_ONTOLOGY_FILE,
-                                         DEFAULT_PROFILE_IDENTIFIER,
-                                         DEFAULT_PROFILE_README_FILE,
-                                         IGNORED_PROFILE_DIRECTORIES,
-                                         JSON_OUTPUT_FORMAT_VERSION, PROF_NS,
-                                         PROFILE_FILE_EXTENSIONS,
-                                         PROFILE_SPECIFICATION_FILE,
-                                         ROCRATE_METADATA_FILE, SCHEMA_ORG_NS)
-from rocrate_validator.errors import (DuplicateRequirementCheck,
-                                      InvalidProfilePath, ProfileNotFound,
-                                      ProfileSpecificationError,
-                                      ProfileSpecificationNotFound,
-                                      ROCrateMetadataNotFoundError)
+from rocrate_validator.constants import (
+    DEFAULT_HTTP_CACHE_MAX_AGE,
+    DEFAULT_ONTOLOGY_FILE,
+    DEFAULT_PROFILE_IDENTIFIER,
+    DEFAULT_PROFILE_README_FILE,
+    IGNORED_PROFILE_DIRECTORIES,
+    JSON_OUTPUT_FORMAT_VERSION,
+    PROF_NS,
+    PROFILE_FILE_EXTENSIONS,
+    PROFILE_SPECIFICATION_FILE,
+    ROCRATE_METADATA_FILE,
+    SCHEMA_ORG_NS,
+)
+from rocrate_validator.errors import (
+    DuplicateRequirementCheck,
+    InvalidProfilePath,
+    ProfileNotFound,
+    ProfileSpecificationError,
+    ProfileSpecificationNotFound,
+    ROCrateMetadataNotFoundError,
+)
 from rocrate_validator.events import Event, EventType, Publisher, Subscriber
 from rocrate_validator.rocrate import ROCrate
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.collections import MapIndex, MultiIndexMap
 from rocrate_validator.utils.http import HttpRequester
 from rocrate_validator.utils.paths import get_profiles_path
-from rocrate_validator.utils.python_helpers import \
-    get_requirement_name_from_file
+from rocrate_validator.utils.python_helpers import (
+    get_requirement_name_from_file,
+)
 from rocrate_validator.utils.uri import URI
 
 # set the default profiles path
@@ -1108,9 +1117,36 @@ class Requirement(ABC):
             result["checks"] = [_.to_dict(with_requirement=False, with_profile=False) for _ in self._checks]
         return result
 
+    @classmethod
+    def initialize(cls, context: ValidationContext) -> None:
+        logger.debug(
+            "Starting %s requirement initialization for context %s",
+            cls.__name__,
+            context,
+        )
+        # do initialization logic here (empty for now)
+        logger.debug(
+            "Completed %s requirement initialization for context %s",
+            cls.__name__,
+            context,
+        )
+
+    @classmethod
+    def finalize(cls, context: ValidationContext) -> None:
+        logger.debug(
+            "Starting %s requirement finalization for context %s",
+            cls.__name__,
+            context,
+        )
+        # do finalization logic here (empty for now)
+        logger.debug(
+            "Completed %s requirement finalization for context %s",
+            cls.__name__,
+            context,
+        )
+
 
 class RequirementLoader:
-
     def __init__(self, profile: Profile):
         self._profile = profile
 
@@ -1129,7 +1165,6 @@ class RequirementLoader:
 
     @classmethod
     def __get_requirement_loader__(cls, profile: Profile, requirement_path: Path) -> RequirementLoader:
-        import importlib
         requirement_type = cls.__get_requirement_type__(requirement_path)
         loader_instance_name = f"_{requirement_type}_loader_instance"
         loader_instance = getattr(profile, loader_instance_name, None)
@@ -1174,16 +1209,21 @@ class RequirementLoader:
         """
         Load the requirements related to the profile
         """
-        def ok_file(p: Path) -> bool:
-            return p.is_file() \
-                and p.suffix in PROFILE_FILE_EXTENSIONS \
-                and not p.name == DEFAULT_ONTOLOGY_FILE \
-                and not p.name == PROFILE_SPECIFICATION_FILE \
-                and not p.name.startswith('.') \
-                and not p.name.startswith('_')
 
-        files = sorted((p for p in profile.path.rglob('*.*') if ok_file(p)),
-                       key=lambda x: (not x.suffix == '.py', x))
+        def ok_file(p: Path) -> bool:
+            return (
+                p.is_file()
+                and p.suffix in PROFILE_FILE_EXTENSIONS
+                and not p.name == DEFAULT_ONTOLOGY_FILE
+                and not p.name == PROFILE_SPECIFICATION_FILE
+                and not p.name.startswith(".")
+                and not p.name.startswith("_")
+            )
+
+        files = sorted(
+            (p for p in profile.path.rglob("*.*") if ok_file(p)),
+            key=lambda x: (not x.suffix == ".py", x),
+        )
 
         # set the requirement level corresponding to the severity
         requirement_level = LevelCollection.get(severity.name)
@@ -1195,23 +1235,33 @@ class RequirementLoader:
                 if requirement_level_from_path < requirement_level:
                     continue
             except ValueError:
-                logger.debug("The requirement level could not be determined from the path: %s", requirement_path)
+                logger.debug(
+                    "The requirement level could not be determined from the path: %s",
+                    requirement_path,
+                )
             requirement_loader = RequirementLoader.__get_requirement_loader__(profile, requirement_path)
             for requirement in requirement_loader.load(
-                    profile, requirement_level,
-                    requirement_path, publicID=profile.publicID):
+                profile,
+                requirement_level,
+                requirement_path,
+                publicID=profile.publicID,
+            ):
                 requirements.append(requirement)
         # sort the requirements by severity
-        requirements = sorted(requirements,
-                              key=lambda x: (-x.severity_from_path.value, x.path.name, x.name)
-                              if x.severity_from_path is not None else (0, x.path.name, x.name),
-                              reverse=False)
+        requirements = sorted(
+            requirements,
+            key=lambda x: (
+                (-x.severity_from_path.value, x.path.name, x.name)
+                if x.severity_from_path is not None
+                else (0, x.path.name, x.name)
+            ),
+            reverse=False,
+        )
         # assign order numbers to requirements
         for i, requirement in enumerate(requirements):
             requirement._order_number = i + 1
         # log and return the requirements
-        logger.debug("Profile %s loaded %s requirements: %s",
-                     profile.identifier, len(requirements), requirements)
+        logger.debug("Profile %s loaded %s requirements: %s", profile.identifier, len(requirements), requirements)
         return requirements
 
 
