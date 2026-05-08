@@ -190,20 +190,23 @@ class ShapesList:
 
     def get_shape_property_graph(self, shape_node: Node, shape_property: Node) -> Graph:
         """
-        Get the subgraph of the given shape node excluding the given property
+        Get the subgraph of a property shape nested inside a node shape.
+
+        Includes only triples reachable from `shape_property` (its constraints
+        and any RDF lists used by `sh:and`/`sh:or`/`sh:xone`), plus the link
+        triple `(shape_node, sh:property, shape_property)`. Nothing reachable
+        only via sibling properties is included, so subtracting this graph
+        from the merged shapes graph cannot break sibling constructs.
         """
         node_graph = self.get_shape_graph(shape_node)
         assert node_graph is not None, "The shape graph cannot be None"
 
         property_graph = Graph()
-        shacl_ns = Namespace(SHACL_NS)
-        nested_properties_to_exclude = [o for (_, _, o) in node_graph.triples(
-            (shape_node, shacl_ns.property, None)) if o != shape_property]
-        triples_to_exclude = [(s, _, o) for (s, _, o) in node_graph.triples((None, None, None))
-                              if s in nested_properties_to_exclude
-                              or o in nested_properties_to_exclude]
+        for s, p, o in __extract_related_triples__(node_graph, shape_property):
+            property_graph.add((s, p, o))
 
-        property_graph += node_graph - triples_to_exclude
+        shacl_ns = Namespace(SHACL_NS)
+        property_graph.add((shape_node, shacl_ns.property, shape_property))
 
         return property_graph
 

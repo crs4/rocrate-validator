@@ -19,8 +19,14 @@ from rdflib import RDF
 
 from rocrate_validator.utils import log as logging
 from rocrate_validator.constants import VALIDATOR_NS
-from rocrate_validator.models import (Profile, Requirement, RequirementCheck,
-                                      RequirementLevel, RequirementLoader)
+from rocrate_validator.models import (
+    Profile,
+    Requirement,
+    RequirementCheck,
+    RequirementLevel,
+    RequirementLoader,
+    ValidationContext,
+)
 from rocrate_validator.requirements.shacl.checks import SHACLCheck
 from rocrate_validator.requirements.shacl.models import Shape, ShapesRegistry
 
@@ -29,16 +35,11 @@ logger = logging.getLogger(__name__)
 
 
 class SHACLRequirement(Requirement):
-
-    def __init__(self,
-                 shape: Shape,
-                 profile: Profile,
-                 path: Path):
+    def __init__(self, shape: Shape, profile: Profile, path: Path):
         self._shape = shape
-        super().__init__(profile,
-                         shape.name if shape.name else "",
-                         shape.description if shape.description else "",
-                         path)
+        super().__init__(
+            profile, shape.name if shape.name else "", shape.description if shape.description else "", path
+        )
         # init checks
         self._checks = self.__init_checks__()
         # assign check IDs
@@ -59,8 +60,15 @@ class SHACLRequirement(Requirement):
         # check if the shape has nested properties
         has_properties = hasattr(self.shape, "properties") and len(self.shape.properties) > 0
         # create a check for the shape itself, hidden if the shape has nested properties
-        checks.append(SHACLCheck(self, self.shape, name=f"Check {self.shape.name}" if has_properties else None,
-                                 hidden=has_properties, root=True))
+        checks.append(
+            SHACLCheck(
+                self,
+                self.shape,
+                name=f"Check {self.shape.name}" if has_properties else None,
+                hidden=has_properties,
+                root=True,
+            )
+        )
         # create a check for each property if the shape has nested properties
         if has_properties:
             for prop in self.shape.properties:
@@ -82,9 +90,67 @@ class SHACLRequirement(Requirement):
                 return True
         return False
 
+    @classmethod
+    def finalize(cls, context: ValidationContext) -> None:
+        """ "
+        Finalize the SHACL requirement by ensuring that a SHACL validation run is triggered for the target profile
+        if it has no shapes of its own (e.g. an extension profile that purely inherits or only deactivates).
+
+        SHACL is normally driven by the first execute_check of a check
+        belonging to the target profile (see SHACLValidationContextManager).
+        If the target has zero SHACL checks of its own (e.g. an extension
+        profile that purely inherits or only deactivates), no pyshacl run
+        is ever triggered and inherited shapes are never evaluated.
+        Force one final run on the merged shapes graph in that case.
+        """
+
+        logger.debug("Starting %s requirement finalization for context %s", cls.__name__, context)
+
+        # extract profiles and target profile from context
+        profiles = context.profiles
+
+        from rocrate_validator.requirements.shacl.checks import SHACLCheck
+        from rocrate_validator.requirements.shacl.validator import SHACLValidationContext
+
+        target = next((p for p in profiles if p.identifier == context.settings.profile_identifier), None)
+        if target is None:
+            return
+
+        shacl_context = SHACLValidationContext.get_instance(context)
+        # If pyshacl already ran for the target during the main loop there is
+        # nothing to do.
+        if shacl_context.get_validation_result(target) is not None:
+            return
+
+        # Pick any SHACLCheck across the loaded profiles to drive the run; the
+        # check identity is only used for logging inside __do_execute_check__,
+        # the actual validation is graph-wide.
+        runner = next(
+            (c for p in profiles for r in p.requirements for c in r.get_checks() if isinstance(c, SHACLCheck)),
+            None,
+        )
+        if runner is None:
+            return
+
+        # Make sure the target's shapes (if any) are in the merged registry
+        # and switch the current profile so violations are attributed under
+        # the target profile in the report.
+        shacl_context.__set_current_validation_profile__(target)
+        shacl_context._current_validation_profile = target
+        try:
+            runner.__do_execute_check__(shacl_context)
+        except Exception as e:
+            logger.warning("Forced SHACL run for zero-shape target profile %s failed: %s", target.identifier, e)
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.exception(e)
+        finally:
+            shacl_context.__unset_current_validation_profile__()
+
+        # do finalization logic here (empty for now)
+        logger.debug("Completed %s requirement finalization for context %s", cls.__name__, context)
+
 
 class SHACLRequirementLoader(RequirementLoader):
-
     def __init__(self, profile: Profile):
         super().__init__(profile)
         self._shape_registry = ShapesRegistry.get_instance(profile)
@@ -95,9 +161,9 @@ class SHACLRequirementLoader(RequirementLoader):
     def shapes_registry(self) -> ShapesRegistry:
         return self._shape_registry
 
-    def load(self, profile: Profile,
-             requirement_level: RequirementLevel,
-             file_path: Path, publicID: Optional[str] = None) -> list[Requirement]:
+    def load(
+        self, profile: Profile, requirement_level: RequirementLevel, file_path: Path, publicID: Optional[str] = None
+    ) -> list[Requirement]:
         assert file_path is not None, "The file path cannot be None"
         shapes: list[Shape] = self.shapes_registry.load_shapes(file_path, publicID)
         logger.debug("Loaded %s shapes: %s", len(shapes), shapes)
