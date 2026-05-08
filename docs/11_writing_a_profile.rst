@@ -94,6 +94,154 @@ These instructions assume you are familiar with code development using Python an
 #. When your profile & tests are written, open a pull request to contribute 
    it back to the repository!
 
+Overriding inherited checks
+---------------------------
+
+When a profile inherits from another profile (via ``prof:isProfileOf`` /
+``prof:isTransitiveProfileOf``), it automatically receives every check
+declared by its ancestors. The validator additionally supports
+**override-by-name**: a child profile can replace an inherited check by
+declaring a new check with the **same name**.
+
+This allows an extension profile to *redefine* the content of an inherited
+check — for example, to make a constraint stricter or looser, change its
+severity, or, as described in the next section, fully deactivate it.
+
+Override-by-name is enabled by default. It can be disabled via the
+``allow_requirement_check_override`` validation setting (CLI / API), which
+will raise an error on duplicate check names instead.
+
+SHACL checks
+^^^^^^^^^^^^
+
+Each SHACL ``NodeShape`` / ``PropertyShape`` becomes a check whose name is
+its ``sh:name``. To override an inherited check, declare a shape in the
+extension profile with the **same** ``sh:name`` as the inherited one:
+
+.. code-block:: turtle
+
+   # Parent profile
+   ro:ShapeC
+       a sh:NodeShape ;
+       sh:name "The Shape C" ;
+       sh:targetNode ro:ro-crate-metadata.json ;
+       sh:property [
+           a sh:PropertyShape ;
+           sh:name "Check Metadata File Descriptor entity existence" ;
+           sh:path rdf:type ;
+           sh:minCount 1 ;
+           sh:message "Missing entity" ;
+       ] .
+
+.. code-block:: turtle
+
+   # Extension profile — overrides the inherited PropertyShape by sh:name
+   ro:ShapeC
+       a sh:NodeShape ;
+       sh:name "The Shape C" ;
+       sh:targetNode ro:ro-crate-metadata.json ;
+       sh:property [
+           a sh:PropertyShape ;
+           sh:name "Check Metadata File Descriptor entity existence" ;
+           sh:path rdf:type ;
+           sh:minCount 1 ;
+           sh:maxCount 1 ;
+           sh:message "Stricter override from extension profile" ;
+       ] .
+
+Both top-level shapes and ``PropertyShape`` entries nested inside a parent
+``NodeShape`` (i.e., declared inline, without an absolute IRI) can be
+overridden this way.
+
+Python checks
+^^^^^^^^^^^^^
+
+Python checks declared via the ``@check`` decorator are matched by their
+``name`` argument. To override an inherited Python check, declare a new
+function with the same ``name`` in the extension profile:
+
+.. code-block:: python
+
+   # In the extension profile's checks module
+   from rocrate_validator.requirements.python import check
+
+   @check(name="Check Metadata File Descriptor entity existence")
+   def overridden_check(self, ctx):
+       # New implementation that replaces the inherited one
+       ...
+
+Deactivating inherited checks
+-----------------------------
+
+A child profile can also **fully deactivate** a check inherited from one of
+its ancestors. A deactivated check is skipped during validation and
+reported as such in the validation result. This is useful when an extension
+profile relaxes the parent's expectations, or replaces a coarse-grained
+check with a more specific one declared elsewhere in the same profile.
+
+SHACL checks
+^^^^^^^^^^^^
+
+Two complementary mechanisms are supported, depending on whether the shape
+to disable has an absolute IRI of its own.
+
+**Shape with an absolute IRI** (e.g. a top-level ``NodeShape`` or a named
+``PropertyShape``): reference the shape by IRI from the extension profile
+and mark it as deactivated, without redeclaring it.
+
+.. code-block:: turtle
+
+   # Extension profile
+   <https://parent-profile/ShapeC> sh:deactivated true .
+
+**Nested ``PropertyShape`` without an absolute IRI** (a property declared
+inline inside a parent ``NodeShape``): use the override-by-name mechanism
+described in the previous section. Declare a new ``PropertyShape`` in the
+extension profile with the same ``sh:name`` as the one to disable, and set
+``sh:deactivated true`` on it. This overrides the parent's
+``PropertyShape``, and the validator reports the resulting check as
+deactivated.
+
+.. code-block:: turtle
+
+   # Extension profile — disables the inherited PropertyShape by sh:name
+   ro:ShapeC
+       a sh:NodeShape ;
+       sh:name "The Shape C" ;
+       sh:targetNode ro:ro-crate-metadata.json ;
+       sh:property [
+           a sh:PropertyShape ;
+           sh:name "Check Metadata File Descriptor entity existence" ;
+           sh:path rdf:type ;
+           sh:deactivated true ;
+       ] .
+
+.. note::
+
+   Cross-profile deactivation is scoped to the shape's transitive
+   descendants: a ``sh:deactivated true`` triple declared by a profile
+   that does not inherit (directly or transitively) from the shape's
+   owning profile is ignored. This prevents unrelated profiles loaded in
+   the same process from interfering with one another.
+
+Python checks
+^^^^^^^^^^^^^
+
+The ``@check`` decorator accepts a ``deactivated`` flag, mirroring SHACL's
+``sh:deactivated``. Combined with override-by-name, an extension profile
+can disable an inherited Python check by redeclaring it with
+``deactivated=True``:
+
+.. code-block:: python
+
+   from rocrate_validator.requirements.python import check
+
+   @check(name="Check Metadata File Descriptor entity existence",
+          deactivated=True)
+   def disabled(self, ctx):
+       # Body is irrelevant — the check is skipped during validation.
+       return True
+
 Running validator & tests during profile development
 ----------------------------------------------------
 
