@@ -457,6 +457,14 @@ class Profile:
         return self.get_sibling_profiles(self)
 
     @property
+    def descendants(self) -> list[Profile]:
+        """
+        The list of profiles that are descendants of this profile
+        (i.e., profiles that have this profile among their inherited profiles).
+        """
+        return self.get_descendants(self)
+
+    @property
     def readme_file_path(self) -> Path:
         """
         The path of the README file of the profile.
@@ -867,6 +875,20 @@ class Profile:
         :rtype: list[Profile]
         """
         return [p for p in cls.__profiles_map.values() if profile in p.parents]
+
+    @classmethod
+    def get_descendants(cls, profile: Profile) -> list[Profile]:
+        """
+        Get the transitive descendants of the given profile (any profile
+        that has `profile` among its `inherited_profiles`).
+
+        :param profile: the profile
+        :type profile: Profile
+
+        :return: the list of descendant profiles
+        :rtype: list[Profile]
+        """
+        return [p for p in cls.__profiles_map.values() if profile in p.inherited_profiles]
 
     @classmethod
     def all(cls) -> list[Profile]:
