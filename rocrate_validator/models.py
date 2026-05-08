@@ -1110,6 +1110,10 @@ class Requirement(ABC):
                         [_.identifier for _ in check.overridden_by],
                     )
                     continue
+                if check.deactivated:
+                    logger.debug("Skipping check '%s' because deactivated", check.identifier)
+                    context.result._add_skipped_check(check)
+                    continue
                 # Determine whether to skip event notification for inherited profiles
                 skip_event_notify = False
                 if (
@@ -2949,6 +2953,12 @@ class Validator(Publisher):
             # set the profiles to validate against
             profiles = context.profiles
             assert len(profiles) > 0, "No profiles to validate"
+            # Pre-load every profile's requirements so all shape graphs are
+            # populated before the validation loop runs. This lets a check
+            # see `sh:deactivated true` triples declared by descendant
+            # profiles that have not yet been visited.
+            for p in profiles:
+                _ = p.requirements
             self.notify(EventType.VALIDATION_START)
             for profile in profiles:
                 logger.debug(
