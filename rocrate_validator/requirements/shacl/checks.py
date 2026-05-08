@@ -366,12 +366,16 @@ class SHACLCheck(RequirementCheck):
             # all together and not profile by profile
             if requirementCheck.identifier not in failed_requirement_checks_notified:
                 shacl_context.result._add_executed_check(requirementCheck, False)
-                if requirementCheck.identifier not in failed_requirement_checks_notified and \
-                        requirementCheck.requirement.profile != shacl_context.current_validation_profile:
+                if (
+                    requirementCheck.identifier not in failed_requirement_checks_notified
+                    and requirementCheck.requirement.profile != shacl_context.current_validation_profile
+                ):
                     failed_requirement_checks_notified.append(requirementCheck.identifier)
-                    shacl_context.validator.notify(RequirementCheckValidationEvent(
-                        EventType.REQUIREMENT_CHECK_VALIDATION_END,
-                        requirementCheck, validation_result=False))
+                    shacl_context.validator.notify(
+                        RequirementCheckValidationEvent(
+                            EventType.REQUIREMENT_CHECK_VALIDATION_END, requirementCheck, validation_result=False
+                        )
+                    )
                     logger.debug(
                         "Added failed check to the context: %s",
                         requirementCheck.identifier,
