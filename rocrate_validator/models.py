@@ -1380,6 +1380,7 @@ class RequirementCheck(ABC):
         level: Optional[RequirementLevel] = LevelCollection.REQUIRED,
         description: Optional[str] = None,
         hidden: Optional[bool] = None,
+        deactivated: bool = False,
     ):
         self._requirement: Requirement = requirement
         self._order_number = 0
@@ -1387,6 +1388,7 @@ class RequirementCheck(ABC):
         self._level = level
         self._description = description
         self._hidden = hidden
+        self._deactivated = deactivated
 
     @property
     def order_number(self) -> int:
@@ -1451,6 +1453,10 @@ class RequirementCheck(ABC):
     @property
     def overridden(self) -> bool:
         return len(self.overridden_by) > 0
+
+    @property
+    def deactivated(self) -> bool:
+        return self._deactivated
 
     @property
     def hidden(self) -> bool:

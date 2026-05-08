@@ -16,6 +16,9 @@ import json
 from timeit import default_timer as timer
 from typing import Optional
 
+from rdflib import Literal, Namespace
+
+from rocrate_validator.constants import SHACL_NS
 from rocrate_validator.errors import ROCrateMetadataNotFoundError
 from rocrate_validator.events import EventType
 from rocrate_validator.models import (
@@ -26,7 +29,7 @@ from rocrate_validator.models import (
     SkipRequirementCheck,
     ValidationContext,
 )
-from rocrate_validator.requirements.shacl.models import Shape
+from rocrate_validator.requirements.shacl.models import Shape, ShapesRegistry
 from rocrate_validator.requirements.shacl.utils import make_uris_relative, resolve_parent_shape
 from rocrate_validator.requirements.shacl.validator import (
     SHACLValidationAlreadyProcessed,
@@ -39,6 +42,9 @@ from rocrate_validator.requirements.shacl.validator import (
 from rocrate_validator.utils import log as logging
 
 logger = logging.getLogger(__name__)
+
+_SH = Namespace(SHACL_NS)
+_TRUE_LITERALS = (Literal(True), Literal("true", datatype=None))
 
 
 class SHACLCheck(RequirementCheck):
@@ -96,6 +102,37 @@ class SHACLCheck(RequirementCheck):
     @property
     def root(self) -> bool:
         return self._root
+
+    @property
+    def deactivated(self) -> bool:
+        if self._deactivated:
+            return True
+        shape = self._shape
+        if shape is None:
+            return False
+        # Same-profile deactivation (cases B & C): the shape itself carries
+        # `sh:deactivated true`, possibly because it was redeclared in an
+        # extension profile via override-by-name.
+        for value in shape.graph.objects(subject=shape.node, predicate=_SH.deactivated):
+            if isinstance(value, Literal) and bool(value.toPython()):
+                return True
+        # Cross-profile deactivation (case A): a descendant profile may add
+        # `<parentShapeIRI> sh:deactivated true` to its own shapes graph,
+        # without redeclaring the shape. Scan only profiles that inherit
+        # (transitively) from the shape's owning profile, so unrelated
+        # profiles loaded in the same process can't influence the result.
+        # Validator.__do_validate__ pre-loads the shape graphs.
+        from rocrate_validator.models import Profile
+
+        owning_profile = self.requirement.profile
+        for profile in Profile.get_descendants(owning_profile):
+            try:
+                registry = ShapesRegistry.get_instance(profile)
+            except Exception:
+                continue
+            if registry.is_node_deactivated(shape.node):
+                return True
+        return False
 
     @property
     def description(self) -> str:
