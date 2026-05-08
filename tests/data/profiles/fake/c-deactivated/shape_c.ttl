@@ -1,0 +1,41 @@
+# Copyright (c) 2024-2026 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+@prefix ro: <./> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema_org: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xml1: <http://www.w3.org/2001/XMLSchema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+
+# Same NodeShape + PropertyShape names as the inherited Shape C in profile c,
+# so the existing override-by-name mechanism wires this shape to the parent's.
+# The PropertyShape is marked sh:deactivated true: pyshacl skips it during
+# validation, and the override surfaces via RequirementCheck.deactivated.
+ro:ShapeC
+    a sh:NodeShape ;
+    sh:name "The Shape C" ;
+    sh:description "Deactivates the inherited Shape C check from profile c." ;
+    sh:targetNode ro:ro-crate-metadata.json ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Check Metadata File Descriptor entity existence" ;
+        sh:description "Check disabled by extension profile" ;
+        sh:path rdf:type ;
+        sh:minCount 1 ;
+        sh:deactivated true ;
+        sh:message "Disabled" ;
+    ] .

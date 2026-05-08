@@ -16,11 +16,13 @@ import logging
 import os
 
 import pytest
+from rdflib import Literal, Namespace
 
-from rocrate_validator.constants import DEFAULT_PROFILE_IDENTIFIER
+from rocrate_validator.constants import DEFAULT_PROFILE_IDENTIFIER, SHACL_NS
 from rocrate_validator.errors import DuplicateRequirementCheck, InvalidProfilePath, ProfileSpecificationError
 from rocrate_validator.models import Profile, ValidationContext, ValidationSettings, Validator
 from rocrate_validator.requirements.shacl.checks import SHACLCheck
+from rocrate_validator.requirements.shacl.models import ShapesRegistry
 from tests.ro_crates import InvalidFileDescriptorEntity, ValidROC
 
 # set up logging
@@ -468,3 +470,152 @@ def test_profile_check_overriding(check_overriding_profiles_path: str):
         # Check the profile 'x'
         elif profile.token == "x":
             check_profile(profile, check, ["a", "b", "d"], [], ["d"])
+
+
+def test_python_check_decorator_sets_deactivated_flag():
+    """The @check decorator must propagate the `deactivated` flag onto the
+    decorated function so that PyRequirement.__init_checks__ can read it."""
+    from rocrate_validator.requirements.python import check
+
+    @check(name="off", deactivated=True)
+    def disabled(self, ctx):  # noqa: ANN001
+        return False
+
+    @check(name="on")
+    def enabled(self, ctx):  # noqa: ANN001
+        return True
+
+    assert disabled.deactivated is True
+    assert enabled.deactivated is False
+
+
+def test_shacl_shape_with_deactivated_marks_check_skipped(fake_profiles_path: str):
+    """A child profile that overrides an inherited NodeShape by `sh:name` and
+    sets `sh:deactivated true` should produce a check whose `deactivated`
+    property is True; the parent's check should be marked as `overridden`."""
+    settings = {
+        "profiles_path": fake_profiles_path,
+        "profile_identifier": "c-deactivated",
+        "rocrate_uri": ValidROC().wrroc_paper,
+        "enable_profile_inheritance": True,
+        "allow_requirement_check_override": True,
+    }
+
+    settings = ValidationSettings(**settings)
+    validator = Validator(settings)
+    context = ValidationContext(validator, validator.validation_settings)
+
+    profiles = context.profiles
+    profile_tokens = sorted(p.token for p in profiles)
+    # Inheritance chain: a <- c <- c-deactivated
+    assert profile_tokens == ["a", "c", "c-deactivated"]
+
+    target = next(p for p in profiles if p.token == "c-deactivated")
+    parent_c = next(p for p in profiles if p.token == "c")
+
+    # The PropertyShape carries `sh:deactivated true`; the matching check is
+    # the second one (the first is the hidden NodeShape root check).
+    target_property_check = target.requirements[0].get_checks()[1]
+    parent_property_check = parent_c.requirements[0].get_checks()[1]
+
+    assert (
+        target_property_check.deactivated is True
+    ), "The deactivated property should reflect sh:deactivated true on the PropertyShape"
+
+    # The parent property check is overridden by the child's (same sh:name).
+    overridden_by_tokens = [c.requirement.profile.token for c in parent_property_check.overridden_by]
+    assert "c-deactivated" in overridden_by_tokens, "The parent check should be reported as overridden by c-deactivated"
+    assert parent_property_check.overridden is True
+
+    # Default state for a non-deactivated check.
+    assert parent_property_check.deactivated is False
+
+
+def test_shacl_check_deactivated_via_cross_profile_triple(fake_profiles_path: str):
+    """A child profile that adds `<parentShapeIRI> sh:deactivated true` to its
+    own shapes graph (without redeclaring the shape) should cause the parent's
+    check to report `deactivated=True`. Verifies the cross-profile lookup in
+    SHACLCheck.deactivated and the pre-load pass in Validator."""
+
+    settings = ValidationSettings(
+        **{
+            "profiles_path": fake_profiles_path,
+            "profile_identifier": "c-deactivated-direct",
+            "rocrate_uri": ValidROC().wrroc_paper,
+            "enable_profile_inheritance": True,
+            "allow_requirement_check_override": True,
+        }
+    )
+    validator = Validator(settings)
+    context = ValidationContext(validator, validator.validation_settings)
+
+    profiles = context.profiles
+    profile_tokens = sorted(p.token for p in profiles)
+    assert profile_tokens == ["a", "c", "c-deactivated-direct"]
+
+    target = next(p for p in profiles if p.token == "c-deactivated-direct")
+    parent_c = next(p for p in profiles if p.token == "c")
+
+    # Trigger lazy loading of every profile's shape graph (the Validator
+    # would do this in __do_validate__; we replay it here for the unit test).
+    for p in profiles:
+        _ = p.requirements
+
+    parent_shape_check = next(c for c in parent_c.requirements[0].get_checks() if isinstance(c, SHACLCheck))
+    assert parent_shape_check.deactivated is False, "Sanity check: the parent shape should not be deactivated yet"
+
+    # Simulate what a child-profile shape file would contribute: a single
+    # `<parentShapeIRI> sh:deactivated true` triple in its own shapes graph.
+    target_registry = ShapesRegistry.get_instance(target)
+    sh = Namespace(SHACL_NS)
+    target_registry._shapes_graph.add((parent_shape_check.shape.node, sh.deactivated, Literal(True)))
+
+    assert (
+        parent_shape_check.deactivated is True
+    ), "The parent's check must read sh:deactivated true from the child's shapes graph"
+
+
+def test_shacl_check_deactivation_scoped_to_descendants(fake_profiles_path: str):
+    """A `sh:deactivated true` triple declared by a profile that does NOT
+    inherit from the shape's owning profile must be ignored. Otherwise
+    unrelated profiles loaded in the same process could spuriously deactivate
+    one another's checks."""
+
+    settings = ValidationSettings(
+        **{
+            "profiles_path": fake_profiles_path,
+            "profile_identifier": "c",
+            "rocrate_uri": ValidROC().wrroc_paper,
+            "enable_profile_inheritance": True,
+            "allow_requirement_check_override": True,
+        }
+    )
+    validator = Validator(settings)
+    context = ValidationContext(validator, validator.validation_settings)
+
+    # Force population of the global profile registry by listing all profiles
+    # under the fake_profiles_path, then resolve the specific ones we need.
+    all_profiles = Profile.load_profiles(profiles_path=fake_profiles_path)
+    parent_c = next(p for p in all_profiles if p.token == "c")
+    # Profile "b" is a descendant of "a" but NOT of "c" — unrelated.
+    profile_b = next(p for p in all_profiles if p.token == "b")
+    assert parent_c not in profile_b.inherited_profiles
+    assert profile_b not in Profile.get_descendants(parent_c)
+
+    # Trigger lazy loading.
+    for p in all_profiles:
+        _ = p.requirements
+    _ = context.profiles  # warm context too
+
+    parent_shape_check = next(c for c in parent_c.requirements[0].get_checks() if isinstance(c, SHACLCheck))
+    assert parent_shape_check.deactivated is False
+
+    # Inject a deactivation triple into an unrelated profile's registry.
+    sh = Namespace(SHACL_NS)
+    ShapesRegistry.get_instance(profile_b)._shapes_graph.add(
+        (parent_shape_check.shape.node, sh.deactivated, Literal(True))
+    )
+
+    assert (
+        parent_shape_check.deactivated is False
+    ), "An unrelated profile's deactivation triple must not affect the check"
