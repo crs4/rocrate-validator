@@ -60,7 +60,7 @@
 #     ] .
 
 # Find studies and add isa-ro-crate:Study type to them, for easier retrieval for checks
-ro-crate:FindStudies a sh:NodeShape, validator:HiddenShape;
+isa-ro-crate:FindStudies a sh:NodeShape, validator:HiddenShape;
     sh:name "Identify Studies within the RO-Crate" ;
     sh:description "A Study has type Dataset and additionalType 'Study'." ;
     sh:targetClass schema:Dataset ;

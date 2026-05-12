@@ -52,7 +52,7 @@
 #         sh:object isa-ro-crate:Assay ;
 #     ] .
 
-ro-crate:FindAssays a sh:NodeShape, validator:HiddenShape;
+isa-ro-crate:FindAssays a sh:NodeShape, validator:HiddenShape;
     sh:name "Identify Assays within the RO-Crate" ;
     sh:description "An Assay has type Dataset and additionalType 'Assay'." ;
     sh:targetClass schema:Dataset ;

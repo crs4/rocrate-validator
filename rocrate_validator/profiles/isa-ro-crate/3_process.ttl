@@ -24,7 +24,7 @@
 @prefix validator: <https://github.com/crs4/rocrate-validator/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-ro-crate:FindISAProcesses a sh:NodeShape, validator:HiddenShape;
+isa-ro-crate:FindISAProcesses a sh:NodeShape, validator:HiddenShape;
     sh:name "Identify ISA processes within the RO-Crate" ;
     sh:description "A Process has type LabProcess and is attached to a Study or Assay." ;
     sh:targetClass bioschemas:LabProcess ;
@@ -38,14 +38,51 @@ ro-crate:FindISAProcesses a sh:NodeShape, validator:HiddenShape;
         sh:condition [
             sh:property [
                 sh:path [ sh:inversePath schema:about ] ;
-                sh:or (
-                    [sh:class isa-ro-crate:Study]
-                    [sh:class isa-ro-crate:Assay]
-                ) ;
+                # sh:qualifiedValueShape [ 
+                #     sh:class isa-ro-crate:Assay 
+                # ] ;
+                sh:qualifiedValueShape [ 
+                    sh:class schema:Dataset ;
+                    sh:property [
+                        sh:path schema:additionalType ;
+                        sh:or (
+                            [sh:hasValue "Study"]
+                            [sh:hasValue "Assay"]
+                        ) ;
+                    ] ;
+                ] ;
+                sh:qualifiedMinCount 1 ;
             ] ;
         ] ;
     ]
 .
+
+# isa-ro-crate:FindISAProcesses a sh:NodeShape, validator:HiddenShape;
+#     sh:name "Identify ISA processes within the RO-Crate" ;
+#     sh:description "A Process has type LabProcess and is attached to a Study or Assay." ;
+#     sh:target [
+#         a sh:SPARQLTarget ;
+#         sh:select """
+#             PREFIX bioschemas: <https://bioschemas.org/>
+#             PREFIX isa-ro-crate: <https://github.com/crs4/rocrate-validator/profiles/isa-ro-crate/>
+#             PREFIX schema: <http://schema.org/>
+
+#             SELECT ?this
+#             WHERE {
+#                 ?this a bioschemas:LabProcess .
+#                 ?assay schema:about ?this .
+#                 ?assay a isa-ro-crate:Assay .
+#             }
+#         """ ;
+#     ] ;
+#     # Expand data graph with triples from the file data entity
+#     sh:rule [
+#         a sh:TripleRule ;
+#         sh:subject sh:this ;
+#         sh:predicate rdf:type ;
+#         sh:object isa-ro-crate:Process ;
+#     ]
+# .
 
 
 
