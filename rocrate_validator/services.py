@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 import shutil
 import tempfile
 import zipfile
@@ -20,8 +21,7 @@ from typing import Optional, Union
 
 from rocrate_validator.utils import log as logging
 from rocrate_validator.events import Subscriber
-from rocrate_validator.models import (Profile, Severity, ValidationResult,
-                                      ValidationSettings, Validator)
+from rocrate_validator.models import Profile, Severity, ValidationResult, ValidationSettings, Validator
 from rocrate_validator.utils.uri import URI
 from rocrate_validator.utils.paths import get_profiles_path
 from rocrate_validator.utils.http import HttpRequester
@@ -43,9 +43,8 @@ def detect_profiles(settings: Union[dict, ValidationSettings]) -> list[Profile]:
 
 
 def validate_metadata_as_dict(
-        metadata_dict: dict,
-        settings: Union[dict, ValidationSettings],
-        subscribers: Optional[list[Subscriber]] = None) -> ValidationResult:
+    metadata_dict: dict, settings: Union[dict, ValidationSettings], subscribers: Optional[list[Subscriber]] = None
+) -> ValidationResult:
     """
     Validate the RO-Crate metadata only against a profile and return the validation result.
     """
@@ -62,8 +61,9 @@ def validate_metadata_as_dict(
     return validate(settings, subscribers)
 
 
-def validate(settings: Union[dict, ValidationSettings],
-             subscribers: Optional[list[Subscriber]] = None) -> ValidationResult:
+def validate(
+    settings: Union[dict, ValidationSettings], subscribers: Optional[list[Subscriber]] = None
+) -> ValidationResult:
     """
     Validate a RO-Crate against a profile and return the validation result
 
@@ -85,8 +85,9 @@ def validate(settings: Union[dict, ValidationSettings],
     return result
 
 
-def __initialise_validator__(settings: Union[dict, ValidationSettings],
-                             subscribers: Optional[list[Subscriber]] = None) -> Validator:
+def __initialise_validator__(
+    settings: Union[dict, ValidationSettings], subscribers: Optional[list[Subscriber]] = None
+) -> Validator:
     """
     Validate a RO-Crate against a profile
     """
@@ -146,13 +147,13 @@ def __initialise_validator__(settings: Union[dict, ValidationSettings],
     # i.e., if the RO-Crate is a URL. If so, download the RO-Crate
     # and extract it to a temporary directory. We support either http or https
     # or ftp protocols to download the remote RO-Crate.
-    if rocrate_path.scheme in ('http', 'https', 'ftp'):
+    if rocrate_path.scheme in ("http", "https", "ftp"):
         logger.debug("RO-Crate is a remote RO-Crate")
         # create a temp folder to store the downloaded RO-Crate
         with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
             # download the remote RO-Crate
             with HttpRequester().get(rocrate_path.uri, stream=True, allow_redirects=True) as r:
-                with open(tmp_file.name, 'wb') as f:
+                with open(tmp_file.name, "wb") as f:
                     shutil.copyfileobj(r.raw, f)
             logger.debug("RO-Crate downloaded to temporary file: %s", tmp_file.name)
             # continue with the validation process by extracting the RO-Crate and validating it
@@ -171,15 +172,16 @@ def __initialise_validator__(settings: Union[dict, ValidationSettings],
         return __init_validator__(settings)
     else:
         raise ValueError(
-            f"Invalid RO-Crate URI: {rocrate_path}. "
-            "It MUST be a local directory or a ZIP file (local or remote).")
+            f"Invalid RO-Crate URI: {rocrate_path}. It MUST be a local directory or a ZIP file (local or remote)."
+        )
 
 
-def get_profiles(profiles_path: Path = DEFAULT_PROFILES_PATH,
-                 extra_profiles_path: Optional[Path] = None,
-                 severity=Severity.OPTIONAL,
-                 allow_requirement_check_override: bool =
-                 ValidationSettings.allow_requirement_check_override) -> list[Profile]:
+def get_profiles(
+    profiles_path: Path = DEFAULT_PROFILES_PATH,
+    extra_profiles_path: Optional[Path] = None,
+    severity=Severity.OPTIONAL,
+    allow_requirement_check_override: bool = ValidationSettings.allow_requirement_check_override,
+) -> list[Profile]:
     """
     Get the list of profiles supported by the package.
     The profile source path can be overridden by specifying ``profiles_path``.
@@ -203,20 +205,23 @@ def get_profiles(profiles_path: Path = DEFAULT_PROFILES_PATH,
     :return: the list of profiles
     :rtype: list[Profile]
     """
-    profiles = Profile.load_profiles(profiles_path,
-                                     extra_profiles_path=extra_profiles_path,
-                                     severity=severity,
-                                     allow_requirement_check_override=allow_requirement_check_override)
+    profiles = Profile.load_profiles(
+        profiles_path,
+        extra_profiles_path=extra_profiles_path,
+        severity=severity,
+        allow_requirement_check_override=allow_requirement_check_override,
+    )
     logger.debug("Profiles loaded: %s", profiles)
     return profiles
 
 
-def get_profile(profile_identifier: str,
-                profiles_path: Path = DEFAULT_PROFILES_PATH,
-                extra_profiles_path: Optional[Path] = None,
-                severity=Severity.OPTIONAL,
-                allow_requirement_check_override: bool =
-                ValidationSettings.allow_requirement_check_override) -> Profile:
+def get_profile(
+    profile_identifier: str,
+    profiles_path: Path = DEFAULT_PROFILES_PATH,
+    extra_profiles_path: Optional[Path] = None,
+    severity=Severity.OPTIONAL,
+    allow_requirement_check_override: bool = ValidationSettings.allow_requirement_check_override,
+) -> Profile:
     """
     Get the profile with the given identifier.
     The profile source path can be overridden through ``profiles_path``.
@@ -245,8 +250,10 @@ def get_profile(profile_identifier: str,
     :rtype: Profile
 
     """
-    profiles = get_profiles(profiles_path,
-                            extra_profiles_path=extra_profiles_path,
-                            severity=severity,
-                            allow_requirement_check_override=allow_requirement_check_override)
+    profiles = get_profiles(
+        profiles_path,
+        extra_profiles_path=extra_profiles_path,
+        severity=severity,
+        allow_requirement_check_override=allow_requirement_check_override,
+    )
     return Profile.find_in_list(profiles, profile_identifier)

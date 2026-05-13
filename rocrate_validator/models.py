@@ -457,6 +457,14 @@ class Profile:
         return self.get_sibling_profiles(self)
 
     @property
+    def descendants(self) -> list[Profile]:
+        """
+        The list of profiles that are descendants of this profile
+        (i.e., profiles that have this profile among their inherited profiles).
+        """
+        return self.get_descendants(self)
+
+    @property
     def readme_file_path(self) -> Path:
         """
         The path of the README file of the profile.
@@ -869,6 +877,20 @@ class Profile:
         return [p for p in cls.__profiles_map.values() if profile in p.parents]
 
     @classmethod
+    def get_descendants(cls, profile: Profile) -> list[Profile]:
+        """
+        Get the transitive descendants of the given profile (any profile
+        that has `profile` among its `inherited_profiles`).
+
+        :param profile: the profile
+        :type profile: Profile
+
+        :return: the list of descendant profiles
+        :rtype: list[Profile]
+        """
+        return [p for p in cls.__profiles_map.values() if profile in p.inherited_profiles]
+
+    @classmethod
     def all(cls) -> list[Profile]:
         """
         Get all the profiles
@@ -1087,6 +1109,10 @@ class Requirement(ABC):
                         check.identifier,
                         [_.identifier for _ in check.overridden_by],
                     )
+                    continue
+                if check.deactivated:
+                    logger.debug("Skipping check '%s' because deactivated", check.identifier)
+                    context.result._add_skipped_check(check)
                     continue
                 # Determine whether to skip event notification for inherited profiles
                 skip_event_notify = False
@@ -1358,6 +1384,7 @@ class RequirementCheck(ABC):
         level: Optional[RequirementLevel] = LevelCollection.REQUIRED,
         description: Optional[str] = None,
         hidden: Optional[bool] = None,
+        deactivated: bool = False,
     ):
         self._requirement: Requirement = requirement
         self._order_number = 0
@@ -1365,6 +1392,7 @@ class RequirementCheck(ABC):
         self._level = level
         self._description = description
         self._hidden = hidden
+        self._deactivated = deactivated
 
     @property
     def order_number(self) -> int:
@@ -1429,6 +1457,10 @@ class RequirementCheck(ABC):
     @property
     def overridden(self) -> bool:
         return len(self.overridden_by) > 0
+
+    @property
+    def deactivated(self) -> bool:
+        return self._deactivated
 
     @property
     def hidden(self) -> bool:
@@ -2925,6 +2957,12 @@ class Validator(Publisher):
             # set the profiles to validate against
             profiles = context.profiles
             assert len(profiles) > 0, "No profiles to validate"
+            # Pre-load every profile's requirements so all shape graphs are
+            # populated before the validation loop runs. This lets a check
+            # see `sh:deactivated true` triples declared by descendant
+            # profiles that have not yet been visited.
+            for p in profiles:
+                _ = p.requirements
             self.notify(EventType.VALIDATION_START)
             for profile in profiles:
                 logger.debug(
