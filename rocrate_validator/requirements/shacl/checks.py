@@ -199,12 +199,12 @@ class SHACLCheck(RequirementCheck):
                     shacl.target,
                 )
                 for predicate in target_predicates:
-                    for triple in graph.triples((owner.node, predicate, None)):
+                    for triple in owner.graph.triples((owner.node, predicate, None)):
                         subgraph.add(triple)
                         # follow BNode objects (e.g. sh:target referencing an inline SPARQL target)
                         _, _, obj = triple
                         if isinstance(obj, BNode):
-                            subgraph += build_node_subgraph(graph, obj)
+                            subgraph += build_node_subgraph(owner.graph, obj)
                 # link the owner to the property so the relationship is preserved in the serialization
                 subgraph.add((owner.node, shacl.property, self._shape.node))
 
