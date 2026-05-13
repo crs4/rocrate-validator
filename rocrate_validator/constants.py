@@ -87,7 +87,7 @@ VALID_REQUIREMENT_LEVELS_TYPES = typing.Literal[
 JSON_OUTPUT_FORMAT_VERSION = "0.2"
 
 # Http Cache Settings
-DEFAULT_HTTP_CACHE_MAX_AGE = 300  # in seconds
+DEFAULT_HTTP_CACHE_MAX_AGE = -1  # in seconds; negative means "never expire"
 DEFAULT_HTTP_CACHE_PATH_PREFIX = '/tmp/rocrate_validator_cache'
 # Directory name used under the user's cache root for the persistent HTTP cache
 USER_CACHE_DIR_NAME = "rocrate-validator"
