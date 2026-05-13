@@ -64,7 +64,22 @@ isa-ro-crate:Sample rdf:type owl:Class ;
 # Data
 isa-ro-crate:Data rdf:type owl:Class ;
   rdfs:subClassOf schema:MediaObject ;
-  rdfs:label "Data"@en .
+  rdfs:label "Data"@en 
+  
+# Comment
+isa-ro-crate:Comment rdf:type owl:Class ;
+  rdfs:subClassOf schema:MediaObject ;
+  rdfs:label "Comment"@en .
+
+# OntologyAnnotation
+isa-ro-crate:OntologyAnnotation rdf:type owl:Class ;
+  rdfs:subClassOf schema:DefinedTerm ;
+  rdfs:label "OntologyAnnotation"@en .
+
+# PropertyValue
+isa-ro-crate:PropertyValue rdf:type owl:Class ;
+  rdfs:subClassOf schema:PropertyValue ;
+  rdfs:label "PropertyValue"@en .
 
 isa-ro-crate:Parameter rdf:type owl:Class ;
   rdfs:subClassOf schema:PropertyValue ;
