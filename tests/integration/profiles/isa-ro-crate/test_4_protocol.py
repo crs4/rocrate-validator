@@ -16,6 +16,7 @@
 import logging
 
 from rocrate_validator.models import Severity
+# from tests.conftest import SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER
 from tests.ro_crates import ValidROC
 from tests.shared import do_entity_test, SPARQL_PREFIXES
 
@@ -181,6 +182,45 @@ def test_isa_protocol_no_intendedUse():
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
     )
+
+# def test_isa_protocol_not_correctly_referenced_from_process():
+#     """
+#     Test an ISA RO-Crate where an invalid Protocol is referenced from a process with wrong property.
+#     Such protocols should be ignored, meaning the validation should pass.
+#     """
+#     sparql = (
+#         SPARQL_PREFIXES
+#         + """
+#         PREFIX bioschemas: <https://bioschemas.org/>
+#         PREFIX bioschemas-prop: <https://bioschemas.org/properties/>
+#         DELETE {
+#             ?process bioschemas-prop:executesProtocol ?protocol .
+#             ?protocol schema:name ?name .
+#         }
+#         INSERT {
+#             ?dataset schema:mentions ?protocol .
+#         }
+#         WHERE {
+#             ?dataset a schema:Dataset .
+#             ?dataset schema:additionalType "Assay" .
+#             ?process a bioschemas:LabProcess .
+#             ?protocol a bioschemas:LabProtocol .
+#             ?process bioschemas-prop:executesProtocol ?protocol .
+#             ?protocol schema:name ?name .
+#         }
+#         """
+#     )
+
+#     do_entity_test(
+#         rocrate_path=ValidROC().isa_ro_crate,
+#         requirement_severity=Severity.RECOMMENDED,
+#         expected_validation_result=True,
+#         # expected_triggered_requirements=["Protocol SHOULD have intended use"],
+#         # expected_triggered_issues=["Protocol intended use MUST be of type string or DefinedTerm"],
+#         profile_identifier="isa-ro-crate",
+#         rocrate_entity_mod_sparql=sparql,
+#         skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER],
+#     )
 
 
 def test_isa_protocol_intendedUse_incorrect_type():

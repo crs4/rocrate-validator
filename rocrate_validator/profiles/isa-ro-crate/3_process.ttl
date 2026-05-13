@@ -28,6 +28,7 @@ isa-ro-crate:FindISAProcesses a sh:NodeShape, validator:HiddenShape;
     sh:name "Identify ISA processes within the RO-Crate" ;
     sh:description "A Process has type LabProcess and is attached to a Study or Assay." ;
     sh:targetClass bioschemas:LabProcess ;
+    sh:order 2 ;
     # Expand data graph with triples from the file data entity
     sh:rule [
         a sh:TripleRule ;
@@ -38,18 +39,11 @@ isa-ro-crate:FindISAProcesses a sh:NodeShape, validator:HiddenShape;
         sh:condition [
             sh:property [
                 sh:path [ sh:inversePath schema:about ] ;
-                # sh:qualifiedValueShape [ 
-                #     sh:class isa-ro-crate:Assay 
-                # ] ;
                 sh:qualifiedValueShape [ 
-                    sh:class schema:Dataset ;
-                    sh:property [
-                        sh:path schema:additionalType ;
-                        sh:or (
-                            [sh:hasValue "Study"]
-                            [sh:hasValue "Assay"]
-                        ) ;
-                    ] ;
+                    sh:or(
+                        [sh:class isa-ro-crate:Assay]
+                        [sh:class isa-ro-crate:Study]
+                    )
                 ] ;
                 sh:qualifiedMinCount 1 ;
             ] ;
@@ -60,6 +54,7 @@ isa-ro-crate:FindISAProcesses a sh:NodeShape, validator:HiddenShape;
 # isa-ro-crate:FindISAProcesses a sh:NodeShape, validator:HiddenShape;
 #     sh:name "Identify ISA processes within the RO-Crate" ;
 #     sh:description "A Process has type LabProcess and is attached to a Study or Assay." ;
+#     sh:order 3 ;
 #     sh:target [
 #         a sh:SPARQLTarget ;
 #         sh:select """

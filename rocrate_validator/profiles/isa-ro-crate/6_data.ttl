@@ -24,14 +24,39 @@
 @prefix validator: <https://github.com/crs4/rocrate-validator/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-
+isa-ro-crate:FindISAFiles a sh:NodeShape, validator:HiddenShape;
+    sh:name "Identify ISA files within the RO-Crate" ;
+    sh:description "A data file has type File/MediaObject and is attached to an ISA Study or Assay." ;
+    sh:targetClass schema:MediaObject ;
+    sh:order 2 ;
+    # Expand data graph with triples from the file data entity
+    sh:rule [
+        a sh:TripleRule ;
+        sh:subject sh:this ;
+        sh:predicate rdf:type ;
+        sh:object isa-ro-crate:Data ;
+        # The condition: need to be attached to a Study or Assay
+        sh:condition [
+            sh:property [
+                sh:path [ sh:inversePath schema:hasPart ] ;
+                sh:qualifiedValueShape [ 
+                    sh:or(
+                        [sh:class isa-ro-crate:Assay]
+                        [sh:class isa-ro-crate:Study]
+                    )
+                ] ;
+                sh:qualifiedMinCount 1 ;
+            ] ;
+        ] ;
+    ] ;
+.
 
 # check File attributes must have correct types
 
 isa-ro-crate:FileMustHaveName a sh:NodeShape ;
     sh:name "File MUST have name" ;
     sh:description "A File MUST have a name" ;
-    sh:targetClass schema:MediaObject ;
+    sh:targetClass isa-ro-crate:Data ;
     sh:property [
         a sh:PropertyShape ;
         sh:path schema:name ;

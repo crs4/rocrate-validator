@@ -56,6 +56,7 @@ isa-ro-crate:FindAssays a sh:NodeShape, validator:HiddenShape;
     sh:name "Identify Assays within the RO-Crate" ;
     sh:description "An Assay has type Dataset and additionalType 'Assay'." ;
     sh:targetClass schema:Dataset ;
+    sh:order 1 ; 
     # Expand data graph with triples from the file data entity
     sh:rule [
         a sh:TripleRule ;

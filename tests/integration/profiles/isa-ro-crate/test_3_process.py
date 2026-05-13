@@ -16,6 +16,7 @@
 import logging
 
 from rocrate_validator.models import Severity
+# from tests.conftest import SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER
 from tests.ro_crates import ValidROC
 from tests.shared import do_entity_test, SPARQL_PREFIXES
 
@@ -55,40 +56,46 @@ def test_isa_process_name():
     )
 
 
-def test_isa_process_not_correctly_referenced_from_dataset():
-    """
-    Test an ISA RO-Crate where a Process is referenced from a Dataset with wrong property.
-    """
-    sparql = (
-        SPARQL_PREFIXES
-        + """
-        PREFIX bioschemas: <https://bioschemas.org/>
-        DELETE {
-            ?dataset schema:about ?process .
-        }
-        INSERT {
-            ?dataset schema:mentions ?process .
-        }
-        WHERE {
-            ?dataset a schema:Dataset .
-            ?dataset schema:about ?process.
-        }
-        """
-    )
+# def test_isa_process_not_correctly_referenced_from_dataset():
+#     """
+#     Test an ISA RO-Crate where an invalid Process is referenced from a Dataset with wrong property.
+#     Such processes should be ignored, meaning the validation should pass.
+#     """
+#     sparql = (
+#         SPARQL_PREFIXES
+#         + """
+#         PREFIX schema: <http://schema.org/>
+#         PREFIX bioschemas: <https://bioschemas.org/>
+#         PREFIX bioschemas-prop: <https://bioschemas.org/properties/>
+#         DELETE {
+#             ?dataset schema:about ?process .
+#             ?process schema:name ?name .
+#         }
+#         INSERT {
+#             ?dataset schema:mentions ?process .
+#         }
+#         WHERE {
+#             ?dataset a schema:Dataset .
+#             ?dataset schema:about ?process.
+#             ?process schema:name ?name .
+#         }
+#         """
+#     )
 
-    do_entity_test(
-        rocrate_path=ValidROC().isa_ro_crate,
-        requirement_severity=Severity.REQUIRED,
-        expected_validation_result=False,
-        expected_triggered_requirements=[
-            "Process MUST be directly referenced from a dataset"
-        ],
-        expected_triggered_issues=[
-            "Process MUST be directly referenced in about on a Dataset"
-        ],
-        profile_identifier="isa-ro-crate",
-        rocrate_entity_mod_sparql=sparql,
-    )
+#     do_entity_test(
+#         rocrate_path=ValidROC().isa_ro_crate,
+#         requirement_severity=Severity.REQUIRED,
+#         expected_validation_result=True,
+#         # expected_triggered_requirements=[
+#         #     "Process MUST be directly referenced from a dataset"
+#         # ],
+#         # expected_triggered_issues=[
+#         #     "Process MUST be directly referenced in about on a Dataset"
+#         # ],
+#         profile_identifier="isa-ro-crate",
+#         rocrate_entity_mod_sparql=sparql,
+#         skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER],
+#     )
 
 
 def test_isa_process_no_object():

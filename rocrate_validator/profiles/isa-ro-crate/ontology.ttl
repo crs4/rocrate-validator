@@ -41,6 +41,31 @@ isa-ro-crate:Process rdf:type owl:Class ;
   rdfs:subClassOf bioschemas:LabProcess ;
   rdfs:label "Process"@en .
 
+# Protocol
+isa-ro-crate:Protocol rdf:type owl:Class ;
+  rdfs:subClassOf bioschemas:LabProtocol ;
+  rdfs:label "Protocol"@en .
+
+# Person
+isa-ro-crate:Person rdf:type owl:Class ;
+  rdfs:subClassOf schema:Person ;
+  rdfs:label "Person"@en .
+
+# Article
+isa-ro-crate:Article rdf:type owl:Class ;
+  rdfs:subClassOf schema:ScholarlyArticle ;
+  rdfs:label "Article"@en .
+
+# Sample
+isa-ro-crate:Sample rdf:type owl:Class ;
+  rdfs:subClassOf bioschemas:Sample ;
+  rdfs:label "Sample"@en .
+
+# Data
+isa-ro-crate:Data rdf:type owl:Class ;
+  rdfs:subClassOf schema:MediaObject ;
+  rdfs:label "Data"@en .
+
 isa-ro-crate:Parameter rdf:type owl:Class ;
   rdfs:subClassOf schema:PropertyValue ;
   rdfs:label "Parameter"@en .
