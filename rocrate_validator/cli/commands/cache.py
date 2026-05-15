@@ -207,6 +207,15 @@ def cache_reset(ctx, cache_path: Optional[Path] = None, yes: bool = False):
     metavar="URI",
     help="URL of a remote RO-Crate to download and cache (may be given multiple times)",
 )
+@click.option(
+    "-u",
+    "--url",
+    multiple=True,
+    type=click.STRING,
+    default=None,
+    metavar="URL",
+    help="Arbitrary URL to fetch and cache (may be given multiple times)",
+)
 @click.pass_context
 def cache_warm(
     ctx,
@@ -216,12 +225,21 @@ def cache_warm(
     profile_identifier: Optional[List[str]] = None,
     all_profiles: bool = False,
     crate: Optional[List[str]] = None,
+    url: Optional[List[str]] = None,
 ):
     """
     Pre-populate the HTTP cache with resources declared by profiles and with
     optional remote RO-Crate URLs.
     """
     console = ctx.obj['console']
+    explicit_urls = list(url or [])
+    invalid_urls = [u for u in explicit_urls if not u.lower().startswith(("http://", "https://"))]
+    if invalid_urls:
+        raise click.BadParameter(
+            f"expected an http(s):// address; got: {', '.join(invalid_urls)}",
+            param_hint="'--url' / '-u'",
+        )
+
     exit_with_failure = False
     try:
         resolved_cache = _resolve_cache_path(cache_path)
@@ -233,7 +251,10 @@ def cache_warm(
         urls: List[str] = []
         profile_scope: Optional[str] = None
 
-        if all_profiles or requested_ids or not crate:
+        # Only fall back to "warm all profiles" when the user gave no other
+        # source (no -p, no --crate, no --url, no --all-profiles).
+        any_explicit_source = bool(crate or explicit_urls or requested_ids or all_profiles)
+        if all_profiles or requested_ids or not any_explicit_source:
             Profile.load_profiles(
                 profiles_path=profiles_dir,
                 extra_profiles_path=extra_dir,
@@ -294,6 +315,12 @@ def cache_warm(
                 f"[bold]Fetching remote RO-Crates[/bold] ([cyan]{len(crate)}[/cyan] URL(s))..."
             )
             results.extend(_warm_remote_crates(list(crate)))
+
+        if explicit_urls:
+            console.print(
+                f"[bold]Fetching explicit URLs[/bold] ([cyan]{len(explicit_urls)}[/cyan] URL(s))..."
+            )
+            results.extend(warm_up_urls(explicit_urls))
 
         if not results:
             console.print("[yellow]Nothing to warm up.[/yellow]")
