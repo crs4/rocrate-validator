@@ -175,7 +175,6 @@ def cache_list(
 
         table = Table(title=f"HTTP Cache entries ({len(entries)})", show_lines=False)
         table.add_column("URL", overflow="fold")
-        table.add_column("Status", justify="right")
         table.add_column("Size", justify="right")
         table.add_column("Content-Type")
         table.add_column("Created")
@@ -185,7 +184,6 @@ def cache_list(
             total += e["size"]
             table.add_row(
                 e["url"],
-                str(e["status"] if e["status"] is not None else "—"),
                 _format_bytes(e["size"]),
                 e["content_type"] or "—",
                 _format_dt(e["created_at"]),
