@@ -60,7 +60,7 @@ from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.cache_warmup import auto_warm_up_for_settings
 from rocrate_validator.utils.collections import MapIndex, MultiIndexMap
 from rocrate_validator.utils.document_loader import install_document_loader
-from rocrate_validator.utils.http import HttpRequester
+from rocrate_validator.utils.http import HttpRequester, find_offline_cache_miss
 from rocrate_validator.utils.paths import (
     get_default_http_cache_path,
     get_profiles_path,
@@ -1179,10 +1179,13 @@ class Requirement(ABC):
                 continue
             except Exception as e:
                 # Ignore the fact that the check failed as far as the validation result is concerned.
-                logger.warning("Unexpected error during check %s.  Exception: %s", check, e)
-                logger.warning("Consider reporting this as a bug.")
-                if logger.isEnabledFor(logging.DEBUG):
-                    logger.exception(e)
+                if context.maybe_warn_offline_cache_miss(e):
+                    logger.debug("Offline cache miss during check %s: %s", check, e)
+                else:
+                    logger.warning("Unexpected error during check %s.  Exception: %s", check, e)
+                    logger.warning("Consider reporting this as a bug.")
+                    if logger.isEnabledFor(logging.DEBUG):
+                        logger.exception(e)
         skipped_checks = set(self._checks) - set(checks_to_perform)
         context.result.skipped_checks.update(skipped_checks)
         logger.debug(
@@ -3131,6 +3134,8 @@ class ValidationContext:
         self._result = None
         # additional properties for the context
         self._properties = {}
+        # URLs already reported as missing from the HTTP cache during this run
+        self._offline_cache_misses_warned: set[str] = set()
 
         # initialize the ROCrate object
         if settings.metadata_dict:
@@ -3466,3 +3471,21 @@ class ValidationContext:
             if p.identifier == identifier:
                 return p
         raise ProfileNotFound(identifier)
+
+    def maybe_warn_offline_cache_miss(self, exc: BaseException) -> bool:
+        """
+        If ``exc`` (or any cause/context in its chain) is an
+        :class:`OfflineCacheMissError`, emit a single user-facing warning
+        for the missing URL — but only the first time that URL is seen
+        during this validation run — and return ``True``.
+
+        Returns ``False`` when the exception is unrelated to offline cache
+        misses, so callers can fall back to their generic handling.
+        """
+        miss = find_offline_cache_miss(exc)
+        if miss is None:
+            return False
+        if miss.url not in self._offline_cache_misses_warned:
+            self._offline_cache_misses_warned.add(miss.url)
+            logger.warning("%s", miss)
+        return True

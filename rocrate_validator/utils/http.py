@@ -71,6 +71,22 @@ class OfflineCacheMissError(RuntimeError):
         self.url = url
 
 
+def find_offline_cache_miss(exc: BaseException) -> Optional[OfflineCacheMissError]:
+    """
+    Walk the chain of an exception (``__cause__``/``__context__``) looking
+    for an :class:`OfflineCacheMissError`. Returns the first match, or
+    ``None`` if the chain does not contain one.
+    """
+    seen: set[int] = set()
+    current: Optional[BaseException] = exc
+    while current is not None and id(current) not in seen:
+        seen.add(id(current))
+        if isinstance(current, OfflineCacheMissError):
+            return current
+        current = current.__cause__ or current.__context__
+    return None
+
+
 class HttpRequester:
     """
     A singleton class to handle HTTP requests.
