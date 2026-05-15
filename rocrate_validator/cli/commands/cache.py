@@ -242,12 +242,35 @@ def cache_warm(
             if requested_ids:
                 selected = []
                 missing = []
+                # (requested, resolved, all candidates) for tokens that matched
+                # more than one versioned profile — we warn so the user knows
+                # which one was picked and how to opt for a different version.
+                ambiguous_fallbacks = []
                 for ident in requested_ids:
                     profile = Profile.get_by_identifier(ident)
+                    if profile is None:
+                        # Mirror the fallback used by `validate`: if no exact
+                        # identifier match, treat the value as a token and
+                        # pick the highest-version profile sharing it.
+                        candidates = Profile.get_by_token(ident) or []
+                        if candidates:
+                            profile = max(candidates, key=lambda p: p.version)
+                            if len(candidates) > 1:
+                                ambiguous_fallbacks.append((ident, profile, candidates))
                     if profile is None:
                         missing.append(ident)
                     else:
                         selected.append(profile)
+                for requested, resolved, candidates in ambiguous_fallbacks:
+                    other_versions = sorted(
+                        p.identifier for p in candidates if p.identifier != resolved.identifier
+                    )
+                    console.print(
+                        f"[yellow]Note:[/yellow] '{requested}' matched multiple profiles; "
+                        f"using [cyan]{resolved.identifier}[/cyan] (highest version). "
+                        f"Pass the full identifier to pick a different one "
+                        f"(available: {', '.join(other_versions)})."
+                    )
                 if missing:
                     console.print(
                         f"[yellow]Profile(s) not found and skipped:[/yellow] {', '.join(missing)}"
