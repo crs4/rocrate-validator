@@ -19,8 +19,11 @@ used by the validator.
 
 from __future__ import annotations
 
+import copy as _copy
+import json
 import shutil
 import tempfile
+from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
 
@@ -30,11 +33,9 @@ from rocrate_validator.cli.commands.errors import handle_error
 from rocrate_validator.cli.main import cli, click
 from rocrate_validator.models import Profile
 from rocrate_validator.utils import log as logging
-from rocrate_validator.utils.cache_warmup import (
-    WarmUpResult, discover_cacheable_urls_from_profiles, warm_up_urls)
+from rocrate_validator.utils.cache_warmup import WarmUpResult, discover_cacheable_urls_from_profiles, warm_up_urls
 from rocrate_validator.utils.http import HttpRequester
-from rocrate_validator.utils.paths import (get_default_http_cache_path,
-                                           get_profiles_path)
+from rocrate_validator.utils.paths import get_default_http_cache_path, get_profiles_path
 
 logger = logging.getLogger(__name__)
 
@@ -96,6 +97,102 @@ def cache_info(ctx, cache_path: Optional[Path] = None):
         size = info.get("size_bytes", 0) or 0
         table.add_row("Size", _format_bytes(size))
         console.print(table)
+    except Exception as e:
+        handle_error(e, console)
+
+
+@cache.command("list")
+@click.option(
+    "--cache-path",
+    type=click.Path(),
+    default=None,
+    show_default=False,
+    help="Path to the HTTP cache directory (defaults to the user cache dir)",
+)
+@click.option(
+    "--url",
+    "url_filter",
+    type=click.STRING,
+    default=None,
+    metavar="SUBSTRING",
+    help="Show only entries whose URL contains SUBSTRING (case-insensitive)",
+)
+@click.option(
+    "--sort",
+    "sort_by",
+    type=click.Choice(["url", "size", "created"], case_sensitive=False),
+    default="created",
+    show_default=True,
+    help="Field to sort entries by",
+)
+@click.option(
+    "--order",
+    "sort_order",
+    type=click.Choice(["asc", "desc"], case_sensitive=False),
+    default=None,
+    show_default=False,
+    help="Sort direction (default: desc for size/created, asc for url)",
+)
+@click.option(
+    "--json",
+    "as_json",
+    is_flag=True,
+    default=False,
+    help="Print entries as JSON (size in bytes, datetimes as ISO 8601)",
+)
+@click.pass_context
+def cache_list(
+    ctx,
+    cache_path: Optional[Path] = None,
+    url_filter: Optional[str] = None,
+    sort_by: str = "created",
+    sort_order: Optional[str] = None,
+    as_json: bool = False,
+):
+    """
+    List entries currently stored in the HTTP cache (alias: `ls`).
+    """
+    console = ctx.obj['console']
+    try:
+        resolved = _resolve_cache_path(cache_path)
+        _reset_requester(resolved)
+        entries = _collect_cache_entries(
+            url_filter=url_filter,
+            sort_by=sort_by.lower(),
+            sort_order=sort_order.lower() if sort_order else None,
+        )
+
+        if as_json:
+            click.echo(json.dumps([_entry_to_dict(e) for e in entries], indent=2))
+            return
+
+        if not entries:
+            if url_filter:
+                console.print(f"[yellow]No entries match URL filter:[/yellow] {url_filter}")
+            else:
+                console.print("[yellow]Cache is empty.[/yellow]")
+            return
+
+        table = Table(title=f"HTTP Cache entries ({len(entries)})", show_lines=False)
+        table.add_column("URL", overflow="fold")
+        table.add_column("Status", justify="right")
+        table.add_column("Size", justify="right")
+        table.add_column("Content-Type")
+        table.add_column("Created")
+        table.add_column("Expires")
+        total = 0
+        for e in entries:
+            total += e["size"]
+            table.add_row(
+                e["url"],
+                str(e["status"] if e["status"] is not None else "—"),
+                _format_bytes(e["size"]),
+                e["content_type"] or "—",
+                _format_dt(e["created_at"]),
+                _format_expires(e["expires"], e["is_expired"]),
+            )
+        console.print(table)
+        console.print(f"[bold]Total:[/bold] {len(entries)} entries, {_format_bytes(total)}")
     except Exception as e:
         handle_error(e, console)
 
@@ -389,3 +486,93 @@ def _format_bytes(size: int) -> str:
         value /= 1024
         idx += 1
     return f"{value:.2f} {units[idx]}"
+
+
+def _format_dt(value: Optional[datetime]) -> str:
+    if value is None:
+        return "—"
+    return value.strftime("%Y-%m-%d %H:%M:%SZ") if value.tzinfo else value.strftime("%Y-%m-%d %H:%M:%S")
+
+
+def _format_expires(value: Optional[datetime], is_expired: bool) -> str:
+    if value is None:
+        return "never"
+    formatted = _format_dt(value)
+    return f"[red]{formatted} (expired)[/red]" if is_expired else formatted
+
+
+_DEFAULT_SORT_ORDER = {"url": "asc", "size": "desc", "created": "desc"}
+
+
+def _collect_cache_entries(
+    url_filter: Optional[str] = None,
+    sort_by: str = "size",
+    sort_order: Optional[str] = None,
+) -> List[dict]:
+    """
+    Read every cached response and return a list of plain dicts. Filtering
+    and sorting happen here so the CLI rendering paths (table / JSON) share
+    the same data shape.
+
+    ``sort_order`` is one of ``"asc"``/``"desc"`` or ``None`` to use the
+    field's natural default (URLs sort ascending; size and timestamps sort
+    descending so the largest/most recent come first).
+    """
+    cache = getattr(HttpRequester().session, "cache", None)
+    if cache is None:
+        return []
+    needle = url_filter.lower() if url_filter else None
+    entries: List[dict] = []
+    responses = getattr(cache, "responses", None) or {}
+    for key in list(responses):
+        try:
+            resp = responses[key]
+        except Exception as exc:
+            logger.debug("Skipping unreadable cache entry %s: %s", key, exc)
+            continue
+        url = getattr(resp, "url", "") or ""
+        if needle and needle not in url.lower():
+            continue
+        entries.append({
+            "key": key,
+            "url": url,
+            "status": getattr(resp, "status_code", None),
+            "size": int(getattr(resp, "size", 0) or 0),
+            "content_type": (getattr(resp, "headers", {}) or {}).get("Content-Type"),
+            "created_at": getattr(resp, "created_at", None),
+            "expires": getattr(resp, "expires", None),
+            "is_expired": bool(getattr(resp, "is_expired", False)),
+        })
+    effective_order = sort_order or _DEFAULT_SORT_ORDER.get(sort_by, "desc")
+    reverse = effective_order == "desc"
+    if sort_by == "url":
+        entries.sort(key=lambda e: e["url"].lower(), reverse=reverse)
+    elif sort_by == "created":
+        entries.sort(key=lambda e: e["created_at"] or datetime.min, reverse=reverse)
+    else:  # "size"
+        entries.sort(key=lambda e: e["size"], reverse=reverse)
+    return entries
+
+
+def _entry_to_dict(entry: dict) -> dict:
+    """JSON-safe view of an entry produced by ``_collect_cache_entries``."""
+    def _iso(value: Optional[datetime]) -> Optional[str]:
+        return value.isoformat() if value is not None else None
+    return {
+        "url": entry["url"],
+        "status": entry["status"],
+        "size_bytes": entry["size"],
+        "content_type": entry["content_type"],
+        "created_at": _iso(entry["created_at"]),
+        "expires": _iso(entry["expires"]),
+        "is_expired": entry["is_expired"],
+    }
+
+
+# Shell-style alias: `cache ls` runs the same callback as `cache list`.
+# A shallow copy gives the alias its own name and hides it from --help so
+# the command appears only once in the listing.
+_cache_ls_alias = _copy.copy(cache_list)
+_cache_ls_alias.name = "ls"
+_cache_ls_alias.hidden = True
+cache.add_command(_cache_ls_alias)
