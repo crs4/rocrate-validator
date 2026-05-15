@@ -50,6 +50,30 @@ SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER = check_local_data_entity_exis
 
 
 @pytest.fixture(scope="session", autouse=True)
+def _session_wide_terminal():
+    """
+    Force Rich (and other ``os.get_terminal_size`` consumers) to render with
+    a wide terminal. ``click.testing.CliRunner`` captures stdout into a
+    StringIO, so Rich falls back to its 80-column default and truncates
+    table cells / wraps panel rows — breaking ``"substring" in result.output``
+    assertions in a non-deterministic way. Setting ``COLUMNS`` early keeps
+    the rendered output predictable across machines and CI.
+    """
+    previous_columns = os.environ.get("COLUMNS")
+    previous_lines = os.environ.get("LINES")
+    os.environ["COLUMNS"] = "200"
+    os.environ["LINES"] = "50"
+    try:
+        yield
+    finally:
+        for name, prev in (("COLUMNS", previous_columns), ("LINES", previous_lines)):
+            if prev is None:
+                os.environ.pop(name, None)
+            else:
+                os.environ[name] = prev
+
+
+@pytest.fixture(scope="session", autouse=True)
 def _session_isolated_xdg(tmp_path_factory):
     """
     Redirect the XDG user cache to a per-session temporary directory so that
