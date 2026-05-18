@@ -35,7 +35,7 @@ isa-ro-crate:FindISAProtocols a sh:NodeShape, validator:HiddenShape;
         sh:subject sh:this ;
         sh:predicate rdf:type ;
         sh:object isa-ro-crate:Protocol ;
-        # The condition: need to be attached to a Study or Assay
+        # The condition: need to be attached to a Process
         sh:condition [
             sh:property [
                 sh:path [ sh:inversePath bioschemas-prop:executesLabProtocol ] ;

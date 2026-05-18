@@ -35,7 +35,7 @@ isa-ro-crate:FindISAPerson a sh:NodeShape, validator:HiddenShape;
         sh:subject sh:this ;
         sh:predicate rdf:type ;
         sh:object isa-ro-crate:Person ;
-        # The condition: need to be attached to a Study or Assay
+        # The condition: need to be attached to a Investigation, Study, Assay, Process, or Article
         sh:condition [
             a sh:NodeShape;
             sh:name: "Person is attached to an Investigation, Study, Assay, Process, or Article" ;
