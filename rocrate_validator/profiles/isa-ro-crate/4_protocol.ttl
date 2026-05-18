@@ -24,14 +24,36 @@
 @prefix validator: <https://github.com/crs4/rocrate-validator/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-
+isa-ro-crate:FindISAProtocols a sh:NodeShape, validator:HiddenShape;
+    sh:name "Identify ISA protocols within the RO-Crate" ;
+    sh:description "A Protocol has type LabProtocol and is attached to an ISA process." ;
+    sh:targetClass bioschemas:LabProtocol ;
+    sh:order 3 ;
+    # Expand data graph with triples from the file data entity
+    sh:rule [
+        a sh:TripleRule ;
+        sh:subject sh:this ;
+        sh:predicate rdf:type ;
+        sh:object isa-ro-crate:Protocol ;
+        # The condition: need to be attached to a Process
+        sh:condition [
+            sh:property [
+                sh:path [ sh:inversePath bioschemas-prop:executesLabProtocol ] ;
+                sh:qualifiedValueShape [ 
+                    sh:class isa-ro-crate:Process ;
+                ] ;
+                sh:qualifiedMinCount 1 ;
+            ] ;
+        ] ;
+    ] ;
+.
 
 # check protocol attributes must have correct types
 
 isa-ro-crate:ProtocolShouldHaveNameOfCorrectType a sh:NodeShape ;
     sh:name "Protocol SHOULD have name" ;
     sh:description "A Protocol SHOULD have a name" ;
-    sh:targetClass bioschemas:LabProtocol ;
+    sh:targetClass isa-ro-crate:Protocol ;
     sh:property [
         a sh:PropertyShape ;
         sh:path schema:name ;
@@ -57,7 +79,7 @@ isa-ro-crate:ProtocolShouldHaveNameOfCorrectType a sh:NodeShape ;
 isa-ro-crate:ProtocolShouldHaveDescriptionOfCorrectType a sh:NodeShape ;
     sh:name "Protocol SHOULD have description" ;
     sh:description "A Protocol SHOULD have a description" ;
-    sh:targetClass bioschemas:LabProtocol ;
+    sh:targetClass isa-ro-crate:Protocol ;
     sh:property [
         a sh:PropertyShape ;
         sh:path schema:description ;
@@ -83,7 +105,7 @@ isa-ro-crate:ProtocolShouldHaveDescriptionOfCorrectType a sh:NodeShape ;
 isa-ro-crate:ProtocolShouldHaveIntendedUse a sh:NodeShape ;
     sh:name "Protocol SHOULD have intended use" ;
     sh:description "A Protocol SHOULD have an intended use" ;
-    sh:targetClass bioschemas:LabProtocol ;
+    sh:targetClass isa-ro-crate:Protocol ;
     sh:property [
         a sh:PropertyShape ;
         sh:path bioschemas-prop:intendedUse ;

@@ -24,6 +24,33 @@
 @prefix validator: <https://github.com/crs4/rocrate-validator/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
+isa-ro-crate:FindISAProcesses a sh:NodeShape, validator:HiddenShape;
+    sh:name "Identify ISA processes within the RO-Crate" ;
+    sh:description "A Process has type LabProcess and is attached to a Study or Assay." ;
+    sh:targetClass bioschemas:LabProcess ;
+    sh:order 2 ;
+    # Expand data graph with triples from the file data entity
+    sh:rule [
+        a sh:TripleRule ;
+        sh:subject sh:this ;
+        sh:predicate rdf:type ;
+        sh:object isa-ro-crate:Process ;
+        # The condition: need to be attached to a Study or Assay
+        sh:condition [
+            sh:property [
+                sh:path [ sh:inversePath schema:about ] ;
+                sh:qualifiedValueShape [ 
+                    sh:or(
+                        [sh:class isa-ro-crate:Assay]
+                        [sh:class isa-ro-crate:Study]
+                    )
+                ] ;
+                sh:qualifiedMinCount 1 ;
+            ] ;
+        ] ;
+    ]
+.
+
 
 
 # check process must have name
@@ -33,7 +60,7 @@
 isa-ro-crate:ProcessMustHaveName a sh:NodeShape ;
     sh:name "Process MUST have name" ;
     sh:description "A Process MUST have a name" ;
-    sh:targetClass bioschemas:LabProcess ;
+    sh:targetClass isa-ro-crate:Process ;
     sh:property [
         a sh:PropertyShape ;
         sh:path schema:name ;
@@ -51,7 +78,7 @@ isa-ro-crate:ProcessMustHaveName a sh:NodeShape ;
 
 isa-ro-crate:ProcessMustBeReferencedFromDataset a sh:NodeShape ;
   sh:name "Process MUST be directly referenced from a dataset" ;
-  sh:targetClass bioschemas:LabProcess ;
+  sh:targetClass isa-ro-crate:Process ;
   sh:property
         [
             a sh:PropertyShape ;
@@ -67,7 +94,7 @@ isa-ro-crate:ProcessMustBeReferencedFromDataset a sh:NodeShape ;
 isa-ro-crate:ProcessShouldHaveObject a sh:NodeShape ;
     sh:name "Process SHOULD have an object" ;
     sh:description "A Process SHOULD have an object" ;
-    sh:targetClass bioschemas:LabProcess ;
+    sh:targetClass isa-ro-crate:Process ;
     sh:property [
         a sh:PropertyShape ;
         sh:path schema:object ;
@@ -93,7 +120,7 @@ isa-ro-crate:ProcessShouldHaveObject a sh:NodeShape ;
 isa-ro-crate:ProcessShouldHaveResult a sh:NodeShape ;
     sh:name "Process SHOULD have a result" ;
     sh:description "A Process SHOULD have a result" ;
-    sh:targetClass bioschemas:LabProcess ;
+    sh:targetClass isa-ro-crate:Process ;
     sh:property [
         a sh:PropertyShape ;
         sh:path schema:result ;
@@ -119,7 +146,7 @@ isa-ro-crate:ProcessShouldHaveResult a sh:NodeShape ;
 isa-ro-crate:ProcessShouldHaveProtocol a sh:NodeShape ;
     sh:name "Process SHOULD have a protocol" ;
     sh:description "A Process SHOULD have a protocol" ;
-    sh:targetClass bioschemas:LabProcess ;
+    sh:targetClass isa-ro-crate:Process ;
     sh:property [
         a sh:PropertyShape ;
         sh:path bioschemas-prop:executesLabProtocol ;
@@ -141,7 +168,7 @@ isa-ro-crate:ProcessShouldHaveProtocol a sh:NodeShape ;
 isa-ro-crate:ProcessShouldHaveParamValue a sh:NodeShape ;
     sh:name "Process SHOULD have a parameter value" ;
     sh:description "A Process SHOULD have a parameter value" ;
-    sh:targetClass bioschemas:LabProcess ;
+    sh:targetClass isa-ro-crate:Process ;
     sh:property [
         a sh:PropertyShape ;
         sh:path bioschemas-prop:parameterValue ;

@@ -24,11 +24,41 @@
 @prefix validator: <https://github.com/crs4/rocrate-validator/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
+isa-ro-crate:FindISAComment a sh:NodeShape, validator:HiddenShape;
+    sh:name "Identify ISA comments within the RO-Crate" ;
+    sh:description "A Comment has type Comment and is attached to an Investigation, Study, Assay, Protocol, Data file, or Publication." ;
+    sh:targetClass schema:Comment ;
+    sh:order 3 ;
+    # Expand data graph with triples from the file data entity
+    sh:rule [
+        a sh:TripleRule ;
+        sh:subject sh:this ;
+        sh:predicate rdf:type ;
+        sh:object isa-ro-crate:Comment ;
+        # The condition: need to be attached to a Investigation, Study, Assay, Protocol, Data file, or Publication
+        sh:condition [
+            sh:property [
+                sh:path [ sh:inversePath schema:comment ] ;
+                sh:qualifiedValueShape [ 
+                    sh:or(
+                        [sh:class ro-crate:RootDataEntity]
+                        [sh:class isa-ro-crate:Study]
+                        [sh:class isa-ro-crate:Assay]
+                        [sh:class isa-ro-crate:Protocol]
+                        [sh:class isa-ro-crate:Data]
+                        [sh:class isa-ro-crate:Article]
+                    )
+                ] ;
+                sh:qualifiedMinCount 1 ;
+            ] ;
+        ] ;
+    ];
+.
 
 isa-ro-crate:CommentShouldHaveName a sh:NodeShape ;
     sh:name "Comment SHOULD have name" ;
     sh:description "A Comment SHOULD have at least one name" ;
-    sh:targetClass schema:Comment ;
+    sh:targetClass isa-ro-crate:Comment ;
     sh:property [
         a sh:PropertyShape ;
         sh:path schema:name ;
@@ -53,7 +83,7 @@ isa-ro-crate:CommentShouldHaveName a sh:NodeShape ;
 isa-ro-crate:CommentShouldHaveText a sh:NodeShape ;
     sh:name "Comment SHOULD have text" ;
     sh:description "A Comment SHOULD have at least one text" ;
-    sh:targetClass schema:Comment ;
+    sh:targetClass isa-ro-crate:Comment ;
     sh:property [
         a sh:PropertyShape ;
         sh:path schema:text ;

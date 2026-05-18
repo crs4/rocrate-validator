@@ -24,11 +24,38 @@
 @prefix validator: <https://github.com/crs4/rocrate-validator/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
+isa-ro-crate:FindISAPublication a sh:NodeShape, validator:HiddenShape;
+    sh:name "Identify ISA publications within the RO-Crate" ;
+    sh:description "A Publication has type ScholarlyArticle and is attached to a Study or Investigation." ;
+    sh:targetClass schema:ScholarlyArticle ;
+    sh:order 2 ;
+    # Expand data graph with triples from the file data entity
+    sh:rule [
+        a sh:TripleRule ;
+        sh:subject sh:this ;
+        sh:predicate rdf:type ;
+        sh:object isa-ro-crate:Article ;
+        # The condition: need to be attached to a Study or Investigation
+        sh:condition [
+            sh:property [
+                sh:path [ sh:inversePath schema:citation ] ;
+                sh:qualifiedValueShape [ 
+                    sh:or(
+                        [sh:class ro-crate:RootDataEntity]
+                        [sh:class isa-ro-crate:Study]
+                    )
+                ] ;
+                sh:qualifiedMinCount 1 ;
+            ] ;
+        ] ;
+    ];
+.
+
 
 isa-ro-crate:ArticleMustHaveHeadline a sh:NodeShape ;
     sh:name "Article MUST have a headline" ;
     sh:description "An Article MUST have a headline" ;
-    sh:targetClass schema:ScholarlyArticle ;
+    sh:targetClass isa-ro-crate:Article ;
     sh:property [
         a sh:PropertyShape ;
         sh:path schema:headline ;
@@ -47,7 +74,7 @@ isa-ro-crate:ArticleMustHaveHeadline a sh:NodeShape ;
 isa-ro-crate:ArticleMustHaveIdentifier a sh:NodeShape ;
     sh:name "Article MUST have an identifier" ;
     sh:description "An Article MUST have an identifier" ;
-    sh:targetClass schema:ScholarlyArticle ;
+    sh:targetClass isa-ro-crate:Article ;
     sh:property [
         a sh:PropertyShape ;
         sh:path schema:identifier ;
@@ -69,7 +96,7 @@ isa-ro-crate:ArticleMustHaveIdentifier a sh:NodeShape ;
 isa-ro-crate:ArticleShouldHaveAuthorOfCorrectType a sh:NodeShape ;
     sh:name "Article SHOULD have author" ;
     sh:description "An Article SHOULD have at least one author" ;
-    sh:targetClass schema:ScholarlyArticle ;
+    sh:targetClass isa-ro-crate:Article ;
     sh:property [
         a sh:PropertyShape ;
         sh:path schema:author ;

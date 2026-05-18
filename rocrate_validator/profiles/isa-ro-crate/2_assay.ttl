@@ -23,39 +23,11 @@
 @prefix validator: <https://github.com/crs4/rocrate-validator/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-
-# check assay must have name
-
-# check assay must be pointed to by investigation through hasPart
-
-# Find assays and add isa-ro-crate:Assay type to them, for easier retrieval for checks
-# ro-crate:FindAssays a sh:NodeShape, validator:HiddenShape;
-#     sh:name "Identify Assays within the RO-Crate" ;
-#     sh:description "An Assay has type Dataset and additionalType 'Assay'." ;
-#     sh:target [
-#         a sh:SPARQLTarget ;
-#         sh:prefixes ro-crate:sparqlPrefixes ;
-#         sh:select """
-#             SELECT ?this
-#             WHERE {
-#                 ?this a schema:Dataset .
-#                 ?this schema:additionalType "Assay" .
-#             }
-#         """
-#     ] ;
-
-#     # Expand data graph with triples from the file data entity
-#     sh:rule [
-#         a sh:TripleRule ;
-#         sh:subject sh:this ;
-#         sh:predicate rdf:type ;
-#         sh:object isa-ro-crate:Assay ;
-#     ] .
-
-ro-crate:FindAssays a sh:NodeShape, validator:HiddenShape;
+isa-ro-crate:FindAssays a sh:NodeShape, validator:HiddenShape;
     sh:name "Identify Assays within the RO-Crate" ;
     sh:description "An Assay has type Dataset and additionalType 'Assay'." ;
     sh:targetClass schema:Dataset ;
+    sh:order 1 ; 
     # Expand data graph with triples from the file data entity
     sh:rule [
         a sh:TripleRule ;
@@ -72,7 +44,6 @@ ro-crate:FindAssays a sh:NodeShape, validator:HiddenShape;
     ]
 .
 
-# WIP
 isa-ro-crate:AssayMustHaveBaseDescriptors a sh:NodeShape ;
     sh:name "Assay MUST have base properties" ;
     sh:description "An Assay MUST have identifier" ;

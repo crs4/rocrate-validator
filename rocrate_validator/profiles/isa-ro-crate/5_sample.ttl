@@ -24,14 +24,51 @@
 @prefix validator: <https://github.com/crs4/rocrate-validator/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-
+isa-ro-crate:FindISASamples a sh:NodeShape, validator:HiddenShape;
+    sh:name "Identify ISA samples within the RO-Crate" ;
+    sh:description "A Sample has type Sample and is attached to an ISA process." ;
+    sh:targetClass bioschemas:Sample ;
+    sh:order 3 ;
+    # Expand data graph with triples from the file data entity
+    sh:rule [
+        a sh:TripleRule ;
+        sh:subject sh:this ;
+        sh:predicate rdf:type ;
+        sh:object isa-ro-crate:Sample ;
+        # The condition: need to be attached to a Process
+        sh:condition [
+            a sh:NodeShape ;
+            sh:name "Sample is attached to a process" ;
+            sh:or(
+                [
+                    sh:property [
+                        sh:path [ sh:inversePath schema:object ] ;
+                        sh:qualifiedValueShape [ 
+                            sh:class isa-ro-crate:Process
+                        ] ;
+                        sh:qualifiedMinCount 1 ;
+                    ] 
+                ]
+                [
+                    sh:property [
+                        sh:path [ sh:inversePath schema:result ] ;
+                        sh:qualifiedValueShape [ 
+                            sh:class isa-ro-crate:Process
+                        ] ;
+                        sh:qualifiedMinCount 1 ;
+                    ] 
+                ]
+            ) ;
+        ] ;
+    ] ;
+.
 
 # check Sample attributes must have correct types
 
 isa-ro-crate:SampledMustHaveName a sh:NodeShape ;
     sh:name "Sample MUST have name" ;
     sh:description "A Sample MUST have a name" ;
-    sh:targetClass bioschemas:Sample ;
+    sh:targetClass isa-ro-crate:Sample ;
     sh:property [
         a sh:PropertyShape ;
         sh:path schema:name ;
@@ -50,7 +87,7 @@ isa-ro-crate:SampledMustHaveName a sh:NodeShape ;
 isa-ro-crate:SampleShouldHaveAdditionalPropertyOfCorrectType a sh:NodeShape ;
     sh:name "Sample SHOULD have additional properties" ;
     sh:description "A Sample SHOULD have at least one additional property" ;
-    sh:targetClass bioschemas:Sample ;
+    sh:targetClass isa-ro-crate:Sample ;
     sh:property [
         a sh:PropertyShape ;
         sh:path bioschemas-prop:additionalProperty ;

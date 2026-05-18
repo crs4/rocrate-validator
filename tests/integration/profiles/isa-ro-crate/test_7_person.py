@@ -54,6 +54,45 @@ def test_isa_person_given_name():
     )
 
 
+def test_isa_person_not_correctly_referenced():
+    """
+    Test an ISA RO-Crate where an invalid person is not correctly referenced.
+    Such persons should be ignored, meaning the validation should pass.
+    """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        PREFIX bioschemas: <https://bioschemas.org/>
+        PREFIX bioschemas-prop: <https://bioschemas.org/properties/>
+        DELETE {
+            ?dataset schema:creator ?person .
+            ?person schema:givenName ?name .
+            ?article schema:author ?person .
+        }
+        INSERT {
+            ?dataset schema:mentions ?person .
+        }
+        WHERE {
+            ?dataset a schema:Dataset .
+            ?person a schema:Person .
+            ?article a schema:ScholarlyArticle .
+            ?article schema:author ?person .
+            ?dataset schema:creator ?person .
+            ?person schema:givenName ?name .
+        }
+        """
+    )
+
+    do_entity_test(
+        rocrate_path=ValidROC().isa_ro_crate,
+        requirement_severity=Severity.REQUIRED,
+        expected_validation_result=True,
+        profile_identifier="isa-ro-crate",
+        rocrate_entity_mod_sparql=sparql,
+        disable_inherited_profiles_issue_reporting=True,
+    )
+
+
 def test_isa_person_given_name_of_incorrect_type():
     """
     Test an ISA RO-Crate where a person given name has wrong type.
