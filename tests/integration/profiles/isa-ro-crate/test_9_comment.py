@@ -81,3 +81,39 @@ def test_isa_comment_text_of_incorrect_type():
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
     )
+
+
+def test_isa_comment_not_correctly_referenced():
+    """
+    Test an ISA RO-Crate where an invalid comment is not correctly referenced.
+    Such comments should be ignored, meaning the validation should pass.
+    """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        PREFIX bioschemas: <https://bioschemas.org/>
+        PREFIX bioschemas-prop: <https://bioschemas.org/properties/>
+        DELETE {
+            ?publication schema:comment ?comment .
+            ?comment schema:text ?text .
+        }
+        INSERT {
+            ?publication schema:mentions ?comment .
+            ?comment schema:text 42 .
+        }
+        WHERE {
+            ?publication a schema:ScholarlyArticle .
+            ?comment a schema:Comment .
+            ?comment schema:text ?text .
+        }
+        """
+    )
+
+    do_entity_test(
+        rocrate_path=ValidROC().isa_ro_crate,
+        requirement_severity=Severity.REQUIRED,
+        expected_validation_result=True,
+        profile_identifier="isa-ro-crate",
+        rocrate_entity_mod_sparql=sparql,
+        disable_inherited_profiles_issue_reporting=True,
+    )

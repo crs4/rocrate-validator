@@ -55,6 +55,42 @@ def test_isa_sample_name():
     )
 
 
+def test_isa_sample_not_correctly_referenced_from_process():
+    """
+    Test an ISA RO-Crate where an invalid Sample is not correctly referenced.
+    Such samples should be ignored, meaning the validation should pass.
+    """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        PREFIX bioschemas: <https://bioschemas.org/>
+        PREFIX bioschemas-prop: <https://bioschemas.org/properties/>
+        DELETE {
+            ?process schema:object ?sample .
+            ?sample schema:name ?name .
+        }
+        INSERT {
+            ?process schema:mentions ?sample .
+        }
+        WHERE {
+            ?process a bioschemas:LabProcess .
+            ?sample a bioschemas:Sample .
+            ?process schema:object ?sample .
+            ?sample schema:name ?name .
+        }
+        """
+    )
+
+    do_entity_test(
+        rocrate_path=ValidROC().isa_ro_crate,
+        requirement_severity=Severity.REQUIRED,
+        expected_validation_result=True,
+        profile_identifier="isa-ro-crate",
+        rocrate_entity_mod_sparql=sparql,
+        disable_inherited_profiles_issue_reporting=True,
+    )
+
+
 def test_isa_sample_name_of_incorrect_type():
     """
     Test an ISA RO-Crate where a sample name has wrong type.

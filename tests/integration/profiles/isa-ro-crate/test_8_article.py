@@ -54,6 +54,41 @@ def test_isa_article_headline():
     )
 
 
+def test_isa_publication_not_correctly_referenced():
+    """
+    Test an ISA RO-Crate where an invalid publication is not correctly referenced.
+    Such publications should be ignored, meaning the validation should pass.
+    """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        PREFIX bioschemas: <https://bioschemas.org/>
+        PREFIX bioschemas-prop: <https://bioschemas.org/properties/>
+        DELETE {
+            ?dataset schema:citation ?publication .
+            ?publication schema:headline ?headline .
+        }
+        INSERT {
+            ?dataset schema:mentions ?publication .
+        }
+        WHERE {
+            ?dataset a schema:Dataset .
+            ?publication a schema:ScholarlyArticle .
+            ?publication schema:headline ?headline .
+        }
+        """
+    )
+
+    do_entity_test(
+        rocrate_path=ValidROC().isa_ro_crate,
+        requirement_severity=Severity.REQUIRED,
+        expected_validation_result=True,
+        profile_identifier="isa-ro-crate",
+        rocrate_entity_mod_sparql=sparql,
+        disable_inherited_profiles_issue_reporting=True,
+    )
+
+
 def test_isa_article_headline_of_incorrect_type():
     """
     Test an ISA RO-Crate where an article headline has wrong type.

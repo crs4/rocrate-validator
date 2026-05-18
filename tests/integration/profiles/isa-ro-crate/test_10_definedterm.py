@@ -31,6 +31,8 @@ def test_isa_defined_term_name():
     sparql = (
         SPARQL_PREFIXES
         + """
+        PREFIX bioschemas: <https://bioschemas.org/>
+        PREFIX bioschemas-prop: <https://bioschemas.org/properties/>
         DELETE {
             ?defined_term schema:name ?name .
         }
@@ -145,4 +147,48 @@ def test_isa_defined_term_termCode_of_incorrect_type():
         expected_triggered_issues=["DefinedTerm termCode MUST be of type string"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
+    )
+
+
+def test_isa_term_not_correctly_referenced():
+    """
+    Test an ISA RO-Crate where an invalid defined term is not correctly referenced.
+    Such defined terms should be ignored, meaning the validation should pass.
+    """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        PREFIX bioschemas: <https://bioschemas.org/>
+        PREFIX bioschemas-prop: <https://bioschemas.org/properties/>
+        DELETE {
+            ?protocol bioschemas-prop:intendedUse ?term .
+            ?person schema:jobTitle ?term .
+            ?assay schema:measurementTechnique ?term .
+            ?assay schema:measurementMethod ?term .
+            ?term schema:name ?name .
+        }
+        INSERT {
+            ?assay schema:mentions ?term .
+        }
+        WHERE {
+            ?protocol a bioschemas:LabProtocol .
+            ?person a schema:Person .
+            ?assay a schema:Dataset .
+            ?term a schema:DefinedTerm .
+            ?term schema:name ?name .
+            ?protocol bioschemas-prop:intendedUse ?term .
+            ?person schema:jobTitle ?term .
+            ?assay schema:measurementTechnique ?term .
+            ?assay schema:measurementMethod ?term .
+        }
+        """
+    )
+
+    do_entity_test(
+        rocrate_path=ValidROC().isa_ro_crate,
+        requirement_severity=Severity.REQUIRED,
+        expected_validation_result=True,
+        profile_identifier="isa-ro-crate",
+        rocrate_entity_mod_sparql=sparql,
+        disable_inherited_profiles_issue_reporting=True,
     )
