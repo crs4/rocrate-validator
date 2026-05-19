@@ -25,11 +25,52 @@ from rocrate_validator.utils.uri import URI
 def test_valid_url():
     uri = URI("http://example.com")
     assert uri.is_remote_resource()
+    assert uri.is_natively_checkable()
+    assert uri.has_supported_rocrate_scheme()
+
+
+def test_uri_with_unknown_scheme_is_accepted_but_not_supported_as_rocrate_root():
+    # Schemes outside the natively-supported set are valid URIs (they may
+    # appear as Data Entity identifiers, e.g. scp://, s3://) but they are
+    # not accepted as RO-Crate root URIs.
+    uri = URI("httpx:///example.com")
+    assert uri.is_remote_resource()
+    assert not uri.is_natively_checkable()
+    assert not uri.has_supported_rocrate_scheme()
 
 
 def test_invalid_url():
+    # A bare token without any scheme/path separator is not a valid URI.
     with pytest.raises(ValueError):
-        URI("httpx:///example.com")
+        URI("")
+
+
+def test_scp_uri_is_remote():
+    uri = URI("scp://transfer.example.org//data/A.0.0")
+    assert uri.is_remote_resource()
+    assert uri.is_known_remote_scheme()
+    assert not uri.is_natively_checkable()
+
+
+def test_s3_uri_is_remote():
+    uri = URI("s3://bucket/key/path")
+    assert uri.is_remote_resource()
+    assert uri.is_known_remote_scheme()
+    assert not uri.is_natively_checkable()
+
+
+@pytest.mark.parametrize("uri_str,expected_scheme", [
+    # Scheme-only (no authority) absolute URIs are valid per RFC 3986 and
+    # accepted by RO-Crate 1.1 § 4.2.2 as Data Entity `@id` values.
+    ("urn:doi:10.5281/zenodo.1234", "urn"),
+    ("doi:10.5281/zenodo.1234", "doi"),
+    ("arcp://name,foo/bar", "arcp"),
+])
+def test_scheme_only_absolute_uri_is_remote(uri_str, expected_scheme):
+    uri = URI(uri_str)
+    assert uri.scheme == expected_scheme
+    assert uri.is_remote_resource()
+    assert not uri.is_natively_checkable()
 
 
 def test_url_with_query_params():
@@ -131,10 +172,12 @@ def test_rocrate_uri_remote_valid():
 
 
 def test_rocrate_uri_remote_invalid():
-
-    with pytest.raises(ValueError) as excinfo:
-        URI("httpx:///example.com")
-    assert str(excinfo.value) == "Invalid URI: httpx:///example.com"
+    # An unknown scheme is a valid URI but cannot be used as an RO-Crate root.
+    uri = URI("httpx:///example.com")
+    assert not validate_rocrate_uri(uri, silent=True), \
+        f"The URI {uri} should not be accepted as an RO-Crate root"
+    with pytest.raises(ROCrateInvalidURIError):
+        validate_rocrate_uri(uri, silent=False)
 
     # Test with an invalid remote URL
     uri = URI("https:///example.com")
