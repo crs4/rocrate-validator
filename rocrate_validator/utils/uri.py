@@ -15,7 +15,7 @@
 import re
 from pathlib import Path
 from typing import Optional, Union
-from urllib.parse import ParseResult, parse_qsl, urlparse
+from urllib.parse import ParseResult, parse_qsl, urlparse, urlsplit
 
 from rocrate_validator import errors
 from rocrate_validator.utils import log as logging
@@ -23,6 +23,47 @@ from rocrate_validator.utils.http import HttpRequester
 
 # set up logging
 logger = logging.getLogger(__name__)
+
+
+# RFC 3986 §3.1: scheme = ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
+# Require length >= 2 to disambiguate from Windows drive letters
+# (e.g. ``C:\path``). RFC 3986 allows single-character schemes but no
+# IANA-registered scheme is one character long, so this is an acceptable
+# trade-off.
+_SCHEME_RE = re.compile(r"^[A-Za-z][A-Za-z0-9+\-.]+$")
+
+
+def is_external_reference(value: object) -> bool:
+    """
+    Check if `value` is an external reference (i.e. has a URI scheme).
+
+    Return True if *value* has an explicit URI or IRI scheme (RFC 3986 for URI, and RFC 3987 for IRIs).
+    Both authority-based forms (``http://...``)
+    and scheme-only forms (``urn:...``, ``doi:...``, ``arcp://...``) are
+    accepted, as required by RO-Crate 1.1 §4.2.2.
+
+    The check is purely syntactic: the scheme is not verified against
+    the IANA registry and the hier-part is not resolved.
+    """
+    if not isinstance(value, str) or not value:
+        return False
+
+    try:
+        parts = urlsplit(value)
+    except ValueError:
+        # urlsplit can raise on malformed IPv6 literals, invalid ports, etc.
+        return False
+
+    # Scheme must conform to RFC 3986 (and be at least 2 chars long).
+    if not _SCHEME_RE.match(parts.scheme):
+        return False
+
+    # Reject scheme-only input (``urn:``, ``doi:``): syntactically valid
+    # per the grammar but semantically unusable as an identifier.
+    if not (parts.netloc or parts.path or parts.query or parts.fragment):
+        return False
+
+    return True
 
 
 class URI:
