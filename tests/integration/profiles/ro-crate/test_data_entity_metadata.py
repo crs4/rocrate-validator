@@ -12,9 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 import logging
 
-from rocrate_validator import models
+import pytest
+
+from rocrate_validator import models, services
 from tests.conftest import SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER
 from tests.ro_crates import InvalidDataEntity, ValidROC
 from tests.shared import do_entity_test
@@ -34,7 +37,7 @@ def test_missing_data_entity_reference():
         models.Severity.REQUIRED,
         False,
         ["Data Entity: REQUIRED properties"],
-        ["sort-and-change-case.ga", "foo/xxx"]
+        ["sort-and-change-case.ga", "foo/xxx"],
     )
 
 
@@ -44,7 +47,7 @@ def test_data_entity_must_be_directly_linked():
         paths.direct_hasPart_data_entity_reference,
         models.Severity.REQUIRED,
         True,
-        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER]
+        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER],
     )
 
 
@@ -54,7 +57,7 @@ def test_data_entity_not_linked():
         paths.dataset_not_linked_to_root,
         models.Severity.REQUIRED,
         False,
-        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER]
+        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER],
     )
 
 
@@ -64,7 +67,7 @@ def test_data_entity_must_be_indirectly_linked():
         paths.indirect_hasPart_data_entity_reference,
         models.Severity.REQUIRED,
         True,
-        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER]
+        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER],
     )
 
 
@@ -75,7 +78,7 @@ def test_directory_data_entity_wo_trailing_slash():
         models.Severity.RECOMMENDED,
         False,
         ["Directory Data Entity: RECOMMENDED value restriction"],
-        ["Every Data Entity Directory URI SHOULD end with `/`"]
+        ["Every Data Entity Directory URI SHOULD end with `/`"],
     )
 
 
@@ -86,7 +89,7 @@ def test_missing_data_entity_encoding_format():
         models.Severity.RECOMMENDED,
         False,
         ["File Data Entity: RECOMMENDED properties"],
-        ["Missing or invalid `encodingFormat` linked to the `File Data Entity`"]
+        ["Missing or invalid `encodingFormat` linked to the `File Data Entity`"],
     )
 
 
@@ -97,7 +100,7 @@ def test_invalid_data_entity_encoding_format_pronom():
         models.Severity.RECOMMENDED,
         False,
         ["File Data Entity: RECOMMENDED properties"],
-        ["Missing or invalid `encodingFormat` linked to the `File Data Entity`"]
+        ["Missing or invalid `encodingFormat` linked to the `File Data Entity`"],
     )
 
 
@@ -108,7 +111,7 @@ def test_invalid_data_entity_encoding_format_ctx_website_type():
         models.Severity.RECOMMENDED,
         False,
         ["File Data Entity: RECOMMENDED properties"],
-        ["Missing or invalid `encodingFormat` linked to the `File Data Entity`"]
+        ["Missing or invalid `encodingFormat` linked to the `File Data Entity`"],
     )
 
 
@@ -119,7 +122,7 @@ def test_invalid_data_entity_encoding_format_ctx_website_name():
         models.Severity.RECOMMENDED,
         False,
         ["WebSite RECOMMENDED Properties"],
-        ["A WebSite MUST have a `name` property"]
+        ["A WebSite MUST have a `name` property"],
     )
 
 
@@ -129,7 +132,7 @@ def test_valid_data_entity_encoding_format_pronom():
         paths.valid_encoding_format_pronom,
         models.Severity.RECOMMENDED,
         True,
-        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER]
+        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER],
     )
 
 
@@ -139,7 +142,7 @@ def test_valid_data_entity_encoding_format_ctx_website():
         paths.valid_encoding_format_ctx_entity,
         models.Severity.RECOMMENDED,
         True,
-        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER]
+        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER],
     )
 
 
@@ -150,7 +153,7 @@ def test_missing_file_data_entity_with_quoted_name():
         models.Severity.REQUIRED,
         False,
         ["Data Entity: REQUIRED resource availability"],
-        ["The RO-Crate does not include the Data Entity 'pics/2017-06-11%2012.56.14.jpg' as part of its payload"]
+        ["The RO-Crate does not include the Data Entity 'pics/2017-06-11%2012.56.14.jpg' as part of its payload"],
     )
 
 
@@ -161,7 +164,7 @@ def test_missing_file_data_entity_with_unquoted_name():
         models.Severity.REQUIRED,
         False,
         ["Data Entity: REQUIRED resource availability"],
-        ["The RO-Crate does not include the Data Entity 'pics/2017-06-11 12.56.14.jpg' as part of its payload"]
+        ["The RO-Crate does not include the Data Entity 'pics/2017-06-11 12.56.14.jpg' as part of its payload"],
     )
 
 
@@ -172,7 +175,7 @@ def test_missing_dataset_entity_with_quoted_name():
         models.Severity.REQUIRED,
         False,
         ["Data Entity: REQUIRED resource availability"],
-        ["The RO-Crate does not include the Data Entity 'data%20set/' as part of its payload"]
+        ["The RO-Crate does not include the Data Entity 'data%20set/' as part of its payload"],
     )
 
 
@@ -183,7 +186,7 @@ def test_missing_dataset_entity_with_unquoted_name():
         models.Severity.REQUIRED,
         False,
         ["Data Entity: REQUIRED resource availability"],
-        ["The RO-Crate does not include the Data Entity 'data set/' as part of its payload"]
+        ["The RO-Crate does not include the Data Entity 'data set/' as part of its payload"],
     )
 
 
@@ -194,15 +197,78 @@ def test_missing_absolute_path_data_entity():
         models.Severity.RECOMMENDED,
         False,
         ["Data Entity: RECOMMENDED resource availability"],
-        ["Data Entity file:///tmp/test.txt is not available"]
+        ["Data Entity file:///tmp/test.txt is not available"],
     )
 
 
 def test_valid_rocrate_with_data_entities():
     """"""
-    do_entity_test(
-        ValidROC().rocrate_with_data_entities,
-        models.Severity.REQUIRED,
-        True,
-        profile_identifier="ro-crate"
+    do_entity_test(ValidROC().rocrate_with_data_entities, models.Severity.REQUIRED, True, profile_identifier="ro-crate")
+
+
+@pytest.mark.parametrize(
+    "remote_entity_id",
+    [
+        "scp://transfer.example.org//data/A.0.0",
+        "sftp://user@host/path/to/file",
+        "s3://bucket/key",
+    ],
+)
+def test_remote_data_entity_does_not_fail_required_check(tmp_path, remote_entity_id):
+    """Regression test for issue #176.
+
+    A Data Entity whose `@id` is an absolute URI with a non-file scheme (e.g.
+    ``scp://``, ``sftp://``, ``s3://``) MUST NOT trigger the
+    "Data Entity: REQUIRED resource availability" violation: per the RO-Crate
+    spec, any absolute-URI Data Entity is web-based and is not required to be
+    part of the local payload.
+    """
+    crate_dir = tmp_path / "crate-with-remote-entity"
+    crate_dir.mkdir()
+    metadata = {
+        "@context": "https://w3id.org/ro/crate/1.1/context",
+        "@graph": [
+            {
+                "@id": "ro-crate-metadata.json",
+                "@type": "CreativeWork",
+                "conformsTo": {"@id": "https://w3id.org/ro/crate/1.1"},
+                "about": {"@id": "./"},
+            },
+            {
+                "@id": "./",
+                "@type": "Dataset",
+                "name": "Crate with remote entity",
+                "description": "Regression fixture for issue #176",
+                "datePublished": "2026-05-15T07:30:50+00:00",
+                "license": {"@id": "https://spdx.org/licenses/CC0-1.0"},
+                "hasPart": [{"@id": remote_entity_id}],
+            },
+            {
+                "@id": remote_entity_id,
+                "@type": "File",
+                "name": "Remote file",
+                "contentSize": 16,
+                "dateModified": "2026-05-15T07:30:50+00:00",
+                "sdDatePublished": "2026-05-15T07:31:03+00:00",
+            },
+            {"@id": "https://spdx.org/licenses/CC0-1.0", "@type": "CreativeWork", "name": "CC0"},
+        ],
+    }
+    (crate_dir / "ro-crate-metadata.json").write_text(json.dumps(metadata))
+
+    result = services.validate(
+        models.ValidationSettings(
+            rocrate_uri=crate_dir,
+            requirement_severity=models.Severity.REQUIRED,
+            profile_identifier="ro-crate",
+        )
     )
+    assert result.passed(), (
+        f"RO-Crate with remote entity '{remote_entity_id}' should pass REQUIRED "
+        f"validation; got issues: {[i.message for i in result.get_issues()]}"
+    )
+    # And the specific must/4 violation must NOT be among the issues.
+    for issue in result.get_issues():
+        assert "as part of its payload" not in (issue.message or ""), (
+            f"Unexpected payload violation raised for remote entity: {issue.message}"
+        )
