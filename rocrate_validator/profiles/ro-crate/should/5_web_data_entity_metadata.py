@@ -16,6 +16,7 @@ from rocrate_validator.utils import log as logging
 from rocrate_validator.models import ValidationContext
 from rocrate_validator.requirements.python import (PyFunctionCheck, check,
                                                    requirement)
+from rocrate_validator.utils.uri import AvailabilityStatus
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -32,13 +33,37 @@ class WebDataEntityRecommendedChecker(PyFunctionCheck):
     def check_availability(self, context: ValidationContext) -> bool:
         """
         Check if the Web-based Data Entity is directly downloadable
-        by a simple retrieval (e.g. HTTP GET) permitting redirection and HTTP/HTTPS URIs
+        by a simple retrieval (e.g. HTTP GET) permitting redirection and HTTP/HTTPS URIs.
+
+        Resources that cannot be natively retrieved by the validator (e.g.
+        `scp://`, `s3://`, `sftp://`) or that are protected by an authorization
+        mechanism (HTTP 401/403) are reported as recommendation-level issues
+        and logged as warnings, without invalidating the validation.
         """
         result = True
         for entity in context.ro_crate.metadata.get_web_data_entities():
             assert entity.id is not None, "Entity has no @id"
             try:
-                if not entity.is_available():
+                status = entity.check_availability()
+                if status == AvailabilityStatus.AVAILABLE:
+                    continue
+                if status == AvailabilityStatus.UNAUTHORIZED:
+                    msg = (
+                        f"Web-based Data Entity {entity.id} is protected by an "
+                        f"authorization mechanism; availability could not be verified"
+                    )
+                    logger.warning(msg)
+                    context.result.add_issue(msg, self)
+                elif status == AvailabilityStatus.UNCHECKABLE:
+                    scheme = entity.id_as_uri.scheme
+                    msg = (
+                        f"Web-based Data Entity {entity.id} uses scheme "
+                        f"'{scheme}' which is not natively supported by the "
+                        f"validator; availability could not be verified"
+                    )
+                    logger.warning(msg)
+                    context.result.add_issue(msg, self)
+                else:
                     context.result.add_issue(
                         f'Web-based Data Entity {entity.id} is not available', self)
                     result = False
@@ -59,6 +84,12 @@ class WebDataEntityRecommendedChecker(PyFunctionCheck):
         result = True
         for entity in context.ro_crate.metadata.get_web_data_entities():
             assert entity.id is not None, "Entity has no @id"
+            # Skip entities whose scheme the validator cannot natively fetch
+            # (e.g. scp://, s3://): without retrieving the content there is
+            # no actual size to compare `contentSize` against. Reachability
+            # is then checked separately via `is_available()` below.
+            if not entity.id_as_uri.is_natively_checkable():
+                continue
             if entity.is_available():
                 content_size = entity.get_property("contentSize")
                 if content_size and int(content_size) != context.ro_crate.get_external_file_size(entity.id):
