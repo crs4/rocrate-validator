@@ -422,6 +422,7 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
                 "startTime",
                 "endTime",
                 "url",
+                "identifier",
             }
 
             def check_value(value: Any, entity_id: str, key: Optional[str] = None) -> Optional[str]:
