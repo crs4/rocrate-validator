@@ -158,7 +158,7 @@ def check_downloadable(url: str) -> DownloadabilityResult:
         )
 
     except Exception as e:
-        logger.error("Error checking downloadability of '%s': %s", url, e, exc_info=True)
+        logger.debug("Error checking downloadability of '%s': %s", url, e)
         return DownloadabilityResult(
             is_downloadable=False,
             reason=str(e),
