@@ -21,7 +21,7 @@ from rocrate_validator.utils import log as logging
 from rocrate_validator.models import (LevelCollection, Profile, Requirement,
                                       RequirementCheck, RequirementLevel,
                                       RequirementLoader, Severity,
-                                      ValidationContext)
+                                      SourceSnippet, ValidationContext)
 from rocrate_validator.utils.python_helpers import get_classes_from_file
 
 # set up logging
@@ -62,6 +62,19 @@ class PyFunctionCheck(RequirementCheck):
                          self.requirement.identifier, self.requirement.profile.identifier)
             return True
         return self._check_function(self, context)
+
+    def get_source_snippet(self) -> Optional[SourceSnippet]:
+        try:
+            code = inspect.getsource(self._check_function)
+        except (OSError, TypeError) as e:
+            logger.debug("Unable to read source for check %s: %s", self.identifier, e)
+            return None
+        source_file = inspect.getsourcefile(self._check_function)
+        return SourceSnippet(
+            language="python",
+            code=code,
+            source_path=Path(source_file) if source_file else None,
+        )
 
 
 class PyRequirement(Requirement):

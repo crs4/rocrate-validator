@@ -21,10 +21,10 @@ from typing import TYPE_CHECKING, Optional, Union
 from rdflib import RDF, BNode, Graph, Namespace
 from rdflib.term import Node
 
-from rocrate_validator.utils import log as logging
-from rocrate_validator.constants import RDF_SYNTAX_NS, SHACL_NS
+from rocrate_validator.constants import SHACL_NS
 from rocrate_validator.errors import BadSyntaxError
 from rocrate_validator.models import Severity
+from rocrate_validator.utils import log as logging
 
 if TYPE_CHECKING:
     from rocrate_validator.requirements.shacl.models import Shape
@@ -34,24 +34,23 @@ logger = logging.getLogger(__name__)
 
 
 def build_node_subgraph(graph: Graph, node: Node) -> Graph:
-    shape_graph = Graph()
-    shape_graph += graph.triples((node, None, None))
-
-    # add BNodes
-    for _, _, o in shape_graph:
-        shape_graph += graph.triples((o, None, None))
-
-    # Use the triples method to get all triples that are part of a list
-    RDF = Namespace(RDF_SYNTAX_NS)
-    first_predicate = RDF.first
-    rest_predicate = RDF.rest
-    shape_graph += graph.triples((None, first_predicate, None))
-    shape_graph += graph.triples((None, rest_predicate, None))
-    for _, _, object in shape_graph:
-        shape_graph += graph.triples((object, None, None))
-
-    # return the subgraph
-    return shape_graph
+    """
+    Build a subgraph with every triple reachable from ``node`` by following BNode objects.
+    """
+    subgraph = Graph()
+    visited: set = set()
+    stack: list = [node]
+    while stack:
+        current = stack.pop()
+        if current in visited:
+            continue
+        visited.add(current)
+        for triple in graph.triples((current, None, None)):
+            subgraph.add(triple)
+            _, _, obj = triple
+            if isinstance(obj, BNode) and obj not in visited:
+                stack.append(obj)
+    return subgraph
 
 
 def map_severity(shacl_severity: str) -> Severity:

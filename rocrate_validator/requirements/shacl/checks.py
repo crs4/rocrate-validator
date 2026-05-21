@@ -16,7 +16,7 @@ import json
 from timeit import default_timer as timer
 from typing import Optional
 
-from rdflib import Literal, Namespace
+from rdflib import RDF, BNode, Literal, Namespace
 
 from rocrate_validator.constants import SHACL_NS
 from rocrate_validator.errors import ROCrateMetadataNotFoundError
@@ -28,10 +28,11 @@ from rocrate_validator.models import (
     RequirementCheckValidationEvent,
     RequirementLevel,
     SkipRequirementCheck,
+    SourceSnippet,
     ValidationContext,
 )
 from rocrate_validator.requirements.shacl.models import Shape, ShapesRegistry
-from rocrate_validator.requirements.shacl.utils import make_uris_relative, resolve_parent_shape
+from rocrate_validator.requirements.shacl.utils import build_node_subgraph, make_uris_relative, resolve_parent_shape
 from rocrate_validator.requirements.shacl.validator import (
     SHACLValidationAlreadyProcessed,
     SHACLValidationContext,
@@ -174,6 +175,58 @@ class SHACLCheck(RequirementCheck):
     @property
     def severity(self) -> str:
         return self.level.severity
+
+    def get_source_snippet(self) -> Optional[SourceSnippet]:
+        if self._shape is None:
+            return None
+        try:
+            graph = self._shape.graph
+            # build a subgraph containing all the triples related to the shape
+            subgraph = build_node_subgraph(graph, self._shape.node)
+            # identify the owner of the shape
+            owner = self._shape
+            while getattr(owner, "parent", None) is not None:
+                owner = owner.parent
+            # if the shape is not a root shape, include the triples linking the owner to the shape
+            if owner is not self._shape:
+                shacl = Namespace(SHACL_NS)
+                target_predicates = (
+                    RDF.type,
+                    shacl.targetClass,
+                    shacl.targetNode,
+                    shacl.targetSubjectsOf,
+                    shacl.targetObjectsOf,
+                    shacl.target,
+                )
+                for predicate in target_predicates:
+                    for triple in owner.graph.triples((owner.node, predicate, None)):
+                        subgraph.add(triple)
+                        # follow BNode objects (e.g. sh:target referencing an inline SPARQL target)
+                        _, _, obj = triple
+                        if isinstance(obj, BNode):
+                            subgraph += build_node_subgraph(owner.graph, obj)
+                # link the owner to the property so the relationship is preserved in the serialization
+                subgraph.add((owner.node, shacl.property, self._shape.node))
+
+            # copy bindings so the serialized snippet uses the same prefix declarations as the source file
+            for prefix, namespace in graph.namespaces():
+                subgraph.bind(prefix, namespace, replace=True)
+            # serialize the subgraph to Turtle format
+            code = subgraph.serialize(format="turtle")
+        except Exception as e:
+            logger.debug("Unable to serialize SHACL shape for check %s: %s", self.identifier, e)
+            return None
+        # if the code is bytes, decode it to string
+        if isinstance(code, bytes):
+            code = code.decode("utf-8")
+        # use the shape source file as the source path for the snippet if available
+        source_path = self.requirement.path if self.requirement else None
+        # build the source snippet for the check
+        return SourceSnippet(
+            language="turtle",
+            code=code,
+            source_path=source_path,
+        )
 
     def execute_check(self, context: ValidationContext):
         logger.debug("Starting check %s", self)
