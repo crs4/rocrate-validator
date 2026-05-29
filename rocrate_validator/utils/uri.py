@@ -114,6 +114,10 @@ class URI:
         "hdfs",
     )
 
+    # ``file://`` authorities that denote the local machine (RFC 8089 §2):
+    # an empty authority (``file:///path``) or the special ``localhost`` host.
+    LOCAL_FILE_AUTHORITIES = ("", "localhost")
+
     # Backwards-compatible alias kept for callers that still inspect it.
     REMOTE_SUPPORTED_SCHEMA = SUPPORTED_ROCRATE_SCHEMES[:-1]  # http, https, ftp
 
@@ -123,12 +127,20 @@ class URI:
         self._uri = uri = str(uri)
         try:
             # Inputs that are not external references are assumed to be local
-            # paths, so the ``file://`` scheme is added explicitly. The
+            # paths, so the ``file:`` scheme is added explicitly. The
             # detection covers both authority-based schemes (``http://``,
             # ``scp://``) and scheme-only ones (``urn:``, ``doi:``), as
             # defined by RFC 3986.
+            #
+            # The authority-less ``file:`` form (no ``//``) is used on purpose:
+            # ``file://data/x`` would parse ``data`` as the authority (host),
+            # while ``file:data/x`` keeps ``data/x`` as the path with an empty
+            # authority. This way a local path never gains a spurious host and
+            # the authority remains a reliable signal to tell a local file
+            # (``file:///path``) from a remote one (``file://host/path``,
+            # RFC 8089).
             if not is_external_reference(uri):
-                uri = f"file://{uri}"
+                uri = f"file:{uri}"
             # parse the value to extract the scheme
             self._parse_result = urlparse(uri)
             if not self.scheme:
@@ -181,11 +193,23 @@ class URI:
         return Path(self._uri)
 
     def is_remote_resource(self) -> bool:
-        """Return True for any well-formed URI whose scheme is not `file`."""
-        return bool(self.scheme) and self.scheme != "file"
+        """
+        Return True for any well-formed URI that points to a non-local resource.
+
+        Schemes other than ``file`` (``http``, ``scp``, ``s3``, ...) are always
+        remote. A ``file://`` URI is remote when it carries an explicit,
+        non-local authority (host) — e.g. ``file://hostname/path`` per
+        RFC 8089: the referenced file lives on another machine and is therefore
+        not part of the local RO-Crate payload.
+        """
+        if not self.scheme:
+            return False
+        if self.scheme == "file":
+            return self.get_netloc().lower() not in self.LOCAL_FILE_AUTHORITIES
+        return True
 
     def is_local_resource(self) -> bool:
-        return self.scheme == "file"
+        return self.scheme == "file" and self.get_netloc().lower() in self.LOCAL_FILE_AUTHORITIES
 
     def is_natively_checkable(self) -> bool:
         """Return True if availability can be verified via a native request."""
