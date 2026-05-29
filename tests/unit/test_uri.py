@@ -73,6 +73,39 @@ def test_scheme_only_absolute_uri_is_remote(uri_str, expected_scheme):
     assert not uri.is_natively_checkable()
 
 
+def test_file_uri_with_remote_host_is_remote():
+    # A `file://` URI carrying a (non-local) authority points to a file on
+    # another host (RFC 8089) and must be treated as remote, not as a local
+    # payload member (regression for issue #176 with `file://` schemes).
+    uri = URI("file://gs02r3b58-ib0/scratch/tmp/5190874/tmp_rf_samples_slt86rc0")
+    assert uri.scheme == "file"
+    assert uri.is_remote_resource()
+    assert not uri.is_local_resource()
+    assert not uri.is_natively_checkable()
+
+
+@pytest.mark.parametrize("uri_str", [
+    "file:///absolute/path/file.txt",
+    "file://localhost/absolute/path/file.txt",
+])
+def test_file_uri_to_local_host_is_local(uri_str):
+    # An empty or `localhost` authority denotes the local machine.
+    uri = URI(uri_str)
+    assert uri.scheme == "file"
+    assert uri.is_local_resource()
+    assert not uri.is_remote_resource()
+
+
+@pytest.mark.parametrize("path", ["README.md", "data/file.txt", "./", "/abs/dir"])
+def test_local_path_never_gains_a_spurious_host(path):
+    # Plain filesystem paths are normalized to authority-less `file:` URIs, so
+    # the first path segment is never mistaken for a remote host.
+    uri = URI(path)
+    assert uri.is_local_resource()
+    assert not uri.is_remote_resource()
+    assert uri.get_netloc() == ""
+
+
 def test_url_with_query_params():
     uri = URI("http://example.com?param1=value1&param2=value2")
     assert uri.get_query_param("param1") == "value1"

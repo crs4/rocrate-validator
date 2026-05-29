@@ -604,6 +604,9 @@ def _metadata_dict_with_id(entity_id: str) -> dict:
         "s3://bucket/key",
         "https://example.org/data.txt",
         "arcp://name,foo/bar",
+        # `file://` URIs with a (non-local) authority denote files living on
+        # another host (RFC 8089), so they are remote too.
+        "file://gs02r3b58-ib0/scratch/tmp/5190874/tmp_rf_samples_slt86rc0",
         # scheme-only absolute URIs (no authority; RO-Crate 1.1 § 4.2.2 + RFC 3986)
         "urn:doi:10.5281/zenodo.1234",
         "doi:10.5281/zenodo.1234",
@@ -626,4 +629,31 @@ def test_absolute_uri_data_entity_is_classified_as_remote(entity_id):
     )
     assert entity not in crate.metadata.get_data_entities(exclude_web_data_entities=True), (
         f"Entity '{entity_id}' should be excluded from local-only data entities"
+    )
+
+
+@pytest.mark.parametrize(
+    "entity_id",
+    [
+        # `file://` URIs without an authority (RFC 8089) or with the special
+        # `localhost` authority refer to the local machine, so they describe
+        # local payload members that the must/4 check must still verify.
+        "file:///absolute/path/to/file.txt",
+        "file://localhost/absolute/path/to/file.txt",
+    ],
+)
+def test_local_file_uri_data_entity_is_not_remote(entity_id):
+    """
+    `file://` Data Entity identifiers that point to the local machine (empty or
+    `localhost` authority) MUST NOT be treated as remote/web-based: only
+    `file://<host>/...` URIs with a real host are remote (issue #176 follow-up).
+    """
+    crate = ROCrate.from_metadata_dict(_metadata_dict_with_id(entity_id))
+    entity = crate.metadata.get_entity(entity_id)
+    assert entity is not None, "Entity should be present in the metadata"
+    assert not entity.is_remote(), (
+        f"Entity with local file URI '{entity_id}' should NOT be classified as remote"
+    )
+    assert entity not in crate.metadata.get_web_data_entities(), (
+        f"Entity '{entity_id}' should not be listed as a web data entity"
     )
