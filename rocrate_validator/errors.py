@@ -12,7 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional
+from __future__ import annotations
+
+from pathlib import Path
+from typing import TYPE_CHECKING, Optional, Union
+
+if TYPE_CHECKING:
+    # Imported only for type-checking to avoid a circular import:
+    # rocrate_validator.utils.uri imports this module at runtime.
+    from rocrate_validator.utils.uri import URI
 
 
 class ROCValidatorError(Exception):
@@ -243,29 +251,34 @@ class CheckValidationError(ValidationError):
 class ROCrateInvalidURIError(ROCValidatorError):
     """Raised when an invalid URI is provided."""
 
-    def __init__(self, uri: str, message: Optional[str] = None):
+    def __init__(self, uri: Union[str, Path, URI], message: Optional[str] = None):
         self._uri = uri
         self._message = message or self.default_error_message(uri)
 
     @property
-    def uri(self) -> Optional[str]:
-        """The invalid URI."""
+    def uri(self) -> Union[str, Path, URI]:
+        """The invalid URI, as originally provided (str, Path, or URI)."""
         return self._uri
 
     @property
-    def message(self) -> Optional[str]:
+    def uri_string(self) -> str:
+        """The invalid URI normalised to its string form."""
+        return str(self._uri)
+
+    @property
+    def message(self) -> str:
         """The error message."""
         return self._message
 
     def __str__(self) -> str:
         return self._message
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"ROCrateInvalidURIError({self._uri!r})"
 
     @classmethod
-    def default_error_message(cls, uri: str) -> str:
-        return f"\"{uri}\" is not a valid RO-Crate URI. "\
+    def default_error_message(cls, uri: Union[str, Path, URI]) -> str:
+        return f"\"{str(uri)}\" is not a valid RO-Crate URI. "\
             "It MUST be either a local path to the RO-Crate root directory or a local/remote RO-Crate ZIP file."
 
 

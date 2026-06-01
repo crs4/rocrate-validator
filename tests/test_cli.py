@@ -35,7 +35,11 @@ logger = logging.getLogger(__name__)
 
 @fixture
 def cli_runner() -> CliRunner:
-    return CliRunner()
+    # Force a wide terminal: the CLI renders output through Rich, which wraps
+    # and truncates tables/panels to the terminal width (defaulting to 80
+    # columns when stdout is captured). Pinning COLUMNS keeps the rendered
+    # output deterministic regardless of the environment's actual width.
+    return CliRunner(env={"COLUMNS": "200"})
 
 
 def test_version(cli_runner: CliRunner):
@@ -138,7 +142,11 @@ def test_validate_with_invalid_profiles_path_dir(cli_runner: CliRunner):
     )
     assert result.exit_code == 2
     # logger.debug(result.output)
-    assert re.search(f"Path '{dummy_profiles_path}' does not exist.", result.output)
+    # On narrow terminals the Rich error panel wraps the message across lines
+    # and inserts box-drawing borders (│) between words; strip those and
+    # collapse whitespace so the match does not depend on terminal width.
+    normalized_output = re.sub(r"[\s│]+", " ", result.output)
+    assert re.search(f"Path '{dummy_profiles_path}' does not exist.", normalized_output)
 
 
 def test_profiles_list(cli_runner: CliRunner):
