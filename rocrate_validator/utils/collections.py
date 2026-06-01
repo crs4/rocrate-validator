@@ -52,7 +52,7 @@ class MultiIndexMap:
         self._indices.pop(index_name)
 
     def get_index(self, index_name: str) -> MapIndex:
-        return self._indices.get(index_name)["__meta__"]
+        return self._indices[index_name]["__meta__"]
 
     def add(self, key, obj, **indices):
         self._data[key] = obj
