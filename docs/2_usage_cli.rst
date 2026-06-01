@@ -1,5 +1,5 @@
 ..
-    Copyright (c) 2024 CRS4
+    Copyright (c) 2024-2026 CRS4
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -31,3 +31,9 @@ CLI Validation
     :parser: myst_parser.sphinx_
     :start-line: 93
     :end-line: 120
+
+.. seealso::
+
+    To validate without network access and manage the HTTP cache from the
+    command line (the ``--offline`` and ``--no-cache`` flags and the ``cache``
+    subcommand), see :ref:`offline_mode`.

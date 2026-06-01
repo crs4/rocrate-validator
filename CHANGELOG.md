@@ -5,6 +5,85 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.0] - 2026-06-01
+
+Full changelog: https://github.com/crs4/rocrate-validator/compare/0.9.0...0.10.0
+
+### ✨ Added
+
+- feat(cli): add offline mode with an `--offline` flag and an HTTP `cache` subcommand to validate RO-Crates without network access ([e296f10](https://github.com/crs4/rocrate-validator/commit/e296f10), [f8b99bc](https://github.com/crs4/rocrate-validator/commit/f8b99bc))
+- feat(utils): add a cache-aware JSON-LD document loader and HTTP cache warm-up from profile artifacts ([eedabf1](https://github.com/crs4/rocrate-validator/commit/eedabf1), [949ec6f](https://github.com/crs4/rocrate-validator/commit/949ec6f))
+- feat(utils): add offline mode and cache management to `HttpRequester`, with configurable cache path ([c92d88c](https://github.com/crs4/rocrate-validator/commit/c92d88c), [7c9e825](https://github.com/crs4/rocrate-validator/commit/7c9e825))
+- feat(core): support offline mode when downloading remote RO-Crates ([57eceb5](https://github.com/crs4/rocrate-validator/commit/57eceb5))
+- feat(cli/cache): add `cache list` (alias `ls`) and allow caching of explicit URLs via `cache warm` ([f9b43ae](https://github.com/crs4/rocrate-validator/commit/f9b43ae), [6925d55](https://github.com/crs4/rocrate-validator/commit/6925d55))
+- feat(cli): extend the `describe` command to describe individual requirement checks ([f3fb7f3](https://github.com/crs4/rocrate-validator/commit/f3fb7f3))
+- feat(model): add a `SourceSnippet` class and `RequirementCheck.get_source_snippet`, implemented for both SHACL and Python checks ([9f48674](https://github.com/crs4/rocrate-validator/commit/9f48674), [25bc7b4](https://github.com/crs4/rocrate-validator/commit/25bc7b4), [fe740e4](https://github.com/crs4/rocrate-validator/commit/fe740e4))
+- feat(checks): support a `deactivated` flag on `RequirementCheck` to override/deactivate checks by name for Python and SHACL ([dd84c32](https://github.com/crs4/rocrate-validator/commit/dd84c32), [4196f0e](https://github.com/crs4/rocrate-validator/commit/4196f0e))
+- feat(rocrate): add `check_availability()` with `AvailabilityStatus` on entities and granular remote-scheme classification ([76e92a4](https://github.com/crs4/rocrate-validator/commit/76e92a4), [469bbe5](https://github.com/crs4/rocrate-validator/commit/469bbe5))
+- feat(checks): handle `UNAUTHORIZED`/`UNCHECKABLE` web data entities as warnings ([0196dc9](https://github.com/crs4/rocrate-validator/commit/0196dc9))
+- feat(uri): add an `is_external_reference()` scheme detector ([62f89c0](https://github.com/crs4/rocrate-validator/commit/62f89c0))
+- feat(model): extend the `Profile` model to compute descendants ([a9783ce](https://github.com/crs4/rocrate-validator/commit/a9783ce))
+- ISA profile: add RDF classes for ISA types and a dedicated `Process` class for process checks ([3ff4245](https://github.com/crs4/rocrate-validator/commit/3ff4245), [e3fda59](https://github.com/crs4/rocrate-validator/commit/e3fda59), [c3e2d5f](https://github.com/crs4/rocrate-validator/commit/c3e2d5f))
+
+### 🔧 Changed
+
+- refactor(models): introduce pre/post internal validation hooks on `Validator` ([e43364b](https://github.com/crs4/rocrate-validator/commit/e43364b))
+- refactor(SHACL): rewrite `build_node_subgraph` as an iterative BNode traversal ([23164b7](https://github.com/crs4/rocrate-validator/commit/23164b7))
+- refactor(errors): accept `str`, `Path` or `URI` in `ROCrateInvalidURIError` ([0b8289b](https://github.com/crs4/rocrate-validator/commit/0b8289b))
+- refactor(cli/cache): drop the `Status` column from the `cache list` table ([392df1a](https://github.com/crs4/rocrate-validator/commit/392df1a))
+- feat(constants): default the HTTP cache to never expire ([419fece](https://github.com/crs4/rocrate-validator/commit/419fece))
+
+### 🐛 Fixed
+
+- fix(shacl): build property shape subgraphs by reachability and derive `NodeShape` level from nested `PropertyShape`s ([f1c0cfd](https://github.com/crs4/rocrate-validator/commit/f1c0cfd), [50448145](https://github.com/crs4/rocrate-validator/commit/5044814))
+- fix(shacl): evaluate inherited shapes for zero-shape target profiles ([bcb5cac](https://github.com/crs4/rocrate-validator/commit/bcb5cac))
+- fix(shacl): drop sub-threshold PySHACL violations at the source ([254fb88](https://github.com/crs4/rocrate-validator/commit/254fb88))
+- fix(core): filter failed requirements/checks by the configured severity ([a306f7f](https://github.com/crs4/rocrate-validator/commit/a306f7f))
+- fix(models): forward `extra_profiles_path` when computing validation statistics ([7b3e8bc](https://github.com/crs4/rocrate-validator/commit/7b3e8bc))
+- fix(uri): treat `file://` URIs with a non-local authority as remote ([63acb6a](https://github.com/crs4/rocrate-validator/commit/63acb6a))
+- fix(cli/cache): resolve profile tokens in `cache warm` and avoid `stream=True` when fetching remote crates ([7926832](https://github.com/crs4/rocrate-validator/commit/7926832), [33012b6](https://github.com/crs4/rocrate-validator/commit/33012b6))
+- fix(validation): report offline cache misses once per URL ([757b86a](https://github.com/crs4/rocrate-validator/commit/757b86a))
+- fix(ISA): correct the error message for a bad position in `HowToStep` ([03a32fc](https://github.com/crs4/rocrate-validator/commit/03a32fc))
+
+### 📚 Documentation
+
+- docs: add a dedicated documentation page for the cache and offline mode features ([e10c3b5](https://github.com/crs4/rocrate-validator/commit/e10c3b5))
+- docs(profiles): document check override-by-name and deactivation ([0b6bff7](https://github.com/crs4/rocrate-validator/commit/0b6bff7))
+
+## [0.9.0] - 2026-04-20
+
+Full changelog: https://github.com/crs4/rocrate-validator/compare/0.8.1...0.9.0
+
+### ✨ Added
+
+- feat(profiles/isa): add the ISA RO-Crate profile, with checks and tests for Investigation, Study, Assay, Process, Protocol, Sample, Data, Person and PropertyValue entities ([852fb23](https://github.com/crs4/rocrate-validator/commit/852fb23), [d62e214](https://github.com/crs4/rocrate-validator/commit/d62e214), [727b6f0](https://github.com/crs4/rocrate-validator/commit/727b6f0))
+- feat(cli): add CLI options to configure the HTTP cache (`--cache-path`, `--cache-max-age`) ([564230f](https://github.com/crs4/rocrate-validator/commit/564230f))
+- feat(model): enable cache configuration in `ValidationSettings` ([b2b47ba](https://github.com/crs4/rocrate-validator/commit/b2b47ba))
+- feat(utils): extend the `HttpRequester` constructor to support cache configuration parameters ([2f2a873](https://github.com/crs4/rocrate-validator/commit/2f2a873))
+- feat(ro-crate): refine the constraint enforcing metadata descriptor existence ([2c6ea76](https://github.com/crs4/rocrate-validator/commit/2c6ea76))
+- feat(file-descriptor): add an internal remote-context retrieval method supporting the alternate `Link` header ([f8b0e55](https://github.com/crs4/rocrate-validator/commit/f8b0e55))
+
+### 🔧 Changed
+
+- refactor(ro-crate): relax the `ROCrateMetadataFileDescriptor` class definition ([61ddbb5](https://github.com/crs4/rocrate-validator/commit/61ddbb5))
+- refactor(file-descriptor): route checks through the new remote-context retrieval method ([0ce2619](https://github.com/crs4/rocrate-validator/commit/0ce2619))
+- chore(utils): increase the session cache max age to 300 seconds ([36ca0ac](https://github.com/crs4/rocrate-validator/commit/36ca0ac))
+- ci(gh-actions): update outdated GitHub Actions ([d565c5d](https://github.com/crs4/rocrate-validator/commit/d565c5d))
+
+### 🐛 Fixed
+
+- fix(ro-crate): target metadata descriptor shapes by class and select the candidate descriptor via SPARQL ([8219f27](https://github.com/crs4/rocrate-validator/commit/8219f27), [39bd761](https://github.com/crs4/rocrate-validator/commit/39bd761), [1a91aa4](https://github.com/crs4/rocrate-validator/commit/1a91aa4))
+- fix(shacl): extract `@base` from the JSON-LD document for ontology parsing ([57f5c54](https://github.com/crs4/rocrate-validator/commit/57f5c54))
+- fix(SHACL-core): improve SHACL violation parsing with better error handling ([90a9f06](https://github.com/crs4/rocrate-validator/commit/90a9f06))
+- fix(file-descriptor): accept `application/json` and treat the `Link` header case-insensitively for remote context retrieval ([fe5ba1c](https://github.com/crs4/rocrate-validator/commit/fe5ba1c))
+- fix(file-descriptor): refine the compacted JSON-LD key validation logic ([45a7017](https://github.com/crs4/rocrate-validator/commit/45a7017))
+- fix(core): allow terms defined by context prefixes ([5fe8171](https://github.com/crs4/rocrate-validator/commit/5fe8171))
+- fix(core): fix output formatting ([523fbf4](https://github.com/crs4/rocrate-validator/commit/523fbf4))
+
+### 📚 Documentation
+
+- docs(cli): document the `-1` value for no cache expiration in the `--cache-max-age` help ([c5848bc](https://github.com/crs4/rocrate-validator/commit/c5848bc))
+
 ## [0.8.1] - 2026-02-18
 
 Full changelog: https://github.com/crs4/rocrate-validator/compare/0.8.0...0.8.1

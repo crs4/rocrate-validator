@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "roc-validator"
-version = "0.9.0"
+version = "0.10.0"
 description = "A Python package to validate RO-Crates"
 authors = [
     "Marco Enrico Piras <kikkomep@crs4.it>",
@@ -114,6 +114,9 @@ filterwarnings = [
     # Fix in progress: https://github.com/RDFLib/rdflib/issues/3302
     "ignore::DeprecationWarning:rdflib.plugins.parsers.jsonld",
 ]
+
+[tool.typos.default]
+extend-ignore-re = ["[0-9a-f]{7,40}"] # Ignore long hexadecimal strings, which are often used as identifiers (e.g., Git commit hashes, UUIDs) and are not typically misspelled words.
 
 [tool.typos.files]
 extend-exclude = ["tests/data", "docs/diagrams", "*.json", "*.html", "*__init__.py"]

@@ -31,7 +31,7 @@ sys.path.insert(0, os.path.abspath('..'))
 
 # Set project metadata
 project = 'rocrate-validator'
-copyright = '2024, CRS4'
+copyright = '2024-2026, CRS4'
 author = 'Marco Enrico Piras, Luca Pireddu, Simone Leo'
 release = __version__
 
@@ -66,6 +66,20 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.autosectionlabel',
     'sphinx_copybutton',
+]
+
+# Only auto-generate section labels for the top two heading levels: deeper
+# subsections (e.g. the repeated "SHACL checks" / "Python checks" headings)
+# would otherwise produce duplicate-label warnings within the same document.
+autosectionlabel_maxdepth = 2
+
+# Warnings raised while embedding the Markdown README into the Sphinx pages.
+# The README is the canonical GitHub document: its slices intentionally start
+# below H1 (myst.header) and use GitHub-relative anchor links that span pages
+# (myst.xref_missing). These are expected when including it here.
+suppress_warnings = [
+    'myst.header',
+    'myst.xref_missing',
 ]
 
 templates_path = ['_templates']
