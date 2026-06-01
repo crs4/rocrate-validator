@@ -243,6 +243,68 @@ def test_warm_url_combined_with_profile_warms_both(
 
 
 # ====================================================================
+# cache warm: --crate (remote RO-Crate)
+# ====================================================================
+@pytest.fixture
+def mock_network_gzip(monkeypatch):
+    """
+    Same as ``mock_network``, but returns a ``Content-Encoding: gzip`` body.
+    This encoded response is required to reproduce the warm-crate bug.
+    """
+    import gzip
+
+    from requests.adapters import HTTPAdapter
+
+    body = gzip.compress(b'{"@context": "https://w3id.org/ro/crate/1.2/context"}')
+
+    def fake_send(self, request, **kwargs):
+        raw = urllib3.HTTPResponse(
+            body=io.BytesIO(body),
+            headers={
+                "Content-Type": "application/json",
+                "Content-Encoding": "gzip",
+                "Content-Length": str(len(body)),
+            },
+            status=200,
+            preload_content=False,
+            decode_content=False,
+        )
+        return self.build_response(request, raw)
+
+    monkeypatch.setattr(HTTPAdapter, "send", fake_send)
+
+
+def test_warm_crate_caches_remote_metadata(cli_runner, mock_network_gzip, tmp_cache):
+    """
+    Regression: ``cache warm --crate <url>`` must consume the body via
+    ``response.content`` rather than streaming ``response.raw``.
+
+    With ``stream=True`` + ``shutil.copyfileobj(response.raw, ...)`` the warm-up
+    crashed with urllib3's "Calling read(decode_content=False) is not supported
+    after read(decode_content=True) was called": requests_cache buffers the
+    streamed body (decode_content=True) to store it, after which a raw read
+    (decode_content=False) is rejected. The body must therefore be touched in a
+    way that goes through the already-decoded content.
+    """
+    url = "https://example.org/ro-crate/ro-crate-metadata.json"
+    result = cli_runner.invoke(
+        cli,
+        ["cache", "warm", "--cache-path", str(tmp_cache), "--crate", url],
+    )
+    assert result.exit_code == 0, result.output
+    assert "Fetching remote RO-Crates" in result.output
+    assert "Summary: 1 cached, 0 failed, 0 skipped" in result.output
+
+    # The fetched crate must actually be retrievable from the cache afterwards.
+    listed = cli_runner.invoke(
+        cli,
+        ["cache", "list", "--cache-path", str(tmp_cache)],
+    )
+    assert listed.exit_code == 0, listed.output
+    assert "ro-crate-metadata.json" in listed.output
+
+
+# ====================================================================
 # cache list / ls
 # ====================================================================
 def _warm_some(cli_runner, tmp_cache, urls):
