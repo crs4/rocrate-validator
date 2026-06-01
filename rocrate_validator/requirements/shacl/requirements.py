@@ -140,9 +140,15 @@ class SHACLRequirement(Requirement):
         try:
             runner.__do_execute_check__(shacl_context)
         except Exception as e:
-            logger.warning("Forced SHACL run for zero-shape target profile %s failed: %s", target.identifier, e)
-            if logger.isEnabledFor(logging.DEBUG):
-                logger.exception(e)
+            if context.maybe_warn_offline_cache_miss(e):
+                logger.debug(
+                    "Forced SHACL run for zero-shape target profile %s skipped due to offline cache miss: %s",
+                    target.identifier, e,
+                )
+            else:
+                logger.warning("Forced SHACL run for zero-shape target profile %s failed: %s", target.identifier, e)
+                if logger.isEnabledFor(logging.DEBUG):
+                    logger.exception(e)
         finally:
             shacl_context.__unset_current_validation_profile__()
 
