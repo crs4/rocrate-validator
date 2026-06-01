@@ -21,8 +21,6 @@ from __future__ import annotations
 
 import copy as _copy
 import json
-import shutil
-import tempfile
 from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
@@ -456,7 +454,7 @@ def _warm_remote_crates(urls: List[str]) -> List[WarmUpResult]:
     results: List[WarmUpResult] = []
     for url in urls:
         try:
-            response = requester.fetch_fresh(url, stream=True, allow_redirects=True)
+            response = requester.fetch_fresh(url, allow_redirects=True)
             status = getattr(response, "status_code", None)
             if status is None:
                 results.append(WarmUpResult(url=url, status="failed", detail="no status code"))
@@ -464,9 +462,8 @@ def _warm_remote_crates(urls: List[str]) -> List[WarmUpResult]:
             if status >= 400:
                 results.append(WarmUpResult(url=url, status="failed", detail=f"HTTP {status}"))
                 continue
-            # Consume the response body so that the cache backend stores it.
-            with tempfile.TemporaryFile() as tmp:
-                shutil.copyfileobj(response.raw, tmp)
+            # Touch the body so the cache backend stores the full response.
+            _ = response.content
             results.append(WarmUpResult(url=url, status="ok", detail=f"HTTP {status}"))
         except Exception as e:
             logger.debug("Remote crate warm-up failed for %s: %s", url, e)
