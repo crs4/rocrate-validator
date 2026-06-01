@@ -19,6 +19,10 @@ from unittest.mock import patch
 from click.testing import CliRunner
 from pytest import fixture
 
+from rocrate_validator import services
+from rocrate_validator.requirements.python import PyFunctionCheck
+from rocrate_validator.requirements.shacl.checks import SHACLCheck
+
 from rocrate_validator.utils import log as logging
 from rocrate_validator.cli.main import cli
 from rocrate_validator.utils.versioning import get_version
@@ -31,7 +35,11 @@ logger = logging.getLogger(__name__)
 
 @fixture
 def cli_runner() -> CliRunner:
-    return CliRunner()
+    # Force a wide terminal: the CLI renders output through Rich, which wraps
+    # and truncates tables/panels to the terminal width (defaulting to 80
+    # columns when stdout is captured). Pinning COLUMNS keeps the rendered
+    # output deterministic regardless of the environment's actual width.
+    return CliRunner(env={"COLUMNS": "200"})
 
 
 def test_version(cli_runner: CliRunner):
@@ -134,7 +142,11 @@ def test_validate_with_invalid_profiles_path_dir(cli_runner: CliRunner):
     )
     assert result.exit_code == 2
     # logger.debug(result.output)
-    assert re.search(f"Path '{dummy_profiles_path}' does not exist.", result.output)
+    # On narrow terminals the Rich error panel wraps the message across lines
+    # and inserts box-drawing borders (│) between words; strip those and
+    # collapse whitespace so the match does not depend on terminal width.
+    normalized_output = re.sub(r"[\s│]+", " ", result.output)
+    assert re.search(f"Path '{dummy_profiles_path}' does not exist.", normalized_output)
 
 
 def test_profiles_list(cli_runner: CliRunner):
@@ -157,3 +169,143 @@ def test_extra_profiles_list(cli_runner: CliRunner, fake_profiles_path: Path):
     assert result.exit_code == 0
     # assert "Available profiles:" in result.output
     assert "Profile A" in result.output  # Check for a known extra profile
+
+
+# Profile used for `profiles describe` tests.
+_DESCRIBE_TEST_PROFILE = "ro-crate-1.1"
+
+
+def _first_visible_check():
+    """Return the first non-hidden (Python-backed) check of the test profile."""
+    profile = services.get_profile(_DESCRIBE_TEST_PROFILE)
+    for requirement in profile.requirements:
+        if requirement.hidden:
+            continue
+        for check in requirement.get_checks():
+            if isinstance(check, PyFunctionCheck):
+                return profile, requirement, check
+    raise RuntimeError("No Python-backed check found in test profile")
+
+
+def _first_shacl_check():
+    """Return the first non-hidden SHACL-backed check of the test profile."""
+    profile = services.get_profile(_DESCRIBE_TEST_PROFILE)
+    for requirement in profile.requirements:
+        if requirement.hidden:
+            continue
+        for check in requirement.get_checks():
+            if isinstance(check, SHACLCheck):
+                return profile, requirement, check
+    raise RuntimeError("No SHACL-backed check found in test profile")
+
+
+def test_profiles_describe_default(cli_runner: CliRunner):
+    """The default describe view (no check id) shows the profile compact view."""
+    result = cli_runner.invoke(cli, ["profiles", "describe", _DESCRIBE_TEST_PROFILE, "--no-paging"])
+    assert result.exit_code == 0
+    assert _DESCRIBE_TEST_PROFILE in result.output
+    assert "Profile Requirements" in result.output
+
+
+def test_profiles_describe_verbose(cli_runner: CliRunner):
+    """The verbose describe view (no check id) shows individual check identifiers."""
+    _, _, check = _first_visible_check()
+    result = cli_runner.invoke(cli, ["profiles", "describe", _DESCRIBE_TEST_PROFILE, "-v", "--no-paging"])
+    assert result.exit_code == 0
+    assert check.identifier in result.output
+
+
+def test_describe_check_relative_id(cli_runner: CliRunner):
+    """Resolving a check by '<req#>.<check#>' renders the single-check view."""
+    _, requirement, check = _first_visible_check()
+    relative = f"{requirement.order_number}.{check.order_number}"
+    result = cli_runner.invoke(cli, ["profiles", "describe", _DESCRIBE_TEST_PROFILE, relative, "--no-paging"])
+    assert result.exit_code == 0, result.output
+    assert check.identifier in result.output
+    assert check.severity.name in result.output
+
+
+def test_describe_check_full_id(cli_runner: CliRunner):
+    """Resolving a check by full '<profile>_<req#>.<check#>'."""
+    _, _, check = _first_visible_check()
+    result = cli_runner.invoke(cli, ["profiles", "describe", _DESCRIBE_TEST_PROFILE, check.identifier, "--no-paging"])
+    assert result.exit_code == 0, result.output
+    assert check.identifier in result.output
+
+
+def test_describe_check_unknown(cli_runner: CliRunner):
+    """An out-of-range check id produces a usage error with a hint."""
+    result = cli_runner.invoke(cli, ["profiles", "describe", _DESCRIBE_TEST_PROFILE, "99.99", "--no-paging"])
+    assert result.exit_code == 2
+    assert "No requirement #99" in result.output
+
+
+def test_describe_check_bad_format(cli_runner: CliRunner):
+    """A non-numeric check id is rejected with a format hint."""
+    result = cli_runner.invoke(cli, ["profiles", "describe", _DESCRIBE_TEST_PROFILE, "not-an-id", "--no-paging"])
+    assert result.exit_code == 2
+    assert "Invalid check identifier" in result.output
+
+
+def test_describe_check_profile_mismatch(cli_runner: CliRunner):
+    """A full id whose prefix doesn't match the requested profile is rejected."""
+    result = cli_runner.invoke(
+        cli, ["profiles", "describe", _DESCRIBE_TEST_PROFILE, "some-other-profile_1.1", "--no-paging"]
+    )
+    assert result.exit_code == 2
+    assert "does not belong to profile" in result.output
+
+
+def test_describe_check_verbose_python(cli_runner: CliRunner):
+    """Verbose single-check view on a Python-backed check shows the function source."""
+    _, requirement, check = _first_visible_check()
+    relative = f"{requirement.order_number}.{check.order_number}"
+    result = cli_runner.invoke(
+        cli, ["profiles", "describe", _DESCRIBE_TEST_PROFILE, relative, "-v", "--no-paging"]
+    )
+    assert result.exit_code == 0, result.output
+    assert "Source" in result.output
+    # The decorated check function is what gets serialized
+    assert "@check" in result.output
+
+
+def test_describe_check_verbose_shacl(cli_runner: CliRunner):
+    """Verbose single-check view on a SHACL-backed check shows turtle source."""
+    _, requirement, check = _first_shacl_check()
+    relative = f"{requirement.order_number}.{check.order_number}"
+    result = cli_runner.invoke(
+        cli, ["profiles", "describe", _DESCRIBE_TEST_PROFILE, relative, "-v", "--no-paging"]
+    )
+    assert result.exit_code == 0, result.output
+    assert "Source" in result.output
+    # SHACL serialized as turtle should contain a sh: prefix and a NodeShape/PropertyShape declaration
+    assert "sh:" in result.output
+
+
+def test_describe_check_verbose_shacl_includes_target(cli_runner: CliRunner):
+    """For nested PropertyShape checks, the snippet must include the owning NodeShape's target."""
+    profile = services.get_profile(_DESCRIBE_TEST_PROFILE)
+    nested = None
+    for requirement in profile.requirements:
+        if requirement.hidden:
+            continue
+        for check in requirement.get_checks():
+            if isinstance(check, SHACLCheck) and getattr(check._shape, "parent", None) is not None:
+                nested = (requirement, check)
+                break
+        if nested:
+            break
+    if nested is None:
+        # No nested PropertyShape check available in this profile; nothing to assert here.
+        return
+    requirement, check = nested
+    relative = f"{requirement.order_number}.{check.order_number}"
+    result = cli_runner.invoke(
+        cli, ["profiles", "describe", _DESCRIBE_TEST_PROFILE, relative, "-v", "--no-paging"]
+    )
+    assert result.exit_code == 0, result.output
+    # The snippet must surface the owning shape's target declaration so the user can see
+    # what the property check applies to.
+    assert any(t in result.output for t in ("sh:targetClass", "sh:targetNode",
+                                            "sh:targetSubjectsOf", "sh:targetObjectsOf",
+                                            "sh:target "))

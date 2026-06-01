@@ -24,11 +24,111 @@
 @prefix validator: <https://github.com/crs4/rocrate-validator/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
+isa-ro-crate:FindISAOntologyAnnotation a sh:NodeShape, validator:HiddenShape;
+    sh:name "Identify ISA OntologyAnnotations within the RO-Crate" ;
+    sh:description "An OntologyAnnotation has type DefinedTerm and is attached to an Assay, Protocol, Person, or Article." ;
+    sh:targetClass schema:DefinedTerm ;
+    sh:order 4 ;
+    # Expand data graph with triples from the file data entity
+    sh:rule [
+        a sh:TripleRule ;
+        sh:subject sh:this ;
+        sh:predicate rdf:type ;
+        sh:object isa-ro-crate:OntologyAnnotation ;
+        # The condition: need to be attached to a Assay, Protocol, Person, or Article
+        sh:condition [
+            a sh:NodeShape;
+            sh:name: "OntologyAnnotation is attached to an Assay, Protocol, Person, or Article" ;
+            sh:or (
+                [
+                    sh:property [
+                        sh:name "OntologyAnnotation is measurementMethod of an Assay" ;
+                        sh:path [ sh:inversePath schema:measurementMethod ] ;
+                        sh:qualifiedValueShape [ 
+                            sh:class isa-ro-crate:Assay ;
+                        ] ;
+                        sh:qualifiedMinCount 1 ;
+                    ]
+                ]
+                [
+                    sh:property [
+                        sh:name "OntologyAnnotation is measurementTechnique of an Assay" ;
+                        sh:path [ sh:inversePath schema:measurementTechnique ] ;
+                        sh:qualifiedValueShape [ 
+                            sh:class isa-ro-crate:Assay
+                        ] ;
+                        sh:qualifiedMinCount 1 ;
+                    ]
+                ]
+                [
+                    sh:property [
+                        sh:name "OntologyAnnotation is intendedUse of a Protocol" ;
+                        sh:path [ sh:inversePath schema:intendedUse ] ;
+                        sh:qualifiedValueShape [ 
+                            sh:class isa-ro-crate:Protocol
+                        ] ;
+                        sh:qualifiedMinCount 1 ;
+                    ]
+                ]
+                [
+                    sh:property [
+                        sh:name "OntologyAnnotation is computationalTool of a Protocol" ;
+                        sh:path [ sh:inversePath schema:computationalTool ] ;
+                        sh:qualifiedValueShape [ 
+                            sh:class isa-ro-crate:Protocol
+                        ] ;
+                        sh:qualifiedMinCount 1 ;
+                    ]
+                ]
+                [
+                    sh:property [
+                        sh:name "OntologyAnnotation is labEquipment of a Protocol" ;
+                        sh:path [ sh:inversePath schema:labEquipment ] ;
+                        sh:qualifiedValueShape [ 
+                            sh:class isa-ro-crate:Protocol
+                        ] ;
+                        sh:qualifiedMinCount 1 ;
+                    ]
+                ]
+                [
+                    sh:property [
+                        sh:name "OntologyAnnotation is reagent of a Protocol" ;
+                        sh:path [ sh:inversePath schema:reagent ] ;
+                        sh:qualifiedValueShape [ 
+                            sh:class isa-ro-crate:Protocol
+                        ] ;
+                        sh:qualifiedMinCount 1 ;
+                    ]
+                ]
+                [
+                    sh:property [
+                        sh:name "OntologyAnnotation is job title of a Person" ;
+                        sh:path [ sh:inversePath schema:jobTitle ] ;
+                        sh:qualifiedValueShape [ 
+                            sh:class isa-ro-crate:Person
+                        ] ;
+                        sh:qualifiedMinCount 1 ;
+                    ]
+                ]
+                [
+                    sh:property [
+                        sh:name "OntologyAnnotation is status of a Publication" ;
+                        sh:path [ sh:inversePath schema:creativeWorkStatus ] ;
+                        sh:qualifiedValueShape [ 
+                            sh:class isa-ro-crate:Publication
+                        ] ;
+                        sh:qualifiedMinCount 1 ;
+                    ]
+                ]
+            ) ;
+        ] ;
+    ] ;
+.
 
 isa-ro-crate:DefinedTermMustHaveName a sh:NodeShape ;
     sh:name "DefinedTerm MUST have a name" ;
     sh:description "A DefinedTerm MUST have a name" ;
-    sh:targetClass schema:DefinedTerm ;
+    sh:targetClass isa-ro-crate:OntologyAnnotation ;
     sh:property [
         a sh:PropertyShape ;
         sh:path schema:name ;
@@ -47,7 +147,7 @@ isa-ro-crate:DefinedTermMustHaveName a sh:NodeShape ;
 isa-ro-crate:DefinedTermShouldHaveTermCodeOfCorrectType a sh:NodeShape ;
     sh:name "DefinedTerm SHOULD have termCode of correct type" ;
     sh:description "A DefinedTerm SHOULD have at least one termCode of correct type" ;
-    sh:targetClass schema:DefinedTerm ;
+    sh:targetClass isa-ro-crate:OntologyAnnotation ;
     sh:property [
         a sh:PropertyShape ;
         sh:path schema:termCode ;

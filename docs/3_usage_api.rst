@@ -1,5 +1,5 @@
 ..
-    Copyright (c) 2024 CRS4
+    Copyright (c) 2024-2026 CRS4
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -29,6 +29,12 @@ Programmatic Validation
     :parser: myst_parser.sphinx_
     :start-line: 121
     :end-line: 162
+
+.. seealso::
+
+    To resolve resources from a local cache or run validation without network
+    access (the ``offline`` / ``no_cache`` settings of ``ValidationSettings``),
+    see :ref:`offline_mode`.
 
 
 Metadata-only Validation

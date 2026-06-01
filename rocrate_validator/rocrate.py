@@ -30,7 +30,7 @@ from rocrate_validator.utils import log as logging
 from rocrate_validator.errors import ROCrateInvalidURIError
 from rocrate_validator.utils.uri import validate_rocrate_uri
 from rocrate_validator.utils.http import HttpRequester
-from rocrate_validator.utils.uri import URI
+from rocrate_validator.utils.uri import URI, AvailabilityStatus, is_external_reference
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -140,8 +140,17 @@ class ROCrateEntity:
     @classmethod
     def get_id_as_uri(cls, entity_id: str, ro_crate: ROCrate) -> URI:
         assert entity_id, "Entity ID cannot be None"
-        if entity_id.startswith("http"):
+        # Per RO-Crate 1.1 § 4.2.2, an `@id` is either a relative URI path or
+        # an external URI/IRI (RFC 3986/3987). External references are used
+        # as-is (without resolving them against the crate URI) so the entity
+        # is classified as remote/web-based; this covers both authority-based
+        # forms (``http://``, ``scp://``) and scheme-only ones (``urn:``,
+        # ``doi:``, ``arcp:``).
+        if is_external_reference(entity_id):
             return URI(entity_id)
+        # Otherwise the `@id` is a relative path: if the RO-Crate itself is
+        # remote, resolve it against the crate URI so the entity is still
+        # classified as remote/web-based.
         if ro_crate.uri.is_remote_resource():
             if entity_id.startswith("./"):
                 return URI(f"{ro_crate.uri}/{entity_id[2:]}")
@@ -208,58 +217,66 @@ class ROCrateEntity:
     def is_local(self) -> bool:
         return not self.is_remote()
 
-    def is_available(self) -> bool:
+    def check_availability(self) -> AvailabilityStatus:
+        """
+        Return a fine-grained availability status for this entity.
+
+        This is the primary check; :meth:`is_available` is the boolean
+        shortcut built on top of it. The status distinguishes definitely
+        unavailable resources, auth-protected ones, and remote URIs whose
+        scheme the validator cannot natively check (scp://, s3://, ...).
+        """
         try:
-            # check if the entity points to an external file
-            if self.id.startswith("http"):
+            entity_uri = self.id_as_uri
+            # Remote entities with a scheme we can natively reach are checked
+            # by inspecting the remote response status.
+            if entity_uri.is_natively_checkable():
                 logger.debug("Checking the availability of a remote entity")
-                return self.ro_crate.get_external_file_size(self.id) > 0
+                return entity_uri.check_availability()
 
-            # check if the entity is part of the local RO-Crate
+            # Remote entities with a non-natively-checkable scheme cannot be
+            # verified (scp://, sftp://, s3://, ...): report UNCHECKABLE so
+            # callers can warn without invalidating the validation.
+            if entity_uri.is_remote_resource():
+                logger.debug(
+                    "Cannot natively verify availability for entity '%s' (scheme '%s')",
+                    self.id,
+                    entity_uri.scheme,
+                )
+                return AvailabilityStatus.UNCHECKABLE
+
+            # Local entity: locate it inside the (local or remote) RO-Crate.
             if self.ro_crate.uri.is_local_resource():
-                # check if the file exists in the local file system
                 if isinstance(self.ro_crate, ROCrateLocalFolder):
-                    logger.debug(
-                        "Checking the availability of a local entity in a local folder"
-                    )
-                    return self.ro_crate.has_file(
-                        self.id_as_path
-                    ) or self.ro_crate.has_directory(self.id_as_path)
-                # check if the file exists in the local zip file
+                    found = self.ro_crate.has_file(self.id_as_path) or self.ro_crate.has_directory(self.id_as_path)
+                    return AvailabilityStatus.AVAILABLE if found else AvailabilityStatus.UNAVAILABLE
                 if isinstance(self.ro_crate, ROCrateLocalZip):
-                    logger.debug(
-                        "Checking the availability of a local entity in a local zip file"
-                    )
-                    # Skip the check for the root of a ZIP archive
                     if self.id == "./":
-                        logger.debug(
-                            "Skipping the check for the presence of the Data Entity '%s' within the RO-Crate "
-                            "as it is the root of a ZIP archive",
-                            self.id,
-                        )
-                        return True
-                    return self.ro_crate.has_directory(
+                        return AvailabilityStatus.AVAILABLE
+                    found = self.ro_crate.has_directory(unquote(str(self.id))) or self.ro_crate.has_file(
                         unquote(str(self.id))
-                    ) or self.ro_crate.has_file(unquote(str(self.id)))
+                    )
+                    return AvailabilityStatus.AVAILABLE if found else AvailabilityStatus.UNAVAILABLE
 
-            # check if the entity is part of the remote RO-Crate
-            logger.debug(
-                "Checking the availability of a remote entity in a remote RO-Crate"
-            )
             if self.ro_crate.uri.is_remote_resource():
                 if self.id == "./":
-                    return self.ro_crate.get_file_size(Path(self.id_as_uri())) > 0
-                return self.ro_crate.has_directory(
-                    unquote(str(self.id))
-                ) or self.ro_crate.has_file(unquote(str(self.id)))
+                    found = self.ro_crate.get_file_size(Path(self.id_as_uri())) > 0
+                else:
+                    found = self.ro_crate.has_directory(unquote(str(self.id))) or self.ro_crate.has_file(
+                        unquote(str(self.id))
+                    )
+                return AvailabilityStatus.AVAILABLE if found else AvailabilityStatus.UNAVAILABLE
         except Exception as e:
             if logger.isEnabledFor(logging.DEBUG):
                 logger.exception(e)
-            return False
+            return AvailabilityStatus.UNAVAILABLE
 
-        raise ROCrateInvalidURIError(
-            uri=self.id, message="Could not determine the availability of the entity"
-        )
+        # Fallthrough: the crate URI is neither a recognized local nor a
+        # remote resource — the entity location cannot be determined.
+        raise ROCrateInvalidURIError(uri=self.id, message="Could not determine the availability of the entity")
+
+    def is_available(self) -> bool:
+        return self.check_availability() == AvailabilityStatus.AVAILABLE
 
     def get_size(self) -> int:
         try:

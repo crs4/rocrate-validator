@@ -5,3 +5,4 @@ enum-tools==0.12.0
 sphinx-toolbox==3.8.1
 myst-parser==4.0.0
 sphinx_rtd_theme==3
+sphinx-copybutton==0.5.2

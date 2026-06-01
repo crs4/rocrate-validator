@@ -21,7 +21,7 @@ from rocrate_validator.utils import log as logging
 from rocrate_validator.models import (LevelCollection, Profile, Requirement,
                                       RequirementCheck, RequirementLevel,
                                       RequirementLoader, Severity,
-                                      ValidationContext)
+                                      SourceSnippet, ValidationContext)
 from rocrate_validator.utils.python_helpers import get_classes_from_file
 
 # set up logging
@@ -38,11 +38,12 @@ class PyFunctionCheck(RequirementCheck):
                  name: str,
                  check_function: Callable[[RequirementCheck, ValidationContext], bool],
                  description: Optional[str] = None,
-                 level: Optional[LevelCollection] = LevelCollection.REQUIRED):
+                 level: Optional[LevelCollection] = LevelCollection.REQUIRED,
+                 deactivated: bool = False):
         """
         check_function: a function that accepts an instance of PyFunctionCheck and a ValidationContext.
         """
-        super().__init__(requirement, name, description=description, level=level)
+        super().__init__(requirement, name, description=description, level=level, deactivated=deactivated)
 
         sig = inspect.signature(check_function)
         if len(sig.parameters) != 2:
@@ -61,6 +62,19 @@ class PyFunctionCheck(RequirementCheck):
                          self.requirement.identifier, self.requirement.profile.identifier)
             return True
         return self._check_function(self, context)
+
+    def get_source_snippet(self) -> Optional[SourceSnippet]:
+        try:
+            code = inspect.getsource(self._check_function)
+        except (OSError, TypeError) as e:
+            logger.debug("Unable to read source for check %s: %s", self.identifier, e)
+            return None
+        source_file = inspect.getsourcefile(self._check_function)
+        return SourceSnippet(
+            language="python",
+            code=code,
+            source_path=Path(source_file) if source_file else None,
+        )
 
 
 class PyRequirement(Requirement):
@@ -115,11 +129,13 @@ class PyRequirement(Requirement):
                                  f"Getting severity from path: {self.severity_from_path}")
                     severity = self.severity_from_path or Severity.REQUIRED
                 logger.debug("Severity log: %r", severity)
+                deactivated = bool(getattr(member, "deactivated", False))
                 check = self.requirement_check_class(self,
                                                      check_name,
                                                      member,
                                                      description=check_description,
-                                                     level=LevelCollection.get(severity.name) if severity else None)
+                                                     level=LevelCollection.get(severity.name) if severity else None,
+                                                     deactivated=deactivated)
                 self._checks.append(check)
                 logger.debug("Added check: %s %r", check_name, check)
 
@@ -159,7 +175,9 @@ def requirement(name: str, description: Optional[str] = None, hidden: bool = Fal
     return decorator
 
 
-def check(name: Optional[str] = None, severity: Optional[Severity] = None):
+def check(name: Optional[str] = None,
+          severity: Optional[Severity] = None,
+          deactivated: bool = False):
     """
     A decorator to mark a function as a check.
 
@@ -178,6 +196,12 @@ def check(name: Optional[str] = None, severity: Optional[Severity] = None):
     :param severity: the severity level
     :type severity: Optional[Severity]
 
+    :param deactivated: when True, the check is skipped during validation.
+        Mirrors SHACL's ``sh:deactivated``: an extension profile may redeclare
+        a check with the same name as one in a parent profile and set this
+        flag to disable the inherited check.
+    :type deactivated: bool
+
     :return: the decorated function
     :rtype: Callable
     """
@@ -193,6 +217,7 @@ def check(name: Optional[str] = None, severity: Optional[Severity] = None):
         func.check = True
         func.name = check_name
         func.severity = severity
+        func.deactivated = deactivated
         return func
     return decorator
 

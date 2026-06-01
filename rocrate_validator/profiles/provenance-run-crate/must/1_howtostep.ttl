@@ -52,14 +52,14 @@ provenance-run-crate:ProvRCHowToStepRequired a sh:NodeShape ;
     sh:property [
         a sh:PropertyShape ;
         sh:name "HowToStep position type" ;
-        sh:description "If specified, position must be a string representing an integer" ;
+        sh:description "If specified, position must be an integer or a string representing an integer" ;
         sh:path schema:position ;
         sh:or (
             [ sh:datatype xsd:string ; ]
             [ sh:datatype xsd:integer ; ]
         ) ;
         sh:pattern "\\d+" ;
-        sh:message "If specified, position must be a string representing an integer" ;
+        sh:message "If specified, position must be an integer or a string representing an integer" ;
     ] ;
     sh:property [
         a sh:PropertyShape ;

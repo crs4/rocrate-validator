@@ -24,14 +24,67 @@
 @prefix validator: <https://github.com/crs4/rocrate-validator/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-
+isa-ro-crate:FindISAPerson a sh:NodeShape, validator:HiddenShape;
+    sh:name "Identify ISA persons within the RO-Crate" ;
+    sh:description "A Person has type Person and is attached to an Investigation, Study, Assay, Process, or Article." ;
+    sh:targetClass schema:Person ;
+    sh:order 3 ;
+    # Expand data graph with triples from the file data entity
+    sh:rule [
+        a sh:TripleRule ;
+        sh:subject sh:this ;
+        sh:predicate rdf:type ;
+        sh:object isa-ro-crate:Person ;
+        # The condition: need to be attached to a Investigation, Study, Assay, Process, or Article
+        sh:condition [
+            a sh:NodeShape;
+            sh:name: "Person is attached to an Investigation, Study, Assay, Process, or Article" ;
+            sh:or (
+                [
+                    sh:property [
+                        sh:name "Person is creator of a Study, Assay, or RootDataEntity" ;
+                        sh:path [ sh:inversePath schema:creator ] ;
+                        sh:qualifiedValueShape [ 
+                            sh:or(
+                                [sh:class isa-ro-crate:Assay]
+                                [sh:class isa-ro-crate:Study]
+                                [sh:class ro-crate:RootDataEntity]
+                            )
+                        ] ;
+                        sh:qualifiedMinCount 1 ;
+                    ]
+                ]
+                [
+                    sh:property [
+                        sh:name "Person is author of an Article" ;
+                        sh:path [ sh:inversePath schema:author ] ;
+                        sh:qualifiedValueShape [ 
+                            sh:class isa-ro-crate:Article
+                        ] ;
+                        sh:qualifiedMinCount 1 ;
+                    ]
+                ]
+                [
+                    sh:property [
+                        sh:name "Person is agent of a Process" ;
+                        sh:path [ sh:inversePath schema:agent ] ;
+                        sh:qualifiedValueShape [ 
+                            sh:class isa-ro-crate:Process
+                        ] ;
+                        sh:qualifiedMinCount 1 ;
+                    ]
+                ]
+            ) ;
+        ] ;
+    ] ;
+.
 
 # check Person attributes must have correct types
 
 isa-ro-crate:PersonMustHaveGivenName a sh:NodeShape ;
     sh:name "Person MUST have a given name" ;
     sh:description "A Person MUST have a given name" ;
-    sh:targetClass schema:Person ;
+    sh:targetClass isa-ro-crate:Person ;
     sh:property [
         a sh:PropertyShape ;
         sh:path schema:givenName ;
@@ -50,7 +103,7 @@ isa-ro-crate:PersonMustHaveGivenName a sh:NodeShape ;
 isa-ro-crate:PersonShouldHaveAffiliationOfCorrectType a sh:NodeShape ;
     sh:name "Person SHOULD have affiliation" ;
     sh:description "A Person SHOULD have at least one affiliation" ;
-    sh:targetClass schema:Person ;
+    sh:targetClass isa-ro-crate:Person ;
     sh:property [
         a sh:PropertyShape ;
         sh:path schema:affiliation ;
@@ -72,7 +125,7 @@ isa-ro-crate:PersonShouldHaveAffiliationOfCorrectType a sh:NodeShape ;
 isa-ro-crate:PersonShouldHaveJobTitleOfCorrectType a sh:NodeShape ;
     sh:name "Person SHOULD have job title" ;
     sh:description "A Person SHOULD have at least one job title" ;
-    sh:targetClass schema:Person ;
+    sh:targetClass isa-ro-crate:Person ;
     sh:property [
         a sh:PropertyShape ;
         sh:path schema:jobTitle ;
@@ -94,7 +147,7 @@ isa-ro-crate:PersonShouldHaveJobTitleOfCorrectType a sh:NodeShape ;
 isa-ro-crate:PersonShouldHaveEmailOfCorrectType a sh:NodeShape ;
     sh:name "Person SHOULD have email" ;
     sh:description "A Person SHOULD have at least one email" ;
-    sh:targetClass schema:Person ;
+    sh:targetClass isa-ro-crate:Person ;
     sh:property [
         a sh:PropertyShape ;
         sh:path schema:email ;
@@ -119,7 +172,7 @@ isa-ro-crate:PersonShouldHaveEmailOfCorrectType a sh:NodeShape ;
 isa-ro-crate:PersonShouldHaveFamilyNameOfCorrectType a sh:NodeShape ;
     sh:name "Person SHOULD have family name" ;
     sh:description "A Person SHOULD have at least one family name" ;
-    sh:targetClass schema:Person ;
+    sh:targetClass isa-ro-crate:Person ;
     sh:property [
         a sh:PropertyShape ;
         sh:path schema:familyName ;
@@ -144,7 +197,7 @@ isa-ro-crate:PersonShouldHaveFamilyNameOfCorrectType a sh:NodeShape ;
 isa-ro-crate:PersonShouldHaveIdentifierOfCorrectType a sh:NodeShape ;
     sh:name "Person SHOULD have identifier" ;
     sh:description "A Person SHOULD have at least one identifier" ;
-    sh:targetClass schema:Person ;
+    sh:targetClass isa-ro-crate:Person ;
     sh:property [
         a sh:PropertyShape ;
         sh:path schema:identifier ;

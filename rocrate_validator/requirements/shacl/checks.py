@@ -16,6 +16,9 @@ import json
 from timeit import default_timer as timer
 from typing import Optional
 
+from rdflib import RDF, BNode, Literal, Namespace
+
+from rocrate_validator.constants import SHACL_NS
 from rocrate_validator.errors import ROCrateMetadataNotFoundError
 from rocrate_validator.events import EventType
 from rocrate_validator.models import (
@@ -23,11 +26,13 @@ from rocrate_validator.models import (
     Requirement,
     RequirementCheck,
     RequirementCheckValidationEvent,
+    RequirementLevel,
     SkipRequirementCheck,
+    SourceSnippet,
     ValidationContext,
 )
-from rocrate_validator.requirements.shacl.models import Shape
-from rocrate_validator.requirements.shacl.utils import make_uris_relative, resolve_parent_shape
+from rocrate_validator.requirements.shacl.models import Shape, ShapesRegistry
+from rocrate_validator.requirements.shacl.utils import build_node_subgraph, make_uris_relative, resolve_parent_shape
 from rocrate_validator.requirements.shacl.validator import (
     SHACLValidationAlreadyProcessed,
     SHACLValidationContext,
@@ -39,6 +44,9 @@ from rocrate_validator.requirements.shacl.validator import (
 from rocrate_validator.utils import log as logging
 
 logger = logging.getLogger(__name__)
+
+_SH = Namespace(SHACL_NS)
+_TRUE_LITERALS = (Literal(True), Literal("true", datatype=None))
 
 
 class SHACLCheck(RequirementCheck):
@@ -98,6 +106,37 @@ class SHACLCheck(RequirementCheck):
         return self._root
 
     @property
+    def deactivated(self) -> bool:
+        if self._deactivated:
+            return True
+        shape = self._shape
+        if shape is None:
+            return False
+        # Same-profile deactivation (cases B & C): the shape itself carries
+        # `sh:deactivated true`, possibly because it was redeclared in an
+        # extension profile via override-by-name.
+        for value in shape.graph.objects(subject=shape.node, predicate=_SH.deactivated):
+            if isinstance(value, Literal) and bool(value.toPython()):
+                return True
+        # Cross-profile deactivation (case A): a descendant profile may add
+        # `<parentShapeIRI> sh:deactivated true` to its own shapes graph,
+        # without redeclaring the shape. Scan only profiles that inherit
+        # (transitively) from the shape's owning profile, so unrelated
+        # profiles loaded in the same process can't influence the result.
+        # Validator.__do_validate__ pre-loads the shape graphs.
+        from rocrate_validator.models import Profile
+
+        owning_profile = self.requirement.profile
+        for profile in Profile.get_descendants(owning_profile):
+            try:
+                registry = ShapesRegistry.get_instance(profile)
+            except Exception:
+                continue
+            if registry.is_node_deactivated(shape.node):
+                return True
+        return False
+
+    @property
     def description(self) -> str:
         if self._shape.description:
             return self._shape.description
@@ -105,12 +144,27 @@ class SHACLCheck(RequirementCheck):
             return self._shape.parent.description
         return f"Check for {self._shape.name}" if self._shape.name else "SHACL validation check"
 
-    def __compute_requirement_level__(self) -> LevelCollection:
+    def __compute_requirement_level__(self) -> RequirementLevel:
         if self._shape and self._shape.get_declared_level():
             return self._shape.get_declared_level()
         if self.requirement and self.requirement.requirement_level_from_path:
             return self.requirement.requirement_level_from_path
+        # When the shape file lives in the profile root and the NodeShape
+        # itself does not declare sh:severity, derive the level from the
+        # most severe nested PropertyShape instead of defaulting to REQUIRED.
+        derived = self.__derive_level_from_properties__()
+        if derived:
+            return derived
         return LevelCollection.REQUIRED
+
+    def __derive_level_from_properties__(self) -> Optional[RequirementLevel]:
+        properties = getattr(self._shape, "properties", None)
+        if not properties:
+            return None
+        declared_levels = [lvl for lvl in (p.get_declared_level() for p in properties) if lvl]
+        if not declared_levels:
+            return None
+        return max(declared_levels, key=lambda lvl: lvl.severity.value)
 
     @property
     def level(self) -> str:
@@ -121,6 +175,58 @@ class SHACLCheck(RequirementCheck):
     @property
     def severity(self) -> str:
         return self.level.severity
+
+    def get_source_snippet(self) -> Optional[SourceSnippet]:
+        if self._shape is None:
+            return None
+        try:
+            graph = self._shape.graph
+            # build a subgraph containing all the triples related to the shape
+            subgraph = build_node_subgraph(graph, self._shape.node)
+            # identify the owner of the shape
+            owner = self._shape
+            while getattr(owner, "parent", None) is not None:
+                owner = owner.parent
+            # if the shape is not a root shape, include the triples linking the owner to the shape
+            if owner is not self._shape:
+                shacl = Namespace(SHACL_NS)
+                target_predicates = (
+                    RDF.type,
+                    shacl.targetClass,
+                    shacl.targetNode,
+                    shacl.targetSubjectsOf,
+                    shacl.targetObjectsOf,
+                    shacl.target,
+                )
+                for predicate in target_predicates:
+                    for triple in owner.graph.triples((owner.node, predicate, None)):
+                        subgraph.add(triple)
+                        # follow BNode objects (e.g. sh:target referencing an inline SPARQL target)
+                        _, _, obj = triple
+                        if isinstance(obj, BNode):
+                            subgraph += build_node_subgraph(owner.graph, obj)
+                # link the owner to the property so the relationship is preserved in the serialization
+                subgraph.add((owner.node, shacl.property, self._shape.node))
+
+            # copy bindings so the serialized snippet uses the same prefix declarations as the source file
+            for prefix, namespace in graph.namespaces():
+                subgraph.bind(prefix, namespace, replace=True)
+            # serialize the subgraph to Turtle format
+            code = subgraph.serialize(format="turtle")
+        except Exception as e:
+            logger.debug("Unable to serialize SHACL shape for check %s: %s", self.identifier, e)
+            return None
+        # if the code is bytes, decode it to string
+        if isinstance(code, bytes):
+            code = code.decode("utf-8")
+        # use the shape source file as the source path for the snippet if available
+        source_path = self.requirement.path if self.requirement else None
+        # build the source snippet for the check
+        return SourceSnippet(
+            language="turtle",
+            code=code,
+            source_path=source_path,
+        )
 
     def execute_check(self, context: ValidationContext):
         logger.debug("Starting check %s", self)
@@ -266,6 +372,18 @@ class SHACLCheck(RequirementCheck):
             if requirementCheck is None:
                 logger.warning("No check instance found for shape: %s", shape.key)
                 continue
+            # Drop violations whose check severity is below the requested
+            # `requirement_severity`: pyshacl still emits sh:ValidationResult
+            # nodes for sh:Warning / sh:Info, but they are not actionable at a
+            # stricter validation level.
+            if requirementCheck.severity < shacl_context.settings.requirement_severity:
+                logger.debug(
+                    "Dropping violation for check %s: severity %s below requested %s",
+                    requirementCheck.identifier,
+                    requirementCheck.severity,
+                    shacl_context.settings.requirement_severity,
+                )
+                continue
             if (
                 not shacl_context.settings.skip_checks
                 or requirementCheck.identifier not in shacl_context.settings.skip_checks
@@ -329,12 +447,16 @@ class SHACLCheck(RequirementCheck):
             # all together and not profile by profile
             if requirementCheck.identifier not in failed_requirement_checks_notified:
                 shacl_context.result._add_executed_check(requirementCheck, False)
-                if requirementCheck.identifier not in failed_requirement_checks_notified and \
-                        requirementCheck.requirement.profile != shacl_context.current_validation_profile:
+                if (
+                    requirementCheck.identifier not in failed_requirement_checks_notified
+                    and requirementCheck.requirement.profile != shacl_context.current_validation_profile
+                ):
                     failed_requirement_checks_notified.append(requirementCheck.identifier)
-                    shacl_context.validator.notify(RequirementCheckValidationEvent(
-                        EventType.REQUIREMENT_CHECK_VALIDATION_END,
-                        requirementCheck, validation_result=False))
+                    shacl_context.validator.notify(
+                        RequirementCheckValidationEvent(
+                            EventType.REQUIREMENT_CHECK_VALIDATION_END, requirementCheck, validation_result=False
+                        )
+                    )
                     logger.debug(
                         "Added failed check to the context: %s",
                         requirementCheck.identifier,

@@ -72,6 +72,33 @@ def get_profiles_path() -> Path:
     return Path(CURRENT_DIR).parent / constants.DEFAULT_PROFILES_PATH
 
 
+def get_user_cache_dir() -> Path:
+    """
+    Get the user-level cache directory for rocrate-validator.
+
+    Honors the XDG Base Directory Specification:
+    - Uses ``$XDG_CACHE_HOME/rocrate-validator`` when ``XDG_CACHE_HOME`` is set
+    - Falls back to ``~/.cache/rocrate-validator`` otherwise
+
+    :return: The path to the cache directory (not guaranteed to exist)
+    """
+    xdg = os.environ.get("XDG_CACHE_HOME")
+    base = Path(xdg) if xdg else Path.home() / ".cache"
+    return base / constants.USER_CACHE_DIR_NAME
+
+
+def get_default_http_cache_path() -> Path:
+    """
+    Get the default persistent HTTP cache path under the user cache directory.
+
+    The returned path is the cache *name* expected by ``requests_cache``
+    (i.e., without the ``.sqlite`` suffix added by the backend).
+
+    :return: The default persistent HTTP cache name path
+    """
+    return get_user_cache_dir() / constants.USER_CACHE_FILE_NAME
+
+
 def list_matching_file_paths(
         directory: str = '.',
         serialization_format: constants.RDF_SERIALIZATION_FORMATS_TYPES = "turtle") -> list[str]:

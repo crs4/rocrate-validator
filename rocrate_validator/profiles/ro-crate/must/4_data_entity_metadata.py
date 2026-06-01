@@ -38,11 +38,13 @@ class DataEntityRequiredChecker(PyFunctionCheck):
             return True
         # Perform the check
         result = True
+        # Web-based Data Entities (absolute URIs with any scheme other than `file`,
+        # e.g. http://, https://, ftp://, scp://, s3://, ...) are not required to
+        # be part of the local payload per the RO-Crate specification.
         for entity in context.ro_crate.metadata.get_data_entities(exclude_web_data_entities=True):
             assert entity.id is not None, "Entity has no @id"
             logger.debug("Ensure the presence of the Data Entity '%s' within the RO-Crate", entity.id)
             try:
-                logger.debug("Ensure the presence of the Data Entity '%s' within the RO-Crate", entity.id)
                 if entity.has_local_identifier():
                     logger.debug(
                         "Ignoring the Data Entity '%s' as it is a local entity with a local identifier. "

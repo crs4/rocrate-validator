@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import bisect
 import enum
+import importlib
 import inspect
 import json
 import re
@@ -25,35 +26,48 @@ from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from functools import total_ordering
 from pathlib import Path
-from typing import Optional, Protocol, Tuple, Union
+from typing import Optional, Protocol, Tuple, Type, Union
 from urllib.error import HTTPError
 
 import enum_tools
 from rdflib import RDF, RDFS, Graph, Namespace, URIRef
 
 from rocrate_validator import __version__
-from rocrate_validator.constants import (DEFAULT_HTTP_CACHE_MAX_AGE,
-                                         DEFAULT_ONTOLOGY_FILE,
-                                         DEFAULT_PROFILE_IDENTIFIER,
-                                         DEFAULT_PROFILE_README_FILE,
-                                         IGNORED_PROFILE_DIRECTORIES,
-                                         JSON_OUTPUT_FORMAT_VERSION, PROF_NS,
-                                         PROFILE_FILE_EXTENSIONS,
-                                         PROFILE_SPECIFICATION_FILE,
-                                         ROCRATE_METADATA_FILE, SCHEMA_ORG_NS)
-from rocrate_validator.errors import (DuplicateRequirementCheck,
-                                      InvalidProfilePath, ProfileNotFound,
-                                      ProfileSpecificationError,
-                                      ProfileSpecificationNotFound,
-                                      ROCrateMetadataNotFoundError)
+from rocrate_validator.constants import (
+    DEFAULT_HTTP_CACHE_MAX_AGE,
+    DEFAULT_ONTOLOGY_FILE,
+    DEFAULT_PROFILE_IDENTIFIER,
+    DEFAULT_PROFILE_README_FILE,
+    IGNORED_PROFILE_DIRECTORIES,
+    JSON_OUTPUT_FORMAT_VERSION,
+    PROF_NS,
+    PROFILE_FILE_EXTENSIONS,
+    PROFILE_SPECIFICATION_FILE,
+    ROCRATE_METADATA_FILE,
+    SCHEMA_ORG_NS,
+)
+from rocrate_validator.errors import (
+    DuplicateRequirementCheck,
+    InvalidProfilePath,
+    ProfileNotFound,
+    ProfileSpecificationError,
+    ProfileSpecificationNotFound,
+    ROCrateMetadataNotFoundError,
+)
 from rocrate_validator.events import Event, EventType, Publisher, Subscriber
 from rocrate_validator.rocrate import ROCrate
 from rocrate_validator.utils import log as logging
+from rocrate_validator.utils.cache_warmup import auto_warm_up_for_settings
 from rocrate_validator.utils.collections import MapIndex, MultiIndexMap
-from rocrate_validator.utils.http import HttpRequester
-from rocrate_validator.utils.paths import get_profiles_path
-from rocrate_validator.utils.python_helpers import \
-    get_requirement_name_from_file
+from rocrate_validator.utils.document_loader import install_document_loader
+from rocrate_validator.utils.http import HttpRequester, find_offline_cache_miss
+from rocrate_validator.utils.paths import (
+    get_default_http_cache_path,
+    get_profiles_path,
+)
+from rocrate_validator.utils.python_helpers import (
+    get_requirement_name_from_file,
+)
 from rocrate_validator.utils.uri import URI
 
 # set the default profiles path
@@ -93,13 +107,13 @@ class Severity(enum.Enum):
 @total_ordering
 @dataclass
 class RequirementLevel:
-
     """
     Represents a requirement level.
 
     A requirement has a name and a severity level of type :class:`.Severity`.
     It implements the comparison operators to allow ordering of the requirement levels.
     """
+
     name: str
     severity: Severity
 
@@ -121,7 +135,7 @@ class RequirementLevel:
         return hash((self.name, self.severity))
 
     def __repr__(self) -> str:
-        return f'RequirementLevel(name={self.name}, severity={self.severity})'
+        return f"RequirementLevel(name={self.name}, severity={self.severity})"
 
     def __str__(self) -> str:
         return self.name
@@ -148,36 +162,39 @@ class LevelCollection:
         are to be interpreted as described in **RFC 2119**.
 
     """
+
     #: The requirement level OPTIONAL is mapped to the OPTIONAL severity level
-    OPTIONAL = RequirementLevel('OPTIONAL', Severity.OPTIONAL)
+    OPTIONAL = RequirementLevel("OPTIONAL", Severity.OPTIONAL)
     #: The requirement level MAY is mapped to the OPTIONAL severity level
-    MAY = RequirementLevel('MAY', Severity.OPTIONAL)
+    MAY = RequirementLevel("MAY", Severity.OPTIONAL)
     #: The requirement level REQUIRED is mapped to the REQUIRED severity level
-    REQUIRED = RequirementLevel('REQUIRED', Severity.REQUIRED)
+    REQUIRED = RequirementLevel("REQUIRED", Severity.REQUIRED)
     #: The requirement level SHOULD is mapped to the RECOMMENDED severity level
-    SHOULD = RequirementLevel('SHOULD', Severity.RECOMMENDED)
+    SHOULD = RequirementLevel("SHOULD", Severity.RECOMMENDED)
     #: The requirement level SHOULD NOT is mapped to the RECOMMENDED severity level
-    SHOULD_NOT = RequirementLevel('SHOULD_NOT', Severity.RECOMMENDED)
+    SHOULD_NOT = RequirementLevel("SHOULD_NOT", Severity.RECOMMENDED)
     #: The requirement level RECOMMENDED is mapped to the RECOMMENDED severity level
-    RECOMMENDED = RequirementLevel('RECOMMENDED', Severity.RECOMMENDED)
+    RECOMMENDED = RequirementLevel("RECOMMENDED", Severity.RECOMMENDED)
 
     #: The requirement level MUST is mapped to the REQUIRED severity level
-    MUST = RequirementLevel('MUST', Severity.REQUIRED)
+    MUST = RequirementLevel("MUST", Severity.REQUIRED)
     #: The requirement level MUST_NOT is mapped to the REQUIRED severity level
-    MUST_NOT = RequirementLevel('MUST_NOT', Severity.REQUIRED)
+    MUST_NOT = RequirementLevel("MUST_NOT", Severity.REQUIRED)
     #: The requirement level SHALL is mapped to the REQUIRED severity level
-    SHALL = RequirementLevel('SHALL', Severity.REQUIRED)
+    SHALL = RequirementLevel("SHALL", Severity.REQUIRED)
     #: The requirement level SHALL_NOT is mapped to the REQUIRED severity level
-    SHALL_NOT = RequirementLevel('SHALL_NOT', Severity.REQUIRED)
+    SHALL_NOT = RequirementLevel("SHALL_NOT", Severity.REQUIRED)
 
     def __init__(self):
         raise NotImplementedError(f"{type(self)} can't be instantiated")
 
     @staticmethod
     def all() -> list[RequirementLevel]:
-        return [level for name, level in inspect.getmembers(LevelCollection)
-                if not inspect.isroutine(level)
-                and not inspect.isdatadescriptor(level) and not name.startswith('__')]
+        return [
+            level
+            for name, level in inspect.getmembers(LevelCollection)
+            if not inspect.isroutine(level) and not inspect.isdatadescriptor(level) and not name.startswith("__")
+        ]
 
     @staticmethod
     def get(name: str) -> RequirementLevel:
@@ -189,7 +206,6 @@ class LevelCollection:
 
 @total_ordering
 class Profile:
-
     """
     RO-Crate Validator profile.
 
@@ -197,19 +213,25 @@ class Profile:
     """
 
     # store the map of profiles: profile URI -> Profile instance
-    __profiles_map: MultiIndexMap = \
-        MultiIndexMap("uri", indexes=[
-            MapIndex("name"), MapIndex("token", unique=False), MapIndex("identifier", unique=True),
-            MapIndex("token_path", unique=False)
-        ])
+    __profiles_map: MultiIndexMap = MultiIndexMap(
+        "uri",
+        indexes=[
+            MapIndex("name"),
+            MapIndex("token", unique=False),
+            MapIndex("identifier", unique=True),
+            MapIndex("token_path", unique=False),
+        ],
+    )
 
-    def __init__(self,
-                 profiles_base_path: Path,
-                 profile_path: Path,
-                 requirements: Optional[list[Requirement]] = None,
-                 identifier: str = None,
-                 publicID: Optional[str] = None,
-                 severity: Severity = Severity.REQUIRED):
+    def __init__(
+        self,
+        profiles_base_path: Path,
+        profile_path: Path,
+        requirements: Optional[list[Requirement]] = None,
+        identifier: str = None,
+        publicID: Optional[str] = None,
+        severity: Severity = Severity.REQUIRED,
+    ):
         """
         Initialize the Profile instance
 
@@ -250,7 +272,7 @@ class Profile:
         self._profile_node = None
 
         # init property to store the RDF graph of the profile specification
-        self._profile_specification_graph = None
+        self._profile_specification_graph: Optional[Graph] = None
 
         # check if the profile specification file exists
         spec_file = self.profile_specification_file_path
@@ -274,11 +296,10 @@ class Profile:
                 if existing_profile.path != profile_path:
                     # if the profile already exists, log a warning
                     logger.warning(
-                        "Profile with identifier %s at %s is being overridden "
-                        "by the profile loaded from %s.",
+                        "Profile with identifier %s at %s is being overridden by the profile loaded from %s.",
                         existing_profile.identifier,
                         existing_profile.path,
-                        profile_path
+                        profile_path,
                     )
                     # add the existing profile as an override
                     self.__add_override__(existing_profile)
@@ -286,17 +307,24 @@ class Profile:
             # add the profile to the profiles map
             self.__profiles_map.add(
                 self._profile_node.toPython(),
-                self, token=self.token,
-                name=self.name, identifier=self.identifier,
-                token_path=self.__extract_token_from_path__()
+                self,
+                token=self.token,
+                name=self.name,
+                identifier=self.identifier,
+                token_path=self.__extract_token_from_path__(),
             )  # add the profile to the profiles map
         else:
             raise ProfileSpecificationError(
-                message=f"Profile specification file {spec_file} must contain exactly one profile")
+                message=f"Profile specification file {spec_file} must contain exactly one profile"
+            )
 
     def __get_specification_property__(
-            self, property: str, namespace: Namespace,
-            pop_first: bool = True, as_Python_object: bool = True) -> Union[str, list[Union[str, URIRef]]]:
+        self,
+        property: str,
+        namespace: Namespace,
+        pop_first: bool = True,
+        as_Python_object: bool = True,
+    ) -> Union[str, list[Union[str, URIRef]]]:
         assert self._profile_specification_graph is not None, "Profile specification graph not loaded"
         values = list(self._profile_specification_graph.objects(self._profile_node, namespace[property]))
         if values and as_Python_object:
@@ -357,6 +385,13 @@ class Profile:
         a default name if the label is not specified.
         """
         return self.label or f"Profile {self.uri}"
+
+    @property
+    def profile_specification_graph(self) -> Graph:
+        """
+        The RDF graph of the profile specification.
+        """
+        return self._profile_specification_graph  # type: ignore
 
     @property
     def profile_node(self):
@@ -434,6 +469,14 @@ class Profile:
         return self.get_sibling_profiles(self)
 
     @property
+    def descendants(self) -> list[Profile]:
+        """
+        The list of profiles that are descendants of this profile
+        (i.e., profiles that have this profile among their inherited profiles).
+        """
+        return self.get_descendants(self)
+
+    @property
     def readme_file_path(self) -> Path:
         """
         The path of the README file of the profile.
@@ -484,23 +527,22 @@ class Profile:
         The list of requirements of the profile.
         """
         if not self._requirements:
-            self._requirements = \
-                RequirementLoader.load_requirements(self, severity=self.severity)
+            self._requirements = RequirementLoader.load_requirements(self, severity=self.severity)
         return self._requirements
 
-    def get_requirements(
-            self, severity: Severity = Severity.REQUIRED,
-            exact_match: bool = False) -> list[Requirement]:
+    def get_requirements(self, severity: Severity = Severity.REQUIRED, exact_match: bool = False) -> list[Requirement]:
         """
         Get the requirements of the profile with the given severity level.
         If the exact_match flag is set to `True`, only the requirements with the exact severity level
         are returned; otherwise, the requirements with severity level greater than or equal to
         the given severity level are returned.
         """
-        return [requirement for requirement in self.requirements
-                if (not exact_match and
-                    (not requirement.severity_from_path or requirement.severity_from_path >= severity)) or
-                (exact_match and requirement.severity_from_path == severity)]
+        return [
+            requirement
+            for requirement in self.requirements
+            if (not exact_match and (not requirement.severity_from_path or requirement.severity_from_path >= severity))
+            or (exact_match and requirement.severity_from_path == severity)
+        ]
 
     def get_requirement(self, name: str) -> Optional[Requirement]:
         """
@@ -555,9 +597,7 @@ class Profile:
         self._requirements.remove(requirement)
 
     def __eq__(self, other: object) -> bool:
-        return isinstance(other, Profile) \
-            and self.identifier == other.identifier \
-            and self.path == other.path
+        return isinstance(other, Profile) and self.identifier == other.identifier and self.path == other.path
 
     def __lt__(self, other: object) -> bool:
         if not isinstance(other, Profile):
@@ -573,10 +613,9 @@ class Profile:
 
     def __repr__(self) -> str:
         return (
-            f'Profile(identifier={self.identifier}, '
-            f'name={self.name}, '
-            f'path={self.path}, ' if self.path else ''
-            f'requirements={self.requirements})'
+            f"Profile(identifier={self.identifier}, name={self.name}, path={self.path}, "
+            if self.path
+            else f"requirements={self.requirements})"
         )
 
     def __str__(self) -> str:
@@ -587,7 +626,7 @@ class Profile:
             "identifier": self.identifier,
             "uri": self.uri,
             "name": self.name,
-            "description": self.description
+            "description": self.description,
         }
 
     @staticmethod
@@ -601,12 +640,16 @@ class Profile:
         return None
 
     def __get_consistent_version__(self, candidate_token: str) -> str:
-        candidates = {_ for _ in [
-            self.__get_specification_property__("version", SCHEMA_ORG_NS),
-            self.__extract_version_from_token__(candidate_token),
-            self.__extract_version_from_token__(str(self.path.relative_to(self._profiles_base_path))),
-            self.__extract_version_from_token__(str(self.uri))
-        ] if _ is not None}
+        candidates = {
+            _
+            for _ in [
+                self.__get_specification_property__("version", SCHEMA_ORG_NS),
+                self.__extract_version_from_token__(candidate_token),
+                self.__extract_version_from_token__(str(self.path.relative_to(self._profiles_base_path))),
+                self.__extract_version_from_token__(str(self.uri)),
+            ]
+            if _ is not None
+        }
         if len(candidates) > 1:
             raise ProfileSpecificationError(f"Inconsistent versions found: {candidates}")
         logger.debug("Candidate versions: %s", candidates)
@@ -621,7 +664,7 @@ class Profile:
         # Remove the base path from the identifier
         identifier = identifier.replace(f"{base_path}/", "")
         # Replace slashes with hyphens
-        identifier = identifier.replace('/', '-')
+        identifier = identifier.replace("/", "-")
         return identifier
 
     def __init_token_version__(self) -> Tuple[str, str, str]:
@@ -643,10 +686,13 @@ class Profile:
         return candidate_token, version
 
     @classmethod
-    def __load_profile_path__(cls, profiles_base_path: str,
-                              profile_path: Union[str, Path],
-                              publicID: Optional[str] = None,
-                              severity:  Severity = Severity.REQUIRED) -> Profile:
+    def __load_profile_path__(
+        cls,
+        profiles_base_path: str,
+        profile_path: Union[str, Path],
+        publicID: Optional[str] = None,
+        severity: Severity = Severity.REQUIRED,
+    ) -> Profile:
         # if the path is a string, convert it to a Path
         if isinstance(profile_path, str):
             profile_path = Path(profile_path)
@@ -654,14 +700,21 @@ class Profile:
         if not profile_path.is_dir():
             raise InvalidProfilePath(profile_path)
         # create a new profile
-        profile = Profile(profiles_base_path=profiles_base_path,
-                          profile_path=profile_path, publicID=publicID, severity=severity)
+        profile = Profile(
+            profiles_base_path=profiles_base_path,
+            profile_path=profile_path,
+            publicID=publicID,
+            severity=severity,
+        )
         logger.debug("Loaded profile: %s", profile)
         return profile
 
     @classmethod
-    def __load_profiles_paths__(cls, profiles_path: Union[str, Path] = None,
-                                extra_profiles_path: Union[str, Path] = None) -> list[Tuple[Path, Path]]:
+    def __load_profiles_paths__(
+        cls,
+        profiles_path: Union[str, Path] = None,
+        extra_profiles_path: Union[str, Path] = None,
+    ) -> list[Tuple[Path, Path]]:
         """
         Load the paths of the profiles from the given profiles path and extra profiles path.
 
@@ -689,33 +742,47 @@ class Profile:
             if not root_profile_directory.is_dir():
                 raise InvalidProfilePath(root_profile_directory)
             # if the path is a directory, get the profile directories
-            result.extend([(root_profile_directory, p.parent)
-                          for p in root_profile_directory.rglob('*.*') if p.name == PROFILE_SPECIFICATION_FILE])
+            result.extend(
+                [
+                    (root_profile_directory, p.parent)
+                    for p in root_profile_directory.rglob("*.*")
+                    if p.name == PROFILE_SPECIFICATION_FILE
+                ]
+            )
         # return the list of profile directories
         return result
 
     @classmethod
-    def load_profiles(cls,
-                      profiles_path: Union[str, Path],
-                      extra_profiles_path: Union[str, Path] = None,
-                      publicID: Optional[str] = None,
-                      severity:  Severity = Severity.REQUIRED,
-                      allow_requirement_check_override: bool = True) -> list[Profile]:
+    def load_profiles(
+        cls,
+        profiles_path: Union[str, Path],
+        extra_profiles_path: Union[str, Path] = None,
+        publicID: Optional[str] = None,
+        severity: Severity = Severity.REQUIRED,
+        allow_requirement_check_override: bool = True,
+    ) -> list[Profile]:
         # initialize the profiles list
         profiles = []
         # calculate the list of profiles path as the subdirectories of the profiles path
         # where the profile specification file is present
-        profiles_paths = cls.__load_profiles_paths__(profiles_path,
-                                                     extra_profiles_path)
+        profiles_paths = cls.__load_profiles_paths__(profiles_path, extra_profiles_path)
 
         # iterate through the directories and load the profiles
         for root_profile_path, profile_path in profiles_paths:
-            logger.debug("Checking profile path: %s %s %r", profile_path,
-                         profile_path.is_dir(), IGNORED_PROFILE_DIRECTORIES)
+            logger.debug(
+                "Checking profile path: %s %s %r",
+                profile_path,
+                profile_path.is_dir(),
+                IGNORED_PROFILE_DIRECTORIES,
+            )
             # check if the profile path is a directory and not in the ignored directories
             if profile_path.is_dir() and profile_path not in IGNORED_PROFILE_DIRECTORIES:
                 profile = Profile.__load_profile_path__(
-                    root_profile_path, profile_path, publicID=publicID, severity=severity)
+                    root_profile_path,
+                    profile_path,
+                    publicID=publicID,
+                    severity=severity,
+                )
                 # if the profile overrides another profile,
                 # remove the overridden profiles from the list of profiles
                 # to avoid duplicates and ensure that the most specific profile is used
@@ -751,7 +818,10 @@ class Profile:
         #  order profiles according to the number of profiles they depend on:
         # i.e, first the profiles that do not depend on any other profile
         # then the profiles that depend on the previous ones, and so on
-        return sorted(profiles, key=lambda x: f"{len(x.inherited_profiles)}_{x.identifier}")
+        return sorted(
+            profiles,
+            key=lambda x: f"{len(x.inherited_profiles)}_{x.identifier}",
+        )
 
     @classmethod
     def get_by_identifier(cls, identifier: str) -> Profile:
@@ -819,6 +889,20 @@ class Profile:
         return [p for p in cls.__profiles_map.values() if profile in p.parents]
 
     @classmethod
+    def get_descendants(cls, profile: Profile) -> list[Profile]:
+        """
+        Get the transitive descendants of the given profile (any profile
+        that has `profile` among its `inherited_profiles`).
+
+        :param profile: the profile
+        :type profile: Profile
+
+        :return: the list of descendant profiles
+        :rtype: list[Profile]
+        """
+        return [p for p in cls.__profiles_map.values() if profile in p.inherited_profiles]
+
+    @classmethod
     def all(cls) -> list[Profile]:
         """
         Get all the profiles
@@ -829,8 +913,7 @@ class Profile:
         return cls.__profiles_map.values()
 
     @classmethod
-    def find_in_list(cls, profiles: Collection[Profile],
-                     profile_identifier: str) -> Optional[Profile]:
+    def find_in_list(cls, profiles: Collection[Profile], profile_identifier: str) -> Optional[Profile]:
         """
         Find a profile with the given identifier in the given list of profiles
 
@@ -843,8 +926,10 @@ class Profile:
         :return: the profile if found, None otherwise
         :rtype: Optional[Profile]
         """
-        profile = next((p for p in profiles if p.identifier == profile_identifier), None) or \
-            next((p for p in profiles if str(p.identifier).replace(f"-{p.version}", '') == profile_identifier), None)
+        profile = next((p for p in profiles if p.identifier == profile_identifier), None) or next(
+            (p for p in profiles if str(p.identifier).replace(f"-{p.version}", "") == profile_identifier),
+            None,
+        )
         if not profile:
             raise ProfileNotFound(profile_identifier)
         return profile
@@ -866,12 +951,14 @@ class Requirement(ABC):
     A requirement is a named set of checks that can be used to validate an RO-Crate.
     """
 
-    def __init__(self,
-                 profile: Profile,
-                 name: str = "",
-                 description: Optional[str] = None,
-                 path: Optional[Path] = None,
-                 initialize_checks: bool = True):
+    def __init__(
+        self,
+        profile: Profile,
+        name: str = "",
+        description: Optional[str] = None,
+        path: Optional[Path] = None,
+        initialize_checks: bool = True,
+    ):
         """
         Initialize the Requirement instance
 
@@ -947,7 +1034,10 @@ class Requirement(ABC):
             try:
                 self._level_from_path = LevelCollection.get(self._path.parent.name)
             except ValueError:
-                logger.debug("The requirement level could not be determined from the path: %s", self._path)
+                logger.debug(
+                    "The requirement level could not be determined from the path: %s",
+                    self._path,
+                )
         return self._level_from_path
 
     @property
@@ -957,8 +1047,9 @@ class Requirement(ABC):
     @property
     def description(self) -> str:
         if not self._description:
-            self._description = self.__class__.__doc__.strip(
-            ) if self.__class__.__doc__ else f"Profile Requirement {self.name}"
+            self._description = (
+                self.__class__.__doc__.strip() if self.__class__.__doc__ else f"Profile Requirement {self.name}"
+            )
         return self._description
 
     @property
@@ -1005,45 +1096,78 @@ class Requirement(ABC):
 
         :meta private:
         """
-        logger.debug("Validating Requirement %s with %s checks", self.name, len(self._checks))
+        logger.debug(
+            "Validating Requirement %s with %s checks",
+            self.name,
+            len(self._checks),
+        )
 
-        logger.debug("Running %s checks for Requirement '%s'", len(self._checks), self.name)
+        logger.debug(
+            "Running %s checks for Requirement '%s'",
+            len(self._checks),
+            self.name,
+        )
         all_passed = True
         checks_to_perform = [
-            _ for _ in self._checks
-            if not context.settings.skip_checks
-            or _.identifier not in context.settings.skip_checks
+            _
+            for _ in self._checks
+            if not context.settings.skip_checks or _.identifier not in context.settings.skip_checks
         ]
         for check in checks_to_perform:
             try:
                 if check.overridden and not check.requirement.profile.identifier == context.profile_identifier:
-                    logger.debug("Skipping check '%s' because overridden by '%r'",
-                                 check.identifier, [_.identifier for _ in check.overridden_by])
+                    logger.debug(
+                        "Skipping check '%s' because overridden by '%r'",
+                        check.identifier,
+                        [_.identifier for _ in check.overridden_by],
+                    )
+                    continue
+                if check.deactivated:
+                    logger.debug("Skipping check '%s' because deactivated", check.identifier)
+                    context.result._add_skipped_check(check)
                     continue
                 # Determine whether to skip event notification for inherited profiles
                 skip_event_notify = False
-                if check.requirement.profile.identifier != context.profile_identifier and \
-                        context.settings.disable_inherited_profiles_issue_reporting:
-                    logger.debug("Inherited profiles reporting disabled. "
-                                 "Skipping requirement %s as it belongs to an inherited profile %s",
-                                 check.requirement.identifier, check.requirement.profile.identifier)
+                if (
+                    check.requirement.profile.identifier != context.profile_identifier
+                    and context.settings.disable_inherited_profiles_issue_reporting
+                ):
+                    logger.debug(
+                        "Inherited profiles reporting disabled. "
+                        "Skipping requirement %s as it belongs to an inherited profile %s",
+                        check.requirement.identifier,
+                        check.requirement.profile.identifier,
+                    )
                     skip_event_notify = True
                 # Notify the start of the check execution if not skip_event_notify is set to True
                 if not skip_event_notify:
-                    context.validator.notify(RequirementCheckValidationEvent(
-                        EventType.REQUIREMENT_CHECK_VALIDATION_START, check))
+                    context.validator.notify(
+                        RequirementCheckValidationEvent(EventType.REQUIREMENT_CHECK_VALIDATION_START, check)
+                    )
                 # Execute the check
                 check_result = check.execute_check(context)
                 logger.debug("Result of check %s: %s", check.identifier, check_result)
                 context.result._add_executed_check(check, check_result)
                 # Notify the end of the check execution if not skip_event_notify is set to True
                 if not skip_event_notify:
-                    context.validator.notify(RequirementCheckValidationEvent(
-                        EventType.REQUIREMENT_CHECK_VALIDATION_END, check, validation_result=check_result))
-                logger.debug("Ran check '%s'. Got result %s", check.identifier, check_result)
+                    context.validator.notify(
+                        RequirementCheckValidationEvent(
+                            EventType.REQUIREMENT_CHECK_VALIDATION_END,
+                            check,
+                            validation_result=check_result,
+                        )
+                    )
+                logger.debug(
+                    "Ran check '%s'. Got result %s",
+                    check.identifier,
+                    check_result,
+                )
                 # Ensure the check result is a boolean
                 if not isinstance(check_result, bool):
-                    logger.warning("Ignoring the check %s as it returned the value %r instead of a boolean", check.name)
+                    logger.warning(
+                        "Ignoring the check %s as it returned the value %r instead of a boolean",
+                        check.name,
+                    )
                     raise RuntimeError(f"Ignoring invalid result from check {check.name}")
                 # Aggregate the check result
                 all_passed = all_passed and check_result
@@ -1055,21 +1179,26 @@ class Requirement(ABC):
                 continue
             except Exception as e:
                 # Ignore the fact that the check failed as far as the validation result is concerned.
-                logger.warning("Unexpected error during check %s.  Exception: %s", check, e)
-                logger.warning("Consider reporting this as a bug.")
-                if logger.isEnabledFor(logging.DEBUG):
-                    logger.exception(e)
+                if context.maybe_warn_offline_cache_miss(e):
+                    logger.debug("Offline cache miss during check %s: %s", check, e)
+                else:
+                    logger.warning("Unexpected error during check %s.  Exception: %s", check, e)
+                    logger.warning("Consider reporting this as a bug.")
+                    if logger.isEnabledFor(logging.DEBUG):
+                        logger.exception(e)
         skipped_checks = set(self._checks) - set(checks_to_perform)
         context.result.skipped_checks.update(skipped_checks)
-        logger.debug("Checks for Requirement '%s' completed. Checks passed? %s", self.name, all_passed)
+        logger.debug(
+            "Checks for Requirement '%s' completed. Checks passed? %s",
+            self.name,
+            all_passed,
+        )
         return all_passed
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Requirement):
             raise TypeError(f"Cannot compare {type(self)} with {type(other)}")
-        return self.name == other.name \
-            and self.description == other.description \
-            and self.path == other.path
+        return self.name == other.name and self.description == other.description and self.path == other.path
 
     def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
@@ -1080,16 +1209,20 @@ class Requirement(ABC):
     def __lt__(self, other: object) -> bool:
         if not isinstance(other, Requirement):
             raise ValueError(f"Cannot compare Requirement with {type(other)}")
-        return (self._order_number, self.name) < (other._order_number, other.name)
+        return (self._order_number, self.name) < (
+            other._order_number,
+            other.name,
+        )
 
     def __repr__(self):
         return (
-            f'ProfileRequirement('
-            f'_order_number={self._order_number}, '
-            f'name={self.name}, '
-            f'description={self.description}'
-            f', path={self.path}, ' if self.path else ''
-            ')'
+            f"ProfileRequirement("
+            f"_order_number={self._order_number}, "
+            f"name={self.name}, "
+            f"description={self.description}"
+            f", path={self.path}, "
+            if self.path
+            else ")"
         )
 
     def __str__(self) -> str:
@@ -1100,7 +1233,7 @@ class Requirement(ABC):
             "identifier": self.identifier,
             "name": self.name,
             "description": self.description,
-            "order": self.order_number
+            "order": self.order_number,
         }
         if with_profile:
             result["profile"] = self.profile.to_dict()
@@ -1108,9 +1241,36 @@ class Requirement(ABC):
             result["checks"] = [_.to_dict(with_requirement=False, with_profile=False) for _ in self._checks]
         return result
 
+    @classmethod
+    def initialize(cls, context: ValidationContext) -> None:
+        logger.debug(
+            "Starting %s requirement initialization for context %s",
+            cls.__name__,
+            context,
+        )
+        # do initialization logic here (empty for now)
+        logger.debug(
+            "Completed %s requirement initialization for context %s",
+            cls.__name__,
+            context,
+        )
+
+    @classmethod
+    def finalize(cls, context: ValidationContext) -> None:
+        logger.debug(
+            "Starting %s requirement finalization for context %s",
+            cls.__name__,
+            context,
+        )
+        # do finalization logic here (empty for now)
+        logger.debug(
+            "Completed %s requirement finalization for context %s",
+            cls.__name__,
+            context,
+        )
+
 
 class RequirementLoader:
-
     def __init__(self, profile: Profile):
         self._profile = profile
 
@@ -1129,7 +1289,6 @@ class RequirementLoader:
 
     @classmethod
     def __get_requirement_loader__(cls, profile: Profile, requirement_path: Path) -> RequirementLoader:
-        import importlib
         requirement_type = cls.__get_requirement_type__(requirement_path)
         loader_instance_name = f"_{requirement_type}_loader_instance"
         loader_instance = getattr(profile, loader_instance_name, None)
@@ -1144,20 +1303,51 @@ class RequirementLoader:
         return loader_instance
 
     @staticmethod
+    def __get_requirement_classes__() -> list[Type[Requirement]]:
+
+        # Ensure known requirement modules are imported so subclasses are registered.
+        for requirement_type in ("python", "shacl"):
+            module_name = f"rocrate_validator.requirements.{requirement_type}"
+            try:
+                importlib.import_module(module_name)
+            except Exception:
+                logger.debug(
+                    "Unable to import requirement module: %s",
+                    module_name,
+                    exc_info=True,
+                )
+
+        def all_subclasses(
+            base_class: Type[Requirement],
+        ) -> list[Type[Requirement]]:
+            result: list[Type[Requirement]] = []
+            for subcls in base_class.__subclasses__():
+                result.append(subcls)
+                result.extend(all_subclasses(subcls))
+            return result
+
+        return all_subclasses(Requirement)
+
+    @staticmethod
     def load_requirements(profile: Profile, severity: Severity = None) -> list[Requirement]:
         """
         Load the requirements related to the profile
         """
-        def ok_file(p: Path) -> bool:
-            return p.is_file() \
-                and p.suffix in PROFILE_FILE_EXTENSIONS \
-                and not p.name == DEFAULT_ONTOLOGY_FILE \
-                and not p.name == PROFILE_SPECIFICATION_FILE \
-                and not p.name.startswith('.') \
-                and not p.name.startswith('_')
 
-        files = sorted((p for p in profile.path.rglob('*.*') if ok_file(p)),
-                       key=lambda x: (not x.suffix == '.py', x))
+        def ok_file(p: Path) -> bool:
+            return (
+                p.is_file()
+                and p.suffix in PROFILE_FILE_EXTENSIONS
+                and not p.name == DEFAULT_ONTOLOGY_FILE
+                and not p.name == PROFILE_SPECIFICATION_FILE
+                and not p.name.startswith(".")
+                and not p.name.startswith("_")
+            )
+
+        files = sorted(
+            (p for p in profile.path.rglob("*.*") if ok_file(p)),
+            key=lambda x: (not x.suffix == ".py", x),
+        )
 
         # set the requirement level corresponding to the severity
         requirement_level = LevelCollection.get(severity.name)
@@ -1169,41 +1359,68 @@ class RequirementLoader:
                 if requirement_level_from_path < requirement_level:
                     continue
             except ValueError:
-                logger.debug("The requirement level could not be determined from the path: %s", requirement_path)
+                logger.debug(
+                    "The requirement level could not be determined from the path: %s",
+                    requirement_path,
+                )
             requirement_loader = RequirementLoader.__get_requirement_loader__(profile, requirement_path)
             for requirement in requirement_loader.load(
-                    profile, requirement_level,
-                    requirement_path, publicID=profile.publicID):
+                profile,
+                requirement_level,
+                requirement_path,
+                publicID=profile.publicID,
+            ):
                 requirements.append(requirement)
         # sort the requirements by severity
-        requirements = sorted(requirements,
-                              key=lambda x: (-x.severity_from_path.value, x.path.name, x.name)
-                              if x.severity_from_path is not None else (0, x.path.name, x.name),
-                              reverse=False)
+        requirements = sorted(
+            requirements,
+            key=lambda x: (
+                (-x.severity_from_path.value, x.path.name, x.name)
+                if x.severity_from_path is not None
+                else (0, x.path.name, x.name)
+            ),
+            reverse=False,
+        )
         # assign order numbers to requirements
         for i, requirement in enumerate(requirements):
             requirement._order_number = i + 1
         # log and return the requirements
-        logger.debug("Profile %s loaded %s requirements: %s",
-                     profile.identifier, len(requirements), requirements)
+        logger.debug("Profile %s loaded %s requirements: %s", profile.identifier, len(requirements), requirements)
         return requirements
+
+
+@dataclass(frozen=True)
+class SourceSnippet:
+    """
+    A snippet of source code backing a :class:`RequirementCheck`.
+    :ivar language: language tag for syntax highlighting (e.g. ``"python"``, ``"turtle"``).
+    :ivar code: the source code as text.
+    :ivar source_path: path to the file the snippet was extracted from, when available.
+    """
+    language: str
+    code: str
+    source_path: Optional[Path] = None
 
 
 @total_ordering
 class RequirementCheck(ABC):
 
-    def __init__(self,
-                 requirement: Requirement,
-                 name: str,
-                 level: Optional[RequirementLevel] = LevelCollection.REQUIRED,
-                 description: Optional[str] = None,
-                 hidden: Optional[bool] = None):
+    def __init__(
+        self,
+        requirement: Requirement,
+        name: str,
+        level: Optional[RequirementLevel] = LevelCollection.REQUIRED,
+        description: Optional[str] = None,
+        hidden: Optional[bool] = None,
+        deactivated: bool = False,
+    ):
         self._requirement: Requirement = requirement
         self._order_number = 0
         self._name = name
         self._level = level
         self._description = description
         self._hidden = hidden
+        self._deactivated = deactivated
 
     @property
     def order_number(self) -> int:
@@ -1241,9 +1458,7 @@ class RequirementCheck(ABC):
 
     @property
     def level(self) -> RequirementLevel:
-        return self._level or \
-            self.requirement.requirement_level_from_path or \
-            LevelCollection.REQUIRED
+        return self._level or self.requirement.requirement_level_from_path or LevelCollection.REQUIRED
 
     @property
     def severity(self) -> Severity:
@@ -1272,6 +1487,10 @@ class RequirementCheck(ABC):
         return len(self.overridden_by) > 0
 
     @property
+    def deactivated(self) -> bool:
+        return self._deactivated
+
+    @property
     def hidden(self) -> bool:
         if self._hidden is not None:
             return self._hidden
@@ -1281,6 +1500,14 @@ class RequirementCheck(ABC):
     def execute_check(self, context: ValidationContext) -> bool:
         raise NotImplementedError()
 
+    def get_source_snippet(self) -> Optional[SourceSnippet]:
+        """
+        Return the source code that implements this check, or ``None`` if the
+        backing source cannot be extracted for this check kind.
+        Concrete subclasses should override this method.
+        """
+        return None
+
     def to_dict(self, with_requirement: bool = True, with_profile: bool = True) -> dict:
         result = {
             "identifier": self.identifier,
@@ -1288,7 +1515,7 @@ class RequirementCheck(ABC):
             "order": self.order_number,
             "name": self.name,
             "description": self.description,
-            "severity": self.severity.name
+            "severity": self.severity.name,
         }
         if with_requirement:
             result["requirement"] = self.requirement.to_dict(with_profile=with_profile, with_checks=False)
@@ -1302,7 +1529,10 @@ class RequirementCheck(ABC):
     def __lt__(self, other: object) -> bool:
         if not isinstance(other, RequirementCheck):
             raise ValueError(f"Cannot compare RequirementCheck with {type(other)}")
-        return (self.requirement, self.identifier) < (other.requirement, other.identifier)
+        return (self.requirement, self.identifier) < (
+            other.requirement,
+            other.identifier,
+        )
 
     def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
@@ -1318,12 +1548,14 @@ class CheckIssue:
     during the validation process.
     """
 
-    def __init__(self,
-                 check: RequirementCheck,
-                 message: Optional[str] = None,
-                 violatingProperty: Optional[str] = None,
-                 violatingEntity: Optional[str] = None,
-                 value: Optional[str] = None):
+    def __init__(
+        self,
+        check: RequirementCheck,
+        message: Optional[str] = None,
+        violatingProperty: Optional[str] = None,
+        violatingEntity: Optional[str] = None,
+        value: Optional[str] = None,
+    ):
         self._message = message
         self._check: RequirementCheck = check
         self._violatingProperty = violatingProperty
@@ -1388,9 +1620,7 @@ class CheckIssue:
         return self._propertyValue
 
     def __eq__(self, other: object) -> bool:
-        return isinstance(other, CheckIssue) and \
-            self._check == other._check and \
-            self._message == other._message
+        return isinstance(other, CheckIssue) and self._check == other._check and self._message == other._message
 
     def __lt__(self, other: object) -> bool:
         if not isinstance(other, CheckIssue):
@@ -1401,34 +1631,43 @@ class CheckIssue:
         return hash((self._check, self._message))
 
     def __repr__(self) -> str:
-        return f'CheckIssue(severity={self.severity}, check={self.check}, message={self.message})'
+        return f"CheckIssue(severity={self.severity}, check={self.check}, message={self.message})"
 
     def __str__(self) -> str:
-        return f"Issue of severity {self.severity.name} with check \"{self.check.identifier}\": {self.message}"
+        return f'Issue of severity {self.severity.name} with check "{self.check.identifier}": {self.message}'
 
-    def to_dict(self, with_check: bool = True,
-                with_requirement: bool = True, with_profile: bool = True) -> dict:
+    def to_dict(
+        self,
+        with_check: bool = True,
+        with_requirement: bool = True,
+        with_profile: bool = True,
+    ) -> dict:
         result = {
             "severity": self.severity.name,
             "message": self.message,
             "violatingEntity": self.violatingEntity,
             "violatingProperty": self.violatingProperty,
-            "violatingPropertyValue": self.violatingPropertyValue
+            "violatingPropertyValue": self.violatingPropertyValue,
         }
         if with_check:
             result["check"] = self.check.to_dict(with_requirement=with_requirement, with_profile=with_profile)
         return result
 
-    def to_json(self,
-                with_checks: bool = True,
-                with_requirements: bool = True,
-                with_profile: bool = True) -> str:
+    def to_json(
+        self,
+        with_checks: bool = True,
+        with_requirements: bool = True,
+        with_profile: bool = True,
+    ) -> str:
         return json.dumps(
             self.to_dict(
                 with_check=with_checks,
                 with_requirement=with_requirements,
-                with_profile=with_profile
-            ), indent=4, cls=CustomEncoder)
+                with_profile=with_profile,
+            ),
+            indent=4,
+            cls=CustomEncoder,
+        )
 
 
 class ValidationStatisticsListener(Protocol):
@@ -1445,9 +1684,12 @@ class ValidationStatistics(Subscriber):
     Computes and stores statistical metrics about the RO-Crate validation process.
     """
 
-    def __init__(self, settings: Union[dict, ValidationSettings],
-                 context: Optional[ValidationContext] = None,
-                 skip_initialization: bool = False):
+    def __init__(
+        self,
+        settings: Union[dict, ValidationSettings],
+        context: Optional[ValidationContext] = None,
+        skip_initialization: bool = False,
+    ):
         if isinstance(settings, dict):
             settings = ValidationSettings.parse(settings)
         self._settings = settings
@@ -1638,7 +1880,11 @@ class ValidationStatistics(Subscriber):
         # extract the validation settings
         severity_validation = validation_settings.requirement_severity
         profiles: list[Profile] = Profile.load_profiles(
-            validation_settings.profiles_path, severity=severity_validation)
+            validation_settings.profiles_path,
+            extra_profiles_path=validation_settings.extra_profiles_path,
+            severity=severity_validation,
+            allow_requirement_check_override=validation_settings.allow_requirement_check_override,
+        )
         profile: Profile = Profile.find_in_list(profiles, validation_settings.profile_identifier)
         target_profile_identifier = profile.identifier
         # initialize the profiles list
@@ -1655,7 +1901,11 @@ class ValidationStatistics(Subscriber):
         requirements: set[Requirement] = set()
 
         # Initialize the counters
-        for severity in (Severity.REQUIRED, Severity.RECOMMENDED, Severity.OPTIONAL):
+        for severity in (
+            Severity.REQUIRED,
+            Severity.RECOMMENDED,
+            Severity.OPTIONAL,
+        ):
             checks_by_severity[severity] = set()
 
         # Process the requirements and checks
@@ -1669,26 +1919,23 @@ class ValidationStatistics(Subscriber):
                     continue
 
                 requirement_checks_count = 0
-                for severity in (Severity.REQUIRED, Severity.RECOMMENDED, Severity.OPTIONAL):
+                for severity in (
+                    Severity.REQUIRED,
+                    Severity.RECOMMENDED,
+                    Severity.OPTIONAL,
+                ):
                     logger.debug(
-                        f"Checking requirement: {requirement} severity: {severity} {severity < severity_validation}")
+                        f"Checking requirement: {requirement} severity: {severity} {severity < severity_validation}"
+                    )
                     # skip requirements with lower severity
                     if severity < severity_validation:
                         continue
                     # count the checks
                     requirement_checks = [
                         _
-                        for _ in requirement.get_checks_by_level(
-                            LevelCollection.get(severity.name)
-                        )
-                        if (
-                            not validation_settings.skip_checks
-                            or _.identifier not in validation_settings.skip_checks
-                        )
-                        and (
-                            not _.overridden
-                            or _.requirement.profile.identifier == target_profile_identifier
-                        )
+                        for _ in requirement.get_checks_by_level(LevelCollection.get(severity.name))
+                        if (not validation_settings.skip_checks or _.identifier not in validation_settings.skip_checks)
+                        and (not _.overridden or _.requirement.profile.identifier == target_profile_identifier)
                     ]
                     num_checks = len(requirement_checks)
                     requirement_checks_count += num_checks
@@ -1708,7 +1955,11 @@ class ValidationStatistics(Subscriber):
                     requirements.add(requirement)
 
         # log processed requirements
-        logger.debug("Processed requirements %r: %r", len(processed_requirements), processed_requirements)
+        logger.debug(
+            "Processed requirements %r: %r",
+            len(processed_requirements),
+            processed_requirements,
+        )
 
         # Prepare the result
         result = {
@@ -1726,7 +1977,7 @@ class ValidationStatistics(Subscriber):
             "finished_at": None,
             "validated_profiles": [],
             "validated_requirements": [],
-            "validated_checks": []
+            "validated_checks": [],
         }
         logger.debug(result)
         return result
@@ -1744,9 +1995,10 @@ class ValidationStatistics(Subscriber):
             logger.debug("Requirement check validation start")
         elif event.event_type == EventType.REQUIREMENT_CHECK_VALIDATION_END:
             target_profile = ctx.target_validation_profile
-            if not event.requirement_check.requirement.hidden and \
-                    (not event.requirement_check.overridden
-                     or target_profile.identifier == event.requirement_check.requirement.profile.identifier):
+            if not event.requirement_check.requirement.hidden and (
+                not event.requirement_check.overridden
+                or target_profile.identifier == event.requirement_check.requirement.profile.identifier
+            ):
                 if event.validation_result is not None:
                     if event.validation_result:
                         self._stats["passed_checks"].append(event.requirement_check)
@@ -1755,10 +2007,15 @@ class ValidationStatistics(Subscriber):
                     self._stats["validated_checks"].append(event.requirement_check)
                     self.notify_listeners()
                 else:
-                    logger.debug("Requirement check validation result is None: %s",
-                                 event.requirement_check.identifier)
+                    logger.debug(
+                        "Requirement check validation result is None: %s",
+                        event.requirement_check.identifier,
+                    )
             else:
-                logger.debug("Skipping requirement check validation: %s", event.requirement_check.identifier)
+                logger.debug(
+                    "Skipping requirement check validation: %s",
+                    event.requirement_check.identifier,
+                )
         elif event.event_type == EventType.REQUIREMENT_VALIDATION_END:
             if not event.requirement.hidden:
                 if event.validation_result:
@@ -1784,12 +2041,10 @@ class ValidationStatistics(Subscriber):
             "started_at": self.started_at.isoformat() if self.started_at else None,
             "finished_at": self.finished_at.isoformat() if self.finished_at else None,
             "duration": self.duration,
-
             # Profile details
             "profile": self.profile.identifier if self.profile else None,
             "profiles": [p.identifier for p in self.profiles],
             "severity": self.severity.name if self.severity else None,
-
             # Computed totals
             "total_requirements": self.total_requirements,
             "total_passed_requirements": len(self.passed_requirements),
@@ -1798,43 +2053,45 @@ class ValidationStatistics(Subscriber):
             "total_passed_checks": len(self.passed_checks),
             "total_failed_checks": len(self.failed_checks),
             "total_checks_by_severity": {k.name: len(v) for k, v in self.checks_by_severity.items()},
-
             # Requirements involved
             "requirements": {
                 "count": self.total_requirements,
                 "passed": {
                     "count": len(self.passed_requirements),
-                    "percentage": (len(self.passed_requirements) / self.total_requirements * 100)
-                    if self.total_requirements > 0 else 0.0,
-                    "identifiers": sorted([r.identifier for r in self.passed_requirements])
+                    "percentage": (
+                        (len(self.passed_requirements) / self.total_requirements * 100)
+                        if self.total_requirements > 0
+                        else 0.0
+                    ),
+                    "identifiers": sorted([r.identifier for r in self.passed_requirements]),
                 },
                 "failed": {
                     "count": len(self.failed_requirements),
-                    "percentage": (len(self.failed_requirements) / self.total_requirements * 100)
-                    if self.total_requirements > 0 else 0.0,
-                    "identifiers": sorted([r.identifier for r in self.failed_requirements])
+                    "percentage": (
+                        (len(self.failed_requirements) / self.total_requirements * 100)
+                        if self.total_requirements > 0
+                        else 0.0
+                    ),
+                    "identifiers": sorted([r.identifier for r in self.failed_requirements]),
                 },
-                "identifiers": sorted([r.identifier for r in self.requirements])
+                "identifiers": sorted([r.identifier for r in self.requirements]),
             },
-
             # Checks involved
             "checks": {
                 "count": self.total_checks,
                 "passed": {
                     "count": len(self.passed_checks),
-                    "percentage": (len(self.passed_checks) / self.total_checks * 100)
-                    if self.total_checks > 0 else 0.0,
-                    "identifiers": sorted([c.identifier for c in self.passed_checks])
+                    "percentage": (len(self.passed_checks) / self.total_checks * 100) if self.total_checks > 0 else 0.0,
+                    "identifiers": sorted([c.identifier for c in self.passed_checks]),
                 },
                 "failed": {
                     "count": len(self.failed_checks),
-                    "percentage": (len(self.failed_checks) / self.total_checks * 100)
-                    if self.total_checks > 0 else 0.0,
-                    "identifiers": sorted([c.identifier for c in self.failed_checks])
+                    "percentage": (len(self.failed_checks) / self.total_checks * 100) if self.total_checks > 0 else 0.0,
+                    "identifiers": sorted([c.identifier for c in self.failed_checks]),
                 },
                 "identifiers": sorted([c.identifier for c in self.checks]),
-                "by_severity": {k.name: len(v) for k, v in self._stats.get("checks_by_severity", {}).items()}
-            }
+                "by_severity": {k.name: len(v) for k, v in self._stats.get("checks_by_severity", {}).items()},
+            },
         }
 
     def to_json(self) -> str:
@@ -1874,10 +2131,8 @@ class AggregatedValidationStatistics:
             "started_at": self.started_at.isoformat() if self.started_at else None,
             "finished_at": self.finished_at.isoformat() if self.finished_at else None,
             "duration": self.duration,
-
             # Profiles involved
             "profiles": [p.identifier for p in self.profiles],
-
             # Computed totals
             "total_requirements": self.total_requirements,
             "total_passed_requirements": len(self.passed_requirements),
@@ -1886,40 +2141,43 @@ class AggregatedValidationStatistics:
             "total_passed_checks": len(self.passed_checks),
             "total_failed_checks": len(self.failed_checks),
             "total_checks_by_severity": {k.name: len(v) for k, v in self.checks_by_severity.items()},
-
             # Requirements involved
             "requirements": {
                 "count": self.total_requirements,
                 "passed": {
                     "count": len(self.passed_requirements),
-                    "percentage": (len(self.passed_requirements) / self.total_requirements * 100)
-                    if self.total_requirements > 0 else 0.0,
-                    "identifiers": [r.identifier for r in self.passed_requirements]
+                    "percentage": (
+                        (len(self.passed_requirements) / self.total_requirements * 100)
+                        if self.total_requirements > 0
+                        else 0.0
+                    ),
+                    "identifiers": [r.identifier for r in self.passed_requirements],
                 },
                 "failed": {
                     "count": len(self.failed_requirements),
-                    "percentage": (len(self.failed_requirements) / self.total_requirements * 100)
-                    if self.total_requirements > 0 else 0.0,
-                    "identifiers": [r.identifier for r in self.failed_requirements]
+                    "percentage": (
+                        (len(self.failed_requirements) / self.total_requirements * 100)
+                        if self.total_requirements > 0
+                        else 0.0
+                    ),
+                    "identifiers": [r.identifier for r in self.failed_requirements],
                 },
-                "identifiers": [r.identifier for r in self.requirements]
+                "identifiers": [r.identifier for r in self.requirements],
             },
             # Checks involved
             "checks": {
                 "count": self.total_checks,
                 "passed": {
                     "count": len(self.passed_checks),
-                    "percentage": (len(self.passed_checks) / self.total_checks * 100)
-                    if self.total_checks > 0 else 0.0,
-                    "identifiers": [c.identifier for c in self.passed_checks]
+                    "percentage": (len(self.passed_checks) / self.total_checks * 100) if self.total_checks > 0 else 0.0,
+                    "identifiers": [c.identifier for c in self.passed_checks],
                 },
                 "failed": {
                     "count": len(self.failed_checks),
-                    "percentage": (len(self.failed_checks) / self.total_checks * 100)
-                    if self.total_checks > 0 else 0.0,
-                    "identifiers": [c.identifier for c in self.failed_checks]
+                    "percentage": (len(self.failed_checks) / self.total_checks * 100) if self.total_checks > 0 else 0.0,
+                    "identifiers": [c.identifier for c in self.failed_checks],
                 },
-                "identifiers": [c.identifier for c in self.checks]
+                "identifiers": [c.identifier for c in self.checks],
             },
         }
 
@@ -2037,7 +2295,7 @@ class AggregatedValidationStatistics:
             "passed_checks": set(),
             "started_at": None,
             "finished_at": None,
-            "duration": 0.0
+            "duration": 0.0,
         }
 
         # Aggregate statistics from each ValidationStatistics instance
@@ -2058,10 +2316,12 @@ class AggregatedValidationStatistics:
             result["passed_checks"].update(stats.passed_checks)
 
             # Aggregate started_at and finished_at
-            result["started_at"] = min(result["started_at"], stats.started_at) \
-                if result["started_at"] else stats.started_at
-            result["finished_at"] = max(result["finished_at"], stats.finished_at) \
-                if result["finished_at"] else stats.finished_at
+            result["started_at"] = (
+                min(result["started_at"], stats.started_at) if result["started_at"] else stats.started_at
+            )
+            result["finished_at"] = (
+                max(result["finished_at"], stats.finished_at) if result["finished_at"] else stats.finished_at
+            )
             # Aggregate duration
             result["duration"] += stats.duration or 0.0
 
@@ -2069,8 +2329,9 @@ class AggregatedValidationStatistics:
         result["profiles"] = sorted(result["profiles"], key=lambda p: p.identifier)
         result["requirements"] = sorted(result["requirements"], key=lambda r: r.identifier)
         result["checks"] = sorted(result["checks"], key=lambda c: c.identifier)
-        result["checks_by_severity"] = {k: sorted(v, key=lambda c: c.identifier)
-                                        for k, v in result["checks_by_severity"].items()}
+        result["checks_by_severity"] = {
+            k: sorted(v, key=lambda c: c.identifier) for k, v in result["checks_by_severity"].items()
+        }
         result["failed_requirements"] = sorted(result["failed_requirements"], key=lambda r: r.identifier)
         result["failed_checks"] = sorted(result["failed_checks"], key=lambda c: c.identifier)
         result["passed_requirements"] = sorted(result["passed_requirements"], key=lambda r: r.identifier)
@@ -2138,6 +2399,7 @@ class ValidationResult:
         The validation statistics
         """
         return self._statistics
+
     # --- Checks ---
 
     @property
@@ -2198,9 +2460,7 @@ class ValidationResult:
         min_severity = min_severity or self.context.requirement_severity
         return [issue for issue in self._issues if issue.severity >= min_severity]
 
-    def get_issues_by_check(self,
-                            check: RequirementCheck,
-                            min_severity: Severity = None) -> list[CheckIssue]:
+    def get_issues_by_check(self, check: RequirementCheck, min_severity: Severity = None) -> list[CheckIssue]:
         """
         Get the issues found during the validation for a specific check
         with a severity greater than or equal to `min_severity`
@@ -2225,12 +2485,14 @@ class ValidationResult:
         min_severity = min_severity or self.context.requirement_severity
         return not any(issue.severity >= min_severity for issue in self._issues)
 
-    def add_issue(self,
-                  message: str,
-                  check: RequirementCheck,
-                  violatingEntity: Optional[str] = None,
-                  violatingProperty: Optional[str] = None,
-                  violatingPropertyValue: Optional[str] = None) -> CheckIssue:
+    def add_issue(
+        self,
+        message: str,
+        check: RequirementCheck,
+        violatingEntity: Optional[str] = None,
+        violatingProperty: Optional[str] = None,
+        violatingPropertyValue: Optional[str] = None,
+    ) -> CheckIssue:
         """
         Add an issue to the validation result
 
@@ -2241,8 +2503,13 @@ class ValidationResult:
             violatingProperty(Optional[str]): The property that caused the issue (if any)
             violatingPropertyValue(Optional[str]): The value of the violatingProperty (if any)
         """
-        c = CheckIssue(check, message, violatingProperty=violatingProperty,
-                       violatingEntity=violatingEntity, value=violatingPropertyValue)
+        c = CheckIssue(
+            check,
+            message,
+            violatingProperty=violatingProperty,
+            violatingEntity=violatingEntity,
+            value=violatingPropertyValue,
+        )
         bisect.insort(self._issues, c)
         return c
 
@@ -2250,17 +2517,21 @@ class ValidationResult:
     @property
     def failed_requirements(self) -> Collection[Requirement]:
         """
-        Get the requirements that failed
+        Get the requirements that failed at or above the configured `requirement_severity`.
         """
-        return set(issue.check.requirement for issue in self._issues)
+        min_severity = self.context.requirement_severity
+        return set(issue.check.requirement for issue in self._issues
+                   if issue.severity >= min_severity)
 
     #  --- Checks ---
     @property
     def failed_checks(self) -> Collection[RequirementCheck]:
         """
-        Get the checks that failed
+        Get the checks that failed at or above the configured `requirement_severity`.
         """
-        return set(issue.check for issue in self._issues)
+        min_severity = self.context.requirement_severity
+        return set(issue.check for issue in self._issues
+                   if issue.severity >= min_severity)
 
     def get_failed_checks_by_requirement(self, requirement: Requirement) -> Collection[RequirementCheck]:
         """
@@ -2269,13 +2540,14 @@ class ValidationResult:
         return [check for check in self.failed_checks if check.requirement == requirement]
 
     def get_failed_checks_by_requirement_and_severity(
-            self, requirement: Requirement, severity: Severity) -> Collection[RequirementCheck]:
+        self, requirement: Requirement, severity: Severity
+    ) -> Collection[RequirementCheck]:
         """
         Get the checks that failed for a specific requirement and severity
         """
-        return [check for check in self.failed_checks
-                if check.requirement == requirement
-                and check.severity == severity]
+        return [
+            check for check in self.failed_checks if check.requirement == requirement and check.severity == severity
+        ]
 
     def __str__(self) -> str:
         return f"Validation result: passed={len(self.failed_checks) == 0}, {len(self._issues)} issues"
@@ -2292,17 +2564,20 @@ class ValidationResult:
         """
         Convert the ValidationResult to a dictionary
         """
-        allowed_properties = ["profile_identifier", "enable_profile_inheritance",
-                              "requirement_severity", "abort_on_first"]
-        validation_settings = {key: value for key, value in self.validation_settings.to_dict().items()
-                               if key in allowed_properties}
+        allowed_properties = [
+            "profile_identifier",
+            "enable_profile_inheritance",
+            "requirement_severity",
+            "abort_on_first",
+        ]
+        validation_settings = {
+            key: value for key, value in self.validation_settings.to_dict().items() if key in allowed_properties
+        }
         result = {
-            "meta": {
-                "version": JSON_OUTPUT_FORMAT_VERSION
-            },
+            "meta": {"version": JSON_OUTPUT_FORMAT_VERSION},
             "validation_settings": validation_settings,
             "passed": self.passed(self.context.settings.requirement_severity),
-            "issues": [issue.to_dict() for issue in self.issues]
+            "issues": [issue.to_dict() for issue in self.issues],
         }
         # add validator version to the settings
         result["validation_settings"]["rocrate_validator_version"] = __version__
@@ -2344,6 +2619,7 @@ class ValidationSettings:
 
     It includes the following attributes:
     """
+
     #: The URI of the RO-Crate
     rocrate_uri: URI
     #: The relative root path of the RO-Crate
@@ -2390,31 +2666,75 @@ class ValidationSettings:
     metadata_dict: dict = None
     #: Verbose output
     verbose: bool = False
-    #: Cache max age in seconds
+    #: Cache max age in seconds (negative values mean "never expire")
     cache_max_age: Optional[int] = DEFAULT_HTTP_CACHE_MAX_AGE
     #: Cache path
     cache_path: Optional[Path] = None
+    #: Flag to enable offline mode: HTTP requests are served only from the cache
+    offline: bool = False
+    #: Flag to disable the HTTP cache entirely: every request hits the network
+    no_cache: bool = False
 
     def __post_init__(self):
         # if requirement_severity is a str, convert to Severity
         if isinstance(self.requirement_severity, str):
             self.requirement_severity = Severity[self.requirement_severity]
+        # Offline mode needs the cache to serve responses, so it cannot be
+        # combined with an explicit cache disable.
+        if self.offline and self.no_cache:
+            raise ValueError(
+                "Offline mode requires the HTTP cache to be enabled; "
+                "no_cache=True is incompatible with offline=True."
+            )
+        # Default to the persistent user cache whenever caching is enabled so that
+        # consecutive runs (online then offline) share the same HTTP cache: this
+        # is what lets the offline mode find the resources fetched online.
+        if self.cache_path is None and not self.no_cache:
+            default_path = get_default_http_cache_path()
+            default_path.parent.mkdir(parents=True, exist_ok=True)
+            self.cache_path = default_path
+            logger.debug("Cache path not set: defaulting to persistent user cache %s", self.cache_path)
+        if self.offline and self.cache_path is None:
+            logger.warning(
+                "Offline mode enabled without a persistent cache path: "
+                "all HTTP-backed resources will fail unless pre-populated."
+            )
+        # Reset any previously initialized singleton so new settings take effect.
+        HttpRequester.reset()
         # initialize the HTTP cache
-        HttpRequester.initialize_cache(cache_path=self.cache_path, cache_max_age=self.cache_max_age)
-        logger.debug("HTTP cache initialized at %s with max age %s seconds",
-                     self.cache_path, self.cache_max_age)
+        HttpRequester.initialize_cache(
+            cache_path=str(self.cache_path) if self.cache_path is not None else None,
+            cache_max_age=self.cache_max_age,
+            offline=self.offline,
+            no_cache=self.no_cache,
+        )
+        logger.debug(
+            "HTTP cache initialized at %s with max age %s seconds (offline=%s, no_cache=%s)",
+            self.cache_path, self.cache_max_age, self.offline, self.no_cache,
+        )
+        # Install the JSON-LD document loader so context resolution goes through the cache.
+        try:
+            install_document_loader()
+        except Exception as e:
+            logger.debug("Could not install JSON-LD document loader: %s", e)
+        # Best-effort synchronous warm-up of profile-declared URLs.
+        if not self.offline:
+            try:
+                auto_warm_up_for_settings(self)
+            except Exception as e:
+                logger.debug("Auto warm-up skipped: %s", e)
 
     def to_dict(self):
         """
         Convert the ValidationSettings to a dictionary
         """
         result = asdict(self)
-        result['rocrate_uri'] = str(self.rocrate_uri)
-        result.pop('metadata_dict', None)  # exclude metadata_dict from the dict representation
+        result["rocrate_uri"] = str(self.rocrate_uri)
+        result.pop("metadata_dict", None)  # exclude metadata_dict from the dict representation
         # Remove disable_crate_download from the dict representation
-        result.pop('disable_remote_crate_download', None)
+        result.pop("disable_remote_crate_download", None)
         # Remove requirement_severity_only from the dict representation
-        result.pop('requirement_severity_only', None)
+        result.pop("requirement_severity_only", None)
         return result
 
     @property
@@ -2461,8 +2781,12 @@ class ValidationSettings:
 
 
 class ValidationEvent(Event):
-    def __init__(self, event_type: EventType,
-                 validation_result: Optional[ValidationResult] = None, message: Optional[str] = None):
+    def __init__(
+        self,
+        event_type: EventType,
+        validation_result: Optional[ValidationResult] = None,
+        message: Optional[str] = None,
+    ):
         super().__init__(event_type, message)
         self._validation_result = validation_result
 
@@ -2472,8 +2796,16 @@ class ValidationEvent(Event):
 
 
 class ProfileValidationEvent(Event):
-    def __init__(self, event_type: EventType, profile: Profile, message: Optional[str] = None):
-        assert event_type in (EventType.PROFILE_VALIDATION_START, EventType.PROFILE_VALIDATION_END)
+    def __init__(
+        self,
+        event_type: EventType,
+        profile: Profile,
+        message: Optional[str] = None,
+    ):
+        assert event_type in (
+            EventType.PROFILE_VALIDATION_START,
+            EventType.PROFILE_VALIDATION_END,
+        )
         super().__init__(event_type, message)
         self._profile = profile
 
@@ -2500,12 +2832,17 @@ class ProfileValidationEvent(Event):
 
 
 class RequirementValidationEvent(Event):
-    def __init__(self,
-                 event_type: EventType,
-                 requirement: Requirement,
-                 validation_result: Optional[bool] = None,
-                 message: Optional[str] = None):
-        assert event_type in (EventType.REQUIREMENT_VALIDATION_START, EventType.REQUIREMENT_VALIDATION_END)
+    def __init__(
+        self,
+        event_type: EventType,
+        requirement: Requirement,
+        validation_result: Optional[bool] = None,
+        message: Optional[str] = None,
+    ):
+        assert event_type in (
+            EventType.REQUIREMENT_VALIDATION_START,
+            EventType.REQUIREMENT_VALIDATION_END,
+        )
         super().__init__(event_type, message)
         self._requirement = requirement
         self._validation_result = validation_result
@@ -2537,10 +2874,17 @@ class RequirementValidationEvent(Event):
 
 
 class RequirementCheckValidationEvent(Event):
-    def __init__(self, event_type: EventType,
-                 requirement_check: RequirementCheck,
-                 validation_result: Optional[bool] = None, message: Optional[str] = None):
-        assert event_type in (EventType.REQUIREMENT_CHECK_VALIDATION_START, EventType.REQUIREMENT_CHECK_VALIDATION_END)
+    def __init__(
+        self,
+        event_type: EventType,
+        requirement_check: RequirementCheck,
+        validation_result: Optional[bool] = None,
+        message: Optional[str] = None,
+    ):
+        assert event_type in (
+            EventType.REQUIREMENT_CHECK_VALIDATION_START,
+            EventType.REQUIREMENT_CHECK_VALIDATION_END,
+        )
         super().__init__(event_type, message)
         self._requirement_check = requirement_check
         self._validation_result = validation_result
@@ -2557,8 +2901,9 @@ class RequirementCheckValidationEvent(Event):
         return f"RequirementCheckValidationEvent({self.event_type}, {self.requirement_check})"
 
     def __repr__(self) -> str:
-        return f"RequirementCheckValidationEvent(event_type={self.event_type}, " \
-            f"requirement_check={self.requirement_check})"
+        return (
+            f"RequirementCheckValidationEvent(event_type={self.event_type}, requirement_check={self.requirement_check})"
+        )
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, RequirementCheckValidationEvent):
@@ -2631,7 +2976,8 @@ class Validator(Publisher):
                 context.profiles_path,
                 extra_profiles_path=context.extra_profiles_path,
                 publicID=context.publicID,
-                severity=context.requirement_severity)
+                severity=context.requirement_severity,
+            )
             profiles = [p for p in available_profiles if p.uri in candidate_profiles_uris]
             # get the candidate profiles
             for profile in profiles:
@@ -2640,7 +2986,11 @@ class Validator(Publisher):
                 for inherited_profile in inherited_profiles:
                     if inherited_profile in candidate_profiles:
                         candidate_profiles.remove(inherited_profile)
-            logger.debug("%d Candidate Profiles found: %s", len(candidate_profiles), candidate_profiles)
+            logger.debug(
+                "%d Candidate Profiles found: %s",
+                len(candidate_profiles),
+                candidate_profiles,
+            )
             # unmatched candidate profiles
             unmatched_profiles = candidate_profiles_uris.difference(set(p.uri for p in profiles))
             logger.debug("Unmatched Candidate Profiles URIs: %s", unmatched_profiles)
@@ -2666,46 +3016,79 @@ class Validator(Publisher):
         """
         Validates the RO-Crate against the specified subset of the profile requirements
         """
-        assert all(isinstance(requirement, Requirement) for requirement in requirements), \
-            "Invalid requirement type"
+        assert all(isinstance(requirement, Requirement) for requirement in requirements), "Invalid requirement type"
         # perform the requirements validation
         return self.__do_validate__(requirements)
 
-    def __do_validate__(self,
-                        requirements: Optional[list[Requirement]] = None) -> ValidationResult:
+    def __do_validate__(self, requirements: Optional[list[Requirement]] = None) -> ValidationResult:
 
         # initialize the validation context
         context = ValidationContext(self, self.validation_settings)
         # register the current context
         self.__current_context__ = context
 
-        try:
+        # initialize the requirement types
+        self.__invoke_pre_validation_hooks__(context)
 
+        try:
             # set the profiles to validate against
             profiles = context.profiles
             assert len(profiles) > 0, "No profiles to validate"
+            # Pre-load every profile's requirements so all shape graphs are
+            # populated before the validation loop runs. This lets a check
+            # see `sh:deactivated true` triples declared by descendant
+            # profiles that have not yet been visited.
+            for p in profiles:
+                _ = p.requirements
             self.notify(EventType.VALIDATION_START)
             for profile in profiles:
-                logger.debug("Validating profile %s (id: %s)", profile.name, profile.identifier)
+                logger.debug(
+                    "Validating profile %s (id: %s)",
+                    profile.name,
+                    profile.identifier,
+                )
                 # set the target profile in the context
                 context._target_validation_profile = profile
                 self.notify(ProfileValidationEvent(EventType.PROFILE_VALIDATION_START, profile=profile))
                 # perform the requirements validation
                 requirements = profile.get_requirements(
-                    context.requirement_severity, exact_match=context.requirement_severity_only)
-                logger.debug("Validating profile %s with %s requirements", profile.identifier, len(requirements))
-                logger.debug("For profile %s, validating these %s requirements: %s",
-                             profile.identifier, len(requirements), requirements)
+                    context.requirement_severity,
+                    exact_match=context.requirement_severity_only,
+                )
+                logger.debug(
+                    "Validating profile %s with %s requirements",
+                    profile.identifier,
+                    len(requirements),
+                )
+                logger.debug(
+                    "For profile %s, validating these %s requirements: %s",
+                    profile.identifier,
+                    len(requirements),
+                    requirements,
+                )
                 terminate = False
                 for requirement in requirements:
                     if not requirement.overridden:
-                        self.notify(RequirementValidationEvent(
-                            EventType.REQUIREMENT_VALIDATION_START, requirement=requirement))
+                        self.notify(
+                            RequirementValidationEvent(
+                                EventType.REQUIREMENT_VALIDATION_START,
+                                requirement=requirement,
+                            )
+                        )
                     passed = requirement._do_validate_(context)
-                    logger.debug("Requirement %s passed: %s", requirement.identifier, passed)
+                    logger.debug(
+                        "Requirement %s passed: %s",
+                        requirement.identifier,
+                        passed,
+                    )
                     if not requirement.overridden:
-                        self.notify(RequirementValidationEvent(
-                            EventType.REQUIREMENT_VALIDATION_END, requirement=requirement, validation_result=passed))
+                        self.notify(
+                            RequirementValidationEvent(
+                                EventType.REQUIREMENT_VALIDATION_END,
+                                requirement=requirement,
+                                validation_result=passed,
+                            )
+                        )
                     if passed:
                         logger.debug("Validation Requirement passed")
                     else:
@@ -2717,16 +3100,33 @@ class Validator(Publisher):
                 self.notify(ProfileValidationEvent(EventType.PROFILE_VALIDATION_END, profile=profile))
                 if terminate:
                     break
-            self.notify(ValidationEvent(EventType.VALIDATION_END,
-                        validation_result=context.result))
 
+            # finalize the requirement types
+            self.__invoke_post_validation_hooks__(context)
+            # notify the end of the validation
+            self.notify(ValidationEvent(EventType.VALIDATION_END, validation_result=context.result))
+            # return the validation result
             return context.result
         finally:
             # clear the current context
             self.__current_context__ = None
 
+    def __invoke_pre_validation_hooks__(self, context: ValidationContext):
+        logger.debug("Initializing requirement types: starting...")
+        requirements_types = RequirementLoader.__get_requirement_classes__()
+        for requirement_type in requirements_types:
+            requirement_type.initialize(context)
+        logger.debug("Initializing requirement types: completed")
+
+    def __invoke_post_validation_hooks__(self, context: ValidationContext):
+        logger.debug("Finalizing requirement types: starting...")
+        requirements_types = RequirementLoader.__get_requirement_classes__()
+        for requirement_type in requirements_types:
+            requirement_type.finalize(context)
+        logger.debug("Finalizing requirement types: completed")
+
     def notify(self, event: Union[Event, EventType]):
-        """ Override notify to update statistics """
+        """Override notify to update statistics"""
         assert self.__current_context__ is not None, "No current validation context"
         result: ValidationResult = self.__current_context__.result
         if isinstance(event, EventType):
@@ -2755,13 +3155,17 @@ class ValidationContext:
         self._result = None
         # additional properties for the context
         self._properties = {}
+        # URLs already reported as missing from the HTTP cache during this run
+        self._offline_cache_misses_warned: set[str] = set()
 
         # initialize the ROCrate object
         if settings.metadata_dict:
             self._rocrate = ROCrate.from_metadata_dict(settings.metadata_dict)
         else:
-            self._rocrate = ROCrate.new_instance(settings.rocrate_uri,
-                                                 relative_root_path=settings.rocrate_relative_root_path)
+            self._rocrate = ROCrate.new_instance(
+                settings.rocrate_uri,
+                relative_root_path=settings.rocrate_relative_root_path,
+            )
         assert isinstance(self._rocrate, ROCrate), "Invalid RO-Crate instance"
 
     @property
@@ -2900,8 +3304,11 @@ class ValidationContext:
     def __load_data_graph__(self) -> Graph:
         data_graph = Graph()
         logger.debug("Loading RO-Crate metadata of: %s", self.ro_crate.uri)
-        _ = data_graph.parse(data=self.ro_crate.metadata.as_dict(),
-                             format="json-ld", publicID=self.publicID)
+        _ = data_graph.parse(
+            data=self.ro_crate.metadata.as_dict(),
+            format="json-ld",
+            publicID=self.publicID,
+        )
         logger.debug("RO-Crate metadata loaded: %s", data_graph)
         return data_graph
 
@@ -2986,7 +3393,8 @@ class ValidationContext:
             extra_profiles_path=self.settings.extra_profiles_path,
             publicID=self.publicID,
             severity=self.requirement_severity,
-            allow_requirement_check_override=self.allow_requirement_check_override)
+            allow_requirement_check_override=self.allow_requirement_check_override,
+        )
 
         # Check if the target profile is in the list of profiles
         profile = Profile.get_by_identifier(self.profile_identifier)
@@ -3007,7 +3415,8 @@ class ValidationContext:
                     logger.exception(e)
                 raise ProfileNotFound(
                     self.profile_identifier,
-                    message=f"Profile '{self.profile_identifier}' not found in '{self.profiles_path}'") from e
+                    message=f"Profile '{self.profile_identifier}' not found in '{self.profiles_path}'",
+                ) from e
 
         # if the inheritance is enabled, return only the target profile
         if not self.inheritance_enabled:
@@ -3083,3 +3492,21 @@ class ValidationContext:
             if p.identifier == identifier:
                 return p
         raise ProfileNotFound(identifier)
+
+    def maybe_warn_offline_cache_miss(self, exc: BaseException) -> bool:
+        """
+        If ``exc`` (or any cause/context in its chain) is an
+        :class:`OfflineCacheMissError`, emit a single user-facing warning
+        for the missing URL — but only the first time that URL is seen
+        during this validation run — and return ``True``.
+
+        Returns ``False`` when the exception is unrelated to offline cache
+        misses, so callers can fall back to their generic handling.
+        """
+        miss = find_offline_cache_miss(exc)
+        if miss is None:
+            return False
+        if miss.url not in self._offline_cache_misses_warned:
+            self._offline_cache_misses_warned.add(miss.url)
+            logger.warning("%s", miss)
+        return True

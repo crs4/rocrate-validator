@@ -16,6 +16,7 @@
 import logging
 
 from rocrate_validator.models import Severity
+# from tests.conftest import SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER
 from tests.ro_crates import ValidROC
 from tests.shared import do_entity_test, SPARQL_PREFIXES
 
@@ -180,6 +181,45 @@ def test_isa_protocol_no_intendedUse():
         expected_triggered_issues=["Protocol entity SHOULD have an intended use"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
+    )
+
+
+def test_isa_protocol_not_correctly_referenced_from_process():
+    """
+    Test an ISA RO-Crate where an invalid Protocol is not correctly referenced.
+    Such protocols should be ignored, meaning the validation should pass.
+    """
+    sparql = (
+        SPARQL_PREFIXES
+        + """
+        PREFIX bioschemas: <https://bioschemas.org/>
+        PREFIX bioschemas-prop: <https://bioschemas.org/properties/>
+        DELETE {
+            ?process bioschemas-prop:executesLabProtocol ?protocol .
+            ?protocol schema:description ?description .
+        }
+        INSERT {
+            ?process schema:mentions ?protocol .
+            ?protocol schema:description 42 .
+        }
+        WHERE {
+            ?process a bioschemas:LabProcess .
+            ?protocol a bioschemas:LabProtocol .
+            ?process bioschemas-prop:executesLabProtocol ?protocol .
+            ?protocol schema:description ?description .
+        }
+        """
+    )
+
+    do_entity_test(
+        rocrate_path=ValidROC().isa_ro_crate,
+        requirement_severity=Severity.REQUIRED,
+        expected_validation_result=True,
+        # expected_triggered_requirements=["Protocol SHOULD have intended use"],
+        # expected_triggered_issues=["Protocol intended use MUST be of type string or DefinedTerm"],
+        profile_identifier="isa-ro-crate",
+        rocrate_entity_mod_sparql=sparql,
+        disable_inherited_profiles_issue_reporting=True,
     )
 
 

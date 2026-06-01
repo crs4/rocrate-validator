@@ -23,47 +23,11 @@
 @prefix validator: <https://github.com/crs4/rocrate-validator/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-# class:study
-#     isTypeDataset
-#     isAdditionalType"Study
-
-
-# check study must have identifier
-# check study must have name
-# check study must have description
-# check study should have about
-
-# check study must be pointed to by investigation through hasPart
-
-# # Find studies and add isa-ro-crate:Study type to them, for easier retrieval for checks
-# ro-crate:FindStudies a sh:NodeShape, validator:HiddenShape;
-#     sh:name "Identify Studies within the RO-Crate" ;
-#     sh:description "A Study has type Dataset and additionalType 'Study'." ;
-#     sh:target [
-#         a sh:SPARQLTarget ;
-#         sh:prefixes ro-crate:sparqlPrefixes ;
-#         sh:select """
-#             SELECT ?this
-#             WHERE {
-#                 ?this a schema:Dataset .
-#                 ?this schema:additionalType "Study" .
-#             }
-#         """
-#     ] ;
-
-#     # Expand data graph with triples from the file data entity
-#     sh:rule [
-#         a sh:TripleRule ;
-#         sh:subject sh:this ;
-#         sh:predicate rdf:type ;
-#         sh:object isa-ro-crate:Study ;
-#     ] .
-
-# Find studies and add isa-ro-crate:Study type to them, for easier retrieval for checks
-ro-crate:FindStudies a sh:NodeShape, validator:HiddenShape;
+isa-ro-crate:FindStudies a sh:NodeShape, validator:HiddenShape;
     sh:name "Identify Studies within the RO-Crate" ;
     sh:description "A Study has type Dataset and additionalType 'Study'." ;
     sh:targetClass schema:Dataset ;
+    sh:order 1 ;
     # Expand data graph with triples from the file data entity
     sh:rule [
         a sh:TripleRule ;
@@ -80,7 +44,6 @@ ro-crate:FindStudies a sh:NodeShape, validator:HiddenShape;
     ]
 .
 
-# WIP
 isa-ro-crate:StudyMustHaveBaseDescriptors a sh:NodeShape ;
     sh:name "Study MUST have base properties" ;
     sh:description "A Study MUST have identifier, name and description" ;

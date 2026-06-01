@@ -24,11 +24,111 @@
 @prefix validator: <https://github.com/crs4/rocrate-validator/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
+isa-ro-crate:FindISAPropertyValue a sh:NodeShape, validator:HiddenShape;
+    sh:name "Identify ISA PropertyValues within the RO-Crate" ;
+    sh:description "An ISA PropertyValue has type PropertyValue and is attached to an Assay, Process, Protocol, Sample, Person, or Article." ;
+    sh:targetClass schema:PropertyValue ;
+    sh:order 4 ;
+    # Expand data graph with triples from the file data entity
+    sh:rule [
+        a sh:TripleRule ;
+        sh:subject sh:this ;
+        sh:predicate rdf:type ;
+        sh:object isa-ro-crate:PropertyValue ;
+        # The condition: need to be attached to a Assay, Process, Protocol, Sample, Person, or Article
+        sh:condition [
+            a sh:NodeShape;
+            sh:name: "PropertyValue is attached to an Assay, Process, Protocol, Sample, Person, or Article" ;
+            sh:or (
+                [
+                    sh:property [
+                        sh:name "PropertyValue is measurementMethod of an Assay" ;
+                        sh:path [ sh:inversePath schema:variableMeasured ] ;
+                        sh:qualifiedValueShape [ 
+                            sh:class isa-ro-crate:Assay ;
+                        ] ;
+                        sh:qualifiedMinCount 1 ;
+                    ]
+                ]
+                [
+                    sh:property [
+                        sh:name "PropertyValue is parameterValue of a Process" ;
+                        sh:path [ sh:inversePath bioschemas-prop:parameterValue ] ;
+                        sh:qualifiedValueShape [ 
+                            sh:class isa-ro-crate:Process
+                        ] ;
+                        sh:qualifiedMinCount 1 ;
+                    ]
+                ]
+                [
+                    sh:property [
+                        sh:name "PropertyValue is computationalTool of a Protocol" ;
+                        sh:path [ sh:inversePath schema:computationalTool ] ;
+                        sh:qualifiedValueShape [ 
+                            sh:class isa-ro-crate:Protocol
+                        ] ;
+                        sh:qualifiedMinCount 1 ;
+                    ]
+                ]
+                [
+                    sh:property [
+                        sh:name "PropertyValue is labEquipment of a Protocol" ;
+                        sh:path [ sh:inversePath schema:labEquipment ] ;
+                        sh:qualifiedValueShape [ 
+                            sh:class isa-ro-crate:Protocol
+                        ] ;
+                        sh:qualifiedMinCount 1 ;
+                    ]
+                ]
+                [
+                    sh:property [
+                        sh:name "PropertyValue is reagent of a Protocol" ;
+                        sh:path [ sh:inversePath schema:reagent ] ;
+                        sh:qualifiedValueShape [ 
+                            sh:class isa-ro-crate:Protocol
+                        ] ;
+                        sh:qualifiedMinCount 1 ;
+                    ]
+                ]
+                [
+                    sh:property [
+                        sh:name "PropertyValue is characteristic of a Sample" ;
+                        sh:path [ sh:inversePath bioschemas-prop:additionalProperty ] ;
+                        sh:qualifiedValueShape [ 
+                            sh:class isa-ro-crate:Sample
+                        ] ;
+                        sh:qualifiedMinCount 1 ;
+                    ]
+                ]
+                [
+                    sh:property [
+                        sh:name "PropertyValue is identifier of a Person" ;
+                        sh:path [ sh:inversePath schema:identifier ] ;
+                        sh:qualifiedValueShape [ 
+                            sh:class isa-ro-crate:Person
+                        ] ;
+                        sh:qualifiedMinCount 1 ;
+                    ]
+                ]
+                [
+                    sh:property [
+                        sh:name "PropertyValue is identifier of a Publication" ;
+                        sh:path [ sh:inversePath schema:identifier ] ;
+                        sh:qualifiedValueShape [ 
+                            sh:class isa-ro-crate:Publication
+                        ] ;
+                        sh:qualifiedMinCount 1 ;
+                    ]
+                ]
+            ) ;
+        ] ;
+    ] ;
+.
 
 ro-crate:FindPropertyValueSubtypes a sh:NodeShape, validator:HiddenShape;
     sh:name "Identify PropertyValue subtypes within the RO-Crate" ;
     sh:description "A PropertyValue has type Parameter, Characteristic, Factor or Component if additionalType is set accordingly." ;
-    sh:targetClass schema:PropertyValue ;
+    sh:targetClass isa-ro-crate:PropertyValue ;
     # Expand data graph with triples from the file data entity
     sh:rule [
         a sh:TripleRule ;
@@ -87,7 +187,7 @@ ro-crate:FindPropertyValueSubtypes a sh:NodeShape, validator:HiddenShape;
 isa-ro-crate:PropertyValueMustHaveName a sh:NodeShape ;
     sh:name "PropertyValue MUST have a name" ;
     sh:description "A PropertyValue MUST have a name" ;
-    sh:targetClass schema:PropertyValue ;
+    sh:targetClass isa-ro-crate:PropertyValue ;
     sh:property [
         a sh:PropertyShape ;
         sh:path schema:name ;
@@ -106,7 +206,7 @@ isa-ro-crate:PropertyValueMustHaveName a sh:NodeShape ;
 isa-ro-crate:PropertyValueShouldHaveValueOfCorrectType a sh:NodeShape ;
     sh:name "PropertyValue SHOULD have value of correct type" ;
     sh:description "A PropertyValue SHOULD have at least one value of correct type" ;
-    sh:targetClass schema:PropertyValue ;
+    sh:targetClass isa-ro-crate:PropertyValue ;
     sh:property [
         a sh:PropertyShape ;
         sh:path schema:value ;
