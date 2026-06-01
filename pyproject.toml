@@ -115,5 +115,8 @@ filterwarnings = [
     "ignore::DeprecationWarning:rdflib.plugins.parsers.jsonld",
 ]
 
+[tool.typos.default]
+extend-ignore-re = ["[0-9a-f]{7,40}"] # Ignore long hexadecimal strings, which are often used as identifiers (e.g., Git commit hashes, UUIDs) and are not typically misspelled words.
+
 [tool.typos.files]
 extend-exclude = ["tests/data", "docs/diagrams", "*.json", "*.html", "*__init__.py"]
