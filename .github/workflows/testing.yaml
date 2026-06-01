@@ -56,7 +56,7 @@ jobs:
             - name: ⌛ Lint Python code
               run: flake8 -v rocrate_validator tests
             - name: ⌛ Spell check code and profiles (covers Python and SHACL)
-              uses: crate-ci/typos@v1.41.0
+              uses: crate-ci/typos@v1.47.0
 
     # Runs the tests
     test:
