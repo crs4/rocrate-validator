@@ -14,6 +14,8 @@
 
 from __future__ import annotations
 
+from typing import Optional
+
 
 class MapIndex:
 
@@ -23,15 +25,15 @@ class MapIndex:
 
 
 class MultiIndexMap:
-    def __init__(self, key: str = "id", indexes: list[MapIndex] = None):
+    def __init__(self, key: str = "id", indexes: Optional[list[MapIndex]] = None):
         self._key = key
         # initialize an empty dictionary to store the indexes
-        self._indices: list[MapIndex] = {}
+        self._indices: dict[str, dict] = {}
         if indexes:
             for index in indexes:
                 self.add_index(index)
         # initialize an empty dictionary to store the data
-        self._data = {}
+        self._data: dict = {}
 
     @property
     def key(self) -> str:

@@ -16,7 +16,7 @@ import atexit
 import sys
 import threading
 from io import StringIO
-from logging import (CRITICAL, DEBUG, ERROR, INFO, WARNING, Logger,
+from logging import (CRITICAL, DEBUG, ERROR, INFO, WARNING, Handler, Logger,
                      StreamHandler, basicConfig as logging_basicConfig)
 from typing import Optional
 
@@ -82,7 +82,7 @@ __loggers__: dict[str, Logger] = {}
 __settings__ = DEFAULT_SETTINGS.copy()
 
 # store logger handlers (only one handler per logger)
-__handlers__ = {}
+__handlers__: dict[str, Handler] = {}
 
 
 # Create a StringIO stream to capture the logs
@@ -196,7 +196,7 @@ def basicConfig(level: int, modules_config: Optional[dict] = None):
         _releaseLock()
 
 
-def getLogger(name: str) -> Logger:
+def getLogger(name: str) -> "LoggerProxy":
     return LoggerProxy(name)
 
 
