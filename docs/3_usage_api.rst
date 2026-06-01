@@ -30,6 +30,12 @@ Programmatic Validation
     :start-line: 121
     :end-line: 162
 
+.. seealso::
+
+    To resolve resources from a local cache or run validation without network
+    access (the ``offline`` / ``no_cache`` settings of ``ValidationSettings``),
+    see :ref:`offline_mode`.
+
 
 Metadata-only Validation
 ------------------------

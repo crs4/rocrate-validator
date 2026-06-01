@@ -21,6 +21,7 @@
     2_usage_cli
     3_usage_api
     4_how_it_works
+    5_offline_mode
 
 .. toctree::
     :maxdepth: 5

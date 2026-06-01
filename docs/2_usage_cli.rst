@@ -31,3 +31,9 @@ CLI Validation
     :parser: myst_parser.sphinx_
     :start-line: 93
     :end-line: 120
+
+.. seealso::
+
+    To validate without network access and manage the HTTP cache from the
+    command line (the ``--offline`` and ``--no-cache`` flags and the ``cache``
+    subcommand), see :ref:`offline_mode`.
