@@ -68,6 +68,20 @@ extensions = [
     'sphinx_copybutton',
 ]
 
+# Only auto-generate section labels for the top two heading levels: deeper
+# subsections (e.g. the repeated "SHACL checks" / "Python checks" headings)
+# would otherwise produce duplicate-label warnings within the same document.
+autosectionlabel_maxdepth = 2
+
+# Warnings raised while embedding the Markdown README into the Sphinx pages.
+# The README is the canonical GitHub document: its slices intentionally start
+# below H1 (myst.header) and use GitHub-relative anchor links that span pages
+# (myst.xref_missing). These are expected when including it here.
+suppress_warnings = [
+    'myst.header',
+    'myst.xref_missing',
+]
+
 templates_path = ['_templates']
 # exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'experiments', 'ontologies', 'tests', 'logs', 'examples', 'debug']
 # List of patterns, relative to source directory, that match files and
