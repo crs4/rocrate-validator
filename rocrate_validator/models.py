@@ -228,7 +228,7 @@ class Profile:
         profiles_base_path: Path,
         profile_path: Path,
         requirements: Optional[list[Requirement]] = None,
-        identifier: str = None,
+        identifier: Optional[str] = None,
         publicID: Optional[str] = None,
         severity: Severity = Severity.REQUIRED,
     ):
@@ -565,7 +565,7 @@ class Profile:
 
     @classmethod
     def __get_nested_profiles__(cls, source: str) -> list[str]:
-        result = []
+        result: list[str] = []
         visited = []
         queue = [source]
         while len(queue) > 0:
@@ -712,8 +712,8 @@ class Profile:
     @classmethod
     def __load_profiles_paths__(
         cls,
-        profiles_path: Union[str, Path] = None,
-        extra_profiles_path: Union[str, Path] = None,
+        profiles_path: Optional[Union[str, Path]] = None,
+        extra_profiles_path: Optional[Union[str, Path]] = None,
     ) -> list[Tuple[Path, Path]]:
         """
         Load the paths of the profiles from the given profiles path and extra profiles path.
@@ -756,13 +756,13 @@ class Profile:
     def load_profiles(
         cls,
         profiles_path: Union[str, Path],
-        extra_profiles_path: Union[str, Path] = None,
+        extra_profiles_path: Optional[Union[str, Path]] = None,
         publicID: Optional[str] = None,
         severity: Severity = Severity.REQUIRED,
         allow_requirement_check_override: bool = True,
     ) -> list[Profile]:
         # initialize the profiles list
-        profiles = []
+        profiles: list[Profile] = []
         # calculate the list of profiles path as the subdirectories of the profiles path
         # where the profile specification file is present
         profiles_paths = cls.__load_profiles_paths__(profiles_path, extra_profiles_path)
@@ -1329,7 +1329,7 @@ class RequirementLoader:
         return all_subclasses(Requirement)
 
     @staticmethod
-    def load_requirements(profile: Profile, severity: Severity = None) -> list[Requirement]:
+    def load_requirements(profile: Profile, severity: Optional[Severity] = None) -> list[Requirement]:
         """
         Load the requirements related to the profile
         """
@@ -1696,7 +1696,7 @@ class ValidationStatistics(Subscriber):
         self._context = context
         self._stats = self.__initialise__(settings) if not skip_initialization else {}
         self._result: Optional[ValidationResult] = None
-        self._listeners = []
+        self._listeners: list[ValidationStatisticsListener] = []
         # self._target_profile: Optional[Profile] = None
 
     @property
@@ -1896,7 +1896,7 @@ class ValidationStatistics(Subscriber):
         logger.debug("Inherited profiles: %r", profile.inherited_profiles)
 
         # Initialize the counters
-        checks_by_severity = {}
+        checks_by_severity: dict[Severity, set[RequirementCheck]] = {}
         checks: set[RequirementCheck] = set()
         requirements: set[Requirement] = set()
 
@@ -1988,12 +1988,15 @@ class ValidationStatistics(Subscriber):
             logger.debug("Validation started")
             self._stats["started_at"] = datetime.now(timezone.utc)
         if event.event_type == EventType.PROFILE_VALIDATION_START:
+            assert isinstance(event, ProfileValidationEvent)
             logger.debug("Profile validation start: %s", event.profile.identifier)
         elif event.event_type == EventType.REQUIREMENT_VALIDATION_START:
             logger.debug("Requirement validation start")
         elif event.event_type == EventType.REQUIREMENT_CHECK_VALIDATION_START:
             logger.debug("Requirement check validation start")
         elif event.event_type == EventType.REQUIREMENT_CHECK_VALIDATION_END:
+            assert isinstance(event, RequirementCheckValidationEvent)
+            assert ctx is not None
             target_profile = ctx.target_validation_profile
             if not event.requirement_check.requirement.hidden and (
                 not event.requirement_check.overridden
@@ -2017,6 +2020,7 @@ class ValidationStatistics(Subscriber):
                     event.requirement_check.identifier,
                 )
         elif event.event_type == EventType.REQUIREMENT_VALIDATION_END:
+            assert isinstance(event, RequirementValidationEvent)
             if not event.requirement.hidden:
                 if event.validation_result:
                     self._stats["passed_requirements"].append(event.requirement)
@@ -2025,9 +2029,11 @@ class ValidationStatistics(Subscriber):
                 self._stats["validated_requirements"].append(event.requirement)
                 self.notify_listeners()
         elif event.event_type == EventType.PROFILE_VALIDATION_END:
+            assert isinstance(event, ProfileValidationEvent)
             self._stats["validated_profiles"].append(event.profile)
             logger.debug("Profile validation ended: %s", event.profile.identifier)
         elif event.event_type == EventType.VALIDATION_END:
+            assert isinstance(event, ValidationEvent)
             self._result = event.validation_result
             self._stats["finished_at"] = datetime.now(timezone.utc)
             logger.debug("Validation ended with result: %s", event.validation_result)
@@ -2460,7 +2466,7 @@ class ValidationResult:
         min_severity = min_severity or self.context.requirement_severity
         return [issue for issue in self._issues if issue.severity >= min_severity]
 
-    def get_issues_by_check(self, check: RequirementCheck, min_severity: Severity = None) -> list[CheckIssue]:
+    def get_issues_by_check(self, check: RequirementCheck, min_severity: Optional[Severity] = None) -> list[CheckIssue]:
         """
         Get the issues found during the validation for a specific check
         with a severity greater than or equal to `min_severity`
@@ -2955,7 +2961,7 @@ class Validator(Publisher):
         try:
             # initialize the validation context
             context = ValidationContext(self, self.validation_settings)
-            candidate_profiles_uris = set()
+            candidate_profiles_uris: set[str] = set()
             try:
                 candidate_profiles_uris.update(context.ro_crate.metadata.get_conforms_to())
             except Exception as e:
@@ -3154,7 +3160,7 @@ class ValidationContext:
         # reference to the validation result
         self._result = None
         # additional properties for the context
-        self._properties = {}
+        self._properties: dict = {}
         # URLs already reported as missing from the HTTP cache during this run
         self._offline_cache_misses_warned: set[str] = set()
 
