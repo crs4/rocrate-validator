@@ -31,7 +31,7 @@ sys.path.insert(0, os.path.abspath('..'))
 
 # Set project metadata
 project = 'rocrate-validator'
-copyright = '2024, CRS4'
+copyright = '2024-2026, CRS4'
 author = 'Marco Enrico Piras, Luca Pireddu, Simone Leo'
 release = __version__
 

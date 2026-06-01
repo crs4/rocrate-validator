@@ -1,5 +1,5 @@
 ..
-    Copyright (c) 2024 CRS4
+    Copyright (c) 2024-2026 CRS4
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -31,3 +31,9 @@
     11_writing_a_profile
     10_api
     genindex
+
+.. toctree::
+    :maxdepth: 1
+    :caption: About
+
+    ack
