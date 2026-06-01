@@ -76,7 +76,7 @@ def _releaseLock():
 
 
 # reference to the list of create loggers
-__loggers__ = {}
+__loggers__: dict[str, Logger] = {}
 
 # user settings for the loggers
 __settings__ = DEFAULT_SETTINGS.copy()
@@ -139,12 +139,13 @@ def __setup_logger__(logger: Logger):
 
 
 def __create_logger__(name: str) -> Logger:
-    logger: Logger = None
     if not isinstance(name, str):
         raise TypeError('A logger name must be a string')
     _acquireLock()
     try:
-        if name not in __loggers__:
+        # Return the cached logger if it already exists, otherwise create it.
+        logger = __loggers__.get(name)
+        if logger is None:
             logger = colorlog.getLogger(name)
             __setup_logger__(logger)
             __loggers__[name] = logger
