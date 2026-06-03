@@ -14,7 +14,7 @@
 
 import json
 from timeit import default_timer as timer
-from typing import Any, Optional, cast
+from typing import Any, ClassVar, Optional, cast
 
 from rdflib import RDF, BNode, Literal, Namespace
 
@@ -56,7 +56,7 @@ class SHACLCheck(RequirementCheck):
     """
 
     # Map shape to requirement check instances
-    __instances__: dict[int, "SHACLCheck"] = {}
+    __instances__: ClassVar[dict[int, "SHACLCheck"]] = {}
 
     def __init__(
         self,
