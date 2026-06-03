@@ -34,8 +34,7 @@ logger = logging.getLogger(__name__)
 
 T = TypeVar("T")
 
-SPARQL_PREFIXES = """PREFIX schema: <http://schema.org/>
-"""
+SPARQL_PREFIXES = "PREFIX schema: <http://schema.org/>"
 
 
 def first(c: Collection[T]) -> T:
@@ -50,9 +49,7 @@ def load_graph_and_preserve_relative_ids(json_data, base="http://example.org/"):
         if isinstance(obj, dict):
             if "@id" in obj:
                 idv = obj["@id"]
-                if isinstance(idv, str) and (
-                    idv.startswith("./") or idv.startswith("../") or idv.startswith("#")
-                ):
+                if isinstance(idv, str) and (idv.startswith("./") or idv.startswith("../") or idv.startswith("#")):
                     rel_ids.add(idv)
             for v in obj.values():
                 collect_ids(v)
@@ -143,9 +140,9 @@ def do_entity_test(
 
     Additional keyword arguments (kwargs) are passed along to initialise ValidationSettings.
     """
-    assert not (
-        rocrate_entity_patch and rocrate_entity_mod_sparql
-    ), "Cannot use rocrate_entity_patch and rocrate_entity_mod_sparql together"
+    assert not (rocrate_entity_patch and rocrate_entity_mod_sparql), (
+        "Cannot use rocrate_entity_patch and rocrate_entity_mod_sparql together"
+    )
 
     # declare variables
     failed_requirements = None
@@ -156,9 +153,7 @@ def do_entity_test(
 
     temp_rocrate_path = None
     if any([rocrate_entity_patch, rocrate_entity_mod_sparql]) and rocrate_path.is_dir():
-        temp_rocrate_path = _prepare_temp_rocrate(
-            rocrate_path, rocrate_entity_patch, rocrate_entity_mod_sparql
-        )
+        temp_rocrate_path = _prepare_temp_rocrate(rocrate_path, rocrate_entity_patch, rocrate_entity_mod_sparql)
         rocrate_path = temp_rocrate_path
 
     if expected_triggered_requirements is None:
@@ -194,9 +189,9 @@ def do_entity_test(
 
         assert result.context is not None, "Validation context should not be None"
         f"Expected requirement severity to be {requirement_severity}, but got {result.context.requirement_severity}"
-        assert (
-            result.passed() == expected_validation_result
-        ), f"RO-Crate should be {'valid' if expected_validation_result else 'invalid'}"
+        assert result.passed() == expected_validation_result, (
+            f"RO-Crate should be {'valid' if expected_validation_result else 'invalid'}"
+        )
 
         # check requirement
         failed_requirements = [_.name for _ in result.failed_requirements]
@@ -214,28 +209,20 @@ def do_entity_test(
 
         # check requirement issues
         detected_issues = [
-            issue.message
-            for issue in result.get_issues(requirement_severity)
-            if issue.message is not None
+            issue.message for issue in result.get_issues(requirement_severity) if issue.message is not None
         ]
         logger.debug("Detected issues: %s", detected_issues)
         logger.debug("Expected issues: %s", expected_triggered_issues)
         for expected_issue in expected_triggered_issues:
-            if not any(
-                expected_issue in issue for issue in detected_issues
-            ):  # support partial match
-                assert (
-                    False
-                ), f'The expected issue "{expected_issue}" was not found in the detected issues'
+            if not any(expected_issue in issue for issue in detected_issues):  # support partial match
+                assert False, f'The expected issue "{expected_issue}" was not found in the detected issues'
     except Exception as e:
         if logger.isEnabledFor(logging.DEBUG):
             logger.exception(e)
             logger.debug("Failed to validate RO-Crate @ path: %s", rocrate_path)
             logger.debug("Requirement severity: %s", requirement_severity)
             logger.debug("Expected validation result: %s", expected_validation_result)
-            logger.debug(
-                "Expected triggered requirements: %s", expected_triggered_requirements
-            )
+            logger.debug("Expected triggered requirements: %s", expected_triggered_requirements)
             logger.debug("Expected triggered issues: %s", expected_triggered_issues)
             logger.debug("Failed requirements: %s", failed_requirements)
             logger.debug("Detected issues: %s", detected_issues)
