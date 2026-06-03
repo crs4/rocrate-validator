@@ -123,7 +123,7 @@ def get_version() -> str:
     return f"{version}-dirty" if dirty else version
 
 
-def get_min_python_version() -> tuple[int, int, Optional[int]]:
+def get_min_python_version() -> tuple[int, ...]:
     """
     Get the minimum Python version required by the package
 
