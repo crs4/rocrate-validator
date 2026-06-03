@@ -348,52 +348,9 @@ def cache_warm(
         # source (no -p, no --crate, no --url, no --all-profiles).
         any_explicit_source = bool(crate or explicit_urls or requested_ids or all_profiles)
         if all_profiles or requested_ids or not any_explicit_source:
-            Profile.load_profiles(
-                profiles_path=profiles_dir,
-                extra_profiles_path=extra_dir,
+            urls, profile_scope = _resolve_warmup_urls_from_profiles(
+                console, profiles_dir, extra_dir, requested_ids
             )
-            loaded_profiles = list(Profile.all())
-            if requested_ids:
-                selected = []
-                missing: list[str] = []
-                # (requested, resolved, all candidates) for tokens that matched
-                # more than one versioned profile — we warn so the user knows
-                # which one was picked and how to opt for a different version.
-                ambiguous_fallbacks: list[tuple[str, Profile, list[Profile]]] = []
-                for ident in requested_ids:
-                    profile = Profile.get_by_identifier(ident)
-                    if profile is None:
-                        # Mirror the fallback used by `validate`: if no exact
-                        # identifier match, treat the value as a token and
-                        # pick the highest-version profile sharing it.
-                        candidates = Profile.get_by_token(ident) or []
-                        if candidates:
-                            profile = max(candidates, key=lambda p: p.version)
-                            if len(candidates) > 1:
-                                ambiguous_fallbacks.append((ident, profile, candidates))
-                    if profile is None:
-                        missing.append(ident)
-                    else:
-                        selected.append(profile)
-                for requested, resolved, candidates in ambiguous_fallbacks:
-                    other_versions = sorted(
-                        p.identifier for p in candidates if p.identifier != resolved.identifier
-                    )
-                    console.print(
-                        f"[yellow]Note:[/yellow] '{requested}' matched multiple profiles; "
-                        f"using [cyan]{resolved.identifier}[/cyan] (highest version). "
-                        f"Pass the full identifier to pick a different one "
-                        f"(available: {', '.join(other_versions)})."
-                    )
-                if missing:
-                    console.print(
-                        f"[yellow]Profile(s) not found and skipped:[/yellow] {', '.join(missing)}"
-                    )
-                profile_scope = f"profiles: {', '.join(p.identifier for p in selected)}"
-                urls = discover_cacheable_urls_from_profiles(selected)
-            else:
-                profile_scope = "all installed profiles"
-                urls = discover_cacheable_urls_from_profiles(loaded_profiles)
 
         results: list[WarmUpResult] = []
         if urls:
@@ -443,6 +400,50 @@ def cache_warm(
         return
     if exit_with_failure:
         ctx.exit(1)
+
+
+def _resolve_warmup_urls_from_profiles(console, profiles_dir, extra_dir, requested_ids):
+    Profile.load_profiles(
+        profiles_path=profiles_dir,
+        extra_profiles_path=extra_dir,
+    )
+    loaded_profiles = list(Profile.all())
+    if requested_ids:
+        selected = []
+        missing: list[str] = []
+        ambiguous_fallbacks: list[tuple[str, Profile, list[Profile]]] = []
+        for ident in requested_ids:
+            profile = Profile.get_by_identifier(ident)
+            if profile is None:
+                candidates = Profile.get_by_token(ident) or []
+                if candidates:
+                    profile = max(candidates, key=lambda p: p.version)
+                    if len(candidates) > 1:
+                        ambiguous_fallbacks.append((ident, profile, candidates))
+            if profile is None:
+                missing.append(ident)
+            else:
+                selected.append(profile)
+        for requested, resolved, candidates in ambiguous_fallbacks:
+            other_versions = sorted(
+                p.identifier for p in candidates if p.identifier != resolved.identifier
+            )
+            console.print(
+                f"[yellow]Note:[/yellow] '{requested}' matched multiple profiles; "
+                f"using [cyan]{resolved.identifier}[/cyan] (highest version). "
+                f"Pass the full identifier to pick a different one "
+                f"(available: {', '.join(other_versions)})."
+            )
+        if missing:
+            console.print(
+                f"[yellow]Profile(s) not found and skipped:[/yellow] {', '.join(missing)}"
+            )
+        profile_scope = f"profiles: {', '.join(p.identifier for p in selected)}"
+        urls = discover_cacheable_urls_from_profiles(selected)
+    else:
+        profile_scope = "all installed profiles"
+        urls = discover_cacheable_urls_from_profiles(loaded_profiles)
+    return urls, profile_scope
 
 
 def _warm_remote_crates(urls: list[str]) -> list[WarmUpResult]:
