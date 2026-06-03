@@ -92,11 +92,12 @@ class WebDataEntityRecommendedChecker(PyFunctionCheck):
                 continue
             if entity.is_available():
                 content_size = entity.get_property("contentSize")
-                if content_size and int(content_size) != context.ro_crate.get_external_file_size(entity.id):
+                actual_size = context.ro_crate.get_external_file_size(entity.id)
+                if content_size and int(content_size) != actual_size:
                     context.result.add_issue(
                         f'The property contentSize={content_size} of the Web-based Data Entity '
                         f'{entity.id} does not match the actual size of '
-                        f'the downloadable content, i.e., {entity.content_size} (bytes)', self,
+                        f'the downloadable content, i.e., {actual_size} (bytes)', self,
                         violatingEntity=entity.id, violatingProperty='contentSize', violatingPropertyValue=content_size)
                     result = False
             if not result and context.fail_fast:
