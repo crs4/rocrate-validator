@@ -376,7 +376,7 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
         # Get the keys of the context
         jsonLD_ctx = self.__get_remote_context__(context_uri)
         if not isinstance(jsonLD_ctx, dict):
-            raise RuntimeError("The context is not a dictionary", self)
+            raise TypeError("The context is not a dictionary")
         return set(jsonLD_ctx.keys())
 
     def __check_entity_keys__(self, entity: Any,

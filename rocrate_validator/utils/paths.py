@@ -148,7 +148,7 @@ def shorten_path(p: Path) -> str:
     :raises ValueError: If the path is not a valid Path object
     """
     if not isinstance(p, Path):
-        raise ValueError("The path must be a Path or ParseResult object")
+        raise TypeError("The path must be a Path or ParseResult object")
 
     try:
         cwd = Path.cwd()

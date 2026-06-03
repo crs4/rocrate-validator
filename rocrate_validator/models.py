@@ -1183,7 +1183,7 @@ class Requirement(ABC):
                 check.name,
                 check_result,
             )
-            raise RuntimeError(f"Ignoring invalid result from check {check.name}")
+            raise TypeError(f"Ignoring invalid result from check {check.name}")
         new_all_passed = all_passed and check_result
         should_break = not new_all_passed and context.fail_fast
         return new_all_passed, should_break
@@ -1201,7 +1201,7 @@ class Requirement(ABC):
 
     def __lt__(self, other: object) -> bool:
         if not isinstance(other, Requirement):
-            raise ValueError(f"Cannot compare Requirement with {type(other)}")
+            raise TypeError(f"Cannot compare Requirement with {type(other)}")
         return (self._order_number, self.name) < (
             other._order_number,
             other.name,
@@ -1514,12 +1514,12 @@ class RequirementCheck(ABC):
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, RequirementCheck):
-            raise ValueError(f"Cannot compare RequirementCheck with {type(other)}")
+            raise TypeError(f"Cannot compare RequirementCheck with {type(other)}")
         return self.requirement == other.requirement and self.name == other.name
 
     def __lt__(self, other: object) -> bool:
         if not isinstance(other, RequirementCheck):
-            raise ValueError(f"Cannot compare RequirementCheck with {type(other)}")
+            raise TypeError(f"Cannot compare RequirementCheck with {type(other)}")
         return (self.requirement, self.identifier) < (
             other.requirement,
             other.identifier,
@@ -3279,7 +3279,7 @@ class ValidationContext:
         if isinstance(severity, str):
             severity = Severity[severity]
         elif not isinstance(severity, Severity):
-            raise ValueError(f"Invalid severity type: {type(severity)}")
+            raise TypeError(f"Invalid severity type: {type(severity)}")
         return severity
 
     @property

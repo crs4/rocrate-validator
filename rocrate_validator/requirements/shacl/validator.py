@@ -449,7 +449,7 @@ class SHACLValidator:
 
         # Validate data_graph
         if not isinstance(data_graph, (Graph, str, bytes)):
-            raise ValueError(
+            raise TypeError(
                 "data_graph must be an instance of Graph, str, or bytes")
 
         # Validate inference
