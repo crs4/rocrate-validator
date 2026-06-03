@@ -130,7 +130,8 @@ class SHACLCheck(RequirementCheck):
         for profile in Profile.get_descendants(owning_profile):
             try:
                 registry = ShapesRegistry.get_instance(profile)
-            except Exception:
+            except Exception as e:
+                logger.debug("Unable to get shapes registry for profile %s: %s", profile.identifier, e)
                 continue
             if registry.is_node_deactivated(shape.node):
                 return True
