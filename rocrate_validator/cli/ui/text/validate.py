@@ -61,6 +61,7 @@ class ValidationCommandView:
             The current report layout
         """
         if self._report_layout is None:
+            assert self.validation_settings is not None, "Validation settings must be set"
             self._report_layout = ValidationReportLayout(
                 console=self.console,
                 settings=self.validation_settings

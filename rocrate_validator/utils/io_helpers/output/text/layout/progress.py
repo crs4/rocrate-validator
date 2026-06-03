@@ -87,12 +87,15 @@ class ProgressMonitor(Subscriber):
             logger.debug("Validation started")
             # self.start()
         if event.event_type == EventType.PROFILE_VALIDATION_START:
+            assert isinstance(event, ProfileValidationEvent)
             logger.debug("Profile validation start: %s", event.profile.identifier)
         elif event.event_type == EventType.REQUIREMENT_VALIDATION_START:
             logger.debug("Requirement validation start")
         elif event.event_type == EventType.REQUIREMENT_CHECK_VALIDATION_START:
             logger.debug("Requirement check validation start")
         elif event.event_type == EventType.REQUIREMENT_CHECK_VALIDATION_END:
+            assert isinstance(event, RequirementCheckValidationEvent)
+            assert ctx is not None, "Validation context must be provided"
             target_profile = ctx.target_validation_profile
             if not event.requirement_check.requirement.hidden and \
                     (not event.requirement_check.overridden
@@ -101,9 +104,11 @@ class ProgressMonitor(Subscriber):
             else:
                 logger.debug("Skipping requirement check validation: %s", event.requirement_check.identifier)
         elif event.event_type == EventType.REQUIREMENT_VALIDATION_END:
+            assert isinstance(event, RequirementValidationEvent)
             if not event.requirement.hidden:
                 self.progress.update(task_id=self.requirement_validation, advance=1)
         elif event.event_type == EventType.PROFILE_VALIDATION_END:
             self.progress.update(task_id=self.profile_validation, advance=1)
         elif event.event_type == EventType.VALIDATION_END:
+            assert isinstance(event, ValidationEvent)
             logger.debug("Validation ended with result: %s", event.validation_result)
