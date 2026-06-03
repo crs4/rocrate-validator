@@ -91,6 +91,37 @@ def load_graph_and_preserve_relative_ids(json_data, base="http://example.org/"):
     return g
 
 
+def _prepare_temp_rocrate(
+    rocrate_path: Path,
+    rocrate_entity_patch: Optional[dict],
+    rocrate_entity_mod_sparql: Optional[str],
+) -> Path:
+    temp_rocrate_path = Path(tempfile.TemporaryDirectory().name)
+    shutil.copytree(rocrate_path, temp_rocrate_path)
+    with open(temp_rocrate_path / "ro-crate-metadata.json", "r") as f:
+        rocrate = json.load(f)
+    if rocrate_entity_patch is not None:
+        for key, value in rocrate_entity_patch.items():
+            for entity in rocrate["@graph"]:
+                if entity["@id"] == key:
+                    entity.update(value)
+                    break
+        with open(temp_rocrate_path / "ro-crate-metadata.json", "w") as f:
+            json.dump(rocrate, f)
+    if rocrate_entity_mod_sparql is not None:
+        rocrate_graph = load_graph_and_preserve_relative_ids(rocrate)
+        rocrate_graph.update(rocrate_entity_mod_sparql)
+        context_uri = "https://w3id.org/ro/crate/1.1/context"
+        rocrate_graph.serialize(
+            Path(temp_rocrate_path, "ro-crate-metadata.json"),
+            format="json-ld",
+            context=context_uri,
+            indent=2,
+            use_native_types=True,
+        )
+    return temp_rocrate_path
+
+
 def do_entity_test(
     rocrate_path: Union[Path, str],
     requirement_severity: models.Severity,
@@ -125,38 +156,9 @@ def do_entity_test(
 
     temp_rocrate_path = None
     if any([rocrate_entity_patch, rocrate_entity_mod_sparql]) and rocrate_path.is_dir():
-        # create a temporary copy of the RO-Crate
-        temp_rocrate_path = Path(tempfile.TemporaryDirectory().name)
-        # copy the RO-Crate to the temporary path using shutil
-        shutil.copytree(rocrate_path, temp_rocrate_path)
-        # load the RO-Crate metadata as RO-Crate JSON-LD
-        with open(temp_rocrate_path / "ro-crate-metadata.json", "r") as f:
-            rocrate = json.load(f)
-        # update the RO-Crate metadata with the patch
-        if rocrate_entity_patch is not None:
-            for key, value in rocrate_entity_patch.items():
-                for entity in rocrate["@graph"]:
-                    if entity["@id"] == key:
-                        entity.update(value)
-                        break
-            # save the updated RO-Crate metadata
-            with open(temp_rocrate_path / "ro-crate-metadata.json", "w") as f:
-                json.dump(rocrate, f)
-        # update the RO-Crate metadata using SPARQL, if required
-        if rocrate_entity_mod_sparql is not None:
-            rocrate_graph = load_graph_and_preserve_relative_ids(rocrate)
-
-            rocrate_graph.update(rocrate_entity_mod_sparql)
-
-            # save the updated RO-Crate metadata
-            context = "https://w3id.org/ro/crate/1.1/context"
-            rocrate_graph.serialize(
-                Path(temp_rocrate_path, "ro-crate-metadata.json"),
-                format="json-ld",
-                context=context,
-                indent=2,
-                use_native_types=True,
-            )
+        temp_rocrate_path = _prepare_temp_rocrate(
+            rocrate_path, rocrate_entity_patch, rocrate_entity_mod_sparql
+        )
         rocrate_path = temp_rocrate_path
 
     if expected_triggered_requirements is None:
