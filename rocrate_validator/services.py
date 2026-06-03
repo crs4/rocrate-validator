@@ -25,6 +25,7 @@ from rocrate_validator.models import Profile, Severity, ValidationResult, Valida
 from rocrate_validator.utils.uri import URI
 from rocrate_validator.utils.paths import get_profiles_path
 from rocrate_validator.utils.http import HttpRequester
+from rocrate_validator.errors import ProfileNotFound
 
 # set the default profiles path
 DEFAULT_PROFILES_PATH = get_profiles_path()
@@ -274,4 +275,7 @@ def get_profile(
         severity=severity,
         allow_requirement_check_override=allow_requirement_check_override,
     )
-    return Profile.find_in_list(profiles, profile_identifier)
+    profile = Profile.find_in_list(profiles, profile_identifier)
+    if profile is None:
+        raise ProfileNotFound(profile_identifier)
+    return profile
