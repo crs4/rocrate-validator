@@ -419,7 +419,7 @@ class SHACLValidator:
             Optional[RDF_SERIALIZATION_FORMATS_TYPES] = "turtle",
         **kwargs,
     ) -> SHACLValidationResult:
-        f"""
+        """
         Validate a data graph using SHACL shapes as constraints
 
         :param data_graph: rdflib.Graph or file path or web url
