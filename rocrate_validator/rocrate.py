@@ -299,6 +299,9 @@ class ROCrateEntity:
             return False
         return self.id == other.id
 
+    def __hash__(self) -> int:
+        return hash(self.id)
+
 
 class ROCrateMetadata:
     METADATA_FILE_DESCRIPTOR = "ro-crate-metadata.json"
@@ -447,6 +450,9 @@ class ROCrateMetadata:
         if not isinstance(other, ROCrateMetadata):
             return False
         return self.ro_crate == other.ro_crate
+
+    def __hash__(self) -> int:
+        return hash(self.ro_crate)
 
 
 class ROCrate(ABC):

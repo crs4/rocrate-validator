@@ -2566,6 +2566,10 @@ class ValidationResult:
             raise TypeError(f"Cannot compare ValidationResult with {type(other)}")
         return self._issues == other._issues
 
+    # Equality is based on the mutable list of issues, so instances are
+    # intentionally unhashable (a content-based hash would be unstable).
+    __hash__ = None  # type: ignore[assignment]
+
     def to_dict(self) -> dict:
         """
         Convert the ValidationResult to a dictionary
