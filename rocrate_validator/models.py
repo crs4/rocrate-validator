@@ -26,7 +26,7 @@ from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from functools import total_ordering
 from pathlib import Path
-from typing import Any, Optional, Protocol, Tuple, Type, Union, cast
+from typing import Any, Optional, Protocol, Union, cast
 from urllib.error import HTTPError
 
 import enum_tools
@@ -666,7 +666,7 @@ class Profile:
         identifier = identifier.replace("/", "-")
         return identifier
 
-    def __init_token_version__(self) -> Tuple[str, Optional[str]]:
+    def __init_token_version__(self) -> tuple[str, Optional[str]]:
         # try to extract the token from the specs or the path
         candidate_token = cast(Optional[str], self.__get_specification_property__("hasToken", PROF_NS))
         if not candidate_token:
@@ -713,7 +713,7 @@ class Profile:
         cls,
         profiles_path: Optional[Union[str, Path]] = None,
         extra_profiles_path: Optional[Union[str, Path]] = None,
-    ) -> list[Tuple[Path, Path]]:
+    ) -> list[tuple[Path, Path]]:
         """
         Load the paths of the profiles from the given profiles path and extra profiles path.
 
@@ -1303,7 +1303,7 @@ class RequirementLoader:
         return loader_instance
 
     @staticmethod
-    def __get_requirement_classes__() -> list[Type[Requirement]]:
+    def __get_requirement_classes__() -> list[type[Requirement]]:
 
         # Ensure known requirement modules are imported so subclasses are registered.
         for requirement_type in ("python", "shacl"):
@@ -1318,9 +1318,9 @@ class RequirementLoader:
                 )
 
         def all_subclasses(
-            base_class: Type[Requirement],
-        ) -> list[Type[Requirement]]:
-            result: list[Type[Requirement]] = []
+            base_class: type[Requirement],
+        ) -> list[type[Requirement]]:
+            result: list[type[Requirement]] = []
             for subcls in base_class.__subclasses__():
                 result.append(subcls)
                 result.extend(all_subclasses(subcls))

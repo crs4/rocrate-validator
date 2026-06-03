@@ -16,7 +16,8 @@ from __future__ import annotations
 
 import threading
 import time
-from typing import Any, Callable, Optional
+from typing import Any, Optional
+from collections.abc import Callable
 
 from rich.align import Align
 from rich.layout import Layout

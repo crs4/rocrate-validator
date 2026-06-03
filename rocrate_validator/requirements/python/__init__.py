@@ -15,7 +15,8 @@
 import inspect
 import re
 from pathlib import Path
-from typing import Callable, Optional, Type
+from typing import Optional
+from collections.abc import Callable
 
 from rocrate_validator.utils import log as logging
 from rocrate_validator.models import (LevelCollection, Profile, Requirement,
@@ -98,7 +99,7 @@ class PyRequirement(Requirement):
 
     def __init__(self,
                  profile: Profile,
-                 requirement_check_class: Type[PyFunctionCheck],
+                 requirement_check_class: type[PyFunctionCheck],
                  name: str = "",
                  description: Optional[str] = None,
                  path: Optional[Path] = None):

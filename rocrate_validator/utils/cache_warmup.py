@@ -27,7 +27,8 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Iterable, List, Optional, Sequence, cast
+from typing import TYPE_CHECKING, Any, Optional, cast
+from collections.abc import Iterable, Sequence
 
 from rocrate_validator import constants
 from rocrate_validator.utils import log as logging
@@ -66,7 +67,7 @@ class WarmUpResult:
     detail: Optional[str] = None
 
 
-def discover_profile_cacheable_urls(profile: "Profile") -> List[str]:
+def discover_profile_cacheable_urls(profile: "Profile") -> list[str]:
     """
     Return the list of HTTP(S) URLs declared by ``profile`` as cacheable
     artifacts. Returns an empty list when the profile has no declared
@@ -77,7 +78,7 @@ def discover_profile_cacheable_urls(profile: "Profile") -> List[str]:
         logger.debug(
             "Profile %s has no specification graph loaded", getattr(profile, "identifier", "?"))
         return []
-    urls: List[str] = []
+    urls: list[str] = []
     try:
         for row in graph.query(_CACHEABLE_URLS_SPARQL):
             artifact = cast(Any, row).artifact
@@ -92,13 +93,13 @@ def discover_profile_cacheable_urls(profile: "Profile") -> List[str]:
     return urls
 
 
-def discover_cacheable_urls_from_profiles(profiles: Iterable["Profile"]) -> List[str]:
+def discover_cacheable_urls_from_profiles(profiles: Iterable["Profile"]) -> list[str]:
     """
     Aggregate cacheable URLs from the given profiles, preserving order and
     removing duplicates.
     """
     seen: set[str] = set()
-    result: List[str] = []
+    result: list[str] = []
     for profile in profiles:
         for url in discover_profile_cacheable_urls(profile):
             if url not in seen:
@@ -107,7 +108,7 @@ def discover_cacheable_urls_from_profiles(profiles: Iterable["Profile"]) -> List
     return result
 
 
-def warm_up_urls(urls: Sequence[str]) -> List[WarmUpResult]:
+def warm_up_urls(urls: Sequence[str]) -> list[WarmUpResult]:
     """
     Fetch each URL so that its response is stored in the HTTP cache.
 
@@ -115,7 +116,7 @@ def warm_up_urls(urls: Sequence[str]) -> List[WarmUpResult]:
     offline cache misses) are reported but do not raise.
     """
     requester = HttpRequester()
-    results: List[WarmUpResult] = []
+    results: list[WarmUpResult] = []
     offline = bool(getattr(requester, "offline", False))
     for url in urls:
         try:
@@ -141,7 +142,7 @@ def warm_up_urls(urls: Sequence[str]) -> List[WarmUpResult]:
     return results
 
 
-def auto_warm_up_for_settings(settings: "ValidationSettings") -> Optional[List[WarmUpResult]]:
+def auto_warm_up_for_settings(settings: "ValidationSettings") -> Optional[list[WarmUpResult]]:
     """
     Perform a best-effort synchronous warm-up triggered by
     ``ValidationSettings.__post_init__``.

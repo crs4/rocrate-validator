@@ -23,7 +23,7 @@ import copy as _copy
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional
 
 from rich.table import Table
 
@@ -315,10 +315,10 @@ def cache_warm(
     cache_path: Optional[Path] = None,
     profiles_path: Optional[Path] = None,
     extra_profiles_path: Optional[Path] = None,
-    profile_identifier: Optional[List[str]] = None,
+    profile_identifier: Optional[list[str]] = None,
     all_profiles: bool = False,
-    crate: Optional[List[str]] = None,
-    url: Optional[List[str]] = None,
+    crate: Optional[list[str]] = None,
+    url: Optional[list[str]] = None,
 ):
     """
     Pre-populate the HTTP cache with resources declared by profiles and with
@@ -341,7 +341,7 @@ def cache_warm(
         extra_dir = Path(extra_profiles_path) if extra_profiles_path else None
 
         requested_ids = list(profile_identifier or [])
-        urls: List[str] = []
+        urls: list[str] = []
         profile_scope: Optional[str] = None
 
         # Only fall back to "warm all profiles" when the user gave no other
@@ -395,7 +395,7 @@ def cache_warm(
                 profile_scope = "all installed profiles"
                 urls = discover_cacheable_urls_from_profiles(loaded_profiles)
 
-        results: List[WarmUpResult] = []
+        results: list[WarmUpResult] = []
         if urls:
             console.print(
                 f"[bold]Warming cache for {profile_scope}[/bold] "
@@ -445,13 +445,13 @@ def cache_warm(
         ctx.exit(1)
 
 
-def _warm_remote_crates(urls: List[str]) -> List[WarmUpResult]:
+def _warm_remote_crates(urls: list[str]) -> list[WarmUpResult]:
     """
     Download each remote RO-Crate URL via ``HttpRequester.fetch_fresh``
     so that its response is stored in the cache.
     """
     requester = HttpRequester()
-    results: List[WarmUpResult] = []
+    results: list[WarmUpResult] = []
     for url in urls:
         try:
             response = requester.fetch_fresh(url, allow_redirects=True)
@@ -503,7 +503,7 @@ def _collect_cache_entries(
     url_filter: Optional[str] = None,
     sort_by: str = "size",
     sort_order: Optional[str] = None,
-) -> List[dict]:
+) -> list[dict]:
     """
     Read every cached response and return a list of plain dicts. Filtering
     and sorting happen here so the CLI rendering paths (table / JSON) share
@@ -517,7 +517,7 @@ def _collect_cache_entries(
     if cache is None:
         return []
     needle = url_filter.lower() if url_filter else None
-    entries: List[dict] = []
+    entries: list[dict] = []
     responses = getattr(cache, "responses", None) or {}
     for key in list(responses):
         try:

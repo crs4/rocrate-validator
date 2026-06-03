@@ -14,7 +14,8 @@
 
 from __future__ import annotations
 
-from typing import Any, Callable, Optional
+from typing import Any, Optional
+from collections.abc import Callable
 
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.io_helpers.output.console import Console
