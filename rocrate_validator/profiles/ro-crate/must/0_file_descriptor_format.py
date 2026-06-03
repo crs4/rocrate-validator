@@ -367,6 +367,9 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
                 keys.update(self.__get_context_keys__(ctx))
             return keys
 
+        # any other context type contributes no keys
+        return set()
+
     def __get_remote_context_keys__(self, context_uri: str) -> set:
         """ Get the keys of the context URI """
 
