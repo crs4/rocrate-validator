@@ -81,7 +81,7 @@ def sparql_test_rocrate():
             ],
         }
 
-        with open(rocrate_dir / "ro-crate-metadata.json", "w") as f:
+        with open(rocrate_dir / "ro-crate-metadata.json", "w", encoding="utf-8") as f:
             json.dump(metadata, f, indent=2)
 
         yield rocrate_dir
