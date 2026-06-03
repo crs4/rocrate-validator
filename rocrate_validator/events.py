@@ -172,10 +172,9 @@ class Publisher:
             event = Event(event)
         # Check if the event has already been notified
         # This is to avoid notifying the same event multiple times
-        if self.__avoid_duplicate_notifications:
-            if event in self.__notified_events:
-                logger.warning(f"Event {event} already notified")
-                return
+        if self.__avoid_duplicate_notifications and event in self.__notified_events:
+            logger.warning(f"Event {event} already notified")
+            return
         # Add the event to the notified events
         self.__notified_events.add(event)
         logger.debug(f"Notifying event {event}")

@@ -171,11 +171,10 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
         """ Get the keys of the context URI """
         is_valid = True
         # if the context is a string, check if it is a valid URI
-        if isinstance(jsonld_context, str):
-            if not self.__check_remote_context__(jsonld_context):
-                context.result.add_issue(
-                    f'Unable to retrieve the JSON-LD context "{jsonld_context}"', self)
-                is_valid = False
+        if isinstance(jsonld_context, str) and not self.__check_remote_context__(jsonld_context):
+            context.result.add_issue(
+                f'Unable to retrieve the JSON-LD context "{jsonld_context}"', self)
+            is_valid = False
 
         # if the context is a dictionary, get the keys of the dictionary
         if isinstance(jsonld_context, dict):

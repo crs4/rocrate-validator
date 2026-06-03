@@ -245,14 +245,13 @@ class PropertyShape(Shape):
     def description(self) -> str:
         """Return the description of the shape property"""
         if not self._description:
-            # get the object of the predicate sh:description
-            if not self._description:
-                property_name = self.name
-                if self._short_name:
-                    property_name = self._short_name
-                self._description = f"Check the property \"**{property_name}**\""
-                if self.parent and self.parent.name not in property_name:
-                    self._description += f" of the entity \"**{self.parent.name}**\""
+            # build a default description from the property (and parent) name
+            property_name = self.name
+            if self._short_name:
+                property_name = self._short_name
+            self._description = f"Check the property \"**{property_name}**\""
+            if self.parent and self.parent.name not in property_name:
+                self._description += f" of the entity \"**{self.parent.name}**\""
         return self._description
 
     @description.setter

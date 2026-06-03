@@ -45,9 +45,8 @@ def __get_single_char_win32__(console: Optional[Console] = None, end: str = "\n"
         finally:
             if console:
                 console.print(char, end=end if choices and char in choices else "")
-        if choices and char not in choices:
-            if console:
-                console.print(" [bold red]INVALID CHOICE[/bold red]", end=end)
+        if choices and char not in choices and console:
+            console.print(" [bold red]INVALID CHOICE[/bold red]", end=end)
     return char
 
 
@@ -75,9 +74,8 @@ def __get_single_char_unix__(console: Optional[Console] = None, end: str = "\n",
             termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
             if console:
                 console.print(char, end=end if choices and char in choices else "")
-        if choices and char not in choices:
-            if console:
-                console.print(" [bold red]INVALID CHOICE[/bold red]", end=end)
+        if choices and char not in choices and console:
+            console.print(" [bold red]INVALID CHOICE[/bold red]", end=end)
     return char
 
 

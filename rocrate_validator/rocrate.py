@@ -152,9 +152,8 @@ class ROCrateEntity:
         # Otherwise the `@id` is a relative path: if the RO-Crate itself is
         # remote, resolve it against the crate URI so the entity is still
         # classified as remote/web-based.
-        if ro_crate.uri.is_remote_resource():
-            if entity_id.startswith("./"):
-                return URI(f"{ro_crate.uri}/{entity_id[2:]}")
+        if ro_crate.uri.is_remote_resource() and entity_id.startswith("./"):
+            return URI(f"{ro_crate.uri}/{entity_id[2:]}")
         return URI(cls.get_id_as_path(entity_id, ro_crate))
 
     @property
@@ -400,9 +399,8 @@ class ROCrateMetadata:
     def get_web_data_entities(self) -> list[ROCrateEntity]:
         entities = []
         for entity in self.get_entities():
-            if entity.has_type("File") or entity.has_type("Dataset"):
-                if entity.is_remote():
-                    entities.append(entity)
+            if (entity.has_type("File") or entity.has_type("Dataset")) and entity.is_remote():
+                entities.append(entity)
         return entities
 
     def get_conforms_to(self) -> Optional[list[str]]:

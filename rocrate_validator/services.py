@@ -101,9 +101,12 @@ def __initialise_validator__(
     logger.debug("Validating RO-Crate: %s", rocrate_path)
 
     # check if the RO-Crate exists
-    if not getattr(settings, "metadata_only", False) and getattr(settings, "metadata_dict", None) is None:
-        if not rocrate_path.is_available():
-            raise FileNotFoundError(f"RO-Crate not found: {rocrate_path}")
+    if (
+        not getattr(settings, "metadata_only", False)
+        and getattr(settings, "metadata_dict", None) is None
+        and not rocrate_path.is_available()
+    ):
+        raise FileNotFoundError(f"RO-Crate not found: {rocrate_path}")
 
     # check if remote validation is enabled
     disable_remote_crate_download = settings.disable_remote_crate_download
