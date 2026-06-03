@@ -252,12 +252,9 @@ class PyRequirementLoader(RequirementLoader):
             rq["description"] = check_class.__doc__.strip() if check_class.__doc__ else ""
             # handle default overrides via decorators
             for pn in ("name", "description"):
-                try:
-                    pv = getattr(check_class, f"__rq_{pn}__", None)
-                    if pv and isinstance(pv, str):
-                        rq[pn] = pv
-                except AttributeError:
-                    pass
+                pv = getattr(check_class, f"__rq_{pn}__", None)
+                if pv and isinstance(pv, str):
+                    rq[pn] = pv
             logger.debug("Processing requirement: %r", requirement_name)
             r = PyRequirement(
                 profile,

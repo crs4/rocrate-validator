@@ -313,21 +313,22 @@ def resolve_parent_shape(
     if not isinstance(source_shape_node, BNode):
         return None
     SHACL = Namespace(SHACL_NS)
-    # Predicates via which a NodeShape/PropertyShape can own a constraint BNode
     parent_predicates = [SHACL.sparql, SHACL.property]
+
+    def _safe_get_shape(graph, node):
+        try:
+            return shapes_registry.get_shape(Shape.compute_key(graph, node))
+        except (ValueError, KeyError):
+            return None
+
     for predicate in parent_predicates:
         for parent_node in shapes_graph.subjects(predicate, source_shape_node):
-            try:
-                parent_shape = shapes_registry.get_shape(
-                    Shape.compute_key(shapes_graph, parent_node)
+            parent_shape = _safe_get_shape(shapes_graph, parent_node)
+            if parent_shape is not None:
+                logger.debug(
+                    "Resolved parent shape %s for SPARQL/inline constraint BNode %s",
+                    parent_shape.key,
+                    source_shape_node,
                 )
-                if parent_shape is not None:
-                    logger.debug(
-                        "Resolved parent shape %s for SPARQL/inline constraint BNode %s",
-                        parent_shape.key,
-                        source_shape_node,
-                    )
-                    return parent_shape
-            except (ValueError, KeyError):
-                continue
+                return parent_shape
     return None
