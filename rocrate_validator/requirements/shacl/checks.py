@@ -124,7 +124,7 @@ class SHACLCheck(RequirementCheck):
         # (transitively) from the shape's owning profile, so unrelated
         # profiles loaded in the same process can't influence the result.
         # Validator.__do_validate__ pre-loads the shape graphs.
-        from rocrate_validator.models import Profile
+        from rocrate_validator.models import Profile  # noqa: PLC0415
 
         owning_profile = self.requirement.profile
         for profile in Profile.get_descendants(owning_profile):

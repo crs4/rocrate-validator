@@ -30,7 +30,7 @@ def run_git_command(command: list[str]) -> Optional[str]:
     :param command: The git command
     :return: The output of the command
     """
-    import subprocess
+    import subprocess  # noqa: PLC0415
 
     try:
         return subprocess.check_output(command, stderr=subprocess.DEVNULL).decode().strip()

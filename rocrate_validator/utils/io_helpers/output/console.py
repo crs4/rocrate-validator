@@ -42,7 +42,7 @@ class Console(BaseConsole):
                 self.register_formatter(formatter, type_)
 
     def __jupyter_environment__(self) -> bool:
-        from rocrate_validator.cli.utils import running_in_jupyter
+        from rocrate_validator.cli.utils import running_in_jupyter  # noqa: PLC0415
         return running_in_jupyter()
 
     def register_formatter(self, formatter: OutputFormatter, type_: Optional[type] = None):

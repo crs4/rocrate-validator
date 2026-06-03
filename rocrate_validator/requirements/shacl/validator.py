@@ -127,7 +127,7 @@ class SHACLValidationContext(ValidationContext):
 
             # enable overriding of checks
             if self.settings.allow_requirement_check_override:
-                from rocrate_validator.requirements.shacl.requirements import SHACLRequirement
+                from rocrate_validator.requirements.shacl.requirements import SHACLRequirement  # noqa: PLC0415
                 for requirement in [_ for _ in profile.requirements if isinstance(_, SHACLRequirement)]:
                     # logger.debug("Processing requirement: %s", requirement.name)
                     for check in requirement.get_checks():

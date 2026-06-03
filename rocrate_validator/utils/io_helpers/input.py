@@ -34,7 +34,7 @@ def __get_single_char_win32__(console: Optional[Console] = None, end: str = "\n"
     """
     Get a single character from the console
     """
-    import msvcrt
+    import msvcrt  # noqa: PLC0415
 
     char = None
     while char is None or (choices and char not in choices):
@@ -56,8 +56,8 @@ def __get_single_char_unix__(console: Optional[Console] = None, end: str = "\n",
     """
     Get a single character from the console
     """
-    import termios
-    import tty
+    import termios  # noqa: PLC0415
+    import tty  # noqa: PLC0415
 
     fd = sys.stdin.fileno()
     old_settings = termios.tcgetattr(fd)

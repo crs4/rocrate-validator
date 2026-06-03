@@ -31,7 +31,7 @@ def get_config() -> dict:
     """
     global _config
     if _config is None:
-        from .paths import get_config_path
+        from .paths import get_config_path  # noqa: PLC0415
 
         # Read the pyproject.toml file
         _config = toml.load(get_config_path())

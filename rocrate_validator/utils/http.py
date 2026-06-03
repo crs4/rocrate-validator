@@ -153,7 +153,7 @@ class HttpRequester:
         # and set up the cached session
         try:
             if not self.no_cache:
-                from requests_cache import CachedSession
+                from requests_cache import CachedSession  # noqa: PLC0415
 
                 # If cache_path is not provided, use the default path prefix
                 if not cache_path:

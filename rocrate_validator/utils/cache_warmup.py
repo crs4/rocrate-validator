@@ -189,8 +189,8 @@ def _find_profile(identifier, settings) -> Optional[Profile]:
     (the settings sometimes store a list of identifiers).
     """
     # Import here to avoid a circular import with models.py.
-    from rocrate_validator.models import Profile
-    from rocrate_validator.utils.paths import get_profiles_path
+    from rocrate_validator.models import Profile  # noqa: PLC0415
+    from rocrate_validator.utils.paths import get_profiles_path  # noqa: PLC0415
 
     # Load profiles to ensure the requested one is available and its graph is parsed.
     global __profiles_loaded

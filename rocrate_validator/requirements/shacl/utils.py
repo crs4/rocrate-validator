@@ -308,7 +308,7 @@ def resolve_parent_shape(
     in the ShapesRegistry directly; instead the containing NodeShape is.
     This helper walks up via sh:sparql and sh:property predicates to find it.
     """
-    from rocrate_validator.requirements.shacl.models import Shape
+    from rocrate_validator.requirements.shacl.models import Shape  # noqa: PLC0415
 
     if not isinstance(source_shape_node, BNode):
         return None
