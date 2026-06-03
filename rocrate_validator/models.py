@@ -731,16 +731,19 @@ class Profile:
         # collect profiles nested in the root profile directories
         for root_profile_directory in root_profile_directories:
             # if the path is a string, convert it to a Path
-            if isinstance(root_profile_directory, str):
-                root_profile_directory = Path(root_profile_directory)
+            profile_root_directory = (
+                Path(root_profile_directory)
+                if isinstance(root_profile_directory, str)
+                else root_profile_directory
+            )
             # check if the path is a directory and raise an error if not
-            if not root_profile_directory.is_dir():
-                raise InvalidProfilePath(str(root_profile_directory))
+            if not profile_root_directory.is_dir():
+                raise InvalidProfilePath(str(profile_root_directory))
             # if the path is a directory, get the profile directories
             result.extend(
                 [
-                    (root_profile_directory, p.parent)
-                    for p in root_profile_directory.rglob("*.*")
+                    (profile_root_directory, p.parent)
+                    for p in profile_root_directory.rglob("*.*")
                     if p.name == PROFILE_SPECIFICATION_FILE
                 ]
             )
