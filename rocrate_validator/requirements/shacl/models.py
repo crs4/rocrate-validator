@@ -402,7 +402,7 @@ class ShapesRegistry:
             # store the node shape in the registry
             self.add_shape(shape)
 
-            #  store the node in the list of shapes
+            # store the node in the list of shapes
             if not grouped:
                 shapes.append(shape)
             else:
