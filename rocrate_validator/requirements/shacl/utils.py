@@ -286,9 +286,7 @@ def load_shapes_from_graph(g: Graph) -> ShapesList:
 
     # Split the graph into subgraphs for each shape
     subgraphs = {}
-    count = 0
     for shape in shapes:
-        count += 1
         subgraph = Graph()
         # Extract all related triples for the current shape
         related_triples = __extract_related_triples__(g, shape)
