@@ -96,8 +96,7 @@ class Severity(enum.Enum):
     def __lt__(self, other: object) -> bool:
         if isinstance(other, Severity):
             return self.value < other.value
-        else:
-            raise TypeError(f"Comparison not supported between instances of {type(self)} and {type(other)}")
+        raise TypeError(f"Comparison not supported between instances of {type(self)} and {type(other)}")
 
     @staticmethod
     def get(name: str) -> Severity:
@@ -1282,10 +1281,9 @@ class RequirementLoader:
     def __get_requirement_type__(requirement_path: Path) -> str:
         if requirement_path.suffix == ".py":
             return "python"
-        elif requirement_path.suffix == ".ttl":
+        if requirement_path.suffix == ".ttl":
             return "shacl"
-        else:
-            raise ValueError(f"Unsupported requirement type: {requirement_path.suffix}")
+        raise ValueError(f"Unsupported requirement type: {requirement_path.suffix}")
 
     @classmethod
     def __get_requirement_loader__(cls, profile: Profile, requirement_path: Path) -> RequirementLoader:
@@ -2784,10 +2782,9 @@ class ValidationSettings:
         """
         if isinstance(settings, dict):
             return cls(**settings)
-        elif isinstance(settings, ValidationSettings):
+        if isinstance(settings, ValidationSettings):
             return settings
-        else:
-            raise ValueError(f"Invalid settings type: {type(settings)}")
+        raise ValueError(f"Invalid settings type: {type(settings)}")
 
 
 class ValidationEvent(Event):

@@ -59,12 +59,11 @@ def map_severity(shacl_severity: str) -> Severity:
     """
     if f"{SHACL_NS}Violation" == shacl_severity:
         return Severity.REQUIRED
-    elif f"{SHACL_NS}Warning" == shacl_severity:
+    if f"{SHACL_NS}Warning" == shacl_severity:
         return Severity.RECOMMENDED
-    elif f"{SHACL_NS}Info" == shacl_severity:
+    if f"{SHACL_NS}Info" == shacl_severity:
         return Severity.OPTIONAL
-    else:
-        raise RuntimeError(f"Unrecognized SHACL severity term {shacl_severity}")
+    raise RuntimeError(f"Unrecognized SHACL severity term {shacl_severity}")
 
 
 def make_uris_relative(text: str, ro_crate_path: Union[Path, str]) -> str:
@@ -138,8 +137,7 @@ def compute_key(g: Graph, s: Node) -> str:
 
     if isinstance(s, BNode):
         return compute_hash(g, s)
-    else:
-        return cast(Any, s).toPython()
+    return cast(Any, s).toPython()
 
 
 class ShapesList:

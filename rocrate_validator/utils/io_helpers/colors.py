@@ -26,12 +26,11 @@ def get_severity_color(severity: Union[str, Severity]) -> str:
     """
     if severity == Severity.REQUIRED or severity == "REQUIRED":
         return "red"
-    elif severity == Severity.RECOMMENDED or severity == "RECOMMENDED":
+    if severity == Severity.RECOMMENDED or severity == "RECOMMENDED":
         return "orange1"
-    elif severity == Severity.OPTIONAL or severity == "OPTIONAL":
+    if severity == Severity.OPTIONAL or severity == "OPTIONAL":
         return "yellow"
-    else:
-        return "white"
+    return "white"
 
 
 def get_req_level_color(level: LevelCollection) -> str:
@@ -42,13 +41,12 @@ def get_req_level_color(level: LevelCollection) -> str:
     """
     if level in (LevelCollection.MUST, LevelCollection.SHALL, LevelCollection.REQUIRED):
         return "red"
-    elif level in (LevelCollection.MUST_NOT, LevelCollection.SHALL_NOT):
+    if level in (LevelCollection.MUST_NOT, LevelCollection.SHALL_NOT):
         return "purple"
-    elif level in (LevelCollection.SHOULD, LevelCollection.RECOMMENDED):
+    if level in (LevelCollection.SHOULD, LevelCollection.RECOMMENDED):
         return "orange1"
-    elif level == LevelCollection.SHOULD_NOT:
+    if level == LevelCollection.SHOULD_NOT:
         return "lightyellow"
-    elif level in (LevelCollection.MAY, LevelCollection.OPTIONAL):
+    if level in (LevelCollection.MAY, LevelCollection.OPTIONAL):
         return "yellow"
-    else:
-        return "white"
+    return "white"

@@ -303,10 +303,8 @@ class ROCrateMetadataNotFoundError(ROCValidatorError):
         if self._path:
             if self._message:
                 return f"RO-Crate metadata not found on '{self._path!r}': {self._message!r}"
-            else:
-                return f"RO-Crate metadata not found on '{self._path!r}'"
-        else:
-            return "RO-Crate metadata not found"
+            return f"RO-Crate metadata not found on '{self._path!r}'"
+        return "RO-Crate metadata not found"
 
     def __repr__(self):
         return f"ROCrateMetadataNotFoundError({self._path!r},{self._message!r})"

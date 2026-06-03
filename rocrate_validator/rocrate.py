@@ -1001,8 +1001,7 @@ class ROCrateRemoteZip(ROCrateLocalZip):
         file_size = response.headers.get('Content-Length')
         if file_size is not None:
             return int(file_size)
-        else:
-            raise Exception("Could not determine the file size from the headers")
+        raise Exception("Could not determine the file size from the headers")
 
     @staticmethod
     def __fetch_range__(uri: str, start, end):
@@ -1058,7 +1057,7 @@ class BagitROCrate(ROCrate, ABC):
                     (base_path / 'data' / 'ro-crate-metadata.json').is_file()
 
             # Check for local zip file
-            elif uri.is_local_file():
+            if uri.is_local_file():
                 path = uri.as_path()
                 if path.suffix == '.zip':
                     with zipfile.ZipFile(path, 'r') as zf:
@@ -1082,21 +1081,20 @@ class BagitROCrate(ROCrate, ABC):
                     metadata_response = HttpRequester().head(f"{base_url}/data/ro-crate-metadata.json")
                     return metadata_response.status_code == 200
 
-                else:
-                    # If it's a remote zip file, we need to download it partially
-                    # Temporarily create instance to check
-                    temp_crate = ROCrateRemoteZip(uri)
-                    logger.debug("Initializing ROCrateRemoteZip for URI: %s", uri)
-                    # ROCrate.__init__(temp_crate, uri)
-                    # temp_crate._ROCrateRemoteZip__init_zip_reference__()
-                    has_bagit_txt = temp_crate.has_file(Path('bagit.txt'))
-                    logger.debug("Presence of 'bagit.txt': %s", has_bagit_txt)
-                    has_ro_crate_metadata = temp_crate.has_file(Path('data/ro-crate-metadata.json'))
-                    logger.debug("Presence of 'data/ro-crate-metadata.json': %s",
-                                 has_ro_crate_metadata)
-                    result = has_bagit_txt and has_ro_crate_metadata
-                    del temp_crate
-                    return result
+                # If it's a remote zip file, we need to download it partially
+                # Temporarily create instance to check
+                temp_crate = ROCrateRemoteZip(uri)
+                logger.debug("Initializing ROCrateRemoteZip for URI: %s", uri)
+                # ROCrate.__init__(temp_crate, uri)
+                # temp_crate._ROCrateRemoteZip__init_zip_reference__()
+                has_bagit_txt = temp_crate.has_file(Path('bagit.txt'))
+                logger.debug("Presence of 'bagit.txt': %s", has_bagit_txt)
+                has_ro_crate_metadata = temp_crate.has_file(Path('data/ro-crate-metadata.json'))
+                logger.debug("Presence of 'data/ro-crate-metadata.json': %s",
+                             has_ro_crate_metadata)
+                result = has_bagit_txt and has_ro_crate_metadata
+                del temp_crate
+                return result
 
         except Exception as e:
             if logger.isEnabledFor(logging.DEBUG):

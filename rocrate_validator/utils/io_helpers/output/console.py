@@ -59,8 +59,7 @@ class Console(BaseConsole):
         formatter = self._formatters.get(type(obj))
         if formatter:
             return formatter(obj)
-        else:
-            return obj
+        return obj
 
     def print(self, obj, *args, **kwargs):
         if not self.disabled:

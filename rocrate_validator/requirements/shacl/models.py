@@ -120,9 +120,9 @@ class SHACLNode:
         severity = getattr(self, "severity", None)
         if severity == f"{SHACL_NS}Violation":
             return Severity.REQUIRED
-        elif severity == f"{SHACL_NS}Warning":
+        if severity == f"{SHACL_NS}Warning":
             return Severity.RECOMMENDED
-        elif severity == f"{SHACL_NS}Info":
+        if severity == f"{SHACL_NS}Info":
             return Severity.OPTIONAL
         return None
 
@@ -130,12 +130,11 @@ class SHACLNode:
         class_name = self.__class__.__name__
         if self.name and self.description:
             return f"{class_name} - {self.name}: {self.description} ({hash(self)})"
-        elif self.name:
+        if self.name:
             return f"{class_name} - {self.name} ({hash(self)})"
-        elif self.description:
+        if self.description:
             return f"{class_name} - {self.description} ({hash(self)})"
-        else:
-            return f"{class_name} ({hash(self)})"
+        return f"{class_name} ({hash(self)})"
 
     def __repr__(self):
         return f"{self.__class__.__name__}({hash(self)})"
