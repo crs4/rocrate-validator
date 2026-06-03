@@ -90,7 +90,7 @@ class SHACLNode:
     def node_name(self):
         """Return the name of the node"""
         node_str = str(self._node)
-        return node_str.split("#")[-1] if "#" in node_str else node_str.split("/")[-1]
+        return node_str.rsplit("#", maxsplit=1)[-1] if "#" in node_str else node_str.rsplit("/", maxsplit=1)[-1]
 
     @property
     def graph(self):
@@ -234,7 +234,8 @@ class PropertyShape(Shape):
             path = self.graph.value(subject=self.node, predicate=shacl_ns.path)
             if path:
                 path_str = str(path)
-                self._short_name = path_str.split("#")[-1] if "#" in path_str else path_str.split("/")[-1]
+                sep = "#" if "#" in path_str else "/"
+                self._short_name = path_str.rsplit(sep, maxsplit=1)[-1]
                 if self.parent:
                     self._name = f"{self._short_name} of {self.parent.name}"
         return self._name or str(self._node).split("/")[-1]
