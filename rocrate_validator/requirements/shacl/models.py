@@ -406,8 +406,7 @@ class ShapesRegistry:
             if not grouped:
                 shapes.append(shape)
             else:
-                for prop in ungrouped_properties:
-                    shapes.append(prop)
+                shapes.extend(ungrouped_properties)
 
         # register Property Shapes
         for property_shape in shapes_list.property_shapes:

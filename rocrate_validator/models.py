@@ -1358,13 +1358,12 @@ class RequirementLoader:
                     requirement_path,
                 )
             requirement_loader = RequirementLoader.__get_requirement_loader__(profile, requirement_path)
-            for requirement in cast(Any, requirement_loader).load(
+            requirements.extend(cast(Any, requirement_loader).load(
                 profile,
                 requirement_level,
                 requirement_path,
                 publicID=profile.publicID,
-            ):
-                requirements.append(requirement)
+            ))
         # sort the requirements by severity
         requirements = sorted(
             requirements,
