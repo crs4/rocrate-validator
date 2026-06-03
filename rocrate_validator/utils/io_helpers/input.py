@@ -41,7 +41,7 @@ def __get_single_char_win32__(console: Optional[Console] = None, end: str = "\n"
         if console and message:
             console.print(f"\n{message}", end="")
         try:
-            char = msvcrt.getch().decode()
+            char = msvcrt.getch().decode()  # type: ignore[attr-defined]  # Windows-only
         finally:
             if console:
                 console.print(char, end=end if choices and char in choices else "")

@@ -142,7 +142,10 @@ class HttpRequester:
 
     def __initialize_session__(self, cache_max_age: int, cache_path: Optional[str] = None):
         # initialize the session
-        self.session = None
+        # The session can be a CachedSession, a plain requests.Session, or the
+        # duck-typed _OfflineFallbackSession; HTTP methods are delegated dynamically
+        # via __getattr__, so it is typed as Any.
+        self.session: Any = None
         logger.debug(f"Initializing instance of {self.__class__.__name__}")
         assert not self._initialized, "Session already initialized"
         # check if requests_cache is installed

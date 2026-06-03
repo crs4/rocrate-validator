@@ -18,7 +18,7 @@ import os
 import sys
 from contextlib import nullcontext
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
 
 import rich_click as click
 from rich.padding import Padding
@@ -244,14 +244,14 @@ def validate_uri(ctx, param, value):
 def validate(ctx,
              profiles_path: Path = DEFAULT_PROFILES_PATH,
              extra_profiles_path: Optional[Path] = None,
-             profile_identifier: Optional[str] = None,
+             profile_identifier: tuple[str, ...] = (),
              metadata_only: bool = False,
              no_auto_profile: bool = False,
              disable_profile_inheritance: bool = False,
              requirement_severity: str = Severity.REQUIRED.name,
              requirement_severity_only: bool = False,
-             skip_checks: list[str] = None,
-             rocrate_uri: Path = ".",
+             skip_checks: Optional[list[str]] = None,
+             rocrate_uri: Union[str, Path] = ".",
              relative_root_path: Optional[Path] = None,
              fail_fast: bool = False,
              no_paging: bool = False,
@@ -323,7 +323,7 @@ def validate(ctx,
     # Parse the skip_checks option
     logger.debug("skip_checks: %s", skip_checks)
     # Parse the skip_checks option
-    skip_checks_list = []
+    skip_checks_list: list[str] = []
     if skip_checks:
         try:
             for s in skip_checks:
@@ -372,6 +372,9 @@ def validate(ctx,
         # Detect the profile to use for validation
         autodetection = False
         selected_profile = profile_identifier
+        # The profile selection collapses to a concrete list of identifiers
+        # (the CLI passes a possibly-empty tuple because of ``multiple=True``).
+        profile_identifiers: list[str] = list(profile_identifier)
         if selected_profile is None or len(selected_profile) == 0:
 
             # Auto-detect the profile to use for validation (if not disabled)
@@ -402,7 +405,7 @@ def validate(ctx,
                     )
                 )
                 selected_options = multiple_choice(console, available_profiles)
-                profile_identifier = [available_profiles[int(
+                profile_identifiers = [available_profiles[int(
                     selected_option)].identifier for selected_option in selected_options]
                 logger.debug("Profile selected: %s", selected_options)
                 console.print(Padding(Rule(style="bold yellow"), (1, 2)))
@@ -410,22 +413,22 @@ def validate(ctx,
             elif candidate_profiles and len(candidate_profiles) < len(available_profiles):
                 logger.debug("Profile identifier autodetected: %s", candidate_profiles[0].identifier)
                 autodetection = True
-                profile_identifier = [_.identifier for _ in candidate_profiles]
+                profile_identifiers = [_.identifier for _ in candidate_profiles]
 
         # Fall back to the selected profile
-        if not profile_identifier or len(profile_identifier) == 0:
+        if not profile_identifiers or len(profile_identifiers) == 0:
             console.print(f"\n{' '*2}[bold yellow]WARNING: [/bold yellow]", end="")
             if no_auto_profile:
                 console.print("[bold]Auto-detection of the profiles to use for validation is disabled[/bold]")
             else:
                 console.print("[bold]Unable to automatically detect the profile to use for validation[/bold]")
             console.print(f"{' '*11}[bold]The base `ro-crate` profile will be used for validation[/bold]")
-            profile_identifier = ["ro-crate"]
+            profile_identifiers = ["ro-crate"]
 
         # Validate the RO-Crate against the selected profiles
         is_valid = True
         results = {}
-        for profile in profile_identifier:
+        for profile in profile_identifiers:
             # Duplicate settings for each profile and set the profile identifier
             logger.info("\nValidating RO-Crate against profile: [bold cyan]%s[/bold cyan]", profile)
             validation_settings = validation_settings.copy()
@@ -435,7 +438,7 @@ def validate(ctx,
             logger.debug("Profile autodetected: %s", autodetection)
 
             # Initialize the validation result variable
-            result: ValidationResult = None
+            result: Optional[ValidationResult] = None
 
             #########################################################################################
             # Perform and display the validation with progress bar to the console
@@ -469,7 +472,7 @@ def validate(ctx,
                             command_view.display_validation_result(result)
                 else:
                     # Validate RO-Crate against the profile and get the validation result
-                    result: ValidationResult = services.validate(validation_settings)
+                    result = services.validate(validation_settings)
                     # Init TextOutputFormatter for console output
                     console.register_formatter(TextOutputFormatter())
                     # Show the final overview of the validation if no interactive mode
@@ -497,7 +500,7 @@ def validate(ctx,
                         logger.debug("Validation result obtained")
                 else:
                     # Validate RO-Crate against the profile and get the validation result
-                    result: ValidationResult = services.validate(validation_settings)
+                    result = services.validate(validation_settings)
                 results[profile] = result
 
                 # Output processing for text format to file
@@ -534,7 +537,7 @@ def validate(ctx,
                     console.print(
                         f"\n{' '*2}✅ [bold]Validation [green]PASSED![/green]. "
                         f"\n{' '*5}RO-Crate is valid according to the profile(s): "
-                        f"[cyan]{', '.join(profile_identifier)}[/cyan][/bold]"
+                        f"[cyan]{', '.join(profile_identifiers)}[/cyan][/bold]"
                     )
                 else:
                     console.print(f"\n{' '*2}❌ [bold]Validation [red]FAILED![/red][/bold]")
