@@ -33,8 +33,7 @@ def run_git_command(command: list[str]) -> Optional[str]:
     import subprocess
 
     try:
-        output = subprocess.check_output(command, stderr=subprocess.DEVNULL).decode().strip()
-        return output
+        return subprocess.check_output(command, stderr=subprocess.DEVNULL).decode().strip()
     except Exception as e:
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug(e)

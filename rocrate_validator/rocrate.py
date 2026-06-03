@@ -72,13 +72,12 @@ class ROCrateEntity:
 
     @classmethod
     def get_id_as_path(cls, entity_id: str, ro_crate: Optional[ROCrate] = None) -> Path:
-        result = cls.get_path_from_identifier(
+        return cls.get_path_from_identifier(
             entity_id,
             ro_crate.uri.as_path()
             if ro_crate and ro_crate.uri.is_local_resource()
             else None,
         )
-        return result
 
     @staticmethod
     def get_path_from_identifier(
@@ -474,8 +473,7 @@ class ROCrate(ABC):
         """
         if cls is not ROCrate:
             # If called on a subclass, use normal instantiation
-            instance = super(ROCrate, cls).__new__(cls)
-            return instance
+            return super(ROCrate, cls).__new__(cls)
 
         # If called on ROCrate directly, use factory logic
         instance = cls.new_instance(uri)

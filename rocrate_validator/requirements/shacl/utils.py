@@ -122,10 +122,8 @@ def compute_hash(g: Graph, s: Node):
     triples_values = sorted(__compute_values__(g, s))
     # Convert the list of triples values to a string representation
     triples_string = str(triples_values)
-    # Calculate the hash of the triples string
-    hash_value = hashlib.sha256(triples_string.encode()).hexdigest()
-    # Return the hash value
-    return hash_value
+    # Calculate and return the hash of the triples string
+    return hashlib.sha256(triples_string.encode()).hexdigest()
 
 
 def compute_key(g: Graph, s: Node) -> str:

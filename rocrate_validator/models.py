@@ -660,8 +660,7 @@ class Profile:
         # Remove the base path from the identifier
         identifier = identifier.replace(f"{base_path}/", "")
         # Replace slashes with hyphens
-        identifier = identifier.replace("/", "-")
-        return identifier
+        return identifier.replace("/", "-")
 
     def __init_token_version__(self) -> tuple[str, Optional[str]]:
         # try to extract the token from the specs or the path

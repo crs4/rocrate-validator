@@ -90,10 +90,8 @@ class ValidationReportLayout(Layout):
 
     def live(self, update_callable: Callable) -> Any:
         # Start live rendering
-        result = None
         with Live(self.layout, console=self.console, refresh_per_second=10, transient=False):
-            result = update_callable()
-        return result
+            return update_callable()
 
     def __init_layout__(self):
 
