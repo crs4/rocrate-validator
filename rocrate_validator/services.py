@@ -96,7 +96,8 @@ def __initialise_validator__(
     settings = ValidationSettings.parse(settings)
 
     # parse the rocrate path
-    rocrate_path: URI = URI(settings.rocrate_uri)
+    assert settings.rocrate_uri is not None, "RO-Crate URI is required"
+    rocrate_path: URI = URI(str(settings.rocrate_uri))
     logger.debug("Validating RO-Crate: %s", rocrate_path)
 
     # check if the RO-Crate exists
@@ -136,7 +137,7 @@ def __initialise_validator__(
                     zip_ref.extractall(tmp_dir)
                     logger.debug("RO-Crate extracted to temporary directory: %s", tmp_dir)
                 # update the data path to point to the temporary directory
-                settings.rocrate_uri = Path(tmp_dir)
+                settings.rocrate_uri = URI(str(tmp_dir))
                 # continue with the validation process
                 return __init_validator__(settings)
             finally:
@@ -187,7 +188,7 @@ def __initialise_validator__(
     # if the RO-Crate is not a ZIP file, directly validate the RO-Crate
     elif rocrate_path.is_local_directory():
         logger.debug("RO-Crate is a local directory")
-        settings.rocrate_uri = rocrate_path.as_path()
+        settings.rocrate_uri = URI(str(rocrate_path.as_path()))
         return __init_validator__(settings)
     else:
         raise ValueError(
