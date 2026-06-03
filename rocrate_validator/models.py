@@ -1130,7 +1130,7 @@ class Requirement(ABC):
         return all_passed
 
     def __execute_check__(self, check, context, all_passed):
-        if check.overridden and not check.requirement.profile.identifier == context.profile_identifier:
+        if check.overridden and check.requirement.profile.identifier != context.profile_identifier:
             logger.debug(
                 "Skipping check '%s' because overridden by '%r'",
                 check.identifier,
@@ -1331,15 +1331,14 @@ class RequirementLoader:
             return (
                 p.is_file()
                 and p.suffix in PROFILE_FILE_EXTENSIONS
-                and not p.name == DEFAULT_ONTOLOGY_FILE
-                and not p.name == PROFILE_SPECIFICATION_FILE
+                and p.name not in {DEFAULT_ONTOLOGY_FILE, PROFILE_SPECIFICATION_FILE}
                 and not p.name.startswith(".")
                 and not p.name.startswith("_")
             )
 
         files = sorted(
             (p for p in profile.path.rglob("*.*") if ok_file(p)),
-            key=lambda x: (not x.suffix == ".py", x),
+            key=lambda x: (x.suffix != ".py", x),
         )
 
         # set the requirement level corresponding to the severity
