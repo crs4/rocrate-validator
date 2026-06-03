@@ -21,8 +21,8 @@ from InquirerPy import prompt
 from InquirerPy.base.control import Choice
 from rich.console import Console
 
-from rocrate_validator.utils import log as logging
 from rocrate_validator.models import Profile
+from rocrate_validator.utils import log as logging
 
 # set up logging
 logger = logging.getLogger(__name__)

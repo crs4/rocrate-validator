@@ -21,11 +21,9 @@ from rdflib import Graph, Literal, Namespace, URIRef
 from rdflib.term import Node
 
 from rocrate_validator.constants import SHACL_NS
-from rocrate_validator.utils import log as logging
 from rocrate_validator.models import LevelCollection, RequirementLevel, Severity
-from rocrate_validator.requirements.shacl.utils import (ShapesList,
-                                                        compute_key,
-                                                        inject_attributes)
+from rocrate_validator.requirements.shacl.utils import ShapesList, compute_key, inject_attributes
+from rocrate_validator.utils import log as logging
 
 # set up logging
 logger = logging.getLogger(__name__)

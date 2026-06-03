@@ -16,8 +16,8 @@ import atexit
 import sys
 import threading
 from io import StringIO
-from logging import (CRITICAL, DEBUG, ERROR, INFO, WARNING, Handler, Logger,
-                     StreamHandler, basicConfig as logging_basicConfig)
+from logging import CRITICAL, DEBUG, ERROR, INFO, WARNING, Handler, Logger, StreamHandler
+from logging import basicConfig as logging_basicConfig
 from typing import Optional
 
 import colorlog

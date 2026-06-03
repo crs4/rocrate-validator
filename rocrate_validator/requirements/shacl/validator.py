@@ -23,16 +23,17 @@ from pyshacl.pytypes import GraphLike
 from rdflib import BNode, Graph
 from rdflib.term import Node, URIRef
 
-from rocrate_validator.constants import (DEFAULT_ONTOLOGY_FILE,
-                                         RDF_SERIALIZATION_FORMATS,
-                                         RDF_SERIALIZATION_FORMATS_TYPES,
-                                         SHACL_NS, VALID_INFERENCE_OPTIONS,
-                                         VALID_INFERENCE_OPTIONS_TYPES)
-from rocrate_validator.models import (Profile, RequirementCheck, Severity,
-                                      ValidationContext, ValidationResult)
+from rocrate_validator.constants import (
+    DEFAULT_ONTOLOGY_FILE,
+    RDF_SERIALIZATION_FORMATS,
+    RDF_SERIALIZATION_FORMATS_TYPES,
+    SHACL_NS,
+    VALID_INFERENCE_OPTIONS,
+    VALID_INFERENCE_OPTIONS_TYPES,
+)
+from rocrate_validator.models import Profile, RequirementCheck, Severity, ValidationContext, ValidationResult
 from rocrate_validator.requirements.shacl.models import ShapesRegistry
-from rocrate_validator.requirements.shacl.utils import (make_uris_relative,
-                                                        map_severity)
+from rocrate_validator.requirements.shacl.utils import make_uris_relative, map_severity
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.rdf import extract_base_from_jsonld
 
@@ -126,8 +127,7 @@ class SHACLValidationContext(ValidationContext):
 
             # enable overriding of checks
             if self.settings.allow_requirement_check_override:
-                from rocrate_validator.requirements.shacl.requirements import \
-                    SHACLRequirement
+                from rocrate_validator.requirements.shacl.requirements import SHACLRequirement
                 for requirement in [_ for _ in profile.requirements if isinstance(_, SHACLRequirement)]:
                     # logger.debug("Processing requirement: %s", requirement.name)
                     for check in requirement.get_checks():

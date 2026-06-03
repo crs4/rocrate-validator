@@ -14,12 +14,14 @@
 
 from typing import Any, Optional
 
+from rocrate_validator.models import ValidationResult, ValidationStatistics
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.io_helpers.output import BaseOutputFormatter
 from rocrate_validator.utils.io_helpers.output.json.formatters import (
-    ValidationResultJSONOutputFormatter, ValidationResultsJSONOutputFormatter,
-    ValidationStatisticsJSONOutputFormatter)
-from rocrate_validator.models import ValidationResult, ValidationStatistics
+    ValidationResultJSONOutputFormatter,
+    ValidationResultsJSONOutputFormatter,
+    ValidationStatisticsJSONOutputFormatter,
+)
 
 # set up logging
 logger = logging.getLogger(__name__)

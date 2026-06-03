@@ -16,8 +16,8 @@ from __future__ import annotations
 
 import threading
 import time
-from typing import Any, Optional
 from collections.abc import Callable
+from typing import Any, Optional
 
 from rich.align import Align
 from rich.layout import Layout
@@ -27,16 +27,21 @@ from rich.panel import Panel
 from rich.rule import Rule
 from rich.text import Text
 
+from rocrate_validator.events import Event, EventType
+from rocrate_validator.models import (
+    ProfileValidationEvent,
+    RequirementCheckValidationEvent,
+    RequirementValidationEvent,
+    Severity,
+    ValidationContext,
+    ValidationEvent,
+    ValidationResult,
+    ValidationSettings,
+    ValidationStatistics,
+)
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.io_helpers.colors import get_severity_color
-from rocrate_validator.events import Event, EventType
 from rocrate_validator.utils.io_helpers.output.console import Console
-from rocrate_validator.models import (ProfileValidationEvent,
-                                      RequirementCheckValidationEvent,
-                                      RequirementValidationEvent, Severity,
-                                      ValidationContext, ValidationEvent,
-                                      ValidationResult, ValidationSettings,
-                                      ValidationStatistics)
 from rocrate_validator.utils.uri import URI
 from rocrate_validator.utils.versioning import get_version
 

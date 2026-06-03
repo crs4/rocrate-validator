@@ -26,11 +26,10 @@ from urllib.parse import unquote
 
 from rdflib import Graph
 
-from rocrate_validator.utils import log as logging
 from rocrate_validator.errors import ROCrateInvalidURIError
-from rocrate_validator.utils.uri import validate_rocrate_uri
+from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.http import HttpRequester
-from rocrate_validator.utils.uri import URI, AvailabilityStatus, is_external_reference
+from rocrate_validator.utils.uri import URI, AvailabilityStatus, is_external_reference, validate_rocrate_uri
 
 # set up logging
 logger = logging.getLogger(__name__)

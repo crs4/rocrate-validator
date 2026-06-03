@@ -14,16 +14,15 @@
 
 from __future__ import annotations
 
-from typing import Any, Optional
 from collections.abc import Callable
+from typing import Any, Optional
 
+from rocrate_validator.models import ValidationResult, ValidationSettings, ValidationStatistics
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.io_helpers.output.console import Console
 from rocrate_validator.utils.io_helpers.output.pager import SystemPager
 from rocrate_validator.utils.io_helpers.output.text import TextOutputFormatter
 from rocrate_validator.utils.io_helpers.output.text.layout.report import ValidationReportLayout
-from rocrate_validator.models import (ValidationResult, ValidationSettings,
-                                      ValidationStatistics)
 
 # set up logging
 logger = logging.getLogger(__name__)

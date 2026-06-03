@@ -17,10 +17,13 @@ from typing import Any, Optional
 
 from rich.console import ConsoleOptions, RenderResult
 
+from rocrate_validator.models import (
+    AggregatedValidationStatistics,
+    CustomEncoder,
+    ValidationResult,
+    ValidationStatistics,
+)
 from rocrate_validator.utils import log as logging
-from rocrate_validator.models import (AggregatedValidationStatistics,
-                                      CustomEncoder, ValidationResult,
-                                      ValidationStatistics)
 from rocrate_validator.utils.io_helpers.output import OutputFormatter
 from rocrate_validator.utils.io_helpers.output.console import Console
 from rocrate_validator.utils.versioning import get_version

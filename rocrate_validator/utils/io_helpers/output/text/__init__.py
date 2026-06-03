@@ -18,13 +18,12 @@ from typing import Any, Optional
 
 from rich.console import ConsoleOptions, RenderResult
 
-from rocrate_validator.utils import log as logging
 from rocrate_validator.models import ValidationResult, ValidationStatistics
+from rocrate_validator.utils import log as logging
 
 from .. import BaseOutputFormatter
 from ..console import Console
-from .formatters import (ValidationResultTextOutputFormatter,
-                         ValidationStatisticsTextOutputFormatter)
+from .formatters import ValidationResultTextOutputFormatter, ValidationStatisticsTextOutputFormatter
 
 # set up logging
 logger = logging.getLogger(__name__)

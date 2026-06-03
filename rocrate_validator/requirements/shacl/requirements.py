@@ -17,7 +17,6 @@ from typing import Any, Optional, cast
 
 from rdflib import RDF
 
-from rocrate_validator.utils import log as logging
 from rocrate_validator.constants import VALIDATOR_NS
 from rocrate_validator.models import (
     Profile,
@@ -29,6 +28,7 @@ from rocrate_validator.models import (
 )
 from rocrate_validator.requirements.shacl.checks import SHACLCheck
 from rocrate_validator.requirements.shacl.models import Shape, ShapesRegistry
+from rocrate_validator.utils import log as logging
 
 # set up logging
 logger = logging.getLogger(__name__)

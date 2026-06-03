@@ -17,9 +17,8 @@ import textwrap
 
 from rich.console import Console
 
+from rocrate_validator.errors import InvalidProfilePath, ProfileNotFound, ProfilesDirectoryNotFound
 from rocrate_validator.utils import log as logging
-from rocrate_validator.errors import (InvalidProfilePath, ProfileNotFound,
-                                      ProfilesDirectoryNotFound)
 
 # Create a logger for this module
 logger = logging.getLogger(__name__)

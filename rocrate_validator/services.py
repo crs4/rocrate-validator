@@ -19,13 +19,13 @@ import zipfile
 from pathlib import Path
 from typing import Optional, Union
 
-from rocrate_validator.utils import log as logging
+from rocrate_validator.errors import ProfileNotFound
 from rocrate_validator.events import Subscriber
 from rocrate_validator.models import Profile, Severity, ValidationResult, ValidationSettings, Validator
-from rocrate_validator.utils.uri import URI
-from rocrate_validator.utils.paths import get_profiles_path
+from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.http import HttpRequester
-from rocrate_validator.errors import ProfileNotFound
+from rocrate_validator.utils.paths import get_profiles_path
+from rocrate_validator.utils.uri import URI
 
 # set the default profiles path
 DEFAULT_PROFILES_PATH = get_profiles_path()

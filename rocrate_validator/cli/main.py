@@ -16,8 +16,8 @@ import sys
 
 import rich_click as click
 
-from rocrate_validator.utils import log as logging
 from rocrate_validator.cli.utils import running_in_jupyter
+from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.io_helpers.output.console import Console
 from rocrate_validator.utils.io_helpers.output.pager import SystemPager
 from rocrate_validator.utils.versioning import get_version

@@ -12,11 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from rich.pager import Pager
-
-
 import pydoc
 from typing import Any
+
+from rich.pager import Pager
 
 
 class SystemPager(Pager):

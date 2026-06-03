@@ -17,13 +17,17 @@ from typing import Optional, Union
 
 from rich.progress import BarColumn, Progress, TextColumn, TimeElapsedColumn
 
-from rocrate_validator.utils import log as logging
 from rocrate_validator.events import Event, EventType, Subscriber
-from rocrate_validator.models import (ProfileValidationEvent,
-                                      RequirementCheckValidationEvent,
-                                      RequirementValidationEvent,
-                                      ValidationContext, ValidationEvent,
-                                      ValidationSettings, ValidationStatistics)
+from rocrate_validator.models import (
+    ProfileValidationEvent,
+    RequirementCheckValidationEvent,
+    RequirementValidationEvent,
+    ValidationContext,
+    ValidationEvent,
+    ValidationSettings,
+    ValidationStatistics,
+)
+from rocrate_validator.utils import log as logging
 
 # set up logging
 logger = logging.getLogger(__name__)

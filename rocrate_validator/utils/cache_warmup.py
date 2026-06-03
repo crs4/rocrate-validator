@@ -26,14 +26,13 @@ subsequent offline runs find every required resource locally.
 from __future__ import annotations
 
 import os
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Optional, cast
-from collections.abc import Iterable, Sequence
 
 from rocrate_validator import constants
 from rocrate_validator.utils import log as logging
-from rocrate_validator.utils.http import (OFFLINE_CACHE_MISS_STATUS,
-                                          HttpRequester)
+from rocrate_validator.utils.http import OFFLINE_CACHE_MISS_STATUS, HttpRequester
 
 if TYPE_CHECKING:
     from rocrate_validator.models import Profile, ValidationSettings

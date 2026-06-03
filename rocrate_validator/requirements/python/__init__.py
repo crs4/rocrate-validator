@@ -14,15 +14,22 @@
 
 import inspect
 import re
+from collections.abc import Callable
 from pathlib import Path
 from typing import Optional
-from collections.abc import Callable
 
+from rocrate_validator.models import (
+    LevelCollection,
+    Profile,
+    Requirement,
+    RequirementCheck,
+    RequirementLevel,
+    RequirementLoader,
+    Severity,
+    SourceSnippet,
+    ValidationContext,
+)
 from rocrate_validator.utils import log as logging
-from rocrate_validator.models import (LevelCollection, Profile, Requirement,
-                                      RequirementCheck, RequirementLevel,
-                                      RequirementLoader, Severity,
-                                      SourceSnippet, ValidationContext)
 from rocrate_validator.utils.python_helpers import get_classes_from_file
 
 # set up logging

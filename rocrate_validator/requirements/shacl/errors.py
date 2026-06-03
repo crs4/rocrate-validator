@@ -15,8 +15,7 @@
 from typing import Optional
 
 from rocrate_validator.errors import ValidationError
-from rocrate_validator.requirements.shacl.validator import \
-    SHACLValidationResult
+from rocrate_validator.requirements.shacl.validator import SHACLValidationResult
 
 
 class SHACLValidationError(ValidationError):
