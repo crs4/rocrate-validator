@@ -47,7 +47,7 @@ def get_git_commit() -> str:
 
     :return: The git commit hash
     """
-    return run_git_command(['git', 'rev-parse', '--short', 'HEAD'])
+    return run_git_command(['git', 'rev-parse', '--short', 'HEAD']) or ""
 
 
 def is_release_tag(git_sha: str) -> bool:
@@ -67,7 +67,7 @@ def get_last_tag() -> str:
 
     :return: The last tag
     """
-    return run_git_command(['git', 'describe', '--tags', '--abbrev=0'])
+    return run_git_command(['git', 'describe', '--tags', '--abbrev=0']) or ""
 
 
 def get_commit_distance(tag: Optional[str] = None) -> int:
@@ -79,7 +79,8 @@ def get_commit_distance(tag: Optional[str] = None) -> int:
     if not tag:
         tag = get_last_tag()
     try:
-        return int(run_git_command(['git', 'rev-list', '--count', f"{tag}..HEAD"]))
+        count = run_git_command(['git', 'rev-list', '--count', f"{tag}..HEAD"])
+        return int(count) if count else 0
     except Exception as e:
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug(e)
