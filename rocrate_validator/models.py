@@ -1584,7 +1584,7 @@ class CheckIssue:
         to meet the defined rules or constraints within a validation process.
         Also referred to as `focusNode` in SHACL terminology
         in the context of an RDF graph, it is the subject of a triple
-        that violates a given constraint on the subject’s property/predicate,
+        that violates a given constraint on the subject's property/predicate,
         represented by the violatingProperty.
         """
         return self._violatingEntity
@@ -1597,7 +1597,7 @@ class CheckIssue:
         It identifies the part of the data structure that is causing the issue.
         Also referred to as `resultPath` in SHACL terminology,
         in the context of an RDF graph, it is the predicate of a triple
-        that violates a given constraint on the subject’s property/predicate,
+        that violates a given constraint on the subject's property/predicate,
         represented by the violatingProperty.
         """
         return self._violatingProperty
