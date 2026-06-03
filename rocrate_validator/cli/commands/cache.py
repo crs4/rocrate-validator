@@ -29,12 +29,12 @@ from rich.table import Table
 
 from rocrate_validator.cli.commands.errors import handle_error
 from rocrate_validator.cli.main import cli, click
+from rocrate_validator.constants import BYTES_PER_KIB, HTTP_STATUS_BAD_REQUEST
 from rocrate_validator.models import Profile
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.cache_warmup import WarmUpResult, discover_cacheable_urls_from_profiles, warm_up_urls
 from rocrate_validator.utils.http import HttpRequester
 from rocrate_validator.utils.paths import get_default_http_cache_path, get_profiles_path
-from rocrate_validator.constants import BYTES_PER_KIB, HTTP_STATUS_BAD_REQUEST
 
 logger = logging.getLogger(__name__)
 

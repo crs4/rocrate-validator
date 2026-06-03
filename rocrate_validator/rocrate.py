@@ -26,11 +26,11 @@ from urllib.parse import unquote
 
 from rdflib import Graph
 
+from rocrate_validator.constants import HTTP_STATUS_OK
 from rocrate_validator.errors import ROCrateInvalidURIError
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.http import HttpRequester
 from rocrate_validator.utils.uri import URI, AvailabilityStatus, is_external_reference, validate_rocrate_uri
-from rocrate_validator.constants import HTTP_STATUS_OK
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -217,6 +217,30 @@ class ROCrateEntity:
     def is_local(self) -> bool:
         return not self.is_remote()
 
+    def _check_local_availability(self) -> AvailabilityStatus:
+        if self.ro_crate.uri.is_local_resource():
+            if isinstance(self.ro_crate, ROCrateLocalFolder):
+                found = self.ro_crate.has_file(self.id_as_path) or self.ro_crate.has_directory(self.id_as_path)
+                return AvailabilityStatus.AVAILABLE if found else AvailabilityStatus.UNAVAILABLE
+            if isinstance(self.ro_crate, ROCrateLocalZip):
+                if self.id == "./":
+                    return AvailabilityStatus.AVAILABLE
+                found = self.ro_crate.has_directory(Path(unquote(str(self.id)))) or self.ro_crate.has_file(
+                    Path(unquote(str(self.id)))
+                )
+                return AvailabilityStatus.AVAILABLE if found else AvailabilityStatus.UNAVAILABLE
+
+        if self.ro_crate.uri.is_remote_resource():
+            if self.id == "./":
+                found = self.ro_crate.get_file_size(self.id_as_path) > 0
+            else:
+                found = self.ro_crate.has_directory(Path(unquote(str(self.id)))) or self.ro_crate.has_file(
+                    Path(unquote(str(self.id)))
+                )
+            return AvailabilityStatus.AVAILABLE if found else AvailabilityStatus.UNAVAILABLE
+
+        raise ROCrateInvalidURIError(uri=self.id, message="Could not determine the availability of the entity")
+
     def check_availability(self) -> AvailabilityStatus:
         """
         Return a fine-grained availability status for this entity.
@@ -228,15 +252,10 @@ class ROCrateEntity:
         """
         try:
             entity_uri = self.id_as_uri
-            # Remote entities with a scheme we can natively reach are checked
-            # by inspecting the remote response status.
             if entity_uri.is_natively_checkable():
                 logger.debug("Checking the availability of a remote entity")
                 return entity_uri.check_availability()
 
-            # Remote entities with a non-natively-checkable scheme cannot be
-            # verified (scp://, sftp://, s3://, ...): report UNCHECKABLE so
-            # callers can warn without invalidating the validation.
             if entity_uri.is_remote_resource():
                 logger.debug(
                     "Cannot natively verify availability for entity '%s' (scheme '%s')",
@@ -245,35 +264,11 @@ class ROCrateEntity:
                 )
                 return AvailabilityStatus.UNCHECKABLE
 
-            # Local entity: locate it inside the (local or remote) RO-Crate.
-            if self.ro_crate.uri.is_local_resource():
-                if isinstance(self.ro_crate, ROCrateLocalFolder):
-                    found = self.ro_crate.has_file(self.id_as_path) or self.ro_crate.has_directory(self.id_as_path)
-                    return AvailabilityStatus.AVAILABLE if found else AvailabilityStatus.UNAVAILABLE
-                if isinstance(self.ro_crate, ROCrateLocalZip):
-                    if self.id == "./":
-                        return AvailabilityStatus.AVAILABLE
-                    found = self.ro_crate.has_directory(Path(unquote(str(self.id)))) or self.ro_crate.has_file(
-                        Path(unquote(str(self.id)))
-                    )
-                    return AvailabilityStatus.AVAILABLE if found else AvailabilityStatus.UNAVAILABLE
-
-            if self.ro_crate.uri.is_remote_resource():
-                if self.id == "./":
-                    found = self.ro_crate.get_file_size(self.id_as_path) > 0
-                else:
-                    found = self.ro_crate.has_directory(Path(unquote(str(self.id)))) or self.ro_crate.has_file(
-                        Path(unquote(str(self.id)))
-                    )
-                return AvailabilityStatus.AVAILABLE if found else AvailabilityStatus.UNAVAILABLE
+            return self._check_local_availability()
         except Exception as e:
             if logger.isEnabledFor(logging.DEBUG):
                 logger.exception(e)
             return AvailabilityStatus.UNAVAILABLE
-
-        # Fallthrough: the crate URI is neither a recognized local nor a
-        # remote resource — the entity location cannot be determined.
-        raise ROCrateInvalidURIError(uri=self.id, message="Could not determine the availability of the entity")
 
     def is_available(self) -> bool:
         return self.check_availability() == AvailabilityStatus.AVAILABLE
@@ -1034,20 +1029,21 @@ class BagitROCrate(ROCrate, ABC):
         if not isinstance(uri, URI):
             uri = URI(uri)
 
+        result = False
         try:
             # Check for local directory
             if uri.is_local_directory():
                 base_path = uri.as_path()
-                return (base_path / 'bagit.txt').is_file() and \
+                result = (base_path / 'bagit.txt').is_file() and \
                     (base_path / 'data' / 'ro-crate-metadata.json').is_file()
 
             # Check for local zip file
-            if uri.is_local_file():
+            elif uri.is_local_file():
                 path = uri.as_path()
                 if path.suffix == '.zip':
                     with zipfile.ZipFile(path, 'r') as zf:
                         namelist = zf.namelist()
-                        return 'bagit.txt' in namelist and \
+                        result = 'bagit.txt' in namelist and \
                             'data/ro-crate-metadata.json' in namelist
 
             # Check for remote zip file
@@ -1059,34 +1055,25 @@ class BagitROCrate(ROCrate, ABC):
                 if not base_url.endswith('.zip'):
                     # Check for bagit.txt
                     bagit_response = HttpRequester().head(f"{base_url}/bagit.txt")
-                    if bagit_response.status_code != HTTP_STATUS_OK:
-                        return False
-
-                    # Check for data/ro-crate-metadata.json
-                    metadata_response = HttpRequester().head(f"{base_url}/data/ro-crate-metadata.json")
-                    return metadata_response.status_code == HTTP_STATUS_OK
-
-                # If it's a remote zip file, we need to download it partially
-                # Temporarily create instance to check
-                temp_crate = ROCrateRemoteZip(uri)
-                logger.debug("Initializing ROCrateRemoteZip for URI: %s", uri)
-                # ROCrate.__init__(temp_crate, uri)
-                # temp_crate._ROCrateRemoteZip__init_zip_reference__()
-                has_bagit_txt = temp_crate.has_file(Path('bagit.txt'))
-                logger.debug("Presence of 'bagit.txt': %s", has_bagit_txt)
-                has_ro_crate_metadata = temp_crate.has_file(Path('data/ro-crate-metadata.json'))
-                logger.debug("Presence of 'data/ro-crate-metadata.json': %s",
-                             has_ro_crate_metadata)
-                result = has_bagit_txt and has_ro_crate_metadata
-                del temp_crate
-                return result
-
+                    if bagit_response.status_code == HTTP_STATUS_OK:
+                        # Check for data/ro-crate-metadata.json
+                        metadata_response = HttpRequester().head(f"{base_url}/data/ro-crate-metadata.json")
+                        result = metadata_response.status_code == HTTP_STATUS_OK
+                else:
+                    # If it's a remote zip file, we need to download it partially
+                    # Temporarily create instance to check
+                    temp_crate = ROCrateRemoteZip(uri)
+                    logger.debug("Initializing ROCrateRemoteZip for URI: %s", uri)
+                    has_bagit_txt = temp_crate.has_file(Path('bagit.txt'))
+                    logger.debug("Presence of 'bagit.txt': %s", has_bagit_txt)
+                    has_ro_crate_metadata = temp_crate.has_file(Path('data/ro-crate-metadata.json'))
+                    logger.debug("Presence of 'data/ro-crate-metadata.json': %s", has_ro_crate_metadata)
+                    result = has_bagit_txt and has_ro_crate_metadata
+                    del temp_crate
         except Exception as e:
             if logger.isEnabledFor(logging.DEBUG):
                 logger.exception(e)
-            return False
-
-        return False
+        return result
 
     def __check_search_path__(self, path):
         """

@@ -16,11 +16,11 @@ import re
 from typing import Any, Optional
 from urllib.parse import urljoin
 
+from rocrate_validator.constants import HTTP_STATUS_OK
 from rocrate_validator.models import ValidationContext
 from rocrate_validator.requirements.python import PyFunctionCheck, check, requirement
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.http import HttpRequester
-from rocrate_validator.constants import HTTP_STATUS_OK
 
 # set up logging
 logger = logging.getLogger(__name__)

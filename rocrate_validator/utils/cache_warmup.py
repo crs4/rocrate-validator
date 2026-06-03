@@ -138,6 +138,21 @@ def warm_up_urls(urls: Sequence[str]) -> list[WarmUpResult]:
     return results
 
 
+def _get_profile_for_warmup(settings) -> Optional[Profile]:
+    if getattr(settings, "offline", False):
+        return None
+    if getattr(settings, "cache_path", None) is None:
+        return None
+    env_value = os.environ.get(constants.AUTO_WARM_ENV_VAR, "1").strip().lower()
+    if env_value in {"0", "false", "no", "off"}:
+        logger.debug("Auto warm-up disabled via %s=%s", constants.AUTO_WARM_ENV_VAR, env_value)
+        return None
+    profile_identifier = getattr(settings, "profile_identifier", None)
+    if not profile_identifier:
+        return None
+    return _find_profile(profile_identifier, settings)
+
+
 def auto_warm_up_for_settings(settings: ValidationSettings) -> Optional[list[WarmUpResult]]:
     """
     Perform a best-effort synchronous warm-up triggered by
@@ -151,20 +166,7 @@ def auto_warm_up_for_settings(settings: ValidationSettings) -> Optional[list[War
     - the environment variable ``ROCRATE_VALIDATOR_AUTO_WARM`` is set to a
       value disabling the feature (``0``, ``false``, ``no``, ``off``).
     """
-    if getattr(settings, "offline", False):
-        return None
-    if getattr(settings, "cache_path", None) is None:
-        return None
-    env_value = os.environ.get(constants.AUTO_WARM_ENV_VAR, "1").strip().lower()
-    if env_value in {"0", "false", "no", "off"}:
-        logger.debug("Auto warm-up disabled via %s=%s", constants.AUTO_WARM_ENV_VAR, env_value)
-        return None
-
-    profile_identifier = getattr(settings, "profile_identifier", None)
-    if not profile_identifier:
-        return None
-
-    profile = _find_profile(profile_identifier, settings)
+    profile = _get_profile_for_warmup(settings)
     if profile is None:
         return None
     urls = discover_profile_cacheable_urls(profile)
@@ -174,12 +176,12 @@ def auto_warm_up_for_settings(settings: ValidationSettings) -> Optional[list[War
     urls_to_fetch = [u for u in urls if not requester.has_cached(u)]
     if not urls_to_fetch:
         logger.debug("Auto warm-up: all %d resources already cached for profile %s",
-                     len(urls), profile_identifier)
+                     len(urls), settings.profile_identifier)
         return []
     results = warm_up_urls(urls_to_fetch)
     ok = sum(1 for r in results if r.status == "ok")
     logger.info("Auto warm-up: pre-loaded %d/%d resources for profile %s",
-                ok, len(urls_to_fetch), profile_identifier)
+                ok, len(urls_to_fetch), settings.profile_identifier)
     return results
 
 

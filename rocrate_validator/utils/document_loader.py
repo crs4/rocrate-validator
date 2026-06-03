@@ -31,9 +31,9 @@ from typing import Any, Optional
 from rdflib.plugins.shared.jsonld import context as jsonld_context
 from rdflib.plugins.shared.jsonld import util as jsonld_util
 
+from rocrate_validator.constants import HTTP_STATUS_BAD_REQUEST
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.http import OFFLINE_CACHE_MISS_STATUS, HttpRequester, OfflineCacheMissError
-from rocrate_validator.constants import HTTP_STATUS_BAD_REQUEST
 
 logger = logging.getLogger(__name__)
 

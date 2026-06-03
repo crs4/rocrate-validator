@@ -2624,15 +2624,10 @@ class CustomEncoder(json.JSONEncoder):
             return obj.__dict__
         if isinstance(obj, Path):
             return str(obj)
-        if isinstance(obj, Severity):
-            return obj.name
-        if isinstance(obj, RequirementCheck):
+        if isinstance(obj, (RequirementCheck, Requirement)):
             return obj.identifier
-        if isinstance(obj, Requirement):
-            return obj.identifier
-        if isinstance(obj, RequirementLevel):
+        if isinstance(obj, (Severity, RequirementLevel)):
             return obj.name
-
         return super().default(obj)
 
 

@@ -18,6 +18,7 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Optional
 
+from rocrate_validator.constants import EXPECTED_CHECK_PARAM_COUNT
 from rocrate_validator.models import (
     LevelCollection,
     Profile,
@@ -31,7 +32,6 @@ from rocrate_validator.models import (
 )
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.python_helpers import get_classes_from_file
-from rocrate_validator.constants import EXPECTED_CHECK_PARAM_COUNT
 
 # set up logging
 logger = logging.getLogger(__name__)
