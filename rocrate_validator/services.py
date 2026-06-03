@@ -87,7 +87,7 @@ def validate(
     return result
 
 
-def __initialise_validator__(
+def __initialise_validator__(  # noqa: PLR0915
     settings: Union[dict, ValidationSettings], subscribers: Optional[list[Subscriber]] = None
 ) -> Validator:
     """

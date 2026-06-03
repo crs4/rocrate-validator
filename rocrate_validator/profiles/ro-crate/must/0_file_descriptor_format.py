@@ -274,9 +274,6 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
             return result
 
         def is_entity_flat_recursive(entity: Any, is_first: bool = True, fail_fast: bool = False) -> bool:
-            """ Recursively check if the given data corresponds to a flattened JSON-LD object
-            and returns False if it does not and is not a root element
-            """
             result = True
             if isinstance(entity, dict):
                 if is_first:
@@ -297,12 +294,15 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
                             return False
             return result
 
+        return self._check_flattened_graph(context, is_entity_flat_recursive)
+
+    def _check_flattened_graph(self, context, is_flat):
         try:
             fail_fast = bool(context.settings.abort_on_first)
             json_dict = context.ro_crate.metadata.as_dict()
             result = True
             for entity in json_dict["@graph"]:
-                if not is_entity_flat_recursive(entity, fail_fast=fail_fast):
+                if not is_flat(entity, fail_fast=fail_fast):
                     context.result.add_issue(
                         f'RO-Crate file descriptor "{context.rel_fd_path}" '
                         f'is not fully flattened at entity "{entity.get("@id", entity)}"', self)
