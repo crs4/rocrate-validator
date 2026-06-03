@@ -1976,60 +1976,81 @@ class ValidationStatistics(Subscriber):
         return result
 
     def update(self, event: Event, ctx: Optional[ValidationContext] = None) -> None:
-        # logger.debug("Event: %s", event.event_type)
-        if event.event_type == EventType.VALIDATION_START:
-            logger.debug("Validation started")
-            self._stats["started_at"] = datetime.now(timezone.utc)
-        if event.event_type == EventType.PROFILE_VALIDATION_START:
-            assert isinstance(event, ProfileValidationEvent)
-            logger.debug("Profile validation start: %s", event.profile.identifier)
-        elif event.event_type == EventType.REQUIREMENT_VALIDATION_START:
-            logger.debug("Requirement validation start")
-        elif event.event_type == EventType.REQUIREMENT_CHECK_VALIDATION_START:
-            logger.debug("Requirement check validation start")
-        elif event.event_type == EventType.REQUIREMENT_CHECK_VALIDATION_END:
-            assert isinstance(event, RequirementCheckValidationEvent)
-            assert ctx is not None
-            target_profile = ctx.target_validation_profile
-            if not event.requirement_check.requirement.hidden and (
-                not event.requirement_check.overridden
-                or target_profile.identifier == event.requirement_check.requirement.profile.identifier
-            ):
-                if event.validation_result is not None:
-                    if event.validation_result:
-                        self._stats["passed_checks"].append(event.requirement_check)
-                    else:
-                        self._stats["failed_checks"].append(event.requirement_check)
-                    self._stats["validated_checks"].append(event.requirement_check)
-                    self.notify_listeners()
+        self.__event_handlers__.get(event.event_type, lambda e, c: None)(event, ctx)
+
+    def __handle_validation_start__(self, event: Event, _ctx: Optional[ValidationContext]) -> None:
+        logger.debug("Validation started")
+        self._stats["started_at"] = datetime.now(timezone.utc)
+
+    def __handle_profile_validation_start__(self, event: Event, _ctx: Optional[ValidationContext]) -> None:
+        assert isinstance(event, ProfileValidationEvent)
+        logger.debug("Profile validation start: %s", event.profile.identifier)
+
+    def __handle_requirement_validation_start__(self, event: Event, _ctx: Optional[ValidationContext]) -> None:
+        logger.debug("Requirement validation start")
+
+    def __handle_requirement_check_validation_start__(self, event: Event, _ctx: Optional[ValidationContext]) -> None:
+        logger.debug("Requirement check validation start")
+
+    def __handle_requirement_check_validation_end__(self, event: Event, ctx: Optional[ValidationContext]) -> None:
+        assert isinstance(event, RequirementCheckValidationEvent)
+        assert ctx is not None
+        target_profile = ctx.target_validation_profile
+        if not event.requirement_check.requirement.hidden and (
+            not event.requirement_check.overridden
+            or target_profile.identifier == event.requirement_check.requirement.profile.identifier
+        ):
+            if event.validation_result is not None:
+                if event.validation_result:
+                    self._stats["passed_checks"].append(event.requirement_check)
                 else:
-                    logger.debug(
-                        "Requirement check validation result is None: %s",
-                        event.requirement_check.identifier,
-                    )
+                    self._stats["failed_checks"].append(event.requirement_check)
+                self._stats["validated_checks"].append(event.requirement_check)
+                self.notify_listeners()
             else:
                 logger.debug(
-                    "Skipping requirement check validation: %s",
+                    "Requirement check validation result is None: %s",
                     event.requirement_check.identifier,
                 )
-        elif event.event_type == EventType.REQUIREMENT_VALIDATION_END:
-            assert isinstance(event, RequirementValidationEvent)
-            if not event.requirement.hidden:
-                if event.validation_result:
-                    self._stats["passed_requirements"].append(event.requirement)
-                else:
-                    self._stats["failed_requirements"].append(event.requirement)
-                self._stats["validated_requirements"].append(event.requirement)
-                self.notify_listeners()
-        elif event.event_type == EventType.PROFILE_VALIDATION_END:
-            assert isinstance(event, ProfileValidationEvent)
-            self._stats["validated_profiles"].append(event.profile)
-            logger.debug("Profile validation ended: %s", event.profile.identifier)
-        elif event.event_type == EventType.VALIDATION_END:
-            assert isinstance(event, ValidationEvent)
-            self._result = event.validation_result
-            self._stats["finished_at"] = datetime.now(timezone.utc)
-            logger.debug("Validation ended with result: %s", event.validation_result)
+        else:
+            logger.debug(
+                "Skipping requirement check validation: %s",
+                event.requirement_check.identifier,
+            )
+
+    def __handle_requirement_validation_end__(self, event: Event, _ctx: Optional[ValidationContext]) -> None:
+        assert isinstance(event, RequirementValidationEvent)
+        if not event.requirement.hidden:
+            if event.validation_result:
+                self._stats["passed_requirements"].append(event.requirement)
+            else:
+                self._stats["failed_requirements"].append(event.requirement)
+            self._stats["validated_requirements"].append(event.requirement)
+            self.notify_listeners()
+
+    def __handle_profile_validation_end__(self, event: Event, _ctx: Optional[ValidationContext]) -> None:
+        assert isinstance(event, ProfileValidationEvent)
+        self._stats["validated_profiles"].append(event.profile)
+        logger.debug("Profile validation ended: %s", event.profile.identifier)
+
+    def __handle_validation_end__(self, event: Event, _ctx: Optional[ValidationContext]) -> None:
+        assert isinstance(event, ValidationEvent)
+        self._result = event.validation_result
+        self._stats["finished_at"] = datetime.now(timezone.utc)
+        logger.debug("Validation ended with result: %s", event.validation_result)
+
+    @property
+    def __event_handlers__(self):
+        return {
+            EventType.VALIDATION_START: self.__handle_validation_start__,
+            EventType.PROFILE_VALIDATION_START: self.__handle_profile_validation_start__,
+            EventType.REQUIREMENT_VALIDATION_START: self.__handle_requirement_validation_start__,
+            EventType.REQUIREMENT_CHECK_VALIDATION_START: self.__handle_requirement_check_validation_start__,
+            EventType.REQUIREMENT_CHECK_VALIDATION_END: self.__handle_requirement_check_validation_end__,
+            EventType.REQUIREMENT_VALIDATION_END: self.__handle_requirement_validation_end__,
+            EventType.PROFILE_VALIDATION_END: self.__handle_profile_validation_end__,
+            EventType.VALIDATION_END: self.__handle_validation_end__,
+        }
 
     def to_dict(self) -> dict:
         """
