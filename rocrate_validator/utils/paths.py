@@ -117,13 +117,7 @@ def list_matching_file_paths(
 
     # iterate through the directory and subdirectories
     for root, _, files in os.walk(directory):
-        # iterate through the files
-        for file in files:
-            # check if the file has a .ttl extension
-            if file.endswith(extension):
-                # append the file path to the list
-                file_paths.append(os.path.join(root, file))
-    # return the list of file paths
+        file_paths.extend(os.path.join(root, f) for f in files if f.endswith(extension))
     return file_paths
 
 

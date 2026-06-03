@@ -168,8 +168,9 @@ class SHACLRequirementLoader(RequirementLoader):
         assert file_path is not None, "The file path cannot be None"
         shapes: list[Shape] = self.shapes_registry.load_shapes(file_path, publicID)
         logger.debug("Loaded %s shapes: %s", len(shapes), shapes)
-        requirements: list[Requirement] = []
-        for shape in shapes:
-            if shape is not None and shape.level >= requirement_level:
-                requirements.append(SHACLRequirement(shape, profile, file_path))
+        requirements: list[Requirement] = [
+            SHACLRequirement(shape, profile, file_path)
+            for shape in shapes
+            if shape is not None and shape.level >= requirement_level
+        ]
         return requirements

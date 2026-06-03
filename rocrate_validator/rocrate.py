@@ -363,20 +363,13 @@ class ROCrateMetadata:
         return None
 
     def get_entities(self) -> list[ROCrateEntity]:
-        entities = []
-        for entity in self.as_dict().get("@graph", []):
-            entities.append(ROCrateEntity(self, entity))
-        return entities
+        return [ROCrateEntity(self, entity) for entity in self.as_dict().get("@graph", [])]
 
     def get_entities_by_type(
         self, entity_type: Union[str, list[str]]
     ) -> list[ROCrateEntity]:
         entity_types = [entity_type] if isinstance(entity_type, str) else entity_type
-        entities = []
-        for e in self.get_entities():
-            if e.has_types(entity_types):
-                entities.append(e)
-        return entities
+        return [e for e in self.get_entities() if e.has_types(entity_types)]
 
     def get_dataset_entities(self) -> list[ROCrateEntity]:
         return self.get_entities_by_type("Dataset")
@@ -396,11 +389,10 @@ class ROCrateMetadata:
         ]
 
     def get_web_data_entities(self) -> list[ROCrateEntity]:
-        entities = []
-        for entity in self.get_entities():
-            if (entity.has_type("File") or entity.has_type("Dataset")) and entity.is_remote():
-                entities.append(entity)
-        return entities
+        return [
+            entity for entity in self.get_entities()
+            if (entity.has_type("File") or entity.has_type("Dataset")) and entity.is_remote()
+        ]
 
     def get_conforms_to(self) -> Optional[list[str]]:
         try:
