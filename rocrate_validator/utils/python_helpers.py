@@ -26,10 +26,10 @@ from rocrate_validator.utils import log as logging
 logger = logging.getLogger(__name__)
 
 
-def get_classes_from_file(file_path: Path,
-                          filter_class: Optional[type] = None,
-                          class_name_suffix: Optional[str] = None) -> dict[str, type]:
-    """Get all classes in a Python file """
+def get_classes_from_file(
+    file_path: Path, filter_class: Optional[type] = None, class_name_suffix: Optional[str] = None
+) -> dict[str, type]:
+    """Get all classes in a Python file"""
     # ensure the file path is a Path object
     assert file_path, "The file path is required"
     if not isinstance(file_path, Path):
@@ -71,8 +71,8 @@ def to_camel_case(snake_str: str) -> str:
     :param snake_str: The snake case string
     :return: The camel case string
     """
-    components = re.split('_|-', snake_str)
-    return components[0].capitalize() + ''.join(x.title() for x in components[1:])
+    components = re.split(r"_|-", snake_str)
+    return components[0].capitalize() + "".join(x.title() for x in components[1:])
 
 
 def get_requirement_name_from_file(file: Path, check_name: Optional[str] = None) -> str:
