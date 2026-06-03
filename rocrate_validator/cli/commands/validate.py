@@ -239,7 +239,7 @@ def validate_uri(ctx, param, value):
     show_default=True,
 )
 @click.pass_context
-def validate(ctx,
+def validate(ctx,  # noqa: PLR0912
              profiles_path: Path = DEFAULT_PROFILES_PATH,
              extra_profiles_path: Optional[Path] = None,
              profile_identifier: tuple[str, ...] = (),
