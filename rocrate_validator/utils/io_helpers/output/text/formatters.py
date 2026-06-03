@@ -74,7 +74,7 @@ class ValidationResultTextOutputFormatter(OutputFormatter):
                     if issue.violatingEntity:
                         path = f"{path} on [cyan]<{issue.violatingEntity}>[/cyan]"
                     yield Padding(f"- [[red]Violation[/red]{path}]: "
-                                  f"{Markdown(issue.message).markup}", (0, 9, 1, 9))
+                                  f"{Markdown(issue.message or '').markup}", (0, 9, 1, 9))
                     if console.no_color:
                         yield Padding("\n", (0, 0))
             yield Padding("\n", (0, 0))
