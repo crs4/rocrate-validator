@@ -402,7 +402,7 @@ class SHACLCheck(RequirementCheck):
                 or requirementCheck.identifier not in shacl_context.settings.skip_checks
             ):
                 failed_requirements_checks.add(requirementCheck)
-                violations = failed_requirements_checks_violations.get(requirementCheck.identifier, None)
+                violations = failed_requirements_checks_violations.get(requirementCheck.identifier)
                 if violations is None:
                     failed_requirements_checks_violations[requirementCheck.identifier] = (violations := [])
                 violations.append(violation)

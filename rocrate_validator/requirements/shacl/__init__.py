@@ -17,5 +17,11 @@ from rocrate_validator.requirements.shacl.errors import SHACLValidationError
 from rocrate_validator.requirements.shacl.requirements import SHACLRequirement, SHACLRequirementLoader
 from rocrate_validator.requirements.shacl.validator import SHACLValidationResult, SHACLValidator
 
-__all__ = ["SHACLCheck", "SHACLValidator", "SHACLValidationResult",
-           "SHACLValidationError", "SHACLRequirement", "SHACLRequirementLoader"]
+__all__ = [
+           "SHACLCheck",
+           "SHACLRequirement",
+           "SHACLRequirementLoader",
+           "SHACLValidationError",
+           "SHACLValidationResult",
+           "SHACLValidator",
+]

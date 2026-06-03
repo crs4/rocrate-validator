@@ -279,7 +279,7 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
             result = True
             if isinstance(entity, dict):
                 if is_first:
-                    for _, elem in entity.items():
+                    for elem in entity.values():
                         if not is_entity_flat_recursive(elem, is_first=False, fail_fast=fail_fast):
                             result = False
                             if fail_fast:

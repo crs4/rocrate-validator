@@ -104,7 +104,7 @@ def multiple_choice(console: Console,
             "type": "checkbox",
             "name": "profiles",
             "message": prompt_text,
-            "choices": [Choice(i, f"{choices[i].identifier}: {choices[i].name}") for i in range(0, len(choices))]
+            "choices": [Choice(i, f"{choices[i].identifier}: {choices[i].name}") for i in range(len(choices))]
         }
     ]
     console.print("\n")

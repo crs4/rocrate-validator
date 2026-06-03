@@ -432,7 +432,7 @@ class ShapesRegistry:
         instance = getattr(ctx, "_shapes_registry_instance", None)
         if not instance:
             instance = cls()
-            setattr(ctx, "_shapes_registry_instance", instance)
+            ctx._shapes_registry_instance = instance
         return instance
 
 

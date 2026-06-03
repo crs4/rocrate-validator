@@ -240,13 +240,13 @@ class SHACLValidationContext(ValidationContext):
         instance = getattr(context, "_shacl_validation_context", None)
         if not instance:
             instance = SHACLValidationContext(context)
-            setattr(context, "_shacl_validation_context", instance)
+            context._shacl_validation_context = instance
         return instance
 
 
 class SHACLViolation:
 
-    def __init__(self, result: "SHACLValidationResult", violation_node: Node, graph: Graph) -> None:
+    def __init__(self, result: SHACLValidationResult, violation_node: Node, graph: Graph) -> None:
         # check the input
         assert result is not None, "Invalid result"
         assert isinstance(violation_node, Node), "Invalid violation node"
@@ -505,4 +505,4 @@ class SHACLValidator:
         return SHACLValidationResult(results_graph, results_text)
 
 
-__all__ = ["SHACLValidator", "SHACLValidationResult", "SHACLViolation"]
+__all__ = ["SHACLValidationResult", "SHACLValidator", "SHACLViolation"]

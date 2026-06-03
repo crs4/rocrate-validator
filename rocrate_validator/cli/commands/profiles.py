@@ -74,7 +74,7 @@ def profiles(ctx, profiles_path: Path = DEFAULT_PROFILES_PATH,
     help="Disable paging",
     default=False,
     show_default=True,
-    hidden=True if sys.platform == "win32" else False
+    hidden=sys.platform == "win32"
 )
 @click.pass_context
 def list_profiles(ctx, no_paging: bool = False):  # , profiles_path: Path = DEFAULT_PROFILES_PATH):
@@ -172,7 +172,7 @@ def list_profiles(ctx, no_paging: bool = False):  # , profiles_path: Path = DEFA
     help="Disable paging",
     default=False,
     show_default=True,
-    hidden=True if sys.platform == "win32" else False
+    hidden=sys.platform == "win32"
 )
 @click.pass_context
 def describe_profile(ctx,
@@ -245,10 +245,7 @@ def describe_profile(ctx,
             )
 
         # Build the profile table
-        if not verbose:
-            table = __compacted_describe_profile__(profile)
-        else:
-            table = __verbose_describe_profile__(profile)
+        table = __compacted_describe_profile__(profile) if not verbose else __verbose_describe_profile__(profile)
 
         with console.pager(pager=pager, styles=not console.no_color) if enable_pager else console:
             console.print(get_app_header_rule())

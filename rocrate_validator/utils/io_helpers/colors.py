@@ -24,11 +24,11 @@ def get_severity_color(severity: Union[str, Severity]) -> str:
     :param severity: The severity
     :return: The color
     """
-    if severity == Severity.REQUIRED or severity == "REQUIRED":
+    if severity in (Severity.REQUIRED, "REQUIRED"):
         return "red"
-    if severity == Severity.RECOMMENDED or severity == "RECOMMENDED":
+    if severity in (Severity.RECOMMENDED, "RECOMMENDED"):
         return "orange1"
-    if severity == Severity.OPTIONAL or severity == "OPTIONAL":
+    if severity in (Severity.OPTIONAL, "OPTIONAL"):
         return "yellow"
     return "white"
 

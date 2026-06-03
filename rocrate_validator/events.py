@@ -148,13 +148,12 @@ class Subscriber(ABC):
         :param ctx: optional context
         :type ctx: Optional[Any]
         """
-        pass
 
 
 class Publisher:
     def __init__(self, avoid_duplicate_notifications: bool = False):
-        self.__subscribers: set["Subscriber"] = set()
-        self.__notified_events: set["Event"] = set()
+        self.__subscribers: set[Subscriber] = set()
+        self.__notified_events: set[Event] = set()
         self.__avoid_duplicate_notifications = avoid_duplicate_notifications
 
     @property

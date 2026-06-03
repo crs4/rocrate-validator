@@ -17,4 +17,4 @@
 from .progress import Progress
 from .report import ValidationReportLayout
 
-__all__ = ["ValidationReportLayout", "Progress"]
+__all__ = ["Progress", "ValidationReportLayout"]

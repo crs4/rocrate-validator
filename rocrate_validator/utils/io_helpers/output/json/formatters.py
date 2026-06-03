@@ -66,9 +66,7 @@ def format_validation_results(data: dict[str, ValidationResult],
     verbose = settings.verbose if settings else False
 
     # Set the list of validation profiles
-    json_output["validation_settings"]["profile_identifiers"] = [
-        profile_identifier for profile_identifier in data.keys()
-    ]
+    json_output["validation_settings"]["profile_identifiers"] = list(data)
 
     # Initialize the overall passed status
     json_output["passed"] = True

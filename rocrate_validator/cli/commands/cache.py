@@ -40,10 +40,7 @@ logger = logging.getLogger(__name__)
 
 def _resolve_cache_path(cache_path: Optional[Path]) -> Path:
     """Return the effective cache path, creating the parent directory."""
-    if cache_path is None:
-        path = get_default_http_cache_path()
-    else:
-        path = Path(cache_path)
+    path = get_default_http_cache_path() if cache_path is None else Path(cache_path)
     path.parent.mkdir(parents=True, exist_ok=True)
     return path
 

@@ -113,7 +113,6 @@ class ValidationReportLayout(Layout):
                 f"[bold {severity_color}]{settings.requirement_severity}[/bold {severity_color}]",
                 style="white", align="left"),
             name="Base Info", size=5)
-        #
         self.passed_checks = Layout(name="PASSED")
         self.failed_checks = Layout(name="FAILED")
         # Create the layout of the requirement checks section

@@ -177,7 +177,7 @@ def validate_uri(ctx, param, value):
     help="Disable pagination of the validation details",
     default=False,
     show_default=True,
-    hidden=True if sys.platform == "win32" else False
+    hidden=sys.platform == "win32"
 )
 @click.option(
     '-f',
@@ -357,7 +357,7 @@ def validate(ctx,  # noqa: PLR0912
             "no_cache": no_cache,
             # When offline is requested, remote crate fetching must use the cache
             # instead of the "disable download" short-circuit.
-            "disable_remote_crate_download": False if offline else True,
+            "disable_remote_crate_download": not offline,
         }
 
         # Print the application header

@@ -114,10 +114,7 @@ def get_version() -> str:
         version = latest_tag
     else:
         commit_distance = get_commit_distance(latest_tag)
-        if commit_sha:
-            version = f"{declared_version}_{commit_sha}+{commit_distance}"
-        else:
-            version = declared_version
+        version = f"{declared_version}_{commit_sha}+{commit_distance}" if commit_sha else declared_version
     dirty = has_uncommitted_changes()
     return f"{version}-dirty" if dirty else version
 

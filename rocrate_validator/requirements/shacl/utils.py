@@ -74,7 +74,7 @@ def make_uris_relative(text: str, ro_crate_path: Union[Path, str]) -> str:
 def inject_attributes(obj: object, node_graph: Graph, node: Node, exclude: Optional[list] = None) -> object:
     # inject attributes of the shape property
     # logger.debug("Injecting attributes of node %s", node)
-    skip_properties = ["node"] if exclude is None else exclude + ["node"]
+    skip_properties = ["node"] if exclude is None else [*exclude, "node"]
     triples = node_graph.triples((node, None, None))
     for _node, p, o in triples:
         predicate_as_string = cast(Any, p).toPython()
@@ -102,7 +102,7 @@ def __compute_values__(g: Graph, s: Node) -> list[tuple]:
     # Collect the values of the triples in the graph (excluding BNodes)
     values = []
     # Assuming the list of triples values is stored in a variable called 'triples_values'
-    triples_values = list([(_, x, _) for (_, x, _) in g.triples((s, None, None)) if x != RDF.type])
+    triples_values = [(_, x, _) for (_, x, _) in g.triples((s, None, None)) if x != RDF.type]
 
     for (s, p, o) in triples_values:
         if isinstance(o, BNode):

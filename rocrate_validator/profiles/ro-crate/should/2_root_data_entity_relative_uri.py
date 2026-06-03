@@ -37,5 +37,5 @@ class RootDataEntityRelativeURI(PyFunctionCheck):
             return True
         except Exception as e:
             context.result.add_issue(
-                f'Error checking Root Data Entity URI: {str(e)}', self)
+                f'Error checking Root Data Entity URI: {e!s}', self)
             return False

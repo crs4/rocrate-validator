@@ -66,7 +66,7 @@ class WarmUpResult:
     detail: Optional[str] = None
 
 
-def discover_profile_cacheable_urls(profile: "Profile") -> list[str]:
+def discover_profile_cacheable_urls(profile: Profile) -> list[str]:
     """
     Return the list of HTTP(S) URLs declared by ``profile`` as cacheable
     artifacts. Returns an empty list when the profile has no declared
@@ -92,7 +92,7 @@ def discover_profile_cacheable_urls(profile: "Profile") -> list[str]:
     return urls
 
 
-def discover_cacheable_urls_from_profiles(profiles: Iterable["Profile"]) -> list[str]:
+def discover_cacheable_urls_from_profiles(profiles: Iterable[Profile]) -> list[str]:
     """
     Aggregate cacheable URLs from the given profiles, preserving order and
     removing duplicates.
@@ -122,10 +122,7 @@ def warm_up_urls(urls: Sequence[str]) -> list[WarmUpResult]:
             if requester.has_cached(url):
                 results.append(WarmUpResult(url=url, status="skipped", detail="already cached"))
                 continue
-            if offline:
-                response = requester.get(url)
-            else:
-                response = requester.fetch_fresh(url)
+            response = requester.get(url) if offline else requester.fetch_fresh(url)
             status_code = getattr(response, "status_code", None)
             if status_code is None:
                 results.append(WarmUpResult(url=url, status="failed", detail="no status code"))
@@ -141,7 +138,7 @@ def warm_up_urls(urls: Sequence[str]) -> list[WarmUpResult]:
     return results
 
 
-def auto_warm_up_for_settings(settings: "ValidationSettings") -> Optional[list[WarmUpResult]]:
+def auto_warm_up_for_settings(settings: ValidationSettings) -> Optional[list[WarmUpResult]]:
     """
     Perform a best-effort synchronous warm-up triggered by
     ``ValidationSettings.__post_init__``.
@@ -186,7 +183,7 @@ def auto_warm_up_for_settings(settings: "ValidationSettings") -> Optional[list[W
     return results
 
 
-def _find_profile(identifier, settings) -> Optional["Profile"]:
+def _find_profile(identifier, settings) -> Optional[Profile]:
     """
     Look up a loaded profile by identifier. Accepts either a string or a list
     (the settings sometimes store a list of identifiers).

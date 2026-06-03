@@ -124,7 +124,7 @@ def __setup_logger__(logger: Logger):
     logger.setLevel(level)
 
     # configure the logger handler
-    ch = __handlers__.get(logger.name, None)
+    ch = __handlers__.get(logger.name)
     if not ch:
         ch = StreamHandler(__log_stream__)
         ch.setLevel(level)

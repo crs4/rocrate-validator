@@ -2538,8 +2538,8 @@ class ValidationResult:
         Get the requirements that failed at or above the configured `requirement_severity`.
         """
         min_severity = self.context.requirement_severity
-        return set(issue.check.requirement for issue in self._issues
-                   if issue.severity >= min_severity)
+        return {issue.check.requirement for issue in self._issues
+                   if issue.severity >= min_severity}
 
     #  --- Checks ---
     @property
@@ -2548,8 +2548,8 @@ class ValidationResult:
         Get the checks that failed at or above the configured `requirement_severity`.
         """
         min_severity = self.context.requirement_severity
-        return set(issue.check for issue in self._issues
-                   if issue.severity >= min_severity)
+        return {issue.check for issue in self._issues
+                   if issue.severity >= min_severity}
 
     def get_failed_checks_by_requirement(self, requirement: Requirement) -> Collection[RequirementCheck]:
         """
@@ -3013,7 +3013,7 @@ class Validator(Publisher):
                 candidate_profiles,
             )
             # unmatched candidate profiles
-            unmatched_profiles = candidate_profiles_uris.difference(set(p.uri for p in profiles))
+            unmatched_profiles = candidate_profiles_uris.difference({p.uri for p in profiles})
             logger.debug("Unmatched Candidate Profiles URIs: %s", unmatched_profiles)
             if len(unmatched_profiles) > 0:
                 logger.warning(
@@ -3444,7 +3444,7 @@ class ValidationContext:
             return [profile]
 
         # Set the profiles to validate against as the target profile and its inherited profiles
-        profiles = profile.inherited_profiles + [profile]
+        profiles = [*profile.inherited_profiles, profile]
 
         # if the check for duplicates is disabled, return the profiles
         if self.disable_check_for_duplicates:

@@ -109,4 +109,4 @@ if __name__ == "__main__":
     except Exception as e:
         if logger.isEnabledFor(logging.DEBUG):
             logger.exception(f"An unexpected error occurred: {e}")
-        exit(2)
+        sys.exit(2)

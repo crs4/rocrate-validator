@@ -15,6 +15,7 @@
 from __future__ import annotations
 
 import atexit
+import contextlib
 import os
 import random
 import string
@@ -104,7 +105,7 @@ class HttpRequester:
             with cls._lock:
                 if cls._instance is None:
                     logger.debug(f"Creating instance of {cls.__name__}")
-                    cls._instance = super(HttpRequester, cls).__new__(cls)
+                    cls._instance = super().__new__(cls)
                     atexit.register(cls._instance.__del__)
                     logger.debug(f"Instance created: {cls._instance.__class__.__name__}")
         return cls._instance
@@ -182,7 +183,7 @@ class HttpRequester:
                         self.session.settings.only_if_cached = True
                     except AttributeError:
                         # Older requests_cache versions expose the flag on the session directly.
-                        setattr(self.session, "only_if_cached", True)
+                        self.session.only_if_cached = True
         except ImportError:
             logger.warning("requests_cache is not installed. Using requests instead.")
         except Exception as e:
@@ -342,10 +343,8 @@ class HttpRequester:
             except Exception as e:
                 logger.debug("Unable to count cache entries: %s", e)
         if info["path"] and os.path.exists(info["path"]):
-            try:
+            with contextlib.suppress(OSError):
                 info["size_bytes"] = os.path.getsize(info["path"])
-            except OSError:
-                pass
         return info
 
     @classmethod

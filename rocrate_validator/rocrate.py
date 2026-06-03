@@ -190,8 +190,8 @@ class ROCrateEntity:
         assert isinstance(entity_types, list), "Entity types must be a list"
         e_types = self.type if isinstance(self.type, list) else [self.type]
         if all_types:
-            return all([t in e_types for t in entity_types])
-        return any([t in e_types for t in entity_types])
+            return all(t in e_types for t in entity_types)
+        return any(t in e_types for t in entity_types)
 
     def __process_property__(self, name: str, data: object) -> object:
         if isinstance(data, dict) and "@id" in data:
@@ -473,7 +473,7 @@ class ROCrate(ABC):
         """
         if cls is not ROCrate:
             # If called on a subclass, use normal instantiation
-            return super(ROCrate, cls).__new__(cls)
+            return super().__new__(cls)
 
         # If called on ROCrate directly, use factory logic
         instance = cls.new_instance(uri)
@@ -534,7 +534,6 @@ class ROCrate(ABC):
         :return: the size of the RO-Crate
         :rtype: int
         """
-        pass
 
     @abstractmethod
     def list_files(self) -> list[Path]:
@@ -544,7 +543,6 @@ class ROCrate(ABC):
         :return: a list of file paths
         :rtype: list[Path]
         """
-        pass
 
     def __get_search_path__(self, path: Path) -> tuple[Path, Path]:
         """
@@ -678,7 +676,6 @@ class ROCrate(ABC):
         :return: the size of the file
         :rtype: int
         """
-        pass
 
     @abstractmethod
     def get_file_content(
@@ -696,7 +693,6 @@ class ROCrate(ABC):
         :return: the content of the file
         :rtype: Union[str, bytes]
         """
-        pass
 
     @staticmethod
     def get_external_file_content(
@@ -738,7 +734,7 @@ class ROCrate(ABC):
     @staticmethod
     def from_metadata_dict(
         metadata_dict: dict
-    ) -> "ROCrate":
+    ) -> ROCrate:
         """
         Create a new instance of the RO-Crate based on the metadata dictionary.
 
@@ -758,7 +754,7 @@ class ROCrate(ABC):
     @staticmethod
     def new_instance(
         uri: Union[str, Path, URI], relative_root_path: Optional[Path] = None
-    ) -> "ROCrate":
+    ) -> ROCrate:
         """
         Create a new instance of the RO-Crate based on the URI.
 
@@ -921,7 +917,7 @@ class ROCrateLocalZip(ROCrate):
         assert self._zipref is not None, "Zip reference not initialized"
         for px in (path, self.__parse_path__(path)):
             for p in self._zipref.namelist():
-                if f"{str(px)}/" == str(p) or str(px) == str(p):
+                if f"{px!s}/" == str(p) or str(px) == str(p):
                     info = self.__get_file_info__(p)
                     return info.is_dir()
         return False

@@ -278,7 +278,7 @@ class ROCrateInvalidURIError(ROCValidatorError):
 
     @classmethod
     def default_error_message(cls, uri: Union[str, Path, URI]) -> str:
-        return f"\"{str(uri)}\" is not a valid RO-Crate URI. "\
+        return f"\"{uri!s}\" is not a valid RO-Crate URI. "\
             "It MUST be either a local path to the RO-Crate root directory or a local/remote RO-Crate ZIP file."
 
 

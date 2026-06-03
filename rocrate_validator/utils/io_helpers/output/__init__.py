@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 class OutputFormatter(Protocol):
     """Protocol for output formatters."""
 
-    def __rich_console__(self, console: "Console", options: ConsoleOptions) -> RenderResult:
+    def __rich_console__(self, console: Console, options: ConsoleOptions) -> RenderResult:
         pass
 
 
@@ -69,7 +69,7 @@ class BaseOutputFormatter(OutputFormatter):
         """Retrieve all registered formatters."""
         return dict(self._fmap)
 
-    def __rich_console__(self, console: "Console", options: ConsoleOptions) -> RenderResult:
+    def __rich_console__(self, console: Console, options: ConsoleOptions) -> RenderResult:
         if self._data is None:
             raise ValueError("No data provided for formatting.")
         formatter = self.get_data_formatter(self._data)

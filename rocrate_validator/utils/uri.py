@@ -70,10 +70,7 @@ def is_external_reference(value: object) -> bool:
 
     # Reject scheme-only input (``urn:``, ``doi:``): syntactically valid
     # per the grammar but semantically unusable as an identifier.
-    if not (parts.netloc or parts.path or parts.query or parts.fragment):
-        return False
-
-    return True
+    return parts.netloc or parts.path or parts.query or parts.fragment
 
 
 class URI:
@@ -148,7 +145,7 @@ class URI:
         except Exception as e:
             if logger.isEnabledFor(logging.DEBUG):
                 logger.debug(e)
-            raise ValueError("Invalid URI: %s" % uri) from e
+            raise ValueError(f"Invalid URI: {uri}") from e
 
     @property
     def uri(self) -> str:
@@ -298,7 +295,7 @@ def validate_rocrate_uri(uri: Union[str, Path, URI], silent: bool = False) -> bo
         assert isinstance(uri, (str, Path, URI)), "The RO-Crate URI must be a string, Path, or URI object"
         try:
             # parse the value to extract the scheme
-            uri = URI(str(uri)) if isinstance(uri, str) or isinstance(uri, Path) else uri
+            uri = URI(str(uri)) if isinstance(uri, (str, Path)) else uri
             # restrict RO-Crate roots to schemes the loader can actually handle
             if not uri.has_supported_rocrate_scheme():
                 raise errors.ROCrateInvalidURIError(uri)
