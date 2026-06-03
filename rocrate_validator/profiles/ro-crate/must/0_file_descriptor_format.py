@@ -212,6 +212,66 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
     def check_flattened(self, context: ValidationContext) -> bool:
         """ Check if the file descriptor is flattened """
 
+        def _validate_non_root_entity(entity: Any, fail_fast: bool) -> bool:
+            result = True
+            if "@id" in entity and "@value" in entity:
+                context.result.add_issue(
+                    (
+                        f'entity "{entity.get("@id", entity)}" contains both @id and @value: '
+                        'an object with an @value represents a value object, which is a literal value such as '
+                        'a string, number, date, or language-tagged string. This object is not an identifiable '
+                        'resource, but a simple literal value.'
+                    ),
+                    self
+                )
+                result = False
+                if fail_fast:
+                    return False
+
+            if "@value" in entity:
+                if not isinstance(entity, dict):
+                    context.result.add_issue(
+                        f'entity "{entity.get("@id", entity)}" is not a valid value object: '
+                        'it MUST be a dictionary.',
+                        self
+                    )
+                    result = False
+                    if fail_fast:
+                        return False
+
+                has_language = "@language" in entity
+                has_type = "@type" in entity
+
+                if has_language and has_type:
+                    context.result.add_issue(
+                        f'entity "{entity.get("@id", entity)}" is not a valid value object: '
+                        '@language and @type cannot coexist.',
+                        self
+                    )
+                    result = False
+                    if fail_fast:
+                        return False
+
+                if has_language and not isinstance(entity["@value"], str):
+                    context.result.add_issue(
+                        f'entity "{entity.get("@id", entity)}" is not a valid value object: '
+                        'if @language is present, @value must be a string.',
+                        self
+                    )
+                    result = False
+                    if fail_fast:
+                        return False
+            elif "@id" not in entity or len(entity) > 1:
+                context.result.add_issue(
+                    f'entity "{entity.get("@id", entity)}" is not a valid node object reference: '
+                    'it MUST have only @id, but no other properties.',
+                    self
+                )
+                result = False
+                if fail_fast:
+                    return False
+            return result
+
         def is_entity_flat_recursive(entity: Any, is_first: bool = True, fail_fast: bool = False) -> bool:
             """ Recursively check if the given data corresponds to a flattened JSON-LD object
             and returns False if it does not and is not a root element
@@ -224,69 +284,10 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
                             result = False
                             if fail_fast:
                                 return False
-                # if this is not the root element, it must not contain more properties than @id
-                else:
-                    if "@id" in entity and "@value" in entity:
-                        # add issue if both @id and @value are present
-                        context.result.add_issue(
-                            (
-                                f'entity "{entity.get("@id", entity)}" contains both @id and @value: '
-                                'an object with an @value represents a value object, which is a literal value such as '
-                                'a string, number, date, or language-tagged string. This object is not an identifiable '
-                                'resource, but a simple literal value.'
-                            ),
-                            self
-                        )
-                        result = False
-                        if fail_fast:
-                            return False
-
-                    # Handle value objects
-                    if "@value" in entity:
-                        # Inline the checks from is_value_object and add issues for each violation
-                        if not isinstance(entity, dict):
-                            context.result.add_issue(
-                                f'entity "{entity.get("@id", entity)}" is not a valid value object: '
-                                'it MUST be a dictionary.',
-                                self
-                            )
-                            result = False
-                            if fail_fast:
-                                return False
-
-                        has_language = "@language" in entity
-                        has_type = "@type" in entity
-
-                        if has_language and has_type:
-                            context.result.add_issue(
-                                f'entity "{entity.get("@id", entity)}" is not a valid value object: '
-                                '@language and @type cannot coexist.',
-                                self
-                            )
-                            result = False
-                            if fail_fast:
-                                return False
-
-                        if has_language and not isinstance(entity["@value"], str):
-                            context.result.add_issue(
-                                f'entity "{entity.get("@id", entity)}" is not a valid value object: '
-                                'if @language is present, @value must be a string.',
-                                self
-                            )
-                            result = False
-                            if fail_fast:
-                                return False
-                    # Handle node objects:
-                    # every remaining entity with len(entity) > 1 must be a node object
-                    elif "@id" not in entity or len(entity) > 1:
-                        context.result.add_issue(
-                            f'entity "{entity.get("@id", entity)}" is not a valid node object reference: '
-                            'it MUST have only @id, but no other properties.',
-                            self
-                        )
-                        result = False
-                        if fail_fast:
-                            return False
+                elif not _validate_non_root_entity(entity, fail_fast):
+                    result = False
+                    if fail_fast:
+                        return False
             if isinstance(entity, list):
                 for element in entity:
                     if not is_entity_flat_recursive(element, is_first=False, fail_fast=fail_fast):
