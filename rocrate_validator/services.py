@@ -26,6 +26,7 @@ from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.http import HttpRequester
 from rocrate_validator.utils.paths import get_profiles_path
 from rocrate_validator.utils.uri import URI
+from rocrate_validator.constants import HTTP_STATUS_BAD_REQUEST, HTTP_STATUS_GATEWAY_TIMEOUT
 
 # set the default profiles path
 DEFAULT_PROFILES_PATH = get_profiles_path()
@@ -166,8 +167,8 @@ def __initialise_validator__(
             else:
                 response = requester.fetch_fresh(rocrate_path.uri, stream=True, allow_redirects=True)
             with response as r:
-                if r.status_code >= 400:
-                    if offline and r.status_code == 504:
+                if r.status_code >= HTTP_STATUS_BAD_REQUEST:
+                    if offline and r.status_code == HTTP_STATUS_GATEWAY_TIMEOUT:
                         raise FileNotFoundError(
                             f"Remote RO-Crate '{rocrate_path.uri}' is not available in the HTTP cache. "
                             f"Validate it online first, or run "

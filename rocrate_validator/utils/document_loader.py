@@ -33,6 +33,7 @@ from rdflib.plugins.shared.jsonld import util as jsonld_util
 
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.http import OFFLINE_CACHE_MISS_STATUS, HttpRequester, OfflineCacheMissError
+from rocrate_validator.constants import HTTP_STATUS_BAD_REQUEST
 
 logger = logging.getLogger(__name__)
 
@@ -117,7 +118,7 @@ def _fetch_json_ld(url: str) -> Any:
     status = getattr(response, "status_code", None)
     if status == OFFLINE_CACHE_MISS_STATUS and getattr(requester, "offline", False):
         raise OfflineCacheMissError(url)
-    if status is None or status >= 400:
+    if status is None or status >= HTTP_STATUS_BAD_REQUEST:
         raise RuntimeError(f"Unable to retrieve JSON-LD document from {url} (status {status})")
     try:
         return response.json()

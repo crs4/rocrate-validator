@@ -86,6 +86,17 @@ VALID_REQUIREMENT_LEVELS_TYPES = typing.Literal[
 # Current JSON output format
 JSON_OUTPUT_FORMAT_VERSION = "0.2"
 
+# HTTP Status Codes
+HTTP_STATUS_OK = 200
+HTTP_STATUS_BAD_REQUEST = 400
+HTTP_STATUS_GATEWAY_TIMEOUT = 504
+
+# Number of bytes per kibibyte
+BYTES_PER_KIB = 1024
+
+# Expected number of parameters for check function signatures
+EXPECTED_CHECK_PARAM_COUNT = 2
+
 # Http Cache Settings
 DEFAULT_HTTP_CACHE_MAX_AGE = -1  # in seconds; negative means "never expire"
 DEFAULT_HTTP_CACHE_PATH_PREFIX = '/tmp/rocrate_validator_cache'

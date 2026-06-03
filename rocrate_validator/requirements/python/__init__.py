@@ -31,6 +31,7 @@ from rocrate_validator.models import (
 )
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.python_helpers import get_classes_from_file
+from rocrate_validator.constants import EXPECTED_CHECK_PARAM_COUNT
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -54,7 +55,7 @@ class PyFunctionCheck(RequirementCheck):
         super().__init__(requirement, name, description=description, level=level, deactivated=deactivated)
 
         sig = inspect.signature(check_function)
-        if len(sig.parameters) != 2:
+        if len(sig.parameters) != EXPECTED_CHECK_PARAM_COUNT:
             raise RuntimeError("Invalid PyFunctionCheck function. Checks are expected to accept "
                                f"arguments [RequirementCheck, ValidationContext] but this has signature {sig}")
         if sig.return_annotation not in (bool, inspect.Signature.empty):
@@ -216,7 +217,7 @@ def check(name: Optional[str] = None,
     def decorator(func):
         check_name = name if name else func.__name__
         sig = inspect.signature(func)
-        if len(sig.parameters) != 2:
+        if len(sig.parameters) != EXPECTED_CHECK_PARAM_COUNT:
             raise RuntimeError(f"Invalid check {check_name}. Checks are expected to "
                                f"accept two arguments but this only takes {len(sig.parameters)}")
         if sig.return_annotation not in (bool, inspect.Signature.empty):

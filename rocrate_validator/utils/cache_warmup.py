@@ -128,7 +128,7 @@ def warm_up_urls(urls: Sequence[str]) -> list[WarmUpResult]:
                 results.append(WarmUpResult(url=url, status="failed", detail="no status code"))
             elif status_code == OFFLINE_CACHE_MISS_STATUS and offline:
                 results.append(WarmUpResult(url=url, status="failed", detail="offline cache miss"))
-            elif status_code >= 400:
+            elif status_code >= constants.HTTP_STATUS_BAD_REQUEST:
                 results.append(WarmUpResult(url=url, status="failed", detail=f"HTTP {status_code}"))
             else:
                 results.append(WarmUpResult(url=url, status="ok", detail=f"HTTP {status_code}"))

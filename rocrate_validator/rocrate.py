@@ -30,6 +30,7 @@ from rocrate_validator.errors import ROCrateInvalidURIError
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.http import HttpRequester
 from rocrate_validator.utils.uri import URI, AvailabilityStatus, is_external_reference, validate_rocrate_uri
+from rocrate_validator.constants import HTTP_STATUS_OK
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -1058,12 +1059,12 @@ class BagitROCrate(ROCrate, ABC):
                 if not base_url.endswith('.zip'):
                     # Check for bagit.txt
                     bagit_response = HttpRequester().head(f"{base_url}/bagit.txt")
-                    if bagit_response.status_code != 200:
+                    if bagit_response.status_code != HTTP_STATUS_OK:
                         return False
 
                     # Check for data/ro-crate-metadata.json
                     metadata_response = HttpRequester().head(f"{base_url}/data/ro-crate-metadata.json")
-                    return metadata_response.status_code == 200
+                    return metadata_response.status_code == HTTP_STATUS_OK
 
                 # If it's a remote zip file, we need to download it partially
                 # Temporarily create instance to check

@@ -34,6 +34,7 @@ from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.cache_warmup import WarmUpResult, discover_cacheable_urls_from_profiles, warm_up_urls
 from rocrate_validator.utils.http import HttpRequester
 from rocrate_validator.utils.paths import get_default_http_cache_path, get_profiles_path
+from rocrate_validator.constants import BYTES_PER_KIB, HTTP_STATUS_BAD_REQUEST
 
 logger = logging.getLogger(__name__)
 
@@ -457,7 +458,7 @@ def _warm_remote_crates(urls: list[str]) -> list[WarmUpResult]:
             if status is None:
                 results.append(WarmUpResult(url=url, status="failed", detail="no status code"))
                 continue
-            if status >= 400:
+            if status >= HTTP_STATUS_BAD_REQUEST:
                 results.append(WarmUpResult(url=url, status="failed", detail=f"HTTP {status}"))
                 continue
             # Touch the body so the cache backend stores the full response.
@@ -475,8 +476,8 @@ def _format_bytes(size: int) -> str:
     units = ["B", "KiB", "MiB", "GiB", "TiB"]
     idx = 0
     value = float(size)
-    while value >= 1024 and idx < len(units) - 1:
-        value /= 1024
+    while value >= BYTES_PER_KIB and idx < len(units) - 1:
+        value /= BYTES_PER_KIB
         idx += 1
     return f"{value:.2f} {units[idx]}"
 

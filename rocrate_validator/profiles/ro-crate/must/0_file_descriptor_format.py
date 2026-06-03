@@ -20,6 +20,7 @@ from rocrate_validator.models import ValidationContext
 from rocrate_validator.requirements.python import PyFunctionCheck, check, requirement
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.http import HttpRequester
+from rocrate_validator.constants import HTTP_STATUS_OK
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -89,7 +90,7 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
 
     def __get_remote_context__(self, context_uri: str) -> object:
         raw_data = HttpRequester().get(context_uri, headers={"Accept": "application/ld+json, application/json"})
-        if raw_data.status_code != 200:
+        if raw_data.status_code != HTTP_STATUS_OK:
             raise RuntimeError(f"Unable to retrieve the JSON-LD context '{context_uri}'", self)
         logger.debug(f"Retrieved context from {context_uri}")
 
@@ -125,7 +126,7 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
                     logger.debug(f"Trying to retrieve JSON-LD context from alternate URL: {alternate_url}")
                     raw_data = HttpRequester().get(alternate_url, headers={
                         "Accept": "application/ld+json, application/json"})
-                    if raw_data.status_code != 200:
+                    if raw_data.status_code != HTTP_STATUS_OK:
                         raise RuntimeError(
                             f"Unable to retrieve the JSON-LD context from alternate URL '{alternate_url}'", self)
                     logger.debug(f"Retrieved context from alternate URL {alternate_url}")
