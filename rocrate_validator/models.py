@@ -26,7 +26,7 @@ from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from functools import total_ordering
 from pathlib import Path
-from typing import Optional, Protocol, Tuple, Type, Union
+from typing import Any, Optional, Protocol, Tuple, Type, Union, cast
 from urllib.error import HTTPError
 
 import enum_tools
@@ -277,7 +277,7 @@ class Profile:
         # check if the profile specification file exists
         spec_file = self.profile_specification_file_path
         if not spec_file or not spec_file.exists():
-            raise ProfileSpecificationNotFound(spec_file)
+            raise ProfileSpecificationNotFound(str(spec_file))
         # load the profile specification expressed using the Profiles Vocabulary
         profile = Graph()
         profile.parse(str(spec_file), format="turtle")
@@ -290,7 +290,7 @@ class Profile:
             self._token, self._version = self.__init_token_version__()
 
             # Check if the profile is overriding an existing profile
-            existing_profile = self.__profiles_map.get_by_key(self._profile_node.toPython())
+            existing_profile = self.__profiles_map.get_by_key(cast(Any, self._profile_node).toPython())
             if existing_profile:
                 # Check if the existing profile is different from the current one
                 if existing_profile.path != profile_path:
@@ -306,7 +306,7 @@ class Profile:
 
             # add the profile to the profiles map
             self.__profiles_map.add(
-                self._profile_node.toPython(),
+                cast(Any, self._profile_node).toPython(),
                 self,
                 token=self.token,
                 name=self.name,
@@ -324,13 +324,12 @@ class Profile:
         namespace: Namespace,
         pop_first: bool = True,
         as_Python_object: bool = True,
-    ) -> Union[str, list[Union[str, URIRef]]]:
+    ) -> Union[str, list[Union[str, URIRef]], None]:
         assert self._profile_specification_graph is not None, "Profile specification graph not loaded"
-        values = list(self._profile_specification_graph.objects(self._profile_node, namespace[property]))
-        if values and as_Python_object:
-            values = [v.toPython() for v in values]
+        nodes = list(self._profile_specification_graph.objects(self._profile_node, namespace[property]))
+        values: list = [cast(Any, v).toPython() for v in nodes] if (nodes and as_Python_object) else list(nodes)
         if pop_first:
-            return values[0] if values and len(values) >= 1 else None
+            return values[0] if values else None
         return values
 
     def __add_override__(self, profile: Profile):
@@ -441,7 +440,7 @@ class Profile:
         as specified in the profile specification file
         (i.e., the value of the prof: isProfileOf property in the `profile.ttl` file).
         """
-        return self.__get_specification_property__("isProfileOf", PROF_NS, pop_first=False)
+        return cast(list[str], self.__get_specification_property__("isProfileOf", PROF_NS, pop_first=False))
 
     @property
     def is_transitive_profile_of(self) -> list[str]:
@@ -450,7 +449,7 @@ class Profile:
         as specified in the profile specification file
         (i.e., the value of the prof: isTransitiveProfileOf property in the `profile.ttl` file).
         """
-        return self.__get_specification_property__("isTransitiveProfileOf", PROF_NS, pop_first=False)
+        return cast(list[str], self.__get_specification_property__("isTransitiveProfileOf", PROF_NS, pop_first=False))
 
     @property
     def parents(self) -> list[Profile]:
@@ -639,11 +638,11 @@ class Profile:
             return matches[-1][0]
         return None
 
-    def __get_consistent_version__(self, candidate_token: str) -> str:
+    def __get_consistent_version__(self, candidate_token: str) -> Optional[str]:
         candidates = {
             _
             for _ in [
-                self.__get_specification_property__("version", SCHEMA_ORG_NS),
+                cast(Optional[str], self.__get_specification_property__("version", SCHEMA_ORG_NS)),
                 self.__extract_version_from_token__(candidate_token),
                 self.__extract_version_from_token__(str(self.path.relative_to(self._profiles_base_path))),
                 self.__extract_version_from_token__(str(self.uri)),
@@ -667,9 +666,9 @@ class Profile:
         identifier = identifier.replace("/", "-")
         return identifier
 
-    def __init_token_version__(self) -> Tuple[str, str, str]:
+    def __init_token_version__(self) -> Tuple[str, Optional[str]]:
         # try to extract the token from the specs or the path
-        candidate_token = self.__get_specification_property__("hasToken", PROF_NS)
+        candidate_token = cast(Optional[str], self.__get_specification_property__("hasToken", PROF_NS))
         if not candidate_token:
             candidate_token = self.__extract_token_from_path__()
         logger.debug("Candidate token: %s", candidate_token)
@@ -688,7 +687,7 @@ class Profile:
     @classmethod
     def __load_profile_path__(
         cls,
-        profiles_base_path: str,
+        profiles_base_path: Union[str, Path],
         profile_path: Union[str, Path],
         publicID: Optional[str] = None,
         severity: Severity = Severity.REQUIRED,
@@ -698,10 +697,10 @@ class Profile:
             profile_path = Path(profile_path)
         # check if the path is a directory
         if not profile_path.is_dir():
-            raise InvalidProfilePath(profile_path)
+            raise InvalidProfilePath(str(profile_path))
         # create a new profile
         profile = Profile(
-            profiles_base_path=profiles_base_path,
+            profiles_base_path=Path(profiles_base_path),
             profile_path=profile_path,
             publicID=publicID,
             severity=severity,
@@ -740,7 +739,7 @@ class Profile:
                 root_profile_directory = Path(root_profile_directory)
             # check if the path is a directory and raise an error if not
             if not root_profile_directory.is_dir():
-                raise InvalidProfilePath(root_profile_directory)
+                raise InvalidProfilePath(str(root_profile_directory))
             # if the path is a directory, get the profile directories
             result.extend(
                 [
@@ -863,7 +862,7 @@ class Profile:
         return cls.__profiles_map.get_by_index("name", name)
 
     @classmethod
-    def get_by_token(cls, token: str) -> Profile:
+    def get_by_token(cls, token: str) -> list[Profile]:
         """
         Get the profile with the given token
 
@@ -968,9 +967,9 @@ class Requirement(ABC):
         self._profile = profile
         self._description = description
         self._path = path  # path of code implementing the requirement
-        self._level_from_path = None
+        self._level_from_path: Optional[RequirementLevel] = None
         self._checks: list[RequirementCheck] = []
-        self._overridden = None
+        self._overridden: Optional[bool] = None
 
         if not name and path:
             self._name = get_requirement_name_from_file(path)
@@ -1025,12 +1024,12 @@ class Requirement(ABC):
         return self._name
 
     @property
-    def severity_from_path(self) -> Severity:
+    def severity_from_path(self) -> Optional[Severity]:
         return self.requirement_level_from_path.severity if self.requirement_level_from_path else None
 
     @property
-    def requirement_level_from_path(self) -> RequirementLevel:
-        if not self._level_from_path:
+    def requirement_level_from_path(self) -> Optional[RequirementLevel]:
+        if not self._level_from_path and self._path:
             try:
                 self._level_from_path = LevelCollection.get(self._path.parent.name)
             except ValueError:
@@ -1326,10 +1325,10 @@ class RequirementLoader:
                 result.extend(all_subclasses(subcls))
             return result
 
-        return all_subclasses(Requirement)
+        return all_subclasses(Requirement)  # type: ignore[type-abstract]
 
     @staticmethod
-    def load_requirements(profile: Profile, severity: Optional[Severity] = None) -> list[Requirement]:
+    def load_requirements(profile: Profile, severity: Severity = Severity.REQUIRED) -> list[Requirement]:
         """
         Load the requirements related to the profile
         """
@@ -1364,7 +1363,7 @@ class RequirementLoader:
                     requirement_path,
                 )
             requirement_loader = RequirementLoader.__get_requirement_loader__(profile, requirement_path)
-            for requirement in requirement_loader.load(
+            for requirement in cast(Any, requirement_loader).load(
                 profile,
                 requirement_level,
                 requirement_path,
@@ -1642,7 +1641,7 @@ class CheckIssue:
         with_requirement: bool = True,
         with_profile: bool = True,
     ) -> dict:
-        result = {
+        result: dict[str, Any] = {
             "severity": self.severity.name,
             "message": self.message,
             "violatingEntity": self.violatingEntity,
@@ -1740,7 +1739,7 @@ class ValidationStatistics(Subscriber):
         """
         Get the profile being validated
         """
-        return self._stats.get("profile")
+        return cast(Profile, self._stats.get("profile"))
 
     @property
     def profiles(self) -> list[Profile]:
@@ -1754,7 +1753,7 @@ class ValidationStatistics(Subscriber):
         """
         Get the validation severity level
         """
-        return self._stats.get("severity")
+        return cast(Severity, self._stats.get("severity"))
 
     @property
     def checks_by_severity(self) -> dict:
@@ -1882,10 +1881,10 @@ class ValidationStatistics(Subscriber):
         profiles: list[Profile] = Profile.load_profiles(
             validation_settings.profiles_path,
             extra_profiles_path=validation_settings.extra_profiles_path,
-            severity=severity_validation,
+            severity=cast(Severity, severity_validation),
             allow_requirement_check_override=validation_settings.allow_requirement_check_override,
         )
-        profile: Profile = Profile.find_in_list(profiles, validation_settings.profile_identifier)
+        profile: Profile = cast(Profile, Profile.find_in_list(profiles, validation_settings.profile_identifier))
         target_profile_identifier = profile.identifier
         # initialize the profiles list
         profiles = [profile]
@@ -2579,10 +2578,10 @@ class ValidationResult:
         validation_settings = {
             key: value for key, value in self.validation_settings.to_dict().items() if key in allowed_properties
         }
-        result = {
+        result: dict[str, Any] = {
             "meta": {"version": JSON_OUTPUT_FORMAT_VERSION},
             "validation_settings": validation_settings,
-            "passed": self.passed(self.context.settings.requirement_severity),
+            "passed": self.passed(cast(Severity, self.context.settings.requirement_severity)),
             "issues": [issue.to_dict() for issue in self.issues],
         }
         # add validator version to the settings
@@ -2665,11 +2664,11 @@ class ValidationSettings:
     #: Flag to disable the check for duplicates
     disable_check_for_duplicates: bool = False
     #: Checks to skip
-    skip_checks: list[str] = None
+    skip_checks: Optional[list[str]] = None
     #: Flag to validate only the metadata of the RO-Crate
     metadata_only: bool = False
     #: RO-Crate metadata as dictionary
-    metadata_dict: dict = None
+    metadata_dict: Optional[dict] = None
     #: Verbose output
     verbose: bool = False
     #: Cache max age in seconds (negative values mean "never expire")
@@ -2743,7 +2742,7 @@ class ValidationSettings:
         result.pop("requirement_severity_only", None)
         return result
 
-    @property
+    @property  # type: ignore[no-redef]
     def rocrate_uri(self) -> Optional[URI]:
         """
         Get the RO-Crate URI
@@ -2763,7 +2762,7 @@ class ValidationSettings:
         """
         if not value:
             raise ValueError("Invalid RO-Crate URI")
-        self._rocrate_uri: URI = URI(value)
+        self._rocrate_uri: URI = URI(str(value))
 
     @classmethod
     def parse(cls, settings: Union[dict, ValidationSettings]) -> ValidationSettings:
@@ -2944,11 +2943,11 @@ class Validator(Publisher):
             Validates the RO-Crate against the specified subset of the profile requirements.
     """
 
-    def __init__(self, settings: Union[str, ValidationSettings]):
+    def __init__(self, settings: Union[dict, ValidationSettings]):
         self._validation_settings = ValidationSettings.parse(settings)
         super().__init__()
         # initialize the current context
-        self.__current_context__ = None
+        self.__current_context__: Optional[ValidationContext] = None
 
     @property
     def validation_settings(self) -> ValidationSettings:
@@ -2963,18 +2962,18 @@ class Validator(Publisher):
             context = ValidationContext(self, self.validation_settings)
             candidate_profiles_uris: set[str] = set()
             try:
-                candidate_profiles_uris.update(context.ro_crate.metadata.get_conforms_to())
+                candidate_profiles_uris.update(context.ro_crate.metadata.get_conforms_to() or [])
             except Exception as e:
                 logger.debug("Error while getting candidate profiles URIs: %s", e)
             try:
-                candidate_profiles_uris.update(context.ro_crate.metadata.get_root_data_entity_conforms_to())
+                candidate_profiles_uris.update(context.ro_crate.metadata.get_root_data_entity_conforms_to() or [])
             except Exception as e:
                 logger.debug("Error while getting candidate profiles URIs: %s", e)
 
             logger.debug("Candidate profiles: %s", candidate_profiles_uris)
             if not candidate_profiles_uris:
                 logger.debug("Unable to determine the profile to validate against")
-                return None
+                return []
             # load the profiles
             profiles = []
             candidate_profiles = []
@@ -3010,7 +3009,7 @@ class Validator(Publisher):
         except Exception as e:
             if logger.isEnabledFor(logging.DEBUG):
                 logger.exception(e)
-            return None
+            return []
 
     def validate(self) -> ValidationResult:
         """
@@ -3131,7 +3130,7 @@ class Validator(Publisher):
             requirement_type.finalize(context)
         logger.debug("Finalizing requirement types: completed")
 
-    def notify(self, event: Union[Event, EventType]):
+    def notify(self, event: Union[Event, EventType], ctx: Optional[Any] = None):
         """Override notify to update statistics"""
         assert self.__current_context__ is not None, "No current validation context"
         result: ValidationResult = self.__current_context__.result
@@ -3152,13 +3151,13 @@ class ValidationContext:
         # reference to the settings
         self._settings = settings
         # reference to the data graph
-        self._data_graph = None
+        self._data_graph: Optional[Graph] = None
         # reference to the profiles
-        self._profiles = None
+        self._profiles: Optional[list[Profile]] = None
         # reference to the target profile
-        self._target_validation_profile = None
+        self._target_validation_profile: Optional[Profile] = None
         # reference to the validation result
-        self._result = None
+        self._result: Optional[ValidationResult] = None
         # additional properties for the context
         self._properties: dict = {}
         # URLs already reported as missing from the HTTP cache during this run
@@ -3295,7 +3294,7 @@ class ValidationContext:
         :return: The flag to abort on first error
         :rtype: bool
         """
-        return self.settings.abort_on_first
+        return bool(self.settings.abort_on_first)
 
     @property
     def rel_fd_path(self) -> Path:
@@ -3311,7 +3310,7 @@ class ValidationContext:
         data_graph = Graph()
         logger.debug("Loading RO-Crate metadata of: %s", self.ro_crate.uri)
         _ = data_graph.parse(
-            data=self.ro_crate.metadata.as_dict(),
+            data=self.ro_crate.metadata.as_dict(),  # type: ignore[arg-type]
             format="json-ld",
             publicID=self.publicID,
         )
@@ -3338,7 +3337,7 @@ class ValidationContext:
             return self._data_graph
         except (HTTPError, FileNotFoundError) as e:
             logger.debug("Error loading data graph: %s", e)
-            raise ROCrateMetadataNotFoundError(self.rocrate_uri)
+            raise ROCrateMetadataNotFoundError(str(self.rocrate_uri))
 
     @property
     def data_graph(self) -> Graph:
@@ -3458,6 +3457,7 @@ class ValidationContext:
         :return: The target validation profile
         :rtype: Profile
         """
+        assert self._target_validation_profile is not None, "Target validation profile not set"
         return self._target_validation_profile
 
     @property
@@ -3484,7 +3484,7 @@ class ValidationContext:
         """
         return [p for p in self.profiles if p.token == token]
 
-    def get_profile_by_identifier(self, identifier: str) -> list[Profile]:
+    def get_profile_by_identifier(self, identifier: str) -> Profile:
         """
         Get the profile by identifier from the profiles to validate against
 
