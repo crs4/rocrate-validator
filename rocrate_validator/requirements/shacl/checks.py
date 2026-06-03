@@ -339,24 +339,34 @@ class SHACLCheck(RequirementCheck):
 
         # store the validation result in the context
         start_time = timer()
-        # if the validation fails, process the failed checks
+        failed_requirements_checks, failed_requirements_checks_violations = self.__collect_failed_checks__(
+            shacl_context, shacl_result, shapes_registry, shapes_graph
+        )
+        failed_requirement_checks_notified = self.__process_failed_checks__(
+            shacl_context, failed_requirements_checks, failed_requirements_checks_violations
+        )
+        self.__notify_skipped_checks__(shacl_context, failed_requirement_checks_notified)
+
+        logger.debug("Remaining skipped checks: %r", len(shacl_context.result.skipped_checks))
+        for skipped_check in shacl_context.result.skipped_checks:
+            logger.debug(
+                "Remaining skipped check: %r - %s",
+                skipped_check.identifier,
+                skipped_check.name,
+            )
+        end_time = timer()
+        logger.debug(f"Execution time for parsing the validation result: {end_time - start_time} seconds")
+
+        return failed_requirements_checks
+
+    def __collect_failed_checks__(self, shacl_context, shacl_result, shapes_registry, shapes_graph):
         failed_requirements_checks = set()
         failed_requirements_checks_violations: dict[str, list[SHACLViolation]] = {}
-        failed_requirement_checks_notified = [
-            _.check.identifier
-            for _ in shacl_context.result.get_issues(
-                min_severity=cast(Severity, shacl_context.settings.requirement_severity))
-        ]
-
-        logger.debug("Parsing Validation with result: %s", shacl_result)
-        # process the failed checks to extract the requirement checks involved
         for violation in shacl_result.violations:
             shape = None
             try:
                 shape = shapes_registry.get_shape(Shape.compute_key(shapes_graph, violation.sourceShape))
             except (ValueError, KeyError):
-                # sourceShape may be a BNode (e.g. an inline sh:sparql constraint).
-                # Attempt to resolve the owning NodeShape/PropertyShape via the graph.
                 shape = resolve_parent_shape(shapes_graph, violation.sourceShape, shapes_registry)
                 if shape is None:
                     logger.warning(
@@ -395,9 +405,15 @@ class SHACLCheck(RequirementCheck):
                 if violations is None:
                     failed_requirements_checks_violations[requirementCheck.identifier] = (violations := [])
                 violations.append(violation)
-        # sort the failed checks by identifier and severity
-        # to ensure a consistent order of the issues
-        # and to make the fail fast mode deterministic
+        return failed_requirements_checks, failed_requirements_checks_violations
+
+    def __process_failed_checks__(self, shacl_context, failed_requirements_checks,
+                                  failed_requirements_checks_violations):
+        failed_requirement_checks_notified = [
+            _.check.identifier
+            for _ in shacl_context.result.get_issues(
+                min_severity=cast(Severity, shacl_context.settings.requirement_severity))
+        ]
         for requirementCheck in sorted(failed_requirements_checks, key=lambda x: (x.identifier, x.severity)):
             # if the check is not in the current profile
             # and the disable_inherited_profiles_reporting is enabled, skip it
@@ -468,15 +484,14 @@ class SHACLCheck(RequirementCheck):
             # if the fail fast mode is enabled, stop the validation after the first failed check
             if shacl_context.fail_fast:
                 break
+        return failed_requirement_checks_notified
 
-        # As above, but for skipped checks which are not failed
-        logger.debug("Skipped checks: %s", len(shacl_context.result.skipped_checks))
+    def __notify_skipped_checks__(self, shacl_context, failed_requirement_checks_notified):
         for skipped_check in list(shacl_context.result.skipped_checks):
             logger.debug("Processing skipped check: %s", skipped_check.identifier)
             if not isinstance(skipped_check, SHACLCheck):
                 logger.debug("Skipped check is not a SHACLCheck: %s", skipped_check.identifier)
                 continue
-            # if skipped_check.requirement.profile != shacl_context.current_validation_profile and
             if skipped_check.identifier not in failed_requirement_checks_notified:
                 failed_requirement_checks_notified.append(skipped_check.identifier)
                 shacl_context.result._add_executed_check(skipped_check, True)
@@ -496,18 +511,6 @@ class SHACLCheck(RequirementCheck):
                     "Added skipped check to the context: %s",
                     skipped_check.identifier,
                 )
-
-        logger.debug("Remaining skipped checks: %r", len(shacl_context.result.skipped_checks))
-        for skipped_check in shacl_context.result.skipped_checks:
-            logger.debug(
-                "Remaining skipped check: %r - %s",
-                skipped_check.identifier,
-                skipped_check.name,
-            )
-        end_time = timer()
-        logger.debug(f"Execution time for parsing the validation result: {end_time - start_time} seconds")
-
-        return failed_requirements_checks
 
     @classmethod
     def get_instance(cls, shape: Shape) -> Optional["SHACLCheck"]:
