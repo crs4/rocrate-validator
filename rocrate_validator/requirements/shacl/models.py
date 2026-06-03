@@ -414,9 +414,9 @@ class ShapesRegistry:
 
         # register Property Shapes
         for property_shape in shapes_list.property_shapes:
-            shape = PropertyShape(property_shape, shapes_list.get_shape_graph(property_shape))
-            self.add_shape(shape)
-            shapes.append(shape)
+            prop_shape = PropertyShape(property_shape, shapes_list.get_shape_graph(property_shape))
+            self.add_shape(prop_shape)
+            shapes.append(prop_shape)
 
         return shapes
 
