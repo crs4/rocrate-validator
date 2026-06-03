@@ -61,7 +61,7 @@ def install_document_loader() -> bool:
     Returns ``True`` when the loader is active after the call, ``False`` when
     installation raised an unexpected error (which is logged).
     """
-    global _installed
+    global _installed  # noqa: PLW0603
 
     with _install_lock:
         if _installed:
@@ -88,7 +88,7 @@ def uninstall_document_loader() -> bool:
     Returns ``True`` when the loader is no longer active after the call,
     ``False`` when uninstallation raised an unexpected error (which is logged).
     """
-    global _installed
+    global _installed  # noqa: PLW0603
     with _install_lock:
         if not _installed:
             return True

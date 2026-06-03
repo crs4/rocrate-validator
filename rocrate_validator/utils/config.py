@@ -29,7 +29,7 @@ def get_config() -> dict:
 
     :return: The configuration
     """
-    global _config
+    global _config  # noqa: PLW0603
     if _config is None:
         from .paths import get_config_path  # noqa: PLC0415
 

@@ -195,7 +195,7 @@ def _find_profile(identifier, settings) -> Optional[Profile]:
     from rocrate_validator.utils.paths import get_profiles_path  # noqa: PLC0415
 
     # Load profiles to ensure the requested one is available and its graph is parsed.
-    global __profiles_loaded
+    global __profiles_loaded  # noqa: PLW0603
     if not __profiles_loaded:
         profiles_path = getattr(settings, "profiles_path", None) or get_profiles_path()
         extra_profiles_path = getattr(settings, "extra_profiles_path", None)
