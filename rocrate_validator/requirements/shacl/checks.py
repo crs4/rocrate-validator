@@ -146,8 +146,9 @@ class SHACLCheck(RequirementCheck):
         return f"Check for {self._shape.name}" if self._shape.name else "SHACL validation check"
 
     def __compute_requirement_level__(self) -> RequirementLevel:
-        if self._shape and self._shape.get_declared_level():
-            return self._shape.get_declared_level()
+        declared_level = self._shape.get_declared_level() if self._shape else None
+        if declared_level:
+            return declared_level
         if self.requirement and self.requirement.requirement_level_from_path:
             return self.requirement.requirement_level_from_path
         # When the shape file lives in the profile root and the NodeShape
