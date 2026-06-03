@@ -77,7 +77,7 @@ def inject_attributes(obj: object, node_graph: Graph, node: Node, exclude: Optio
     # logger.debug("Injecting attributes of node %s", node)
     skip_properties = ["node"] if exclude is None else exclude + ["node"]
     triples = node_graph.triples((node, None, None))
-    for node, p, o in triples:
+    for _node, p, o in triples:
         predicate_as_string = cast(Any, p).toPython()
         # logger.debug(f"Processing {predicate_as_string} of property graph {node}")
         if predicate_as_string.startswith(SHACL_NS):
