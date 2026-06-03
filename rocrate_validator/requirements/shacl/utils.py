@@ -104,11 +104,11 @@ def __compute_values__(g: Graph, s: Node) -> list[tuple]:
     # Assuming the list of triples values is stored in a variable called 'triples_values'
     triples_values = [(_, x, _) for (_, x, _) in g.triples((s, None, None)) if x != RDF.type]
 
-    for (s, p, o) in triples_values:
-        if isinstance(o, BNode):
-            values.extend(__compute_values__(g, o))
+    for (subj, pred, obj) in triples_values:
+        if isinstance(obj, BNode):
+            values.extend(__compute_values__(g, obj))
         else:
-            values.append((s, p, o) if not isinstance(s, BNode) else (p, o))
+            values.append((subj, pred, obj) if not isinstance(subj, BNode) else (pred, obj))
     return values
 
 
