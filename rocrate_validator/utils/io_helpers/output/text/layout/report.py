@@ -101,7 +101,7 @@ class ValidationReportLayout(Layout):
         severity_color = get_severity_color(settings.requirement_severity)
         base_info_layout = Layout(
             Align(
-                f"\n[bold cyan]RO-Crate:[/bold cyan] [bold]{URI(settings.rocrate_uri).uri}[/bold]"
+                f"\n[bold cyan]RO-Crate:[/bold cyan] [bold]{URI(str(settings.rocrate_uri)).uri}[/bold]"
                 "\n[bold cyan]Target Profile:[/bold cyan][bold magenta] "
                 f"{settings.profile_identifier}[/bold magenta] "
                 f"{'[italic](autodetected)[/italic]' if self.profile_autodetected else ''}"
@@ -175,15 +175,18 @@ class ValidationReportLayout(Layout):
         if result:
             self.__show_overall_result__(result)
 
-    def update(self, event: Event, ctx: Optional[ValidationContext] = None):
+    def update(self, event: Event, ctx: Optional[ValidationContext] = None):  # type: ignore[override]
         logger.debug("Event: %s", event.event_type)
         if event.event_type == EventType.PROFILE_VALIDATION_START:
+            assert isinstance(event, ProfileValidationEvent)
             logger.debug("Profile validation start: %s", event.profile.identifier)
         elif event.event_type == EventType.REQUIREMENT_VALIDATION_START:
             logger.debug("Requirement validation start")
         elif event.event_type == EventType.REQUIREMENT_CHECK_VALIDATION_START:
             logger.debug("Requirement check validation start")
         elif event.event_type == EventType.REQUIREMENT_CHECK_VALIDATION_END:
+            assert isinstance(event, RequirementCheckValidationEvent)
+            assert ctx is not None, "Validation context must be provided"
             target_profile = ctx.target_validation_profile
             if not event.requirement_check.requirement.hidden and \
                     (not event.requirement_check.overridden
@@ -193,16 +196,20 @@ class ValidationReportLayout(Layout):
             else:
                 logger.debug("Skipping requirement check validation: %s", event.requirement_check.identifier)
         elif event.event_type == EventType.REQUIREMENT_VALIDATION_END:
+            assert isinstance(event, RequirementValidationEvent)
+            assert ctx is not None, "Validation context must be provided"
             if not event.requirement.hidden:
                 self.update_stats(ctx.result.statistics)
         # elif event.event_type == EventType.PROFILE_VALIDATION_END:
         #     pass
         elif event.event_type == EventType.VALIDATION_END:
+            assert isinstance(event, ValidationEvent)
             self.__show_overall_result__(event.validation_result)
             logger.debug("Validation ended with result: %s", event.validation_result)
 
     def update_stats(self, profile_stats: Optional[ValidationStatistics] = None):
         assert profile_stats, "Profile stats must be provided"
+        assert self.passed_checks is not None and self.failed_checks is not None, "Layout not initialized"
         # self.profile_stats = profile_stats
         self.requirement_checks_by_severity_container_layout["required"].update(
             Panel(
@@ -270,6 +277,7 @@ class ValidationReportLayout(Layout):
 
     def __show_overall_result__(self, result: Optional[ValidationResult]):
         assert result, "Validation result must be provided"
+        assert self.overall_result is not None, "Layout not initialized"
         self.result = result
         if result.passed():
             icon = "[OK]" if not self.console.interactive else "✅"
@@ -285,7 +293,7 @@ class ValidationReportLayout(Layout):
                              style="bold red"), (1, 1)))
 
 
-def get_app_header_rule() -> Text:
+def get_app_header_rule() -> Padding:
     return Padding(Rule(f"\n[bold][cyan]ROCrate Validator[/cyan] (ver. [magenta]{get_version()}[/magenta])[/bold]",
                         style="bold cyan"), (1, 2))
 
