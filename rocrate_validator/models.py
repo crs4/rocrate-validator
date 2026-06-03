@@ -200,7 +200,7 @@ class LevelCollection:
         try:
             return getattr(LevelCollection, name.upper())
         except AttributeError:
-            raise ValueError(f"Invalid RequirementLevel: {name}")
+            raise ValueError(f"Invalid RequirementLevel: {name}") from None
 
 
 @total_ordering
@@ -3337,7 +3337,7 @@ class ValidationContext:
             return self._data_graph
         except (HTTPError, FileNotFoundError) as e:
             logger.debug("Error loading data graph: %s", e)
-            raise ROCrateMetadataNotFoundError(str(self.rocrate_uri))
+            raise ROCrateMetadataNotFoundError(str(self.rocrate_uri)) from e
 
     @property
     def data_graph(self) -> Graph:

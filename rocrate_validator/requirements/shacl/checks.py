@@ -270,7 +270,7 @@ class SHACLCheck(RequirementCheck):
             )
             # The validation is postponed to the more specific profiles
             # so the check is not considered as failed.
-            raise SkipRequirementCheck(self, str(e))
+            raise SkipRequirementCheck(self, str(e)) from e
         except ROCrateMetadataNotFoundError as e:
             logger.debug(
                 "Unable to perform metadata validation due to missing metadata file: %s",
@@ -305,7 +305,7 @@ class SHACLCheck(RequirementCheck):
             )
             raise ROCrateMetadataNotFoundError(
                 "Unable to perform metadata validation due to one or more errors in the JSON-LD data file"
-            )
+            ) from e
 
         # Begin the timer
         start_time = timer()

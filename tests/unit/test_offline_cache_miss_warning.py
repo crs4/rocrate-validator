@@ -47,7 +47,7 @@ def test_find_offline_cache_miss_walks_context_chain():
         try:
             raise OfflineCacheMissError("https://example.org/y")
         except OfflineCacheMissError:
-            raise RuntimeError("wrapped via context")
+            raise RuntimeError("wrapped via context")  # noqa: B904
     except Exception as outer:
         found = find_offline_cache_miss(outer)
     assert isinstance(found, OfflineCacheMissError)

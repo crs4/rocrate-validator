@@ -148,7 +148,7 @@ class URI:
         except Exception as e:
             if logger.isEnabledFor(logging.DEBUG):
                 logger.debug(e)
-            raise ValueError("Invalid URI: %s" % uri)
+            raise ValueError("Invalid URI: %s" % uri) from e
 
     @property
     def uri(self) -> str:
@@ -316,7 +316,7 @@ def validate_rocrate_uri(uri: Union[str, Path, URI], silent: bool = False) -> bo
             logger.error(e)
             if logger.isEnabledFor(logging.DEBUG):
                 logger.exception(e)
-            raise errors.ROCrateInvalidURIError(uri)
+            raise errors.ROCrateInvalidURIError(uri) from e
     except Exception as e:
         if not silent:
             raise e

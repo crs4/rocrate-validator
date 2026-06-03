@@ -59,7 +59,7 @@ def validate_uri(ctx, param, value):
         except ROCrateInvalidURIError as e:
             if logger.isEnabledFor(logging.DEBUG):
                 logger.exception(e)
-            raise click.BadParameter(e.message, param=param)
+            raise click.BadParameter(e.message, param=param) from e
     return value
 
 
@@ -334,7 +334,7 @@ def validate(ctx,
             raise ValueError(
                 f"Invalid skip_checks value: {s}. "
                 "It must be a comma-separated list of Fully Qualified Check IDs."
-            )
+            ) from e
     logger.debug("Skip checks: %s", skip_checks_list)
 
     try:

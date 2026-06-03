@@ -900,7 +900,7 @@ class ROCrateLocalZip(ROCrate):
             return self._zipref.getinfo(str(path))
         except KeyError:
             logger.error("File not found in zip: %s", path)
-            raise FileNotFoundError(f"File not found in zip: {path}")
+            raise FileNotFoundError(f"File not found in zip: {path}") from None
 
     def has_descriptor(self) -> bool:
         """

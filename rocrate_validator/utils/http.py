@@ -127,7 +127,7 @@ class HttpRequester:
                         logger.debug(f"Setting cache_max_age to {cache_max_age}")
                         self.cache_max_age = int(cache_max_age)
                     except ValueError:
-                        raise TypeError("cache_max_age must be an integer")
+                        raise TypeError("cache_max_age must be an integer") from None
                     self.cache_path_prefix = cache_path
                     self.offline = bool(offline)
                     self.no_cache = bool(no_cache)
