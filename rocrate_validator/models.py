@@ -1166,6 +1166,7 @@ class Requirement(ABC):
                     logger.warning(
                         "Ignoring the check %s as it returned the value %r instead of a boolean",
                         check.name,
+                        check_result,
                     )
                     raise RuntimeError(f"Ignoring invalid result from check {check.name}")
                 # Aggregate the check result
