@@ -27,7 +27,7 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Iterable, List, Optional, Sequence
+from typing import TYPE_CHECKING, Any, Iterable, List, Optional, Sequence, cast
 
 from rocrate_validator import constants
 from rocrate_validator.utils import log as logging
@@ -80,7 +80,7 @@ def discover_profile_cacheable_urls(profile: "Profile") -> List[str]:
     urls: List[str] = []
     try:
         for row in graph.query(_CACHEABLE_URLS_SPARQL):
-            artifact = row.artifact
+            artifact = cast(Any, row).artifact
             if artifact is None:
                 continue
             value = str(artifact)

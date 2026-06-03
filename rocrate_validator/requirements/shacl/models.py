@@ -15,7 +15,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Optional, Union
+from typing import Optional, Union, cast
 
 from rdflib import Graph, Literal, Namespace, URIRef
 from rdflib.term import Node
@@ -34,9 +34,9 @@ logger = logging.getLogger(__name__)
 class SHACLNode:
 
     # define default values
-    _name: str = None
-    _description: str = None
-    severity: str = None
+    _name: Optional[str] = None
+    _description: Optional[str] = None
+    severity: Optional[str] = None
 
     def __init__(self, node: Node, graph: Graph, parent: Optional[SHACLNode] = None):
 
@@ -59,14 +59,14 @@ class SHACLNode:
         """Return the name of the shape"""
         if not self._name:
             self._name = self.node_name
-        return self._name or self._node.split("/")[-1]
+        return self._name or str(self._node).split("/")[-1]
 
     @name.setter
     def name(self, value: str):
         self._name = value
 
     @property
-    def description(self) -> str:
+    def description(self) -> Optional[str]:
         """Return the description of the shape"""
         return self._description
 
@@ -89,7 +89,8 @@ class SHACLNode:
     @property
     def node_name(self):
         """Return the name of the node"""
-        return self._node.split("#")[-1] if "#" in self.node else self._node.split("/")[-1]
+        node_str = str(self._node)
+        return node_str.split("#")[-1] if "#" in node_str else node_str.split("/")[-1]
 
     @property
     def graph(self):
@@ -162,7 +163,7 @@ class SHACLNode:
 
 class SHACLNodeCollection(SHACLNode):
 
-    def __init__(self, node: Node, graph: Graph, properties: list[PropertyShape] = None):
+    def __init__(self, node: Node, graph: Graph, properties: Optional[list[PropertyShape]] = None):
         super().__init__(node, graph)
         # store the properties
         self._properties = properties if properties else []
@@ -172,7 +173,7 @@ class SHACLNodeCollection(SHACLNode):
         """Return the properties of the shape"""
         return self._properties.copy()
 
-    def get_property(self, name) -> PropertyShape:
+    def get_property(self, name) -> Optional[PropertyShape]:
         """Return the property of the shape with the given name"""
         for prop in self._properties:
             if prop.name == name:
@@ -206,14 +207,14 @@ class PropertyGroup(SHACLNodeCollection):
 class PropertyShape(Shape):
 
     # define default values
-    _name: str = None
-    _short_name: str = None
-    _description: str = None
-    group: str = None
-    defaultValue: str = None
+    _name: Optional[str] = None
+    _short_name: Optional[str] = None
+    _description: Optional[str] = None
+    group: Optional[str] = None
+    defaultValue: Optional[str] = None
     order: int = 0
     # store the reference to the property group
-    _property_group: PropertyGroup = None
+    _property_group: Optional[PropertyGroup] = None
 
     def __init__(self,
                  node: Node,
@@ -232,10 +233,11 @@ class PropertyShape(Shape):
             shacl_ns = Namespace(SHACL_NS)
             path = self.graph.value(subject=self.node, predicate=shacl_ns.path)
             if path:
-                self._short_name = path.split("#")[-1] if "#" in path else path.split("/")[-1]
+                path_str = str(path)
+                self._short_name = path_str.split("#")[-1] if "#" in path_str else path_str.split("/")[-1]
                 if self.parent:
                     self._name = f"{self._short_name} of {self.parent.name}"
-        return self._name
+        return self._name or str(self._node).split("/")[-1]
 
     @name.setter
     def name(self, value: str):
@@ -272,10 +274,10 @@ class PropertyShape(Shape):
     @property
     def parent(self) -> Optional[Shape]:
         """Return the parent shape of the shape property"""
-        return self._parent
+        return cast(Optional[Shape], self._parent)
 
     @property
-    def propertyGroup(self) -> PropertyGroup:
+    def propertyGroup(self) -> Optional[PropertyGroup]:
         """Return the group of the shape property"""
         return self._property_group
 
@@ -305,7 +307,7 @@ class NodeShape(Shape, SHACLNodeCollection):
 class ShapesRegistry:
 
     def __init__(self):
-        self._shapes = {}
+        self._shapes: dict[str, Shape] = {}
         self._shapes_graph: Graph = Graph()
 
     def add_shape(self, shape: Shape):
@@ -360,17 +362,18 @@ class ShapesRegistry:
         """
         logger.debug(f"Loading shapes from: {shapes_path}")
         # load shapes (nodes and properties) from the shapes graph
-        shapes_list: ShapesList = ShapesList.load_from_file(shapes_path, publicID)
+        shapes_list: ShapesList = ShapesList.load_from_file(str(shapes_path), publicID)
         logger.debug(f"Shapes List: {shapes_list}")
 
         # append the partial shapes graph to the global shapes graph
         self._shapes_graph += shapes_list.shapes_graph
 
-        # list of instantiated shapes
-        shapes = []
+        # list of instantiated shapes (NodeShape/PropertyShape, plus PropertyGroups
+        # which are shape-like collections registered alongside the shapes)
+        shapes: list[Shape] = []
 
         # list of property groups
-        property_groups = {}
+        property_groups: dict[str, PropertyGroup] = {}
 
         # register Node Shapes
         for node_shape in shapes_list.node_shapes:
@@ -393,7 +396,7 @@ class ShapesRegistry:
                 group = __process_property_group__(property_groups, p_shape)
                 if group and group not in shapes:
                     grouped = True
-                    shapes.append(group)
+                    shapes.append(cast(Shape, group))
                 if not group:
                     ungrouped_properties.append(p_shape)
 
@@ -436,11 +439,13 @@ class ShapesRegistry:
         return instance
 
 
-def __process_property_group__(groups: dict[str, PropertyGroup], property_shape: PropertyShape) -> PropertyGroup:
+def __process_property_group__(
+    groups: dict[str, PropertyGroup], property_shape: PropertyShape
+) -> Optional[PropertyGroup]:
     group_name = property_shape.group
     if group_name:
         if group_name not in groups:
-            groups[group_name] = PropertyGroup(URIRef(property_shape.group), property_shape.graph)
+            groups[group_name] = PropertyGroup(URIRef(group_name), property_shape.graph)
         groups[group_name].add_property(property_shape)
         property_shape._property_group = groups[group_name]
         return groups[group_name]

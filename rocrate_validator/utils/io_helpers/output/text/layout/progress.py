@@ -13,13 +13,17 @@
 # limitations under the License.
 
 
-from typing import Optional
+from typing import Optional, Union
 
 from rich.progress import BarColumn, Progress, TextColumn, TimeElapsedColumn
 
 from rocrate_validator.utils import log as logging
 from rocrate_validator.events import Event, EventType, Subscriber
-from rocrate_validator.models import ValidationContext, ValidationStatistics
+from rocrate_validator.models import (ProfileValidationEvent,
+                                      RequirementCheckValidationEvent,
+                                      RequirementValidationEvent,
+                                      ValidationContext, ValidationEvent,
+                                      ValidationSettings, ValidationStatistics)
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -31,7 +35,8 @@ class ProgressMonitor(Subscriber):
     REQUIREMENT_VALIDATION = "Requirements"
     REQUIREMENT_CHECK_VALIDATION = "Requirements Checks"
 
-    def __init__(self, settings: dict, stats: Optional[ValidationStatistics] = None):
+    def __init__(self, settings: Union[dict, ValidationSettings],
+                 stats: Optional[ValidationStatistics] = None):
         self.__progress = Progress(
             TextColumn("[progress.description]{task.description}"),
             BarColumn(),

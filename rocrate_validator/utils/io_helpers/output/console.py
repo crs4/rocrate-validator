@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional
+from typing import Any, Optional
 
 from rich.console import Console as BaseConsole
 
@@ -27,14 +27,14 @@ class Console(BaseConsole):
     """Rich console that can be disabled."""
 
     def __init__(self, *args, disabled: bool = False, interactive: bool = True,
-                 formatters: dict[type, OutputFormatter] = None, **kwargs):
+                 formatters: Optional[dict[type, Any]] = None, **kwargs):
         force_jupyter = kwargs.pop("force_jupyter", None)
         if force_jupyter is None:
             force_jupyter = False if self.__jupyter_environment__() else None
         super().__init__(*args, force_jupyter=force_jupyter, **kwargs)
         self.disabled = disabled
         self.interactive = interactive
-        self._formatters = {}
+        self._formatters: dict[type, Any] = {}
         self._formatters_opts: dict[type, BaseOutputFormatter] = {}
         # Register provided formatters if any
         if formatters:
@@ -52,6 +52,7 @@ class Console(BaseConsole):
             for t, f in formatter.get_type_formatters().items():
                 self._formatters[t] = f
         else:
+            assert type_ is not None  # guaranteed by the check above
             self._formatters[type_] = formatter
 
     def __format_data__(self, obj, *args, **kwargs):

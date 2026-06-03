@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional, cast
 
 from rdflib import RDF
 
@@ -56,9 +56,9 @@ class SHACLRequirement(Requirement):
         assert self.shape is not None, "The shape cannot be None"
         assert self.shape.node is not None, "The shape node cannot be None"
         # assign a check to each property of the shape
-        checks = []
+        checks: list[RequirementCheck] = []
         # check if the shape has nested properties
-        has_properties = hasattr(self.shape, "properties") and len(self.shape.properties) > 0
+        has_properties = hasattr(self.shape, "properties") and len(cast(Any, self.shape).properties) > 0
         # create a check for the shape itself, hidden if the shape has nested properties
         checks.append(
             SHACLCheck(
@@ -71,7 +71,7 @@ class SHACLRequirement(Requirement):
         )
         # create a check for each property if the shape has nested properties
         if has_properties:
-            for prop in self.shape.properties:
+            for prop in cast(Any, self.shape).properties:
                 logger.debug("Creating check for property %s %s", prop.name, prop.description)
                 property_check = SHACLCheck(self, prop)
                 logger.debug("Property check %s: %s", property_check.name, property_check.description)
@@ -173,7 +173,7 @@ class SHACLRequirementLoader(RequirementLoader):
         assert file_path is not None, "The file path cannot be None"
         shapes: list[Shape] = self.shapes_registry.load_shapes(file_path, publicID)
         logger.debug("Loaded %s shapes: %s", len(shapes), shapes)
-        requirements = []
+        requirements: list[Requirement] = []
         for shape in shapes:
             if shape is not None and shape.level >= requirement_level:
                 requirements.append(SHACLRequirement(shape, profile, file_path))

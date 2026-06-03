@@ -16,9 +16,8 @@ from __future__ import annotations
 
 import threading
 import time
-from typing import Callable
+from typing import Any, Callable, Optional
 
-from requests_cache import Optional
 from rich.align import Align
 from rich.layout import Layout
 from rich.live import Live
@@ -31,7 +30,10 @@ from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.io_helpers.colors import get_severity_color
 from rocrate_validator.events import Event, EventType
 from rocrate_validator.utils.io_helpers.output.console import Console
-from rocrate_validator.models import (Severity, ValidationContext,
+from rocrate_validator.models import (ProfileValidationEvent,
+                                      RequirementCheckValidationEvent,
+                                      RequirementValidationEvent, Severity,
+                                      ValidationContext, ValidationEvent,
                                       ValidationResult, ValidationSettings,
                                       ValidationStatistics)
 from rocrate_validator.utils.uri import URI
@@ -54,15 +56,15 @@ class ValidationReportLayout(Layout):
         self.validation_settings = settings
         self.statistics = statistics
         self.profile_autodetected = profile_autodetected
-        self.result = None
-        self.__layout = None
-        self._validation_checks_progress = None
-        self.__progress_monitor = None
-        self.requirement_checks_container_layout = None
-        self.passed_checks = None
-        self.failed_checks = None
-        self.report_details_container = None
-        self.overall_result = None
+        self.result: Optional[ValidationResult] = None
+        self.__layout: Optional[Padding] = None
+        self._validation_checks_progress: Optional[Layout] = None
+        self.__progress_monitor: Optional[ProgressMonitor] = None
+        self.requirement_checks_container_layout: Optional[Layout] = None
+        self.passed_checks: Optional[Layout] = None
+        self.failed_checks: Optional[Layout] = None
+        self.report_details_container: Optional[Layout] = None
+        self.overall_result: Optional[Layout] = None
 
     @property
     def layout(self):
@@ -80,8 +82,7 @@ class ValidationReportLayout(Layout):
             self.__progress_monitor = ProgressMonitor(self.validation_settings, self.statistics)
         return self.__progress_monitor
 
-    def live(self, update_callable: callable) -> any:
-        assert update_callable, "Update callable must be provided"
+    def live(self, update_callable: Callable) -> Any:
         # Start live rendering
         result = None
         with Live(self.layout, console=self.console, refresh_per_second=10, transient=False):
@@ -200,7 +201,7 @@ class ValidationReportLayout(Layout):
             self.__show_overall_result__(event.validation_result)
             logger.debug("Validation ended with result: %s", event.validation_result)
 
-    def update_stats(self, profile_stats: ValidationStatistics = None):
+    def update_stats(self, profile_stats: Optional[ValidationStatistics] = None):
         assert profile_stats, "Profile stats must be provided"
         # self.profile_stats = profile_stats
         self.requirement_checks_by_severity_container_layout["required"].update(
@@ -267,7 +268,7 @@ class ValidationReportLayout(Layout):
             )
         )
 
-    def __show_overall_result__(self, result: ValidationResult):
+    def __show_overall_result__(self, result: Optional[ValidationResult]):
         assert result, "Validation result must be provided"
         self.result = result
         if result.passed():
@@ -306,10 +307,10 @@ class LiveReportLayout(ValidationReportLayout):
             refresh_per_second: Number of refreshes per second
             transient: Whether the display is transient
         """
-        super().__init__(console, validation_settings, result, profile_autodetected)
+        super().__init__(console, validation_settings, result, profile_autodetected)  # type: ignore[arg-type]
         self.refresh_per_second = refresh_per_second
         self.transient = transient
-        self._live = None
+        self._live: Optional[Live] = None
 
     def __enter__(self):
         """Enter the context and start live rendering."""

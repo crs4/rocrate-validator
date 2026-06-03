@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import hashlib
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, Any, Optional, Union, cast
 
 from rdflib import RDF, BNode, Graph, Namespace
 from rdflib.term import Node
@@ -78,14 +78,14 @@ def inject_attributes(obj: object, node_graph: Graph, node: Node, exclude: Optio
     skip_properties = ["node"] if exclude is None else exclude + ["node"]
     triples = node_graph.triples((node, None, None))
     for node, p, o in triples:
-        predicate_as_string = p.toPython()
+        predicate_as_string = cast(Any, p).toPython()
         # logger.debug(f"Processing {predicate_as_string} of property graph {node}")
         if predicate_as_string.startswith(SHACL_NS):
             property_name = predicate_as_string.split("#")[-1]
             if property_name in skip_properties:
                 continue
             try:
-                setattr(obj, property_name, o.toPython())
+                setattr(obj, property_name, cast(Any, o).toPython())
             except AttributeError as e:
                 logger.error(f"Error injecting attribute {property_name}: {e}")
             # logger.debug("Injected attribute %s: %s", property_name, o.toPython())
@@ -139,7 +139,7 @@ def compute_key(g: Graph, s: Node) -> str:
     if isinstance(s, BNode):
         return compute_hash(g, s)
     else:
-        return s.toPython()
+        return cast(Any, s).toPython()
 
 
 class ShapesList:
@@ -210,7 +210,7 @@ class ShapesList:
         return property_graph
 
     @classmethod
-    def load_from_file(cls, file_path: str, publicID: str = None) -> ShapesList:
+    def load_from_file(cls, file_path: str, publicID: Optional[str] = None) -> ShapesList:
         """
         Load the shapes from the file
 
@@ -261,7 +261,7 @@ def __extract_related_triples__(graph, subject_node, processed_nodes=None):
     return related_triples
 
 
-def load_shapes_from_file(file_path: str, publicID: str = None) -> ShapesList:
+def load_shapes_from_file(file_path: str, publicID: Optional[str] = None) -> ShapesList:
     try:
         # Check the file path is not None
         assert file_path is not None, "The file path cannot be None"

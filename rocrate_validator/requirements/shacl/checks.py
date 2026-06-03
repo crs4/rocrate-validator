@@ -14,7 +14,7 @@
 
 import json
 from timeit import default_timer as timer
-from typing import Optional
+from typing import Any, Optional, cast
 
 from rdflib import RDF, BNode, Literal, Namespace
 
@@ -27,11 +27,12 @@ from rocrate_validator.models import (
     RequirementCheck,
     RequirementCheckValidationEvent,
     RequirementLevel,
+    Severity,
     SkipRequirementCheck,
     SourceSnippet,
     ValidationContext,
 )
-from rocrate_validator.requirements.shacl.models import Shape, ShapesRegistry
+from rocrate_validator.requirements.shacl.models import SHACLNode, Shape, ShapesRegistry
 from rocrate_validator.requirements.shacl.utils import build_node_subgraph, make_uris_relative, resolve_parent_shape
 from rocrate_validator.requirements.shacl.validator import (
     SHACLValidationAlreadyProcessed,
@@ -55,7 +56,7 @@ class SHACLCheck(RequirementCheck):
     """
 
     # Map shape to requirement check instances
-    __instances__ = {}
+    __instances__: dict[int, "SHACLCheck"] = {}
 
     def __init__(
         self,
@@ -64,7 +65,7 @@ class SHACLCheck(RequirementCheck):
         name: Optional[str] = None,
         root: bool = False,
         hidden: Optional[bool] = None,
-        level: Optional[bool] = None,
+        level: Optional[RequirementLevel] = None,
     ) -> None:
         self._shape = shape
         self._root = root
@@ -167,13 +168,13 @@ class SHACLCheck(RequirementCheck):
         return max(declared_levels, key=lambda lvl: lvl.severity.value)
 
     @property
-    def level(self) -> str:
+    def level(self) -> RequirementLevel:
         if not self._level:
             self._level = self.__compute_requirement_level__()
         return self._level
 
     @property
-    def severity(self) -> str:
+    def severity(self) -> Severity:
         return self.level.severity
 
     def get_source_snippet(self) -> Optional[SourceSnippet]:
@@ -184,9 +185,9 @@ class SHACLCheck(RequirementCheck):
             # build a subgraph containing all the triples related to the shape
             subgraph = build_node_subgraph(graph, self._shape.node)
             # identify the owner of the shape
-            owner = self._shape
+            owner: SHACLNode = self._shape
             while getattr(owner, "parent", None) is not None:
-                owner = owner.parent
+                owner = cast(SHACLNode, owner.parent)
             # if the shape is not a root shape, include the triples linking the owner to the shape
             if owner is not self._shape:
                 shacl = Namespace(SHACL_NS)
@@ -340,10 +341,11 @@ class SHACLCheck(RequirementCheck):
         start_time = timer()
         # if the validation fails, process the failed checks
         failed_requirements_checks = set()
-        failed_requirements_checks_violations: dict[str, SHACLViolation] = {}
+        failed_requirements_checks_violations: dict[str, list[SHACLViolation]] = {}
         failed_requirement_checks_notified = [
             _.check.identifier
-            for _ in shacl_context.result.get_issues(min_severity=shacl_context.settings.requirement_severity)
+            for _ in shacl_context.result.get_issues(
+                min_severity=cast(Severity, shacl_context.settings.requirement_severity))
         ]
 
         logger.debug("Parsing Validation with result: %s", shacl_result)
@@ -405,9 +407,10 @@ class SHACLCheck(RequirementCheck):
             ):
                 continue
             for violation in failed_requirements_checks_violations[requirementCheck.identifier]:
-                violating_entity = make_uris_relative(violation.focusNode.toPython(), shacl_context.publicID)
+                violating_entity = make_uris_relative(cast(Any, violation.focusNode).toPython(),
+                                                      shacl_context.publicID)
                 violating_property = violation.resultPath.toPython() if violation.resultPath else None
-                violation_message = violation.get_result_message(shacl_context.rocrate_uri)
+                violation_message = violation.get_result_message(str(shacl_context.rocrate_uri))
                 registered_check_issues = shacl_context.result.get_issues_by_check(requirementCheck)
                 skip_requirement_check = False
                 # check if the violation is already registered
@@ -429,7 +432,7 @@ class SHACLCheck(RequirementCheck):
                 # if the check is not to be skipped, add the issue to the context
                 if not skip_requirement_check:
                     c = shacl_context.result.add_issue(
-                        message=violation.get_result_message(shacl_context.rocrate_uri),
+                        message=violation.get_result_message(str(shacl_context.rocrate_uri)),
                         check=requirementCheck,
                         violatingProperty=violating_property,
                         violatingEntity=violating_entity,

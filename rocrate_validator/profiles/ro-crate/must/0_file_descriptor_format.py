@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import re
-from typing import Any
+from typing import Any, Optional
 from urllib.parse import urljoin
 
 from rocrate_validator.models import ValidationContext
@@ -298,7 +298,7 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
             return result
 
         try:
-            fail_fast = context.settings.abort_on_first
+            fail_fast = bool(context.settings.abort_on_first)
             json_dict = context.ro_crate.metadata.as_dict()
             result = True
             for entity in json_dict["@graph"]:
@@ -377,9 +377,9 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
             raise RuntimeError("The context is not a dictionary", self)
         return set(jsonLD_ctx.keys())
 
-    def __check_entity_keys__(self, entity: dict,
+    def __check_entity_keys__(self, entity: Any,
                               context_keys: set,
-                              unexpected_keys: dict[str, int] = None) -> dict[str, int]:
+                              unexpected_keys: Optional[dict[str, int]] = None) -> dict[str, int]:
         """ Check if the entity is in the correct format """
 
         def add_unexpected_key(k: str, u_keys: dict) -> None:

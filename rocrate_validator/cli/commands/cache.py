@@ -355,11 +355,11 @@ def cache_warm(
             loaded_profiles = list(Profile.all())
             if requested_ids:
                 selected = []
-                missing = []
+                missing: list[str] = []
                 # (requested, resolved, all candidates) for tokens that matched
                 # more than one versioned profile — we warn so the user knows
                 # which one was picked and how to opt for a different version.
-                ambiguous_fallbacks = []
+                ambiguous_fallbacks: list[tuple[str, Profile, list[Profile]]] = []
                 for ident in requested_ids:
                     profile = Profile.get_by_identifier(ident)
                     if profile is None:

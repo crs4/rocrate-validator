@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-from typing import Optional, Union
+from typing import Any, Optional, Union, cast
 
 import pyshacl
 from pyshacl.pytypes import GraphLike
@@ -46,7 +46,7 @@ class SHACLValidationSkip(Exception):
 
 class SHACLValidationAlreadyProcessed(Exception):
 
-    def __init__(self, profile_identifier: str, result: SHACLValidationResult) -> None:
+    def __init__(self, profile_identifier: str, result: Optional[bool]) -> None:
         super().__init__(f"Profile {profile_identifier} has already been processed")
         self.result = result
 
@@ -95,7 +95,7 @@ class SHACLValidationContext(ValidationContext):
         super().__init__(context.validator, context.settings)
         self._base_context: ValidationContext = context
         # reference to the ontology path
-        self._ontology_path: Path = None
+        self._ontology_path: Optional[Path] = None
 
         # reference to the contextual ShapeRegistry instance
         self._shapes_registry: ShapesRegistry = ShapesRegistry()
@@ -104,10 +104,10 @@ class SHACLValidationContext(ValidationContext):
         self._processed_profiles: dict[str, bool] = {}
 
         # reference to the current validation profile
-        self._current_validation_profile: Profile = None
+        self._current_validation_profile: Optional[Profile] = None
 
-        # store the validation result of the current profile
-        self._validation_result: SHACLValidationResult = None
+        # store the validation result of the current profile (a pass/fail boolean)
+        self._validation_result: Optional[bool] = None
 
         # reference to the contextual ontology graph
         self._ontology_graph: Graph = Graph()
@@ -134,8 +134,8 @@ class SHACLValidationContext(ValidationContext):
                         # logger.debug("Processing check: %s", check)
                         if check.overridden and check.requirement.profile != self.target_profile:
                             # logger.debug("Overridden check: %s", check)
-                            profile_shapes_graph -= check.shape.graph
-                            profile_shapes.pop(check.shape.key)
+                            profile_shapes_graph -= cast(Any, check).shape.graph
+                            profile_shapes.pop(cast(Any, check).shape.key)
 
             # add the shapes to the registry
             self._shapes_registry.extend(profile_shapes, profile_shapes_graph)
@@ -154,15 +154,15 @@ class SHACLValidationContext(ValidationContext):
         return self._base_context
 
     @property
-    def current_validation_profile(self) -> Profile:
+    def current_validation_profile(self) -> Optional[Profile]:
         return self._current_validation_profile
 
     @property
-    def current_validation_result(self) -> SHACLValidationResult:
+    def current_validation_result(self) -> Optional[bool]:
         return self._validation_result
 
     @current_validation_result.setter
-    def current_validation_result(self, result: ValidationResult):
+    def current_validation_result(self, result: bool):
         assert self._current_validation_profile is not None, "Invalid state: current profile not set"
         # store the validation result
         self._validation_result = result
@@ -207,9 +207,9 @@ class SHACLValidationContext(ValidationContext):
             return None
 
     def __load_ontology_graph__(self, profile_path: Path,
-                                ontology_filename: Optional[str] = DEFAULT_ONTOLOGY_FILE) -> Graph:
+                                ontology_filename: str = DEFAULT_ONTOLOGY_FILE) -> Optional[Graph]:
         # load the graph of ontologies
-        ontology_graph = None
+        ontology_graph: Optional[Graph] = None
         ontology_path = self.__get_ontology_path__(profile_path, ontology_filename)
         if os.path.exists(ontology_path):
             logger.debug("Loading ontologies: %s", ontology_path)
@@ -246,7 +246,7 @@ class SHACLValidationContext(ValidationContext):
 
 class SHACLViolation:
 
-    def __init__(self, result: ValidationResult, violation_node: Node, graph: Graph) -> None:
+    def __init__(self, result: "SHACLValidationResult", violation_node: Node, graph: Graph) -> None:
         # check the input
         assert result is not None, "Invalid result"
         assert isinstance(violation_node, Node), "Invalid violation node"
@@ -258,14 +258,14 @@ class SHACLViolation:
         self._graph = graph
 
         # initialize the properties for lazy loading
-        self._focus_node = None
-        self._result_message = None
-        self._result_path = None
-        self._severity = None
-        self._source_constraint_component = None
-        self._source_shape = None
-        self._source_shape_node = None
-        self._value = None
+        self._focus_node: Optional[Node] = None
+        self._result_message: Optional[str] = None
+        self._result_path: Optional[Node] = None
+        self._severity: Optional[Severity] = None
+        self._source_constraint_component: Optional[Node] = None
+        self._source_shape: Optional[Node] = None
+        self._source_shape_node: Optional[Node] = None
+        self._value: Optional[Node] = None
 
     @property
     def node(self) -> Node:
@@ -299,7 +299,7 @@ class SHACLViolation:
             severity = self.graph.value(self._violation_node, URIRef(f"{SHACL_NS}resultSeverity"))
             assert severity is not None, f"Unable to get severity from violation node {self._violation_node}"
             # we need to map the SHACL severity term to our Severity enum values
-            self._severity = map_severity(severity.toPython())
+            self._severity = map_severity(cast(Any, severity).toPython())
         return self._severity
 
     @property
@@ -315,7 +315,7 @@ class SHACLViolation:
         if not self._result_message:
             message = self.graph.value(self._violation_node, URIRef(f"{SHACL_NS}resultMessage"))
             assert message is not None, f"Unable to get result message from violation node {self._violation_node}"
-            self._result_message = make_uris_relative(message.toPython(), ro_crate_path)
+            self._result_message = make_uris_relative(cast(Any, message).toPython(), ro_crate_path)
         return self._result_message
 
     @property
@@ -324,13 +324,13 @@ class SHACLViolation:
             self._source_shape_node = self.graph.value(self._violation_node, URIRef(f"{SHACL_NS}sourceShape"))
             assert self._source_shape_node is not None, \
                 f"Unable to get source shape node from violation node {self._violation_node}"
-        return self._source_shape_node
+        return cast(Union[URIRef, BNode], self._source_shape_node)
 
 
 class SHACLValidationResult:
 
     def __init__(self, results_graph: Graph,
-                 results_text: str = None) -> None:
+                 results_text: Optional[str] = None) -> None:
         # validate the results graph input
         assert results_graph is not None, "Invalid graph"
         assert isinstance(results_graph, Graph), "Invalid graph type"
@@ -366,7 +366,7 @@ class SHACLValidationResult:
         return self._violations
 
     @property
-    def text(self) -> str:
+    def text(self) -> Optional[str]:
         return self._text
 
 

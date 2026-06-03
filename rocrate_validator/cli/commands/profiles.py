@@ -15,7 +15,7 @@
 import re
 import sys
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 from rich.align import Align
 from rich.markdown import Markdown
@@ -61,7 +61,7 @@ logger = logging.getLogger(__name__)
 )
 @click.pass_context
 def profiles(ctx, profiles_path: Path = DEFAULT_PROFILES_PATH,
-             extra_profiles_path: Path = None):
+             extra_profiles_path: Optional[Path] = None):
     """
     [magenta]rocrate-validator:[/magenta] Manage profiles
     """
@@ -125,7 +125,7 @@ def list_profiles(ctx, no_paging: bool = False):  # , profiles_path: Path = DEFA
         # Add data to the table
         for profile in profiles:
             # Count requirements by severity
-            checks_info = {}
+            checks_info: dict[str, dict[str, Any]] = {}
             for level in levels:
                 checks_info[level.severity.name] = {
                     "count": 0,
@@ -182,7 +182,7 @@ def describe_profile(ctx,
                      profile_identifier: str = DEFAULT_PROFILE_IDENTIFIER,
                      check_identifier: Optional[str] = None,
                      profiles_path: Path = DEFAULT_PROFILES_PATH,
-                     extra_profiles_path: Path = None,
+                     extra_profiles_path: Optional[Path] = None,
                      verbose: bool = False, no_paging: bool = False):
     """
     Show a profile, or — when CHECK_IDENTIFIER is given — show a single requirement check.

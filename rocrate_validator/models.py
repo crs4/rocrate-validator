@@ -1407,7 +1407,7 @@ class RequirementCheck(ABC):
     def __init__(
         self,
         requirement: Requirement,
-        name: str,
+        name: Optional[str],
         level: Optional[RequirementLevel] = LevelCollection.REQUIRED,
         description: Optional[str] = None,
         hidden: Optional[bool] = None,
@@ -2753,12 +2753,12 @@ class ValidationSettings:
         return self._rocrate_uri
 
     @rocrate_uri.setter
-    def rocrate_uri(self, value: URI):
+    def rocrate_uri(self, value: Union[str, Path, URI]):
         """
         Set the RO-Crate URI.
 
         :param value: The RO-Crate URI.
-        :type value: URI
+        :type value: Union[str, Path, URI]
         """
         if not value:
             raise ValueError("Invalid RO-Crate URI")

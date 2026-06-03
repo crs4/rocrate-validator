@@ -153,8 +153,8 @@ class Subscriber(ABC):
 
 class Publisher:
     def __init__(self, avoid_duplicate_notifications: bool = False):
-        self.__subscribers = set()
-        self.__notified_events = set()
+        self.__subscribers: set["Subscriber"] = set()
+        self.__notified_events: set["Event"] = set()
         self.__avoid_duplicate_notifications = avoid_duplicate_notifications
 
     @property

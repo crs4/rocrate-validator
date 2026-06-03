@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import json
+from typing import Any, Optional
 
 from rich.console import ConsoleOptions, RenderResult
 
@@ -35,12 +36,12 @@ def format_validation_result(data: ValidationResult,
                                      console=console, console_options=console_options)
 
 
-def format_validation_results(data: ValidationResult,
-                              console: Console = None,
-                              console_options: ConsoleOptions = None) -> str:
+def format_validation_results(data: dict[str, ValidationResult],
+                              console: Optional[Console] = None,
+                              console_options: Optional[ConsoleOptions] = None) -> str:
 
     # Initialize an empty JSON output
-    json_output = {
+    json_output: dict[str, Any] = {
         "meta": {
             "generated_by": "rocrate-validator",
             "version": get_version(),

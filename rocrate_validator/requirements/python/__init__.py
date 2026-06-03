@@ -38,7 +38,7 @@ class PyFunctionCheck(RequirementCheck):
                  name: str,
                  check_function: Callable[[RequirementCheck, ValidationContext], bool],
                  description: Optional[str] = None,
-                 level: Optional[LevelCollection] = LevelCollection.REQUIRED,
+                 level: Optional[RequirementLevel] = LevelCollection.REQUIRED,
                  deactivated: bool = False):
         """
         check_function: a function that accepts an instance of PyFunctionCheck and a ValidationContext.
