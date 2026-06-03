@@ -430,7 +430,7 @@ class ROCrateMetadata:
         if not self._graph:
             # if the graph is not cached, load it
             self._graph = Graph(base=publicID or self.ro_crate.uri)
-            self._graph.parse(data=self.as_json, format="json-ld")
+            self._graph.parse(data=self.as_json(), format="json-ld")
         return self._graph
 
     def __str__(self) -> str:
