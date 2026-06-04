@@ -32,11 +32,15 @@ __module__ = sys.modules[__name__]
 
 def get_log_format(level: int):
     """Get the log format based on the log level"""
-    log_format = '[%(log_color)s%(asctime)s%(reset)s] %(levelname)s in %(yellow)s%(module)s%(reset)s: '\
+    log_format = (
+        '[%(log_color)s%(asctime)s%(reset)s] %(levelname)s in %(yellow)s%(module)s%(reset)s: '
         '%(light_white)s%(message)s%(reset)s'
+    )
     if level == DEBUG:
-        log_format = '%(log_color)s%(levelname)s%(reset)s:%(yellow)s%(name)s:%(module)s::%(funcName)s%(reset)s '\
+        log_format = (
+            '%(log_color)s%(levelname)s%(reset)s:%(yellow)s%(name)s:%(module)s::%(funcName)s%(reset)s '
             '@ %(light_green)sline: %(lineno)s%(reset)s - %(light_black)s%(message)s%(reset)s'
+        )
     return log_format
 
 
