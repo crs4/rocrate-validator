@@ -213,7 +213,7 @@ class SHACLValidationContext(ValidationContext):
         # load the graph of ontologies
         ontology_graph: Optional[Graph] = None
         ontology_path = self.__get_ontology_path__(profile_path, ontology_filename)
-        if os.path.exists(ontology_path):
+        if ontology_path.exists():
             logger.debug("Loading ontologies: %s", ontology_path)
             ontology_graph = Graph()
 

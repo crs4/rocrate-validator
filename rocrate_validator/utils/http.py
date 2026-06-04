@@ -20,6 +20,7 @@ import os
 import random
 import string
 import threading
+from pathlib import Path
 from typing import Any, Optional
 
 import requests
@@ -220,7 +221,7 @@ class HttpRequester:
             try:
                 logger.debug(f"Deleting cache directory: {self.session.cache.cache_name}")
                 cache_path = f"{self.session.cache.cache_name}.sqlite"
-                if os.path.exists(cache_path):
+                if Path(cache_path).exists():
                     os.remove(cache_path)
                     logger.debug(f"Deleted cache directory: {cache_path}")
             except Exception as e:
@@ -342,7 +343,7 @@ class HttpRequester:
                 info["entries"] = sum(1 for _ in cache.urls())
             except Exception as e:
                 logger.debug("Unable to count cache entries: %s", e)
-        if info["path"] and os.path.exists(info["path"]):
+        if info["path"] and Path(info["path"]).exists():
             with contextlib.suppress(OSError):
                 info["size_bytes"] = os.path.getsize(info["path"])
         return info
