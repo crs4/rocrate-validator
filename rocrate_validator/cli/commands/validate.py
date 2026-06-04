@@ -19,9 +19,9 @@ from contextlib import nullcontext
 from pathlib import Path
 from typing import Optional, Union
 
+import rich_click as click
 from rich.padding import Padding
 from rich.rule import Rule
-from rich_click import click
 
 from rocrate_validator import constants, services
 from rocrate_validator.cli.commands.errors import handle_error
