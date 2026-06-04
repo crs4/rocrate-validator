@@ -14,10 +14,10 @@
 
 from __future__ import annotations
 
-import os
 import sys
 from contextlib import nullcontext
-from typing import TYPE_CHECKING, Optional, Union
+from pathlib import Path
+from typing import Optional, Union
 
 from rich.padding import Padding
 from rich.rule import Rule
@@ -37,9 +37,6 @@ from rocrate_validator.utils.io_helpers.output.text import TextOutputFormatter
 from rocrate_validator.utils.io_helpers.output.text.layout.report import LiveTextProgressLayout, get_app_header_rule
 from rocrate_validator.utils.paths import get_profiles_path
 from rocrate_validator.utils.uri import validate_rocrate_uri
-
-if TYPE_CHECKING:
-    from pathlib import Path
 
 # from rich.markdown import Markdown
 # from rich.table import Table
@@ -275,8 +272,8 @@ def validate(ctx,  # noqa: PLR0912, PLR0915
     if not interactive or sys.platform == "win32":
         enable_pager = False
     # Log the input parameters for debugging
-    logger.debug("profiles_path: %s", os.path.abspath(profiles_path))
-    logger.debug("extra_profiles_path: %s", os.path.abspath(extra_profiles_path) if extra_profiles_path else None)
+    logger.debug("profiles_path: %s", Path(profiles_path).resolve())
+    logger.debug("extra_profiles_path: %s", Path(extra_profiles_path).resolve() if extra_profiles_path else None)
     logger.debug("profile_identifier: %s", profile_identifier)
     logger.debug("requirement_severity: %s", requirement_severity)
     logger.debug("requirement_severity_only: %s", requirement_severity_only)
@@ -288,7 +285,7 @@ def validate(ctx,  # noqa: PLR0912, PLR0915
 
     # Cache settings
     logger.debug("cache_max_age: %s", cache_max_age)
-    logger.debug("cache_path: %s", os.path.abspath(cache_path) if cache_path else None)
+    logger.debug("cache_path: %s", Path(cache_path).resolve() if cache_path else None)
     logger.debug("no_cache: %s", no_cache)
     logger.debug("offline: %s", offline)
 
@@ -301,7 +298,7 @@ def validate(ctx,  # noqa: PLR0912, PLR0915
         )
 
     if rocrate_uri:
-        logger.debug("rocrate_path: %s", os.path.abspath(rocrate_uri))
+        logger.debug("rocrate_path: %s", Path(rocrate_uri).resolve())
 
     # Warn the user when a remote RO-Crate is about to be validated in offline mode:
     # the cached copy (if any) will be used, and it may be out of sync with the remote.
