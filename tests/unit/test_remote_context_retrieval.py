@@ -126,15 +126,17 @@ class TestGetRemoteContextLogic:
             assert result == {"relative": "resolved"}
             assert call_count[0] == 2  # Ensure both requests were made
             # Check that the first request was made to the original context URI
-            assert call_args_list[0][0] == "https://example.com/base/context.json", \
-                f"The first request should be made to the original context URI " \
-                f"{'https://example.com/base/context.json'}, " \
+            assert call_args_list[0][0] == "https://example.com/base/context.json", (
+                f"The first request should be made to the original context URI "
+                f"{'https://example.com/base/context.json'}, "
                 f"but got {call_args_list[0][0]}"
+            )
             # Check that the second request was made to the resolved alternate URL
-            assert call_args_list[1][0] == "https://example.com/base/alternate-context.json", \
-                f"The second request should be made to the resolved alternate URL " \
-                f"{'https://example.com/base/alternate-context.json'}, " \
+            assert call_args_list[1][0] == "https://example.com/base/alternate-context.json", (
+                f"The second request should be made to the resolved alternate URL "
+                f"{'https://example.com/base/alternate-context.json'}, "
                 f"but got {call_args_list[1][0]}"
+            )
         finally:
             fd_format.HttpRequester = original_requester
 

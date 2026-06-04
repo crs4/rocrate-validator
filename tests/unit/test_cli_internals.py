@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 from pathlib import Path
 
 from rocrate_validator.models import (
@@ -76,7 +75,7 @@ def test_compute_stats(fake_profiles_path):
     assert len(stats["requirements"]) > 0, "There should be at least one requirement"
 
     # extract the first and unique requirement
-    requirement = list(requirements)[0]
+    requirement = next(iter(requirements))
 
     # check the number of checks in the requirement
     assert len(requirement.get_checks()) == len(requirement.get_checks_by_level(LevelCollection.get("REQUIRED")))

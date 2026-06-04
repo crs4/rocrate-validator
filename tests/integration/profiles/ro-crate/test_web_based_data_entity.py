@@ -22,7 +22,7 @@ from tests.shared import do_entity_test
 logger = logging.getLogger(__name__)
 
 
-#  Global set up the paths
+# Global set up the paths
 paths = InvalidDataEntity()
 
 

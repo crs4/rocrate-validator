@@ -172,10 +172,11 @@ def test_rocrate_uri_local_folder_invalid():
     # Use verbose mode to print the error message
     with pytest.raises(ROCrateInvalidURIError) as excinfo:
         validate_rocrate_uri(uri, silent=False)
-    assert str(
-        excinfo.value) == f"\"{uri}\" is not a valid RO-Crate URI. "\
-        "It MUST be either a local path to the RO-Crate root directory "\
+    assert str(excinfo.value) == (
+        f"\"{uri}\" is not a valid RO-Crate URI. "
+        "It MUST be either a local path to the RO-Crate root directory "
         "or a local/remote RO-Crate ZIP file."
+    )
 
 
 def test_rocrate_uri_local_zip_valid():
@@ -192,10 +193,11 @@ def test_rocrate_uri_local_zip_invalid():
     # Use verbose mode to print the error message
     with pytest.raises(ROCrateInvalidURIError) as excinfo:
         validate_rocrate_uri(uri, silent=False)
-    assert str(
-        excinfo.value) == f"\"{uri}\" is not a valid RO-Crate URI. "\
-        "It MUST be either a local path to the RO-Crate root directory "\
+    assert str(excinfo.value) == (
+        f"\"{uri}\" is not a valid RO-Crate URI. "
+        "It MUST be either a local path to the RO-Crate root directory "
         "or a local/remote RO-Crate ZIP file."
+    )
 
 
 def test_rocrate_uri_remote_valid():

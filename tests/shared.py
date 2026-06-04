@@ -167,9 +167,6 @@ def do_entity_test(
         logger.debug("Requirement severity: %s", requirement_severity)
         logger.debug("Checks to skip: %s", skip_checks)
 
-        # set abort_on_first to False
-        abort_on_first = abort_on_first
-
         # validate RO-Crate
         result: models.ValidationResult = services.validate(
             models.ValidationSettings(
@@ -203,7 +200,7 @@ def do_entity_test(
         # check that the expected requirements are triggered
         for expected_triggered_requirement in expected_triggered_requirements:
             if expected_triggered_requirement not in failed_requirements:
-                assert False, (
+                raise AssertionError(
                     f"The expected requirement "
                     f'"{expected_triggered_requirement}" was not found in the failed requirements'
                 )
@@ -216,7 +213,9 @@ def do_entity_test(
         logger.debug("Expected issues: %s", expected_triggered_issues)
         for expected_issue in expected_triggered_issues:
             if not any(expected_issue in issue for issue in detected_issues):  # support partial match
-                assert False, f'The expected issue "{expected_issue}" was not found in the detected issues'
+                raise AssertionError(
+                    f'The expected issue "{expected_issue}" was not found in the detected issues'
+                )
     except Exception as e:
         if logger.isEnabledFor(logging.DEBUG):
             logger.exception(e)

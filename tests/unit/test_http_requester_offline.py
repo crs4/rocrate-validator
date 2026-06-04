@@ -45,8 +45,7 @@ def mock_network(monkeypatch):
 
     def fake_send(self, request, **kwargs):
         raw = _build_urllib3_response()
-        response = self.build_response(request, raw)
-        return response
+        return self.build_response(request, raw)
 
     monkeypatch.setattr(HTTPAdapter, "send", fake_send)
 
@@ -194,7 +193,7 @@ class _RecordCollector:
         self.records.clear()
         self.handler = _logging.Handler()
         self.handler.setLevel(_logging.DEBUG)
-        self.handler.emit = lambda record: self.records.append(record)  # type: ignore[assignment]
+        self.handler.emit = self.records.append  # type: ignore[assignment]
         # Force initialization of the underlying logger via the proxy.
         http_module.logger.warning  # noqa: B018
         self._target = http_module.logger._instance

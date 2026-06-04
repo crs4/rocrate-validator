@@ -27,7 +27,6 @@ and includes a NodeShape with a sh:sparql constraint.
 
 import json
 import logging
-import os
 import tempfile
 from pathlib import Path
 

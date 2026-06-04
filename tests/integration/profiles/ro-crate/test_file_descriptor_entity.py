@@ -23,7 +23,7 @@ from tests.shared import do_entity_test
 # set up logging
 logger = logging.getLogger(__name__)
 
-#  Global set up the paths
+# Global set up the paths
 paths = InvalidFileDescriptorEntity()
 
 

@@ -36,7 +36,7 @@ def test_level_ordering():
     assert may < should
     assert should > may
     assert should != may
-    assert may == may
+    assert RequirementLevel('MAY', Severity.OPTIONAL) == may
     assert may != 1
     assert may != RequirementLevel('OPTIONAL', Severity.OPTIONAL)
     with pytest.raises(TypeError):

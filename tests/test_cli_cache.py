@@ -23,6 +23,7 @@ CLI tests for the ``rocrate-validator cache`` subcommands:
 from __future__ import annotations
 
 import io
+import itertools
 import json
 
 import pytest
@@ -438,7 +439,7 @@ def test_list_default_sort_is_created_desc(cli_runner, mock_network, tmp_cache):
     created = [e["created_at"] for e in json.loads(result.output)]
     # Each entry has a timestamp (mocked response goes through requests_cache);
     # the sequence must be monotonically non-increasing.
-    assert all(a >= b for a, b in zip(created, created[1:]))
+    assert all(a >= b for a, b in itertools.pairwise(created))
 
 
 def test_list_invalid_order_is_rejected(cli_runner, tmp_cache):

@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import logging
-import os
 from pathlib import Path
 
 import pytest
@@ -29,7 +28,7 @@ from tests.ro_crates import InvalidFileDescriptorEntity, ValidROC
 # set up logging
 logger = logging.getLogger(__name__)
 
-#  Global set up the paths
+# Global set up the paths
 paths = InvalidFileDescriptorEntity()
 
 
@@ -173,12 +172,8 @@ def test_versioned_profiles_loading(fake_versioned_profiles_path: str):
 
 def test_conflicting_versioned_profiles_loading(fake_conflicting_versioned_profiles_path: str):
     """Test the loaded profiles from the validator context."""
-    with pytest.raises(ProfileSpecificationError) as excinfo:
-        logger.debug("result: %r", excinfo)
-        # Load the profiles
+    with pytest.raises(ProfileSpecificationError, match="Inconsistent versions found"):
         Profile.load_profiles(profiles_path=fake_conflicting_versioned_profiles_path)
-    # Check that the conflicting versions are found
-    assert "Inconsistent versions found: {'3.2.2', '3.2.1', '2.3'}"
 
 
 def test_loaded_valid_profile_with_inheritance_from_validator_context(fake_profiles_path: str):
@@ -349,11 +344,11 @@ def test_profile_parents(check_overriding_profiles_path: str):
         if profile.token == "a":
             assert len(profile.parents) == 0, "The number of parents should be 0"
 
-        elif profile.token == "b" or profile.token == "c":
+        elif profile.token in {"b", "c"}:
             assert len(profile.parents) == 1, "The number of parents should be 1"
             assert profile.parents[0].token == "a", "The parent should be 'a'"
 
-        elif profile.token == "d" or profile.token == "e":
+        elif profile.token in {"d", "e"}:
             assert len(profile.parents) == 1, "The number of parents should be 1"
             assert profile.parents[0].token == "b", "The parent should be 'b'"
 

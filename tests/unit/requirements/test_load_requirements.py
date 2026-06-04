@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import logging
-import os
+from pathlib import Path
 
 from rocrate_validator.constants import DEFAULT_PROFILE_IDENTIFIER
 from rocrate_validator.models import LevelCollection, Profile, Severity
@@ -22,8 +22,6 @@ from tests.ro_crates import InvalidFileDescriptorEntity
 
 # set up logging
 logger = logging.getLogger(__name__)
-
-from pathlib import Path
 
 #  Global set up the paths
 paths = InvalidFileDescriptorEntity()

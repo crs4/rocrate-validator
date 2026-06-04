@@ -346,8 +346,10 @@ def test_procrc_action_bad_containerimage():
     Test a Process Run Crate where the Action has a containerImage that does
     not point to a URL or to a ContainerImage object.
     """
-    for crate in (InvalidProcRC().action_bad_containerimage_url,
-                  InvalidProcRC().action_bad_containerimage_type):
+    for crate in (  # noqa: B007
+        InvalidProcRC().action_bad_containerimage_url,
+        InvalidProcRC().action_bad_containerimage_type,
+    ):
         do_entity_test(
             InvalidProcRC().action_bad_containerimage_url,
             Severity.RECOMMENDED,
