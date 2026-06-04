@@ -16,12 +16,14 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-from typing import Any, Optional, Union, cast
+from typing import TYPE_CHECKING, Any, Optional, Union, cast
 
 import pyshacl
-from pyshacl.pytypes import GraphLike
 from rdflib import BNode, Graph
 from rdflib.term import Node, URIRef
+
+if TYPE_CHECKING:
+    from pyshacl.pytypes import GraphLike
 
 from rocrate_validator.constants import (
     DEFAULT_ONTOLOGY_FILE,

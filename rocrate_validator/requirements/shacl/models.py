@@ -15,10 +15,12 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Optional, Union, cast
+from typing import TYPE_CHECKING, Optional, Union, cast
 
 from rdflib import Graph, Literal, Namespace, URIRef
-from rdflib.term import Node
+
+if TYPE_CHECKING:
+    from rdflib.term import Node
 
 from rocrate_validator.constants import SHACL_NS
 from rocrate_validator.models import LevelCollection, RequirementLevel, Severity

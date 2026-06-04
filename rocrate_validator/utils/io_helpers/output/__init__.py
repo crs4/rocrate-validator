@@ -17,9 +17,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Optional, Protocol, cast
 
-from rich.console import ConsoleOptions, RenderResult
-
 from rocrate_validator.utils import log as logging
+
+if TYPE_CHECKING:
+    from rich.console import ConsoleOptions, RenderResult
 
 if TYPE_CHECKING:
     # The formatters render to the application's Console subclass (which adds
