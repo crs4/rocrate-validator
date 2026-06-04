@@ -219,7 +219,7 @@ class SHACLValidationContext(ValidationContext):
             # 1. First, try to get @base from the data graph metadata
             # 2. Fall back to the default publicID (RO-Crate URI)
             data_graph_base = self.__get_data_graph_base__()
-            public_id = data_graph_base if data_graph_base else self.publicID
+            public_id = data_graph_base or self.publicID
 
             if data_graph_base:
                 logger.debug("Using @base from data graph metadata: %s", data_graph_base)
@@ -471,7 +471,7 @@ class SHACLValidator:
             data_graph,
             shacl_graph=self.shapes_graph,
             ont_graph=self.ont_graph,
-            inference=inference if inference else "owlrl" if self.ont_graph else None,
+            inference=inference or ("owlrl" if self.ont_graph else None),
             inplace=inplace,
             abort_on_first=abort_on_first,
             allow_infos=allow_infos,

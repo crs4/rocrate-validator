@@ -166,7 +166,7 @@ class URI:
     @property
     def fragment(self) -> Optional[str]:
         fragment = self._parse_result.fragment
-        return fragment if fragment else None
+        return fragment or None
 
     def get_scheme(self) -> str:
         return self._parse_result.scheme

@@ -3262,7 +3262,7 @@ class ValidationContext:
         extra_profiles_path = self.settings.extra_profiles_path
         if isinstance(extra_profiles_path, str):
             extra_profiles_path = Path(extra_profiles_path)
-        return extra_profiles_path if extra_profiles_path else None
+        return extra_profiles_path or None
 
     @property
     def requirement_severity(self) -> Severity:

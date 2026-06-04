@@ -38,7 +38,7 @@ class SHACLRequirement(Requirement):
     def __init__(self, shape: Shape, profile: Profile, path: Path):
         self._shape = shape
         super().__init__(
-            profile, shape.name if shape.name else "", shape.description if shape.description else "", path
+            profile, shape.name or "", shape.description or "", path
         )
         # init checks
         self._checks = self.__init_checks__()

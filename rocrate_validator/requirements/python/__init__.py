@@ -215,7 +215,7 @@ def check(name: Optional[str] = None,
     :rtype: Callable
     """
     def decorator(func):
-        check_name = name if name else func.__name__
+        check_name = name or func.__name__
         sig = inspect.signature(func)
         if len(sig.parameters) != EXPECTED_CHECK_PARAM_COUNT:
             raise RuntimeError(f"Invalid check {check_name}. Checks are expected to "

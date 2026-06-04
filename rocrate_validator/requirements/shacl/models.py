@@ -163,7 +163,7 @@ class SHACLNodeCollection(SHACLNode):
     def __init__(self, node: Node, graph: Graph, properties: Optional[list[PropertyShape]] = None):
         super().__init__(node, graph)
         # store the properties
-        self._properties = properties if properties else []
+        self._properties = properties or []
 
     @property
     def properties(self) -> list[PropertyShape]:
