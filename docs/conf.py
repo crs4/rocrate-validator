@@ -22,17 +22,18 @@
 
 import os
 import sys
+from pathlib import Path
 
 from rocrate_validator import __version__
 
 # update PYTHONPATH
-sys.path.insert(0, os.path.abspath('.'))
-sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, str(Path.cwd()))
+sys.path.insert(0, str(Path("..").resolve()))
 
 # Set project metadata
-project = 'rocrate-validator'
-copyright = '2024-2026, CRS4'
-author = 'Marco Enrico Piras, Luca Pireddu, Simone Leo'
+project = "rocrate-validator"
+copyright = "2024-2026, CRS4"
+author = "Marco Enrico Piras, Luca Pireddu, Simone Leo"
 release = __version__
 
 github_url = "https://github.com/crs4/rocrate-validator"
@@ -53,19 +54,19 @@ github_url = "https://github.com/crs4/rocrate-validator"
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.doctest',
-    'sphinx.ext.coverage',
-    'sphinx.ext.mathjax',
-    'sphinx.ext.viewcode',
-    'sphinx.ext.autosummary',
-    'nbsphinx',
-    'myst_parser',
-    'sphinx.ext.mathjax',
-    'enum_tools.autoenum',
-    'sphinx.ext.intersphinx',
-    'sphinx.ext.autosectionlabel',
-    'sphinx_copybutton',
+    "sphinx.ext.autodoc",
+    "sphinx.ext.doctest",
+    "sphinx.ext.coverage",
+    "sphinx.ext.mathjax",
+    "sphinx.ext.viewcode",
+    "sphinx.ext.autosummary",
+    "nbsphinx",
+    "myst_parser",
+    "sphinx.ext.mathjax",
+    "enum_tools.autoenum",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.autosectionlabel",
+    "sphinx_copybutton",
 ]
 
 # Only auto-generate section labels for the top two heading levels: deeper
@@ -78,20 +79,23 @@ autosectionlabel_maxdepth = 2
 # below H1 (myst.header) and use GitHub-relative anchor links that span pages
 # (myst.xref_missing). These are expected when including it here.
 suppress_warnings = [
-    'myst.header',
-    'myst.xref_missing',
+    "myst.header",
+    "myst.xref_missing",
 ]
 
-templates_path = ['_templates']
-# exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'experiments', 'ontologies', 'tests', 'logs', 'examples', 'debug']
+templates_path = ["_templates"]
+# exclude_patterns = [
+#     "_build", "Thumbs.db", ".DS_Store", "experiments",
+#     "ontologies", "tests", "logs", "examples", "debug",
+# ]
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', '**.ipynb_checkpoints']
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "**.ipynb_checkpoints"]
 
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = "sphinx"
 
 # A list of ignored prefixes for module index sorting.
 # modindex_common_prefix = []
@@ -107,9 +111,9 @@ todo_include_todos = False
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'sphinx_rtd_theme'
+html_theme = "sphinx_rtd_theme"
 
-autodoc_member_order = 'bysource'
+autodoc_member_order = "bysource"
 
 autosummary_generate = True
 
