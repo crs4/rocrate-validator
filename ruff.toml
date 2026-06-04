@@ -1,0 +1,63 @@
+# Copyright (c) 2024-2026 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+########################################################################
+# **Ruff** configuration for rocrate-validator.
+########################################################################
+# This file is read by both the Ruff CLI and the VS Code Ruff extension;
+# a config file takes precedence over the editor's `ruff.*` settings,
+# so it is the single source of truth for what Ruff reports.
+
+# Set the maximum line length to 120 characters,
+# which is a common convention in Python projects.
+line-length = 120
+
+# Extend the default set of rules with additional rules from various plugins.
+[lint]
+extend-select = [
+    "F",    # Pyflakes – runtime logic errors
+    "E",    # PyCodeStyle errors – PEP 8
+    "W",    # PyCodeStyle warnings
+    "I",    # isort – import ordering
+    "UP",   # pyupgrade – modern syntax
+    "B",    # flake8-bugbear – common bugs and bad practices
+    "C4",   # flake8-comprehensions – proper use of list/dict/set
+    "SIM",  # flake8-simplify – idiomatic simplifications
+    "RET",  # flake8-return – return statement practices
+    "TID",  # tidy imports
+    "TC",   # TYPE_CHECKING import enforcement
+    "PTH",  # pathlib over os.path
+    "FA",   # from __future__ import annotations
+    "ISC",  # implicit string concatenation
+    "FURB", # refurb – more idiomatic Python patterns
+    "RUF",  # Ruff-specific rules
+    "PL",   # pylint – PLC/PLE/PLR/PLW
+]
+
+# Rules intentionally disabled.
+ignore = [
+    "UP045",   # non-pep604-annotation-optional: keep `Optional[X]` instead of `X | None` (project supports 3.9)
+    "UP007",   # non-pep604-annotation: same rationale as UP045
+    "PLR0904", # too-many-public-methods: pre-existing project style
+    "PLR0913", # too-many-arguments: pre-existing project style
+    "PLR0917", # too-many-positional-arguments: pre-existing project style
+    "PLW3201", # bad-dunder-method-name: project uses `__method__` convention; renaming is not viable
+]
+
+[lint.per-file-ignores]
+# Allow magic value comparisons and local imports in test files.
+"tests/**" = [
+    "PLR2004", # magic-value-comparison: tests use literal values in assertions
+    "PLC0415", # import-outside-top-level: tests use local imports for mocking
+]

@@ -75,7 +75,7 @@ typos = "^1.41.0"
 [tool.poetry.group.dev.dependencies]
 pylint = "^3.1.0"
 ipykernel = "^6.29.3"
-
+ruff = "^0.15.15"
 
 [tool.poetry.group.test.dependencies]
 pytest-cov = "^5.0.0"
