@@ -83,8 +83,6 @@ def test_validate_skip_checks_option(cli_runner: CliRunner):
     called_kwargs = {}
 
     def mock_validate(*args, **kwargs):
-        nonlocal called_args
-
         logger.warning(f"Mock validate called with args: {args}, kwargs: {kwargs}")
 
         called_args.extend(args)
