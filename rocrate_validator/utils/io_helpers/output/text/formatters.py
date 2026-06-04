@@ -24,8 +24,8 @@ from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.io_helpers.colors import get_severity_color
 from rocrate_validator.utils.io_helpers.output.text.layout.report import ValidationReportLayout
 
-from .. import OutputFormatter
-from ..console import Console
+from rocrate_validator.utils.io_helpers.output import OutputFormatter
+from rocrate_validator.utils.io_helpers.output.console import Console
 
 # set up logging
 logger = logging.getLogger(__name__)

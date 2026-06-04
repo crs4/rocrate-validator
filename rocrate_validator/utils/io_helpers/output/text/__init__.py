@@ -21,8 +21,8 @@ from rich.console import ConsoleOptions, RenderResult
 from rocrate_validator.models import ValidationResult, ValidationStatistics
 from rocrate_validator.utils import log as logging
 
-from .. import BaseOutputFormatter
-from ..console import Console
+from rocrate_validator.utils.io_helpers.output import BaseOutputFormatter
+from rocrate_validator.utils.io_helpers.output.console import Console
 from .formatters import ValidationResultTextOutputFormatter, ValidationStatisticsTextOutputFormatter
 
 # set up logging
