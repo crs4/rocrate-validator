@@ -222,7 +222,7 @@ class HttpRequester:
                 logger.debug(f"Deleting cache directory: {self.session.cache.cache_name}")
                 cache_path = f"{self.session.cache.cache_name}.sqlite"
                 if Path(cache_path).exists():
-                    os.remove(cache_path)
+                    Path(cache_path).unlink()
                     logger.debug(f"Deleted cache directory: {cache_path}")
             except Exception as e:
                 logger.error(f"Error deleting cache directory: {e}")
