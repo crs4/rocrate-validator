@@ -83,7 +83,10 @@ class SHACLRequirement(Requirement):
 
     @property
     def hidden(self) -> bool:
-        return bool(self.shape.node is not None and (self.shape.node, RDF.type, VALIDATOR_NS.HiddenShape) in self.shape.graph)
+        return bool(
+            self.shape.node is not None
+            and (self.shape.node, RDF.type, VALIDATOR_NS.HiddenShape) in self.shape.graph
+        )
 
     @classmethod
     def finalize(cls, context: ValidationContext) -> None:
