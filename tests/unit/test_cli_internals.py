@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+from pathlib import Path
 
 from rocrate_validator.models import (
     DEFAULT_PROFILES_PATH,
@@ -42,7 +43,7 @@ def test_compute_stats(fake_profiles_path):
 
     profiles_path = settings.profiles_path or DEFAULT_PROFILES_PATH
     logger.debug("The profiles path: %r", profiles_path)
-    assert os.path.exists(profiles_path)
+    assert Path(profiles_path).exists()
     profiles = Profile.load_profiles(profiles_path)
     # The number of profiles should be greater than 0
     assert len(profiles) > 0

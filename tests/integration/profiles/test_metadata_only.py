@@ -68,7 +68,7 @@ def test_valid_ro_crates_from_metadata_dict(valid_roc_path):
     metadata_dict = None
     # Load the metadata dict from the RO-Crate
     if not isinstance(valid_roc_path, str):
-        with open(valid_roc_path / "ro-crate-metadata.json", encoding="utf-8") as f:
+        with (valid_roc_path / "ro-crate-metadata.json").open(encoding="utf-8") as f:
             metadata_dict = json.load(f)
         assert metadata_dict is not None, "Failed to load metadata dict"
         assert isinstance(metadata_dict, dict), "Metadata dict is not a dictionary"

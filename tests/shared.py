@@ -96,7 +96,7 @@ def _prepare_temp_rocrate(
 ) -> Path:
     temp_rocrate_path = Path(tempfile.TemporaryDirectory().name)
     shutil.copytree(rocrate_path, temp_rocrate_path)
-    with open(temp_rocrate_path / "ro-crate-metadata.json", encoding="utf-8") as f:
+    with (temp_rocrate_path / "ro-crate-metadata.json").open(encoding="utf-8") as f:
         rocrate = json.load(f)
     if rocrate_entity_patch is not None:
         for key, value in rocrate_entity_patch.items():
@@ -104,7 +104,7 @@ def _prepare_temp_rocrate(
                 if entity["@id"] == key:
                     entity.update(value)
                     break
-        with open(temp_rocrate_path / "ro-crate-metadata.json", "w", encoding="utf-8") as f:
+        with (temp_rocrate_path / "ro-crate-metadata.json").open("w", encoding="utf-8") as f:
             json.dump(rocrate, f)
     if rocrate_entity_mod_sparql is not None:
         rocrate_graph = load_graph_and_preserve_relative_ids(rocrate)

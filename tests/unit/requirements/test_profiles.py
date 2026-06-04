@@ -14,6 +14,7 @@
 
 import logging
 import os
+from pathlib import Path
 
 import pytest
 from rdflib import Literal, Namespace
@@ -35,7 +36,7 @@ paths = InvalidFileDescriptorEntity()
 def test_order_of_loaded_profiles(profiles_path: str):
     """Test the order of the loaded profiles."""
     logger.debug("The profiles path: %r", profiles_path)
-    assert os.path.exists(profiles_path)
+    assert Path(profiles_path).exists()
     profiles = Profile.load_profiles(profiles_path=profiles_path)
     # The number of profiles should be greater than 0
     assert len(profiles) > 0
@@ -46,7 +47,7 @@ def test_order_of_loaded_profiles(profiles_path: str):
 
     # The order of the profiles should be the same as the order of the directories
     # in the profiles directory
-    profile_directories = sorted(os.listdir(profiles_path))
+    profile_directories = sorted(p.name for p in Path(profiles_path).iterdir())
     logger.debug("The profile directories: %r", profile_directories)
     assert profile_names == profile_directories
 
@@ -330,7 +331,7 @@ def test_zero_shape_target_profile_triggers_pyshacl_run(fake_profiles_path: str)
 def test_profile_parents(check_overriding_profiles_path: str):
     """Test the order of the loaded profiles."""
     logger.debug("The profiles path: %r", check_overriding_profiles_path)
-    assert os.path.exists(check_overriding_profiles_path)
+    assert Path(check_overriding_profiles_path).exists()
     # Load the profiles
     profiles = Profile.load_profiles(profiles_path=check_overriding_profiles_path)
     # The number of profiles should be greater than 0
@@ -373,7 +374,7 @@ def test_profile_parents(check_overriding_profiles_path: str):
 def test_profile_check_overriding(check_overriding_profiles_path: str):
     """Test the order of the loaded profiles."""
     logger.debug("The profiles path: %r", check_overriding_profiles_path)
-    assert os.path.exists(check_overriding_profiles_path)
+    assert Path(check_overriding_profiles_path).exists()
     # Load the profiles
     profiles = Profile.load_profiles(profiles_path=check_overriding_profiles_path)
     # The number of profiles should be greater than 0

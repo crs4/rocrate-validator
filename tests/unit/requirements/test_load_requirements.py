@@ -23,7 +23,9 @@ from tests.ro_crates import InvalidFileDescriptorEntity
 # set up logging
 logger = logging.getLogger(__name__)
 
-#  Global set up the paths
+from pathlib import Path
+
+#  Global set up the paths
 paths = InvalidFileDescriptorEntity()
 
 
@@ -91,7 +93,7 @@ def test_requirements_loading(profiles_requirement_loading: str):
 def test_order_of_loaded_profile_requirements(profiles_path: str):
     """Test the order of the loaded profiles."""
     logger.debug("The profiles path: %r", profiles_path)
-    assert os.path.exists(profiles_path)
+    assert Path(profiles_path).exists()
     profiles = Profile.load_profiles(profiles_path=profiles_path, severity=Severity.RECOMMENDED)
     # The number of profiles should be greater than 0
     assert len(profiles) > 0

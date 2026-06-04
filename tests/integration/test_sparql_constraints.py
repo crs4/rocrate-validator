@@ -42,9 +42,9 @@ from tests.conftest import TEST_DATA_PATH
 
 logger = logging.getLogger(__name__)
 
-CURRENT_PATH = os.path.dirname(os.path.realpath(__file__))
+CURRENT_PATH = str(Path(__file__).resolve().parent)
 
-SPARQL_TEST_PROFILES_PATH = os.path.join(TEST_DATA_PATH, "profiles", "sparql_test")
+SPARQL_TEST_PROFILES_PATH = str(Path(TEST_DATA_PATH) / "profiles" / "sparql_test")
 
 
 @pytest.fixture
@@ -80,7 +80,7 @@ def sparql_test_rocrate():
             ],
         }
 
-        with open(rocrate_dir / "ro-crate-metadata.json", "w", encoding="utf-8") as f:
+        with (rocrate_dir / "ro-crate-metadata.json").open("w", encoding="utf-8") as f:
             json.dump(metadata, f, indent=2)
 
         yield rocrate_dir
@@ -89,9 +89,7 @@ def sparql_test_rocrate():
 def test_sparql_profile_shape_loaded_correctly(sparql_test_profiles_path):
     """Test that the sparql-test profile loads the test shape with SPARQL constraint."""
     registry = ShapesRegistry()
-    shape_file = os.path.join(
-        sparql_test_profiles_path, "must", "agent_project_intersection.ttl"
-    )
+    shape_file = str(Path(sparql_test_profiles_path) / "must" / "agent_project_intersection.ttl")
 
     shapes = registry.load_shapes(shape_file)
 
@@ -161,9 +159,10 @@ def test_resolve_parent_shape_with_sparql_bnode():
     profiles_path = "rocrate_validator/profiles/ro-crate/must"
 
     # Load shapes from profile
-    for filename in os.listdir(profiles_path):
-        if filename.endswith(".ttl"):
-            registry.load_shapes(os.path.join(profiles_path, filename))
+    for filename in Path(profiles_path).iterdir():
+        name = filename.name
+        if name.endswith(".ttl"):
+            registry.load_shapes(str(Path(profiles_path) / name))
 
     g = Graph()
 

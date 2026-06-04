@@ -215,7 +215,7 @@ def test_valid_crate_metadata_dict_with_metadata_only():
     logger.debug("Validating a local RO-Crate in metadata-only mode: %s", crate_path)
 
     # Load the metadata dict from the RO-Crate
-    with open(crate_path / "ro-crate-metadata.json", encoding="utf-8") as f:
+    with (crate_path / "ro-crate-metadata.json").open(encoding="utf-8") as f:
         metadata_dict = json.loads(f.read())
 
     # Define shared settings object

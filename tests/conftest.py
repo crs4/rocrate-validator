@@ -15,6 +15,7 @@
 # calculate the absolute path of the rocrate-validator package
 # and add it to the system path
 import os
+from pathlib import Path
 
 import pytest
 from pytest import fixture
@@ -30,13 +31,13 @@ logging.basicConfig(
     }
 )
 
-CURRENT_PATH = os.path.dirname(os.path.realpath(__file__))
+CURRENT_PATH = str(Path(__file__).resolve().parent)
 
 # test data paths
-TEST_DATA_PATH = os.path.abspath(os.path.join(CURRENT_PATH, "data"))
+TEST_DATA_PATH = str(Path(CURRENT_PATH) / "data")
 
 # profiles paths
-PROFILES_PATH = os.path.abspath(f"{CURRENT_PATH}/../rocrate_validator/profiles")
+PROFILES_PATH = str(Path(f"{CURRENT_PATH}/../rocrate_validator/profiles").resolve())
 
 # Dynamically update the SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER
 rocrate_profile = services.get_profile("ro-crate")
@@ -175,22 +176,22 @@ def graph_books_path():
 
 @fixture
 def ro_crate_profile_path(profiles_path):
-    return os.path.join(profiles_path, "ro-crate")
+    return str(Path(profiles_path) / "ro-crate")
 
 
 @fixture
 def ro_crate_profile_must_path(ro_crate_profile_path):
-    return os.path.join(ro_crate_profile_path, "must")
+    return str(Path(ro_crate_profile_path) / "must")
 
 
 @fixture
 def ro_crate_profile_should_path(ro_crate_profile_path):
-    return os.path.join(ro_crate_profile_path, "should")
+    return str(Path(ro_crate_profile_path) / "should")
 
 
 @fixture
 def ro_crate_profile_may_path(ro_crate_profile_path):
-    return os.path.join(ro_crate_profile_path, "may")
+    return str(Path(ro_crate_profile_path) / "may")
 
 
 @fixture(params=[
