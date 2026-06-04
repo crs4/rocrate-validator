@@ -14,12 +14,13 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 from typing import TYPE_CHECKING, Optional, Union
 
 if TYPE_CHECKING:
     # Imported only for type-checking to avoid a circular import:
     # rocrate_validator.utils.uri imports this module at runtime.
+    from pathlib import Path
+
     from rocrate_validator.utils.uri import URI
 
 
