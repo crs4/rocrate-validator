@@ -117,7 +117,7 @@ def list_matching_file_paths(
 
     # iterate through the directory and subdirectories
     for root, _, files in os.walk(directory):
-        file_paths.extend(os.path.join(root, f) for f in files if f.endswith(extension))
+        file_paths.extend(str(Path(root) / f) for f in files if f.endswith(extension))
     return file_paths
 
 
