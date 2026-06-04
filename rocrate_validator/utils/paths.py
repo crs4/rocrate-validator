@@ -19,7 +19,7 @@ from rocrate_validator import constants, errors
 from rocrate_validator.utils import log as logging
 
 # current directory
-CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
+CURRENT_DIR = str(Path(__file__).resolve().parent)
 
 
 # set up logging

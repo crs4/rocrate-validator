@@ -48,7 +48,7 @@ def get_classes_from_file(
     logger.debug("Module: %r", module_name)
 
     # Add the directory containing the file to the system path
-    sys.path.insert(0, os.path.dirname(file_path))
+    sys.path.insert(0, str(file_path.parent))
 
     # Import the module
     module = import_module(module_name)
@@ -103,7 +103,7 @@ def get_requirement_class_by_name(requirement_name: str) -> type:
     # convert the module name to a path
     module_path = module_name.replace(".", "/")
     # add the path to the system path
-    sys.path.insert(0, os.path.dirname(module_path))
+    sys.path.insert(0, str(Path(module_path).parent))
 
     # Import the module
     module = import_module(module_name)
