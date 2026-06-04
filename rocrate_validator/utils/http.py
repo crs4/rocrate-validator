@@ -345,7 +345,7 @@ class HttpRequester:
                 logger.debug("Unable to count cache entries: %s", e)
         if info["path"] and Path(info["path"]).exists():
             with contextlib.suppress(OSError):
-                info["size_bytes"] = os.path.getsize(info["path"])
+                info["size_bytes"] = Path(info["path"]).stat().st_size
         return info
 
     @classmethod
