@@ -73,9 +73,9 @@ enum-tools = ">=0.12,<0.13"
 typos = "^1.41.0"
 
 [tool.poetry.group.dev.dependencies]
-pyproject-flake8 = "^6.1.0"
 pylint = "^3.1.0"
 ipykernel = "^6.29.3"
+flake8 = "^7.3.0"
 
 [tool.poetry.group.test.dependencies]
 pytest-cov = "^5.0.0"
