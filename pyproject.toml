@@ -75,7 +75,7 @@ typos = "^1.41.0"
 [tool.poetry.group.dev.dependencies]
 pylint = "^3.1.0"
 ipykernel = "^6.29.3"
-flake8 = "^7.3.0"
+
 
 [tool.poetry.group.test.dependencies]
 pytest-cov = "^5.0.0"
@@ -90,9 +90,6 @@ sphinx-toolbox = "^3.8.1"
 myst-parser = "^4.0.0"
 sphinx-rtd-theme = "^3.0.2"
 sphinx-copybutton = "^0.5.2"
-
-[tool.flake8]
-max-line-length = 120
 
 [build-system]
 requires = ["poetry-core"]
