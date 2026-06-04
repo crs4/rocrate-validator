@@ -513,7 +513,7 @@ class Profile:
         """
         if not self._description:
             if self.path and self.readme_file_path.exists():
-                with open(self.readme_file_path, encoding="utf-8") as f:
+                with self.readme_file_path.open(encoding="utf-8") as f:
                     self._description = f.read()
             else:
                 self._description = self.comment
@@ -2615,7 +2615,7 @@ class ValidationResult:
         """
         result = json.dumps(self.to_dict(), indent=4, cls=CustomEncoder)
         if path:
-            with open(path, "w", encoding="utf-8") as f:
+            with path.open("w", encoding="utf-8") as f:
                 f.write(result)
         return result
 

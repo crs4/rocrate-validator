@@ -177,7 +177,7 @@ def __initialise_validator__(  # noqa: PLR0915
                     raise FileNotFoundError(
                         f"Failed to download remote RO-Crate '{rocrate_path.uri}' (status {r.status_code})."
                     )
-                with open(tmp_file.name, "wb") as f:
+                with Path(tmp_file.name).open("wb") as f:
                     shutil.copyfileobj(r.raw, f)
             logger.debug("RO-Crate downloaded to temporary file: %s", tmp_file.name)
             # continue with the validation process by extracting the RO-Crate and validating it

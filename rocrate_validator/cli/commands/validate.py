@@ -508,7 +508,7 @@ def validate(ctx,  # noqa: PLR0912, PLR0915
                 if output_file and output_format == "text":
                     if interactive:
                         console.print(f"\n{' '*2}📝 [bold]Writing validation results to file[/bold]{'.'*4} ", end="")
-                    with open(output_file, "w", encoding="utf-8") if output_file else sys.stdout as f:
+                    with output_file.open("w", encoding="utf-8") if output_file else sys.stdout as f:
                         out = Console(color_system=None, width=output_line_width, height=31, file=f)
                         if output_format == "text":
                             out.register_formatter(TextOutputFormatter())
@@ -553,7 +553,7 @@ def validate(ctx,  # noqa: PLR0912, PLR0915
                     console.print(f"\n{' '*2}📋 [bold]The validation report in JSON format: [/bold]\n")
 
             # Generate the JSON output and write it to the specified output file or to stdout
-            with open(output_file, "w", encoding="utf-8") if output_file else nullcontext(sys.stdout) as f:
+            with output_file.open("w", encoding="utf-8") if output_file else nullcontext(sys.stdout) as f:
                 out = Console(width=output_line_width, file=f)
                 out.register_formatter(JSONOutputFormatter())
                 out.print(results)
