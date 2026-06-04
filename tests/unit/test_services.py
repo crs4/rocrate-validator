@@ -17,11 +17,11 @@ import shutil
 import tempfile
 from pathlib import Path
 
-from rocrate_validator.utils import log as logging
 from rocrate_validator.models import ValidationSettings
 from rocrate_validator.rocrate import ROCrateMetadata
 from rocrate_validator.services import detect_profiles, get_profiles, validate
-from tests.ro_crates import InvalidMultiProfileROC, ValidROC, InvalidFileDescriptorEntity
+from rocrate_validator.utils import log as logging
+from tests.ro_crates import InvalidFileDescriptorEntity, InvalidMultiProfileROC, ValidROC
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -215,7 +215,7 @@ def test_valid_crate_metadata_dict_with_metadata_only():
     logger.debug("Validating a local RO-Crate in metadata-only mode: %s", crate_path)
 
     # Load the metadata dict from the RO-Crate
-    with open(crate_path / "ro-crate-metadata.json", "r", encoding="utf-8") as f:
+    with open(crate_path / "ro-crate-metadata.json", encoding="utf-8") as f:
         metadata_dict = json.loads(f.read())
 
     # Define shared settings object

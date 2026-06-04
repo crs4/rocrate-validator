@@ -19,9 +19,7 @@ from rdflib import BNode, Graph, Namespace, URIRef
 from rocrate_validator.constants import SHACL_NS
 from rocrate_validator.models import LevelCollection
 from rocrate_validator.requirements.shacl.checks import SHACLCheck
-from rocrate_validator.requirements.shacl.models import (NodeShape,
-                                                         PropertyShape, Shape,
-                                                         ShapesRegistry)
+from rocrate_validator.requirements.shacl.models import NodeShape, PropertyShape, Shape, ShapesRegistry
 from rocrate_validator.requirements.shacl.utils import resolve_parent_shape
 
 logger = logging.getLogger(__name__)

@@ -15,7 +15,7 @@
 import logging
 
 from rocrate_validator.models import Severity
-from tests.ro_crates import ValidROC, InvalidProcRC
+from tests.ro_crates import InvalidProcRC, ValidROC
 from tests.shared import do_entity_test
 
 # set up logging

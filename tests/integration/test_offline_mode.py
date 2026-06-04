@@ -24,8 +24,7 @@ from click.testing import CliRunner
 
 from rocrate_validator.cli.main import cli
 from rocrate_validator.models import ValidationSettings
-from rocrate_validator.utils.http import (OFFLINE_CACHE_MISS_STATUS,
-                                          HttpRequester)
+from rocrate_validator.utils.http import OFFLINE_CACHE_MISS_STATUS, HttpRequester
 from tests.conftest import SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER
 from tests.ro_crates import ValidROC
 

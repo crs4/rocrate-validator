@@ -23,8 +23,7 @@ import pytest
 import urllib3
 
 from rocrate_validator.utils import http as http_module
-from rocrate_validator.utils.http import (OFFLINE_CACHE_MISS_STATUS,
-                                          HttpRequester)
+from rocrate_validator.utils.http import OFFLINE_CACHE_MISS_STATUS, HttpRequester
 
 
 def _build_urllib3_response(body: bytes = b'{"ok": true}',

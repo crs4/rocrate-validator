@@ -14,9 +14,14 @@
 
 import os
 
+from rocrate_validator.models import (
+    DEFAULT_PROFILES_PATH,
+    LevelCollection,
+    Profile,
+    ValidationSettings,
+    ValidationStatistics,
+)
 from rocrate_validator.utils import log as logging
-from rocrate_validator.models import (DEFAULT_PROFILES_PATH, LevelCollection,
-                                      Profile, ValidationSettings, ValidationStatistics)
 
 # TODO: move to models section
 

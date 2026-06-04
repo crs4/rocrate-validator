@@ -23,8 +23,11 @@ import urllib3
 
 from rocrate_validator.models import Profile
 from rocrate_validator.utils.cache_warmup import (
-    auto_warm_up_for_settings, discover_cacheable_urls_from_profiles,
-    discover_profile_cacheable_urls, warm_up_urls)
+    auto_warm_up_for_settings,
+    discover_cacheable_urls_from_profiles,
+    discover_profile_cacheable_urls,
+    warm_up_urls,
+)
 from rocrate_validator.utils.http import HttpRequester
 from rocrate_validator.utils.paths import get_profiles_path
 

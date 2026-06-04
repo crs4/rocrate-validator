@@ -15,7 +15,7 @@
 import logging
 
 from rocrate_validator.models import Severity
-from tests.ro_crates import WROCNoLicense, WROCMainEntity
+from tests.ro_crates import WROCMainEntity, WROCNoLicense
 from tests.shared import do_entity_test
 
 logger = logging.getLogger(__name__)

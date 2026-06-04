@@ -20,11 +20,10 @@ from click.testing import CliRunner
 from pytest import fixture
 
 from rocrate_validator import services
+from rocrate_validator.cli.main import cli
 from rocrate_validator.requirements.python import PyFunctionCheck
 from rocrate_validator.requirements.shacl.checks import SHACLCheck
-
 from rocrate_validator.utils import log as logging
-from rocrate_validator.cli.main import cli
 from rocrate_validator.utils.versioning import get_version
 from tests.conftest import SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER
 from tests.ro_crates import InvalidFileDescriptor, ValidROC
@@ -84,7 +83,7 @@ def test_validate_skip_checks_option(cli_runner: CliRunner):
     called_kwargs = {}
 
     def mock_validate(*args, **kwargs):
-        nonlocal called_args  # noqa: F824
+        nonlocal called_args
 
         logger.warning(f"Mock validate called with args: {args}, kwargs: {kwargs}")
 

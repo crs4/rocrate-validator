@@ -22,9 +22,11 @@ import pytest
 import urllib3
 
 from rocrate_validator.utils import document_loader
-from rocrate_validator.utils.document_loader import (install_document_loader,
-                                                     resolve_remote_document,
-                                                     uninstall_document_loader)
+from rocrate_validator.utils.document_loader import (
+    install_document_loader,
+    resolve_remote_document,
+    uninstall_document_loader,
+)
 from rocrate_validator.utils.http import HttpRequester, OfflineCacheMissError
 
 

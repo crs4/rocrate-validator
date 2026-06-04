@@ -15,8 +15,7 @@
 import pytest
 
 from rocrate_validator import models, services
-from rocrate_validator.models import (LevelCollection, RequirementLevel,
-                                      Severity, ValidationSettings)
+from rocrate_validator.models import LevelCollection, RequirementLevel, Severity, ValidationSettings
 from tests.ro_crates import InvalidRootDataEntity, WROCInvalidReadme
 
 
@@ -61,7 +60,7 @@ def test_level_collection():
     assert LevelCollection.MAY == LevelCollection.MAY
 
     all_levels = LevelCollection.all()
-    assert 10 == len(all_levels)
+    assert len(all_levels) == 10
     level_names = [level.name for level in all_levels]
     # Test a few of the keys
     assert 'MAY' in level_names

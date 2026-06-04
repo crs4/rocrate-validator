@@ -16,14 +16,20 @@ from pathlib import Path
 
 import pytest
 
-from rocrate_validator.utils import log as logging
 from rocrate_validator.errors import ROCrateInvalidURIError
-from rocrate_validator.rocrate import (BagitROCrate, ROCrate,
-                                       ROCrateBagitLocalFolder,
-                                       ROCrateBagitLocalZip,
-                                       ROCrateBagitRemoteZip, ROCrateEntity,
-                                       ROCrateLocalFolder, ROCrateLocalZip,
-                                       ROCrateMetadata, ROCrateRemoteZip)
+from rocrate_validator.rocrate import (
+    BagitROCrate,
+    ROCrate,
+    ROCrateBagitLocalFolder,
+    ROCrateBagitLocalZip,
+    ROCrateBagitRemoteZip,
+    ROCrateEntity,
+    ROCrateLocalFolder,
+    ROCrateLocalZip,
+    ROCrateMetadata,
+    ROCrateRemoteZip,
+)
+from rocrate_validator.utils import log as logging
 from tests.ro_crates import InvalidDataEntity, ValidROC
 
 # set up logging

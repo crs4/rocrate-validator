@@ -40,7 +40,6 @@ from rocrate_validator.requirements.shacl.models import Shape, ShapesRegistry
 from rocrate_validator.requirements.shacl.utils import resolve_parent_shape
 from tests.conftest import TEST_DATA_PATH
 
-
 logger = logging.getLogger(__name__)
 
 CURRENT_PATH = os.path.dirname(os.path.realpath(__file__))

@@ -20,11 +20,12 @@ import json
 import logging
 import shutil
 import tempfile
-import rdflib
 from collections.abc import Collection
 from pathlib import Path
 from typing import Optional, TypeVar, Union
 from urllib.parse import urljoin
+
+import rdflib
 
 from rocrate_validator import models, services
 from rocrate_validator.constants import DEFAULT_PROFILE_IDENTIFIER
@@ -95,7 +96,7 @@ def _prepare_temp_rocrate(
 ) -> Path:
     temp_rocrate_path = Path(tempfile.TemporaryDirectory().name)
     shutil.copytree(rocrate_path, temp_rocrate_path)
-    with open(temp_rocrate_path / "ro-crate-metadata.json", "r", encoding="utf-8") as f:
+    with open(temp_rocrate_path / "ro-crate-metadata.json", encoding="utf-8") as f:
         rocrate = json.load(f)
     if rocrate_entity_patch is not None:
         for key, value in rocrate_entity_patch.items():

@@ -348,19 +348,11 @@ def test_profile_parents(check_overriding_profiles_path: str):
         if profile.token == "a":
             assert len(profile.parents) == 0, "The number of parents should be 0"
 
-        elif profile.token == "b":
+        elif profile.token == "b" or profile.token == "c":
             assert len(profile.parents) == 1, "The number of parents should be 1"
             assert profile.parents[0].token == "a", "The parent should be 'a'"
 
-        elif profile.token == "c":
-            assert len(profile.parents) == 1, "The number of parents should be 1"
-            assert profile.parents[0].token == "a", "The parent should be 'a'"
-
-        elif profile.token == "d":
-            assert len(profile.parents) == 1, "The number of parents should be 1"
-            assert profile.parents[0].token == "b", "The parent should be 'b'"
-
-        elif profile.token == "e":
+        elif profile.token == "d" or profile.token == "e":
             assert len(profile.parents) == 1, "The number of parents should be 1"
             assert profile.parents[0].token == "b", "The parent should be 'b'"
 
@@ -478,11 +470,11 @@ def test_python_check_decorator_sets_deactivated_flag():
     from rocrate_validator.requirements.python import check
 
     @check(name="off", deactivated=True)
-    def disabled(self, ctx):  # noqa: ANN001
+    def disabled(self, ctx):
         return False
 
     @check(name="on")
-    def enabled(self, ctx):  # noqa: ANN001
+    def enabled(self, ctx):
         return True
 
     assert disabled.deactivated is True
