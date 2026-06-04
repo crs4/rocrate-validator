@@ -14,12 +14,13 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 from typing import TYPE_CHECKING, Optional, Union, cast
 
 from rdflib import Graph, Literal, Namespace, URIRef
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from rdflib.term import Node
 
 from rocrate_validator.constants import SHACL_NS

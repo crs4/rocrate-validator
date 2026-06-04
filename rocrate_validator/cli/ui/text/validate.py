@@ -14,7 +14,6 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, Optional
 
 from rocrate_validator.utils import log as logging
@@ -23,6 +22,8 @@ from rocrate_validator.utils.io_helpers.output.text import TextOutputFormatter
 from rocrate_validator.utils.io_helpers.output.text.layout.report import ValidationReportLayout
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from rocrate_validator.models import ValidationResult, ValidationSettings, ValidationStatistics
     from rocrate_validator.utils.io_helpers.output.pager import SystemPager
 

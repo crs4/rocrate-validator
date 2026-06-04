@@ -21,13 +21,15 @@ import inspect
 import json
 import re
 from abc import ABC, abstractmethod
-from collections.abc import Collection
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from functools import total_ordering
 from pathlib import Path
-from typing import Any, Optional, Protocol, Union, cast
+from typing import TYPE_CHECKING, Any, Optional, Protocol, Union, cast
 from urllib.error import HTTPError
+
+if TYPE_CHECKING:
+    from collections.abc import Collection
 
 import enum_tools
 from rdflib import RDF, RDFS, Graph, Namespace, URIRef

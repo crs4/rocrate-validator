@@ -16,7 +16,6 @@ from __future__ import annotations
 
 import threading
 import time
-from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, Optional
 
 from rich.align import Align
@@ -32,9 +31,6 @@ from rocrate_validator.models import (
     ProfileValidationEvent,
     RequirementCheckValidationEvent,
     RequirementValidationEvent,
-    Severity,
-    ValidationContext,
-    ValidationEvent,
     ValidationResult,
     ValidationSettings,
     ValidationStatistics,
@@ -47,6 +43,8 @@ from rocrate_validator.utils.versioning import get_version
 from .progress import ProgressMonitor
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from rocrate_validator.utils.io_helpers.output.console import Console
 
 # set up logging

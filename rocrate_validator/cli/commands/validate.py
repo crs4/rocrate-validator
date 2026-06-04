@@ -17,26 +17,28 @@ from __future__ import annotations
 import os
 import sys
 from contextlib import nullcontext
-from pathlib import Path
-from typing import Optional, Union
+from typing import TYPE_CHECKING
 
-import rich_click as click
 from rich.padding import Padding
 from rich.rule import Rule
+from rich_click import click
 
 from rocrate_validator import constants, services
 from rocrate_validator.cli.commands.errors import handle_error
 from rocrate_validator.cli.main import cli
 from rocrate_validator.cli.ui.text.validate import ValidationCommandView
 from rocrate_validator.errors import ROCrateInvalidURIError
-from rocrate_validator.models import Severity, ValidationResult, ValidationSettings
+from rocrate_validator.models import Severity, ValidationResult
 from rocrate_validator.utils import log as logging
-from rocrate_validator.utils.io_helpers.input import get_single_char, multiple_choice
+from rocrate_validator.utils.io_helpers.input import get_single_char
 from rocrate_validator.utils.io_helpers.output.console import Console
-from rocrate_validator.utils.io_helpers.output.json import JSONOutputFormatter
-from rocrate_validator.utils.io_helpers.output.text import TextOutputFormatter
-from rocrate_validator.utils.io_helpers.output.text.layout.report import LiveTextProgressLayout, get_app_header_rule
+from rocrate_validator.utils.io_helpers.output.text.layout.report import get_app_header_rule
 from rocrate_validator.utils.paths import get_profiles_path
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+# from rich.markdown import Markdown
 from rocrate_validator.utils.uri import validate_rocrate_uri
 
 # from rich.markdown import Markdown

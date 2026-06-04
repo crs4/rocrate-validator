@@ -15,8 +15,10 @@
 from __future__ import annotations
 
 import hashlib
-from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional, Union, cast
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 from rdflib import RDF, BNode, Graph, Namespace
 from rdflib.term import Node
