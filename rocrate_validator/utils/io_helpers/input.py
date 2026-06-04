@@ -15,14 +15,17 @@
 from __future__ import annotations
 
 import sys
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 from InquirerPy import prompt
 from InquirerPy.base.control import Choice
-from rich.console import Console
 
-from rocrate_validator.models import Profile
 from rocrate_validator.utils import log as logging
+
+if TYPE_CHECKING:
+    from rich.console import Console
+
+    from rocrate_validator.models import Profile
 
 # set up logging
 logger = logging.getLogger(__name__)

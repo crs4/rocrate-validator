@@ -17,7 +17,7 @@ from __future__ import annotations
 import threading
 import time
 from collections.abc import Callable
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any, Optional
 
 from rich.align import Align
 from rich.layout import Layout
@@ -41,11 +41,13 @@ from rocrate_validator.models import (
 )
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.io_helpers.colors import get_severity_color
-from rocrate_validator.utils.io_helpers.output.console import Console
 from rocrate_validator.utils.uri import URI
 from rocrate_validator.utils.versioning import get_version
 
 from .progress import ProgressMonitor
+
+if TYPE_CHECKING:
+    from rocrate_validator.utils.io_helpers.output.console import Console
 
 # set up logging
 logger = logging.getLogger(__name__)

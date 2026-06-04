@@ -14,16 +14,18 @@
 
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any, Optional
 
 from rich.console import ConsoleOptions, RenderResult
 
 from rocrate_validator.models import ValidationResult, ValidationStatistics
 from rocrate_validator.utils import log as logging
-
 from rocrate_validator.utils.io_helpers.output import BaseOutputFormatter
-from rocrate_validator.utils.io_helpers.output.console import Console
+
 from .formatters import ValidationResultTextOutputFormatter, ValidationStatisticsTextOutputFormatter
+
+if TYPE_CHECKING:
+    from rocrate_validator.utils.io_helpers.output.console import Console
 
 # set up logging
 logger = logging.getLogger(__name__)
