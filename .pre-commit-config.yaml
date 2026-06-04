@@ -1,0 +1,56 @@
+# Copyright (c) 2024-2026 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+repos:
+  # Run typos to check for common spelling mistakes in the codebase.
+  - repo: https://github.com/crate-ci/typos
+    rev: v1.22.9
+    hooks:
+      - id: typos
+        args:
+          - --config
+          - pyproject.toml
+          - --write-changes
+
+  # Performs basic checks on files, such as removing trailing whitespace,
+  # ensuring files end with a newline, and validating YAML files.
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+
+  # Run Ruff for both linting and formatting.
+  # The ruff-check hook will report linting issues,
+  # while the ruff-format hook will automatically fix formatting issues.
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.15
+    hooks:
+      - id: ruff-check
+      - id: ruff-format
+
+  # Run mypy to perform static type checking on the codebase.
+  # This hook is configured as a manual hook to run mypy using Poetry,
+  # ensuring that it uses the correct virtual environment and dependencies.
+  # To run this hook, use the command:
+  # `pre-commit run --hook-stage manual`
+  - repo: local
+    hooks:
+      - id: mypy
+        name: mypy
+        entry: poetry run mypy
+        language: system
+        types: [python]
+        pass_filenames: false
