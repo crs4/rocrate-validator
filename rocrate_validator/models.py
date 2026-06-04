@@ -2541,7 +2541,7 @@ class ValidationResult:
         """
         min_severity = self.context.requirement_severity
         return {issue.check.requirement for issue in self._issues
-                   if issue.severity >= min_severity}
+                if issue.severity >= min_severity}
 
     #  --- Checks ---
     @property
@@ -2551,7 +2551,7 @@ class ValidationResult:
         """
         min_severity = self.context.requirement_severity
         return {issue.check for issue in self._issues
-                   if issue.severity >= min_severity}
+                if issue.severity >= min_severity}
 
     def get_failed_checks_by_requirement(self, requirement: Requirement) -> Collection[RequirementCheck]:
         """
