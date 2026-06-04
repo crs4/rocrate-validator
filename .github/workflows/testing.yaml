@@ -67,7 +67,12 @@ jobs:
                 print(f'ruff~={version}')
                 ")"
             - name: ⌛ Lint Python code with ruff
-              run: ruff check rocrate_validator tests --output-format github --statistics
+              run: |
+                # Produce GitHub annotations; suppress exit code so the
+                # statistics summary still runs.
+                ruff check rocrate_validator tests --output-format github || true
+                # Emit a compact rule-count summary and fail the job if needed.
+                ruff check rocrate_validator tests --statistics
             - name: ⌛ Spell check code and profiles (covers Python and SHACL)
               uses: crate-ci/typos@v1.47.0
 
