@@ -67,7 +67,7 @@ jobs:
                 print(f'ruff~={version}')
                 ")"
             - name: ⌛ Lint Python code with ruff
-              run: ruff check rocrate_validator tests
+              run: ruff check rocrate_validator tests --output-format github --statistics
             - name: ⌛ Spell check code and profiles (covers Python and SHACL)
               uses: crate-ci/typos@v1.47.0
 
