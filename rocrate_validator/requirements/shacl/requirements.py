@@ -56,7 +56,7 @@ class SHACLRequirement(Requirement):
         # assign a check to each property of the shape
         checks: list[RequirementCheck] = []
         # check if the shape has nested properties
-        has_properties = hasattr(self.shape, "properties") and len(cast(Any, self.shape).properties) > 0
+        has_properties = hasattr(self.shape, "properties") and len(cast("Any", self.shape).properties) > 0
         # create a check for the shape itself, hidden if the shape has nested properties
         checks.append(
             SHACLCheck(
@@ -69,7 +69,7 @@ class SHACLRequirement(Requirement):
         )
         # create a check for each property if the shape has nested properties
         if has_properties:
-            for prop in cast(Any, self.shape).properties:
+            for prop in cast("Any", self.shape).properties:
                 logger.debug("Creating check for property %s %s", prop.name, prop.description)
                 property_check = SHACLCheck(self, prop)
                 logger.debug("Property check %s: %s", property_check.name, property_check.description)

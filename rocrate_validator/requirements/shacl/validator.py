@@ -134,8 +134,8 @@ class SHACLValidationContext(ValidationContext):
                         # logger.debug("Processing check: %s", check)
                         if check.overridden and check.requirement.profile != self.target_profile:
                             # logger.debug("Overridden check: %s", check)
-                            profile_shapes_graph -= cast(Any, check).shape.graph
-                            profile_shapes.pop(cast(Any, check).shape.key)
+                            profile_shapes_graph -= cast("Any", check).shape.graph
+                            profile_shapes.pop(cast("Any", check).shape.key)
 
             # add the shapes to the registry
             self._shapes_registry.extend(profile_shapes, profile_shapes_graph)
@@ -299,7 +299,7 @@ class SHACLViolation:
             severity = self.graph.value(self._violation_node, URIRef(f"{SHACL_NS}resultSeverity"))
             assert severity is not None, f"Unable to get severity from violation node {self._violation_node}"
             # we need to map the SHACL severity term to our Severity enum values
-            self._severity = map_severity(cast(Any, severity).toPython())
+            self._severity = map_severity(cast("Any", severity).toPython())
         return self._severity
 
     @property
@@ -315,7 +315,7 @@ class SHACLViolation:
         if not self._result_message:
             message = self.graph.value(self._violation_node, URIRef(f"{SHACL_NS}resultMessage"))
             assert message is not None, f"Unable to get result message from violation node {self._violation_node}"
-            self._result_message = make_uris_relative(cast(Any, message).toPython(), ro_crate_path)
+            self._result_message = make_uris_relative(cast("Any", message).toPython(), ro_crate_path)
         return self._result_message
 
     @property
@@ -324,7 +324,7 @@ class SHACLViolation:
             self._source_shape_node = self.graph.value(self._violation_node, URIRef(f"{SHACL_NS}sourceShape"))
             assert self._source_shape_node is not None, \
                 f"Unable to get source shape node from violation node {self._violation_node}"
-        return cast(Union[URIRef, BNode], self._source_shape_node)
+        return cast("Union[URIRef, BNode]", self._source_shape_node)
 
 
 class SHACLValidationResult:

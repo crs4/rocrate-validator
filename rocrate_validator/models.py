@@ -289,7 +289,7 @@ class Profile:
             self._token, self._version = self.__init_token_version__()
 
             # Check if the profile is overriding an existing profile
-            existing_profile = self.__profiles_map.get_by_key(cast(Any, self._profile_node).toPython())
+            existing_profile = self.__profiles_map.get_by_key(cast("Any", self._profile_node).toPython())
             # If an existing profile is being overridden by a different one, log a warning
             if existing_profile and existing_profile.path != profile_path:
                 logger.warning(
@@ -303,7 +303,7 @@ class Profile:
 
             # add the profile to the profiles map
             self.__profiles_map.add(
-                cast(Any, self._profile_node).toPython(),
+                cast("Any", self._profile_node).toPython(),
                 self,
                 token=self.token,
                 name=self.name,
@@ -324,7 +324,7 @@ class Profile:
     ) -> Union[str, list[Union[str, URIRef]], None]:
         assert self._profile_specification_graph is not None, "Profile specification graph not loaded"
         nodes = list(self._profile_specification_graph.objects(self._profile_node, namespace[property]))
-        values: list = [cast(Any, v).toPython() for v in nodes] if (nodes and as_Python_object) else list(nodes)
+        values: list = [cast("Any", v).toPython() for v in nodes] if (nodes and as_Python_object) else list(nodes)
         if pop_first:
             return values[0] if values else None
         return values
@@ -437,7 +437,7 @@ class Profile:
         as specified in the profile specification file
         (i.e., the value of the prof: isProfileOf property in the `profile.ttl` file).
         """
-        return cast(list[str], self.__get_specification_property__("isProfileOf", PROF_NS, pop_first=False))
+        return cast("list[str]", self.__get_specification_property__("isProfileOf", PROF_NS, pop_first=False))
 
     @property
     def is_transitive_profile_of(self) -> list[str]:
@@ -446,7 +446,7 @@ class Profile:
         as specified in the profile specification file
         (i.e., the value of the prof: isTransitiveProfileOf property in the `profile.ttl` file).
         """
-        return cast(list[str], self.__get_specification_property__("isTransitiveProfileOf", PROF_NS, pop_first=False))
+        return cast("list[str]", self.__get_specification_property__("isTransitiveProfileOf", PROF_NS, pop_first=False))
 
     @property
     def parents(self) -> list[Profile]:
@@ -639,7 +639,7 @@ class Profile:
         candidates = {
             _
             for _ in [
-                cast(Optional[str], self.__get_specification_property__("version", SCHEMA_ORG_NS)),
+                cast("Optional[str]", self.__get_specification_property__("version", SCHEMA_ORG_NS)),
                 self.__extract_version_from_token__(candidate_token),
                 self.__extract_version_from_token__(str(self.path.relative_to(self._profiles_base_path))),
                 self.__extract_version_from_token__(str(self.uri)),
@@ -664,7 +664,7 @@ class Profile:
 
     def __init_token_version__(self) -> tuple[str, Optional[str]]:
         # try to extract the token from the specs or the path
-        candidate_token = cast(Optional[str], self.__get_specification_property__("hasToken", PROF_NS))
+        candidate_token = cast("Optional[str]", self.__get_specification_property__("hasToken", PROF_NS))
         if not candidate_token:
             candidate_token = self.__extract_token_from_path__()
         logger.debug("Candidate token: %s", candidate_token)
@@ -1358,7 +1358,7 @@ class RequirementLoader:
                     requirement_path,
                 )
             requirement_loader = RequirementLoader.__get_requirement_loader__(profile, requirement_path)
-            requirements.extend(cast(Any, requirement_loader).load(
+            requirements.extend(cast("Any", requirement_loader).load(
                 profile,
                 requirement_level,
                 requirement_path,
@@ -1733,7 +1733,7 @@ class ValidationStatistics(Subscriber):
         """
         Get the profile being validated
         """
-        return cast(Profile, self._stats.get("profile"))
+        return cast("Profile", self._stats.get("profile"))
 
     @property
     def profiles(self) -> list[Profile]:
@@ -1747,7 +1747,7 @@ class ValidationStatistics(Subscriber):
         """
         Get the validation severity level
         """
-        return cast(Severity, self._stats.get("severity"))
+        return cast("Severity", self._stats.get("severity"))
 
     @property
     def checks_by_severity(self) -> dict:
@@ -1875,10 +1875,10 @@ class ValidationStatistics(Subscriber):
         profiles: list[Profile] = Profile.load_profiles(
             validation_settings.profiles_path,
             extra_profiles_path=validation_settings.extra_profiles_path,
-            severity=cast(Severity, severity_validation),
+            severity=cast("Severity", severity_validation),
             allow_requirement_check_override=validation_settings.allow_requirement_check_override,
         )
-        profile: Profile = cast(Profile, Profile.find_in_list(profiles, validation_settings.profile_identifier))
+        profile: Profile = cast("Profile", Profile.find_in_list(profiles, validation_settings.profile_identifier))
         target_profile_identifier = profile.identifier
         # initialize the profiles list
         profiles = [profile]
@@ -2600,7 +2600,7 @@ class ValidationResult:
         result: dict[str, Any] = {
             "meta": {"version": JSON_OUTPUT_FORMAT_VERSION},
             "validation_settings": validation_settings,
-            "passed": self.passed(cast(Severity, self.context.settings.requirement_severity)),
+            "passed": self.passed(cast("Severity", self.context.settings.requirement_severity)),
             "issues": [issue.to_dict() for issue in self.issues],
         }
         # add validator version to the settings

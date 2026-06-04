@@ -271,7 +271,7 @@ class PropertyShape(Shape):
     @property
     def parent(self) -> Optional[Shape]:
         """Return the parent shape of the shape property"""
-        return cast(Optional[Shape], self._parent)
+        return cast("Optional[Shape]", self._parent)
 
     @property
     def propertyGroup(self) -> Optional[PropertyGroup]:
@@ -393,7 +393,7 @@ class ShapesRegistry:
                 group = __process_property_group__(property_groups, p_shape)
                 if group and group not in shapes:
                     grouped = True
-                    shapes.append(cast(Shape, group))
+                    shapes.append(cast("Shape", group))
                 if not group:
                     ungrouped_properties.append(p_shape)
 

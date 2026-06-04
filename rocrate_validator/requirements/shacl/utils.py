@@ -77,14 +77,14 @@ def inject_attributes(obj: object, node_graph: Graph, node: Node, exclude: Optio
     skip_properties = ["node"] if exclude is None else [*exclude, "node"]
     triples = node_graph.triples((node, None, None))
     for _node, p, o in triples:
-        predicate_as_string = cast(Any, p).toPython()
+        predicate_as_string = cast("Any", p).toPython()
         # logger.debug(f"Processing {predicate_as_string} of property graph {node}")
         if predicate_as_string.startswith(SHACL_NS):
             property_name = predicate_as_string.split("#")[-1]
             if property_name in skip_properties:
                 continue
             try:
-                setattr(obj, property_name, cast(Any, o).toPython())
+                setattr(obj, property_name, cast("Any", o).toPython())
             except AttributeError as e:
                 logger.error(f"Error injecting attribute {property_name}: {e}")
             # logger.debug("Injected attribute %s: %s", property_name, o.toPython())
@@ -135,7 +135,7 @@ def compute_key(g: Graph, s: Node) -> str:
 
     if isinstance(s, BNode):
         return compute_hash(g, s)
-    return cast(Any, s).toPython()
+    return cast("Any", s).toPython()
 
 
 class ShapesList:

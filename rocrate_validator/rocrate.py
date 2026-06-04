@@ -44,11 +44,11 @@ class ROCrateEntity:
 
     @property
     def id(self) -> str:
-        return cast(str, self._raw_data.get('@id'))
+        return cast('str', self._raw_data.get('@id'))
 
     @property
     def type(self) -> Union[str, list[str]]:
-        return cast(Union[str, list[str]], self._raw_data.get('@type'))
+        return cast('Union[str, list[str]]', self._raw_data.get('@type'))
 
     def is_dataset(self) -> bool:
         return self.has_type('Dataset')
@@ -58,7 +58,7 @@ class ROCrateEntity:
 
     @property
     def name(self) -> str:
-        return cast(str, self._raw_data.get('name'))
+        return cast('str', self._raw_data.get('name'))
 
     @property
     def metadata(self) -> ROCrateMetadata:
@@ -406,7 +406,7 @@ class ROCrateMetadata:
 
     def as_json(self) -> str:
         if not self._json:
-            self._json = cast(str, self.ro_crate.get_file_content(
+            self._json = cast('str', self.ro_crate.get_file_content(
                 Path(self.METADATA_FILE_DESCRIPTOR), binary_mode=False
             ))
         return self._json

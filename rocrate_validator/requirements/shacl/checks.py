@@ -188,7 +188,7 @@ class SHACLCheck(RequirementCheck):
             # identify the owner of the shape
             owner: SHACLNode = self._shape
             while getattr(owner, "parent", None) is not None:
-                owner = cast(SHACLNode, owner.parent)
+                owner = cast("SHACLNode", owner.parent)
             # if the shape is not a root shape, include the triples linking the owner to the shape
             if owner is not self._shape:
                 shacl = Namespace(SHACL_NS)
@@ -413,7 +413,7 @@ class SHACLCheck(RequirementCheck):
         failed_requirement_checks_notified = [
             _.check.identifier
             for _ in shacl_context.result.get_issues(
-                min_severity=cast(Severity, shacl_context.settings.requirement_severity))
+                min_severity=cast("Severity", shacl_context.settings.requirement_severity))
         ]
         for requirementCheck in sorted(failed_requirements_checks, key=lambda x: (x.identifier, x.severity)):
             # if the check is not in the current profile
@@ -424,7 +424,7 @@ class SHACLCheck(RequirementCheck):
             ):
                 continue
             for violation in failed_requirements_checks_violations[requirementCheck.identifier]:
-                violating_entity = make_uris_relative(cast(Any, violation.focusNode).toPython(),
+                violating_entity = make_uris_relative(cast("Any", violation.focusNode).toPython(),
                                                       shacl_context.publicID)
                 violating_property = violation.resultPath.toPython() if violation.resultPath else None
                 violation_message = violation.get_result_message(str(shacl_context.rocrate_uri))

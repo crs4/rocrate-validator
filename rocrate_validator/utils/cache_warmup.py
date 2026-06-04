@@ -80,7 +80,7 @@ def discover_profile_cacheable_urls(profile: Profile) -> list[str]:
     urls: list[str] = []
     try:
         for row in graph.query(_CACHEABLE_URLS_SPARQL):
-            artifact = cast(Any, row).artifact
+            artifact = cast("Any", row).artifact
             if artifact is None:
                 continue
             value = str(artifact)

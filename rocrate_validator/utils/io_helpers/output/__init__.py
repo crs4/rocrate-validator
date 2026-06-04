@@ -77,4 +77,4 @@ class BaseOutputFormatter(OutputFormatter):
             yield self._data
         else:
             # ``formatter`` is a formatter class instantiated with the data to render.
-            yield from cast(Any, formatter)(self._data).__rich_console__(console, options)
+            yield from cast("Any", formatter)(self._data).__rich_console__(console, options)
