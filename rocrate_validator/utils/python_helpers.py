@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import inspect
-import os
 import re
 import sys
 from importlib import import_module

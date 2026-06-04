@@ -16,7 +16,6 @@ from __future__ import annotations
 
 import atexit
 import contextlib
-import os
 import random
 import string
 import threading
