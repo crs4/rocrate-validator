@@ -13,6 +13,11 @@
 # limitations under the License.
 
 from rocrate_validator.models._logging import logger
+from rocrate_validator.models.batch import (
+    BatchCrateEntry,
+    BatchSession,
+    BatchValidationResult,
+)
 from rocrate_validator.models.check_result import CheckResult, CheckResultValue, normalize_check_result
 from rocrate_validator.models.events import (
     ProfileValidationEvent,
@@ -55,6 +60,9 @@ __all__ = [
     "URI",
     "AggregatedValidationStatistics",
     "BaseTypes",
+    "BatchCrateEntry",
+    "BatchSession",
+    "BatchValidationResult",
     "CheckIssue",
     "CheckResult",
     "CheckResultValue",
