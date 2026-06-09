@@ -402,8 +402,8 @@ class HttpRequester:
             self._close_session()
             try:
                 self.cache_max_age = int(cache_max_age)
-            except ValueError:
-                raise TypeError("cache_max_age must be an integer")
+            except ValueError as exc:
+                raise TypeError("cache_max_age must be an integer") from exc
             self.cache_path_prefix = cache_path
             self.offline = bool(offline)
             self.no_cache = bool(no_cache)
