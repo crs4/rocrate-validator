@@ -41,7 +41,18 @@ class _FakeContextResponse:
     headers = {"Content-Type": "application/ld+json"}
 
     def json(self):
-        return {"@context": {k: f"http://schema.org/{k}" for k in _FAKE_CONTEXT_KEYS}}
+        # Map each known key explicitly so `check_compaction` finds them, and add a
+        # schema.org default vocabulary so entity *types* (Dataset, File, Person,
+        # Organization, CreativeWork, ...) expand correctly during validation even
+        # though they are not listed individually. Without `@vocab`, types do not
+        # resolve to schema.org and the crate fails REQUIRED structural checks.
+        context = {k: f"http://schema.org/{k}" for k in _FAKE_CONTEXT_KEYS}
+        context["@vocab"] = "http://schema.org/"
+        # `conformsTo` is a Dublin Core term in the real RO-Crate context; the
+        # file-descriptor checks query `dct:conformsTo`, so it must not fall back
+        # to the schema.org default vocabulary.
+        context["conformsTo"] = {"@id": "http://purl.org/dc/terms/conformsTo", "@type": "@id"}
+        return {"@context": context}
 
 
 def _fake_context_get(url, *args, **kwargs):
