@@ -357,8 +357,19 @@ class HttpRequester:
         :param no_cache: When ``True``, disable the HTTP cache entirely and
             use a plain ``requests.Session``. Incompatible with ``offline``.
         """
-        return cls(cache_max_age=cache_max_age, cache_path=cache_path,
-                   offline=offline, no_cache=no_cache)
+    def _close_session(self) -> None:
+        """Close the current session and remove its cache file if it is temporary."""
+        session = getattr(self, "session", None)
+        if session is not None and hasattr(session, "close"):
+            try:
+                session.close()
+            except Exception as e:
+                logger.debug("Error closing previous session: %s", e)
+        if getattr(self, "permanent_cache", True) is False:
+            try:
+                self.cleanup()
+            except Exception as e:
+                logger.debug("Error cleaning up previous cache: %s", e)
 
     @classmethod
     def reset(cls) -> None:
@@ -369,17 +380,7 @@ class HttpRequester:
         with cls._lock:
             instance = cls._instance
             if instance is not None:
-                try:
-                    session = getattr(instance, "session", None)
-                    if session is not None and hasattr(session, "close"):
-                        session.close()
-                except Exception as e:
-                    logger.debug("Error closing previous session: %s", e)
-                if getattr(instance, "permanent_cache", True) is False:
-                    try:
-                        instance.cleanup()
-                    except Exception as e:
-                        logger.debug("Error cleaning up previous cache: %s", e)
+                instance._close_session()
             cls._instance = None
 
 
