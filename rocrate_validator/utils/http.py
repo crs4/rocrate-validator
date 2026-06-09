@@ -232,9 +232,13 @@ class HttpRequester:
         """
         if name.upper() in {"GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS", "PATCH"}:
             method = name.lower()
-            session_method = getattr(self.session, method)
 
             def _wrapped(url, *args, **kwargs):
+                # Resolve the session method lazily, at call time, so the wrapper
+                # always targets the current session. This keeps the wrapper valid
+                # after the session is rebuilt in place (see ``_reconfigure``) and
+                # avoids holding a reference to a closed session.
+                session_method = getattr(self.session, method)
                 response = session_method(url, *args, **kwargs)
                 _log_cache_outcome(method.upper(), url, response, offline=self.offline)
                 return response
