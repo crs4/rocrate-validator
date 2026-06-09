@@ -2699,9 +2699,9 @@ class ValidationSettings:
                 "Offline mode enabled without a persistent cache path: "
                 "all HTTP-backed resources will fail unless pre-populated."
             )
-        # Reset any previously initialized singleton so new settings take effect.
-        HttpRequester.reset()
-        # initialize the HTTP cache
+        # Re-apply the cache settings to the HTTP requester. ``initialize_cache``
+        # reconfigures the existing singleton in place (rather than dropping it),
+        # so new settings take effect without discarding state set on the instance.
         HttpRequester.initialize_cache(
             cache_path=str(self.cache_path) if self.cache_path is not None else None,
             cache_max_age=self.cache_max_age,
