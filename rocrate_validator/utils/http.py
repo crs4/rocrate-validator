@@ -357,6 +357,18 @@ class HttpRequester:
         :param no_cache: When ``True``, disable the HTTP cache entirely and
             use a plain ``requests.Session``. Incompatible with ``offline``.
         """
+        with cls._lock:
+            instance = cls._instance
+        if instance is None:
+            return cls(cache_max_age=cache_max_age, cache_path=cache_path,
+                       offline=offline, no_cache=no_cache)
+        # Re-apply the configuration without recreating the instance:
+        # we keep the same singleton in place and only rebuild its underlying session,
+        # rather than dropping and recreating the object (as ``reset`` does).
+        instance._reconfigure(cache_max_age=cache_max_age, cache_path=cache_path,
+                              offline=offline, no_cache=no_cache)
+        return instance
+
     def _close_session(self) -> None:
         """Close the current session and remove its cache file if it is temporary."""
         session = getattr(self, "session", None)
@@ -370,6 +382,30 @@ class HttpRequester:
                 self.cleanup()
             except Exception as e:
                 logger.debug("Error cleaning up previous cache: %s", e)
+
+    def _reconfigure(self,
+                     cache_max_age: int = constants.DEFAULT_HTTP_CACHE_MAX_AGE,
+                     cache_path: Optional[str] = None,
+                     offline: bool = False,
+                     no_cache: bool = False) -> None:
+        """
+        Rebuild the underlying session with new cache settings while preserving
+        the singleton instance (and any attributes set on it, e.g. test patches).
+        """
+        with self._lock:
+            self._close_session()
+            try:
+                self.cache_max_age = int(cache_max_age)
+            except ValueError:
+                raise TypeError("cache_max_age must be an integer")
+            self.cache_path_prefix = cache_path
+            self.offline = bool(offline)
+            self.no_cache = bool(no_cache)
+            self.permanent_cache = cache_path is not None
+            # ``__initialize_session__`` asserts the instance is not yet initialized.
+            self._initialized = False
+            self.__initialize_session__(cache_max_age, cache_path)
+            self._initialized = True
 
     @classmethod
     def reset(cls) -> None:
