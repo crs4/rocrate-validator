@@ -403,6 +403,7 @@ class LiveTextProgressLayout:
             validation_thread.join()
             # Check for exceptions
             if exception_container[0]:
+                # pylint: disable-next=raising-bad-type  # populated with an exception by the worker thread
                 raise exception_container[0]
             message.append(" DONE!", style="bold")
             # Final update to indicate completion
