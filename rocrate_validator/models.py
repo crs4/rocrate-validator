@@ -389,7 +389,7 @@ class Profile:
         """
         The RDF graph of the profile specification.
         """
-        return self._profile_specification_graph  # type: ignore
+        return self._profile_specification_graph  # type: ignore[return-value]
 
     @property
     def profile_node(self):
@@ -2321,6 +2321,17 @@ class AggregatedValidationStatistics:
         """
         Compute the overall aggregated statistics
         """
+        raw_stats = self.__aggregate_raw_stats__(self._statistics_list)
+        return self.__build_sorted_stats_dict__(raw_stats)
+
+    @classmethod
+    def __aggregate_raw_stats__(
+        cls,
+        statistics_list: list[ValidationStatistics],
+    ):
+        """
+        Aggregate raw (unsorted) statistics from a list of ValidationStatistics instances.
+        """
         profiles: set[Profile] = set()
         requirements: set[Requirement] = set()
         checks: set[RequirementCheck] = set()
@@ -2334,7 +2345,7 @@ class AggregatedValidationStatistics:
         duration: float = 0.0
 
         # Aggregate statistics from each ValidationStatistics instance
-        for stats in self._statistics_list:
+        for stats in statistics_list:
             # Aggregate profiles
             for profile in stats.profiles:
                 profiles.add(profile)
@@ -2362,31 +2373,43 @@ class AggregatedValidationStatistics:
             # Aggregate duration
             duration += stats.duration or 0.0
 
-        # Sort the sets to have consistent order
-        sorted_profiles = sorted(profiles, key=lambda p: p.identifier)
-        sorted_requirements = sorted(requirements, key=lambda r: r.identifier)
-        sorted_checks = sorted(checks, key=lambda c: c.identifier)
-        sorted_checks_by_severity = {
-            k: sorted(v, key=lambda c: c.identifier) for k, v in checks_by_severity.items()
-        }
-        sorted_failed_requirements = sorted(failed_requirements, key=lambda r: r.identifier)
-        sorted_failed_checks = sorted(failed_checks, key=lambda c: c.identifier)
-        sorted_passed_requirements = sorted(passed_requirements, key=lambda r: r.identifier)
-        sorted_passed_checks = sorted(passed_checks, key=lambda c: c.identifier)
-
-        # return the aggregated statistics
         return {
-            "profiles": sorted_profiles,
-            "requirements": sorted_requirements,
-            "checks": sorted_checks,
-            "checks_by_severity": sorted_checks_by_severity,
-            "failed_requirements": sorted_failed_requirements,
-            "failed_checks": sorted_failed_checks,
-            "passed_requirements": sorted_passed_requirements,
-            "passed_checks": sorted_passed_checks,
+            "profiles": profiles,
+            "requirements": requirements,
+            "checks": checks,
+            "checks_by_severity": checks_by_severity,
+            "failed_requirements": failed_requirements,
+            "failed_checks": failed_checks,
+            "passed_requirements": passed_requirements,
+            "passed_checks": passed_checks,
             "started_at": started_at,
             "finished_at": finished_at,
             "duration": duration,
+        }
+
+    @classmethod
+    def __build_sorted_stats_dict__(cls, raw_stats):
+        """
+        Sort the raw aggregated sets and build the final sorted statistics dict.
+        """
+        sorted_checks_by_severity = {}
+        for severity_key, severity_checks in raw_stats["checks_by_severity"].items():
+            sorted_checks_by_severity[severity_key] = sorted(
+                severity_checks, key=lambda c: c.identifier
+            )
+
+        return {
+            "profiles": sorted(raw_stats["profiles"], key=lambda p: p.identifier),
+            "requirements": sorted(raw_stats["requirements"], key=lambda r: r.identifier),
+            "checks": sorted(raw_stats["checks"], key=lambda c: c.identifier),
+            "checks_by_severity": sorted_checks_by_severity,
+            "failed_requirements": sorted(raw_stats["failed_requirements"], key=lambda r: r.identifier),
+            "failed_checks": sorted(raw_stats["failed_checks"], key=lambda c: c.identifier),
+            "passed_requirements": sorted(raw_stats["passed_requirements"], key=lambda r: r.identifier),
+            "passed_checks": sorted(raw_stats["passed_checks"], key=lambda c: c.identifier),
+            "started_at": raw_stats["started_at"],
+            "finished_at": raw_stats["finished_at"],
+            "duration": raw_stats["duration"],
         }
 
 
