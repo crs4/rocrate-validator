@@ -229,33 +229,36 @@ __export__ = [get_log_format, DEFAULT_SETTINGS, Logger,
               CRITICAL, DEBUG, ERROR, INFO, WARNING, StreamHandler, Optional]
 
 
-# Example of usage
-# if __name__ == '__main__':
-# log_config = {
-#     'module1': {'enabled': True, 'level': 'DEBUG'},
-#     'module2': {'enabled': False, 'level': 'INFO'},
-#     'module3': {'enabled': True, 'level': 'ERROR'},
-# }
-#     mgt = LoggerManager(log_config)
-#     logger1 = mgt.getLogger('module1')
-#     logger2 = mgt.getLogger('module2')
-#     logger3 = mgt.getLogger('module3')
-#     logger4 = mgt.getLogger('module4')
+"""
+Example of usage::
 
-#     logger1.debug('This is a debug message')
-#     logger1.info('This is an info message')
-#     logger1.error('This is an error message')
+    if __name__ == '__main__':
+        log_config = {
+            'module1': {'enabled': True, 'level': 'DEBUG'},
+            'module2': {'enabled': False, 'level': 'INFO'},
+            'module3': {'enabled': True, 'level': 'ERROR'},
+        }
+        mgt = LoggerManager(log_config)
+        logger1 = mgt.getLogger('module1')
+        logger2 = mgt.getLogger('module2')
+        logger3 = mgt.getLogger('module3')
+        logger4 = mgt.getLogger('module4')
 
-#     logger2.debug('This is a debug message')
-#     logger2.info('This is an info message')
-#     logger2.error('This is an error message')
+        logger1.debug('This is a debug message')
+        logger1.info('This is an info message')
+        logger1.error('This is an error message')
 
-#     logger3.debug('This is a debug message')
-#     logger3.info('This is an info message')
-#     logger3.error('This is an error message')
-#     logger3.critical('This is a critical message')
+        logger2.debug('This is a debug message')
+        logger2.info('This is an info message')
+        logger2.error('This is an error message')
 
-#     logger4.debug('This is a debug message')
-#     logger4.info('This is an info message')
-#     logger4.error('This is an error message')
-#     logger4.critical('This is a critical message')
+        logger3.debug('This is a debug message')
+        logger3.info('This is an info message')
+        logger3.error('This is an error message')
+        logger3.critical('This is a critical message')
+
+        logger4.debug('This is a debug message')
+        logger4.info('This is an info message')
+        logger4.error('This is an error message')
+        logger4.critical('This is a critical message')
+"""
