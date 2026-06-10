@@ -1692,7 +1692,6 @@ class ValidationStatistics(Subscriber):
         self._stats = self.__initialise__(settings) if not skip_initialization else {}
         self._result: Optional[ValidationResult] = None
         self._listeners: list[ValidationStatisticsListener] = []
-        # self._target_profile: Optional[Profile] = None
 
     @property
     def validation_settings(self) -> ValidationSettings:
@@ -2489,9 +2488,6 @@ class ValidationResult:
         """
         min_severity = min_severity or self.context.requirement_severity
         return [issue for issue in self._issues if issue.check == check and issue.severity >= min_severity]
-
-    # def get_issues_by_check_and_severity(self, check: RequirementCheck, severity: Severity) -> list[CheckIssue]:
-    #     return [issue for issue in self.issues if issue.check == check and issue.severity == severity]
 
     def has_issues(self, min_severity: Optional[Severity] = None) -> bool:
         """

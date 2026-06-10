@@ -47,7 +47,7 @@ def test_isa_defined_term_name():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Study MUST have base properties"],
+        # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
         expected_triggered_issues=[
             "DefinedTerm entity MUST have a non-empty name of type string"
         ],
@@ -80,7 +80,7 @@ def test_isa_defined_term_name_of_incorrect_type():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Study MUST have base properties"],
+        # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
         expected_triggered_issues=[
             "DefinedTerm entity MUST have a non-empty name of type string"
         ],
@@ -110,7 +110,7 @@ def test_isa_defined_term_termCode():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Study MUST have base properties"],
+        # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
         expected_triggered_issues=[
             "DefinedTerm entity SHOULD have at least one termCode"
         ],
@@ -143,7 +143,7 @@ def test_isa_defined_term_termCode_of_incorrect_type():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Study MUST have base properties"],
+        # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
         expected_triggered_issues=["DefinedTerm termCode MUST be of type string"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,

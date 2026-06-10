@@ -384,9 +384,6 @@ def test_paths_valid_bagit_rocrate():
     assert len(files) == 16, "Should have 16 files"
 
     # check file paths
-    # assert roc.has_file(Path("ro-crate-metadata.json")), "Should have ro-crate-metadata.json file"
-    # # assert roc.has_file(Path("bagit.txt")), "Should have bagit.txt file"
-    # # assert roc.has_file(Path("data/ro-crate-metadata.json")), "Should have data/ro-crate-metadata.json file"
     # assert roc.has_file(Path("pics/2017-06-11%2012.56.14.jpg")
     #                     ), "Should have data/pics/2017-06-11 12.56.14.jpg file"
 
@@ -423,7 +420,6 @@ def test_valid_bagit_zip_rocrate():
     # test list files
     files = roc.list_files()
     logger.debug(f"Files: {files}")
-    # assert len(files) == 11, "Should have 11 files"
 
     # test is_file
     assert roc.has_file(metadata_file_descriptor), "Should be a file"
@@ -463,21 +459,12 @@ def test_valid_bagit_zip_rocrate():
     assert root_data_entity.name == "My Pictures", "Name should be sort_and_change"
 
     # test subEntity mainEntity
-    # main_entity = root_data_entity.get_property("mainEntity")
-    # logger.error(f"Main entity: {main_entity}")
-    # assert isinstance(main_entity, ROCrateEntity), "Entity should be ROCrateEntity"
-    # assert main_entity.id == "sort-and-change-case.ga", "Id should be main-entity"
     # assert "ComputationalWorkflow" in main_entity.type, "Type should be ComputationalWorkflow"
 
     # check metadata consistency
-    # assert main_entity.metadata == metadata, "Metadata should be the same"
-    # assert main_entity.metadata == roc.metadata, "Metadata should be the same"
 
     # check availability of 'pics/2017-06-11%2012.56.14.jpg'
-    # entity = metadata.get_entity("pics/2017-06-11%2012.56.14.jpg")
-    # assert entity.is_available(), "Entity should be available"
 
-    # assert roc.has_directory("data%20set/"), "Should have data%20set/ directory"
 
 
 ################################
@@ -487,8 +474,6 @@ def test_valid_bagit_zip_rocrate():
 
 def test_valid_remote_zip_rocrate():
     roc = ROCrateRemoteZip(ValidROC().sort_and_change_remote)
-    # assert isinstance(roc,  ROCrateRemoteZip)
-    # return
     # # test list files
     files = roc.list_files()
     logger.debug(f"Files: {files}")

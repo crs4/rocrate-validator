@@ -17,7 +17,7 @@ import logging
 
 from rocrate_validator.models import Severity
 
-# from tests.conftest import SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER
+# from tests.conftest import SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER  # noqa: ERA001
 from tests.ro_crates import ValidROC
 from tests.shared import SPARQL_PREFIXES, do_entity_test
 
@@ -87,12 +87,8 @@ def test_isa_process_not_correctly_referenced_from_dataset():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=True,
-        # expected_triggered_requirements=[
-        #     "Process MUST be directly referenced from a dataset"
-        # ],
-        # expected_triggered_issues=[
-        #     "Process MUST be directly referenced in about on a Dataset"
-        # ],
+        # expected_triggered_requirements=["Process MUST be directly referenced from a dataset"],  # noqa: ERA001
+        # expected_triggered_issues=["Process MUST be directly referenced in about on a Dataset"],  # noqa: ERA001
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
         disable_inherited_profiles_issue_reporting=True,

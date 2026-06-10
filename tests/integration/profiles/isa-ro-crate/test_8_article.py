@@ -45,7 +45,7 @@ def test_isa_article_headline():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Study MUST have base properties"],
+        # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
         expected_triggered_issues=[
             "Article entity MUST have a non-empty headline of type string"
         ],
@@ -113,7 +113,7 @@ def test_isa_article_headline_of_incorrect_type():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Study MUST have base properties"],
+        # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
         expected_triggered_issues=[
             "Article entity MUST have a non-empty headline of type string"
         ],
@@ -143,7 +143,7 @@ def test_isa_article_identifier():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Study MUST have base properties"],
+        # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
         expected_triggered_issues=[
             "Article entity MUST have a non-empty identifier of type string or PropertyValue"
         ],
@@ -176,7 +176,7 @@ def test_isa_article_identifier_of_incorrect_type():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Study MUST have base properties"],
+        # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
         expected_triggered_issues=[
             "Article entity MUST have a non-empty identifier of type string or PropertyValue"
         ],
@@ -206,7 +206,7 @@ def test_isa_article_author():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Study MUST have base properties"],
+        # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
         expected_triggered_issues=["Article entity SHOULD have at least one author"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
@@ -237,7 +237,7 @@ def test_isa_article_author_of_incorrect_type():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Study MUST have base properties"],
+        # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
         expected_triggered_issues=["Article author MUST be of type Person"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,

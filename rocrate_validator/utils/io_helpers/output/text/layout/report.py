@@ -206,8 +206,6 @@ class ValidationReportLayout(Layout):
             assert ctx is not None, "Validation context must be provided"
             if not event.requirement.hidden:
                 self.update_stats(ctx.result.statistics)
-        # elif event.event_type == EventType.PROFILE_VALIDATION_END:
-        #     pass
         elif event.event_type == EventType.VALIDATION_END:
             assert isinstance(event, ValidationEvent)
             self.__show_overall_result__(event.validation_result)
@@ -216,11 +214,9 @@ class ValidationReportLayout(Layout):
     def update_stats(self, profile_stats: Optional[ValidationStatistics] = None):
         assert profile_stats, "Profile stats must be provided"
         assert self.passed_checks is not None and self.failed_checks is not None, "Layout not initialized"
-        # self.profile_stats = profile_stats
         self.requirement_checks_by_severity_container_layout["required"].update(
             Panel(
                 Align(
-                    # str(profile_stats['check_count_by_severity'][Severity.REQUIRED]) if profile_stats else "0",
                     str(profile_stats.check_count_by_severity[Severity.REQUIRED]) if profile_stats else "0",
                     align="center"
                 ),

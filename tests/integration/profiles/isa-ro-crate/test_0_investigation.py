@@ -78,7 +78,7 @@ def test_isa_investigation_no_identifier():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Investigation MUST have base properties"],
+        # expected_triggered_requirements=["Investigation MUST have base properties"],  # noqa: ERA001
         expected_triggered_issues=[
             "The root data entity must have a non-empty identifier"
         ],
@@ -112,7 +112,7 @@ def test_isa_investigation_identifier_not_string():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Investigation MUST have base properties"],
+        # expected_triggered_requirements=["Investigation MUST have base properties"],  # noqa: ERA001
         expected_triggered_issues=[
             "The root data entity must have a non-empty identifier"
         ],
@@ -146,7 +146,7 @@ def test_isa_investigation_no_shoulds():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Investigation MUST have base properties"],
+        # expected_triggered_requirements=["Investigation MUST have base properties"],  # noqa: ERA001
         expected_triggered_issues=[
             "Investigation entity SHOULD have a dateCreated",
             "Investigation entity SHOULD have a creator",
@@ -184,7 +184,7 @@ def test_isa_investigation_shoulds_have_wrong_types():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Investigation MUST have base properties"],
+        # expected_triggered_requirements=["Investigation MUST have base properties"],  # noqa: ERA001
         expected_triggered_issues=[
             "Investigation dateCreated MUST be a valid ISO 8601 date",
             "Investigation creator MUST be of type Person",

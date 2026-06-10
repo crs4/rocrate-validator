@@ -45,7 +45,7 @@ def test_isa_comment_text():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Study MUST have base properties"],
+        # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
         expected_triggered_issues=["Comment entity SHOULD have at least one text"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
@@ -76,7 +76,7 @@ def test_isa_comment_text_of_incorrect_type():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Study MUST have base properties"],
+        # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
         expected_triggered_issues=["Comment text MUST be of type string"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,

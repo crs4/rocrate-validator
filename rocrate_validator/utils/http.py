@@ -440,7 +440,6 @@ class _OfflineFallbackSession:
         response.status_code = OFFLINE_CACHE_MISS_STATUS
         response.reason = "Offline: no HTTP cache backend available"
         response.url = url
-        # response._content = b""
         return response
 
     def get(self, url, **_kwargs):

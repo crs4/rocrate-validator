@@ -149,7 +149,6 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
 
         # Try to parse the JSON-LD and access the context
         jsonLD = raw_data.json()["@context"]
-        # logger.warning(f"Retrieved JSON-LD context: {jsonLD}")
         assert isinstance(jsonLD, dict)
         # return the JSON-LD context
         return jsonLD

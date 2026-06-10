@@ -130,11 +130,8 @@ class SHACLValidationContext(ValidationContext):
             if self.settings.allow_requirement_check_override:
                 from rocrate_validator.requirements.shacl.requirements import SHACLRequirement  # noqa: PLC0415
                 for requirement in [_ for _ in profile.requirements if isinstance(_, SHACLRequirement)]:
-                    # logger.debug("Processing requirement: %s", requirement.name)
                     for check in requirement.get_checks():
-                        # logger.debug("Processing check: %s", check)
                         if check.overridden and check.requirement.profile != self.target_profile:
-                            # logger.debug("Overridden check: %s", check)
                             profile_shapes_graph -= cast("Any", check).shape.graph
                             profile_shapes.pop(cast("Any", check).shape.key)
 

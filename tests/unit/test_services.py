@@ -159,7 +159,6 @@ def test_skip_pycheck_on_workflow_ro_crate():
 
     # Ensure that the skipped checks are indeed skipped
     skipped_check_ids = {check.identifier for check in result.skipped_checks}
-    # logger.error("Skipped checks: %s", result.skipped_checks)
     assert "ro-crate-1.1_5.3" in skipped_check_ids, "Expected check 'ro-crate-1.1_5.3' to be skipped"
     assert "ro-crate-1.1_12.1" in skipped_check_ids, "Expected check 'ro-crate-1.1_12.1' to be skipped"
 

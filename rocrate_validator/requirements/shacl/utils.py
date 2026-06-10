@@ -70,17 +70,15 @@ def map_severity(shacl_severity: str) -> Severity:
 
 def make_uris_relative(text: str, ro_crate_path: Union[Path, str]) -> str:
     # globally replace the string "file://" with "./
-    return text.replace(str(ro_crate_path), './')
+    return text.replace(str(ro_crate_path), "./")
 
 
 def inject_attributes(obj: object, node_graph: Graph, node: Node, exclude: Optional[list] = None) -> object:
     # inject attributes of the shape property
-    # logger.debug("Injecting attributes of node %s", node)
     skip_properties = ["node"] if exclude is None else [*exclude, "node"]
     triples = node_graph.triples((node, None, None))
     for _node, p, o in triples:
         predicate_as_string = cast("Any", p).toPython()
-        # logger.debug(f"Processing {predicate_as_string} of property graph {node}")
         if predicate_as_string.startswith(SHACL_NS):
             property_name = predicate_as_string.split("#")[-1]
             if property_name in skip_properties:
@@ -89,9 +87,6 @@ def inject_attributes(obj: object, node_graph: Graph, node: Node, exclude: Optio
                 setattr(obj, property_name, cast("Any", o).toPython())
             except AttributeError as e:
                 logger.error(f"Error injecting attribute {property_name}: {e}")
-            # logger.debug("Injected attribute %s: %s", property_name, o.toPython())
-    # logger.debug("Injected attributes ig node %s: %s", node, len(list(triples)))
-    # return the object
     return obj
 
 
@@ -106,7 +101,7 @@ def __compute_values__(g: Graph, s: Node) -> list[tuple]:
     # Assuming the list of triples values is stored in a variable called 'triples_values'
     triples_values = [(_, x, _) for (_, x, _) in g.triples((s, None, None)) if x != RDF.type]
 
-    for (subj, pred, obj) in triples_values:
+    for subj, pred, obj in triples_values:
         if isinstance(obj, BNode):
             values.extend(__compute_values__(g, obj))
         else:
@@ -141,11 +136,13 @@ def compute_key(g: Graph, s: Node) -> str:
 
 
 class ShapesList:
-    def __init__(self,
-                 node_shapes: list[Node],
-                 property_shapes: list[Node],
-                 shapes_graphs: dict[Node, Graph],
-                 shapes_graph: Graph):
+    def __init__(
+        self,
+        node_shapes: list[Node],
+        property_shapes: list[Node],
+        shapes_graphs: dict[Node, Graph],
+        shapes_graph: Graph,
+    ):
         self._node_shapes = node_shapes
         self._property_shapes = property_shapes
         self._shapes_graph = shapes_graph
@@ -276,12 +273,10 @@ def load_shapes_from_graph(g: Graph) -> ShapesList:
     # define the SHACL namespace
     SHACL = Namespace(SHACL_NS)
     # find all NodeShapes
-    node_shapes = [s for (s, _, _) in g.triples(
-        (None, RDF.type, SHACL.NodeShape)) if not isinstance(s, BNode)]
+    node_shapes = [s for (s, _, _) in g.triples((None, RDF.type, SHACL.NodeShape)) if not isinstance(s, BNode)]
     logger.debug("Loaded Node Shapes: %s", node_shapes)
     # find all PropertyShapes
-    property_shapes = [s for (s, _, _) in g.triples((None, RDF.type, SHACL.PropertyShape))
-                       if not isinstance(s, BNode)]
+    property_shapes = [s for (s, _, _) in g.triples((None, RDF.type, SHACL.PropertyShape)) if not isinstance(s, BNode)]
     logger.debug("Loaded Property Shapes: %s", property_shapes)
     # define the list of shapes to extract
     shapes = node_shapes + property_shapes
@@ -299,9 +294,7 @@ def load_shapes_from_graph(g: Graph) -> ShapesList:
     return ShapesList(node_shapes, property_shapes, subgraphs, g)
 
 
-def resolve_parent_shape(
-    shapes_graph: Graph, source_shape_node: Node, shapes_registry
-) -> Optional[Shape]:
+def resolve_parent_shape(shapes_graph: Graph, source_shape_node: Node, shapes_registry) -> Optional[Shape]:
     """
     Try to resolve the parent NodeShape/PropertyShape for a BNode constraint node.
 

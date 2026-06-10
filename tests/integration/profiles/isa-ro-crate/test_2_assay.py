@@ -80,7 +80,7 @@ def test_isa_assay_identifier_not_string():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Root Data Entity must be Investigation"],
+        # expected_triggered_requirements=["Root Data Entity must be Investigation"],  # noqa: ERA001
         expected_triggered_issues=[
             "Assay entity MUST have a non-empty identifier of type string"
         ],
@@ -201,7 +201,7 @@ def test_isa_assay_no_shoulds():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Study MUST have base properties"],
+        # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
         expected_triggered_issues=[
             "Assay entity SHOULD have a non-empty name of type string",
             "Assay entity SHOULD have a non-empty description of type string",
@@ -259,7 +259,7 @@ def test_isa_assay_shoulds_have_wrong_types():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Study MUST have base properties"],
+        # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
         expected_triggered_issues=[
             "Assay name MUST be of type string",
             "Assay description MUST be of type string",

@@ -89,7 +89,6 @@ class ProgressMonitor(Subscriber):
         logger.debug("Event: %s", event.event_type)
         if event.event_type == EventType.VALIDATION_START:
             logger.debug("Validation started")
-            # self.start()
         if event.event_type == EventType.PROFILE_VALIDATION_START:
             assert isinstance(event, ProfileValidationEvent)
             logger.debug("Profile validation start: %s", event.profile.identifier)

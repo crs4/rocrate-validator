@@ -193,9 +193,6 @@ def do_entity_test(
 
         # check requirement
         failed_requirements = [_.name for _ in result.failed_requirements]
-        # assert len(failed_requirements) == len(expected_triggered_requirements), \
-        #     f"Expected {len(expected_triggered_requirements)} requirements to be "\
-        #     f"triggered, but got {len(failed_requirements)}"
 
         # check that the expected requirements are triggered
         for expected_triggered_requirement in expected_triggered_requirements:

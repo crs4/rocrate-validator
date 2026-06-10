@@ -138,7 +138,6 @@ def test_validate_with_invalid_profiles_path_dir(cli_runner: CliRunner):
         ]
     )
     assert result.exit_code == 2
-    # logger.debug(result.output)
     # On narrow terminals the Rich error panel wraps the message across lines
     # and inserts box-drawing borders (│) between words; strip those and
     # collapse whitespace so the match does not depend on terminal width.
@@ -151,9 +150,7 @@ def test_profiles_list(cli_runner: CliRunner):
     Test the list of profiles.
     """
     result = cli_runner.invoke(cli, ["profiles", "list", "--no-paging"])
-    # logger.debug("Profiles list output: %s", result.output)
     assert result.exit_code == 0
-    # assert "Available profiles:" in result.output
     assert "ro-crate-1.1" in result.output  # Check for a known profile
 
 
@@ -162,9 +159,7 @@ def test_extra_profiles_list(cli_runner: CliRunner, fake_profiles_path: Path):
     Test the list of extra profiles.
     """
     result = cli_runner.invoke(cli, ["profiles", "--extra-profiles-path", fake_profiles_path, "list", "--no-paging"])
-    # logger.debug("Extra profiles list output: %s", result.output)
     assert result.exit_code == 0
-    # assert "Available profiles:" in result.output
     assert "Profile A" in result.output  # Check for a known extra profile
 
 

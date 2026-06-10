@@ -46,7 +46,7 @@ def test_isa_property_value_name():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Study MUST have base properties"],
+        # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
         expected_triggered_issues=[
             "PropertyValue entity MUST have a non-empty name of type string"
         ],
@@ -80,7 +80,7 @@ def test_isa_property_value_name_of_incorrect_type():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Study MUST have base properties"],
+        # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
         expected_triggered_issues=[
             "PropertyValue entity MUST have a non-empty name of type string"
         ],
@@ -111,7 +111,7 @@ def test_isa_property_value_value():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Study MUST have base properties"],
+        # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
         expected_triggered_issues=[
             "PropertyValue entity SHOULD have at least one value"
         ],
@@ -147,7 +147,7 @@ def test_isa_property_value_value_of_incorrect_type():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Study MUST have base properties"],
+        # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
         expected_triggered_issues=[
             "PropertyValue value MUST be of type string, float, or integer"
         ],

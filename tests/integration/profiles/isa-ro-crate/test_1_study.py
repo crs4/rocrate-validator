@@ -83,7 +83,7 @@ def test_isa_study_identifier_not_string():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Study MUST have base properties"],
+        # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
         expected_triggered_issues=[
             "Study entity MUST have a non-empty identifier of type string"
         ],
@@ -148,7 +148,7 @@ def test_isa_study_name_not_string():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Study MUST have base properties"],
+        # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
         expected_triggered_issues=[
             "Study entity MUST have a non-empty name of type string"
         ],
@@ -259,7 +259,7 @@ def test_isa_study_no_shoulds():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Study MUST have base properties"],
+        # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
         expected_triggered_issues=[
             "Study entity SHOULD have a dateCreated",
             "Study entity SHOULD have a datePublished",
@@ -313,7 +313,7 @@ def test_isa_study_shoulds_have_wrong_types():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Study MUST have base properties"],
+        # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
         expected_triggered_issues=[
             "Study dateCreated MUST be a valid date literal",
             "Study datePublished MUST be a valid date literal",

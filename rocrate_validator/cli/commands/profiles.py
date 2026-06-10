@@ -293,7 +293,6 @@ def __compacted_describe_profile__(profile):
                            f"{levels_count[2]}"))
 
     table = Table(show_header=True,
-                  #   renderer=renderer,
                   title=f"[cyan]{len(requirements)}[/cyan] Profile Requirements",
                   title_style="italic bold",
                   header_style="bold cyan",
@@ -345,7 +344,6 @@ def __verbose_describe_profile__(profile):
             count_checks += 1
 
     table = Table(show_header=True,
-                  #   renderer=renderer,
                   title=f"[cyan]{count_checks}[/cyan] Profile Requirements Checks",
                   title_style="italic bold",
                   header_style="bold cyan",

@@ -38,9 +38,6 @@ from rocrate_validator.utils.io_helpers.output.text.layout.report import LiveTex
 from rocrate_validator.utils.paths import get_profiles_path
 from rocrate_validator.utils.uri import validate_rocrate_uri
 
-# from rich.markdown import Markdown
-# from rich.table import Table
-
 # set the default profiles path
 DEFAULT_PROFILES_PATH = get_profiles_path()
 

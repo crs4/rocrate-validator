@@ -17,7 +17,7 @@ import logging
 
 from rocrate_validator.models import Severity
 
-# from tests.conftest import SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER
+# from tests.conftest import SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER  # noqa: ERA001
 from tests.ro_crates import ValidROC
 from tests.shared import SPARQL_PREFIXES, do_entity_test
 
@@ -49,7 +49,7 @@ def test_isa_protocol_no_name():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Protocol SHOULD have name"],
+        # expected_triggered_requirements=["Protocol SHOULD have name"],  # noqa: ERA001
         expected_triggered_issues=[
             "Protocol entity SHOULD have a non-empty name of type string"
         ],
@@ -83,7 +83,7 @@ def test_isa_protocol_name_incorrect_type():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Protocol SHOULD have name"],
+        # expected_triggered_requirements=["Protocol SHOULD have name"],  # noqa: ERA001
         expected_triggered_issues=["Protocol name MUST be of type string"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
@@ -113,7 +113,7 @@ def test_isa_protocol_no_description():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Protocol SHOULD have description"],
+        # expected_triggered_requirements=["Protocol SHOULD have description"],  # noqa: ERA001
         expected_triggered_issues=[
             "Protocol entity SHOULD have a non-empty description of type string"
         ],
@@ -148,7 +148,7 @@ def test_isa_protocol_description_incorrect_type():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Protocol SHOULD have description"],
+        # expected_triggered_requirements=["Protocol SHOULD have description"],  # noqa: ERA001
         expected_triggered_issues=["Protocol description MUST be of type string"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
@@ -178,7 +178,7 @@ def test_isa_protocol_no_intendedUse():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Protocol SHOULD have intended use"],
+        # expected_triggered_requirements=["Protocol SHOULD have intended use"],  # noqa: ERA001
         expected_triggered_issues=["Protocol entity SHOULD have an intended use"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
@@ -216,8 +216,8 @@ def test_isa_protocol_not_correctly_referenced_from_process():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=True,
-        # expected_triggered_requirements=["Protocol SHOULD have intended use"],
-        # expected_triggered_issues=["Protocol intended use MUST be of type string or DefinedTerm"],
+        # expected_triggered_requirements=["Protocol SHOULD have intended use"],  # noqa: ERA001
+        # expected_triggered_issues=["Protocol intended use MUST be of type string or DefinedTerm"],  # noqa: ERA001
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
         disable_inherited_profiles_issue_reporting=True,
@@ -250,7 +250,7 @@ def test_isa_protocol_intendedUse_incorrect_type():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Protocol SHOULD have intended use"],
+        # expected_triggered_requirements=["Protocol SHOULD have intended use"],  # noqa: ERA001
         expected_triggered_issues=["Protocol intended use MUST be of type string or DefinedTerm"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,

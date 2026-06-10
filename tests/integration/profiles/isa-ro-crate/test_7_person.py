@@ -45,7 +45,7 @@ def test_isa_person_given_name():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Study MUST have base properties"],
+        # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
         expected_triggered_issues=[
             "Person entity MUST have a non-empty given name of type string"
         ],
@@ -118,7 +118,7 @@ def test_isa_person_given_name_of_incorrect_type():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Study MUST have base properties"],
+        # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
         expected_triggered_issues=[
             "Person entity MUST have a non-empty given name of type string"
         ],
@@ -148,7 +148,7 @@ def test_isa_person_family_name():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Study MUST have base properties"],
+        # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
         expected_triggered_issues=[
             "Person entity SHOULD have a non-empty family name of type string"
         ],
@@ -181,7 +181,7 @@ def test_isa_person_family_name_of_incorrect_type():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Study MUST have base properties"],
+        # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
         expected_triggered_issues=["Person family name MUST be of type string"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
@@ -209,7 +209,7 @@ def test_isa_person_email():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Study MUST have base properties"],
+        # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
         expected_triggered_issues=[
             "Person entity SHOULD have a non-empty email of type string"
         ],
@@ -242,7 +242,7 @@ def test_isa_person_email_of_incorrect_type():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Study MUST have base properties"],
+        # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
         expected_triggered_issues=["Person email MUST be of type string"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
@@ -271,7 +271,7 @@ def test_isa_person_identifier():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Study MUST have base properties"],
+        # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
         expected_triggered_issues=[
             "Person entity SHOULD have a non-empty identifier of type string"
         ],
@@ -305,7 +305,7 @@ def test_isa_person_identifier_of_incorrect_type():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Study MUST have base properties"],
+        # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
         expected_triggered_issues=["Person identifier MUST be of type string"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
@@ -334,7 +334,7 @@ def test_isa_person_affiliation():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Study MUST have base properties"],
+        # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
         expected_triggered_issues=[
             "Person entity SHOULD have at least one affiliation"
         ],
@@ -368,7 +368,7 @@ def test_isa_person_affiliation_of_incorrect_type():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Study MUST have base properties"],
+        # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
         expected_triggered_issues=["Person affiliation MUST be of type Organization"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
@@ -397,7 +397,7 @@ def test_isa_person_job_title():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Study MUST have base properties"],
+        # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
         expected_triggered_issues=["Person entity SHOULD have at least one job title"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
@@ -429,7 +429,7 @@ def test_isa_person_job_title_of_incorrect_type():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Study MUST have base properties"],
+        # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
         expected_triggered_issues=["Person job title MUST be of type DefinedTerm"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
