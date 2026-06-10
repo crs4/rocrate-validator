@@ -981,7 +981,7 @@ class ROCrateRemoteZip(ROCrateLocalZip):
         file_size = response.headers.get('Content-Length')
         if file_size is not None:
             return int(file_size)
-        raise Exception("Could not determine the file size from the headers")
+        raise ValueError("Could not determine the file size from the headers")
 
     @staticmethod
     def __fetch_range__(uri: str, start, end):
@@ -995,7 +995,7 @@ class ROCrateRemoteZip(ROCrateLocalZip):
         eocd_signature = b'PK\x05\x06'
         eocd_offset = data.rfind(eocd_signature)
         if eocd_offset == -1:
-            raise Exception("EOCD not found")
+            raise ValueError("EOCD not found")
         return eocd_offset
 
     @staticmethod
