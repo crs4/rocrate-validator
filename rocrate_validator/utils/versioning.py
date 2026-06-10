@@ -46,7 +46,7 @@ def get_git_commit() -> str:
 
     :return: The git commit hash
     """
-    return run_git_command(['git', 'rev-parse', '--short', 'HEAD']) or ""
+    return run_git_command(["git", "rev-parse", "--short", "HEAD"]) or ""
 
 
 def is_release_tag(git_sha: str) -> bool:
@@ -56,7 +56,7 @@ def is_release_tag(git_sha: str) -> bool:
     :param git_sha: The git sha
     :return: True if the sha corresponds to a release tag, False otherwise
     """
-    tags = run_git_command(['git', 'tag', '--points-at', git_sha])
+    tags = run_git_command(["git", "tag", "--points-at", git_sha])
     return bool(tags)
 
 
@@ -66,7 +66,7 @@ def get_last_tag() -> str:
 
     :return: The last tag
     """
-    return run_git_command(['git', 'describe', '--tags', '--abbrev=0']) or ""
+    return run_git_command(["git", "describe", "--tags", "--abbrev=0"]) or ""
 
 
 def get_commit_distance(tag: Optional[str] = None) -> int:
@@ -78,7 +78,7 @@ def get_commit_distance(tag: Optional[str] = None) -> int:
     if not tag:
         tag = get_last_tag()
     try:
-        count = run_git_command(['git', 'rev-list', '--count', f"{tag}..HEAD"])
+        count = run_git_command(["git", "rev-list", "--count", f"{tag}..HEAD"])
         return int(count) if count else 0
     except Exception as e:
         if logger.isEnabledFor(logging.DEBUG):
@@ -93,7 +93,7 @@ def has_uncommitted_changes() -> bool:
 
     :return: True if there are uncommitted changes, False otherwise
     """
-    return bool(run_git_command(['git', 'status', '--porcelain']))
+    return bool(run_git_command(["git", "status", "--porcelain"]))
 
 
 def get_version() -> str:
@@ -129,7 +129,7 @@ def get_min_python_version() -> tuple[int, ...]:
     min_version_str = config["tool"]["poetry"]["dependencies"]["python"]
     assert min_version_str, "The minimum Python version is required"
     # remove any non-digit characters
-    min_version_str = re.sub(r'[^\d.]+', '', min_version_str)
+    min_version_str = re.sub(r"[^\d.]+", "", min_version_str)
     # convert the version string to a tuple
     min_version = tuple(map(int, min_version_str.split(".")))
     logger.debug(f"Minimum Python version: {min_version}")
