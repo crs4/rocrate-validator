@@ -110,7 +110,7 @@ def list_matching_file_paths(
     :return: A list of file paths
     """
     # initialize an empty list to store the file paths
-    file_paths = []
+    file_paths: list[str] = []
 
     # extension
     extension = get_format_extension(serialization_format)
