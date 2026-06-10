@@ -253,7 +253,7 @@ class SHACLCheck(RequirementCheck):
                     self.identifier,
                     ctx.current_validation_result,
                 )
-                return ctx.current_validation_result
+                return bool(ctx.current_validation_result)
         except SHACLValidationAlreadyProcessed:
             logger.debug(
                 "SHACL Validation of requirement check %s (profile: %s) already processed",
