@@ -70,7 +70,7 @@ def is_external_reference(value: object) -> bool:
 
     # Reject scheme-only input (``urn:``, ``doi:``): syntactically valid
     # per the grammar but semantically unusable as an identifier.
-    return parts.netloc or parts.path or parts.query or parts.fragment
+    return bool(parts.netloc or parts.path or parts.query or parts.fragment)
 
 
 class URI:
