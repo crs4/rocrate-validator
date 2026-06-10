@@ -1685,6 +1685,7 @@ class ValidationStatistics(Subscriber):
         context: Optional[ValidationContext] = None,
         skip_initialization: bool = False,
     ):
+        super().__init__(name=self.__class__.__name__)
         if isinstance(settings, dict):
             settings = ValidationSettings.parse(settings)
         self._settings = settings
