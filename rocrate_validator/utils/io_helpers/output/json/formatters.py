@@ -111,8 +111,14 @@ def _compute_overall_statistics(results: list[ValidationResult], verbose: bool) 
         return None
     stats_dict = stats.to_dict()
     if not verbose:
-        for key in ("passed_requirements", "failed_requirements",
-                    "passed_checks", "failed_checks", "checks", "requirements"):
+        for key in (
+            "passed_requirements",
+            "failed_requirements",
+            "passed_checks",
+            "failed_checks",
+            "checks",
+            "requirements",
+        ):
             stats_dict.pop(key, None)
     return stats_dict
 
@@ -122,7 +128,6 @@ def format_validation_statistics(data: ValidationStatistics) -> str:
 
 
 class ValidationResultJSONOutputFormatter(OutputFormatter):
-
     def __init__(self, result: ValidationResult):
         self._result = result
 
