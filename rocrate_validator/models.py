@@ -270,7 +270,7 @@ class Profile:
         self._overridden_by: list[Profile] = []
 
         # init property to store the RDF node which is the root of the profile specification graph
-        self._profile_node = None
+        self._profile_node: Any = None
 
         # init property to store the RDF graph of the profile specification
         self._profile_specification_graph: Optional[Graph] = None
@@ -414,7 +414,7 @@ class Profile:
 
     @property
     def label(self):
-        return self.__get_specification_property__("label", RDFS)
+        return self.__get_specification_property__("label", RDFS)  # type: ignore[arg-type]
 
     @property
     def comment(self):
@@ -422,7 +422,7 @@ class Profile:
         The comment added to the profile in the profile specification file
         (i.e., the value of the rdfs: comment property in the `profile.ttl` file).
         """
-        return self.__get_specification_property__("comment", RDFS)
+        return self.__get_specification_property__("comment", RDFS)  # type: ignore[arg-type]
 
     @property
     def version(self):
@@ -2321,62 +2321,73 @@ class AggregatedValidationStatistics:
         """
         Compute the overall aggregated statistics
         """
-        # Initialize the overall statistics
-        result = {
-            "profiles": set(),
-            "requirements": set(),
-            "checks": set(),
-            "checks_by_severity": {},
-            "failed_requirements": set(),
-            "failed_checks": set(),
-            "passed_requirements": set(),
-            "passed_checks": set(),
-            "started_at": None,
-            "finished_at": None,
-            "duration": 0.0,
-        }
+        profiles: set[Profile] = set()
+        requirements: set[Requirement] = set()
+        checks: set[RequirementCheck] = set()
+        checks_by_severity: dict[Severity, set[RequirementCheck]] = {}
+        failed_requirements: set[Requirement] = set()
+        failed_checks: set[RequirementCheck] = set()
+        passed_requirements: set[Requirement] = set()
+        passed_checks: set[RequirementCheck] = set()
+        started_at: Optional[datetime] = None
+        finished_at: Optional[datetime] = None
+        duration: float = 0.0
 
         # Aggregate statistics from each ValidationStatistics instance
         for stats in self._statistics_list:
             # Aggregate profiles
             for profile in stats.profiles:
-                result["profiles"].add(profile)
+                profiles.add(profile)
 
             # Aggregate total requirements and checks
-            result["requirements"].update(stats.requirements)
-            result["checks"].update(stats.checks)
-            result["checks_by_severity"].update(stats.checks_by_severity)
+            requirements.update(stats.requirements)
+            checks.update(stats.checks)
+            checks_by_severity.update(stats.checks_by_severity)
 
             # Aggregate failed and passed requirements and checks
-            result["failed_requirements"].update(stats.failed_requirements)
-            result["failed_checks"].update(stats.failed_checks)
-            result["passed_requirements"].update(stats.passed_requirements)
-            result["passed_checks"].update(stats.passed_checks)
+            failed_requirements.update(stats.failed_requirements)
+            failed_checks.update(stats.failed_checks)
+            passed_requirements.update(stats.passed_requirements)
+            passed_checks.update(stats.passed_checks)
 
             # Aggregate started_at and finished_at
-            result["started_at"] = (
-                min(result["started_at"], stats.started_at) if result["started_at"] else stats.started_at
-            )
-            result["finished_at"] = (
-                max(result["finished_at"], stats.finished_at) if result["finished_at"] else stats.finished_at
-            )
+            if started_at is not None and stats.started_at is not None:
+                started_at = min(started_at, stats.started_at)
+            elif stats.started_at is not None:
+                started_at = stats.started_at
+            if finished_at is not None and stats.finished_at is not None:
+                finished_at = max(finished_at, stats.finished_at)
+            elif stats.finished_at is not None:
+                finished_at = stats.finished_at
             # Aggregate duration
-            result["duration"] += stats.duration or 0.0
+            duration += stats.duration or 0.0
 
         # Sort the sets to have consistent order
-        result["profiles"] = sorted(result["profiles"], key=lambda p: p.identifier)
-        result["requirements"] = sorted(result["requirements"], key=lambda r: r.identifier)
-        result["checks"] = sorted(result["checks"], key=lambda c: c.identifier)
-        result["checks_by_severity"] = {
-            k: sorted(v, key=lambda c: c.identifier) for k, v in result["checks_by_severity"].items()
+        sorted_profiles = sorted(profiles, key=lambda p: p.identifier)
+        sorted_requirements = sorted(requirements, key=lambda r: r.identifier)
+        sorted_checks = sorted(checks, key=lambda c: c.identifier)
+        sorted_checks_by_severity = {
+            k: sorted(v, key=lambda c: c.identifier) for k, v in checks_by_severity.items()
         }
-        result["failed_requirements"] = sorted(result["failed_requirements"], key=lambda r: r.identifier)
-        result["failed_checks"] = sorted(result["failed_checks"], key=lambda c: c.identifier)
-        result["passed_requirements"] = sorted(result["passed_requirements"], key=lambda r: r.identifier)
-        result["passed_checks"] = sorted(result["passed_checks"], key=lambda c: c.identifier)
+        sorted_failed_requirements = sorted(failed_requirements, key=lambda r: r.identifier)
+        sorted_failed_checks = sorted(failed_checks, key=lambda c: c.identifier)
+        sorted_passed_requirements = sorted(passed_requirements, key=lambda r: r.identifier)
+        sorted_passed_checks = sorted(passed_checks, key=lambda c: c.identifier)
 
         # return the aggregated statistics
-        return result
+        return {
+            "profiles": sorted_profiles,
+            "requirements": sorted_requirements,
+            "checks": sorted_checks,
+            "checks_by_severity": sorted_checks_by_severity,
+            "failed_requirements": sorted_failed_requirements,
+            "failed_checks": sorted_failed_checks,
+            "passed_requirements": sorted_passed_requirements,
+            "passed_checks": sorted_passed_checks,
+            "started_at": started_at,
+            "finished_at": finished_at,
+            "duration": duration,
+        }
 
 
 class ValidationResult:
@@ -2701,7 +2712,7 @@ class ValidationSettings:
     #: Verbose output
     verbose: bool = False
     #: Cache max age in seconds (negative values mean "never expire")
-    cache_max_age: Optional[int] = DEFAULT_HTTP_CACHE_MAX_AGE
+    cache_max_age: int = DEFAULT_HTTP_CACHE_MAX_AGE
     #: Cache path
     cache_path: Optional[Path] = None
     #: Flag to enable offline mode: HTTP requests are served only from the cache

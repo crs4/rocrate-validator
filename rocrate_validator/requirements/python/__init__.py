@@ -16,7 +16,7 @@ import inspect
 import re
 from collections.abc import Callable
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional, cast
 
 from rocrate_validator.constants import EXPECTED_CHECK_PARAM_COUNT
 from rocrate_validator.models import (
@@ -116,20 +116,21 @@ class PyRequirement(Requirement):
 
     def __init_checks__(self):
         # initialize the list of checks
-        checks = []
+        checks: list = []
         for name, member in inspect.getmembers(self.requirement_check_class, inspect.isfunction):
             # verify that the attribute set by the check decorator is present
             if hasattr(member, "check") and member.check is True:
                 check_name = None
                 try:
-                    check_name = member.name.strip()
+                    # `name`/`severity` are attributes attached dynamically by the @check decorator
+                    check_name = cast("Any", member).name.strip()
                 except Exception:
                     check_name = name.strip()
                 check_description = member.__doc__.strip() if member.__doc__ else ""
                 # init the check with the requirement level
                 severity = None
                 try:
-                    severity = member.severity
+                    severity = cast("Any", member).severity
                     logger.debug("Severity set for check '%r' from decorator: %r", check_name, severity)
                 except Exception:
                     pass

@@ -234,7 +234,7 @@ def __extract_related_triples__(graph, subject_node, processed_nodes=None):
     Recursively extract all triples related to a given shape.
     """
 
-    related_triples = []
+    related_triples: list = []
 
     processed_nodes = processed_nodes if processed_nodes is not None else set()
 

@@ -61,7 +61,7 @@ class Console(BaseConsole):
             return formatter(obj)
         return obj
 
-    def print(self, obj, *args, **kwargs):
+    def print(self, obj, *args, **kwargs):  # type: ignore[override]  # intentional formatting wrapper
         if not self.disabled:
             out = self.__format_data__(obj, *args, **kwargs)
             super().print(out, *args, **kwargs)

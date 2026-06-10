@@ -376,8 +376,8 @@ class LiveTextProgressLayout:
         with Live(message, console=self.console, refresh_per_second=4) as live:
             # Start validation in background while updating dots
 
-            result_container = [None]
-            exception_container = [None]
+            result_container: list[Optional[ValidationResult]] = [None]
+            exception_container: list[Optional[BaseException]] = [None]
 
             def run_validation():
                 try:
@@ -402,9 +402,9 @@ class LiveTextProgressLayout:
             # Wait for the validation thread to finish
             validation_thread.join()
             # Check for exceptions
-            if exception_container[0]:
-                # pylint: disable-next=raising-bad-type  # populated with an exception by the worker thread
-                raise exception_container[0]
+            error = exception_container[0]
+            if error is not None:
+                raise error
             message.append(" DONE!", style="bold")
             # Final update to indicate completion
             return result_container[0]

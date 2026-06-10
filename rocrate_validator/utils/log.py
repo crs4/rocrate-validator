@@ -210,7 +210,7 @@ class LoggerProxy:
 
     def __init__(self, name: str):
         self.name = name
-        self._instance = None
+        self._instance: Optional[Logger] = None
 
     def _initialize(self):
         _acquireLock()

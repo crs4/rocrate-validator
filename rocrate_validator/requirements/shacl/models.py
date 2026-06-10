@@ -48,7 +48,7 @@ class SHACLNode:
         # store the shapes graph
         self._graph = graph
         # cache the hash
-        self._hash = None
+        self._hash: Optional[int] = None
         # store the parent shape
         self._parent = parent
 
