@@ -28,9 +28,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional, Protocol, Union, cast
 from urllib.error import HTTPError
 
-if TYPE_CHECKING:
-    from collections.abc import Collection
-
 import enum_tools
 from rdflib import RDF, RDFS, Graph, Namespace, URIRef
 
@@ -71,6 +68,9 @@ from rocrate_validator.utils.python_helpers import (
     get_requirement_name_from_file,
 )
 from rocrate_validator.utils.uri import URI
+
+if TYPE_CHECKING:
+    from collections.abc import Collection
 
 # set the default profiles path
 DEFAULT_PROFILES_PATH = get_profiles_path()
