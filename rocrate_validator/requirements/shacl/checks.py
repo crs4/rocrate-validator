@@ -314,14 +314,14 @@ class SHACLCheck(RequirementCheck):
         end_time = timer()
         logger.debug(f"Execution time for getting shapes: {end_time - start_time} seconds")
 
-        # # uncomment to save the graphs to the logs folder (for debugging purposes)
-        # start_time = timer()
-        # data_graph.serialize("logs/data_graph.ttl", format="turtle")
-        # shapes_graph.serialize("logs/shapes_graph.ttl", format="turtle")
+        ## uncomment to save the graphs to the logs folder (for debugging purposes)
+        # start_time = timer()  # noqa: ERA001
+        # data_graph.serialize("logs/data_graph.ttl", format="turtle")  # noqa: ERA001
+        # shapes_graph.serialize("logs/shapes_graph.ttl", format="turtle")  # noqa: ERA001
         # if ontology_graph:
-        #     ontology_graph.serialize("logs/ontology_graph.ttl", format="turtle")
-        # end_time = timer()
-        # logger.debug(f"Execution time for saving graphs: {end_time - start_time} seconds")
+        #     ontology_graph.serialize("logs/ontology_graph.ttl", format="turtle")  # noqa: ERA001
+        # end_time = timer()  # noqa: ERA001
+        # logger.debug(f"Execution time for saving graphs: {end_time - start_time} seconds")  # noqa: ERA001
 
         # validate the data graph
         start_time = timer()
@@ -331,7 +331,7 @@ class SHACLCheck(RequirementCheck):
             ontology_graph=ontology_graph,
             **shacl_context.settings.to_dict(),
         )
-        # shacl_result.results_graph.serialize("logs/validation_results.ttl", format="turtle")
+        # shacl_result.results_graph.serialize("logs/validation_results.ttl", format="turtle") # noqa: ERA001
         # parse the validation result
         end_time = timer()
         logger.debug("Validation '%s' conforms: %s", self.name, shacl_result.conforms)
