@@ -322,11 +322,11 @@ class Profile:
         property: str,
         namespace: Namespace,
         pop_first: bool = True,
-        as_Python_object: bool = True,
+        as_python_object: bool = True,
     ) -> Union[str, list[Union[str, URIRef]], None]:
         assert self._profile_specification_graph is not None, "Profile specification graph not loaded"
         nodes = list(self._profile_specification_graph.objects(self._profile_node, namespace[property]))
-        values: list = [cast("Any", v).toPython() for v in nodes] if (nodes and as_Python_object) else list(nodes)
+        values: list = [cast("Any", v).toPython() for v in nodes] if (nodes and as_python_object) else list(nodes)
         if pop_first:
             return values[0] if values else None
         return values

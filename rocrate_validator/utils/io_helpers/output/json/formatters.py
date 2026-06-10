@@ -72,9 +72,9 @@ def format_validation_results(data: dict[str, ValidationResult],
     json_output["passed"] = True
 
     # Initialize the profile results dictionary
-    _RESULTS_KEY = "validation_results_by_profile"
+    results_key = "validation_results_by_profile"
     if verbose:
-        json_output[_RESULTS_KEY] = {}
+        json_output[results_key] = {}
 
     # Iterate over each validation result
     for profile_identifier, result in data.items():
@@ -86,7 +86,7 @@ def format_validation_results(data: dict[str, ValidationResult],
             result_dict["statistics"] = result.statistics.to_dict()
         # Add the result to the profiles dictionary in verbose mode
         if verbose:
-            json_output[_RESULTS_KEY][profile_identifier] = result_dict
+            json_output[results_key][profile_identifier] = result_dict
         # Update the overall passed status
         json_output["passed"] = json_output["passed"] and result.passed()
         # Update the overall list of issues
