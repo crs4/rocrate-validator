@@ -122,7 +122,7 @@ def __setup_logger__(logger: Logger):
     # parse the log level
     level = settings.get('level', __settings__['level'])
     if not isinstance(level, int):
-        level = getattr(__module__, settings['level'].upper(), None)
+        level = getattr(__module__, settings['level'].upper(), WARNING)
 
     # set the log level
     logger.setLevel(level)
