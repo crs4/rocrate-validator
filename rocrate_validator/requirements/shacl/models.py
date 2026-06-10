@@ -434,7 +434,9 @@ class ShapesRegistry:
         instance = getattr(ctx, "_shapes_registry_instance", None)
         if not instance:
             instance = cls()
-            ctx._shapes_registry_instance = instance
+            # `ctx` is intentionally typed `object`: the instance is cached as a
+            # dynamic attribute on whatever context is passed in.
+            ctx._shapes_registry_instance = instance  # type: ignore[attr-defined]
         return instance
 
 

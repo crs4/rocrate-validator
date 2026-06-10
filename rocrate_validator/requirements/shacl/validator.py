@@ -241,7 +241,8 @@ class SHACLValidationContext(ValidationContext):
         instance = getattr(context, "_shacl_validation_context", None)
         if not instance:
             instance = SHACLValidationContext(context)
-            context._shacl_validation_context = instance
+            # Cached as a dynamic attribute on the validation context.
+            context._shacl_validation_context = instance  # type: ignore[attr-defined]
         return instance
 
 
