@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import re
+import subprocess
 import sys
 from typing import Optional
 
@@ -30,7 +31,6 @@ def run_git_command(command: list[str]) -> Optional[str]:
     :param command: The git command
     :return: The output of the command
     """
-    import subprocess  # noqa: PLC0415
 
     try:
         return subprocess.check_output(command, stderr=subprocess.DEVNULL).decode().strip()
