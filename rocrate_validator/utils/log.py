@@ -18,7 +18,7 @@ import threading
 from io import StringIO
 from logging import CRITICAL, DEBUG, ERROR, INFO, WARNING, Handler, Logger, StreamHandler
 from logging import basicConfig as logging_basicConfig
-from typing import Optional
+from typing import Any, Optional
 
 import colorlog
 from rich.console import Console
@@ -44,7 +44,7 @@ def get_log_format(level: int):
     return log_format
 
 
-DEFAULT_SETTINGS = {
+DEFAULT_SETTINGS : dict[str, Any] = {
     'enabled': True,
     'level': WARNING,
     'format': get_log_format(WARNING)
