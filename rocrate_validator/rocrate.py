@@ -871,7 +871,7 @@ class ROCrateLocalZip(ROCrate):
         if not self.uri.as_path().is_file():
             raise ROCrateInvalidURIError(uri=path)
         # check if the file is a zip file
-        if not self.uri.as_path().suffix == ".zip":
+        if self.uri.as_path().suffix != ".zip":
             raise ROCrateInvalidURIError(uri=path)
         self._zipref = zipfile.ZipFile(path)
         logger.debug("Initialized zip reference: %s", self._zipref)
