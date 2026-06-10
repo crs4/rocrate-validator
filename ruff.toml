@@ -43,7 +43,21 @@ extend-select = [
     "FURB", # refurb – more idiomatic Python patterns
     "RUF",  # Ruff-specific rules
     "PL",   # pylint – PLC/PLE/PLR/PLW
+    "C90",     # mccabe – cyclomatic complexity
+    "ERA",     # eradicate – commented-out code
+    "PLR0914", # too-many-locals (preview) – pylint R0914 parity
+    "PLR1702", # too-many-nested-blocks (preview) – pylint R1702 parity
 ]
+
+# Activate the preview-stage rules selected above (PLR0914 / PLR1702 are
+# not yet stabilised in Ruff). `explicit-preview-rules` keeps preview-stage
+# rules from being pulled in via the category selectors above (PL, E, B, ...),
+# so only PLR0914 / PLR1702 are added from the preview set. NOTE: enabling
+# `preview` also widens category membership to a handful of *stable* rules
+# (BLE/TRY/D/PIE/...); those are explicitly suppressed in `ignore` below to
+# keep the net effect limited to the two pylint-parity rules requested.
+preview = true
+explicit-preview-rules = true
 
 # Rules intentionally disabled.
 ignore = [
@@ -53,6 +67,20 @@ ignore = [
     "PLR0913", # too-many-arguments: pre-existing project style
     "PLR0917", # too-many-positional-arguments: pre-existing project style
     "PLW3201", # bad-dunder-method-name: project uses `__method__` convention; renaming is not viable
+    # --- Stable rules pulled in only as a side effect of `preview = true` ---
+    # (not part of the original selection; suppressed to keep the preview flag
+    # scoped to PLR0914 / PLR1702. Enable individually later if desired.)
+    "BLE001",  # blind-except
+    "TRY401",  # verbose-log-message
+    "TRY201",  # verbose-raise
+    "TRY002",  # raise-vanilla-class
+    "D419",    # empty-docstring
+    "PIE804",  # unnecessary-dict-kwargs
+    "PIE810",  # multiple-starts-ends-with
+    "DTZ901",  # datetime-min-max
+    "PYI034",  # non-self-return-type
+    "PYI061",  # redundant-none-literal
+    "S110",    # try-except-pass
 ]
 
 [lint.per-file-ignores]
@@ -60,4 +88,9 @@ ignore = [
 "tests/**" = [
     "PLR2004", # magic-value-comparison: tests use literal values in assertions
     "PLC0415", # import-outside-top-level: tests use local imports for mocking
+    "C901",    # complex-structure: test helpers/scenarios are not held to the prod complexity gate
 ]
+
+# Cyclomatic complexity threshold for the mccabe (C90) check.
+[lint.mccabe]
+max-complexity = 10
