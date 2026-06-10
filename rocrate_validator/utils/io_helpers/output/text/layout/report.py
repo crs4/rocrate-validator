@@ -74,6 +74,8 @@ class ValidationReportLayout(Layout):
         self.failed_checks: Optional[Layout] = None
         self.report_details_container: Optional[Layout] = None
         self.overall_result: Optional[Layout] = None
+        self.requirement_checks_by_severity_container_layout: Any = None
+        self.checks_stats_layout: Any = None
 
     @property
     def layout(self):
