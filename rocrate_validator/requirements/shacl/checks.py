@@ -423,42 +423,11 @@ class SHACLCheck(RequirementCheck):
                 and shacl_context.settings.disable_inherited_profiles_issue_reporting
             ):
                 continue
-            for violation in failed_requirements_checks_violations[requirementCheck.identifier]:
-                violating_entity = make_uris_relative(cast("Any", violation.focusNode).toPython(),
-                                                      shacl_context.publicID)
-                violating_property = violation.resultPath.toPython() if violation.resultPath else None
-                violation_message = violation.get_result_message(str(shacl_context.rocrate_uri))
-                registered_check_issues = shacl_context.result.get_issues_by_check(requirementCheck)
-                skip_requirement_check = False
-                # check if the violation is already registered
-                # and skip the requirement check if it is
-                for check_issue in registered_check_issues:
-                    if (
-                        check_issue.message == violation_message
-                        and check_issue.violatingProperty == violating_property
-                        and check_issue.violatingEntity == violating_entity
-                        and check_issue.violatingPropertyValue == violation.value
-                    ):
-                        skip_requirement_check = True
-                        logger.debug(
-                            "Skipping requirement check %s: %s",
-                            requirementCheck.identifier,
-                            violation_message,
-                        )
-                        break
-                # if the check is not to be skipped, add the issue to the context
-                if not skip_requirement_check:
-                    c = shacl_context.result.add_issue(
-                        message=violation.get_result_message(str(shacl_context.rocrate_uri)),
-                        check=requirementCheck,
-                        violatingProperty=violating_property,
-                        violatingEntity=violating_entity,
-                        violatingPropertyValue=violation.value,
-                    )
-                    logger.debug("Added validation issue to the context: %s", c)
-                # if the fail fast mode is enabled, stop the validation after the first issue
-                if shacl_context.fail_fast:
-                    break
+            self.__register_check_violations__(
+                shacl_context,
+                requirementCheck,
+                failed_requirements_checks_violations[requirementCheck.identifier],
+            )
 
             # If the fail fast mode is disabled, notify all the validation issues
             # related to profiles other than the current one.
@@ -467,10 +436,7 @@ class SHACLCheck(RequirementCheck):
             # all together and not profile by profile
             if requirementCheck.identifier not in failed_requirement_checks_notified:
                 shacl_context.result._add_executed_check(requirementCheck, False)
-                if (
-                    requirementCheck.identifier not in failed_requirement_checks_notified
-                    and requirementCheck.requirement.profile != shacl_context.current_validation_profile
-                ):
+                if requirementCheck.requirement.profile != shacl_context.current_validation_profile:
                     failed_requirement_checks_notified.append(requirementCheck.identifier)
                     shacl_context.validator.notify(
                         RequirementCheckValidationEvent(
@@ -486,6 +452,44 @@ class SHACLCheck(RequirementCheck):
             if shacl_context.fail_fast:
                 break
         return failed_requirement_checks_notified
+
+    def __register_check_violations__(self, shacl_context, requirementCheck, violations):
+        for violation in violations:
+            violating_entity = make_uris_relative(cast("Any", violation.focusNode).toPython(),
+                                                  shacl_context.publicID)
+            violating_property = violation.resultPath.toPython() if violation.resultPath else None
+            violation_message = violation.get_result_message(str(shacl_context.rocrate_uri))
+            registered_check_issues = shacl_context.result.get_issues_by_check(requirementCheck)
+            skip_requirement_check = False
+            # check if the violation is already registered
+            # and skip the requirement check if it is
+            for check_issue in registered_check_issues:
+                if (
+                    check_issue.message == violation_message
+                    and check_issue.violatingProperty == violating_property
+                    and check_issue.violatingEntity == violating_entity
+                    and check_issue.violatingPropertyValue == violation.value
+                ):
+                    skip_requirement_check = True
+                    logger.debug(
+                        "Skipping requirement check %s: %s",
+                        requirementCheck.identifier,
+                        violation_message,
+                    )
+                    break
+            # if the check is not to be skipped, add the issue to the context
+            if not skip_requirement_check:
+                c = shacl_context.result.add_issue(
+                    message=violation.get_result_message(str(shacl_context.rocrate_uri)),
+                    check=requirementCheck,
+                    violatingProperty=violating_property,
+                    violatingEntity=violating_entity,
+                    violatingPropertyValue=violation.value,
+                )
+                logger.debug("Added validation issue to the context: %s", c)
+            # if the fail fast mode is enabled, stop the validation after the first issue
+            if shacl_context.fail_fast:
+                break
 
     def __notify_skipped_checks__(self, shacl_context, failed_requirement_checks_notified):
         for skipped_check in list(shacl_context.result.skipped_checks):
