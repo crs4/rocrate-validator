@@ -873,7 +873,7 @@ class ROCrateLocalZip(ROCrate):
         # check if the file is a zip file
         if self.uri.as_path().suffix != ".zip":
             raise ROCrateInvalidURIError(uri=path)
-        self._zipref = zipfile.ZipFile(path)
+        self._zipref = zipfile.ZipFile(path)  # pylint: disable=consider-using-with
         logger.debug("Initialized zip reference: %s", self._zipref)
 
     def __get_file_info__(self, path: Union[str, Path]) -> zipfile.ZipInfo:
@@ -972,7 +972,7 @@ class ROCrateRemoteZip(ROCrateLocalZip):
         central_directory_data = self.__fetch_range__(url, central_directory_offset,
                                                       central_directory_offset + central_directory_size - 1)
         # Step 5: Parse the central directory and return the zip file
-        self._zipref = zipfile.ZipFile(io.BytesIO(central_directory_data))
+        self._zipref = zipfile.ZipFile(io.BytesIO(central_directory_data))  # pylint: disable=consider-using-with
 
     @property
     def size(self) -> int:
