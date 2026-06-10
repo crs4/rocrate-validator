@@ -194,7 +194,7 @@ class ROCrateEntity:
             return all(t in e_types for t in entity_types)
         return any(t in e_types for t in entity_types)
 
-    def __process_property__(self, name: str, data: object) -> object:
+    def __process_property__(self, _name: str, data: object) -> object:
         if isinstance(data, dict) and "@id" in data:
             entity = self.metadata.get_entity(data["@id"])
             if entity is None:

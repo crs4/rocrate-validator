@@ -32,16 +32,17 @@ from rocrate_validator.utils.versioning import get_version
 logger = logging.getLogger(__name__)
 
 
-def format_validation_result(data: ValidationResult,
-                             console: Console,
-                             console_options: ConsoleOptions) -> str:
-    return format_validation_results({data.context.profile_identifier: data},
-                                     console=console, console_options=console_options)
+def format_validation_result(data: ValidationResult, console: Console, console_options: ConsoleOptions) -> str:
+    return format_validation_results(
+        {data.context.profile_identifier: data}, console=console, console_options=console_options
+    )
 
 
-def format_validation_results(data: dict[str, ValidationResult],
-                              console: Optional[Console] = None,
-                              console_options: Optional[ConsoleOptions] = None) -> str:
+def format_validation_results(
+    data: dict[str, ValidationResult],
+    console: Optional[Console] = None,  # pylint: disable=unused-argument
+    console_options: Optional[ConsoleOptions] = None,
+) -> str:  # pylint: disable=unused-argument
 
     # Initialize an empty JSON output
     json_output: dict[str, Any] = {
@@ -130,7 +131,6 @@ class ValidationResultJSONOutputFormatter(OutputFormatter):
 
 
 class ValidationStatisticsJSONOutputFormatter(OutputFormatter):
-
     def __init__(self, statistics: ValidationStatistics):
         self._statistics = statistics
 
@@ -139,7 +139,6 @@ class ValidationStatisticsJSONOutputFormatter(OutputFormatter):
 
 
 class ValidationResultsJSONOutputFormatter(OutputFormatter):
-
     def __init__(self, results: dict[str, ValidationResult]):
         self._results = results
 

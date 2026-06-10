@@ -124,7 +124,7 @@ class RequirementLevel:
         return self.name == other.name and self.severity == other.severity
 
     def __lt__(self, other: object) -> bool:
-        # TODO: this ordering is not totally coherent, since for two objects a and b
+        # NOTE: this ordering is not totally coherent, since for two objects a and b
         # with equal Severity but different names you would have
         #       not a < b, which implies a >= b
         #       and also a != b and not a > b, which is incoherent with a >= b
@@ -319,13 +319,13 @@ class Profile:
 
     def __get_specification_property__(
         self,
-        property: str,
+        prop: str,
         namespace: Namespace,
         pop_first: bool = True,
         as_python_object: bool = True,
     ) -> Union[str, list[Union[str, URIRef]], None]:
         assert self._profile_specification_graph is not None, "Profile specification graph not loaded"
-        nodes = list(self._profile_specification_graph.objects(self._profile_node, namespace[property]))
+        nodes = list(self._profile_specification_graph.objects(self._profile_node, namespace[prop]))
         values: list = [cast("Any", v).toPython() for v in nodes] if (nodes and as_python_object) else list(nodes)
         if pop_first:
             return values[0] if values else None
@@ -1996,7 +1996,7 @@ class ValidationStatistics(Subscriber):
     def update(self, event: Event, ctx: Optional[ValidationContext] = None) -> None:
         self.__event_handlers__.get(event.event_type, lambda e, c: None)(event, ctx)
 
-    def __handle_validation_start__(self, event: Event, _ctx: Optional[ValidationContext]) -> None:
+    def __handle_validation_start__(self, _event: Event, _ctx: Optional[ValidationContext]) -> None:
         logger.debug("Validation started")
         self._stats["started_at"] = datetime.now(timezone.utc)
 
@@ -2004,10 +2004,10 @@ class ValidationStatistics(Subscriber):
         assert isinstance(event, ProfileValidationEvent)
         logger.debug("Profile validation start: %s", event.profile.identifier)
 
-    def __handle_requirement_validation_start__(self, event: Event, _ctx: Optional[ValidationContext]) -> None:
+    def __handle_requirement_validation_start__(self, _event: Event, _ctx: Optional[ValidationContext]) -> None:
         logger.debug("Requirement validation start")
 
-    def __handle_requirement_check_validation_start__(self, event: Event, _ctx: Optional[ValidationContext]) -> None:
+    def __handle_requirement_check_validation_start__(self, _event: Event, _ctx: Optional[ValidationContext]) -> None:
         logger.debug("Requirement check validation start")
 
     def __handle_requirement_check_validation_end__(self, event: Event, ctx: Optional[ValidationContext]) -> None:
@@ -2668,7 +2668,7 @@ class ValidationResult:
 
 
 class CustomEncoder(json.JSONEncoder):
-    def default(self, obj):
+    def default(self, obj):  # pylint: disable=arguments-renamed
         if isinstance(obj, CheckIssue):
             return obj.__dict__
         if isinstance(obj, Path):

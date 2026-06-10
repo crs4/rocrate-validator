@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-def get_version():
+def _get_version():
     from rocrate_validator.utils.versioning import get_version  # noqa: PLC0415
     return get_version()
 
 
-__version__ = get_version()
+__version__ = _get_version()

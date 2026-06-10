@@ -154,8 +154,8 @@ class DuplicateRequirementCheck(ROCValidatorError):
 class InvalidSerializationFormat(ROCValidatorError):
     """Raised when an invalid serialization format is provided."""
 
-    def __init__(self, format: Optional[str] = None):
-        self._format = format
+    def __init__(self, fmt: Optional[str] = None):
+        self._format = fmt
 
     @property
     def serialization_format(self) -> Optional[str]:

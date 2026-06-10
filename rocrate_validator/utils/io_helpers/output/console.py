@@ -55,7 +55,7 @@ class Console(BaseConsole):
             assert type_ is not None  # guaranteed by the check above
             self._formatters[type_] = formatter
 
-    def __format_data__(self, obj, *args, **kwargs):
+    def __format_data__(self, obj, *_, **__):  # pylint: disable=unused-argument
         formatter = self._formatters.get(type(obj))
         if formatter:
             return formatter(obj)
