@@ -827,7 +827,7 @@ class ROCrateLocalFolder(ROCrate):
         path = self.__parse_path__(path)
         if not self.has_file(path):
             raise FileNotFoundError(f"File not found: {path}")
-        return path.read_bytes() if binary_mode else path.read_text()
+        return path.read_bytes() if binary_mode else path.read_text(encoding="utf-8")
 
 
 class ROCrateLocalZip(ROCrate):
