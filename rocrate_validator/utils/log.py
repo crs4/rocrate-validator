@@ -61,24 +61,6 @@ DEFAULT_SETTINGS : dict[str, Any] = {
 _lock = threading.RLock()
 
 
-def _acquireLock():
-    """
-    Acquire the module-level lock for serializing access to shared data.
-
-    This should be released with _releaseLock().
-    """
-    if _lock:
-        _lock.acquire()
-
-
-def _releaseLock():
-    """
-    Release the module-level lock acquired by calling _acquireLock().
-    """
-    if _lock:
-        _lock.release()
-
-
 # reference to the list of create loggers
 __loggers__: dict[str, Logger] = {}
 
@@ -145,28 +127,23 @@ def __setup_logger__(logger: Logger):
 def __create_logger__(name: str) -> Logger:
     if not isinstance(name, str):
         raise TypeError('A logger name must be a string')
-    _acquireLock()
-    try:
+    with _lock:
         # Return the cached logger if it already exists, otherwise create it.
         logger = __loggers__.get(name)
         if logger is None:
             logger = colorlog.getLogger(name)
             __setup_logger__(logger)
             __loggers__[name] = logger
-    finally:
-        _releaseLock()
     return logger
 
 
 def basicConfig(level: int, modules_config: Optional[dict] = None):
     """Set the log level and format for the logger"""
-    _acquireLock()
+    with _lock:
+        # set the default log level to ERROR for loggers of other modules
+        logging_basicConfig(level=ERROR)
 
-    # set the default log level to ERROR for loggers of other modules
-    logging_basicConfig(level=ERROR)
-
-    # set the default log level and format
-    try:
+        # set the default log level and format
         if not isinstance(level, int):
             level = getattr(__module__, level.upper(), None)
 
@@ -196,9 +173,6 @@ def basicConfig(level: int, modules_config: Optional[dict] = None):
         for logger in __loggers__.values():
             __setup_logger__(logger)
 
-    finally:
-        _releaseLock()
-
 
 def getLogger(name: str) -> "LoggerProxy":
     return LoggerProxy(name)
@@ -213,12 +187,9 @@ class LoggerProxy:
         self._instance: Optional[Logger] = None
 
     def _initialize(self):
-        _acquireLock()
-        try:
+        with _lock:
             if self._instance is None:
                 self._instance = __create_logger__(self.name)
-        finally:
-            _releaseLock()
 
     def __getattr__(self, name):
         self._initialize()
