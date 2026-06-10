@@ -1866,6 +1866,39 @@ class ValidationStatistics(Subscriber):
             return (finished_at - started_at).total_seconds()
         return None
 
+    @staticmethod
+    def __collect_requirement_checks__(
+        requirement, severity_validation, validation_settings,
+        target_profile_identifier, checks, checks_by_severity,
+    ) -> int:
+        """Count and register a requirement's checks across severities >= the requested one."""
+        requirement_checks_count = 0
+        for severity in (
+            Severity.REQUIRED,
+            Severity.RECOMMENDED,
+            Severity.OPTIONAL,
+        ):
+            logger.debug(
+                f"Checking requirement: {requirement} severity: {severity} {severity < severity_validation}"
+            )
+            # skip requirements with lower severity
+            if severity < severity_validation:
+                continue
+            # count the checks
+            requirement_checks = [
+                _
+                for _ in requirement.get_checks_by_level(LevelCollection.get(severity.name))
+                if (not validation_settings.skip_checks or _.identifier not in validation_settings.skip_checks)
+                and (not _.overridden or _.requirement.profile.identifier == target_profile_identifier)
+            ]
+            num_checks = len(requirement_checks)
+            requirement_checks_count += num_checks
+            if num_checks > 0:
+                logger.debug(f"Requirement: {requirement} has {num_checks} checks of severity: {severity}")
+                checks.update(requirement_checks)
+                checks_by_severity[severity].update(requirement_checks)
+        return requirement_checks_count
+
     @classmethod
     def __initialise__(cls, validation_settings: ValidationSettings):
         """
@@ -1912,31 +1945,14 @@ class ValidationStatistics(Subscriber):
                 if requirement.hidden:
                     continue
 
-                requirement_checks_count = 0
-                for severity in (
-                    Severity.REQUIRED,
-                    Severity.RECOMMENDED,
-                    Severity.OPTIONAL,
-                ):
-                    logger.debug(
-                        f"Checking requirement: {requirement} severity: {severity} {severity < severity_validation}"
-                    )
-                    # skip requirements with lower severity
-                    if severity < severity_validation:
-                        continue
-                    # count the checks
-                    requirement_checks = [
-                        _
-                        for _ in requirement.get_checks_by_level(LevelCollection.get(severity.name))
-                        if (not validation_settings.skip_checks or _.identifier not in validation_settings.skip_checks)
-                        and (not _.overridden or _.requirement.profile.identifier == target_profile_identifier)
-                    ]
-                    num_checks = len(requirement_checks)
-                    requirement_checks_count += num_checks
-                    if num_checks > 0:
-                        logger.debug(f"Requirement: {requirement} has {num_checks} checks of severity: {severity}")
-                        checks.update(requirement_checks)
-                        checks_by_severity[severity].update(requirement_checks)
+                requirement_checks_count = cls.__collect_requirement_checks__(
+                    requirement,
+                    severity_validation,
+                    validation_settings,
+                    target_profile_identifier,
+                    checks,
+                    checks_by_severity,
+                )
 
                 # count the requirements and checks
                 if requirement_checks_count == 0:

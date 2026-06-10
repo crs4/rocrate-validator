@@ -374,30 +374,35 @@ def cache_warm(
             console.print("[yellow]Nothing to warm up.[/yellow]")
             return
 
-        table = Table(title="Warm-up results", show_lines=False)
-        table.add_column("URL", overflow="fold")
-        table.add_column("Status")
-        table.add_column("Detail")
-        ok = 0
-        failed = 0
-        for r in results:
-            colour = {"ok": "green", "skipped": "cyan", "failed": "red"}.get(r.status, "white")
-            table.add_row(r.url, f"[{colour}]{r.status}[/{colour}]", r.detail or "")
-            if r.status == "ok":
-                ok += 1
-            elif r.status == "failed":
-                failed += 1
-        console.print(table)
-        console.print(
-            f"[bold]Summary:[/bold] {ok} cached, {failed} failed, "
-            f"{len(results) - ok - failed} skipped"
-        )
-        exit_with_failure = failed > 0
+        exit_with_failure = _render_warmup_results(console, results)
     except Exception as e:
         handle_error(e, console)
         return
     if exit_with_failure:
         ctx.exit(1)
+
+
+def _render_warmup_results(console, results: list[WarmUpResult]) -> bool:
+    """Render the warm-up results table and summary; return True if any URL failed."""
+    table = Table(title="Warm-up results", show_lines=False)
+    table.add_column("URL", overflow="fold")
+    table.add_column("Status")
+    table.add_column("Detail")
+    ok = 0
+    failed = 0
+    for r in results:
+        colour = {"ok": "green", "skipped": "cyan", "failed": "red"}.get(r.status, "white")
+        table.add_row(r.url, f"[{colour}]{r.status}[/{colour}]", r.detail or "")
+        if r.status == "ok":
+            ok += 1
+        elif r.status == "failed":
+            failed += 1
+    console.print(table)
+    console.print(
+        f"[bold]Summary:[/bold] {ok} cached, {failed} failed, "
+        f"{len(results) - ok - failed} skipped"
+    )
+    return failed > 0
 
 
 def _resolve_warmup_urls_from_profiles(console, profiles_dir, extra_dir, requested_ids):

@@ -87,7 +87,66 @@ def validate(
     return result
 
 
-def __initialise_validator__(  # noqa: PLR0915
+def _build_validator(settings: ValidationSettings, subscribers: Optional[list[Subscriber]]) -> Validator:
+    """Create a validator for the given settings and register any subscribers."""
+    validator = Validator(settings)
+    logger.debug("Validator created. Starting validation...")
+    if subscribers:
+        for subscriber in subscribers:
+            validator.add_subscriber(subscriber)
+    return validator
+
+
+def _extract_and_validate(
+    settings: ValidationSettings, subscribers: Optional[list[Subscriber]], rocrate_path: Path
+) -> Validator:
+    """Extract a (local or downloaded) zipped RO-Crate to a temp dir and validate it."""
+    original_data_path = settings.rocrate_uri
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        try:
+            with zipfile.ZipFile(rocrate_path, "r") as zip_ref:
+                zip_ref.extractall(tmp_dir)
+                logger.debug("RO-Crate extracted to temporary directory: %s", tmp_dir)
+            settings.rocrate_uri = URI(str(tmp_dir))
+            return _build_validator(settings, subscribers)
+        finally:
+            settings.rocrate_uri = original_data_path
+            logger.debug("Original data path restored: %s", original_data_path)
+
+
+def _download_remote_rocrate(
+    settings: ValidationSettings, subscribers: Optional[list[Subscriber]], rocrate_path: URI
+) -> Validator:
+    """Download a remote (http/https/ftp) RO-Crate to a temp file, then extract and validate it."""
+    logger.debug("RO-Crate is a remote RO-Crate")
+    with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
+        requester = HttpRequester()
+        offline = bool(getattr(settings, "offline", False))
+        # In offline mode, the cache is the only source of truth. Otherwise,
+        # bypass the cache to refresh the stored copy so that subsequent
+        # offline runs validate against the latest known remote state.
+        if offline:
+            response = requester.get(rocrate_path.uri, stream=True, allow_redirects=True)
+        else:
+            response = requester.fetch_fresh(rocrate_path.uri, stream=True, allow_redirects=True)
+        with response as r:
+            if r.status_code >= HTTP_STATUS_BAD_REQUEST:
+                if offline and r.status_code == HTTP_STATUS_GATEWAY_TIMEOUT:
+                    raise FileNotFoundError(
+                        f"Remote RO-Crate '{rocrate_path.uri}' is not available in the HTTP cache. "
+                        f"Validate it online first, or run "
+                        f"`rocrate-validator cache warm --crate '{rocrate_path.uri}'`."
+                    )
+                raise FileNotFoundError(
+                    f"Failed to download remote RO-Crate '{rocrate_path.uri}' (status {r.status_code})."
+                )
+            with Path(tmp_file.name).open("wb") as f:
+                shutil.copyfileobj(r.raw, f)
+        logger.debug("RO-Crate downloaded to temporary file: %s", tmp_file.name)
+        return _extract_and_validate(settings, subscribers, Path(tmp_file.name))
+
+
+def __initialise_validator__(
     settings: Union[dict, ValidationSettings], subscribers: Optional[list[Subscriber]] = None
 ) -> Validator:
     """
@@ -113,91 +172,22 @@ def __initialise_validator__(  # noqa: PLR0915
     disable_remote_crate_download = settings.disable_remote_crate_download
     logger.debug("Remote validation: %s", disable_remote_crate_download)
     if disable_remote_crate_download:
-        # create a validator
-        validator = Validator(settings)
-        logger.debug("Validator created. Starting validation...")
-        if subscribers:
-            for subscriber in subscribers:
-                validator.add_subscriber(subscriber)
-        return validator
+        return _build_validator(settings, subscribers)
 
-    def __init_validator__(settings: ValidationSettings) -> Validator:
-        # create a validator
-        validator = Validator(settings)
-        logger.debug("Validator created. Starting validation...")
-        if subscribers:
-            for subscriber in subscribers:
-                validator.add_subscriber(subscriber)
-        return validator
-
-    def __extract_and_validate_rocrate__(rocrate_path: Path):
-        # store the original data path
-        original_data_path = settings.rocrate_uri
-
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            try:
-                # extract the RO-Crate to the temporary directory
-                with zipfile.ZipFile(rocrate_path, "r") as zip_ref:
-                    zip_ref.extractall(tmp_dir)
-                    logger.debug("RO-Crate extracted to temporary directory: %s", tmp_dir)
-                # update the data path to point to the temporary directory
-                settings.rocrate_uri = URI(str(tmp_dir))
-                # continue with the validation process
-                return __init_validator__(settings)
-            finally:
-                # restore the original data path
-                settings.rocrate_uri = original_data_path
-                logger.debug("Original data path restored: %s", original_data_path)
-
-    # check if the RO-Crate is a remote RO-Crate,
-    # i.e., if the RO-Crate is a URL. If so, download the RO-Crate
-    # and extract it to a temporary directory. We support either http or https
-    # or ftp protocols to download the remote RO-Crate.
+    # Resolve the RO-Crate source: remote URL, local ZIP, or local directory.
+    # We support http/https/ftp protocols to download a remote RO-Crate.
     if rocrate_path.scheme in ("http", "https", "ftp"):
-        logger.debug("RO-Crate is a remote RO-Crate")
-        # create a temp folder to store the downloaded RO-Crate
-        with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
-            requester = HttpRequester()
-            offline = bool(getattr(settings, "offline", False))
-            # In offline mode, the cache is the only source of truth. Otherwise,
-            # bypass the cache to refresh the stored copy so that subsequent
-            # offline runs validate against the latest known remote state.
-            if offline:
-                response = requester.get(rocrate_path.uri, stream=True, allow_redirects=True)
-            else:
-                response = requester.fetch_fresh(rocrate_path.uri, stream=True, allow_redirects=True)
-            with response as r:
-                if r.status_code >= HTTP_STATUS_BAD_REQUEST:
-                    if offline and r.status_code == HTTP_STATUS_GATEWAY_TIMEOUT:
-                        raise FileNotFoundError(
-                            f"Remote RO-Crate '{rocrate_path.uri}' is not available in the HTTP cache. "
-                            f"Validate it online first, or run "
-                            f"`rocrate-validator cache warm --crate '{rocrate_path.uri}'`."
-                        )
-                    raise FileNotFoundError(
-                        f"Failed to download remote RO-Crate '{rocrate_path.uri}' (status {r.status_code})."
-                    )
-                with Path(tmp_file.name).open("wb") as f:
-                    shutil.copyfileobj(r.raw, f)
-            logger.debug("RO-Crate downloaded to temporary file: %s", tmp_file.name)
-            # continue with the validation process by extracting the RO-Crate and validating it
-            return __extract_and_validate_rocrate__(Path(tmp_file.name))
-
-    # check if the RO-Crate is a ZIP file
-    elif rocrate_path.as_path().suffix == ".zip":
+        return _download_remote_rocrate(settings, subscribers, rocrate_path)
+    if rocrate_path.as_path().suffix == ".zip":
         logger.debug("RO-Crate is a local ZIP file")
-        # continue with the validation process by extracting the RO-Crate and validating it
-        return __extract_and_validate_rocrate__(rocrate_path.as_path())
-
-    # if the RO-Crate is not a ZIP file, directly validate the RO-Crate
-    elif rocrate_path.is_local_directory():
+        return _extract_and_validate(settings, subscribers, rocrate_path.as_path())
+    if rocrate_path.is_local_directory():
         logger.debug("RO-Crate is a local directory")
         settings.rocrate_uri = URI(str(rocrate_path.as_path()))
-        return __init_validator__(settings)
-    else:
-        raise ValueError(
-            f"Invalid RO-Crate URI: {rocrate_path}. It MUST be a local directory or a ZIP file (local or remote)."
-        )
+        return _build_validator(settings, subscribers)
+    raise ValueError(
+        f"Invalid RO-Crate URI: {rocrate_path}. It MUST be a local directory or a ZIP file (local or remote)."
+    )
 
 
 def get_profiles(

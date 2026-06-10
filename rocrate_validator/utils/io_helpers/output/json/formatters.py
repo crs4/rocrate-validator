@@ -95,19 +95,25 @@ def format_validation_results(data: dict[str, ValidationResult],
         json_output["issues"].extend(result_dict.get("issues", []))
 
     # Add overall statistics
-    stats = AggregatedValidationStatistics([r.statistics for r in results if r.statistics])
-    if stats:
-        stats_dict = stats.to_dict()
-        # If not verbose, remove detailed lists from statistics
-        if not verbose:
-            for key in ["passed_requirements", "failed_requirements",
-                        "passed_checks", "failed_checks", "checks", "requirements"]:
-                if key in stats_dict:
-                    stats_dict.pop(key, None)
+    stats_dict = _compute_overall_statistics(results, verbose=verbose)
+    if stats_dict is not None:
         json_output["statistics"] = stats_dict
 
     # Return the formatted JSON output
     return json.dumps(json_output, indent=4, cls=CustomEncoder)
+
+
+def _compute_overall_statistics(results: list[ValidationResult], verbose: bool) -> Optional[dict[str, Any]]:
+    """Aggregate per-result statistics, dropping detailed lists unless verbose."""
+    stats = AggregatedValidationStatistics([r.statistics for r in results if r.statistics])
+    if not stats:
+        return None
+    stats_dict = stats.to_dict()
+    if not verbose:
+        for key in ("passed_requirements", "failed_requirements",
+                    "passed_checks", "failed_checks", "checks", "requirements"):
+            stats_dict.pop(key, None)
+    return stats_dict
 
 
 def format_validation_statistics(data: ValidationStatistics) -> str:

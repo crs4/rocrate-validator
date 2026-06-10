@@ -211,89 +211,74 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
     @check(name="File Descriptor JSON-LD must be flattened")
     def check_flattened(self, context: ValidationContext) -> bool:
         """ Check if the file descriptor is flattened """
+        return self._check_flattened_graph(
+            context,
+            lambda entity, fail_fast: self._is_entity_flat(context, entity, fail_fast=fail_fast),
+        )
 
-        def _validate_non_root_entity(entity: Any, fail_fast: bool) -> bool:
-            result = True
-            if "@id" in entity and "@value" in entity:
-                context.result.add_issue(
-                    (
-                        f'entity "{entity.get("@id", entity)}" contains both @id and @value: '
-                        'an object with an @value represents a value object, which is a literal value such as '
-                        'a string, number, date, or language-tagged string. This object is not an identifiable '
-                        'resource, but a simple literal value.'
-                    ),
-                    self
-                )
+    def _is_entity_flat(self, context: ValidationContext, entity: Any,
+                        is_first: bool = True, fail_fast: bool = False) -> bool:
+        """Recursively check that an entity (and its children) is flattened."""
+        if isinstance(entity, dict):
+            if is_first:
+                return self._all_children_flat(context, entity.values(), fail_fast)
+            return self._validate_non_root_entity(context, entity, fail_fast)
+        if isinstance(entity, list):
+            return self._all_children_flat(context, entity, fail_fast)
+        return True
+
+    def _all_children_flat(self, context: ValidationContext, children: Any, fail_fast: bool) -> bool:
+        """Check that every child entity is flattened, honoring fail-fast."""
+        result = True
+        for child in children:
+            if not self._is_entity_flat(context, child, is_first=False, fail_fast=fail_fast):
                 result = False
                 if fail_fast:
                     return False
+        return result
 
-            if "@value" in entity:
-                if not isinstance(entity, dict):
-                    context.result.add_issue(
-                        f'entity "{entity.get("@id", entity)}" is not a valid value object: '
-                        'it MUST be a dictionary.',
-                        self
-                    )
-                    result = False
-                    if fail_fast:
-                        return False
-
-                has_language = "@language" in entity
-                has_type = "@type" in entity
-
-                if has_language and has_type:
-                    context.result.add_issue(
-                        f'entity "{entity.get("@id", entity)}" is not a valid value object: '
-                        '@language and @type cannot coexist.',
-                        self
-                    )
-                    result = False
-                    if fail_fast:
-                        return False
-
-                if has_language and not isinstance(entity["@value"], str):
-                    context.result.add_issue(
-                        f'entity "{entity.get("@id", entity)}" is not a valid value object: '
-                        'if @language is present, @value must be a string.',
-                        self
-                    )
-                    result = False
-                    if fail_fast:
-                        return False
-            elif "@id" not in entity or len(entity) > 1:
-                context.result.add_issue(
-                    f'entity "{entity.get("@id", entity)}" is not a valid node object reference: '
-                    'it MUST have only @id, but no other properties.',
-                    self
+    def _validate_non_root_entity(self, context: ValidationContext, entity: Any, fail_fast: bool) -> bool:
+        """Validate a non-root entity, collecting any flattening issues then emitting them."""
+        issues: list[str] = []
+        if "@id" in entity and "@value" in entity:
+            issues.append(
+                f'entity "{entity.get("@id", entity)}" contains both @id and @value: '
+                'an object with an @value represents a value object, which is a literal value such as '
+                'a string, number, date, or language-tagged string. This object is not an identifiable '
+                'resource, but a simple literal value.'
+            )
+        if "@value" in entity:
+            if not isinstance(entity, dict):
+                issues.append(
+                    f'entity "{entity.get("@id", entity)}" is not a valid value object: '
+                    'it MUST be a dictionary.'
                 )
-                result = False
-                if fail_fast:
-                    return False
-            return result
+            has_language = "@language" in entity
+            has_type = "@type" in entity
+            if has_language and has_type:
+                issues.append(
+                    f'entity "{entity.get("@id", entity)}" is not a valid value object: '
+                    '@language and @type cannot coexist.'
+                )
+            if has_language and not isinstance(entity["@value"], str):
+                issues.append(
+                    f'entity "{entity.get("@id", entity)}" is not a valid value object: '
+                    'if @language is present, @value must be a string.'
+                )
+        elif "@id" not in entity or len(entity) > 1:
+            issues.append(
+                f'entity "{entity.get("@id", entity)}" is not a valid node object reference: '
+                'it MUST have only @id, but no other properties.'
+            )
+        return self._emit_entity_issues(context, issues, fail_fast)
 
-        def is_entity_flat_recursive(entity: Any, is_first: bool = True, fail_fast: bool = False) -> bool:
-            result = True
-            if isinstance(entity, dict):
-                if is_first:
-                    for elem in entity.values():
-                        if not is_entity_flat_recursive(elem, is_first=False, fail_fast=fail_fast):
-                            result = False
-                            if fail_fast:
-                                return False
-                elif not _validate_non_root_entity(entity, fail_fast):
-                    result = False
-                    if fail_fast:
-                        return False
-            if isinstance(entity, list):
-                for element in entity:
-                    if not is_entity_flat_recursive(element, is_first=False, fail_fast=fail_fast):
-                        result = False
-                        if fail_fast:
-                            return False
-            return result
-
-        return self._check_flattened_graph(context, is_entity_flat_recursive)
+    def _emit_entity_issues(self, context: ValidationContext, issues: list[str], fail_fast: bool) -> bool:
+        """Emit collected entity issues; in fail-fast mode stop after the first."""
+        for message in issues:
+            context.result.add_issue(message, self)
+            if fail_fast:
+                return False
+        return not issues
 
     def _check_flattened_graph(self, context, is_flat):
         try:
@@ -379,45 +364,21 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
             raise TypeError("The context is not a dictionary")
         return set(jsonLD_ctx.keys())
 
+    # Reserved JSON-LD keywords that are always allowed as entity keys.
+    __RESERVED_JSONLD_KEYS__ = frozenset({"@id", "@type", "@context", "@value", "@language"})
+
     def __check_entity_keys__(self, entity: Any,
                               context_keys: set,
                               unexpected_keys: Optional[dict[str, int]] = None) -> dict[str, int]:
         """ Check if the entity is in the correct format """
-
-        def add_unexpected_key(k: str, u_keys: dict) -> None:
-            """ Add a key to the unexpected keys dictionary """
-            u_keys[k] = u_keys.get(k, 0) + 1
-
-        # Keys that should be skipped
-        SKIP_KEYS = {"@id", "@type", "@context", "@value", "@language"}
-
         # Ensure unexpected_keys is initialized
         if unexpected_keys is None:
             unexpected_keys = {}
 
-        # If the entity is a dictionary, check each key
+        # If the entity is a dictionary, classify each key and recurse into values
         if isinstance(entity, dict):
             for k, v in entity.items():
-                # If the key is in the skip keys, skip it
-                if k in SKIP_KEYS:
-                    logger.debug(f"Key {k} is a reserved JSON-LD keyword, skipping")
-
-                # If the key is not in the context keys,
-                # it can be used in compacted format only if it is a valid compact IRI
-                # with a prefix that is in the context
-                elif k not in context_keys:
-                    logger.debug(f"Key {k} not in context keys")
-
-                    # Try to get the prefix of the compact IRI, if it has one
-                    prefix = k.split(":", 1)[0] if ":" in k else None
-                    logger.debug(f"Checking prefix {prefix} of key {k}")
-                    # If the key does not have a prefix (no colon) or the prefix is not in the context keys,
-                    # it cannot be used as a key in compacted format
-                    if prefix is None or prefix not in context_keys:
-                        logger.debug(
-                            f"Key {k} does not have a valid prefix in context keys, adding to unexpected keys")
-                        add_unexpected_key(k, unexpected_keys)
-
+                self.__record_unexpected_key__(k, context_keys, unexpected_keys)
                 # If the value is a dictionary or a list, check its keys recursively
                 if isinstance(v, (dict, list)):
                     self.__check_entity_keys__(v, context_keys, unexpected_keys)
@@ -428,6 +389,23 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
                 self.__check_entity_keys__(elem, context_keys, unexpected_keys)
 
         return unexpected_keys
+
+    def __record_unexpected_key__(self, k: str, context_keys: set, unexpected_keys: dict[str, int]) -> None:
+        """ Record ``k`` as unexpected unless it is reserved or a valid compact IRI prefix """
+        # If the key is a reserved JSON-LD keyword, skip it
+        if k in self.__RESERVED_JSONLD_KEYS__:
+            logger.debug(f"Key {k} is a reserved JSON-LD keyword, skipping")
+            return
+
+        # A key not in the context can still be valid in compacted format if it is
+        # a compact IRI whose prefix is in the context.
+        if k not in context_keys:
+            logger.debug(f"Key {k} not in context keys")
+            prefix = k.split(":", 1)[0] if ":" in k else None
+            logger.debug(f"Checking prefix {prefix} of key {k}")
+            if prefix is None or prefix not in context_keys:
+                logger.debug(f"Key {k} does not have a valid prefix in context keys, adding to unexpected keys")
+                unexpected_keys[k] = unexpected_keys.get(k, 0) + 1
 
     @check(name="Validation of the compaction format of the file descriptor")
     def check_compaction(self, context: ValidationContext) -> bool:
