@@ -15,7 +15,7 @@
 import enum
 import re
 from pathlib import Path
-from typing import Optional, Union
+from typing import Optional
 from urllib.parse import ParseResult, parse_qsl, urlparse, urlsplit
 
 from rocrate_validator import errors
@@ -118,7 +118,7 @@ class URI:
     # Backwards-compatible alias kept for callers that still inspect it.
     REMOTE_SUPPORTED_SCHEMA = SUPPORTED_ROCRATE_SCHEMES[:-1]  # http, https, ftp
 
-    def __init__(self, uri: Union[str, Path]):
+    def __init__(self, uri: str | Path):
         if uri is None or (isinstance(uri, str) and not uri.strip()):
             raise ValueError("Invalid URI: empty value")
         self._uri = uri = str(uri)
@@ -282,7 +282,7 @@ class URI:
         return hash(self._uri)
 
 
-def validate_rocrate_uri(uri: Union[str, Path, URI], silent: bool = False) -> bool:
+def validate_rocrate_uri(uri: str | Path | URI, silent: bool = False) -> bool:
     """
     Validate the RO-Crate URI
 

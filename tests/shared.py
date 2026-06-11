@@ -22,7 +22,7 @@ import shutil
 import tempfile
 from collections.abc import Collection
 from pathlib import Path
-from typing import Optional, TypeVar, Union
+from typing import Optional, TypeVar
 from urllib.parse import urljoin
 
 import rdflib
@@ -121,7 +121,7 @@ def _prepare_temp_rocrate(
 
 
 def do_entity_test(
-    rocrate_path: Union[Path, str],
+    rocrate_path: Path | str,
     requirement_severity: models.Severity,
     expected_validation_result: bool,
     expected_triggered_requirements: Optional[list[str]] = None,

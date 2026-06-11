@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
     # Imported only for type-checking to avoid a circular import:
@@ -252,12 +252,12 @@ class CheckValidationError(ValidationError):
 class ROCrateInvalidURIError(ROCValidatorError):
     """Raised when an invalid URI is provided."""
 
-    def __init__(self, uri: Union[str, Path, URI], message: Optional[str] = None):
+    def __init__(self, uri: str | Path | URI, message: Optional[str] = None):
         self._uri = uri
         self._message = message or self.default_error_message(uri)
 
     @property
-    def uri(self) -> Union[str, Path, URI]:
+    def uri(self) -> str | Path | URI:
         """The invalid URI, as originally provided (str, Path, or URI)."""
         return self._uri
 
@@ -278,7 +278,7 @@ class ROCrateInvalidURIError(ROCValidatorError):
         return f"ROCrateInvalidURIError({self._uri!r})"
 
     @classmethod
-    def default_error_message(cls, uri: Union[str, Path, URI]) -> str:
+    def default_error_message(cls, uri: str | Path | URI) -> str:
         return (
             f"\"{uri!s}\" is not a valid RO-Crate URI. "
             "It MUST be either a local path to the RO-Crate root directory or a local/remote RO-Crate ZIP file."

@@ -21,7 +21,7 @@ import struct
 import zipfile
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Optional, Union, cast
+from typing import Any, Optional, cast
 from urllib.parse import unquote
 
 from rdflib import Graph
@@ -47,8 +47,8 @@ class ROCrateEntity:
         return cast('str', self._raw_data.get('@id'))
 
     @property
-    def type(self) -> Union[str, list[str]]:
-        return cast('Union[str, list[str]]', self._raw_data.get('@type'))
+    def type(self) -> str | list[str]:
+        return cast('str | list[str]', self._raw_data.get('@type'))
 
     def is_dataset(self) -> bool:
         return self.has_type('Dataset')
@@ -83,7 +83,7 @@ class ROCrateEntity:
     @staticmethod
     def get_path_from_identifier(
         identifier: str,
-        rocrate_path: Optional[Union[str, Path]] = None,
+        rocrate_path: Optional[str | Path] = None,
         decode: bool = False,
     ) -> Path:
         """
@@ -362,7 +362,7 @@ class ROCrateMetadata:
         return [ROCrateEntity(self, entity) for entity in self.as_dict().get("@graph", [])]
 
     def get_entities_by_type(
-        self, entity_type: Union[str, list[str]]
+        self, entity_type: str | list[str]
     ) -> list[ROCrateEntity]:
         entity_types = [entity_type] if isinstance(entity_type, str) else entity_type
         return [e for e in self.get_entities() if e.has_types(entity_types)]
@@ -444,7 +444,7 @@ class ROCrate(ABC):
     Base class for representing and interacting with a Research Object Crate (RO-Crate).
     """
 
-    def __new__(cls, uri: Union[str, Path, URI], relative_root_path: Optional[Path] = None):
+    def __new__(cls, uri: str | Path | URI, relative_root_path: Optional[Path] = None):
         """
         Factory method to create the appropriate ROCrate subclass instance.
 
@@ -469,7 +469,7 @@ class ROCrate(ABC):
             instance.relative_root_path = relative_root_path
         return instance
 
-    def __init__(self, uri: Union[str, Path, URI], relative_root_path: Optional[Path] = None) -> None:
+    def __init__(self, uri: str | Path | URI, relative_root_path: Optional[Path] = None) -> None:
         """
         Initialize the RO-Crate.
 
@@ -668,7 +668,7 @@ class ROCrate(ABC):
     @abstractmethod
     def get_file_content(
         self, path: Path, binary_mode: bool = True
-    ) -> Union[str, bytes]:
+    ) -> str | bytes:
         """
         Get the content of a file in the RO-Crate.
 
@@ -685,7 +685,7 @@ class ROCrate(ABC):
     @staticmethod
     def get_external_file_content(
         uri: str, binary_mode: bool = True
-    ) -> Union[str, bytes]:
+    ) -> str | bytes:
         """
         Get the content of an external file.
 
@@ -741,7 +741,7 @@ class ROCrate(ABC):
 
     @staticmethod
     def new_instance(
-        uri: Union[str, Path, URI], relative_root_path: Optional[Path] = None
+        uri: str | Path | URI, relative_root_path: Optional[Path] = None
     ) -> ROCrate:
         """
         Create a new instance of the RO-Crate based on the URI.
@@ -792,7 +792,7 @@ class ROCrateLocalFolder(ROCrate):
     Class representing an RO-Crate stored in a local folder.
     """
 
-    def __init__(self, path: Union[str, Path, URI], relative_root_path: Optional[Path] = None):
+    def __init__(self, path: str | Path | URI, relative_root_path: Optional[Path] = None):
         super().__init__(path, relative_root_path=relative_root_path)
 
         # cache the list of files
@@ -823,7 +823,7 @@ class ROCrateLocalFolder(ROCrate):
 
     def get_file_content(
         self, path: Path, binary_mode: bool = True
-    ) -> Union[str, bytes]:
+    ) -> str | bytes:
         path = self.__parse_path__(path)
         if not self.has_file(path):
             raise FileNotFoundError(f"File not found: {path}")
@@ -833,7 +833,7 @@ class ROCrateLocalFolder(ROCrate):
 class ROCrateLocalZip(ROCrate):
     def __init__(
         self,
-        path: Union[str, Path, URI],
+        path: str | Path | URI,
         relative_root_path: Optional[Path] = None,
         init_zip: bool = True,
     ):
@@ -876,7 +876,7 @@ class ROCrateLocalZip(ROCrate):
         self._zipref = zipfile.ZipFile(path)  # pylint: disable=consider-using-with
         logger.debug("Initialized zip reference: %s", self._zipref)
 
-    def __get_file_info__(self, path: Union[str, Path]) -> zipfile.ZipInfo:
+    def __get_file_info__(self, path: str | Path) -> zipfile.ZipInfo:
         assert self._zipref is not None, "Zip reference not initialized"
         try:
             return self._zipref.getinfo(str(path))
@@ -934,7 +934,7 @@ class ROCrateLocalZip(ROCrate):
 
     def get_file_content(
         self, path: Path, binary_mode: bool = True
-    ) -> Union[str, bytes]:
+    ) -> str | bytes:
         path = self.__parse_path__(path)
         if not self.has_file(path):
             raise FileNotFoundError(f"File not found: {path}")
@@ -945,7 +945,7 @@ class ROCrateLocalZip(ROCrate):
 
 class ROCrateRemoteZip(ROCrateLocalZip):
 
-    def __init__(self, path: Union[str, Path, URI], relative_root_path: Optional[Path] = None):
+    def __init__(self, path: str | Path | URI, relative_root_path: Optional[Path] = None):
         super().__init__(path, relative_root_path=relative_root_path, init_zip=False)
 
         # # initialize the zip reference
@@ -1016,7 +1016,7 @@ class BagitROCrate(ROCrate, ABC):
         assert self.is_bagit_wrapping_crate(uri), "Not a BagIt-wrapped RO-Crate"
 
     @staticmethod
-    def is_bagit_wrapping_crate(uri: Union[str, Path, URI]) -> bool:
+    def is_bagit_wrapping_crate(uri: str | Path | URI) -> bool:
         """
         Check if the RO-Crate is a BagIt-wrapped crate.
 
@@ -1097,7 +1097,7 @@ class BagitROCrate(ROCrate, ABC):
 
 class ROCrateBagitLocalFolder(BagitROCrate, ROCrateLocalFolder):
 
-    def __init__(self, uri: Union[str, Path, URI], relative_root_path: Optional[Path] = None):
+    def __init__(self, uri: str | Path | URI, relative_root_path: Optional[Path] = None):
         # initialize the parent classes
         super(ROCrateLocalFolder, self).__init__(uri, relative_root_path=relative_root_path)
         # check if the path is a BagIt-wrapped crate

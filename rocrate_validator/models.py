@@ -77,7 +77,7 @@ DEFAULT_PROFILES_PATH = get_profiles_path()
 
 logger = logging.getLogger(__name__)
 
-BaseTypes = Union[str, Path, bool, int, None]
+BaseTypes = str | Path | bool | int | None
 
 
 @enum.unique
@@ -323,7 +323,7 @@ class Profile:
         namespace: Namespace,
         pop_first: bool = True,
         as_python_object: bool = True,
-    ) -> Union[str, list[Union[str, URIRef]], None]:
+    ) -> str | list[str | URIRef] | None:
         assert self._profile_specification_graph is not None, "Profile specification graph not loaded"
         nodes = list(self._profile_specification_graph.objects(self._profile_node, namespace[prop]))
         values: list = [cast("Any", v).toPython() for v in nodes] if (nodes and as_python_object) else list(nodes)
@@ -685,8 +685,8 @@ class Profile:
     @classmethod
     def __load_profile_path__(
         cls,
-        profiles_base_path: Union[str, Path],
-        profile_path: Union[str, Path],
+        profiles_base_path: str | Path,
+        profile_path: str | Path,
         publicID: Optional[str] = None,
         severity: Severity = Severity.REQUIRED,
     ) -> Profile:
@@ -709,8 +709,8 @@ class Profile:
     @classmethod
     def __load_profiles_paths__(
         cls,
-        profiles_path: Optional[Union[str, Path]] = None,
-        extra_profiles_path: Optional[Union[str, Path]] = None,
+        profiles_path: Optional[str | Path] = None,
+        extra_profiles_path: Optional[str | Path] = None,
     ) -> list[tuple[Path, Path]]:
         """
         Load the paths of the profiles from the given profiles path and extra profiles path.
@@ -755,8 +755,8 @@ class Profile:
     @classmethod
     def load_profiles(
         cls,
-        profiles_path: Union[str, Path],
-        extra_profiles_path: Optional[Union[str, Path]] = None,
+        profiles_path: str | Path,
+        extra_profiles_path: Optional[str | Path] = None,
         publicID: Optional[str] = None,
         severity: Severity = Severity.REQUIRED,
         allow_requirement_check_override: bool = True,
@@ -1681,7 +1681,7 @@ class ValidationStatistics(Subscriber):
 
     def __init__(
         self,
-        settings: Union[dict, ValidationSettings],
+        settings: dict | ValidationSettings,
         context: Optional[ValidationContext] = None,
         skip_initialization: bool = False,
     ):
@@ -2718,7 +2718,7 @@ class ValidationSettings:
     disable_remote_crate_download: bool = True
     # Requirement settings
     #: The requirement severity
-    requirement_severity: Union[str, Severity] = Severity.REQUIRED
+    requirement_severity: str | Severity = Severity.REQUIRED
     #: Flag to validate requirement severity only skipping check with lower or higher severity
     requirement_severity_only: bool = False
     # Requirement check settings
@@ -2816,7 +2816,7 @@ class ValidationSettings:
         return self._rocrate_uri
 
     @rocrate_uri.setter
-    def rocrate_uri(self, value: Union[str, Path, URI]):
+    def rocrate_uri(self, value: str | Path | URI):
         """
         Set the RO-Crate URI.
 
@@ -2828,7 +2828,7 @@ class ValidationSettings:
         self._rocrate_uri: URI = URI(str(value))
 
     @classmethod
-    def parse(cls, settings: Union[dict, ValidationSettings]) -> ValidationSettings:
+    def parse(cls, settings: dict | ValidationSettings) -> ValidationSettings:
         """
         Parse the settings to a ValidationSettings object.
 
@@ -3005,7 +3005,7 @@ class Validator(Publisher):
             Validates the RO-Crate against the specified subset of the profile requirements.
     """
 
-    def __init__(self, settings: Union[dict, ValidationSettings]):
+    def __init__(self, settings: dict | ValidationSettings):
         self._validation_settings = ValidationSettings.parse(settings)
         super().__init__()
         # initialize the current context
@@ -3192,7 +3192,7 @@ class Validator(Publisher):
             requirement_type.finalize(context)
         logger.debug("Finalizing requirement types: completed")
 
-    def notify(self, event: Union[Event, EventType], ctx: Optional[Any] = None):
+    def notify(self, event: Event | EventType, ctx: Optional[Any] = None):
         """Override notify to update statistics"""
         assert self.__current_context__ is not None, "No current validation context"
         result: ValidationResult = self.__current_context__.result

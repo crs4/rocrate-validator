@@ -17,7 +17,7 @@ from __future__ import annotations
 import sys
 from contextlib import nullcontext
 from pathlib import Path
-from typing import Optional, Union
+from typing import Optional
 
 import rich_click as click
 from rich.padding import Padding
@@ -245,7 +245,7 @@ def validate(ctx,
              requirement_severity: str = Severity.REQUIRED.name,
              requirement_severity_only: bool = False,
              skip_checks: Optional[list[str]] = None,
-             rocrate_uri: Union[str, Path] = ".",
+             rocrate_uri: str | Path = ".",
              relative_root_path: Optional[Path] = None,
              fail_fast: bool = False,
              no_paging: bool = False,
@@ -431,7 +431,7 @@ def _log_validation_inputs(
     logger.debug("offline: %s", offline)
 
 
-def _warn_if_remote_offline(console: Console, rocrate_uri: Union[str, Path], offline: bool) -> None:
+def _warn_if_remote_offline(console: Console, rocrate_uri: str | Path, offline: bool) -> None:
     """Warn when a remote RO-Crate is validated in offline mode (the cached copy is used)."""
     if offline and isinstance(rocrate_uri, str) and rocrate_uri.split(":", 1)[0].lower() in ("http", "https", "ftp"):
         console.print(

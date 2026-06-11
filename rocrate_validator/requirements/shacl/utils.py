@@ -15,7 +15,7 @@
 from __future__ import annotations
 
 import hashlib
-from typing import TYPE_CHECKING, Any, Optional, Union, cast
+from typing import TYPE_CHECKING, Any, Optional, cast
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -68,7 +68,7 @@ def map_severity(shacl_severity: str) -> Severity:
     raise RuntimeError(f"Unrecognized SHACL severity term {shacl_severity}")
 
 
-def make_uris_relative(text: str, ro_crate_path: Union[Path, str]) -> str:
+def make_uris_relative(text: str, ro_crate_path: Path | str) -> str:
     # globally replace the string "file://" with "./
     return text.replace(str(ro_crate_path), "./")
 

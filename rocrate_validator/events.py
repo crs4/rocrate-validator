@@ -15,7 +15,7 @@
 import enum
 from abc import ABC, abstractmethod
 from functools import total_ordering
-from typing import Any, Optional, Union
+from typing import Any, Optional
 
 import enum_tools
 
@@ -166,7 +166,7 @@ class Publisher:
     def remove_subscriber(self, subscriber):
         self.subscribers.remove(subscriber)
 
-    def notify(self, event: Union[Event, EventType], ctx: Optional[Any] = None):
+    def notify(self, event: Event | EventType, ctx: Optional[Any] = None):
         if isinstance(event, EventType):
             event = Event(event)
         # Check if the event has already been notified

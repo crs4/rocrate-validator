@@ -12,12 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Union
 
 from rocrate_validator.models import LevelCollection, Severity
 
 
-def get_severity_color(severity: Union[str, Severity]) -> str:
+def get_severity_color(severity: str | Severity) -> str:
     """
     Get the color for the severity
 

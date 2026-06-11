@@ -17,7 +17,7 @@ import shutil
 import tempfile
 import zipfile
 from pathlib import Path
-from typing import Optional, Union
+from typing import Optional
 
 from rocrate_validator.constants import HTTP_STATUS_BAD_REQUEST, HTTP_STATUS_GATEWAY_TIMEOUT
 from rocrate_validator.errors import ProfileNotFound
@@ -35,7 +35,7 @@ DEFAULT_PROFILES_PATH = get_profiles_path()
 logger = logging.getLogger(__name__)
 
 
-def detect_profiles(settings: Union[dict, ValidationSettings]) -> list[Profile]:
+def detect_profiles(settings: dict | ValidationSettings) -> list[Profile]:
     # initialize the validator
     validator = __initialise_validator__(settings)
     # detect the profiles
@@ -45,7 +45,7 @@ def detect_profiles(settings: Union[dict, ValidationSettings]) -> list[Profile]:
 
 
 def validate_metadata_as_dict(
-    metadata_dict: dict, settings: Union[dict, ValidationSettings], subscribers: Optional[list[Subscriber]] = None
+    metadata_dict: dict, settings: dict | ValidationSettings, subscribers: Optional[list[Subscriber]] = None
 ) -> ValidationResult:
     """
     Validate the RO-Crate metadata only against a profile and return the validation result.
@@ -64,7 +64,7 @@ def validate_metadata_as_dict(
 
 
 def validate(
-    settings: Union[dict, ValidationSettings], subscribers: Optional[list[Subscriber]] = None
+    settings: dict | ValidationSettings, subscribers: Optional[list[Subscriber]] = None
 ) -> ValidationResult:
     """
     Validate a RO-Crate against a profile and return the validation result
@@ -147,7 +147,7 @@ def _download_remote_rocrate(
 
 
 def __initialise_validator__(
-    settings: Union[dict, ValidationSettings], subscribers: Optional[list[Subscriber]] = None
+    settings: dict | ValidationSettings, subscribers: Optional[list[Subscriber]] = None
 ) -> Validator:
     """
     Validate a RO-Crate against a profile

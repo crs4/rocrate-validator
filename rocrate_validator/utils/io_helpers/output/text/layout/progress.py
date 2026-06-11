@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-from typing import Optional, Union
+from typing import Optional
 
 from rich.progress import BarColumn, Progress, TextColumn, TimeElapsedColumn
 
@@ -39,7 +39,7 @@ class ProgressMonitor(Subscriber):
     REQUIREMENT_VALIDATION = "Requirements"
     REQUIREMENT_CHECK_VALIDATION = "Requirements Checks"
 
-    def __init__(self, settings: Union[dict, ValidationSettings],
+    def __init__(self, settings: dict | ValidationSettings,
                  stats: Optional[ValidationStatistics] = None):
         self.__progress = Progress(
             TextColumn("[progress.description]{task.description}"),

@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional, Union, cast
+from typing import TYPE_CHECKING, Optional, cast
 
 from rdflib import Graph, Literal, Namespace, URIRef
 
@@ -356,7 +356,7 @@ class ShapesRegistry:
                 return True
         return False
 
-    def load_shapes(self, shapes_path: Union[str, Path], publicID: Optional[str] = None) -> list[Shape]:
+    def load_shapes(self, shapes_path: str | Path, publicID: Optional[str] = None) -> list[Shape]:
         """
         Load the shapes from the graph
         """

@@ -15,7 +15,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional, Union, cast
+from typing import TYPE_CHECKING, Any, Optional, cast
 
 import pyshacl
 from rdflib import BNode, Graph
@@ -310,7 +310,7 @@ class SHACLViolation:
                 f"Unable to get source constraint component from violation node {self._violation_node}"
         return self._source_constraint_component
 
-    def get_result_message(self, ro_crate_path: Union[Path, str]) -> str:
+    def get_result_message(self, ro_crate_path: Path | str) -> str:
         if not self._result_message:
             message = self.graph.value(self._violation_node, URIRef(f"{SHACL_NS}resultMessage"))
             assert message is not None, f"Unable to get result message from violation node {self._violation_node}"
@@ -318,12 +318,12 @@ class SHACLViolation:
         return self._result_message
 
     @property
-    def sourceShape(self) -> Union[URIRef, BNode]:
+    def sourceShape(self) -> URIRef | BNode:
         if not self._source_shape_node:
             self._source_shape_node = self.graph.value(self._violation_node, URIRef(f"{SHACL_NS}sourceShape"))
             assert self._source_shape_node is not None, \
                 f"Unable to get source shape node from violation node {self._violation_node}"
-        return cast("Union[URIRef, BNode]", self._source_shape_node)
+        return cast("URIRef | BNode", self._source_shape_node)
 
 
 class SHACLValidationResult:
@@ -373,8 +373,8 @@ class SHACLValidator:
 
     def __init__(
         self,
-        shapes_graph: Optional[Union[GraphLike, str, bytes]],
-        ont_graph: Optional[Union[GraphLike, str, bytes]] = None,
+        shapes_graph: Optional[GraphLike | str | bytes],
+        ont_graph: Optional[GraphLike | str | bytes] = None,
     ) -> None:
         """
         Create a new SHACLValidator instance.
@@ -391,17 +391,17 @@ class SHACLValidator:
         self._ont_graph = ont_graph
 
     @property
-    def shapes_graph(self) -> Optional[Union[GraphLike, str, bytes]]:
+    def shapes_graph(self) -> Optional[GraphLike | str | bytes]:
         return self._shapes_graph
 
     @property
-    def ont_graph(self) -> Optional[Union[GraphLike, str, bytes]]:
+    def ont_graph(self) -> Optional[GraphLike | str | bytes]:
         return self._ont_graph
 
     def validate(
         self,
         # data to validate
-        data_graph: Union[GraphLike, str, bytes],
+        data_graph: GraphLike | str | bytes,
         # validation settings
         abort_on_first: Optional[bool] = True,
         advanced: Optional[bool] = True,
