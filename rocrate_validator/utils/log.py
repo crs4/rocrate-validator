@@ -137,7 +137,7 @@ def __create_logger__(name: str) -> Logger:
     return logger
 
 
-def basicConfig(level: int, modules_config: Optional[dict] = None):
+def basicConfig(level: int, modules_config: dict | None = None):
     """Set the log level and format for the logger"""
     with _lock:
         # set the default log level to ERROR for loggers of other modules
@@ -184,7 +184,7 @@ class LoggerProxy:
 
     def __init__(self, name: str):
         self.name = name
-        self._instance: Optional[Logger] = None
+        self._instance: Logger | None = None
 
     def _initialize(self):
         with _lock:

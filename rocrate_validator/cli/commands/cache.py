@@ -23,7 +23,6 @@ import copy as _copy
 import json
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional
 
 from rich.table import Table
 
@@ -39,7 +38,7 @@ from rocrate_validator.utils.paths import get_default_http_cache_path, get_profi
 logger = logging.getLogger(__name__)
 
 
-def _resolve_cache_path(cache_path: Optional[Path]) -> Path:
+def _resolve_cache_path(cache_path: Path | None) -> Path:
     """Return the effective cache path, creating the parent directory."""
     path = get_default_http_cache_path() if cache_path is None else Path(cache_path)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -73,7 +72,7 @@ def cache(ctx):
     help="Path to the HTTP cache directory (defaults to the user cache dir)",
 )
 @click.pass_context
-def cache_info(ctx, cache_path: Optional[Path] = None):
+def cache_info(ctx, cache_path: Path | None = None):
     """
     Display information about the HTTP cache.
     """
@@ -139,10 +138,10 @@ def cache_info(ctx, cache_path: Optional[Path] = None):
 @click.pass_context
 def cache_list(
     ctx,
-    cache_path: Optional[Path] = None,
-    url_filter: Optional[str] = None,
+    cache_path: Path | None = None,
+    url_filter: str | None = None,
     sort_by: str = "created",
-    sort_order: Optional[str] = None,
+    sort_order: str | None = None,
     as_json: bool = False,
 ):
     """
@@ -207,7 +206,7 @@ def cache_list(
     help="Do not prompt for confirmation before removing cache entries",
 )
 @click.pass_context
-def cache_reset(ctx, cache_path: Optional[Path] = None, yes: bool = False):
+def cache_reset(ctx, cache_path: Path | None = None, yes: bool = False):
     """
     Remove every entry from the HTTP cache.
     """
@@ -310,13 +309,13 @@ def cache_reset(ctx, cache_path: Optional[Path] = None, yes: bool = False):
 @click.pass_context
 def cache_warm(
     ctx,
-    cache_path: Optional[Path] = None,
-    profiles_path: Optional[Path] = None,
-    extra_profiles_path: Optional[Path] = None,
-    profile_identifier: Optional[list[str]] = None,
+    cache_path: Path | None = None,
+    profiles_path: Path | None = None,
+    extra_profiles_path: Path | None = None,
+    profile_identifier: list[str] | None = None,
     all_profiles: bool = False,
-    crate: Optional[list[str]] = None,
-    url: Optional[list[str]] = None,
+    crate: list[str] | None = None,
+    url: list[str] | None = None,
 ):
     """
     Pre-populate the HTTP cache with resources declared by profiles and with
@@ -340,7 +339,7 @@ def cache_warm(
 
         requested_ids = list(profile_identifier or [])
         urls: list[str] = []
-        profile_scope: Optional[str] = None
+        profile_scope: str | None = None
 
         # Only fall back to "warm all profiles" when the user gave no other
         # source (no -p, no --crate, no --url, no --all-profiles).
@@ -487,13 +486,13 @@ def _format_bytes(size: int) -> str:
     return f"{value:.2f} {units[idx]}"
 
 
-def _format_dt(value: Optional[datetime]) -> str:
+def _format_dt(value: datetime | None) -> str:
     if value is None:
         return "—"
     return value.strftime("%Y-%m-%d %H:%M:%SZ") if value.tzinfo else value.strftime("%Y-%m-%d %H:%M:%S")
 
 
-def _format_expires(value: Optional[datetime], is_expired: bool) -> str:
+def _format_expires(value: datetime | None, is_expired: bool) -> str:
     if value is None:
         return "never"
     formatted = _format_dt(value)
@@ -504,9 +503,9 @@ _DEFAULT_SORT_ORDER = {"url": "asc", "size": "desc", "created": "desc"}
 
 
 def _collect_cache_entries(
-    url_filter: Optional[str] = None,
+    url_filter: str | None = None,
     sort_by: str = "size",
-    sort_order: Optional[str] = None,
+    sort_order: str | None = None,
 ) -> list[dict]:
     """
     Read every cached response and return a list of plain dicts. Filtering
@@ -555,7 +554,7 @@ def _collect_cache_entries(
 
 def _entry_to_dict(entry: dict) -> dict:
     """JSON-safe view of an entry produced by ``_collect_cache_entries``."""
-    def _iso(value: Optional[datetime]) -> Optional[str]:
+    def _iso(value: datetime | None) -> str | None:
         return value.isoformat() if value is not None else None
     return {
         "url": entry["url"],

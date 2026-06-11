@@ -27,7 +27,7 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Optional, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from rocrate_validator import constants
 from rocrate_validator.utils import log as logging
@@ -64,7 +64,7 @@ class WarmUpResult:
     """Outcome of a warm-up operation."""
     url: str
     status: str  # "ok", "skipped", "failed"
-    detail: Optional[str] = None
+    detail: str | None = None
 
 
 def discover_profile_cacheable_urls(profile: Profile) -> list[str]:
@@ -139,7 +139,7 @@ def warm_up_urls(urls: Sequence[str]) -> list[WarmUpResult]:
     return results
 
 
-def _get_profile_for_warmup(settings) -> Optional[Profile]:
+def _get_profile_for_warmup(settings) -> Profile | None:
     if getattr(settings, "offline", False):
         return None
     if getattr(settings, "cache_path", None) is None:
@@ -154,7 +154,7 @@ def _get_profile_for_warmup(settings) -> Optional[Profile]:
     return _find_profile(profile_identifier, settings)
 
 
-def auto_warm_up_for_settings(settings: ValidationSettings) -> Optional[list[WarmUpResult]]:
+def auto_warm_up_for_settings(settings: ValidationSettings) -> list[WarmUpResult] | None:
     """
     Perform a best-effort synchronous warm-up triggered by
     ``ValidationSettings.__post_init__``.
@@ -186,7 +186,7 @@ def auto_warm_up_for_settings(settings: ValidationSettings) -> Optional[list[War
     return results
 
 
-def _find_profile(identifier, settings) -> Optional[Profile]:
+def _find_profile(identifier, settings) -> Profile | None:
     """
     Look up a loaded profile by identifier. Accepts either a string or a list
     (the settings sometimes store a list of identifiers).

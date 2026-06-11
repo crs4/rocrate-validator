@@ -17,7 +17,6 @@ import shutil
 import tempfile
 import zipfile
 from pathlib import Path
-from typing import Optional
 
 from rocrate_validator.constants import HTTP_STATUS_BAD_REQUEST, HTTP_STATUS_GATEWAY_TIMEOUT
 from rocrate_validator.errors import ProfileNotFound
@@ -45,7 +44,7 @@ def detect_profiles(settings: dict | ValidationSettings) -> list[Profile]:
 
 
 def validate_metadata_as_dict(
-    metadata_dict: dict, settings: dict | ValidationSettings, subscribers: Optional[list[Subscriber]] = None
+    metadata_dict: dict, settings: dict | ValidationSettings, subscribers: list[Subscriber] | None = None
 ) -> ValidationResult:
     """
     Validate the RO-Crate metadata only against a profile and return the validation result.
@@ -64,7 +63,7 @@ def validate_metadata_as_dict(
 
 
 def validate(
-    settings: dict | ValidationSettings, subscribers: Optional[list[Subscriber]] = None
+    settings: dict | ValidationSettings, subscribers: list[Subscriber] | None = None
 ) -> ValidationResult:
     """
     Validate a RO-Crate against a profile and return the validation result
@@ -87,7 +86,7 @@ def validate(
     return result
 
 
-def _build_validator(settings: ValidationSettings, subscribers: Optional[list[Subscriber]]) -> Validator:
+def _build_validator(settings: ValidationSettings, subscribers: list[Subscriber] | None) -> Validator:
     """Create a validator for the given settings and register any subscribers."""
     validator = Validator(settings)
     logger.debug("Validator created. Starting validation...")
@@ -98,7 +97,7 @@ def _build_validator(settings: ValidationSettings, subscribers: Optional[list[Su
 
 
 def _extract_and_validate(
-    settings: ValidationSettings, subscribers: Optional[list[Subscriber]], rocrate_path: Path
+    settings: ValidationSettings, subscribers: list[Subscriber] | None, rocrate_path: Path
 ) -> Validator:
     """Extract a (local or downloaded) zipped RO-Crate to a temp dir and validate it."""
     original_data_path = settings.rocrate_uri
@@ -115,7 +114,7 @@ def _extract_and_validate(
 
 
 def _download_remote_rocrate(
-    settings: ValidationSettings, subscribers: Optional[list[Subscriber]], rocrate_path: URI
+    settings: ValidationSettings, subscribers: list[Subscriber] | None, rocrate_path: URI
 ) -> Validator:
     """Download a remote (http/https/ftp) RO-Crate to a temp file, then extract and validate it."""
     logger.debug("RO-Crate is a remote RO-Crate")
@@ -147,7 +146,7 @@ def _download_remote_rocrate(
 
 
 def __initialise_validator__(
-    settings: dict | ValidationSettings, subscribers: Optional[list[Subscriber]] = None
+    settings: dict | ValidationSettings, subscribers: list[Subscriber] | None = None
 ) -> Validator:
     """
     Validate a RO-Crate against a profile
@@ -192,7 +191,7 @@ def __initialise_validator__(
 
 def get_profiles(
     profiles_path: Path = DEFAULT_PROFILES_PATH,
-    extra_profiles_path: Optional[Path] = None,
+    extra_profiles_path: Path | None = None,
     severity=Severity.OPTIONAL,
     allow_requirement_check_override: bool = ValidationSettings.allow_requirement_check_override,
 ) -> list[Profile]:
@@ -232,7 +231,7 @@ def get_profiles(
 def get_profile(
     profile_identifier: str,
     profiles_path: Path = DEFAULT_PROFILES_PATH,
-    extra_profiles_path: Optional[Path] = None,
+    extra_profiles_path: Path | None = None,
     severity=Severity.OPTIONAL,
     allow_requirement_check_override: bool = ValidationSettings.allow_requirement_check_override,
 ) -> Profile:

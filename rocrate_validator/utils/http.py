@@ -20,7 +20,7 @@ import random
 import string
 import threading
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -75,14 +75,14 @@ class OfflineCacheMissError(RuntimeError):
         self.url = url
 
 
-def find_offline_cache_miss(exc: BaseException) -> Optional[OfflineCacheMissError]:
+def find_offline_cache_miss(exc: BaseException) -> OfflineCacheMissError | None:
     """
     Walk the chain of an exception (``__cause__``/``__context__``) looking
     for an :class:`OfflineCacheMissError`. Returns the first match, or
     ``None`` if the chain does not contain one.
     """
     seen: set[int] = set()
-    current: Optional[BaseException] = exc
+    current: BaseException | None = exc
     while current is not None and id(current) not in seen:
         seen.add(id(current))
         if isinstance(current, OfflineCacheMissError):
@@ -115,7 +115,7 @@ class HttpRequester:
 
     def __init__(self,
                  cache_max_age: int = constants.DEFAULT_HTTP_CACHE_MAX_AGE,
-                 cache_path: Optional[str] = None,
+                 cache_path: str | None = None,
                  offline: bool = False,
                  no_cache: bool = False):
         logger.debug(f"Initializing instance of {self.__class__.__name__} {self}")
@@ -144,7 +144,7 @@ class HttpRequester:
         else:
             logger.debug(f"Instance of {self} already initialized")
 
-    def __initialize_session__(self, cache_max_age: int, cache_path: Optional[str] = None):
+    def __initialize_session__(self, cache_max_age: int, cache_path: str | None = None):
         # initialize the session
         # The session can be a CachedSession, a plain requests.Session, or the
         # duck-typed _OfflineFallbackSession; HTTP methods are delegated dynamically
@@ -353,7 +353,7 @@ class HttpRequester:
     @classmethod
     def initialize_cache(cls,
                          cache_max_age: int = constants.DEFAULT_HTTP_CACHE_MAX_AGE,
-                         cache_path: Optional[str] = None,
+                         cache_path: str | None = None,
                          offline: bool = False,
                          no_cache: bool = False) -> HttpRequester:
         """
@@ -394,7 +394,7 @@ class HttpRequester:
 
     def _reconfigure(self,
                      cache_max_age: int = constants.DEFAULT_HTTP_CACHE_MAX_AGE,
-                     cache_path: Optional[str] = None,
+                     cache_path: str | None = None,
                      offline: bool = False,
                      no_cache: bool = False) -> None:
         """

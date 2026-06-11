@@ -17,7 +17,6 @@ from __future__ import annotations
 import sys
 from contextlib import nullcontext
 from pathlib import Path
-from typing import Optional
 
 import rich_click as click
 from rich.padding import Padding
@@ -237,24 +236,24 @@ def validate_uri(ctx, param, value):
 @click.pass_context
 def validate(ctx,
              profiles_path: Path = DEFAULT_PROFILES_PATH,
-             extra_profiles_path: Optional[Path] = None,
+             extra_profiles_path: Path | None = None,
              profile_identifier: tuple[str, ...] = (),
              metadata_only: bool = False,
              no_auto_profile: bool = False,
              disable_profile_inheritance: bool = False,
              requirement_severity: str = Severity.REQUIRED.name,
              requirement_severity_only: bool = False,
-             skip_checks: Optional[list[str]] = None,
+             skip_checks: list[str] | None = None,
              rocrate_uri: str | Path = ".",
-             relative_root_path: Optional[Path] = None,
+             relative_root_path: Path | None = None,
              fail_fast: bool = False,
              no_paging: bool = False,
              verbose: bool = False,
              output_format: str = "text",
-             output_file: Optional[Path] = None,
-             output_line_width: Optional[int] = None,
+             output_file: Path | None = None,
+             output_line_width: int | None = None,
              cache_max_age: int = constants.DEFAULT_HTTP_CACHE_MAX_AGE,
-             cache_path: Optional[Path] = None,
+             cache_path: Path | None = None,
              no_cache: bool = False,
              offline: bool = False):
     """
@@ -449,7 +448,7 @@ def _warn_if_remote_offline(console: Console, rocrate_uri: str | Path, offline: 
         )
 
 
-def _parse_skip_checks(skip_checks: Optional[list[str]]) -> list[str]:
+def _parse_skip_checks(skip_checks: list[str] | None) -> list[str]:
     """Parse the comma-separated ``--skip-checks`` option into a flat list of check IDs."""
     logger.debug("skip_checks: %s", skip_checks)
     skip_checks_list: list[str] = []
@@ -581,8 +580,8 @@ def _render_file_or_collected_result(
     interactive: bool,
     verbose: bool,
     output_format: str,
-    output_file: Optional[Path],
-    output_line_width: Optional[int],
+    output_file: Path | None,
+    output_line_width: int | None,
 ) -> ValidationResult:
     """Validate for the file/JSON-input path, optionally writing a text report to file."""
     if interactive:
@@ -619,8 +618,8 @@ def _emit_json_report(
     *,
     console: Console,
     interactive: bool,
-    output_file: Optional[Path],
-    output_line_width: Optional[int],
+    output_file: Path | None,
+    output_line_width: int | None,
 ) -> None:
     """Write the aggregated validation results as JSON to a file or stdout."""
     if interactive:

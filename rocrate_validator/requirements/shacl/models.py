@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional, cast
+from typing import TYPE_CHECKING, cast
 
 from rdflib import Graph, Literal, Namespace, URIRef
 
@@ -35,11 +35,11 @@ logger = logging.getLogger(__name__)
 class SHACLNode:
 
     # define default values
-    _name: Optional[str] = None
-    _description: Optional[str] = None
-    severity: Optional[str] = None
+    _name: str | None = None
+    _description: str | None = None
+    severity: str | None = None
 
-    def __init__(self, node: Node, graph: Graph, parent: Optional[SHACLNode] = None):
+    def __init__(self, node: Node, graph: Graph, parent: SHACLNode | None = None):
 
         # store the shape key
         self._key = None
@@ -48,7 +48,7 @@ class SHACLNode:
         # store the shapes graph
         self._graph = graph
         # cache the hash
-        self._hash: Optional[int] = None
+        self._hash: int | None = None
         # store the parent shape
         self._parent = parent
 
@@ -67,7 +67,7 @@ class SHACLNode:
         self._name = value
 
     @property
-    def description(self) -> Optional[str]:
+    def description(self) -> str | None:
         """Return the description of the shape"""
         return self._description
 
@@ -99,7 +99,7 @@ class SHACLNode:
         return self._graph
 
     @property
-    def parent(self) -> Optional[SHACLNode]:
+    def parent(self) -> SHACLNode | None:
         """Return the parent shape of the shape"""
         return self._parent
 
@@ -108,7 +108,7 @@ class SHACLNode:
         """Return the requirement level of the shape"""
         return self.get_declared_level() or LevelCollection.REQUIRED
 
-    def get_declared_level(self) -> Optional[RequirementLevel]:
+    def get_declared_level(self) -> RequirementLevel | None:
         """Return the declared level of the shape"""
         severity = self.get_declared_severity()
         if severity:
@@ -118,7 +118,7 @@ class SHACLNode:
                 pass
         return None
 
-    def get_declared_severity(self) -> Optional[Severity]:
+    def get_declared_severity(self) -> Severity | None:
         """Return the declared severity of the shape"""
         severity = getattr(self, "severity", None)
         if severity == f"{SHACL_NS}Violation":
@@ -163,7 +163,7 @@ class SHACLNode:
 
 class SHACLNodeCollection(SHACLNode):
 
-    def __init__(self, node: Node, graph: Graph, properties: Optional[list[PropertyShape]] = None):
+    def __init__(self, node: Node, graph: Graph, properties: list[PropertyShape] | None = None):
         super().__init__(node, graph)
         # store the properties
         self._properties = properties or []
@@ -173,7 +173,7 @@ class SHACLNodeCollection(SHACLNode):
         """Return the properties of the shape"""
         return self._properties.copy()
 
-    def get_property(self, name) -> Optional[PropertyShape]:
+    def get_property(self, name) -> PropertyShape | None:
         """Return the property of the shape with the given name"""
         for prop in self._properties:
             if prop.name == name:
@@ -207,19 +207,19 @@ class PropertyGroup(SHACLNodeCollection):
 class PropertyShape(Shape):
 
     # define default values
-    _name: Optional[str] = None
-    _short_name: Optional[str] = None
-    _description: Optional[str] = None
-    group: Optional[str] = None
-    defaultValue: Optional[str] = None
+    _name: str | None = None
+    _short_name: str | None = None
+    _description: str | None = None
+    group: str | None = None
+    defaultValue: str | None = None
     order: int = 0
     # store the reference to the property group
-    _property_group: Optional[PropertyGroup] = None
+    _property_group: PropertyGroup | None = None
 
     def __init__(self,
                  node: Node,
                  graph: Graph,
-                 parent: Optional[Shape] = None):
+                 parent: Shape | None = None):
         # call the parent constructor
         super().__init__(node, graph)
         # store the parent shape
@@ -272,12 +272,12 @@ class PropertyShape(Shape):
         return self._graph
 
     @property
-    def parent(self) -> Optional[Shape]:
+    def parent(self) -> Shape | None:
         """Return the parent shape of the shape property"""
-        return cast("Optional[Shape]", self._parent)
+        return cast("Shape | None", self._parent)
 
     @property
-    def propertyGroup(self) -> Optional[PropertyGroup]:
+    def propertyGroup(self) -> PropertyGroup | None:
         """Return the group of the shape property"""
         return self._property_group
 
@@ -319,7 +319,7 @@ class ShapesRegistry:
         self._shapes.pop(shape.key, None)
         self._shapes_graph -= shape.graph
 
-    def get_shape(self, shape_key: str) -> Optional[Shape]:
+    def get_shape(self, shape_key: str) -> Shape | None:
         logger.debug("Searching for shape %s in the registry: %s", shape_key, self._shapes)
         result = self._shapes.get(shape_key, None)
         if not result:
@@ -331,7 +331,7 @@ class ShapesRegistry:
         self._shapes.update(shapes)
         self._shapes_graph += graph
 
-    def get_shape_by_name(self, name: str) -> Optional[Shape]:
+    def get_shape_by_name(self, name: str) -> Shape | None:
         for shape in self._shapes.values():
             if shape.name == name:
                 return shape
@@ -356,7 +356,7 @@ class ShapesRegistry:
                 return True
         return False
 
-    def load_shapes(self, shapes_path: str | Path, publicID: Optional[str] = None) -> list[Shape]:
+    def load_shapes(self, shapes_path: str | Path, publicID: str | None = None) -> list[Shape]:
         """
         Load the shapes from the graph
         """
@@ -442,7 +442,7 @@ class ShapesRegistry:
 
 def __process_property_group__(
     groups: dict[str, PropertyGroup], property_shape: PropertyShape
-) -> Optional[PropertyGroup]:
+) -> PropertyGroup | None:
     group_name = property_shape.group
     if group_name:
         if group_name not in groups:

@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import threading
 import time
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
 from rich.align import Align
 from rich.layout import Layout
@@ -58,22 +58,22 @@ class ValidationReportLayout(Layout):
 
     def __init__(self, console: Console,
                  settings: ValidationSettings,
-                 statistics: Optional[ValidationStatistics] = None,
+                 statistics: ValidationStatistics | None = None,
                  profile_autodetected: bool = False):
         super().__init__()
         self.console = console
         self.validation_settings = settings
         self.statistics = statistics
         self.profile_autodetected = profile_autodetected
-        self.result: Optional[ValidationResult] = None
-        self.__layout: Optional[Padding] = None
-        self._validation_checks_progress: Optional[Layout] = None
-        self.__progress_monitor: Optional[ProgressMonitor] = None
-        self.requirement_checks_container_layout: Optional[Layout] = None
-        self.passed_checks: Optional[Layout] = None
-        self.failed_checks: Optional[Layout] = None
-        self.report_details_container: Optional[Layout] = None
-        self.overall_result: Optional[Layout] = None
+        self.result: ValidationResult | None = None
+        self.__layout: Padding | None = None
+        self._validation_checks_progress: Layout | None = None
+        self.__progress_monitor: ProgressMonitor | None = None
+        self.requirement_checks_container_layout: Layout | None = None
+        self.passed_checks: Layout | None = None
+        self.failed_checks: Layout | None = None
+        self.report_details_container: Layout | None = None
+        self.overall_result: Layout | None = None
         self.requirement_checks_by_severity_container_layout: Any = None
         self.checks_stats_layout: Any = None
 
@@ -183,7 +183,7 @@ class ValidationReportLayout(Layout):
         if result:
             self.__show_overall_result__(result)
 
-    def update(self, event: Event, ctx: Optional[ValidationContext] = None):  # type: ignore[override]
+    def update(self, event: Event, ctx: ValidationContext | None = None):  # type: ignore[override]
         logger.debug("Event: %s", event.event_type)
         if event.event_type == EventType.PROFILE_VALIDATION_START:
             assert isinstance(event, ProfileValidationEvent)
@@ -213,7 +213,7 @@ class ValidationReportLayout(Layout):
             self.__show_overall_result__(event.validation_result)
             logger.debug("Validation ended with result: %s", event.validation_result)
 
-    def update_stats(self, profile_stats: Optional[ValidationStatistics] = None):
+    def update_stats(self, profile_stats: ValidationStatistics | None = None):
         assert profile_stats, "Profile stats must be provided"
         assert self.passed_checks is not None and self.failed_checks is not None, "Layout not initialized"
         self.requirement_checks_by_severity_container_layout["required"].update(
@@ -279,7 +279,7 @@ class ValidationReportLayout(Layout):
             )
         )
 
-    def __show_overall_result__(self, result: Optional[ValidationResult]):
+    def __show_overall_result__(self, result: ValidationResult | None):
         assert result, "Validation result must be provided"
         assert self.overall_result is not None, "Layout not initialized"
         self.result = result
@@ -322,7 +322,7 @@ class LiveReportLayout(ValidationReportLayout):
         super().__init__(console, validation_settings, result, profile_autodetected)  # type: ignore[arg-type]
         self.refresh_per_second = refresh_per_second
         self.transient = transient
-        self._live: Optional[Live] = None
+        self._live: Live | None = None
 
     def __enter__(self):
         """Enter the context and start live rendering."""
@@ -378,8 +378,8 @@ class LiveTextProgressLayout:
         with Live(message, console=self.console, refresh_per_second=4) as live:
             # Start validation in background while updating dots
 
-            result_container: list[Optional[ValidationResult]] = [None]
-            exception_container: list[Optional[BaseException]] = [None]
+            result_container: list[ValidationResult | None] = [None]
+            exception_container: list[BaseException | None] = [None]
 
             def run_validation():
                 try:

@@ -22,7 +22,7 @@ import shutil
 import tempfile
 from collections.abc import Collection
 from pathlib import Path
-from typing import Optional, TypeVar
+from typing import TypeVar
 from urllib.parse import urljoin
 
 import rdflib
@@ -91,8 +91,8 @@ def load_graph_and_preserve_relative_ids(json_data, base="http://example.org/"):
 
 def _prepare_temp_rocrate(
     rocrate_path: Path,
-    rocrate_entity_patch: Optional[dict],
-    rocrate_entity_mod_sparql: Optional[str],
+    rocrate_entity_patch: dict | None,
+    rocrate_entity_mod_sparql: str | None,
 ) -> Path:
     temp_rocrate_path = Path(tempfile.TemporaryDirectory().name)
     shutil.copytree(rocrate_path, temp_rocrate_path)
@@ -124,16 +124,16 @@ def do_entity_test(
     rocrate_path: Path | str,
     requirement_severity: models.Severity,
     expected_validation_result: bool,
-    expected_triggered_requirements: Optional[list[str]] = None,
-    expected_triggered_issues: Optional[list[str]] = None,
+    expected_triggered_requirements: list[str] | None = None,
+    expected_triggered_issues: list[str] | None = None,
     abort_on_first: bool = False,
     profile_identifier: str = DEFAULT_PROFILE_IDENTIFIER,
-    rocrate_entity_patch: Optional[dict] = None,
-    rocrate_entity_mod_sparql: Optional[str] = None,
-    skip_checks: Optional[list[str]] = (),
-    rocrate_relative_root_path: Optional[str] = None,
+    rocrate_entity_patch: dict | None = None,
+    rocrate_entity_mod_sparql: str | None = None,
+    skip_checks: list[str] | None = (),
+    rocrate_relative_root_path: str | None = None,
     metadata_only: bool = False,
-    metadata_dict: Optional[dict] = None,
+    metadata_dict: dict | None = None,
     **kwargs,
 ):
     """

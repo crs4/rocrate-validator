@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import logging
-from typing import Optional
 
 from rdflib import BNode, Graph, Namespace, URIRef
 
@@ -224,7 +223,7 @@ def test_resolve_parent_shape_with_property_bnode():
     assert result.key == shape.key
 
 
-def _make_property(graph: Graph, severity_term: Optional[str] = None) -> PropertyShape:
+def _make_property(graph: Graph, severity_term: str | None = None) -> PropertyShape:
     """Build a PropertyShape on a fresh BNode, optionally setting sh:severity."""
     prop = PropertyShape(BNode(), graph)
     if severity_term is not None:

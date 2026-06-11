@@ -15,7 +15,7 @@
 from __future__ import annotations
 
 import hashlib
-from typing import TYPE_CHECKING, Any, Optional, cast
+from typing import TYPE_CHECKING, Any, cast
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -73,7 +73,7 @@ def make_uris_relative(text: str, ro_crate_path: Path | str) -> str:
     return text.replace(str(ro_crate_path), "./")
 
 
-def inject_attributes(obj: object, node_graph: Graph, node: Node, exclude: Optional[list] = None) -> object:
+def inject_attributes(obj: object, node_graph: Graph, node: Node, exclude: list | None = None) -> object:
     # inject attributes of the shape property
     skip_properties = ["node"] if exclude is None else [*exclude, "node"]
     triples = node_graph.triples((node, None, None))
@@ -205,7 +205,7 @@ class ShapesList:
         return property_graph
 
     @classmethod
-    def load_from_file(cls, file_path: str, publicID: Optional[str] = None) -> ShapesList:
+    def load_from_file(cls, file_path: str, publicID: str | None = None) -> ShapesList:
         """
         Load the shapes from the file
 
@@ -256,7 +256,7 @@ def __extract_related_triples__(graph, subject_node, processed_nodes=None):
     return related_triples
 
 
-def load_shapes_from_file(file_path: str, publicID: Optional[str] = None) -> ShapesList:
+def load_shapes_from_file(file_path: str, publicID: str | None = None) -> ShapesList:
     try:
         # Check the file path is not None
         assert file_path is not None, "The file path cannot be None"
@@ -294,7 +294,7 @@ def load_shapes_from_graph(g: Graph) -> ShapesList:
     return ShapesList(node_shapes, property_shapes, subgraphs, g)
 
 
-def resolve_parent_shape(shapes_graph: Graph, source_shape_node: Node, shapes_registry) -> Optional[Shape]:
+def resolve_parent_shape(shapes_graph: Graph, source_shape_node: Node, shapes_registry) -> Shape | None:
     """
     Try to resolve the parent NodeShape/PropertyShape for a BNode constraint node.
 

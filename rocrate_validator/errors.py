@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     # Imported only for type-checking to avoid a circular import:
@@ -31,11 +31,11 @@ class ROCValidatorError(Exception):
 class ProfilesDirectoryNotFound(ROCValidatorError):
     """Raised when the profiles directory is not found."""
 
-    def __init__(self, profiles_path: Optional[str] = None):
+    def __init__(self, profiles_path: str | None = None):
         self._profiles_path = profiles_path
 
     @property
-    def profiles_path(self) -> Optional[str]:
+    def profiles_path(self) -> str | None:
         """The path to the profiles directory."""
         return self._profiles_path
 
@@ -49,11 +49,11 @@ class ProfilesDirectoryNotFound(ROCValidatorError):
 class InvalidProfilePath(ROCValidatorError):
     """Raised when an invalid profile path is provided."""
 
-    def __init__(self, profile_path: Optional[str] = None):
+    def __init__(self, profile_path: str | None = None):
         self._profile_path = profile_path
 
     @property
-    def profile_path(self) -> Optional[str]:
+    def profile_path(self) -> str | None:
         """The invalid profile path."""
         return self._profile_path
 
@@ -67,17 +67,17 @@ class InvalidProfilePath(ROCValidatorError):
 class ProfileNotFound(ROCValidatorError):
     """Raised when a profile is not found."""
 
-    def __init__(self, profile_name: Optional[str] = None, message: Optional[str] = None):
+    def __init__(self, profile_name: str | None = None, message: str | None = None):
         self._profile_name = profile_name
         self._message = message
 
     @property
-    def profile_name(self) -> Optional[str]:
+    def profile_name(self) -> str | None:
         """The name of the profile."""
         return self._profile_name
 
     @property
-    def message(self) -> Optional[str]:
+    def message(self) -> str | None:
         """The error message."""
         return self._message
 
@@ -91,11 +91,11 @@ class ProfileNotFound(ROCValidatorError):
 class ProfileSpecificationNotFound(ROCValidatorError):
     """Raised when the profile specification is not found."""
 
-    def __init__(self, spec_file: Optional[str] = None):
+    def __init__(self, spec_file: str | None = None):
         self._spec_file = spec_file
 
     @property
-    def spec_file(self) -> Optional[str]:
+    def spec_file(self) -> str | None:
         """The name of the profile specification file."""
         return self._spec_file
 
@@ -112,11 +112,11 @@ class ProfileSpecificationNotFound(ROCValidatorError):
 class ProfileSpecificationError(ROCValidatorError):
     """Raised when an error occurs in the profile specification."""
 
-    def __init__(self, message: Optional[str] = None):
+    def __init__(self, message: str | None = None):
         self._message = message
 
     @property
-    def message(self) -> Optional[str]:
+    def message(self) -> str | None:
         """The error message."""
         return self._message
 
@@ -130,7 +130,7 @@ class ProfileSpecificationError(ROCValidatorError):
 class DuplicateRequirementCheck(ROCValidatorError):
     """Raised when a duplicate requirement check is found."""
 
-    def __init__(self, check_name: str, profile_name: Optional[str] = None):
+    def __init__(self, check_name: str, profile_name: str | None = None):
         self._check_name = check_name
         self._profile_name = profile_name
 
@@ -140,7 +140,7 @@ class DuplicateRequirementCheck(ROCValidatorError):
         return self._check_name
 
     @property
-    def profile_name(self) -> Optional[str]:
+    def profile_name(self) -> str | None:
         """The name of the profile."""
         return self._profile_name
 
@@ -154,11 +154,11 @@ class DuplicateRequirementCheck(ROCValidatorError):
 class InvalidSerializationFormat(ROCValidatorError):
     """Raised when an invalid serialization format is provided."""
 
-    def __init__(self, fmt: Optional[str] = None):
+    def __init__(self, fmt: str | None = None):
         self._format = fmt
 
     @property
-    def serialization_format(self) -> Optional[str]:
+    def serialization_format(self) -> str | None:
         """The invalid serialization format."""
         return self._format
 
@@ -252,7 +252,7 @@ class CheckValidationError(ValidationError):
 class ROCrateInvalidURIError(ROCValidatorError):
     """Raised when an invalid URI is provided."""
 
-    def __init__(self, uri: str | Path | URI, message: Optional[str] = None):
+    def __init__(self, uri: str | Path | URI, message: str | None = None):
         self._uri = uri
         self._message = message or self.default_error_message(uri)
 
@@ -288,17 +288,17 @@ class ROCrateInvalidURIError(ROCValidatorError):
 class ROCrateMetadataNotFoundError(ROCValidatorError):
     """Raised when the RO-Crate metadata is not found."""
 
-    def __init__(self, message: Optional[str] = None, path: Optional[str] = None):
+    def __init__(self, message: str | None = None, path: str | None = None):
         self._message = message
         self._path = path
 
     @property
-    def message(self) -> Optional[str]:
+    def message(self) -> str | None:
         """The error message."""
         return self._message
 
     @property
-    def path(self) -> Optional[str]:
+    def path(self) -> str | None:
         """The path where the error occurred."""
         return self._path
 

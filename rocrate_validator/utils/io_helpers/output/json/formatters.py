@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import json
-from typing import Any, Optional
+from typing import Any
 
 from rich.console import ConsoleOptions, RenderResult
 
@@ -40,8 +40,8 @@ def format_validation_result(data: ValidationResult, console: Console, console_o
 
 def format_validation_results(
     data: dict[str, ValidationResult],
-    console: Optional[Console] = None,  # pylint: disable=unused-argument
-    console_options: Optional[ConsoleOptions] = None,
+    console: Console | None = None,  # pylint: disable=unused-argument
+    console_options: ConsoleOptions | None = None,
 ) -> str:  # pylint: disable=unused-argument
 
     # Initialize an empty JSON output
@@ -104,7 +104,7 @@ def format_validation_results(
     return json.dumps(json_output, indent=4, cls=CustomEncoder)
 
 
-def _compute_overall_statistics(results: list[ValidationResult], verbose: bool) -> Optional[dict[str, Any]]:
+def _compute_overall_statistics(results: list[ValidationResult], verbose: bool) -> dict[str, Any] | None:
     """Aggregate per-result statistics, dropping detailed lists unless verbose."""
     stats = AggregatedValidationStatistics([r.statistics for r in results if r.statistics])
     if not stats:

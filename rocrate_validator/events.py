@@ -15,7 +15,7 @@
 import enum
 from abc import ABC, abstractmethod
 from functools import total_ordering
-from typing import Any, Optional
+from typing import Any
 
 import enum_tools
 
@@ -59,7 +59,7 @@ class Event:
     Base class for representing events
     """
 
-    def __init__(self, event_type: EventType, message: Optional[str] = None):
+    def __init__(self, event_type: EventType, message: str | None = None):
         """
         Initialize the event.
 
@@ -138,7 +138,7 @@ class Subscriber(ABC):
         self.name = name
 
     @abstractmethod
-    def update(self, event: Event, ctx: Optional[Any] = None):
+    def update(self, event: Event, ctx: Any | None = None):
         """
         Update the subscriber with the event
 
@@ -166,7 +166,7 @@ class Publisher:
     def remove_subscriber(self, subscriber):
         self.subscribers.remove(subscriber)
 
-    def notify(self, event: Event | EventType, ctx: Optional[Any] = None):
+    def notify(self, event: Event | EventType, ctx: Any | None = None):
         if isinstance(event, EventType):
             event = Event(event)
         # Check if the event has already been notified

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import re
-from typing import Any, Optional
+from typing import Any
 from urllib.parse import urljoin
 
 from rocrate_validator.constants import HTTP_STATUS_OK
@@ -369,7 +369,7 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
 
     def __check_entity_keys__(self, entity: Any,
                               context_keys: set,
-                              unexpected_keys: Optional[dict[str, int]] = None) -> dict[str, int]:
+                              unexpected_keys: dict[str, int] | None = None) -> dict[str, int]:
         """ Check if the entity is in the correct format """
         # Ensure unexpected_keys is initialized
         if unexpected_keys is None:

@@ -25,7 +25,7 @@ from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from functools import total_ordering
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional, Protocol, Union, cast
+from typing import TYPE_CHECKING, Any, Protocol, cast
 from urllib.error import HTTPError
 
 import enum_tools
@@ -228,9 +228,9 @@ class Profile:
         self,
         profiles_base_path: Path,
         profile_path: Path,
-        requirements: Optional[list[Requirement]] = None,
-        identifier: Optional[str] = None,
-        publicID: Optional[str] = None,
+        requirements: list[Requirement] | None = None,
+        identifier: str | None = None,
+        publicID: str | None = None,
         severity: Severity = Severity.REQUIRED,
     ):
         """
@@ -258,11 +258,11 @@ class Profile:
 
         :meta private:
         """
-        self._identifier: Optional[str] = identifier
+        self._identifier: str | None = identifier
         self._profiles_base_path = profiles_base_path
         self._profile_path = profile_path
-        self._name: Optional[str] = None
-        self._description: Optional[str] = None
+        self._name: str | None = None
+        self._description: str | None = None
         self._requirements: list[Requirement] = requirements if requirements is not None else []
         self._publicID = publicID
         self._severity = severity
@@ -273,7 +273,7 @@ class Profile:
         self._profile_node: Any = None
 
         # init property to store the RDF graph of the profile specification
-        self._profile_specification_graph: Optional[Graph] = None
+        self._profile_specification_graph: Graph | None = None
 
         # check if the profile specification file exists
         spec_file = self.profile_specification_file_path
@@ -489,7 +489,7 @@ class Profile:
         return self.path / PROFILE_SPECIFICATION_FILE
 
     @property
-    def publicID(self) -> Optional[str]:
+    def publicID(self) -> str | None:
         """
         The public identifier of the RO-Crate which is validated by the profile.
 
@@ -542,7 +542,7 @@ class Profile:
             or (exact_match and requirement.severity_from_path == severity)
         ]
 
-    def get_requirement(self, name: str) -> Optional[Requirement]:
+    def get_requirement(self, name: str) -> Requirement | None:
         """
         Get the requirement with the given name
         """
@@ -551,7 +551,7 @@ class Profile:
                 return requirement
         return None
 
-    def get_requirement_check(self, check_name: str) -> Optional[RequirementCheck]:
+    def get_requirement_check(self, check_name: str) -> RequirementCheck | None:
         """
         Get the requirement check with the given name
         """
@@ -628,7 +628,7 @@ class Profile:
         }
 
     @staticmethod
-    def __extract_version_from_token__(token: str) -> Optional[str]:
+    def __extract_version_from_token__(token: str) -> str | None:
         if not token:
             return None
         pattern = r"\Wv?(\d+(\.\d+(\.\d+)?)?)"
@@ -637,11 +637,11 @@ class Profile:
             return matches[-1][0]
         return None
 
-    def __get_consistent_version__(self, candidate_token: str) -> Optional[str]:
+    def __get_consistent_version__(self, candidate_token: str) -> str | None:
         candidates = {
             _
             for _ in [
-                cast("Optional[str]", self.__get_specification_property__("version", SCHEMA_ORG_NS)),
+                cast("str | None", self.__get_specification_property__("version", SCHEMA_ORG_NS)),
                 self.__extract_version_from_token__(candidate_token),
                 self.__extract_version_from_token__(str(self.path.relative_to(self._profiles_base_path))),
                 self.__extract_version_from_token__(str(self.uri)),
@@ -664,9 +664,9 @@ class Profile:
         # Replace slashes with hyphens
         return identifier.replace("/", "-")
 
-    def __init_token_version__(self) -> tuple[str, Optional[str]]:
+    def __init_token_version__(self) -> tuple[str, str | None]:
         # try to extract the token from the specs or the path
-        candidate_token = cast("Optional[str]", self.__get_specification_property__("hasToken", PROF_NS))
+        candidate_token = cast("str | None", self.__get_specification_property__("hasToken", PROF_NS))
         if not candidate_token:
             candidate_token = self.__extract_token_from_path__()
         logger.debug("Candidate token: %s", candidate_token)
@@ -687,7 +687,7 @@ class Profile:
         cls,
         profiles_base_path: str | Path,
         profile_path: str | Path,
-        publicID: Optional[str] = None,
+        publicID: str | None = None,
         severity: Severity = Severity.REQUIRED,
     ) -> Profile:
         # if the path is a string, convert it to a Path
@@ -709,8 +709,8 @@ class Profile:
     @classmethod
     def __load_profiles_paths__(
         cls,
-        profiles_path: Optional[str | Path] = None,
-        extra_profiles_path: Optional[str | Path] = None,
+        profiles_path: str | Path | None = None,
+        extra_profiles_path: str | Path | None = None,
     ) -> list[tuple[Path, Path]]:
         """
         Load the paths of the profiles from the given profiles path and extra profiles path.
@@ -756,8 +756,8 @@ class Profile:
     def load_profiles(
         cls,
         profiles_path: str | Path,
-        extra_profiles_path: Optional[str | Path] = None,
-        publicID: Optional[str] = None,
+        extra_profiles_path: str | Path | None = None,
+        publicID: str | None = None,
         severity: Severity = Severity.REQUIRED,
         allow_requirement_check_override: bool = True,
     ) -> list[Profile]:
@@ -913,7 +913,7 @@ class Profile:
         return cls.__profiles_map.values()
 
     @classmethod
-    def find_in_list(cls, profiles: Collection[Profile], profile_identifier: str) -> Optional[Profile]:
+    def find_in_list(cls, profiles: Collection[Profile], profile_identifier: str) -> Profile | None:
         """
         Find a profile with the given identifier in the given list of profiles
 
@@ -955,8 +955,8 @@ class Requirement(ABC):
         self,
         profile: Profile,
         name: str = "",
-        description: Optional[str] = None,
-        path: Optional[Path] = None,
+        description: str | None = None,
+        path: Path | None = None,
         initialize_checks: bool = True,
     ):
         """
@@ -964,13 +964,13 @@ class Requirement(ABC):
 
         :meta private:
         """
-        self._order_number: Optional[int] = None
+        self._order_number: int | None = None
         self._profile = profile
         self._description = description
         self._path = path  # path of code implementing the requirement
-        self._level_from_path: Optional[RequirementLevel] = None
+        self._level_from_path: RequirementLevel | None = None
         self._checks: list[RequirementCheck] = []
-        self._overridden: Optional[bool] = None
+        self._overridden: bool | None = None
 
         if not name and path:
             self._name = get_requirement_name_from_file(path)
@@ -1025,11 +1025,11 @@ class Requirement(ABC):
         return self._name
 
     @property
-    def severity_from_path(self) -> Optional[Severity]:
+    def severity_from_path(self) -> Severity | None:
         return self.requirement_level_from_path.severity if self.requirement_level_from_path else None
 
     @property
-    def requirement_level_from_path(self) -> Optional[RequirementLevel]:
+    def requirement_level_from_path(self) -> RequirementLevel | None:
         if not self._level_from_path and self._path:
             try:
                 self._level_from_path = LevelCollection.get(self._path.parent.name)
@@ -1066,7 +1066,7 @@ class Requirement(ABC):
         pass
 
     @property
-    def path(self) -> Optional[Path]:
+    def path(self) -> Path | None:
         return self._path
 
     @abstractmethod
@@ -1076,7 +1076,7 @@ class Requirement(ABC):
     def get_checks(self) -> list[RequirementCheck]:
         return self._checks.copy()
 
-    def get_check(self, name: str) -> Optional[RequirementCheck]:
+    def get_check(self, name: str) -> RequirementCheck | None:
         for check in self._checks:
             if check.name == name:
                 return check
@@ -1394,7 +1394,7 @@ class SourceSnippet:
     """
     language: str
     code: str
-    source_path: Optional[Path] = None
+    source_path: Path | None = None
 
 
 @total_ordering
@@ -1403,10 +1403,10 @@ class RequirementCheck(ABC):
     def __init__(
         self,
         requirement: Requirement,
-        name: Optional[str],
-        level: Optional[RequirementLevel] = LevelCollection.REQUIRED,
-        description: Optional[str] = None,
-        hidden: Optional[bool] = None,
+        name: str | None,
+        level: RequirementLevel | None = LevelCollection.REQUIRED,
+        description: str | None = None,
+        hidden: bool | None = None,
         deactivated: bool = False,
     ):
         self._requirement: Requirement = requirement
@@ -1495,7 +1495,7 @@ class RequirementCheck(ABC):
     def execute_check(self, context: ValidationContext) -> bool:
         raise NotImplementedError()
 
-    def get_source_snippet(self) -> Optional[SourceSnippet]:
+    def get_source_snippet(self) -> SourceSnippet | None:
         """
         Return the source code that implements this check, or ``None`` if the
         backing source cannot be extracted for this check kind.
@@ -1546,10 +1546,10 @@ class CheckIssue:
     def __init__(
         self,
         check: RequirementCheck,
-        message: Optional[str] = None,
-        violatingProperty: Optional[str] = None,
-        violatingEntity: Optional[str] = None,
-        value: Optional[str] = None,
+        message: str | None = None,
+        violatingProperty: str | None = None,
+        violatingEntity: str | None = None,
+        value: str | None = None,
     ):
         self._message = message
         self._check: RequirementCheck = check
@@ -1558,7 +1558,7 @@ class CheckIssue:
         self._propertyValue = value
 
     @property
-    def message(self) -> Optional[str]:
+    def message(self) -> str | None:
         """The message associated with the issue"""
         return self._message
 
@@ -1582,7 +1582,7 @@ class CheckIssue:
         return self._check
 
     @property
-    def violatingEntity(self) -> Optional[str]:
+    def violatingEntity(self) -> str | None:
         """
         It represents the specific element being evaluated that fails
         to meet the defined rules or constraints within a validation process.
@@ -1594,7 +1594,7 @@ class CheckIssue:
         return self._violatingEntity
 
     @property
-    def violatingProperty(self) -> Optional[str]:
+    def violatingProperty(self) -> str | None:
         """
         It refers to the specific property or relationship within an item
         that leads to a validation failure.
@@ -1607,7 +1607,7 @@ class CheckIssue:
         return self._violatingProperty
 
     @property
-    def violatingPropertyValue(self) -> Optional[str]:
+    def violatingPropertyValue(self) -> str | None:
         """
         It represents the value of the violatingProperty
         that leads to a validation failure.
@@ -1682,7 +1682,7 @@ class ValidationStatistics(Subscriber):
     def __init__(
         self,
         settings: dict | ValidationSettings,
-        context: Optional[ValidationContext] = None,
+        context: ValidationContext | None = None,
         skip_initialization: bool = False,
     ):
         super().__init__(name=self.__class__.__name__)
@@ -1691,7 +1691,7 @@ class ValidationStatistics(Subscriber):
         self._settings = settings
         self._context = context
         self._stats = self.__initialise__(settings) if not skip_initialization else {}
-        self._result: Optional[ValidationResult] = None
+        self._result: ValidationResult | None = None
         self._listeners: list[ValidationStatisticsListener] = []
 
     @property
@@ -1702,7 +1702,7 @@ class ValidationStatistics(Subscriber):
         return self._settings
 
     @property
-    def validation_result(self) -> Optional[ValidationResult]:
+    def validation_result(self) -> ValidationResult | None:
         """
         Get the validation result
         """
@@ -1843,21 +1843,21 @@ class ValidationStatistics(Subscriber):
         return self._stats.get("validated_checks", [])
 
     @property
-    def started_at(self) -> Optional[datetime]:
+    def started_at(self) -> datetime | None:
         """
         Get the timestamp when validation started
         """
         return self._stats.get("started_at")
 
     @property
-    def finished_at(self) -> Optional[datetime]:
+    def finished_at(self) -> datetime | None:
         """
         Get the timestamp when validation finished
         """
         return self._stats.get("finished_at")
 
     @property
-    def duration(self) -> Optional[float]:
+    def duration(self) -> float | None:
         """
         Get the duration of the validation process in seconds
         """
@@ -1993,24 +1993,24 @@ class ValidationStatistics(Subscriber):
         logger.debug(result)
         return result
 
-    def update(self, event: Event, ctx: Optional[ValidationContext] = None) -> None:
+    def update(self, event: Event, ctx: ValidationContext | None = None) -> None:
         self.__event_handlers__.get(event.event_type, lambda e, c: None)(event, ctx)
 
-    def __handle_validation_start__(self, _event: Event, _ctx: Optional[ValidationContext]) -> None:
+    def __handle_validation_start__(self, _event: Event, _ctx: ValidationContext | None) -> None:
         logger.debug("Validation started")
         self._stats["started_at"] = datetime.now(timezone.utc)
 
-    def __handle_profile_validation_start__(self, event: Event, _ctx: Optional[ValidationContext]) -> None:
+    def __handle_profile_validation_start__(self, event: Event, _ctx: ValidationContext | None) -> None:
         assert isinstance(event, ProfileValidationEvent)
         logger.debug("Profile validation start: %s", event.profile.identifier)
 
-    def __handle_requirement_validation_start__(self, _event: Event, _ctx: Optional[ValidationContext]) -> None:
+    def __handle_requirement_validation_start__(self, _event: Event, _ctx: ValidationContext | None) -> None:
         logger.debug("Requirement validation start")
 
-    def __handle_requirement_check_validation_start__(self, _event: Event, _ctx: Optional[ValidationContext]) -> None:
+    def __handle_requirement_check_validation_start__(self, _event: Event, _ctx: ValidationContext | None) -> None:
         logger.debug("Requirement check validation start")
 
-    def __handle_requirement_check_validation_end__(self, event: Event, ctx: Optional[ValidationContext]) -> None:
+    def __handle_requirement_check_validation_end__(self, event: Event, ctx: ValidationContext | None) -> None:
         assert isinstance(event, RequirementCheckValidationEvent)
         assert ctx is not None
         target_profile = ctx.target_validation_profile
@@ -2036,7 +2036,7 @@ class ValidationStatistics(Subscriber):
                 event.requirement_check.identifier,
             )
 
-    def __handle_requirement_validation_end__(self, event: Event, _ctx: Optional[ValidationContext]) -> None:
+    def __handle_requirement_validation_end__(self, event: Event, _ctx: ValidationContext | None) -> None:
         assert isinstance(event, RequirementValidationEvent)
         if not event.requirement.hidden:
             if event.validation_result:
@@ -2046,12 +2046,12 @@ class ValidationStatistics(Subscriber):
             self._stats["validated_requirements"].append(event.requirement)
             self.notify_listeners()
 
-    def __handle_profile_validation_end__(self, event: Event, _ctx: Optional[ValidationContext]) -> None:
+    def __handle_profile_validation_end__(self, event: Event, _ctx: ValidationContext | None) -> None:
         assert isinstance(event, ProfileValidationEvent)
         self._stats["validated_profiles"].append(event.profile)
         logger.debug("Profile validation ended: %s", event.profile.identifier)
 
-    def __handle_validation_end__(self, event: Event, _ctx: Optional[ValidationContext]) -> None:
+    def __handle_validation_end__(self, event: Event, _ctx: ValidationContext | None) -> None:
         assert isinstance(event, ValidationEvent)
         self._result = event.validation_result
         self._stats["finished_at"] = datetime.now(timezone.utc)
@@ -2297,14 +2297,14 @@ class AggregatedValidationStatistics:
         return self._overall_stats.get("failed_checks", set())
 
     @property
-    def started_at(self) -> Optional[datetime]:
+    def started_at(self) -> datetime | None:
         """
         Get the timestamp when the aggregated validation started
         """
         return self._overall_stats.get("started_at")
 
     @property
-    def finished_at(self) -> Optional[datetime]:
+    def finished_at(self) -> datetime | None:
         """
         Get the timestamp when the aggregated validation finished
         """
@@ -2340,8 +2340,8 @@ class AggregatedValidationStatistics:
         failed_checks: set[RequirementCheck] = set()
         passed_requirements: set[Requirement] = set()
         passed_checks: set[RequirementCheck] = set()
-        started_at: Optional[datetime] = None
-        finished_at: Optional[datetime] = None
+        started_at: datetime | None = None
+        finished_at: datetime | None = None
         duration: float = 0.0
 
         # Aggregate statistics from each ValidationStatistics instance
@@ -2492,7 +2492,7 @@ class ValidationResult:
             self._skipped_checks.remove(check)
             logger.debug("Removing check '%s' from skipped checks", check.name)
 
-    def get_executed_check_result(self, check: RequirementCheck) -> Optional[bool]:
+    def get_executed_check_result(self, check: RequirementCheck) -> bool | None:
         """
         Get the result of an executed check
         """
@@ -2525,14 +2525,14 @@ class ValidationResult:
         """
         return self._issues.copy()
 
-    def get_issues(self, min_severity: Optional[Severity] = None) -> list[CheckIssue]:
+    def get_issues(self, min_severity: Severity | None = None) -> list[CheckIssue]:
         """
         Get the issues found during the validation with a severity greater than or equal to `min_severity`
         """
         min_severity = min_severity or self.context.requirement_severity
         return [issue for issue in self._issues if issue.severity >= min_severity]
 
-    def get_issues_by_check(self, check: RequirementCheck, min_severity: Optional[Severity] = None) -> list[CheckIssue]:
+    def get_issues_by_check(self, check: RequirementCheck, min_severity: Severity | None = None) -> list[CheckIssue]:
         """
         Get the issues found during the validation for a specific check
         with a severity greater than or equal to `min_severity`
@@ -2540,14 +2540,14 @@ class ValidationResult:
         min_severity = min_severity or self.context.requirement_severity
         return [issue for issue in self._issues if issue.check == check and issue.severity >= min_severity]
 
-    def has_issues(self, min_severity: Optional[Severity] = None) -> bool:
+    def has_issues(self, min_severity: Severity | None = None) -> bool:
         """
         Check if there are issues with a severity greater than or equal to the given `severity`
         """
         min_severity = min_severity or self.context.requirement_severity
         return any(issue.severity >= min_severity for issue in self._issues)
 
-    def passed(self, min_severity: Optional[Severity] = None) -> bool:
+    def passed(self, min_severity: Severity | None = None) -> bool:
         """
         Check if all checks passed with a severity greater than or equal to the given `severity`
         """
@@ -2558,9 +2558,9 @@ class ValidationResult:
         self,
         message: str,
         check: RequirementCheck,
-        violatingEntity: Optional[str] = None,
-        violatingProperty: Optional[str] = None,
-        violatingPropertyValue: Optional[str] = None,
+        violatingEntity: str | None = None,
+        violatingProperty: str | None = None,
+        violatingPropertyValue: str | None = None,
     ) -> CheckIssue:
         """
         Add an issue to the validation result
@@ -2656,7 +2656,7 @@ class ValidationResult:
         result["validation_settings"]["rocrate_validator_version"] = __version__
         return result
 
-    def to_json(self, path: Optional[Path] = None) -> str:
+    def to_json(self, path: Path | None = None) -> str:
         """
         Convert the ValidationResult to a JSON string
         """
@@ -2691,12 +2691,12 @@ class ValidationSettings:
     #: The URI of the RO-Crate
     rocrate_uri: URI
     #: The relative root path of the RO-Crate
-    rocrate_relative_root_path: Optional[Path] = None
+    rocrate_relative_root_path: Path | None = None
     # Profile settings
     #: The path to the profiles
     profiles_path: Path = DEFAULT_PROFILES_PATH
     #: The path to the extra profiles
-    extra_profiles_path: Optional[Path] = None
+    extra_profiles_path: Path | None = None
     #: The profile identifier to validate against
     profile_identifier: str = DEFAULT_PROFILE_IDENTIFIER
     #: Flag to enable profile inheritance
@@ -2711,7 +2711,7 @@ class ValidationSettings:
     enable_profile_inheritance: bool = True
     # Validation settings
     #: Flag to abort on first error
-    abort_on_first: Optional[bool] = False
+    abort_on_first: bool | None = False
     #: Flag to disable reporting of issues related to inherited profiles
     disable_inherited_profiles_issue_reporting: bool = False
     #: Flag to disable remote crate download
@@ -2727,17 +2727,17 @@ class ValidationSettings:
     #: Flag to disable the check for duplicates
     disable_check_for_duplicates: bool = False
     #: Checks to skip
-    skip_checks: Optional[list[str]] = None
+    skip_checks: list[str] | None = None
     #: Flag to validate only the metadata of the RO-Crate
     metadata_only: bool = False
     #: RO-Crate metadata as dictionary
-    metadata_dict: Optional[dict] = None
+    metadata_dict: dict | None = None
     #: Verbose output
     verbose: bool = False
     #: Cache max age in seconds (negative values mean "never expire")
     cache_max_age: int = DEFAULT_HTTP_CACHE_MAX_AGE
     #: Cache path
-    cache_path: Optional[Path] = None
+    cache_path: Path | None = None
     #: Flag to enable offline mode: HTTP requests are served only from the cache
     offline: bool = False
     #: Flag to disable the HTTP cache entirely: every request hits the network
@@ -2806,7 +2806,7 @@ class ValidationSettings:
         return result
 
     @property  # type: ignore[no-redef]
-    def rocrate_uri(self) -> Optional[URI]:
+    def rocrate_uri(self) -> URI | None:
         """
         Get the RO-Crate URI
 
@@ -2851,14 +2851,14 @@ class ValidationEvent(Event):
     def __init__(
         self,
         event_type: EventType,
-        validation_result: Optional[ValidationResult] = None,
-        message: Optional[str] = None,
+        validation_result: ValidationResult | None = None,
+        message: str | None = None,
     ):
         super().__init__(event_type, message)
         self._validation_result = validation_result
 
     @property
-    def validation_result(self) -> Optional[ValidationResult]:
+    def validation_result(self) -> ValidationResult | None:
         return self._validation_result
 
 
@@ -2867,7 +2867,7 @@ class ProfileValidationEvent(Event):
         self,
         event_type: EventType,
         profile: Profile,
-        message: Optional[str] = None,
+        message: str | None = None,
     ):
         assert event_type in (
             EventType.PROFILE_VALIDATION_START,
@@ -2903,8 +2903,8 @@ class RequirementValidationEvent(Event):
         self,
         event_type: EventType,
         requirement: Requirement,
-        validation_result: Optional[bool] = None,
-        message: Optional[str] = None,
+        validation_result: bool | None = None,
+        message: str | None = None,
     ):
         assert event_type in (
             EventType.REQUIREMENT_VALIDATION_START,
@@ -2919,7 +2919,7 @@ class RequirementValidationEvent(Event):
         return self._requirement
 
     @property
-    def validation_result(self) -> Optional[bool]:
+    def validation_result(self) -> bool | None:
         return self._validation_result
 
     def __str__(self) -> str:
@@ -2945,8 +2945,8 @@ class RequirementCheckValidationEvent(Event):
         self,
         event_type: EventType,
         requirement_check: RequirementCheck,
-        validation_result: Optional[bool] = None,
-        message: Optional[str] = None,
+        validation_result: bool | None = None,
+        message: str | None = None,
     ):
         assert event_type in (
             EventType.REQUIREMENT_CHECK_VALIDATION_START,
@@ -2961,7 +2961,7 @@ class RequirementCheckValidationEvent(Event):
         return self._requirement_check
 
     @property
-    def validation_result(self) -> Optional[bool]:
+    def validation_result(self) -> bool | None:
         return self._validation_result
 
     def __str__(self) -> str:
@@ -3009,7 +3009,7 @@ class Validator(Publisher):
         self._validation_settings = ValidationSettings.parse(settings)
         super().__init__()
         # initialize the current context
-        self.__current_context__: Optional[ValidationContext] = None
+        self.__current_context__: ValidationContext | None = None
 
     @property
     def validation_settings(self) -> ValidationSettings:
@@ -3087,7 +3087,7 @@ class Validator(Publisher):
         # perform the requirements validation
         return self.__do_validate__(requirements)
 
-    def __do_validate__(self, requirements: Optional[list[Requirement]] = None) -> ValidationResult:
+    def __do_validate__(self, requirements: list[Requirement] | None = None) -> ValidationResult:
 
         # initialize the validation context
         context = ValidationContext(self, self.validation_settings)
@@ -3192,7 +3192,7 @@ class Validator(Publisher):
             requirement_type.finalize(context)
         logger.debug("Finalizing requirement types: completed")
 
-    def notify(self, event: Event | EventType, ctx: Optional[Any] = None):
+    def notify(self, event: Event | EventType, ctx: Any | None = None):
         """Override notify to update statistics"""
         assert self.__current_context__ is not None, "No current validation context"
         result: ValidationResult = self.__current_context__.result
@@ -3213,13 +3213,13 @@ class ValidationContext:
         # reference to the settings
         self._settings = settings
         # reference to the data graph
-        self._data_graph: Optional[Graph] = None
+        self._data_graph: Graph | None = None
         # reference to the profiles
-        self._profiles: Optional[list[Profile]] = None
+        self._profiles: list[Profile] | None = None
         # reference to the target profile
-        self._target_validation_profile: Optional[Profile] = None
+        self._target_validation_profile: Profile | None = None
         # reference to the validation result
-        self._result: Optional[ValidationResult] = None
+        self._result: ValidationResult | None = None
         # additional properties for the context
         self._properties: dict = {}
         # URLs already reported as missing from the HTTP cache during this run
@@ -3301,7 +3301,7 @@ class ValidationContext:
         return profiles_path
 
     @property
-    def extra_profiles_path(self) -> Optional[Path]:
+    def extra_profiles_path(self) -> Path | None:
         """
         The path to the extra profiles
 

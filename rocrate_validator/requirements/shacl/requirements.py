@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from pathlib import Path
-from typing import Any, Optional, cast
+from typing import Any, cast
 
 from rdflib import RDF
 
@@ -166,7 +166,7 @@ class SHACLRequirementLoader(RequirementLoader):
         return self._shape_registry
 
     def load(
-        self, profile: Profile, requirement_level: RequirementLevel, file_path: Path, publicID: Optional[str] = None
+        self, profile: Profile, requirement_level: RequirementLevel, file_path: Path, publicID: str | None = None
     ) -> list[Requirement]:
         assert file_path is not None, "The file path cannot be None"
         shapes: list[Shape] = self.shapes_registry.load_shapes(file_path, publicID)

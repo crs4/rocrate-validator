@@ -15,7 +15,7 @@
 import re
 import sys
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from rich.align import Align
 from rich.markdown import Markdown
@@ -58,7 +58,7 @@ logger = logging.getLogger(__name__)
 )
 @click.pass_context
 def profiles(ctx, profiles_path: Path = DEFAULT_PROFILES_PATH,
-             extra_profiles_path: Optional[Path] = None):
+             extra_profiles_path: Path | None = None):
     """
     [magenta]rocrate-validator:[/magenta] Manage profiles
     """
@@ -177,9 +177,9 @@ def list_profiles(ctx, no_paging: bool = False):  # , profiles_path: Path = DEFA
 @click.pass_context
 def describe_profile(ctx,
                      profile_identifier: str = DEFAULT_PROFILE_IDENTIFIER,
-                     check_identifier: Optional[str] = None,
+                     check_identifier: str | None = None,
                      profiles_path: Path = DEFAULT_PROFILES_PATH,
-                     extra_profiles_path: Optional[Path] = None,
+                     extra_profiles_path: Path | None = None,
                      verbose: bool = False, no_paging: bool = False):
     """
     Show a profile, or — when CHECK_IDENTIFIER is given — show a single requirement check.

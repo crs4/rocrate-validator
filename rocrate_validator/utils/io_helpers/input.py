@@ -15,7 +15,7 @@
 from __future__ import annotations
 
 import sys
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from InquirerPy import prompt
 from InquirerPy.base.control import Choice
@@ -31,9 +31,9 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-def __get_single_char_win32__(console: Optional[Console] = None, end: str = "\n",
-                              message: Optional[str] = None,
-                              choices: Optional[list[str]] = None) -> str:
+def __get_single_char_win32__(console: Console | None = None, end: str = "\n",
+                              message: str | None = None,
+                              choices: list[str] | None = None) -> str:
     """
     Get a single character from the console
     """
@@ -53,9 +53,9 @@ def __get_single_char_win32__(console: Optional[Console] = None, end: str = "\n"
     return char
 
 
-def __get_single_char_unix__(console: Optional[Console] = None, end: str = "\n",
-                             message: Optional[str] = None,
-                             choices: Optional[list[str]] = None) -> str:
+def __get_single_char_unix__(console: Console | None = None, end: str = "\n",
+                             message: str | None = None,
+                             choices: list[str] | None = None) -> str:
     """
     Get a single character from the console
     """
@@ -82,9 +82,9 @@ def __get_single_char_unix__(console: Optional[Console] = None, end: str = "\n",
     return char
 
 
-def get_single_char(console: Optional[Console] = None, end: str = "\n",
-                    message: Optional[str] = None,
-                    choices: Optional[list[str]] = None) -> str:
+def get_single_char(console: Console | None = None, end: str = "\n",
+                    message: str | None = None,
+                    choices: list[str] | None = None) -> str:
     """
     Get a single character from the console
     """

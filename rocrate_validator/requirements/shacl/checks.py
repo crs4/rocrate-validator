@@ -62,10 +62,10 @@ class SHACLCheck(RequirementCheck):
         self,
         requirement: Requirement,
         shape: Shape,
-        name: Optional[str] = None,
+        name: str | None = None,
         root: bool = False,
-        hidden: Optional[bool] = None,
-        level: Optional[RequirementLevel] = None,
+        hidden: bool | None = None,
+        level: RequirementLevel | None = None,
     ) -> None:
         self._shape = shape
         self._root = root
@@ -159,7 +159,7 @@ class SHACLCheck(RequirementCheck):
             return derived
         return LevelCollection.REQUIRED
 
-    def __derive_level_from_properties__(self) -> Optional[RequirementLevel]:
+    def __derive_level_from_properties__(self) -> RequirementLevel | None:
         properties = getattr(self._shape, "properties", None)
         if not properties:
             return None
@@ -178,7 +178,7 @@ class SHACLCheck(RequirementCheck):
     def severity(self) -> Severity:
         return self.level.severity
 
-    def get_source_snippet(self) -> Optional[SourceSnippet]:
+    def get_source_snippet(self) -> SourceSnippet | None:
         if self._shape is None:
             return None
         try:

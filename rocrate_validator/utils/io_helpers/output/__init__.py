@@ -15,7 +15,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Optional, Protocol, cast
+from typing import TYPE_CHECKING, Any, Protocol, cast
 
 from rocrate_validator.utils import log as logging
 
@@ -41,7 +41,7 @@ class OutputFormatter(Protocol):
 
 class BaseOutputFormatter(OutputFormatter):
 
-    def __init__(self, data: Optional[Any] = None):
+    def __init__(self, data: Any | None = None):
         # Formatters are registered as classes (instantiated with the data to
         # render), so the map values are formatter types, not instances.
         self._fmap: dict[type, type[OutputFormatter]] = {}

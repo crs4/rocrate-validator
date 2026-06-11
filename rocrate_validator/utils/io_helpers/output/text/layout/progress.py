@@ -13,7 +13,6 @@
 # limitations under the License.
 
 
-from typing import Optional
 
 from rich.progress import BarColumn, Progress, TextColumn, TimeElapsedColumn
 
@@ -40,7 +39,7 @@ class ProgressMonitor(Subscriber):
     REQUIREMENT_CHECK_VALIDATION = "Requirements Checks"
 
     def __init__(self, settings: dict | ValidationSettings,
-                 stats: Optional[ValidationStatistics] = None):
+                 stats: ValidationStatistics | None = None):
         self.__progress = Progress(
             TextColumn("[progress.description]{task.description}"),
             BarColumn(),
@@ -85,7 +84,7 @@ class ProgressMonitor(Subscriber):
     def progress(self) -> Progress:
         return self.__progress
 
-    def update(self, event: Event, ctx: Optional[ValidationContext] = None):
+    def update(self, event: Event, ctx: ValidationContext | None = None):
         logger.debug("Event: %s", event.event_type)
         if event.event_type == EventType.VALIDATION_START:
             logger.debug("Validation started")
@@ -108,7 +107,7 @@ class ProgressMonitor(Subscriber):
             assert isinstance(event, ValidationEvent)
             logger.debug("Validation ended with result: %s", event.validation_result)
 
-    def __on_requirement_check_end__(self, event: Event, ctx: Optional[ValidationContext]) -> None:
+    def __on_requirement_check_end__(self, event: Event, ctx: ValidationContext | None) -> None:
         """Advance the requirement-check progress bar, unless the check is hidden or overridden."""
         assert isinstance(event, RequirementCheckValidationEvent)
         assert ctx is not None, "Validation context must be provided"

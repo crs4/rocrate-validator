@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional
 
 from rdflib import Graph
 
@@ -43,7 +42,7 @@ def get_full_graph(
     return full_graph
 
 
-def extract_base_from_jsonld(json_data: dict) -> Optional[str]:
+def extract_base_from_jsonld(json_data: dict) -> str | None:
     """
     Extract the @base from the @context of a JSON-LD document.
 

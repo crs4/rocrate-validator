@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Optional
+from typing import Any
 
 from rich.console import Console as BaseConsole
 
@@ -27,7 +27,7 @@ class Console(BaseConsole):
     """Rich console that can be disabled."""
 
     def __init__(self, *args, disabled: bool = False, interactive: bool = True,
-                 formatters: Optional[dict[type, Any]] = None, **kwargs):
+                 formatters: dict[type, Any] | None = None, **kwargs):
         force_jupyter = kwargs.pop("force_jupyter", None)
         if force_jupyter is None:
             force_jupyter = False if self.__jupyter_environment__() else None
@@ -45,7 +45,7 @@ class Console(BaseConsole):
         from rocrate_validator.cli.utils import running_in_jupyter  # noqa: PLC0415
         return running_in_jupyter()
 
-    def register_formatter(self, formatter: OutputFormatter, type_: Optional[type] = None):
+    def register_formatter(self, formatter: OutputFormatter, type_: type | None = None):
         if type_ is None and not isinstance(formatter, BaseOutputFormatter):
             raise ValueError("type_ must be provided if formatter is not a BaseOutputFormatter")
         if isinstance(formatter, BaseOutputFormatter):

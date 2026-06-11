@@ -15,7 +15,6 @@
 import re
 import subprocess
 import sys
-from typing import Optional
 
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.config import get_config
@@ -24,7 +23,7 @@ from rocrate_validator.utils.config import get_config
 logger = logging.getLogger(__name__)
 
 
-def run_git_command(command: list[str]) -> Optional[str]:
+def run_git_command(command: list[str]) -> str | None:
     """
     Run a git command and return the output
 
@@ -69,7 +68,7 @@ def get_last_tag() -> str:
     return run_git_command(["git", "describe", "--tags", "--abbrev=0"]) or ""
 
 
-def get_commit_distance(tag: Optional[str] = None) -> int:
+def get_commit_distance(tag: str | None = None) -> int:
     """
     Get the distance in commits between the current commit and the last tag
 

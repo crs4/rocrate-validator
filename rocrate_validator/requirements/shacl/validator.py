@@ -15,7 +15,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional, cast
+from typing import TYPE_CHECKING, Any, cast
 
 import pyshacl
 from rdflib import BNode, Graph
@@ -48,7 +48,7 @@ class SHACLValidationSkip(Exception):
 
 class SHACLValidationAlreadyProcessed(Exception):
 
-    def __init__(self, profile_identifier: str, result: Optional[bool]) -> None:
+    def __init__(self, profile_identifier: str, result: bool | None) -> None:
         super().__init__(f"Profile {profile_identifier} has already been processed")
         self.result = result
 
@@ -97,7 +97,7 @@ class SHACLValidationContext(ValidationContext):
         super().__init__(context.validator, context.settings)
         self._base_context: ValidationContext = context
         # reference to the ontology path
-        self._ontology_path: Optional[Path] = None
+        self._ontology_path: Path | None = None
 
         # reference to the contextual ShapeRegistry instance
         self._shapes_registry: ShapesRegistry = ShapesRegistry()
@@ -106,10 +106,10 @@ class SHACLValidationContext(ValidationContext):
         self._processed_profiles: dict[str, bool] = {}
 
         # reference to the current validation profile
-        self._current_validation_profile: Optional[Profile] = None
+        self._current_validation_profile: Profile | None = None
 
         # store the validation result of the current profile (a pass/fail boolean)
-        self._validation_result: Optional[bool] = None
+        self._validation_result: bool | None = None
 
         # reference to the contextual ontology graph
         self._ontology_graph: Graph = Graph()
@@ -152,11 +152,11 @@ class SHACLValidationContext(ValidationContext):
         return self._base_context
 
     @property
-    def current_validation_profile(self) -> Optional[Profile]:
+    def current_validation_profile(self) -> Profile | None:
         return self._current_validation_profile
 
     @property
-    def current_validation_result(self) -> Optional[bool]:
+    def current_validation_result(self) -> bool | None:
         return self._validation_result
 
     @current_validation_result.setter
@@ -167,7 +167,7 @@ class SHACLValidationContext(ValidationContext):
         # mark the profile as processed and store the result
         self._processed_profiles[self._current_validation_profile.identifier] = result
 
-    def get_validation_result(self, profile: Profile) -> Optional[bool]:
+    def get_validation_result(self, profile: Profile) -> bool | None:
         assert profile is not None, "Invalid profile"
         return self._processed_profiles.get(profile.identifier, None)
 
@@ -188,7 +188,7 @@ class SHACLValidationContext(ValidationContext):
             self._ontology_path = Path(f"{profile_path}/{ontology_filename}")
         return self._ontology_path
 
-    def __get_data_graph_base__(self) -> Optional[str]:
+    def __get_data_graph_base__(self) -> str | None:
         """
         Get the @base from the RO-Crate metadata JSON-LD.
 
@@ -205,9 +205,9 @@ class SHACLValidationContext(ValidationContext):
             return None
 
     def __load_ontology_graph__(self, profile_path: Path,
-                                ontology_filename: str = DEFAULT_ONTOLOGY_FILE) -> Optional[Graph]:
+                                ontology_filename: str = DEFAULT_ONTOLOGY_FILE) -> Graph | None:
         # load the graph of ontologies
-        ontology_graph: Optional[Graph] = None
+        ontology_graph: Graph | None = None
         ontology_path = self.__get_ontology_path__(profile_path, ontology_filename)
         if ontology_path.exists():
             logger.debug("Loading ontologies: %s", ontology_path)
@@ -257,14 +257,14 @@ class SHACLViolation:
         self._graph = graph
 
         # initialize the properties for lazy loading
-        self._focus_node: Optional[Node] = None
-        self._result_message: Optional[str] = None
-        self._result_path: Optional[Node] = None
-        self._severity: Optional[Severity] = None
-        self._source_constraint_component: Optional[Node] = None
-        self._source_shape: Optional[Node] = None
-        self._source_shape_node: Optional[Node] = None
-        self._value: Optional[Node] = None
+        self._focus_node: Node | None = None
+        self._result_message: str | None = None
+        self._result_path: Node | None = None
+        self._severity: Severity | None = None
+        self._source_constraint_component: Node | None = None
+        self._source_shape: Node | None = None
+        self._source_shape_node: Node | None = None
+        self._value: Node | None = None
 
     @property
     def node(self) -> Node:
@@ -329,7 +329,7 @@ class SHACLViolation:
 class SHACLValidationResult:
 
     def __init__(self, results_graph: Graph,
-                 results_text: Optional[str] = None) -> None:
+                 results_text: str | None = None) -> None:
         # validate the results graph input
         assert results_graph is not None, "Invalid graph"
         assert isinstance(results_graph, Graph), "Invalid graph type"
@@ -365,7 +365,7 @@ class SHACLValidationResult:
         return self._violations
 
     @property
-    def text(self) -> Optional[str]:
+    def text(self) -> str | None:
         return self._text
 
 
@@ -373,8 +373,8 @@ class SHACLValidator:
 
     def __init__(
         self,
-        shapes_graph: Optional[GraphLike | str | bytes],
-        ont_graph: Optional[GraphLike | str | bytes] = None,
+        shapes_graph: GraphLike | str | bytes | None,
+        ont_graph: GraphLike | str | bytes | None = None,
     ) -> None:
         """
         Create a new SHACLValidator instance.
@@ -391,11 +391,11 @@ class SHACLValidator:
         self._ont_graph = ont_graph
 
     @property
-    def shapes_graph(self) -> Optional[GraphLike | str | bytes]:
+    def shapes_graph(self) -> GraphLike | str | bytes | None:
         return self._shapes_graph
 
     @property
-    def ont_graph(self) -> Optional[GraphLike | str | bytes]:
+    def ont_graph(self) -> GraphLike | str | bytes | None:
         return self._ont_graph
 
     def validate(
@@ -403,19 +403,19 @@ class SHACLValidator:
         # data to validate
         data_graph: GraphLike | str | bytes,
         # validation settings
-        abort_on_first: Optional[bool] = True,
-        advanced: Optional[bool] = True,
-        inference: Optional[VALID_INFERENCE_OPTIONS_TYPES] = None,
-        inplace: Optional[bool] = False,
+        abort_on_first: bool | None = True,
+        advanced: bool | None = True,
+        inference: VALID_INFERENCE_OPTIONS_TYPES | None = None,
+        inplace: bool | None = False,
         meta_shacl: bool = False,
         iterate_rules: bool = True,
         # SHACL validation severity
-        allow_infos: Optional[bool] = True,
-        allow_warnings: Optional[bool] = True,
+        allow_infos: bool | None = True,
+        allow_warnings: bool | None = True,
         # serialization settings
-        serialization_output_path: Optional[str] = None,
+        serialization_output_path: str | None = None,
         serialization_output_format:
-            Optional[RDF_SERIALIZATION_FORMATS_TYPES] = "turtle",
+            RDF_SERIALIZATION_FORMATS_TYPES | None = "turtle",
         **kwargs,
     ) -> SHACLValidationResult:
         """

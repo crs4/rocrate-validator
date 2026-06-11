@@ -15,7 +15,6 @@
 import enum
 import re
 from pathlib import Path
-from typing import Optional
 from urllib.parse import ParseResult, parse_qsl, urlparse, urlsplit
 
 from rocrate_validator import errors
@@ -164,7 +163,7 @@ class URI:
         return self._parse_result.scheme
 
     @property
-    def fragment(self) -> Optional[str]:
+    def fragment(self) -> str | None:
         fragment = self._parse_result.fragment
         return fragment or None
 
@@ -180,7 +179,7 @@ class URI:
     def get_query_string(self) -> str:
         return self._parse_result.query
 
-    def get_query_param(self, param: str) -> Optional[str]:
+    def get_query_param(self, param: str) -> str | None:
         query_params = dict(parse_qsl(self._parse_result.query))
         return query_params.get(param)
 

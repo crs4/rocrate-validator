@@ -17,7 +17,6 @@ import re
 import sys
 from importlib import import_module
 from pathlib import Path
-from typing import Optional
 
 from rocrate_validator.utils import log as logging
 
@@ -26,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_classes_from_file(
-    file_path: Path, filter_class: Optional[type] = None, class_name_suffix: Optional[str] = None
+    file_path: Path, filter_class: type | None = None, class_name_suffix: str | None = None
 ) -> dict[str, type]:
     """Get all classes in a Python file"""
     # ensure the file path is a Path object
@@ -74,7 +73,7 @@ def to_camel_case(snake_str: str) -> str:
     return components[0].capitalize() + "".join(x.title() for x in components[1:])
 
 
-def get_requirement_name_from_file(file: Path, check_name: Optional[str] = None) -> str:
+def get_requirement_name_from_file(file: Path, check_name: str | None = None) -> str:
     """
     Get the requirement name from the file
 

@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.io_helpers.output.console import Console
@@ -37,18 +37,18 @@ class ValidationCommandView:
     """
 
     def __init__(self,
-                 validation_settings: Optional[ValidationSettings],
+                 validation_settings: ValidationSettings | None,
                  interactive: bool = True,
                  no_paging: bool = False,
-                 pager: Optional[SystemPager] = None,
-                 console: Optional[Console] = None):
+                 pager: SystemPager | None = None,
+                 console: Console | None = None):
         self.console = console or Console()
         self.interactive = interactive
         self.pager = pager if not no_paging else None
         # reference to the validation settings
         self.validation_settings = validation_settings
         # reference to the report layout
-        self._report_layout: Optional[ValidationReportLayout] = None
+        self._report_layout: ValidationReportLayout | None = None
 
         # Register text output formatter
         self.console.register_formatter(TextOutputFormatter())

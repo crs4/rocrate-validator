@@ -16,7 +16,7 @@ import inspect
 import re
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Optional, cast
+from typing import Any, cast
 
 from rocrate_validator.constants import EXPECTED_CHECK_PARAM_COUNT
 from rocrate_validator.models import (
@@ -46,8 +46,8 @@ class PyFunctionCheck(RequirementCheck):
                  requirement: Requirement,
                  name: str,
                  check_function: Callable[[RequirementCheck, ValidationContext], bool],
-                 description: Optional[str] = None,
-                 level: Optional[RequirementLevel] = LevelCollection.REQUIRED,
+                 description: str | None = None,
+                 level: RequirementLevel | None = LevelCollection.REQUIRED,
                  deactivated: bool = False):
         """
         check_function: a function that accepts an instance of PyFunctionCheck and a ValidationContext.
@@ -72,7 +72,7 @@ class PyFunctionCheck(RequirementCheck):
             return True
         return self._check_function(self, context)
 
-    def get_source_snippet(self) -> Optional[SourceSnippet]:
+    def get_source_snippet(self) -> SourceSnippet | None:
         try:
             code = inspect.getsource(self._check_function)
         except (OSError, TypeError) as e:
@@ -109,8 +109,8 @@ class PyRequirement(Requirement):
                  profile: Profile,
                  requirement_check_class: type[PyFunctionCheck],
                  name: str = "",
-                 description: Optional[str] = None,
-                 path: Optional[Path] = None):
+                 description: str | None = None,
+                 path: Path | None = None):
         self.requirement_check_class = requirement_check_class
         super().__init__(profile, name, description, path, initialize_checks=True)
 
@@ -156,7 +156,7 @@ class PyRequirement(Requirement):
         return getattr(self.requirement_check_class, "hidden", False)
 
 
-def requirement(name: str, description: Optional[str] = None, hidden: bool = False):
+def requirement(name: str, description: str | None = None, hidden: bool = False):
     """
     A decorator to mark a class as a requirement class.
 
@@ -185,8 +185,8 @@ def requirement(name: str, description: Optional[str] = None, hidden: bool = Fal
     return decorator
 
 
-def check(name: Optional[str] = None,
-          severity: Optional[Severity] = None,
+def check(name: str | None = None,
+          severity: Severity | None = None,
           deactivated: bool = False):
     """
     A decorator to mark a function as a check.
@@ -237,7 +237,7 @@ class PyRequirementLoader(RequirementLoader):
     def load(self, profile: Profile,
              requirement_level: RequirementLevel,
              file_path: Path,
-             publicID: Optional[str] = None) -> list[Requirement]:
+             publicID: str | None = None) -> list[Requirement]:
         # instantiate a list to store the requirements
         requirements: list[Requirement] = []
 

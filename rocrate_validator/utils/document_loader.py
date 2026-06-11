@@ -26,7 +26,7 @@ from __future__ import annotations
 
 import json
 import threading
-from typing import Any, Optional
+from typing import Any
 
 from rdflib.plugins.shared.jsonld import context as jsonld_context
 from rdflib.plugins.shared.jsonld import util as jsonld_util
@@ -128,7 +128,7 @@ def _fetch_json_ld(url: str) -> Any:
         return json.loads(response.text)
 
 
-def resolve_remote_document(url: str) -> tuple[Optional[dict], Optional[str]]:
+def resolve_remote_document(url: str) -> tuple[dict | None, str | None]:
     """
     Resolve a remote JSON-LD document, returning ``(json, content_type)``.
 
