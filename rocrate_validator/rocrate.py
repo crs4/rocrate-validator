@@ -411,10 +411,11 @@ class ROCrateMetadata:
             ))
         return self._json
 
-    def as_dict(self) -> dict:
+    def as_dict(self) -> dict[Any, Any]:
         if not self._dict:
             # if the dictionary is not cached, load it
             self._dict = json.loads(self.as_json())
+        assert self._dict is not None, "Metadata dictionary should not be None after loading"
         return self._dict
 
     def as_graph(self, publicID: str | None = None) -> Graph:
