@@ -419,7 +419,7 @@ def _resolve_warmup_urls_from_profiles(console, profiles_dir, extra_dir, request
             if profile is None:
                 candidates = Profile.get_by_token(ident) or []
                 if candidates:
-                    profile = max(candidates, key=lambda p: p.version)
+                    profile = max(candidates, key=lambda p: p.version or "")
                     if len(candidates) > 1:
                         ambiguous_fallbacks.append((ident, profile, candidates))
             if profile is None:

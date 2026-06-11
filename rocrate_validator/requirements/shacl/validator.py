@@ -487,6 +487,12 @@ class SHACLValidator:
         logger.debug("pyshacl.validate result: Results Graph: %r", results_graph)
         logger.debug("pyshacl.validate result: Results Text: %r", results_text)
 
+        if not isinstance(results_graph, Graph):
+            raise TypeError(
+                "pyshacl.validate returned a non-Graph results_graph: "
+                f"{type(results_graph).__name__}"
+            )
+
         # serialize the results graph
         if serialization_output_path:
             assert serialization_output_format in [

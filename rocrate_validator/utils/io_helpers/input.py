@@ -17,8 +17,8 @@ from __future__ import annotations
 import sys
 from typing import TYPE_CHECKING
 
-from InquirerPy import prompt
 from InquirerPy.base.control import Choice
+from InquirerPy.resolver import prompt
 
 from rocrate_validator.utils import log as logging
 

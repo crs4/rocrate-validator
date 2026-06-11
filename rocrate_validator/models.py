@@ -456,7 +456,11 @@ class Profile:
         The list of profiles that this profile is a profile of
         as specified in the profile specification file.
         """
-        return [self.__profiles_map.get_by_key(_) for _ in self.is_profile_of]
+        return [
+            profile
+            for profile in (self.__profiles_map.get_by_key(_) for _ in self.is_profile_of)
+            if profile is not None
+        ]
 
     @property
     def siblings(self) -> list[Profile]:
@@ -506,7 +510,7 @@ class Profile:
         return self._severity
 
     @property
-    def description(self) -> str:
+    def description(self) -> str | None:
         """
         The description of the profile as specified in the profile specification file
         (i.e., the value of the rdfs: comment property in the `profile.ttl` file).
@@ -516,7 +520,8 @@ class Profile:
                 with self.readme_file_path.open(encoding="utf-8") as f:
                     self._description = f.read()
             else:
-                self._description = self.comment
+                comment = self.comment
+                self._description = str(comment) if comment else None
         return self._description
 
     @property
@@ -571,6 +576,8 @@ class Profile:
             if p not in visited:
                 visited.append(p)
                 profile = cls.__profiles_map.get_by_key(p)
+                if profile is None:
+                    continue
                 inherited_profiles = profile.is_profile_of
                 if inherited_profiles:
                     for p in sorted(inherited_profiles, reverse=True):
@@ -586,7 +593,13 @@ class Profile:
         if not inherited_profiles or len(inherited_profiles) == 0:
             inherited_profiles = Profile.__get_nested_profiles__(self.uri)
         profile_keys = self.__profiles_map.keys
-        return [self.__profiles_map.get_by_key(_) for _ in inherited_profiles if _ in profile_keys]
+        return [
+            profile
+            for key in inherited_profiles
+            if key in profile_keys
+            for profile in [self.__profiles_map.get_by_key(key)]
+            if isinstance(profile, Profile)
+        ]
 
     def add_requirement(self, requirement: Requirement):
         self._requirements.append(requirement)
@@ -824,7 +837,7 @@ class Profile:
         )
 
     @classmethod
-    def get_by_identifier(cls, identifier: str) -> Profile:
+    def get_by_identifier(cls, identifier: str) -> Profile | None:
         """
         Get the profile with the given identifier
 
@@ -834,10 +847,13 @@ class Profile:
         :return: the profile
         :rtype: Profile
         """
-        return cls.__profiles_map.get_by_index("identifier", identifier)
+        profile = cls.__profiles_map.get_by_index("identifier", identifier)
+        if isinstance(profile, list):
+            return cast("Profile | None", profile[0] if profile else None)
+        return cast("Profile | None", profile)
 
     @classmethod
-    def get_by_uri(cls, uri: str) -> Profile:
+    def get_by_uri(cls, uri: str) -> Profile | None:
         """
         Get the profile with the given URI
 
@@ -847,7 +863,7 @@ class Profile:
         :return: the profile
         :rtype: Profile
         """
-        return cls.__profiles_map.get_by_key(uri)
+        return cast("Profile | None", cls.__profiles_map.get_by_key(uri))
 
     @classmethod
     def get_by_name(cls, name: str) -> list[Profile]:
@@ -860,7 +876,7 @@ class Profile:
         :return: the profile
         :rtype: Profile
         """
-        return cls.__profiles_map.get_by_index("name", name)
+        return cast("list[Profile]", cls.__profiles_map.get_by_index("name", name) or [])
 
     @classmethod
     def get_by_token(cls, token: str) -> list[Profile]:
@@ -873,7 +889,7 @@ class Profile:
         :return: the profile
         :rtype: Profile
         """
-        return cls.__profiles_map.get_by_index("token", token)
+        return cast("list[Profile]", cls.__profiles_map.get_by_index("token", token) or [])
 
     @classmethod
     def get_sibling_profiles(cls, profile: Profile) -> list[Profile]:
@@ -910,7 +926,7 @@ class Profile:
         :return: the list of profiles
         :rtype: list[Profile]
         """
-        return cls.__profiles_map.values()
+        return list(cls.__profiles_map.values())
 
     @classmethod
     def find_in_list(cls, profiles: Collection[Profile], profile_identifier: str) -> Profile | None:
@@ -2668,16 +2684,16 @@ class ValidationResult:
 
 
 class CustomEncoder(json.JSONEncoder):
-    def default(self, obj):  # pylint: disable=arguments-renamed
-        if isinstance(obj, CheckIssue):
-            return obj.__dict__
-        if isinstance(obj, Path):
-            return str(obj)
-        if isinstance(obj, (RequirementCheck, Requirement)):
-            return obj.identifier
-        if isinstance(obj, (Severity, RequirementLevel)):
-            return obj.name
-        return super().default(obj)
+    def default(self, o):
+        if isinstance(o, CheckIssue):
+            return o.__dict__
+        if isinstance(o, Path):
+            return str(o)
+        if isinstance(o, (RequirementCheck, Requirement)):
+            return o.identifier
+        if isinstance(o, (Severity, RequirementLevel)):
+            return o.name
+        return super().default(o)
 
 
 @dataclass
@@ -2689,7 +2705,7 @@ class ValidationSettings:
     """
 
     #: The URI of the RO-Crate
-    rocrate_uri: URI
+    rocrate_uri: URI  # pyright: ignore[reportRedeclaration]
     #: The relative root path of the RO-Crate
     rocrate_relative_root_path: Path | None = None
     # Profile settings
@@ -3229,8 +3245,10 @@ class ValidationContext:
         if settings.metadata_dict:
             self._rocrate = ROCrate.from_metadata_dict(settings.metadata_dict)
         else:
+            rocrate_uri = settings.rocrate_uri
+            assert rocrate_uri is not None, "RO-Crate URI is required when metadata_dict is not provided"
             self._rocrate = ROCrate.new_instance(
-                settings.rocrate_uri,
+                rocrate_uri,
                 relative_root_path=settings.rocrate_relative_root_path,
             )
         assert isinstance(self._rocrate, ROCrate), "Invalid RO-Crate instance"
@@ -3346,7 +3364,10 @@ class ValidationContext:
         :return: The URI of the RO-Crate
         :rtype: Path
         """
-        return self.settings.rocrate_uri
+        rocrate_uri = self.settings.rocrate_uri
+        if rocrate_uri is None:
+            raise ValueError("RO-Crate URI is not set")
+        return rocrate_uri
 
     @property
     def fail_fast(self) -> bool:
@@ -3471,11 +3492,9 @@ class ValidationContext:
                 logger.debug("Candidate profiles found by token: %s", profile)
                 if candidate_profiles:
                     # Find the profile with the highest version number
-                    profile = max(candidate_profiles, key=lambda p: p.version)
+                    profile = max(candidate_profiles, key=lambda p: p.version or "")
                     self.settings.profile_identifier = profile.identifier
                     logger.debug("Profile with the highest version number: %s", profile)
-                # if the profile is found by token, set the profile name to the identifier
-                self.settings.profile_identifier = profile.identifier
             except AttributeError as e:
                 # raised when the profile is not found
                 if logger.isEnabledFor(logging.DEBUG):
@@ -3484,6 +3503,11 @@ class ValidationContext:
                     self.profile_identifier,
                     message=f"Profile '{self.profile_identifier}' not found in '{self.profiles_path}'",
                 ) from e
+            if profile is None:
+                raise ProfileNotFound(
+                    self.profile_identifier,
+                    message=f"Profile '{self.profile_identifier}' not found in '{self.profiles_path}'",
+                )
 
         # if the inheritance is enabled, return only the target profile
         if not self.inheritance_enabled:

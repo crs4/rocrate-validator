@@ -139,8 +139,14 @@ def list_profiles(ctx, no_paging: bool = False):  # , profiles_path: Path = DEFA
                 [f"[{v['color']}]{k}[/{v['color']}]: {v['count']}" for k, v in checks_info.items()])
 
             # Add the row to the table
+            profile_name = (
+                "\n".join(map(str, profile.name))
+                if isinstance(profile.name, list)
+                else str(profile.name or "")
+            )
+
             table.add_row(profile.identifier, profile.uri, profile.version,
-                          profile.name, Markdown(profile.description.strip()),
+                          profile_name, Markdown((profile.description or "").strip()),
                           "\n".join([p.identifier for p in profile.inherited_profiles]),
                           checks_summary)
             table.add_row()
@@ -222,8 +228,16 @@ def describe_profile(ctx,
         # Set the subheader content
         subheader_content = f"[bold cyan]Version:[/bold cyan] [italic green]{profile.version}[/italic green]\n"
         subheader_content += f"[bold cyan]URI:[/bold cyan] [italic yellow]{profile.uri}[/italic yellow]\n\n"
-        subheader_content += f"[bold cyan]Name:[/bold cyan] [italic]{profile.name.strip()}[/italic]\n"
-        subheader_content += f"[bold cyan]Description:[/bold cyan] [italic]{profile.description.strip()}[/italic]"
+        profile_name = profile.name or ""
+        if isinstance(profile_name, list):
+            profile_name = ", ".join(str(name).strip() for name in profile_name if str(name).strip())
+        else:
+            profile_name = str(profile_name).strip()
+        subheader_content += f"[bold cyan]Name:[/bold cyan] [italic]{profile_name}[/italic]\n"
+        subheader_content += (
+            f"[bold cyan]Description:[/bold cyan] "
+            f"[italic]{(profile.description or '').strip()}[/italic]"
+        )
         # Add path info to the subheader
         subheader_content += (
             "\n\n"

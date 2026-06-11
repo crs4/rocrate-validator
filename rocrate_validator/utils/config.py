@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import toml
+import toml  # type: ignore[import-untyped]
 
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.paths import get_config_path

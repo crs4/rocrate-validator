@@ -461,7 +461,7 @@ def _parse_skip_checks(skip_checks: list[str] | None) -> list[str]:
             if logger.isEnabledFor(logging.DEBUG):
                 logger.exception("Error parsing skip_checks")
             raise ValueError(
-                f"Invalid skip_checks value: {s}. "
+                f"Invalid skip_checks value: {skip_checks}. "
                 "It must be a comma-separated list of Fully Qualified Check IDs."
             ) from e
     logger.debug("Skip checks: %s", skip_checks_list)
@@ -511,6 +511,8 @@ def _resolve_profile_identifiers(
                 )
             )
             selected_options = multiple_choice(console, available_profiles)
+            if selected_options is None or isinstance(selected_options, bool):
+                selected_options = []
             profile_identifiers = [available_profiles[int(o)].identifier for o in selected_options]
             logger.debug("Profile selected: %s", selected_options)
             console.print(Padding(Rule(style="bold yellow"), (1, 2)))
@@ -595,6 +597,9 @@ def _render_file_or_collected_result(
             logger.debug("Validation result obtained")
     else:
         result = services.validate(validation_settings)
+
+    if result is None:
+        raise RuntimeError("Validation did not produce a result")
 
     # Output processing for text format to file
     if output_file and output_format == "text":

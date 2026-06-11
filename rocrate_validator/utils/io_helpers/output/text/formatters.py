@@ -95,5 +95,6 @@ class ValidationStatisticsTextOutputFormatter(OutputFormatter):
             statistics=self._validation_statistics
         )
         logger.debug(layout.layout)
-        yield layout.layout
+        if layout.layout is not None:
+            yield layout.layout
         yield Padding("\n", (0, 0))
