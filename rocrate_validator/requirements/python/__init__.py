@@ -133,7 +133,7 @@ class PyRequirement(Requirement):
                     severity = cast("Any", member).severity
                     logger.debug("Severity set for check '%r' from decorator: %r", check_name, severity)
                 except Exception:
-                    pass
+                    logger.debug(f"No severity set for check '{check_name}' from decorator.")
                 if not severity:
                     logger.debug(f"No explicit severity set for check '{check_name}' from decorator."
                                  f"Getting severity from path: {self.severity_from_path}")
