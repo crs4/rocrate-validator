@@ -20,7 +20,10 @@ import random
 import string
 import threading
 from pathlib import Path
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any, Optional
+
+if TYPE_CHECKING:
+    from typing_extensions import Self
 
 import requests
 
@@ -99,7 +102,7 @@ class HttpRequester:
     _instance = None
     _lock = threading.Lock()
 
-    def __new__(cls, *args, **kwargs) -> HttpRequester:
+    def __new__(cls, *args, **kwargs) -> Self:
         if cls._instance is None:
             logger.debug(f"Creating instance of {cls.__name__} with args: {args}, kwargs: {kwargs}")
             with cls._lock:
