@@ -109,8 +109,9 @@ def _extract_and_validate(
             settings.rocrate_uri = URI(str(tmp_dir))
             return _build_validator(settings, subscribers)
         finally:
-            settings.rocrate_uri = original_data_path
-            logger.debug("Original data path restored: %s", original_data_path)
+            if original_data_path is not None:
+                settings.rocrate_uri = original_data_path
+                logger.debug("Original data path restored: %s", original_data_path)
 
 
 def _download_remote_rocrate(
