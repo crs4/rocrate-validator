@@ -21,7 +21,7 @@ from __future__ import annotations
 
 import copy as _copy
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
@@ -547,7 +547,7 @@ def _collect_cache_entries(
     if sort_by == "url":
         entries.sort(key=lambda e: e["url"].lower(), reverse=reverse)
     elif sort_by == "created":
-        entries.sort(key=lambda e: e["created_at"] or datetime.min, reverse=reverse)
+        entries.sort(key=lambda e: e["created_at"] or datetime.min.replace(tzinfo=timezone.utc), reverse=reverse)
     else:  # "size"
         entries.sort(key=lambda e: e["size"], reverse=reverse)
     return entries
