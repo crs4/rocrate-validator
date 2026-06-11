@@ -14,10 +14,15 @@
 
 from typing import Any
 
-from rocrate_validator.models import ValidationResult, ValidationStatistics
+from rocrate_validator.models import (
+    BatchValidationResult,
+    ValidationResult,
+    ValidationStatistics,
+)
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.io_helpers.output import BaseOutputFormatter
 from rocrate_validator.utils.io_helpers.output.json.formatters import (
+    BatchValidationResultJSONOutputFormatter,
     ValidationResultJSONOutputFormatter,
     ValidationResultsJSONOutputFormatter,
     ValidationStatisticsJSONOutputFormatter,
@@ -33,3 +38,4 @@ class JSONOutputFormatter(BaseOutputFormatter):
         self.add_type_formatter(ValidationResult, ValidationResultJSONOutputFormatter)
         self.add_type_formatter(dict, ValidationResultsJSONOutputFormatter)
         self.add_type_formatter(ValidationStatistics, ValidationStatisticsJSONOutputFormatter)
+        self.add_type_formatter(BatchValidationResult, BatchValidationResultJSONOutputFormatter)
