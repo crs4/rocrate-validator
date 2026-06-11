@@ -119,7 +119,7 @@ class PyRequirement(Requirement):
         checks: list = []
         for name, member in inspect.getmembers(self.requirement_check_class, inspect.isfunction):
             # verify that the attribute set by the check decorator is present
-            if hasattr(member, "check") and member.check is True:
+            if bool(getattr(member, "check", False)):
                 check_name = None
                 try:
                     # `name`/`severity` are attributes attached dynamically by the @check decorator
