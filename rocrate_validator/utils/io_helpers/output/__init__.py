@@ -36,7 +36,7 @@ class OutputFormatter(Protocol):
     """Protocol for output formatters."""
 
     def __rich_console__(self, console: Console, options: ConsoleOptions) -> RenderResult:
-        pass
+        ...
 
 
 class BaseOutputFormatter(OutputFormatter):
