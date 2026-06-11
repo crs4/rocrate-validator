@@ -17,7 +17,7 @@ from abc import ABC, abstractmethod
 from functools import total_ordering
 from typing import Any
 
-import enum_tools
+from enum_tools.documentation import document_enum
 
 from rocrate_validator.utils import log as logging
 
@@ -26,10 +26,10 @@ logger = logging.getLogger(__name__)
 
 
 @enum.unique
-@enum_tools.documentation.document_enum
+@document_enum
 @total_ordering
 class EventType(enum.Enum):
-    """ Event types """
+    """Event types"""
 
     #: Validation start
     VALIDATION_START = 0
@@ -127,7 +127,6 @@ class Event:
 
 
 class Subscriber(ABC):
-
     """
     Subscriber interface.
     Objects that want to be notified of events generated during the validation process

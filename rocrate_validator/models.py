@@ -28,7 +28,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Protocol, cast
 from urllib.error import HTTPError
 
-import enum_tools
+from enum_tools.documentation import document_enum
 from rdflib import RDF, RDFS, Graph, Namespace, URIRef
 
 from rocrate_validator import __version__
@@ -81,7 +81,7 @@ BaseTypes = str | Path | bool | int | None
 
 
 @enum.unique
-@enum_tools.documentation.document_enum
+@document_enum
 @total_ordering
 class Severity(enum.Enum):
     """
