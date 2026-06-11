@@ -27,14 +27,14 @@ paths = InvalidFileDescriptor()
 
 def test_missing_file_descriptor():
     """Test a RO-Crate without a file descriptor."""
-    with paths.missing_file_descriptor as rocrate_path:
-        do_entity_test(
-            rocrate_path,
-            models.Severity.REQUIRED,
-            False,
-            ["File Descriptor existence"],
-            []
-        )
+    rocrate_path = paths.missing_file_descriptor
+    do_entity_test(
+        rocrate_path,
+        models.Severity.REQUIRED,
+        False,
+        ["File Descriptor existence"],
+        []
+    )
 
 
 def test_not_valid_json_format():
