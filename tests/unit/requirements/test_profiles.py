@@ -304,14 +304,12 @@ def test_zero_shape_target_profile_triggers_pyshacl_run(fake_profiles_path: str)
     no SHACLCheck would be recorded as executed for the wrapper target."""
 
     settings = ValidationSettings(
-        **{
-            "profiles_path": fake_profiles_path,
-            "profile_identifier": "c-wrapper",
-            "rocrate_uri": ValidROC().wrroc_paper,
-            "enable_profile_inheritance": True,
-            "allow_requirement_check_override": True,
-            "disable_check_for_duplicates": True,
-        }
+        profiles_path=fake_profiles_path,
+        profile_identifier="c-wrapper",
+        rocrate_uri=ValidROC().wrroc_paper,
+        enable_profile_inheritance=True,
+        allow_requirement_check_override=True,
+        disable_check_for_duplicates=True,
     )
     result = Validator(settings).validate()
 
@@ -526,13 +524,11 @@ def test_shacl_check_deactivated_via_cross_profile_triple(fake_profiles_path: st
     SHACLCheck.deactivated and the pre-load pass in Validator."""
 
     settings = ValidationSettings(
-        **{
-            "profiles_path": fake_profiles_path,
-            "profile_identifier": "c-deactivated-direct",
-            "rocrate_uri": ValidROC().wrroc_paper,
-            "enable_profile_inheritance": True,
-            "allow_requirement_check_override": True,
-        }
+        profiles_path=fake_profiles_path,
+        profile_identifier="c-deactivated-direct",
+        rocrate_uri=ValidROC().wrroc_paper,
+        enable_profile_inheritance=True,
+        allow_requirement_check_override=True,
     )
     validator = Validator(settings)
     context = ValidationContext(validator, validator.validation_settings)
@@ -570,13 +566,11 @@ def test_shacl_check_deactivation_scoped_to_descendants(fake_profiles_path: str)
     one another's checks."""
 
     settings = ValidationSettings(
-        **{
-            "profiles_path": fake_profiles_path,
-            "profile_identifier": "c",
-            "rocrate_uri": ValidROC().wrroc_paper,
-            "enable_profile_inheritance": True,
-            "allow_requirement_check_override": True,
-        }
+        profiles_path=fake_profiles_path,
+        profile_identifier="c",
+        rocrate_uri=ValidROC().wrroc_paper,
+        enable_profile_inheritance=True,
+        allow_requirement_check_override=True,
     )
     validator = Validator(settings)
     context = ValidationContext(validator, validator.validation_settings)

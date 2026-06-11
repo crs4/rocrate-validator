@@ -170,16 +170,14 @@ def do_entity_test(
         # validate RO-Crate
         result: models.ValidationResult = services.validate(
             models.ValidationSettings(
-                **{
-                    "rocrate_uri": rocrate_path,
-                    "requirement_severity": requirement_severity,
-                    "abort_on_first": abort_on_first,
-                    "profile_identifier": profile_identifier,
-                    "skip_checks": skip_checks,
-                    "rocrate_relative_root_path": rocrate_relative_root_path,
-                    "metadata_only": metadata_only,
-                    "metadata_dict": metadata_dict,
-                },
+                rocrate_uri=rocrate_path,
+                requirement_severity=requirement_severity,
+                abort_on_first=abort_on_first,
+                profile_identifier=profile_identifier,
+                skip_checks=skip_checks,
+                rocrate_relative_root_path=rocrate_relative_root_path,
+                metadata_only=metadata_only,
+                metadata_dict=metadata_dict,
                 **kwargs,
             )
         )
