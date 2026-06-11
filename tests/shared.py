@@ -50,7 +50,7 @@ def load_graph_and_preserve_relative_ids(json_data, base="http://example.org/"):
         if isinstance(obj, dict):
             if "@id" in obj:
                 idv = obj["@id"]
-                if isinstance(idv, str) and (idv.startswith("./") or idv.startswith("../") or idv.startswith("#")):
+                if isinstance(idv, str) and idv.startswith(("./", "../", "#")):
                     rel_ids.add(idv)
             for v in obj.values():
                 collect_ids(v)
