@@ -311,7 +311,7 @@ def validate_rocrate_uri(uri: str | Path | URI, silent: bool = False) -> bool:
         except ValueError as e:
             logger.error(e)
             if logger.isEnabledFor(logging.DEBUG):
-                logger.exception(e)
+                logger.exception("Invalid RO-Crate URI: %s", uri)
             raise errors.ROCrateInvalidURIError(uri) from e
     except Exception as e:
         if not silent:

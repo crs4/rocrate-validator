@@ -3068,9 +3068,9 @@ class Validator(Publisher):
                 )
             return candidate_profiles
 
-        except Exception as e:
+        except Exception:
             if logger.isEnabledFor(logging.DEBUG):
-                logger.exception(e)
+                logger.exception("Error detecting RO-Crate profiles")
             return []
 
     def validate(self) -> ValidationResult:
@@ -3479,7 +3479,7 @@ class ValidationContext:
             except AttributeError as e:
                 # raised when the profile is not found
                 if logger.isEnabledFor(logging.DEBUG):
-                    logger.exception(e)
+                    logger.exception("Profile not found: %s", self.profile_identifier)
                 raise ProfileNotFound(
                     self.profile_identifier,
                     message=f"Profile '{self.profile_identifier}' not found in '{self.profiles_path}'",

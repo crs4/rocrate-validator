@@ -146,7 +146,7 @@ class SHACLRequirement(Requirement):
             else:
                 logger.warning("Forced SHACL run for zero-shape target profile %s failed: %s", target.identifier, e)
                 if logger.isEnabledFor(logging.DEBUG):
-                    logger.exception(e)
+                    logger.exception("Forced SHACL run for zero-shape target profile failed")
         finally:
             shacl_context.__unset_current_validation_profile__()
 

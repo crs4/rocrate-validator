@@ -42,9 +42,9 @@ class WorkflowFilesExistence(PyFunctionCheck):
                 context.result.add_issue(f"Workflow diagram '{image.id}' not found in crate", self)
                 return False
             return True
-        except Exception as e:
+        except Exception:
             if logger.isEnabledFor(logging.DEBUG):
-                logger.exception(f"Unexpected error: {e}")
+                logger.exception("Unexpected error checking main workflow image existence")
             return False
 
     @check(name="Workflow description existence")
@@ -62,7 +62,7 @@ class WorkflowFilesExistence(PyFunctionCheck):
                     f"Workflow CWL description {main_workflow_subject.id} not found in crate", self)
                 return False
             return True
-        except Exception as e:
+        except Exception:
             if logger.isEnabledFor(logging.DEBUG):
-                logger.exception(f"Unexpected error: {e}")
+                logger.exception("Unexpected error checking workflow description existence")
             return False

@@ -74,11 +74,11 @@ class FileDescriptorJsonFormat(PyFunctionCheck):
             logger.debug("Checking validity of JSON file at %s", context.ro_crate.metadata)
             context.ro_crate.metadata.as_dict()
             return True
-        except Exception as e:
+        except Exception:
             context.result.add_issue(
                 f'RO-Crate file descriptor "{context.rel_fd_path}" is not in the correct format', self)
             if logger.isEnabledFor(logging.DEBUG):
-                logger.exception(e)
+                logger.exception("RO-Crate file descriptor is not in the correct format")
             return False
 
 
@@ -162,9 +162,9 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
                 jsonLD, dict), f"The retrieved context from {context_uri} is not \
                 a valid JSON-LD context: it is not a dictionary"
             return True
-        except Exception as e:
+        except Exception:
             if logger.isEnabledFor(logging.DEBUG):
-                logger.exception(e)
+                logger.exception("Error validating JSON-LD context is a dictionary")
         return False
 
     def __check_contexts__(self, context: ValidationContext, jsonld_context: object) -> bool:
@@ -203,9 +203,9 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
 
             # Check if the context is valid
             return self.__check_contexts__(context, json_dict["@context"])
-        except Exception as e:
+        except Exception:
             if logger.isEnabledFor(logging.DEBUG):
-                logger.exception(e)
+                logger.exception("Error extracting @context from file descriptor")
         return False
 
     @check(name="File Descriptor JSON-LD must be flattened")
@@ -294,9 +294,9 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
                     if fail_fast:
                         return False
             return result
-        except Exception as e:
+        except Exception:
             if logger.isEnabledFor(logging.DEBUG):
-                logger.exception(e)
+                logger.exception("Error flattening JSON-LD file descriptor")
         return False
 
     @check(name="Validation of the @id property of the file descriptor entities")
@@ -312,9 +312,9 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
                         "file descriptor does not contain the @id attribute", self)
                     return False
             return True
-        except Exception as e:
+        except Exception:
             if logger.isEnabledFor(logging.DEBUG):
-                logger.exception(e)
+                logger.exception("Error validating @id property of file descriptor entities")
         return False
 
     @check(name="Validation of the @type property of the file descriptor entities")
@@ -330,9 +330,9 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
                         "file descriptor does not contain the @type attribute", self)
                     return False
             return True
-        except Exception as e:
+        except Exception:
             if logger.isEnabledFor(logging.DEBUG):
-                logger.exception(e)
+                logger.exception("Error validating @type property of file descriptor entities")
         return False
 
     def __get_context_keys__(self, context: object) -> set:
@@ -423,7 +423,7 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
                 logger.debug(f"{context_keys}")
             except Exception as e:
                 if logger.isEnabledFor(logging.DEBUG):
-                    logger.exception(e)
+                    logger.exception("Error getting context keys from JSON-LD")
                 context.result.add_issue(str(e), self)
                 return False
 
@@ -450,7 +450,7 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
             return True
         except Exception as e:
             if logger.isEnabledFor(logging.DEBUG):
-                logger.exception(e)
+                logger.exception("Unexpected error during file descriptor validation")
             context.result.add_issue(
                 f'Unexpected error: {e}', self)
         return False

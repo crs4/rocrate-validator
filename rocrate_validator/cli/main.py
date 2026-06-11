@@ -98,7 +98,7 @@ def cli(ctx: click.Context, debug: bool, version: bool, disable_color: bool, no_
 if __name__ == "__main__":
     try:
         cli()  # pylint: disable=no-value-for-parameter  # click injects the parameters
-    except Exception as e:
+    except Exception:
         if logger.isEnabledFor(logging.DEBUG):
-            logger.exception(f"An unexpected error occurred: {e}")
+            logger.exception("An unexpected error occurred")
         sys.exit(2)

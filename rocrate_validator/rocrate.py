@@ -265,9 +265,9 @@ class ROCrateEntity:
                 return AvailabilityStatus.UNCHECKABLE
 
             return self._check_local_availability()
-        except Exception as e:
+        except Exception:
             if logger.isEnabledFor(logging.DEBUG):
-                logger.exception(e)
+                logger.exception("Error checking entity availability")
             return AvailabilityStatus.UNAVAILABLE
 
     def is_available(self) -> bool:
@@ -276,9 +276,9 @@ class ROCrateEntity:
     def get_size(self) -> int:
         try:
             return self.metadata.ro_crate.get_file_size(Path(self.id))
-        except Exception as e:
+        except Exception:
             if logger.isEnabledFor(logging.DEBUG):
-                logger.exception(e)
+                logger.exception("Error getting entity file size")
             return 0
 
     def __str__(self) -> str:
@@ -313,9 +313,9 @@ class ROCrateMetadata:
     def size(self) -> int:
         try:
             return len(self.as_json())
-        except Exception as e:
+        except Exception:
             if logger.isEnabledFor(logging.DEBUG):
-                logger.exception(e)
+                logger.exception("Error computing entity JSON size")
             return 0
 
     def get_file_descriptor_entity(self) -> ROCrateEntity:
@@ -340,9 +340,9 @@ class ROCrateMetadata:
             if not isinstance(result, list):
                 result = [result]
             return [_.id for _ in result]
-        except Exception as e:
+        except Exception:
             if logger.isEnabledFor(logging.DEBUG):
-                logger.exception(e)
+                logger.exception("Error getting entity image")
             return None
 
     def get_main_workflow(self) -> ROCrateEntity:
@@ -399,9 +399,9 @@ class ROCrateMetadata:
             if not isinstance(result, list):
                 result = [result]
             return [_.id for _ in result]
-        except Exception as e:
+        except Exception:
             if logger.isEnabledFor(logging.DEBUG):
-                logger.exception(e)
+                logger.exception("Error getting entity identifiers by type")
             return None
 
     def as_json(self) -> str:
@@ -631,9 +631,9 @@ class ROCrate(ABC):
         """
         try:
             return self.__parse_path__(path).is_file()
-        except Exception as e:
+        except Exception:
             if logger.isEnabledFor(logging.DEBUG):
-                logger.exception(e)
+                logger.exception("Error checking if path is a file")
             return False
 
     def has_directory(self, path: Path) -> bool:
@@ -648,9 +648,9 @@ class ROCrate(ABC):
         """
         try:
             return self.__parse_path__(path).is_dir()
-        except Exception as e:
+        except Exception:
             if logger.isEnabledFor(logging.DEBUG):
-                logger.exception(e)
+                logger.exception("Error checking if path is a directory")
             return False
 
     @abstractmethod
@@ -852,9 +852,9 @@ class ROCrateLocalZip(ROCrate):
             if self._zipref and self._zipref.fp is not None:
                 self._zipref.close()
                 del self._zipref
-        except Exception as e:
+        except Exception:
             if logger.isEnabledFor(logging.DEBUG):
-                logger.exception(e)
+                logger.exception("Error closing zip reference")
 
     def __parse_path__(self, path):
         assert path, "Path cannot be None"
@@ -1070,9 +1070,9 @@ class BagitROCrate(ROCrate, ABC):
                     logger.debug("Presence of 'data/ro-crate-metadata.json': %s", has_ro_crate_metadata)
                     result = has_bagit_txt and has_ro_crate_metadata
                     del temp_crate
-        except Exception as e:
+        except Exception:
             if logger.isEnabledFor(logging.DEBUG):
-                logger.exception(e)
+                logger.exception("Error loading remote BagIt RO-Crate metadata")
         return result
 
     def __check_search_path__(self, path):

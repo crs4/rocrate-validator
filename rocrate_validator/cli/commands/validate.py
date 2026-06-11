@@ -53,7 +53,7 @@ def validate_uri(ctx, param, value):
             validate_rocrate_uri(value)
         except ROCrateInvalidURIError as e:
             if logger.isEnabledFor(logging.DEBUG):
-                logger.exception(e)
+                logger.exception("Invalid RO-Crate URI provided: %s", value)
             raise click.BadParameter(e.message, param=param) from e
     return value
 
@@ -459,7 +459,7 @@ def _parse_skip_checks(skip_checks: list[str] | None) -> list[str]:
         except Exception as e:
             logger.error("Error parsing skip_checks: %s", e)
             if logger.isEnabledFor(logging.DEBUG):
-                logger.exception("Error parsing skip_checks: %s", e)
+                logger.exception("Error parsing skip_checks")
             raise ValueError(
                 f"Invalid skip_checks value: {s}. "
                 "It must be a comma-separated list of Fully Qualified Check IDs."

@@ -213,8 +213,7 @@ def do_entity_test(
                 )
     except Exception as e:
         if logger.isEnabledFor(logging.DEBUG):
-            logger.exception(e)
-            logger.debug("Failed to validate RO-Crate @ path: %s", rocrate_path)
+            logger.exception("Failed to validate RO-Crate @ path: %s", rocrate_path)
             logger.debug("Requirement severity: %s", requirement_severity)
             logger.debug("Expected validation result: %s", expected_validation_result)
             logger.debug("Expected triggered requirements: %s", expected_triggered_requirements)
