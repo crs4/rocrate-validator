@@ -211,7 +211,7 @@ def do_entity_test(
                 raise AssertionError(
                     f'The expected issue "{expected_issue}" was not found in the detected issues'
                 )
-    except Exception as e:
+    except Exception:
         if logger.isEnabledFor(logging.DEBUG):
             logger.exception("Failed to validate RO-Crate @ path: %s", rocrate_path)
             logger.debug("Requirement severity: %s", requirement_severity)
@@ -220,7 +220,7 @@ def do_entity_test(
             logger.debug("Expected triggered issues: %s", expected_triggered_issues)
             logger.debug("Failed requirements: %s", failed_requirements)
             logger.debug("Detected issues: %s", detected_issues)
-        raise e
+        raise
     finally:
         # cleanup
         if temp_rocrate_path is not None:
