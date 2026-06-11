@@ -25,7 +25,7 @@ from rocrate_validator.utils import log as logging
 
 # set up logging
 logging.basicConfig(
-    level="warning",
+    level=logging.WARNING,
     modules_config={
         # "rocrate_validator.models": {"level": logging.DEBUG}
     }

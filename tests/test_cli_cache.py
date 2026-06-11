@@ -76,7 +76,9 @@ def _make_profile_stub(identifier: str, version: str, token: str):
     """Lightweight stand-in for a Profile used only by token fallback tests."""
 
     class _Stub:
-        pass
+        identifier: str
+        version: str
+        token: str
 
     stub = _Stub()
     stub.identifier = identifier

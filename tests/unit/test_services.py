@@ -17,7 +17,7 @@ import shutil
 import tempfile
 from pathlib import Path
 
-from rocrate_validator.models import ValidationSettings
+from rocrate_validator.models import URI, ValidationSettings
 from rocrate_validator.rocrate import ROCrateMetadata
 from rocrate_validator.services import detect_profiles, get_profiles, validate
 from rocrate_validator.utils import log as logging
@@ -62,7 +62,7 @@ def test_extra_profiles_list(fake_profiles_path: Path):
 def test_valid_local_rocrate():
     logger.debug("Validating a local RO-Crate: %s", ValidROC().wrroc_paper)
     profiles = detect_profiles(ValidationSettings(
-        rocrate_uri=ValidROC().wrroc_paper
+        rocrate_uri=URI(ValidROC().wrroc_paper)
     ))
 
     logger.debug("Candidate profiles: %s", profiles)
@@ -77,7 +77,7 @@ def test_valid_local_workflow_rocrate():
     crate_path = ValidROC().workflow_roc
     logger.debug("Validating a local RO-Crate: %s", crate_path)
     profiles = detect_profiles(ValidationSettings(
-        rocrate_uri=crate_path
+        rocrate_uri=URI(crate_path)
     ))
     assert len(profiles) == 1, "Expected a single profile"
     assert profiles[0].identifier == "workflow-ro-crate-1.0", "Expected the 'workflow-ro-crate-1.0' profile"
@@ -88,7 +88,7 @@ def test_valid_local_process_run_crate():
     crate_path = ValidROC().process_run_crate
     logger.debug("Validating a local RO-Crate: %s", crate_path)
     profiles = detect_profiles(ValidationSettings(
-        rocrate_uri=crate_path
+        rocrate_uri=URI(crate_path)
     ))
     assert len(profiles) == 1, "Expected a single profile"
     assert profiles[0].identifier == "process-run-crate-0.5", "Expected the 'process-run-crate-0.5' profile"
@@ -99,7 +99,7 @@ def test_valid_local_workflow_testing_ro_crate():
     crate_path = ValidROC().workflow_testing_ro_crate
     logger.debug("Validating a local RO-Crate: %s", crate_path)
     profiles = detect_profiles(ValidationSettings(
-        rocrate_uri=crate_path
+        rocrate_uri=URI(crate_path)
     ))
     assert len(profiles) == 1, "Expected a single profile"
     assert profiles[0].identifier == "workflow-testing-ro-crate-0.1", \
@@ -113,7 +113,7 @@ def test_disable_inherited_profiles_issue_reporting():
 
     # First, validate with inherited profiles issue reporting enabled
     settings = ValidationSettings(
-        rocrate_uri=crate_path,
+        rocrate_uri=URI(crate_path),
         disable_inherited_profiles_issue_reporting=False
     )
     result = validate(settings)
@@ -133,7 +133,7 @@ def test_disable_inherited_profiles_issue_reporting():
     # Check that all reported issues are from the main profile
     main_profile_identifier = "workflow-testing-ro-crate-0.1"
     for issue in result.get_issues():
-        assert issue.check.profile.identifier == main_profile_identifier, \
+        assert issue.check.requirement.profile.identifier == main_profile_identifier, \
             "All reported issues should belong to the main profile when inherited profiles issue reporting is disabled"
 
 
@@ -141,7 +141,7 @@ def test_skip_pycheck_on_workflow_ro_crate():
     # Set the rocrate_uri to the workflow testing RO-Crate
     crate_path = InvalidFileDescriptorEntity().invalid_conforms_to
     logger.debug("Validating a local RO-Crate: %s", crate_path)
-    settings = ValidationSettings(rocrate_uri=crate_path)
+    settings = ValidationSettings(rocrate_uri=URI(crate_path))
     result = validate(settings)
     assert not result.passed(), \
         "The RO-Crate is expected to be invalid because of an incorrect conformsTo field and missing resources"
@@ -168,7 +168,7 @@ def test_valid_local_multi_profile_crate():
     crate_path = InvalidMultiProfileROC().invalid_multi_profile_crate
     logger.debug("Validating a local RO-Crate: %s", crate_path)
     profiles = detect_profiles(ValidationSettings(
-        rocrate_uri=crate_path
+        rocrate_uri=URI(crate_path)
     ))
     assert len(profiles) == 2, "Expected two profiles"
 
@@ -192,7 +192,7 @@ def test_valid_crate_folder_with_metadata_only():
 
         # Define shared settings object
         settings = ValidationSettings(
-            rocrate_uri=Path(tmpdirname),
+            rocrate_uri=URI(Path(tmpdirname)),
             metadata_only=True
         )
 
@@ -218,7 +218,7 @@ def test_valid_crate_metadata_dict_with_metadata_only():
         metadata_dict = json.loads(f.read())
 
     # Define shared settings object
-    settings = ValidationSettings(
+    settings = ValidationSettings(  # type: ignore[call-arg]  # rocrate_uri not needed in metadata-dict mode
         metadata_dict=metadata_dict
     )
 

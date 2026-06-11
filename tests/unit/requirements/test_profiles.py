@@ -14,13 +14,14 @@
 
 import logging
 from pathlib import Path
+from typing import Any
 
 import pytest
 from rdflib import Literal, Namespace
 
 from rocrate_validator.constants import DEFAULT_PROFILE_IDENTIFIER, SHACL_NS
 from rocrate_validator.errors import DuplicateRequirementCheck, InvalidProfilePath, ProfileSpecificationError
-from rocrate_validator.models import Profile, ValidationContext, ValidationSettings, Validator
+from rocrate_validator.models import URI, Profile, ValidationContext, ValidationSettings, Validator
 from rocrate_validator.requirements.shacl.checks import SHACLCheck
 from rocrate_validator.requirements.shacl.models import ShapesRegistry
 from tests.ro_crates import InvalidFileDescriptorEntity, ValidROC
@@ -53,14 +54,14 @@ def test_order_of_loaded_profiles(profiles_path: str):
 
 def test_load_invalid_profile_from_validation_context(fake_profiles_path: str):
     """Test the loaded profiles from the validator context."""
-    settings = {
+    settings_dict: dict[str, Any] = {
         "profiles_path": "/tmp/random_path_xxx",
         "profile_identifier": DEFAULT_PROFILE_IDENTIFIER,
         "rocrate_uri": ValidROC().wrroc_paper,
         "enable_profile_inheritance": False,
     }
 
-    settings = ValidationSettings(**settings)
+    settings = ValidationSettings(**settings_dict)
     assert not settings.enable_profile_inheritance, "The inheritance mode should be set to False"
 
     validator = Validator(settings)
@@ -75,14 +76,14 @@ def test_load_invalid_profile_from_validation_context(fake_profiles_path: str):
 
 def test_load_valid_profile_without_inheritance_from_validation_context(fake_profiles_path: str):
     """Test the loaded profiles from the validator context."""
-    settings = {
+    settings_dict: dict[str, Any] = {
         "profiles_path": fake_profiles_path,
         "profile_identifier": "c",
         "rocrate_uri": ValidROC().wrroc_paper,
         "enable_profile_inheritance": False,
     }
 
-    settings = ValidationSettings(**settings)
+    settings = ValidationSettings(**settings_dict)
     assert not settings.enable_profile_inheritance, "The inheritance mode should be set to False"
 
     validator = Validator(settings)
@@ -99,7 +100,7 @@ def test_load_valid_profile_without_inheritance_from_validation_context(fake_pro
 
 def test_profile_spec_properties(fake_profiles_path: str):
     """Test the loaded profiles from the validator context."""
-    settings = {
+    settings_dict: dict[str, Any] = {
         "profiles_path": fake_profiles_path,
         "profile_identifier": "c",
         "rocrate_uri": ValidROC().wrroc_paper,
@@ -107,7 +108,7 @@ def test_profile_spec_properties(fake_profiles_path: str):
         "disable_check_for_duplicates": True,
     }
 
-    settings = ValidationSettings(**settings)
+    settings = ValidationSettings(**settings_dict)
     assert settings.enable_profile_inheritance, "The inheritance mode should be set to True"
 
     validator = Validator(settings)
@@ -221,7 +222,7 @@ def test_loaded_valid_profile_with_inheritance_from_validator_context(fake_profi
 
 def test_load_invalid_profile_no_override_enabled(fake_profiles_path: str):
     """Test the loaded profiles from the validator context."""
-    settings = {
+    settings_dict: dict[str, Any] = {
         "profiles_path": fake_profiles_path,
         "profile_identifier": "invalid-duplicated-shapes",
         "rocrate_uri": ValidROC().wrroc_paper,
@@ -229,7 +230,7 @@ def test_load_invalid_profile_no_override_enabled(fake_profiles_path: str):
         "allow_requirement_check_override": False,
     }
 
-    settings = ValidationSettings(**settings)
+    settings = ValidationSettings(**settings_dict)
     assert settings.enable_profile_inheritance, "The inheritance mode should be set to True"
     assert not settings.allow_requirement_check_override, "The override mode should be set to False"
 
@@ -245,7 +246,7 @@ def test_load_invalid_profile_no_override_enabled(fake_profiles_path: str):
 
 def test_load_invalid_profile_with_override_on_same_profile(fake_profiles_path: str):
     """Test the loaded profiles from the validator context."""
-    settings = {
+    settings_dict: dict[str, Any] = {
         "profiles_path": fake_profiles_path,
         "profile_identifier": "invalid-duplicated-shapes",
         "rocrate_uri": ValidROC().wrroc_paper,
@@ -253,7 +254,7 @@ def test_load_invalid_profile_with_override_on_same_profile(fake_profiles_path: 
         "allow_requirement_check_override": False,
     }
 
-    settings = ValidationSettings(**settings)
+    settings = ValidationSettings(**settings_dict)
     assert settings.enable_profile_inheritance, "The inheritance mode should be set to True"
     assert not settings.allow_requirement_check_override, "The override mode should be set to `True`"
     validator = Validator(settings)
@@ -268,7 +269,7 @@ def test_load_invalid_profile_with_override_on_same_profile(fake_profiles_path: 
 
 def test_load_valid_profile_with_override_on_inherited_profile(fake_profiles_path: str):
     """Test the loaded profiles from the validator context."""
-    settings = {
+    settings_dict: dict[str, Any] = {
         "profiles_path": fake_profiles_path,
         "profile_identifier": "c-overridden",
         "rocrate_uri": ValidROC().wrroc_paper,
@@ -276,7 +277,7 @@ def test_load_valid_profile_with_override_on_inherited_profile(fake_profiles_pat
         "allow_requirement_check_override": True,
     }
 
-    settings = ValidationSettings(**settings)
+    settings = ValidationSettings(**settings_dict)
     assert settings.enable_profile_inheritance, "The inheritance mode should be set to True"
     assert settings.allow_requirement_check_override, "The override mode should be set to `True`"
     validator = Validator(settings)
@@ -304,9 +305,9 @@ def test_zero_shape_target_profile_triggers_pyshacl_run(fake_profiles_path: str)
     no SHACLCheck would be recorded as executed for the wrapper target."""
 
     settings = ValidationSettings(
-        profiles_path=fake_profiles_path,
+        profiles_path=Path(fake_profiles_path),
         profile_identifier="c-wrapper",
-        rocrate_uri=ValidROC().wrroc_paper,
+        rocrate_uri=URI(ValidROC().wrroc_paper),
         enable_profile_inheritance=True,
         allow_requirement_check_override=True,
         disable_check_for_duplicates=True,
@@ -471,15 +472,15 @@ def test_python_check_decorator_sets_deactivated_flag():
     def enabled(self, ctx):
         return True
 
-    assert disabled.deactivated is True
-    assert enabled.deactivated is False
+    assert disabled.deactivated is True  # pyright: ignore[reportFunctionMemberAccess]
+    assert enabled.deactivated is False  # pyright: ignore[reportFunctionMemberAccess]
 
 
 def test_shacl_shape_with_deactivated_marks_check_skipped(fake_profiles_path: str):
     """A child profile that overrides an inherited NodeShape by `sh:name` and
     sets `sh:deactivated true` should produce a check whose `deactivated`
     property is True; the parent's check should be marked as `overridden`."""
-    settings = {
+    settings_dict: dict[str, Any] = {
         "profiles_path": fake_profiles_path,
         "profile_identifier": "c-deactivated",
         "rocrate_uri": ValidROC().wrroc_paper,
@@ -487,7 +488,7 @@ def test_shacl_shape_with_deactivated_marks_check_skipped(fake_profiles_path: st
         "allow_requirement_check_override": True,
     }
 
-    settings = ValidationSettings(**settings)
+    settings = ValidationSettings(**settings_dict)
     validator = Validator(settings)
     context = ValidationContext(validator, validator.validation_settings)
 
@@ -524,9 +525,9 @@ def test_shacl_check_deactivated_via_cross_profile_triple(fake_profiles_path: st
     SHACLCheck.deactivated and the pre-load pass in Validator."""
 
     settings = ValidationSettings(
-        profiles_path=fake_profiles_path,
+        profiles_path=Path(fake_profiles_path),
         profile_identifier="c-deactivated-direct",
-        rocrate_uri=ValidROC().wrroc_paper,
+        rocrate_uri=URI(ValidROC().wrroc_paper),
         enable_profile_inheritance=True,
         allow_requirement_check_override=True,
     )
@@ -566,9 +567,9 @@ def test_shacl_check_deactivation_scoped_to_descendants(fake_profiles_path: str)
     one another's checks."""
 
     settings = ValidationSettings(
-        profiles_path=fake_profiles_path,
+        profiles_path=Path(fake_profiles_path),
         profile_identifier="c",
-        rocrate_uri=ValidROC().wrroc_paper,
+        rocrate_uri=URI(ValidROC().wrroc_paper),
         enable_profile_inheritance=True,
         allow_requirement_check_override=True,
     )

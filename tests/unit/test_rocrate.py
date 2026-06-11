@@ -72,7 +72,7 @@ def test_is_bagit_rocrate():
 def test_abstract_bagit_rocrate_instantiation():
     # Check that the base class BagItROCrate cannot be instantiated directly
     with pytest.raises(TypeError, match="Can't instantiate"):
-        BagitROCrate(ValidROC().bagit)
+        BagitROCrate(ValidROC().bagit)  # type: ignore[abstract]
 
 
 def test_rocrate_factory():
@@ -104,21 +104,21 @@ def test_rocrate_factory():
 
 
 def test_rocrate_constructor():
-    roc = ROCrate(ValidROC().wrroc_paper)
+    roc = ROCrate(ValidROC().wrroc_paper)  # type: ignore[abstract]
     assert isinstance(roc, ROCrateLocalFolder), "Should be a ROCrateLocalFolder"
 
-    roc = ROCrate(ValidROC().sort_and_change_archive)
+    roc = ROCrate(ValidROC().sort_and_change_archive)  # type: ignore[abstract]
     assert isinstance(roc, ROCrateLocalZip), "Should be a ROCrateLocalZip"
 
-    roc = ROCrate(ValidROC().sort_and_change_remote)
+    roc = ROCrate(ValidROC().sort_and_change_remote)  # type: ignore[abstract]
     assert isinstance(roc, ROCrateRemoteZip), "Should be a ROCrateRemoteZip"
 
-    roc = ROCrate(ValidROC().bagit)
+    roc = ROCrate(ValidROC().bagit)  # type: ignore[abstract]
     assert isinstance(roc, BagitROCrate), "Should be a BagItROCrate"
     assert isinstance(roc, ROCrateLocalFolder), "Should be a ROCrateLocalFolder"
     assert isinstance(roc, ROCrateBagitLocalFolder), "Should be a ROCrateBagitLocalFolder"
 
-    roc = ROCrate(ValidROC().bagit_zip)
+    roc = ROCrate(ValidROC().bagit_zip)  # pyright: ignore[reportAbstractUsage]
     assert isinstance(roc, BagitROCrate), "Should be a BagItROCrate"
     assert isinstance(roc, ROCrateLocalZip), "Should be a ROCrateLocalZip"
     assert isinstance(roc, ROCrateBagitLocalZip), "Should be a ROCrateBagitLocalZip"
@@ -151,7 +151,7 @@ def test_parse_path():
 
 def test_local_folder_with_relative_root():
     # set relative root path
-    relative_root_path = "data"
+    relative_root_path = Path("data")
     # create ROCrateBagitLocalFolder with relative root path
     roc = ROCrateLocalFolder(ValidROC().bagit, relative_root_path=relative_root_path)
     assert isinstance(roc, ROCrateLocalFolder)
@@ -171,10 +171,10 @@ def test_local_folder_with_relative_root():
     assert parsed_path == ValidROC().bagit / relative_root_path / path, "Parsed path should be data/file.txt"
 
     # test has_file
-    assert roc.has_file("data/ro-crate-metadata.json"), "Should have ro-crate-metadata.json file"
+    assert roc.has_file(Path("data/ro-crate-metadata.json")), "Should have ro-crate-metadata.json file"
 
     # test get_file_content
-    content = roc.get_file_content("data/ro-crate-metadata.json")
+    content = roc.get_file_content(Path("data/ro-crate-metadata.json"))
     assert isinstance(content, bytes), "Content should be bytes"
 
 
@@ -203,7 +203,7 @@ def test_remote_bagit_rocrate():
     assert roc.has_directory(Path("data%20set/")), "Should have data%20set/ directory"
     assert roc.has_directory(Path("data set3/")), "Should have data set3/ directory"
     # test has file
-    assert roc.has_file("pics/2018-06-11 12.56.14.jpg"), "Should have pics/2018-06-11%2012.56.14.jpg file"
+    assert roc.has_file(Path("pics/2018-06-11 12.56.14.jpg")), "Should have pics/2018-06-11%2012.56.14.jpg file"
 
     # test file availability
     img_2018 = roc.metadata.get_entity("pics/2018-06-11%2012.56.14.jpg")
@@ -271,7 +271,7 @@ def test_valid_local_rocrate():
 #      ROCrateLocalFolder
 def test_valid_local_folder_rocrate_with_relative_root():
     # set relative root path
-    relative_root_path = "custom-relative-root"
+    relative_root_path = Path("custom-relative-root")
     # create ROCrateLocalFolder with relative root path
     roc = ROCrateLocalFolder(ValidROC().rocrate_with_relative_root,
                              relative_root_path=relative_root_path)
@@ -279,18 +279,19 @@ def test_valid_local_folder_rocrate_with_relative_root():
     logger.debug("Testing bagit with relative root path: %s", relative_root_path)
 
     # inspect ro-crate-metadata.json to confirm correct relative root path
-    assert roc.has_file("ro-crate-metadata.json"), "Should have ro-crate-metadata.json file"
+    assert roc.has_file(Path("ro-crate-metadata.json")), "Should have ro-crate-metadata.json file"
 
-    metadata_path = roc.get_file_content("ro-crate-metadata.json", binary_mode=False)
-    logger.debug(f"ro-crate-metadata.json content: {metadata_path}")
+    metadata_path = roc.get_file_content(Path("ro-crate-metadata.json"), binary_mode=False)
+    metadata_text = metadata_path.decode("utf-8") if isinstance(metadata_path, bytes) else metadata_path
+    logger.debug(f"ro-crate-metadata.json content: {metadata_text}")
 
     # test has_file
-    assert roc.has_file("ro-crate-metadata.json"), "Should have ro-crate-metadata.json file"
-    assert roc.has_file("pics/2017-06-11%252012.56.14.jpg"), \
+    assert roc.has_file(Path("ro-crate-metadata.json")), "Should have ro-crate-metadata.json file"
+    assert roc.has_file(Path("pics/2017-06-11%252012.56.14.jpg")), \
         "Should have pics/2017-06-11%252012.56.14.jpg file"
 
     # test get_file_content
-    content = roc.get_file_content("ro-crate-metadata.json")
+    content = roc.get_file_content(Path("ro-crate-metadata.json"))
     assert isinstance(content, bytes), "Content should be bytes"
 
     # check availability
@@ -375,7 +376,7 @@ def test_valid_zip_rocrate():
 ################################
 
 def test_paths_valid_bagit_rocrate():
-    roc = ROCrate(ValidROC().bagit_zip)
+    roc = ROCrate(ValidROC().bagit_zip)  # type: ignore[abstract]
     assert isinstance(roc, ROCrateLocalZip)
 
     # test list files
@@ -394,7 +395,7 @@ def test_paths_valid_bagit_rocrate():
     assert roc.has_directory(Path("data set3")), "Should have data set3/ directory"
     assert roc.has_directory(Path("data set3/")), "Should have data set3/ directory"
 
-    assert roc.has_file("pics/2018-06-11 12.56.14.jpg"), "Should have pics/2018-06-11%2012.56.14.jpg file"
+    assert roc.has_file(Path("pics/2018-06-11 12.56.14.jpg")), "Should have pics/2018-06-11%2012.56.14.jpg file"
 
     dataset3 = roc.metadata.get_entity("data set3/")
     assert dataset3 is not None, "Should have data set3/ entity"
@@ -414,7 +415,7 @@ def test_paths_valid_bagit_rocrate():
 
 
 def test_valid_bagit_zip_rocrate():
-    roc = ROCrate(ValidROC().bagit_zip)
+    roc = ROCrate(ValidROC().bagit_zip)  # type: ignore[abstract]
     assert isinstance(roc, ROCrateLocalZip)
 
     # test list files
@@ -532,10 +533,10 @@ def test_valid_remote_zip_rocrate():
 
 
 def test_external_file():
-    content = ROCrate.get_external_file_content(ValidROC().sort_and_change_remote)
+    content = ROCrate.get_external_file_content(str(ValidROC().sort_and_change_remote))
     assert isinstance(content, bytes), "Content should be bytes"
 
-    size = ROCrate.get_external_file_size(ValidROC().sort_and_change_remote)
+    size = ROCrate.get_external_file_size(str(ValidROC().sort_and_change_remote))
     assert size == 137039, "Size should be 137039"
 
 

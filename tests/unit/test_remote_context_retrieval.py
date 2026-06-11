@@ -26,6 +26,7 @@ def fd_format():
         "fd_format",
         "rocrate_validator/profiles/ro-crate/must/0_file_descriptor_format.py"
     )
+    assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     sys.modules["fd_format"] = module
     spec.loader.exec_module(module)

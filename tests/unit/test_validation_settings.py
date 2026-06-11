@@ -14,7 +14,7 @@
 
 import pytest
 
-from rocrate_validator.models import Severity, ValidationSettings
+from rocrate_validator.models import URI, Severity, ValidationSettings
 
 
 def test_validation_settings_parse_dict():
@@ -37,8 +37,8 @@ def test_validation_settings_parse_dict():
 
 def test_validation_settings_parse_object():
     existing_settings = ValidationSettings(
-        rocrate_uri="/path/to/data",
-        profiles_path="/path/to/profiles",
+        rocrate_uri=URI("/path/to/data"),
+        profiles_path="/path/to/profiles",  # type: ignore[arg-type]
         requirement_severity=Severity.RECOMMENDED,
         enable_profile_inheritance=False,
         disable_inherited_profiles_issue_reporting=True,
@@ -55,13 +55,13 @@ def test_validation_settings_parse_object():
 
 def test_validation_settings_parse_invalid_type():
     with pytest.raises(ValueError):
-        ValidationSettings.parse("invalid_settings")
+        ValidationSettings.parse("invalid_settings")  # type: ignore[arg-type]
 
 
 def test_validation_settings_to_dict():
     settings = ValidationSettings(
-        rocrate_uri="/path/to/data",
-        profiles_path="/path/to/profiles",
+        rocrate_uri=URI("/path/to/data"),
+        profiles_path="/path/to/profiles",  # type: ignore[arg-type]
         requirement_severity=Severity.RECOMMENDED,
         enable_profile_inheritance=False
     )
@@ -73,53 +73,53 @@ def test_validation_settings_to_dict():
 
 
 def test_validation_settings_enable_profile_inheritance():
-    settings = ValidationSettings(enable_profile_inheritance=True)
+    settings = ValidationSettings(enable_profile_inheritance=True)  # type: ignore[call-arg]
     assert settings.enable_profile_inheritance is True
 
-    settings = ValidationSettings(enable_profile_inheritance=False)
+    settings = ValidationSettings(enable_profile_inheritance=False)  # type: ignore[call-arg]
     assert settings.enable_profile_inheritance is False
 
 
 def test_validation_settings_disable_inherited_profiles_issue_reporting():
-    settings = ValidationSettings()
+    settings = ValidationSettings()  # type: ignore[call-arg]
     assert settings.disable_inherited_profiles_issue_reporting is False
 
-    settings = ValidationSettings(disable_inherited_profiles_issue_reporting=True)
+    settings = ValidationSettings(disable_inherited_profiles_issue_reporting=True)  # type: ignore[call-arg]
     assert settings.disable_inherited_profiles_issue_reporting is True
 
-    settings = ValidationSettings(disable_inherited_profiles_issue_reporting=False)
+    settings = ValidationSettings(disable_inherited_profiles_issue_reporting=False)  # type: ignore[call-arg]
     assert settings.disable_inherited_profiles_issue_reporting is False
 
 
 def test_validation_settings_data_path():
-    settings = ValidationSettings(rocrate_uri="/path/to/data")
+    settings = ValidationSettings(rocrate_uri=URI("/path/to/data"))
     assert str(settings.rocrate_uri) == "/path/to/data"
 
 
 def test_validation_settings_profiles_path():
-    settings = ValidationSettings(profiles_path="/path/to/profiles")
+    settings = ValidationSettings(profiles_path="/path/to/profiles")  # type: ignore[call-arg, arg-type]
     assert settings.profiles_path == "/path/to/profiles"
 
 
 def test_validation_settings_requirement_severity():
-    settings = ValidationSettings(requirement_severity=Severity.RECOMMENDED)
+    settings = ValidationSettings(requirement_severity=Severity.RECOMMENDED)  # type: ignore[call-arg]
     assert settings.requirement_severity == Severity.RECOMMENDED
 
 
 def test_validation_settings_abort_on_first():
-    settings = ValidationSettings(abort_on_first=True)
+    settings = ValidationSettings(abort_on_first=True)  # type: ignore[call-arg]
     assert settings.abort_on_first is True
 
 
 def test_validation_settings_metadata_only():
-    settings = ValidationSettings(metadata_only=True)
+    settings = ValidationSettings(metadata_only=True)  # type: ignore[call-arg]
     assert settings.metadata_only is True
 
-    settings = ValidationSettings(metadata_only=False)
+    settings = ValidationSettings(metadata_only=False)  # type: ignore[call-arg]
     assert settings.metadata_only is False
 
 
 def test_validation_settings_metadata_dict():
-    metadata = {"@graph": []}
-    settings = ValidationSettings(metadata_dict=metadata)
+    metadata: dict = {"@graph": []}
+    settings = ValidationSettings(metadata_dict=metadata)  # type: ignore[call-arg]
     assert settings.metadata_dict == metadata

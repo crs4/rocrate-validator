@@ -14,6 +14,7 @@
 
 import logging
 from pathlib import Path
+from typing import Any
 
 from rocrate_validator.constants import DEFAULT_PROFILE_IDENTIFIER
 from rocrate_validator.models import LevelCollection, Profile, Severity
@@ -25,6 +26,13 @@ logger = logging.getLogger(__name__)
 
 #  Global set up the paths
 paths = InvalidFileDescriptorEntity()
+
+
+def _require(profile: Profile, name: str):
+    """Return the named requirement, asserting it exists (it must for these tests)."""
+    requirement = profile.get_requirement(name)
+    assert requirement is not None, f"Requirement {name!r} not found"
+    return requirement
 
 
 def test_requirements_loading(profiles_requirement_loading: str):
@@ -39,7 +47,7 @@ def test_requirements_loading(profiles_requirement_loading: str):
     number_of_checks_per_requirement = 4
 
     # Define the settings
-    settings = {
+    settings: dict[str, Any] = {
         "profiles_path": profiles_requirement_loading,
         "severity": Severity.OPTIONAL
     }
@@ -58,8 +66,13 @@ def test_requirements_loading(profiles_requirement_loading: str):
 
     # Sort requirements by their order
     sorted_requirements = sorted(
-        requirements, key=lambda x: (-x.severity_from_path.value, x.path.name, x.name)
-        if x.severity_from_path else (0, x.path.name, x.name))
+        requirements,
+        key=lambda x: (
+            -(x.severity_from_path.value if x.severity_from_path else 0),
+            x.path.name if x.path else "",
+            x.name,
+        ),
+    )
 
     # Check the order of the requirements
     for i, requirement in enumerate(sorted_requirements):
@@ -69,7 +82,7 @@ def test_requirements_loading(profiles_requirement_loading: str):
     # Check the requirements and their checks
     for requirement_name in requirements_names:
         logger.debug("The requirement: %r", requirement_name)
-        requirement = profile.get_requirement(requirement_name)
+        requirement = _require(profile, requirement_name)
         assert requirement.name == requirement_name, "The name of the requirement is incorrect"
         if requirement_name in ["A", "B"]:
             assert requirement.severity_from_path is None, "The severity of the requirement should be None"
@@ -110,8 +123,14 @@ def test_order_of_loaded_profile_requirements(profiles_path: str):
                      requirement.name, requirement.severity_from_path, requirement.path)
 
     # Sort requirements by their order
-    requirements = sorted(requirements, key=lambda x: (-x.severity_from_path.value, x.path.name, x.name)
-                          if x.severity_from_path else (0, x.path.name, x.name))
+    requirements = sorted(
+        requirements,
+        key=lambda x: (
+            -(x.severity_from_path.value if x.severity_from_path else 0),
+            x.path.name if x.path else "",
+            x.name,
+        ),
+    )
 
     # Check the order of the requirements
     for i, requirement in enumerate(requirements):
@@ -122,7 +141,7 @@ def test_order_of_loaded_profile_requirements(profiles_path: str):
     for r in profile.get_requirements(severity=Severity.OPTIONAL):
         logger.debug("The requirement: %r -> severity: %r", r.name, r.severity_from_path)
 
-    r = profile.get_requirement("RO-Crate Root Data Entity RECOMMENDED value")
+    r = _require(profile, "RO-Crate Root Data Entity RECOMMENDED value")
     assert r.severity_from_path == Severity.RECOMMENDED, "The severity of the requirement should be RECOMMENDED"
 
     # Check the number of requirement checks
@@ -145,7 +164,7 @@ def test_hidden_requirements(profiles_loading_hidden_requirements: str):
     requirements_names = ["A", "B", "A_MUST", "B_MUST"]
 
     # Define the settings
-    settings = {
+    settings: dict[str, Any] = {
         "profiles_path": profiles_loading_hidden_requirements,
         "severity": Severity.OPTIONAL
     }
@@ -163,17 +182,17 @@ def test_hidden_requirements(profiles_loading_hidden_requirements: str):
     assert len(requirements) == len(requirements_names), "The number of requirements is incorrect"
 
     # Check if the requirement A is hidden
-    requirement_a = profile.get_requirement("A")
+    requirement_a = _require(profile, "A")
     assert requirement_a.hidden, "The requirement A should be hidden"
 
     # Check if the requirement B is hidden
-    requirement_b = profile.get_requirement("B")
+    requirement_b = _require(profile, "B")
     assert requirement_b.hidden, "The requirement B should be hidden"
 
     # Check if the requirement A_MUST is not hidden
-    requirement_a_must = profile.get_requirement("A_MUST")
+    requirement_a_must = _require(profile, "A_MUST")
     assert not requirement_a_must.hidden, "The requirement A_MUST should not be hidden"
 
     # Check if the requirement B_MUST is not hidden
-    requirement_b_must = profile.get_requirement("B_MUST")
+    requirement_b_must = _require(profile, "B_MUST")
     assert not requirement_b_must.hidden, "The requirement B_MUST should not be hidden"

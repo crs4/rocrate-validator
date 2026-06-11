@@ -15,7 +15,7 @@
 import pytest
 
 from rocrate_validator import models, services
-from rocrate_validator.models import LevelCollection, RequirementLevel, Severity, ValidationSettings
+from rocrate_validator.models import URI, LevelCollection, RequirementLevel, Severity, ValidationSettings
 from tests.ro_crates import InvalidRootDataEntity, WROCInvalidReadme
 
 
@@ -72,6 +72,7 @@ def test_level_collection():
 @pytest.fixture
 def validation_settings():
     return ValidationSettings(
+        rocrate_uri=URI("file:///"),
         requirement_severity=Severity.OPTIONAL,
         abort_on_first=False
     )

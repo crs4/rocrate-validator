@@ -196,7 +196,9 @@ class _RecordCollector:
         self.handler.emit = self.records.append  # type: ignore[assignment]
         # Force initialization of the underlying logger via the proxy.
         http_module.logger.warning  # noqa: B018
-        self._target = http_module.logger._instance
+        target = http_module.logger._instance
+        assert target is not None  # initialized above via the proxy access
+        self._target = target
         self._target.addHandler(self.handler)
         self._previous_level = self._target.level
         self._target.setLevel(_logging.DEBUG)

@@ -23,7 +23,7 @@ import urllib3
 from click.testing import CliRunner
 
 from rocrate_validator.cli.main import cli
-from rocrate_validator.models import ValidationSettings
+from rocrate_validator.models import URI, ValidationSettings
 from rocrate_validator.utils.http import OFFLINE_CACHE_MISS_STATUS, HttpRequester
 from tests.conftest import SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER
 from tests.ro_crates import ValidROC
@@ -52,7 +52,7 @@ def network_interceptor(monkeypatch):
     """
     from requests.adapters import HTTPAdapter
 
-    recorder = {"calls": []}
+    recorder: dict[str, list[str]] = {"calls": []}
 
     def fake_send(self, request, **kwargs):
         recorder["calls"].append(request.url)
@@ -77,7 +77,7 @@ def cli_runner() -> CliRunner:
 
 def test_offline_flag_configures_cache(tmp_path):
     settings = ValidationSettings(
-        rocrate_uri=str(ValidROC().wrroc_paper_long_date),
+        rocrate_uri=URI(ValidROC().wrroc_paper_long_date),
         offline=True,
         cache_path=tmp_path / "cache",
     )
@@ -90,7 +90,7 @@ def test_offline_flag_configures_cache(tmp_path):
 def test_offline_default_path_is_persistent(tmp_path, monkeypatch):
     monkeypatch.setenv("XDG_CACHE_HOME", str(tmp_path / "xdg"))
     ValidationSettings(
-        rocrate_uri=str(ValidROC().wrroc_paper_long_date),
+        rocrate_uri=URI(ValidROC().wrroc_paper_long_date),
         offline=True,
         cache_path=None,
     )
@@ -102,7 +102,7 @@ def test_offline_default_path_is_persistent(tmp_path, monkeypatch):
 
 def test_offline_cache_miss_yields_504_response(tmp_path):
     ValidationSettings(
-        rocrate_uri=str(ValidROC().wrroc_paper_long_date),
+        rocrate_uri=URI(ValidROC().wrroc_paper_long_date),
         offline=True,
         cache_path=tmp_path / "cache",
     )
@@ -120,7 +120,7 @@ def test_online_then_offline_share_default_cache(tmp_path, network_interceptor, 
     url = "https://example.org/ctx"
 
     ValidationSettings(
-        rocrate_uri=str(ValidROC().wrroc_paper_long_date),
+        rocrate_uri=URI(ValidROC().wrroc_paper_long_date),
         offline=False,
         cache_max_age=60,
     )
@@ -133,7 +133,7 @@ def test_online_then_offline_share_default_cache(tmp_path, network_interceptor, 
     HttpRequester.reset()
 
     ValidationSettings(
-        rocrate_uri=str(ValidROC().wrroc_paper_long_date),
+        rocrate_uri=URI(ValidROC().wrroc_paper_long_date),
         offline=True,
     )
     offline_info = HttpRequester().cache_info()
@@ -147,7 +147,7 @@ def test_offline_reuses_cached_response(tmp_path, network_interceptor):
     cache_path = tmp_path / "cache"
     # First: online run populates the cache.
     ValidationSettings(
-        rocrate_uri=str(ValidROC().wrroc_paper_long_date),
+        rocrate_uri=URI(ValidROC().wrroc_paper_long_date),
         offline=False,
         cache_path=cache_path,
         cache_max_age=60,
@@ -161,7 +161,7 @@ def test_offline_reuses_cached_response(tmp_path, network_interceptor):
     # Second: offline run must not hit the network but still get the cached doc.
     HttpRequester.reset()
     ValidationSettings(
-        rocrate_uri=str(ValidROC().wrroc_paper_long_date),
+        rocrate_uri=URI(ValidROC().wrroc_paper_long_date),
         offline=True,
         cache_path=cache_path,
     )
@@ -175,7 +175,7 @@ def test_offline_reuses_cached_response(tmp_path, network_interceptor):
 def test_no_cache_disables_cache_backend(tmp_path, network_interceptor):
     """no_cache=True must skip the cache and hit the network every call."""
     ValidationSettings(
-        rocrate_uri=str(ValidROC().wrroc_paper_long_date),
+        rocrate_uri=URI(ValidROC().wrroc_paper_long_date),
         offline=False,
         no_cache=True,
     )
@@ -192,7 +192,7 @@ def test_no_cache_disables_cache_backend(tmp_path, network_interceptor):
 def test_negative_cache_max_age_means_never_expire(tmp_path, network_interceptor):
     """cache_max_age<0 must enable the cache with no expiration."""
     ValidationSettings(
-        rocrate_uri=str(ValidROC().wrroc_paper_long_date),
+        rocrate_uri=URI(ValidROC().wrroc_paper_long_date),
         offline=False,
         cache_max_age=-1,
         cache_path=tmp_path / "cache",
@@ -210,7 +210,7 @@ def test_negative_cache_max_age_means_never_expire(tmp_path, network_interceptor
 def test_offline_with_disabled_cache_raises():
     with pytest.raises(ValueError, match="Offline mode requires the HTTP cache"):
         ValidationSettings(
-            rocrate_uri=str(ValidROC().wrroc_paper_long_date),
+            rocrate_uri=URI(ValidROC().wrroc_paper_long_date),
             offline=True,
             no_cache=True,
         )
@@ -389,7 +389,7 @@ def test_auto_warm_up_skipped_when_offline(tmp_path, network_interceptor, monkey
     """Auto warm-up must not run when offline mode is active."""
     monkeypatch.setenv("ROCRATE_VALIDATOR_AUTO_WARM", "1")
     ValidationSettings(
-        rocrate_uri=str(ValidROC().wrroc_paper_long_date),
+        rocrate_uri=URI(ValidROC().wrroc_paper_long_date),
         offline=True,
         cache_path=tmp_path / "cache",
     )
@@ -399,7 +399,7 @@ def test_auto_warm_up_skipped_when_offline(tmp_path, network_interceptor, monkey
 def test_auto_warm_up_disabled_via_env(tmp_path, network_interceptor, monkeypatch):
     monkeypatch.setenv("ROCRATE_VALIDATOR_AUTO_WARM", "0")
     ValidationSettings(
-        rocrate_uri=str(ValidROC().wrroc_paper_long_date),
+        rocrate_uri=URI(ValidROC().wrroc_paper_long_date),
         offline=False,
         cache_path=tmp_path / "cache",
     )

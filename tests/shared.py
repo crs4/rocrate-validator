@@ -130,7 +130,7 @@ def do_entity_test(
     profile_identifier: str = DEFAULT_PROFILE_IDENTIFIER,
     rocrate_entity_patch: dict | None = None,
     rocrate_entity_mod_sparql: str | None = None,
-    skip_checks: list[str] | None = (),
+    skip_checks: list[str] | None = None,
     rocrate_relative_root_path: str | None = None,
     metadata_only: bool = False,
     metadata_dict: dict | None = None,
@@ -153,7 +153,8 @@ def do_entity_test(
         rocrate_path = Path(rocrate_path)
 
     temp_rocrate_path = None
-    if any([rocrate_entity_patch, rocrate_entity_mod_sparql]) and rocrate_path.is_dir():
+    if (any([rocrate_entity_patch, rocrate_entity_mod_sparql])
+            and isinstance(rocrate_path, Path) and rocrate_path.is_dir()):
         temp_rocrate_path = _prepare_temp_rocrate(rocrate_path, rocrate_entity_patch, rocrate_entity_mod_sparql)
         rocrate_path = temp_rocrate_path
 
@@ -168,14 +169,17 @@ def do_entity_test(
         logger.debug("Checks to skip: %s", skip_checks)
 
         # validate RO-Crate
+        relative_root_path = (
+            Path(rocrate_relative_root_path) if rocrate_relative_root_path is not None else None
+        )
         result: models.ValidationResult = services.validate(
             models.ValidationSettings(
-                rocrate_uri=rocrate_path,
+                rocrate_uri=models.URI(rocrate_path),
                 requirement_severity=requirement_severity,
                 abort_on_first=abort_on_first,
                 profile_identifier=profile_identifier,
                 skip_checks=skip_checks,
-                rocrate_relative_root_path=rocrate_relative_root_path,
+                rocrate_relative_root_path=relative_root_path,
                 metadata_only=metadata_only,
                 metadata_dict=metadata_dict,
                 **kwargs,

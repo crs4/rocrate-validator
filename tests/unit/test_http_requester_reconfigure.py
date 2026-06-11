@@ -81,7 +81,7 @@ def test_reconfigure_preserves_instance_attributes(tmp_path):
     singleton (e.g. methods patched by tests)."""
     requester = _initialize(tmp_path / "cache-1", cache_max_age=60)
     sentinel = object()
-    requester.custom_marker = sentinel
+    requester.custom_marker = sentinel  # pyright: ignore[reportAttributeAccessIssue]
 
     _initialize(tmp_path / "cache-2", cache_max_age=60)
 
@@ -112,7 +112,8 @@ def test_pinned_wrapper_survives_reconfigure(tmp_path):
     as an instance attribute: after a reconfigure rebuilds the session, that
     wrapper must still target the live session, not a closed one."""
     requester = _initialize(tmp_path / "cache-1", cache_max_age=60)
-    requester.get = requester.get  # pin the wrapper as an instance attribute
+    # pin the wrapper as an instance attribute
+    requester.get = requester.get  # pyright: ignore[reportAttributeAccessIssue]
 
     _initialize(tmp_path / "cache-2", cache_max_age=60)  # rebuilds the session
 
@@ -141,7 +142,7 @@ def test_validation_settings_preserves_singleton(tmp_path):
 
     requester = _initialize(tmp_path / "cache", cache_max_age=60)
     marker = object()
-    requester.custom_marker = marker
+    requester.custom_marker = marker  # pyright: ignore[reportAttributeAccessIssue]
 
     # ``offline=True`` keeps the construction self-contained (no warm-up/network).
     ValidationSettings(

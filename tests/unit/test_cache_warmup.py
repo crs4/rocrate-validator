@@ -17,11 +17,12 @@
 from __future__ import annotations
 
 import io
+from typing import cast
 
 import pytest
 import urllib3
 
-from rocrate_validator.models import Profile
+from rocrate_validator.models import Profile, ValidationSettings
 from rocrate_validator.utils.cache_warmup import (
     auto_warm_up_for_settings,
     discover_cacheable_urls_from_profiles,
@@ -79,7 +80,7 @@ def sample_profile(tmp_path):
 
 @pytest.fixture
 def mock_network(monkeypatch):
-    from requests.adapters import HTTPAdapter
+    from requests.adapters import HTTPAdapter  # type: ignore[import-untyped]
 
     def fake_send(self, request, **kwargs):
         raw = urllib3.HTTPResponse(
@@ -149,7 +150,7 @@ def test_auto_warm_up_noop_when_offline(tmp_path):
         profiles_path = get_profiles_path()
         extra_profiles_path = None
 
-    assert auto_warm_up_for_settings(_Settings()) is None
+    assert auto_warm_up_for_settings(cast("ValidationSettings", _Settings())) is None
 
 
 def test_auto_warm_up_disabled_via_env(monkeypatch, tmp_path):
@@ -162,7 +163,7 @@ def test_auto_warm_up_disabled_via_env(monkeypatch, tmp_path):
         profiles_path = get_profiles_path()
         extra_profiles_path = None
 
-    assert auto_warm_up_for_settings(_Settings()) is None
+    assert auto_warm_up_for_settings(cast("ValidationSettings", _Settings())) is None
 
 
 def test_auto_warm_up_noop_when_no_cache_path():
@@ -173,4 +174,4 @@ def test_auto_warm_up_noop_when_no_cache_path():
         profiles_path = get_profiles_path()
         extra_profiles_path = None
 
-    assert auto_warm_up_for_settings(_Settings()) is None
+    assert auto_warm_up_for_settings(cast("ValidationSettings", _Settings())) is None

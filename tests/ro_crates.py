@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from pathlib import Path
-from tempfile import TemporaryDirectory
+from tempfile import mkdtemp
 
 from pytest import fixture
 
@@ -83,7 +83,7 @@ class ValidROC:
         return VALID_CRATES_DATA_PATH / "workflow-roc-string-license"
 
     @property
-    def sort_and_change_remote(self) -> Path:
+    def sort_and_change_remote(self) -> str:
         return "https://raw.githubusercontent.com/lifemonitor/validator-test-data/main/sortchangecase.crate.zip"
 
     @property
@@ -129,7 +129,7 @@ class InvalidFileDescriptor:
 
     @property
     def missing_file_descriptor(self) -> Path:
-        return TemporaryDirectory()
+        return Path(mkdtemp())
 
     @property
     def invalid_json_format(self) -> Path:
