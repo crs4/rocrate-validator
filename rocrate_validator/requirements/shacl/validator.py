@@ -399,6 +399,7 @@ class SHACLValidator:
     def ont_graph(self) -> GraphLike | str | bytes | None:
         return self._ont_graph
 
+    # pylint: disable-next=too-many-locals
     def validate(
         self,
         # data to validate

@@ -369,38 +369,7 @@ class ShapesRegistry:
 
         # register Node Shapes
         for node_shape in shapes_list.node_shapes:
-            # flag to check if the nested properties are in a group
-            grouped = False
-            # list of properties ungrouped
-            ungrouped_properties = []
-            # get the shape graph
-            node_graph = shapes_list.get_shape_graph(node_shape)
-            # create a node shape object
-            shape = NodeShape(node_shape, node_graph)
-            # load the nested properties
-            shacl_ns = Namespace(SHACL_NS)
-            nested_properties = node_graph.objects(subject=node_shape, predicate=shacl_ns.property)
-            for property_shape in nested_properties:
-                property_graph = shapes_list.get_shape_property_graph(node_shape, property_shape)
-                p_shape = PropertyShape(property_shape, property_graph, shape)
-                shape.add_property(p_shape)
-                group = __process_property_group__(property_groups, p_shape)
-                if group and group not in shapes:
-                    grouped = True
-                    shapes.append(cast("Shape", group))
-                if not group:
-                    ungrouped_properties.append(p_shape)
-
-                # store the property shape in the registry
-                self.add_shape(p_shape)
-            # store the node shape in the registry
-            self.add_shape(shape)
-
-            # store the node in the list of shapes
-            if not grouped:
-                shapes.append(shape)
-            else:
-                shapes.extend(ungrouped_properties)
+            self._register_node_shape(node_shape, shapes_list, property_groups, shapes)
 
         # register Property Shapes
         for property_shape in shapes_list.property_shapes:
@@ -409,6 +378,47 @@ class ShapesRegistry:
             shapes.append(prop_shape)
 
         return shapes
+
+    def _register_node_shape(
+        self,
+        node_shape: Node,
+        shapes_list: ShapesList,
+        property_groups: dict[str, PropertyGroup],
+        shapes: list[Shape],
+    ) -> None:
+        """Instantiate ``node_shape`` and its nested PropertyShapes, registering them and appending to ``shapes``."""
+        # flag to check if the nested properties are in a group
+        grouped = False
+        # list of properties ungrouped
+        ungrouped_properties: list[PropertyShape] = []
+        # get the shape graph
+        node_graph = shapes_list.get_shape_graph(node_shape)
+        # create a node shape object
+        shape = NodeShape(node_shape, node_graph)
+        # load the nested properties
+        shacl_ns = Namespace(SHACL_NS)
+        nested_properties = node_graph.objects(subject=node_shape, predicate=shacl_ns.property)
+        for property_shape in nested_properties:
+            property_graph = shapes_list.get_shape_property_graph(node_shape, property_shape)
+            p_shape = PropertyShape(property_shape, property_graph, shape)
+            shape.add_property(p_shape)
+            group = __process_property_group__(property_groups, p_shape)
+            if group and group not in shapes:
+                grouped = True
+                shapes.append(cast("Shape", group))
+            if not group:
+                ungrouped_properties.append(p_shape)
+
+            # store the property shape in the registry
+            self.add_shape(p_shape)
+        # store the node shape in the registry
+        self.add_shape(shape)
+
+        # store the node in the list of shapes
+        if not grouped:
+            shapes.append(shape)
+        else:
+            shapes.extend(ungrouped_properties)
 
     def __str__(self):
         return f"ShapesRegistry: {self._shapes}"
