@@ -87,7 +87,7 @@ class ValidationCommandView:
         result = self.report_layout.live(
             lambda: validation_command(
                 self.validation_settings,
-                subscribers=[self.report_layout, self.report_layout.progress_monitor]
+                subscribers=self.report_layout.subscribers
             )
         )
         logger.debug("Validation completed  with result: %s", result)

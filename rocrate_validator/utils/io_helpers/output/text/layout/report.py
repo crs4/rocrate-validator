@@ -26,9 +26,7 @@ from rich.panel import Panel
 from rich.rule import Rule
 from rich.text import Text
 
-from rocrate_validator.events import Event, EventType
 from rocrate_validator.models import (
-    ProfileValidationEvent,
     RequirementCheckValidationEvent,
     RequirementValidationEvent,
     Severity,
@@ -43,11 +41,13 @@ from rocrate_validator.utils.io_helpers.colors import get_severity_color
 from rocrate_validator.utils.uri import URI
 from rocrate_validator.utils.versioning import get_version
 
+from .dispatcher import EventDispatcher
 from .progress import ProgressMonitor
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
+    from rocrate_validator.events import Subscriber
     from rocrate_validator.utils.io_helpers.output.console import Console
 
 # set up logging
@@ -66,9 +66,10 @@ class ValidationReportLayout(Layout):
         self.statistics = statistics
         self.profile_autodetected = profile_autodetected
         self.result: ValidationResult | None = None
-        self.__layout: Padding | None = None
+        self._layout: Padding | None = None
         self._validation_checks_progress: Layout | None = None
-        self.__progress_monitor: ProgressMonitor | None = None
+        self._progress_monitor: ProgressMonitor | None = None
+        self._subscriber: EventDispatcher = _ReportLayoutSubscriber(self)
         self.requirement_checks_container_layout: Layout | None = None
         self.passed_checks: Layout | None = None
         self.failed_checks: Layout | None = None
@@ -79,9 +80,9 @@ class ValidationReportLayout(Layout):
 
     @property
     def layout(self):
-        if not self.__layout:
-            self.__init_layout__()
-        return self.__layout
+        if not self._layout:
+            self._init_layout()
+        return self._layout
 
     @property
     def validation_checks_progress(self):
@@ -89,16 +90,20 @@ class ValidationReportLayout(Layout):
 
     @property
     def progress_monitor(self) -> ProgressMonitor:
-        if not self.__progress_monitor:
-            self.__progress_monitor = ProgressMonitor(self.validation_settings, self.statistics)
-        return self.__progress_monitor
+        if not self._progress_monitor:
+            self._progress_monitor = ProgressMonitor(self.validation_settings, self.statistics)
+        return self._progress_monitor
+
+    @property
+    def subscribers(self) -> list[Subscriber]:
+        """Subscribers to register with the validator (layout + progress)."""
+        return [self._subscriber, self.progress_monitor]
 
     def live(self, update_callable: Callable) -> Any:
-        # Start live rendering
         with Live(self.layout, console=self.console, refresh_per_second=10, transient=False):
             return update_callable()
 
-    def __init_layout__(self):
+    def _init_layout(self):
 
         # Get the validation settings
         settings = self.validation_settings
@@ -170,7 +175,7 @@ class ValidationReportLayout(Layout):
         group_layout.add_split(self.checks_stats_layout)
         group_layout.add_split(self.overall_result)
 
-        self.__layout = Padding(group_layout, (1, 1))
+        self._layout = Padding(group_layout, (1, 1))
 
         # Update the layout with the profile stats
         self.update_stats(
@@ -181,37 +186,7 @@ class ValidationReportLayout(Layout):
         result = self.result or (self.statistics.validation_result) if self.statistics else None
         # Show the overall result if available
         if result:
-            self.__show_overall_result__(result)
-
-    def update(self, event: Event, ctx: ValidationContext | None = None):  # type: ignore[override]
-        logger.debug("Event: %s", event.event_type)
-        if event.event_type == EventType.PROFILE_VALIDATION_START:
-            assert isinstance(event, ProfileValidationEvent)
-            logger.debug("Profile validation start: %s", event.profile.identifier)
-        elif event.event_type == EventType.REQUIREMENT_VALIDATION_START:
-            logger.debug("Requirement validation start")
-        elif event.event_type == EventType.REQUIREMENT_CHECK_VALIDATION_START:
-            logger.debug("Requirement check validation start")
-        elif event.event_type == EventType.REQUIREMENT_CHECK_VALIDATION_END:
-            assert isinstance(event, RequirementCheckValidationEvent)
-            assert ctx is not None, "Validation context must be provided"
-            target_profile = ctx.target_validation_profile
-            if not event.requirement_check.requirement.hidden and \
-                    (not event.requirement_check.overridden
-                     or target_profile.identifier == event.requirement_check.requirement.profile.identifier):
-                if event.validation_result is not None:
-                    self.update_stats(ctx.result.statistics)
-            else:
-                logger.debug("Skipping requirement check validation: %s", event.requirement_check.identifier)
-        elif event.event_type == EventType.REQUIREMENT_VALIDATION_END:
-            assert isinstance(event, RequirementValidationEvent)
-            assert ctx is not None, "Validation context must be provided"
-            if not event.requirement.hidden:
-                self.update_stats(ctx.result.statistics)
-        elif event.event_type == EventType.VALIDATION_END:
-            assert isinstance(event, ValidationEvent)
-            self.__show_overall_result__(event.validation_result)
-            logger.debug("Validation ended with result: %s", event.validation_result)
+            self._show_overall_result(result)
 
     def update_stats(self, profile_stats: ValidationStatistics | None = None):
         assert profile_stats, "Profile stats must be provided"
@@ -279,7 +254,7 @@ class ValidationReportLayout(Layout):
             )
         )
 
-    def __show_overall_result__(self, result: ValidationResult | None):
+    def _show_overall_result(self, result: ValidationResult | None):
         assert result, "Validation result must be provided"
         assert self.overall_result is not None, "Layout not initialized"
         self.result = result
@@ -295,6 +270,29 @@ class ValidationReportLayout(Layout):
                 Padding(Rule(f"[bold]{icon} RO-Crate is [red]not[/red] a [red]valid[/red] "
                              f"[magenta]{result.context.target_profile.identifier}[/magenta] !!![/bold]\n",
                              style="bold red"), (1, 1)))
+
+
+class _ReportLayoutSubscriber(EventDispatcher):
+    """Drives :class:`ValidationReportLayout` from validation events."""
+
+    def __init__(self, layout: ValidationReportLayout):
+        super().__init__("ValidationReportLayout")
+        self._layout = layout
+
+    def _on_requirement_check_validation_end(self, event: RequirementCheckValidationEvent,
+                                             ctx: ValidationContext | None) -> None:
+        if event.validation_result is not None:
+            assert ctx is not None
+            self._layout.update_stats(ctx.result.statistics)
+
+    def _on_requirement_validation_end(self, event: RequirementValidationEvent,
+                                       ctx: ValidationContext | None) -> None:
+        assert ctx is not None, "Validation context must be provided"
+        self._layout.update_stats(ctx.result.statistics)
+
+    def _on_validation_end(self, event: ValidationEvent,
+                           ctx: ValidationContext | None) -> None:
+        self._layout._show_overall_result(event.validation_result)
 
 
 def get_app_header_rule() -> Padding:

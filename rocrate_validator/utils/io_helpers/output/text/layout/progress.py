@@ -12,27 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-
 from rich.progress import BarColumn, Progress, TextColumn, TimeElapsedColumn
 
-from rocrate_validator.events import Event, EventType, Subscriber
 from rocrate_validator.models import (
     ProfileValidationEvent,
     RequirementCheckValidationEvent,
     RequirementValidationEvent,
     ValidationContext,
-    ValidationEvent,
     ValidationSettings,
     ValidationStatistics,
 )
 from rocrate_validator.utils import log as logging
 
+from .dispatcher import EventDispatcher
+
 # set up logging
 logger = logging.getLogger(__name__)
 
 
-class ProgressMonitor(Subscriber):
+class ProgressMonitor(EventDispatcher):
 
     PROFILE_VALIDATION = "Profiles"
     REQUIREMENT_VALIDATION = "Requirements"
@@ -40,6 +38,8 @@ class ProgressMonitor(Subscriber):
 
     def __init__(self, settings: dict | ValidationSettings,
                  stats: ValidationStatistics | None = None):
+        # Initialize the Subscriber
+        super().__init__("ProgressMonitor")
         self.__progress = Progress(
             TextColumn("[progress.description]{task.description}"),
             BarColumn(),
@@ -52,69 +52,38 @@ class ProgressMonitor(Subscriber):
         # Store settings
         self.settings = settings
         # Initialize progress tasks
-        self.profile_validation = self.progress.add_task(
+        self.profile_validation = self.__progress.add_task(
             self.PROFILE_VALIDATION, total=len(stats.profiles))
-        self.requirement_validation = self.progress.add_task(
+        self.requirement_validation = self.__progress.add_task(
             self.REQUIREMENT_VALIDATION, total=stats.total_requirements)
-        self.requirement_check_validation = self.progress.add_task(
+        self.requirement_check_validation = self.__progress.add_task(
             self.REQUIREMENT_CHECK_VALIDATION, total=stats.total_checks)
-
-        # Initialize the Subscriber
-        super().__init__("ProgressMonitor")
-
         # Initialize progress according to current statistics
-        self.__initialize__(stats)
-
-    def __initialize__(self, stats: ValidationStatistics):
-        """Initialize the progress monitor according to the current statistics."""
-        self.progress.update(task_id=self.profile_validation,
-                             advance=len(stats.validated_profiles))
-        self.progress.update(task_id=self.requirement_validation,
-                             advance=len(stats.validated_requirements))
-        self.progress.update(task_id=self.requirement_check_validation,
-                             advance=len(stats.validated_checks))
+        self.__progress.update(task_id=self.profile_validation,
+                               advance=len(stats.validated_profiles))
+        self.__progress.update(task_id=self.requirement_validation,
+                               advance=len(stats.validated_requirements))
+        self.__progress.update(task_id=self.requirement_check_validation,
+                               advance=len(stats.validated_checks))
 
     def start(self):
-        self.progress.start()
+        self.__progress.start()
 
     def stop(self):
-        self.progress.stop()
+        self.__progress.stop()
 
     @property
     def progress(self) -> Progress:
         return self.__progress
 
-    def update(self, event: Event, ctx: ValidationContext | None = None):
-        logger.debug("Event: %s", event.event_type)
-        if event.event_type == EventType.VALIDATION_START:
-            logger.debug("Validation started")
-        if event.event_type == EventType.PROFILE_VALIDATION_START:
-            assert isinstance(event, ProfileValidationEvent)
-            logger.debug("Profile validation start: %s", event.profile.identifier)
-        elif event.event_type == EventType.REQUIREMENT_VALIDATION_START:
-            logger.debug("Requirement validation start")
-        elif event.event_type == EventType.REQUIREMENT_CHECK_VALIDATION_START:
-            logger.debug("Requirement check validation start")
-        elif event.event_type == EventType.REQUIREMENT_CHECK_VALIDATION_END:
-            self.__on_requirement_check_end__(event, ctx)
-        elif event.event_type == EventType.REQUIREMENT_VALIDATION_END:
-            assert isinstance(event, RequirementValidationEvent)
-            if not event.requirement.hidden:
-                self.progress.update(task_id=self.requirement_validation, advance=1)
-        elif event.event_type == EventType.PROFILE_VALIDATION_END:
-            self.progress.update(task_id=self.profile_validation, advance=1)
-        elif event.event_type == EventType.VALIDATION_END:
-            assert isinstance(event, ValidationEvent)
-            logger.debug("Validation ended with result: %s", event.validation_result)
+    def _on_requirement_check_validation_end(self, event: RequirementCheckValidationEvent,
+                                             ctx: ValidationContext | None) -> None:
+        self.__progress.update(task_id=self.requirement_check_validation, advance=1)
 
-    def __on_requirement_check_end__(self, event: Event, ctx: ValidationContext | None) -> None:
-        """Advance the requirement-check progress bar, unless the check is hidden or overridden."""
-        assert isinstance(event, RequirementCheckValidationEvent)
-        assert ctx is not None, "Validation context must be provided"
-        target_profile = ctx.target_validation_profile
-        if not event.requirement_check.requirement.hidden and \
-                (not event.requirement_check.overridden
-                 or target_profile.identifier == event.requirement_check.requirement.profile.identifier):
-            self.progress.update(task_id=self.requirement_check_validation, advance=1)
-        else:
-            logger.debug("Skipping requirement check validation: %s", event.requirement_check.identifier)
+    def _on_requirement_validation_end(self, event: RequirementValidationEvent,
+                                       ctx: ValidationContext | None) -> None:
+        self.__progress.update(task_id=self.requirement_validation, advance=1)
+
+    def _on_profile_validation_end(self, event: ProfileValidationEvent,
+                                   ctx: ValidationContext | None) -> None:
+        self.__progress.update(task_id=self.profile_validation, advance=1)
