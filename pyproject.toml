@@ -157,6 +157,9 @@ good-names-rgxs = [
     "^(basicConfig|getLogger)$",                              # drop-in mirror of the stdlib `logging` API
     "^(_installed|_config|__profiles_loaded)$",             # module-level mutable state (not constants)
     "^[A-Z][A-Z0-9_]*_TYPES$",                              # UPPER_CASE type aliases
+    "^(focusNode|resultPath|sourceConstraintComponent|sourceShape|propertyGroup|requirementCheck)$",  # SHACL/rdflib API
+    "^SHACL$",                                              # rdflib Namespace alias (uppercase by convention)
+    "^jsonLD(_[a-zA-Z]+)?$",                                # JSON-LD domain term
 ]
 
 [tool.pylint."messages control"]
@@ -175,7 +178,7 @@ disable = [
     # data/config classes and cross-file similarity are acceptable here.
     "too-few-public-methods",        # R0903
     "too-many-instance-attributes",  # R0902
-    # "duplicate-code",                # R0801: noisy across CLI/output layers
+    "duplicate-code",                  # R0801: noisy across CLI/output layers
     # Deferred imports are intentional: circular-import avoidance,
     # platform-specific modules, optional dependencies, and lazy CLI loading.
     "import-outside-toplevel",         # C0415
