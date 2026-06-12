@@ -169,6 +169,40 @@ To run the `rocrate-validator` tests, use the following command:
 poetry run pytest
 ```
 
+## Development
+
+When working from source, install the dependencies (including the dev and test
+groups) with:
+
+```bash
+poetry install
+```
+
+### Pre-commit hooks
+
+The repository ships a [pre-commit](https://pre-commit.com/) configuration
+(`.pre-commit-config.yaml`) that runs spell checking (`typos`), linting and
+formatting (`ruff`), and static type checking (`mypy`). The hooks are **not**
+active until you install them once in your local clone:
+
+```bash
+poetry run pre-commit install
+```
+
+After this, the checks run automatically on every `git commit`. You can also run
+them manually at any time:
+
+```bash
+# Run all hooks against the whole codebase
+poetry run pre-commit run --all-files
+
+# Run a single hook (e.g. typos or ruff)
+poetry run pre-commit run typos --all-files
+
+# mypy is configured as a manual-stage hook, so run it explicitly
+poetry run pre-commit run --hook-stage manual
+```
+
 <!-- ## Contributing
 
 Contributions are welcome! Please read our [contributing guidelines](CONTRIBUTING.md) for details. -->
