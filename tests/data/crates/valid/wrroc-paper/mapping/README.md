@@ -2,7 +2,7 @@
 
 ## About SSSOM
 
-SSSOM is a way to specify semantic mappings, typically based on SKOS. 
+SSSOM is a way to specify semantic mappings, typically based on SKOS.
 
 * https://mapping-commons.github.io/sssom/spec/
 * https://mapping-commons.github.io/sssom/tutorial/
@@ -14,7 +14,7 @@ SSSOM mapping ar typically edited collaboratively as tab-separated text files, w
 
 ## Editing
 
-Please edit [prov-mapping.tsv](prov-mapping.tsv) taking care not to break the tabular characters. You may use the _Rainbow CSV_ extension in Visual Studio Code, or a spreadsheet software. 
+Please edit [prov-mapping.tsv](prov-mapping.tsv) taking care not to break the tabular characters. You may use the _Rainbow CSV_ extension in Visual Studio Code, or a spreadsheet software.
 
 The metadata headers are maintained in [prov-mapping.yml](prov-mapping.yml) as well as in [ro-crate-metadata.json](../ro-crate-metadata.json).
 
@@ -34,4 +34,3 @@ Then to generate the converted file formats `prov-mapping.rdf prov-mapping.json 
 ```
 make
 ```
-

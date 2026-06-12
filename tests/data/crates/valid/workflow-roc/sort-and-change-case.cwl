@@ -39,4 +39,3 @@ steps:
         out_file1:
           doc: tabular
           type: File
-

@@ -160,7 +160,7 @@
             "@type": "FormalParameter",
             "additionalType": "Boolean",
             "defaultValue": "True",
-            "description": "If true, reverse (decending) sort",
+            "description": "If true, reverse (descending) sort",
             "name": "reverse_sort"
         },
         {
