@@ -27,7 +27,7 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any, cast  # pylint: disable=unused-import
 
 from rocrate_validator import constants
 from rocrate_validator.utils import log as logging

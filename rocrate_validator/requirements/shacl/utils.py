@@ -15,7 +15,7 @@
 from __future__ import annotations
 
 import hashlib
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any, cast  # pylint: disable=unused-import
 
 if TYPE_CHECKING:
     from pathlib import Path

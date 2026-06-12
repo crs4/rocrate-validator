@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from pathlib import Path
-from typing import Any, cast
+from typing import Any, cast  # pylint: disable=unused-import
 
 from rdflib import RDF
 
@@ -107,7 +107,6 @@ class SHACLRequirement(Requirement):
         # extract profiles and target profile from context
         profiles = context.profiles
 
-        from rocrate_validator.requirements.shacl.checks import SHACLCheck  # noqa: PLC0415
         from rocrate_validator.requirements.shacl.validator import SHACLValidationContext  # noqa: PLC0415
 
         target = next((p for p in profiles if p.identifier == context.settings.profile_identifier), None)

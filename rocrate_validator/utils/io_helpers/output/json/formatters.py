@@ -41,8 +41,8 @@ def format_validation_result(data: ValidationResult, console: Console, console_o
 def format_validation_results(
     data: dict[str, ValidationResult],
     console: Console | None = None,  # pylint: disable=unused-argument
-    console_options: ConsoleOptions | None = None,
-) -> str:  # pylint: disable=unused-argument
+    console_options: ConsoleOptions | None = None,  # pylint: disable=unused-argument
+) -> str:
 
     # Initialize an empty JSON output
     json_output: dict[str, Any] = {

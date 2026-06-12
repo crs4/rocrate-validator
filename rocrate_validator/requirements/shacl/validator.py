@@ -15,7 +15,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any, cast  # pylint: disable=unused-import
 
 import pyshacl
 from rdflib import BNode, Graph

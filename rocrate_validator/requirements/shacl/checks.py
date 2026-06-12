@@ -14,7 +14,7 @@
 
 import json
 from timeit import default_timer as timer
-from typing import Any, ClassVar, Optional, cast
+from typing import Any, ClassVar, Optional, cast  # pylint: disable=unused-import
 
 from rdflib import RDF, BNode, Literal, Namespace
 

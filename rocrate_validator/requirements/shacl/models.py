@@ -60,7 +60,7 @@ class SHACLNode:
         """Return the name of the shape"""
         if not self._name:
             self._name = self.node_name
-        return self._name or str(self._node).split("/")[-1]
+        return self._name or str(self._node).rsplit("/", maxsplit=1)[-1]
 
     @name.setter
     def name(self, value: str):
@@ -187,13 +187,13 @@ class SHACLNodeCollection(SHACLNode):
                 return i
         return -1
 
-    def add_property(self, property: PropertyShape):
+    def add_property(self, prop: PropertyShape):
         """Add a property to the shape"""
-        self._properties.append(property)
+        self._properties.append(prop)
 
-    def remove_property(self, property: PropertyShape):
+    def remove_property(self, prop: PropertyShape):
         """Remove a property from the shape"""
-        self._properties.remove(property)
+        self._properties.remove(prop)
 
 
 class Shape(SHACLNode):
@@ -238,7 +238,7 @@ class PropertyShape(Shape):
                 self._short_name = path_str.rsplit(sep, maxsplit=1)[-1]
                 if self.parent:
                     self._name = f"{self._short_name} of {self.parent.name}"
-        return self._name or str(self._node).split("/")[-1]
+        return self._name or str(self._node).rsplit("/", maxsplit=1)[-1]
 
     @name.setter
     def name(self, value: str):

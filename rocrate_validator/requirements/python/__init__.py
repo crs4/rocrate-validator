@@ -43,7 +43,7 @@ class PyFunctionCheck(RequirementCheck):
     """
 
     def __init__(self,
-                 requirement: Requirement,
+                 requirement: Requirement,  # pylint: disable=redefined-outer-name
                  name: str,
                  check_function: Callable[[RequirementCheck, ValidationContext], bool],
                  description: str | None = None,
@@ -140,6 +140,7 @@ class PyRequirement(Requirement):
                     severity = self.severity_from_path or Severity.REQUIRED
                 logger.debug("Severity log: %r", severity)
                 deactivated = bool(getattr(member, "deactivated", False))
+                # pylint: disable-next=redefined-outer-name  # local 'check' mirrors the decorator name
                 check = self.requirement_check_class(self,
                                                      check_name,
                                                      member,
@@ -235,9 +236,9 @@ def check(name: str | None = None,
 class PyRequirementLoader(RequirementLoader):
 
     def load(self, profile: Profile,
-             requirement_level: RequirementLevel,
+             requirement_level: RequirementLevel,  # pylint: disable=unused-argument
              file_path: Path,
-             publicID: str | None = None) -> list[Requirement]:
+             publicID: str | None = None) -> list[Requirement]:  # pylint: disable=unused-argument
         # instantiate a list to store the requirements
         requirements: list[Requirement] = []
 
