@@ -84,13 +84,14 @@ requests = ">=2.32,<3.0"
 requests-cache = ">=1.2,<2.0"
 inquirerpy = ">=0.3.4,<0.4.0"
 enum-tools = ">=0.12,<0.13"
-typos = "^1.41.0"
 
 [tool.poetry.group.dev.dependencies]
 pylint = "^3.1.0"
 ipykernel = "^6.29.3"
 ruff = "^0.15.15"
 pre-commit = "^4.6.0"
+types-toml = "^0.10.8.20260518"
+mypy = "^2.1.0"
 
 [tool.poetry.group.test.dependencies]
 pytest-cov = "^5.0.0"
@@ -100,7 +101,6 @@ pytest-xdist = "^3.6.1"
 [tool.poetry.group.docs.dependencies]
 sphinx = "^8.1.3"
 nbsphinx = "^0.9.5"
-enum-tools = "^0.12.0"
 sphinx-toolbox = "^3.8.1"
 myst-parser = "^4.0.0"
 sphinx-rtd-theme = "^3.0.2"
@@ -132,3 +132,88 @@ extend-ignore-re = ["[0-9a-f]{7,40}"] # Ignore long hexadecimal strings, which a
 
 [tool.typos.files]
 extend-exclude = ["tests/data", "docs/diagrams", "*.json", "*.html", "*__init__.py"]
+
+# Pylint configuration.
+# Ruff (see ruff.toml) is the primary linter/formatter; this section keeps
+# pylint consistent with it so the two tools do not disagree on style or on
+# the design limits the project deliberately accepts.
+[tool.pylint.main]
+# Lowest supported Python version (matches tool.poetry.dependencies.python).
+py-version = "3.10"
+# Platform-specific stdlib modules that are imported behind try/except guards;
+# pylint cannot import them on every OS and would report a false `import-error`.
+ignored-modules = ["msvcrt"]
+
+[tool.pylint.format]
+# Match the line length enforced by Ruff (ruff.toml `line-length = 120`).
+max-line-length = 120
+
+[tool.pylint.basic]
+# Names that intentionally deviate from the default naming style and should
+# NOT be flagged as `invalid-name` — they mirror external APIs or domain terms:
+good-names-rgxs = [
+    "^_?publicID$",                                         # rdflib API parameter name
+    "^_?(violating[A-Za-z]+|propertyValue)$",               # SHACL violation fields (camelCase domain)
+    "^(basicConfig|getLogger)$",                              # drop-in mirror of the stdlib `logging` API
+    "^(_installed|_config|__profiles_loaded)$",             # module-level mutable state (not constants)
+    "^[A-Z][A-Z0-9_]*_TYPES$",                              # UPPER_CASE type aliases
+]
+
+[tool.pylint."messages control"]
+disable = [
+    # Docstrings are not enforced project-wide: Ruff's `D` (pydocstyle) rules
+    # are intentionally not enabled, so pylint should not flag them either.
+    "missing-module-docstring",   # C0114
+    "missing-class-docstring",    # C0115
+    "missing-function-docstring", # C0116
+    # Pre-existing project style — mirrors the `PLR*` entries already ignored
+    # in ruff.toml, so pylint and Ruff stay aligned on design limits.
+    "too-many-arguments",            # R0913 ~ ruff PLR0913
+    "too-many-positional-arguments", # R0917 ~ ruff PLR0917
+    "too-many-public-methods",       # R0904 ~ ruff PLR0904
+    # Design metrics not enforced by this project (commonly disabled): small
+    # data/config classes and cross-file similarity are acceptable here.
+    "too-few-public-methods",        # R0903
+    "too-many-instance-attributes",  # R0902
+    # "duplicate-code",                # R0801: noisy across CLI/output layers
+    # Deferred imports are intentional: circular-import avoidance,
+    # platform-specific modules, optional dependencies, and lazy CLI loading.
+    "import-outside-toplevel",         # C0415
+    # Broad `except Exception` is structural here: CLI boundary handlers,
+    # user-supplied check execution (Python/SHACL plugins), parsers of
+    # untrusted RO-Crate metadata and best-effort I/O fallbacks all need
+    # to catch anything. Narrowing is impossible at most call sites and
+    # noisy at the rest; suppress globally instead of per-line.
+    "broad-exception-caught",          # W0718
+    # False positive triggered by the `if TYPE_CHECKING:` import pattern:
+    # pylint sees the guarded block as code and flags any import after it
+    # as not at the top. Ruff handles this pattern correctly.
+    "wrong-import-position",           # C0413
+    # Module-level lazy init / configuration singletons (e.g. `_installed`,
+    # `_config`, `__profiles_loaded`) intentionally use the `global` keyword.
+    # The pattern is conventional and already whitelisted in `good-names-rgxs`.
+    "global-statement",                # W0603
+    # `_name`-prefixed cross-class collaboration is intentional throughout the
+    # validator (e.g. `_add_executed_check`, `_do_validate_`, `_close_session`):
+    # the underscore signals "internal API" within the package, not a hard
+    # privacy boundary. Per-callsite suppressions would be noisy.
+    "protected-access",                # W0212
+]
+
+# Mypy configuration.
+# Static type checking for the package. The pre-commit `mypy` hook runs
+# `poetry run mypy` with no file arguments, so `files` below defines what gets
+# checked. The baseline is intentionally lenient (gradual typing): it surfaces
+# real type errors without forcing annotations on every function yet.
+[tool.mypy]
+python_version = "3.10"        # lowest supported version (see dependencies.python)
+files = ["rocrate_validator"]  # the package; tests are not type-checked (yet)
+
+# Surface configuration/annotation drift without being noisy.
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+
+# Type-check the bodies of unannotated functions too (catches real bugs without
+# requiring annotations everywhere).
+check_untyped_defs = true
