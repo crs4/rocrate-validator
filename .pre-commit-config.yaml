@@ -15,9 +15,13 @@
 repos:
   # Run typos to check for common spelling mistakes in the codebase.
   - repo: https://github.com/crate-ci/typos
-    rev: v1.22.9
+    rev: v1.47.2
     hooks:
       - id: typos
+        # Pre-commit passes explicit file paths to the hook, bypassing the
+        # `[tool.typos.files] extend-exclude` config; replicate the excludes
+        # here so generated SVGs, JSON fixtures and HTML aren't scanned.
+        exclude: ^(tests/data/|docs/diagrams/|.*\.json$|.*\.html$|.*__init__\.py$)
         args:
           - --config
           - pyproject.toml
@@ -26,7 +30,7 @@ repos:
   # Performs basic checks on files, such as removing trailing whitespace,
   # ensuring files end with a newline, and validating YAML files.
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v6.0.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
