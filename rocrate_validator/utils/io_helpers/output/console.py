@@ -62,13 +62,13 @@ class Console(BaseConsole):
             assert type_ is not None  # guaranteed by the check above
             self._formatters[type_] = formatter
 
-    def __format_data__(self, obj, *_, **__):  # pylint: disable=unused-argument
+    def __format_data__(self, obj):
         formatter = self._formatters.get(type(obj))
         if formatter:
             return formatter(obj)
         return obj
 
-    def print(self, obj, *args, **kwargs):  # type: ignore[override]  # intentional formatting wrapper
+    def print(self, *objects, **kwargs):
         if not self.disabled:
-            out = self.__format_data__(obj, *args, **kwargs)
-            super().print(out, *args, **kwargs)
+            formatted = tuple(self.__format_data__(o) for o in objects)
+            super().print(*formatted, **kwargs)
