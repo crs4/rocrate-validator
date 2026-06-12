@@ -31,27 +31,27 @@ def test_severity_ordering():
 
 
 def test_level_ordering():
-    may = RequirementLevel('MAY', Severity.OPTIONAL)
-    should = RequirementLevel('SHOULD', Severity.RECOMMENDED)
+    may = RequirementLevel("MAY", Severity.OPTIONAL)
+    should = RequirementLevel("SHOULD", Severity.RECOMMENDED)
     assert may < should
     assert should > may
     assert should != may
-    assert RequirementLevel('MAY', Severity.OPTIONAL) == may
+    assert RequirementLevel("MAY", Severity.OPTIONAL) == may
     assert may != 1
-    assert may != RequirementLevel('OPTIONAL', Severity.OPTIONAL)
+    assert may != RequirementLevel("OPTIONAL", Severity.OPTIONAL)
     with pytest.raises(TypeError):
         _ = may > 1
 
 
 def test_level_basics():
-    may = RequirementLevel('MAY', Severity.OPTIONAL)
+    may = RequirementLevel("MAY", Severity.OPTIONAL)
     assert str(may) == "MAY"
     assert int(may) == Severity.OPTIONAL.value
     assert hash(may) != 0  # should be find as long as it runs
 
 
 def test_level_collection():
-    assert LevelCollection.get('may') == LevelCollection.MAY
+    assert LevelCollection.get("may") == LevelCollection.MAY
 
     # Test ordering
     assert LevelCollection.MAY < LevelCollection.SHOULD
@@ -63,19 +63,15 @@ def test_level_collection():
     assert len(all_levels) == 10
     level_names = [level.name for level in all_levels]
     # Test a few of the keys
-    assert 'MAY' in level_names
-    assert 'SHOULD_NOT' in level_names
-    assert 'RECOMMENDED' in level_names
-    assert 'REQUIRED' in level_names
+    assert "MAY" in level_names
+    assert "SHOULD_NOT" in level_names
+    assert "RECOMMENDED" in level_names
+    assert "REQUIRED" in level_names
 
 
 @pytest.fixture
 def validation_settings():
-    return ValidationSettings(
-        rocrate_uri=URI("file:///"),
-        requirement_severity=Severity.OPTIONAL,
-        abort_on_first=False
-    )
+    return ValidationSettings(rocrate_uri=URI("file:///"), requirement_severity=Severity.OPTIONAL, abort_on_first=False)
 
 
 # @pytest.mark.skip(reason="Temporarily disabled: we need an RO-Crate with multiple failed requirements to test this.")

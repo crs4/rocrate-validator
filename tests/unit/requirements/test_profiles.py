@@ -128,9 +128,9 @@ def test_profile_spec_properties(fake_profiles_path: str):
     assert profile.comment == "Comment for the Profile C.", "The profile comment should be 'Comment for the Profile C.'"
     assert profile.version == "1.0.0", "The profile version should be 1.0.0"
     assert profile.is_profile_of == ["https://w3id.org/a"], "The profileOf property should be ['a']"
-    assert profile.is_transitive_profile_of == [
-        "https://w3id.org/a"
-    ], "The transitiveProfileOf property should be ['a']"
+    assert profile.is_transitive_profile_of == ["https://w3id.org/a"], (
+        "The transitiveProfileOf property should be ['a']"
+    )
 
 
 def test_profiles_loading_free_folder_structure(profiles_with_free_folder_structure_path: str):
@@ -204,9 +204,9 @@ def test_loaded_valid_profile_with_inheritance_from_validator_context(fake_profi
 
         # The number of profiles should be 1
         profiles_names = [_.token for _ in profile.inherited_profiles]
-        assert (
-            profiles_names == expected_inherited_profiles
-        ), f"The number of profiles should be {expected_inherited_profiles}"
+        assert profiles_names == expected_inherited_profiles, (
+            f"The number of profiles should be {expected_inherited_profiles}"
+        )
 
     # Test the inheritance mode with 1 profile
     __perform_test__("a", [])
@@ -383,24 +383,24 @@ def test_profile_check_overriding(check_overriding_profiles_path: str):
 
     def check_profile(profile, check, inherited_profiles, overridden_by, override):
         # Check inherited profiles
-        assert len(profile.inherited_profiles) == len(
-            inherited_profiles
-        ), f"The number of inherited profiles should be {len(inherited_profiles)}"
+        assert len(profile.inherited_profiles) == len(inherited_profiles), (
+            f"The number of inherited profiles should be {len(inherited_profiles)}"
+        )
         inherited_profiles_tokens = [_.token for _ in profile.inherited_profiles]
-        assert set(inherited_profiles_tokens) == set(
-            inherited_profiles
-        ), f"The inherited profiles should be {inherited_profiles}"
+        assert set(inherited_profiles_tokens) == set(inherited_profiles), (
+            f"The inherited profiles should be {inherited_profiles}"
+        )
 
         # Check overridden status
         logger.debug(
             "%r overridden by: %r", check.identifier, [_.requirement.profile.identifier for _ in check.overridden_by]
         )
-        assert check.overridden == (
-            len(overridden_by) > 0
-        ), f"The check overridden status should be {len(overridden_by) > 0}"
-        assert len(check.overridden_by) == len(
-            overridden_by
-        ), f"The number of overridden checks should be {len(overridden_by)}"
+        assert check.overridden == (len(overridden_by) > 0), (
+            f"The check overridden status should be {len(overridden_by) > 0}"
+        )
+        assert len(check.overridden_by) == len(overridden_by), (
+            f"The number of overridden checks should be {len(overridden_by)}"
+        )
         overridden_by_tokens = [_.requirement.profile.identifier for _ in check.overridden_by]
         assert set(overridden_by_tokens) == set(overridden_by), f"The overridden checks should be {overridden_by}"
 
@@ -505,9 +505,9 @@ def test_shacl_shape_with_deactivated_marks_check_skipped(fake_profiles_path: st
     target_property_check = target.requirements[0].get_checks()[1]
     parent_property_check = parent_c.requirements[0].get_checks()[1]
 
-    assert (
-        target_property_check.deactivated is True
-    ), "The deactivated property should reflect sh:deactivated true on the PropertyShape"
+    assert target_property_check.deactivated is True, (
+        "The deactivated property should reflect sh:deactivated true on the PropertyShape"
+    )
 
     # The parent property check is overridden by the child's (same sh:name).
     overridden_by_tokens = [c.requirement.profile.token for c in parent_property_check.overridden_by]
@@ -555,9 +555,9 @@ def test_shacl_check_deactivated_via_cross_profile_triple(fake_profiles_path: st
     sh = Namespace(SHACL_NS)
     target_registry._shapes_graph.add((parent_shape_check.shape.node, sh.deactivated, Literal(True)))
 
-    assert (
-        parent_shape_check.deactivated is True
-    ), "The parent's check must read sh:deactivated true from the child's shapes graph"
+    assert parent_shape_check.deactivated is True, (
+        "The parent's check must read sh:deactivated true from the child's shapes graph"
+    )
 
 
 def test_shacl_check_deactivation_scoped_to_descendants(fake_profiles_path: str):
@@ -599,6 +599,6 @@ def test_shacl_check_deactivation_scoped_to_descendants(fake_profiles_path: str)
         (parent_shape_check.shape.node, sh.deactivated, Literal(True))
     )
 
-    assert (
-        parent_shape_check.deactivated is False
-    ), "An unrelated profile's deactivation triple must not affect the check"
+    assert parent_shape_check.deactivated is False, (
+        "An unrelated profile's deactivation triple must not affect the check"
+    )

@@ -34,14 +34,17 @@ def valid_roc_paths():
     return [
         value
         for attr in dir(valid_roc)
-        if not attr.startswith('_')
-        and not any(excluded in attr for excluded in (
-            'bagit',
-            'multi_profile_crate',
-            'rocrate_with_relative_root',
-            'rocrate_with_at_base_set'  # Excluded: has dedicated test with skip_checks
-        ))
-        and not str(value := getattr(valid_roc, attr)).endswith('.zip')
+        if not attr.startswith("_")
+        and not any(
+            excluded in attr
+            for excluded in (
+                "bagit",
+                "multi_profile_crate",
+                "rocrate_with_relative_root",
+                "rocrate_with_at_base_set",  # Excluded: has dedicated test with skip_checks
+            )
+        )
+        and not str(value := getattr(valid_roc, attr)).endswith(".zip")
     ]
 
 
@@ -52,14 +55,7 @@ def test_valid_ro_crates_from_folder(valid_roc_path):
         temp_path = Path(tmpdirname) / valid_roc_path.name
         shutil.copytree(valid_roc_path, temp_path)
         valid_roc_path = temp_path
-        do_entity_test(
-            valid_roc_path,
-            models.Severity.REQUIRED,
-            True,
-            [],
-            [],
-            metadata_only=True
-        )
+        do_entity_test(valid_roc_path, models.Severity.REQUIRED, True, [], [], metadata_only=True)
 
 
 @pytest.mark.parametrize("valid_roc_path", valid_roc_paths())
@@ -73,11 +69,5 @@ def test_valid_ro_crates_from_metadata_dict(valid_roc_path):
         assert metadata_dict is not None, "Failed to load metadata dict"
         assert isinstance(metadata_dict, dict), "Metadata dict is not a dictionary"
         do_entity_test(
-            valid_roc_path,
-            models.Severity.REQUIRED,
-            True,
-            [],
-            [],
-            metadata_dict=metadata_dict,
-            metadata_only=True
+            valid_roc_path, models.Severity.REQUIRED, True, [], [], metadata_dict=metadata_dict, metadata_only=True
         )

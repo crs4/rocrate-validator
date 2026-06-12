@@ -32,13 +32,15 @@ logger = logging.getLogger(__name__)
 
 def test_compute_stats(fake_profiles_path):
 
-    settings = ValidationSettings.parse({
-        "profiles_path": fake_profiles_path,
-        "profile_identifier": "a",
-        "enable_profile_inheritance": True,
-        "allow_requirement_check_override": True,
-        "requirement_severity": "REQUIRED",
-    })
+    settings = ValidationSettings.parse(
+        {
+            "profiles_path": fake_profiles_path,
+            "profile_identifier": "a",
+            "enable_profile_inheritance": True,
+            "allow_requirement_check_override": True,
+            "requirement_severity": "REQUIRED",
+        }
+    )
 
     profiles_path = settings.profiles_path or DEFAULT_PROFILES_PATH
     logger.debug("The profiles path: %r", profiles_path)
@@ -68,8 +70,7 @@ def test_compute_stats(fake_profiles_path):
     assert len(stats["profiles"]) == 1
 
     # check if the requirements match
-    assert stats["requirements"] == requirements, \
-        "The requirements in stats do not match the profile requirements"
+    assert stats["requirements"] == requirements, "The requirements in stats do not match the profile requirements"
 
     # Check if the number of requirements is greater than 0
     assert len(stats["requirements"]) > 0, "There should be at least one requirement"
@@ -82,8 +83,9 @@ def test_compute_stats(fake_profiles_path):
 
     # check the number of requirement checks
     requirements_list = list(requirements)
-    assert stats["checks"] == {_ for _ in requirements_list[0].get_checks() if not _.overridden or
-                               _.requirement.profile.identifier == "a"}
+    assert stats["checks"] == {
+        _ for _ in requirements_list[0].get_checks() if not _.overridden or _.requirement.profile.identifier == "a"
+    }
 
     logger.error(stats)
 
@@ -92,16 +94,19 @@ def test_compute_stats_resolves_profile_from_extra_profiles_path(fake_profiles_p
     # ValidationStatistics.__initialise__ used to call Profile.load_profiles
     # without forwarding extra_profiles_path, so any profile that lived only
     # under --extra-profiles-path raised ProfileNotFound.
-    settings = ValidationSettings.parse({
-        "profiles_path": DEFAULT_PROFILES_PATH,
-        "extra_profiles_path": fake_profiles_path,
-        "profile_identifier": "a",
-        "enable_profile_inheritance": True,
-        "allow_requirement_check_override": True,
-        "requirement_severity": "REQUIRED",
-    })
+    settings = ValidationSettings.parse(
+        {
+            "profiles_path": DEFAULT_PROFILES_PATH,
+            "extra_profiles_path": fake_profiles_path,
+            "profile_identifier": "a",
+            "enable_profile_inheritance": True,
+            "allow_requirement_check_override": True,
+            "requirement_severity": "REQUIRED",
+        }
+    )
 
     stats = ValidationStatistics.__initialise__(validation_settings=settings)
 
-    assert any(p.identifier == "a" for p in stats["profiles"]), \
+    assert any(p.identifier == "a" for p in stats["profiles"]), (
         "Profile 'a' from extra_profiles_path was not resolved by ValidationStatistics"
+    )

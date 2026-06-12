@@ -153,8 +153,11 @@ def do_entity_test(
         rocrate_path = Path(rocrate_path)
 
     temp_rocrate_path = None
-    if (any([rocrate_entity_patch, rocrate_entity_mod_sparql])
-            and isinstance(rocrate_path, Path) and rocrate_path.is_dir()):
+    if (
+        any([rocrate_entity_patch, rocrate_entity_mod_sparql])
+        and isinstance(rocrate_path, Path)
+        and rocrate_path.is_dir()
+    ):
         temp_rocrate_path = _prepare_temp_rocrate(rocrate_path, rocrate_entity_patch, rocrate_entity_mod_sparql)
         rocrate_path = temp_rocrate_path
 
@@ -169,9 +172,7 @@ def do_entity_test(
         logger.debug("Checks to skip: %s", skip_checks)
 
         # validate RO-Crate
-        relative_root_path = (
-            Path(rocrate_relative_root_path) if rocrate_relative_root_path is not None else None
-        )
+        relative_root_path = Path(rocrate_relative_root_path) if rocrate_relative_root_path is not None else None
         result: models.ValidationResult = services.validate(
             models.ValidationSettings(
                 rocrate_uri=models.URI(rocrate_path),
@@ -212,9 +213,7 @@ def do_entity_test(
         logger.debug("Expected issues: %s", expected_triggered_issues)
         for expected_issue in expected_triggered_issues:
             if not any(expected_issue in issue for issue in detected_issues):  # support partial match
-                raise AssertionError(
-                    f'The expected issue "{expected_issue}" was not found in the detected issues'
-                )
+                raise AssertionError(f'The expected issue "{expected_issue}" was not found in the detected issues')
     except Exception:
         if logger.isEnabledFor(logging.DEBUG):
             logger.exception("Failed to validate RO-Crate @ path: %s", rocrate_path)

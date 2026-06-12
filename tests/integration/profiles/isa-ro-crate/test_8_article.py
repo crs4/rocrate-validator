@@ -46,9 +46,7 @@ def test_isa_article_headline():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
-        expected_triggered_issues=[
-            "Article entity MUST have a non-empty headline of type string"
-        ],
+        expected_triggered_issues=["Article entity MUST have a non-empty headline of type string"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
     )
@@ -114,9 +112,7 @@ def test_isa_article_headline_of_incorrect_type():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
-        expected_triggered_issues=[
-            "Article entity MUST have a non-empty headline of type string"
-        ],
+        expected_triggered_issues=["Article entity MUST have a non-empty headline of type string"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
     )
@@ -144,9 +140,7 @@ def test_isa_article_identifier():
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
-        expected_triggered_issues=[
-            "Article entity MUST have a non-empty identifier of type string or PropertyValue"
-        ],
+        expected_triggered_issues=["Article entity MUST have a non-empty identifier of type string or PropertyValue"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
     )
@@ -177,9 +171,7 @@ def test_isa_article_identifier_of_incorrect_type():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
-        expected_triggered_issues=[
-            "Article entity MUST have a non-empty identifier of type string or PropertyValue"
-        ],
+        expected_triggered_issues=["Article entity MUST have a non-empty identifier of type string or PropertyValue"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
     )

@@ -21,8 +21,8 @@ package "rocrate_validator" {
 
 note top of services
     **I** ➠ **Interface**
-          Python module that exposes 
-          the main validation services 
+          Python module that exposes
+          the main validation services
           provided by the RO-Crate validator
 end note
 

@@ -25,7 +25,7 @@
 
 ro-crate:WebBasedDataEntityRequiredValueRestriction a sh:NodeShape ;
     sh:name "Web-based Data Entity: RECOMMENDED properties" ;
-    sh:description """A Web-based Data Entity MUST be identified by an absolute URL and 
+    sh:description """A Web-based Data Entity MUST be identified by an absolute URL and
     SHOULD have a `contentSize` and `sdDatePublished` property""" ;
     sh:targetClass ro-crate:WebDataEntity ;
     # Check if the Web-based Data Entity has a contentSize property

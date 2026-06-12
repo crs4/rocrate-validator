@@ -55,11 +55,13 @@ logger = logging.getLogger(__name__)
 
 
 class ValidationReportLayout(Layout):
-
-    def __init__(self, console: Console,
-                 settings: ValidationSettings,
-                 statistics: ValidationStatistics | None = None,
-                 profile_autodetected: bool = False):
+    def __init__(
+        self,
+        console: Console,
+        settings: ValidationSettings,
+        statistics: ValidationStatistics | None = None,
+        profile_autodetected: bool = False,
+    ):
         super().__init__()
         self.console = console
         self.validation_settings = settings
@@ -121,55 +123,72 @@ class ValidationReportLayout(Layout):
                 f"{'[italic](autodetected)[/italic]' if self.profile_autodetected else ''}"
                 f"\n[bold cyan]Validation Severity:[/bold cyan] "
                 f"[bold {severity_color}]{settings.requirement_severity}[/bold {severity_color}]",
-                style="white", align="left"),
-            name="Base Info", size=5)
+                style="white",
+                align="left",
+            ),
+            name="Base Info",
+            size=5,
+        )
         self.passed_checks = Layout(name="PASSED")
         self.failed_checks = Layout(name="FAILED")
         # Create the layout of the requirement checks section
         validated_checks_container = Layout(name="Requirement Checks Validated")
-        validated_checks_container.split_row(
-            self.passed_checks,
-            self.failed_checks
-        )
+        validated_checks_container.split_row(self.passed_checks, self.failed_checks)
 
         # Create the layout of the requirement checks section
         self.requirement_checks_by_severity_container_layout = Layout(name="Requirement Checks Validation", size=5)
         self.requirement_checks_by_severity_container_layout.split_row(
-            Layout(name="required"),
-            Layout(name="recommended"),
-            Layout(name="optional")
+            Layout(name="required"), Layout(name="recommended"), Layout(name="optional")
         )
 
         # Create the layout of the requirement checks section
         requirement_checks_container_layout = Layout(name="Requirement Checks")
         requirement_checks_container_layout.split_column(
-            self.requirement_checks_by_severity_container_layout,
-            validated_checks_container
+            self.requirement_checks_by_severity_container_layout, validated_checks_container
         )
 
         # Create the layout of the validation checks progress
         self._validation_checks_progress = Layout(
-            Panel(Align(self.progress_monitor.progress, align="center"),
-                  border_style="white", padding=(0, 1), title="Overall Progress"),
-            name="Validation Progress", size=5)
+            Panel(
+                Align(self.progress_monitor.progress, align="center"),
+                border_style="white",
+                padding=(0, 1),
+                title="Overall Progress",
+            ),
+            name="Validation Progress",
+            size=5,
+        )
 
         # Create the layout of the report container
         report_container_layout = Layout(name="Report Container Layout")
         report_container_layout.split_column(
             base_info_layout,
-            Layout(Panel(requirement_checks_container_layout,
-                   title="[bold]Requirements Checks Validation[/bold]", border_style="white", padding=(1, 1))),
-            self._validation_checks_progress
+            Layout(
+                Panel(
+                    requirement_checks_container_layout,
+                    title="[bold]Requirements Checks Validation[/bold]",
+                    border_style="white",
+                    padding=(1, 1),
+                )
+            ),
+            self._validation_checks_progress,
         )
 
         # Create the main layout
         self.checks_stats_layout = Layout(
-            Panel(report_container_layout, title="[bold]- Validation Report -[/bold]",
-                  border_style="cyan", title_align="center", padding=(1, 2)))
+            Panel(
+                report_container_layout,
+                title="[bold]- Validation Report -[/bold]",
+                border_style="cyan",
+                title_align="center",
+                padding=(1, 2),
+            )
+        )
 
         # Create the overall result layout
         self.overall_result = Layout(
-            Padding(Rule("\n[italic][cyan]Validating ROCrate...[/cyan][/italic]"), (1, 1)), size=3)
+            Padding(Rule("\n[italic][cyan]Validating ROCrate...[/cyan][/italic]"), (1, 1)), size=3
+        )
 
         group_layout = Layout()
         group_layout.add_split(self.checks_stats_layout)
@@ -178,9 +197,7 @@ class ValidationReportLayout(Layout):
         self._layout = Padding(group_layout, (1, 1))
 
         # Update the layout with the profile stats
-        self.update_stats(
-            self.statistics or ValidationStatistics(self.validation_settings)
-        )
+        self.update_stats(self.statistics or ValidationStatistics(self.validation_settings))
 
         # Extract the result if available
         result = self.result or (self.statistics.validation_result) if self.statistics else None
@@ -195,62 +212,56 @@ class ValidationReportLayout(Layout):
             Panel(
                 Align(
                     str(profile_stats.check_count_by_severity[Severity.REQUIRED]) if profile_stats else "0",
-                    align="center"
+                    align="center",
                 ),
                 padding=(1, 1),
                 title="Severity: REQUIRED",
                 title_align="center",
-                border_style="RED"
+                border_style="RED",
             )
         )
         self.requirement_checks_by_severity_container_layout["recommended"].update(
             Panel(
                 Align(
                     str(profile_stats.check_count_by_severity[Severity.RECOMMENDED]) if profile_stats else "0",
-                    align="center"
+                    align="center",
                 ),
                 padding=(1, 1),
                 title="Severity: RECOMMENDED",
                 title_align="center",
-                border_style="orange1"
+                border_style="orange1",
             )
         )
         self.requirement_checks_by_severity_container_layout["optional"].update(
             Panel(
                 Align(
                     str(profile_stats.check_count_by_severity[Severity.OPTIONAL]) if profile_stats else "0",
-                    align="center"
+                    align="center",
                 ),
                 padding=(1, 1),
                 title="Severity: OPTIONAL",
                 title_align="center",
-                border_style="yellow"
+                border_style="yellow",
             )
         )
 
         self.passed_checks.update(
             Panel(
-                Align(
-                    str(len(profile_stats.passed_checks)),
-                    align="center"
-                ),
+                Align(str(len(profile_stats.passed_checks)), align="center"),
                 padding=(1, 1),
                 title="PASSED Checks",
                 title_align="center",
-                border_style="green"
+                border_style="green",
             )
         )
 
         self.failed_checks.update(
             Panel(
-                Align(
-                    str(len(profile_stats.failed_checks)),
-                    align="center"
-                ),
+                Align(str(len(profile_stats.failed_checks)), align="center"),
                 padding=(1, 1),
                 title="FAILED Checks",
                 title_align="center",
-                border_style="red"
+                border_style="red",
             )
         )
 
@@ -261,15 +272,27 @@ class ValidationReportLayout(Layout):
         if result.passed():
             icon = "[OK]" if not self.console.interactive else "✅"
             self.overall_result.update(
-                Padding(Rule(f"[bold]{icon} RO-Crate is a [green]valid[/green] "
-                             f"[magenta]{result.context.target_profile.identifier}[/magenta] !!![/bold]\n\n",
-                             style="bold green"), (1, 1)))
+                Padding(
+                    Rule(
+                        f"[bold]{icon} RO-Crate is a [green]valid[/green] "
+                        f"[magenta]{result.context.target_profile.identifier}[/magenta] !!![/bold]\n\n",
+                        style="bold green",
+                    ),
+                    (1, 1),
+                )
+            )
         else:
             icon = "[FAILED]" if not self.console.interactive else "❌"
             self.overall_result.update(
-                Padding(Rule(f"[bold]{icon} RO-Crate is [red]not[/red] a [red]valid[/red] "
-                             f"[magenta]{result.context.target_profile.identifier}[/magenta] !!![/bold]\n",
-                             style="bold red"), (1, 1)))
+                Padding(
+                    Rule(
+                        f"[bold]{icon} RO-Crate is [red]not[/red] a [red]valid[/red] "
+                        f"[magenta]{result.context.target_profile.identifier}[/magenta] !!![/bold]\n",
+                        style="bold red",
+                    ),
+                    (1, 1),
+                )
+            )
 
 
 class _ReportLayoutSubscriber(EventDispatcher):
@@ -279,33 +302,43 @@ class _ReportLayoutSubscriber(EventDispatcher):
         super().__init__("ValidationReportLayout")
         self._layout = layout
 
-    def _on_requirement_check_validation_end(self, event: RequirementCheckValidationEvent,
-                                             ctx: ValidationContext | None) -> None:
+    def _on_requirement_check_validation_end(
+        self, event: RequirementCheckValidationEvent, ctx: ValidationContext | None
+    ) -> None:
         if event.validation_result is not None:
             assert ctx is not None
             self._layout.update_stats(ctx.result.statistics)
 
-    def _on_requirement_validation_end(self, event: RequirementValidationEvent,
-                                       ctx: ValidationContext | None) -> None:
+    def _on_requirement_validation_end(self, event: RequirementValidationEvent, ctx: ValidationContext | None) -> None:
         assert ctx is not None, "Validation context must be provided"
         self._layout.update_stats(ctx.result.statistics)
 
-    def _on_validation_end(self, event: ValidationEvent,
-                           ctx: ValidationContext | None) -> None:
+    def _on_validation_end(self, event: ValidationEvent, ctx: ValidationContext | None) -> None:
         self._layout.show_overall_result(event.validation_result)
 
 
 def get_app_header_rule() -> Padding:
-    return Padding(Rule(f"\n[bold][cyan]ROCrate Validator[/cyan] (ver. [magenta]{get_version()}[/magenta])[/bold]",
-                        style="bold cyan"), (1, 2))
+    return Padding(
+        Rule(
+            f"\n[bold][cyan]ROCrate Validator[/cyan] (ver. [magenta]{get_version()}[/magenta])[/bold]",
+            style="bold cyan",
+        ),
+        (1, 2),
+    )
 
 
 class LiveReportLayout(ValidationReportLayout):
     """Context manager for live validation report rendering."""
 
-    def __init__(self, console: Console, validation_settings: dict,
-                 result: ValidationResult, profile_autodetected: bool = False,
-                 refresh_per_second: int = 10, transient: bool = False):
+    def __init__(
+        self,
+        console: Console,
+        validation_settings: dict,
+        result: ValidationResult,
+        profile_autodetected: bool = False,
+        refresh_per_second: int = 10,
+        transient: bool = False,
+    ):
         """
         Initialize the live report layout context manager.
 
@@ -325,10 +358,7 @@ class LiveReportLayout(ValidationReportLayout):
     def __enter__(self):
         """Enter the context and start live rendering."""
         self._live = Live(
-            self,
-            console=self.console,
-            refresh_per_second=self.refresh_per_second,
-            transient=self.transient
+            self, console=self.console, refresh_per_second=self.refresh_per_second, transient=self.transient
         )
         self._live.__enter__()
         return self
@@ -343,11 +373,15 @@ class LiveReportLayout(ValidationReportLayout):
 class LiveTextProgressLayout:
     """Context manager for live validation report rendering with text progress."""
 
-    def __init__(self, console: Console,
-                 profile_identifier: str,
-                 validation_settings: dict,
-                 callable_service: Callable,
-                 refresh_per_second: int = 10, transient: bool = False):
+    def __init__(
+        self,
+        console: Console,
+        profile_identifier: str,
+        validation_settings: dict,
+        callable_service: Callable,
+        refresh_per_second: int = 10,
+        transient: bool = False,
+    ):
         """
         Initialize the live text progress layout context manager.
         Args:
@@ -368,7 +402,7 @@ class LiveTextProgressLayout:
 
         # Create initial message
         message = Text()
-        message.append(f"\n{' '*2}🔍 ", style="")
+        message.append(f"\n{' ' * 2}🔍 ", style="")
         message.append("Validating RO-Crate against profile: ", style="bold")
         message.append(f"{self.profile_identifier}", style="cyan")
         message.append("... ", style="bold")
@@ -394,7 +428,7 @@ class LiveTextProgressLayout:
             while validation_thread.is_alive():
                 dot_count += 1
                 message = Text()
-                message.append(f"\n{' '*2}🔍 ", style="")
+                message.append(f"\n{' ' * 2}🔍 ", style="")
                 message.append("Validating RO-Crate against profile: ", style="bold")
                 message.append(f"{self.profile_identifier}", style="cyan")
                 message.append("." * dot_count, style="bold")

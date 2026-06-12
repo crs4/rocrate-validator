@@ -53,17 +53,17 @@ def test_extra_profiles_list(fake_profiles_path: Path):
     all_profiles = get_profiles(extra_profiles_path=fake_profiles_path)
     logger.error("All profiles: %s", all_profiles)
     # Check the number of all profiles
-    assert len(all_profiles) > len(default_profiles), \
+    assert len(all_profiles) > len(default_profiles), (
         "Expected more profiles with extra profiles added than the default ones"
-    assert len(all_profiles) == len(extra_profiles) + len(default_profiles), \
+    )
+    assert len(all_profiles) == len(extra_profiles) + len(default_profiles), (
         "Expected the number of all profiles to be the sum of default and extra profiles"
+    )
 
 
 def test_valid_local_rocrate():
     logger.debug("Validating a local RO-Crate: %s", ValidROC().wrroc_paper)
-    profiles = detect_profiles(ValidationSettings(
-        rocrate_uri=URI(ValidROC().wrroc_paper)
-    ))
+    profiles = detect_profiles(ValidationSettings(rocrate_uri=URI(ValidROC().wrroc_paper)))
 
     logger.debug("Candidate profiles: %s", profiles)
     # Check the number of detected profiles
@@ -76,9 +76,7 @@ def test_valid_local_workflow_rocrate():
     # Set the rocrate_uri to the workflow RO-Crate
     crate_path = ValidROC().workflow_roc
     logger.debug("Validating a local RO-Crate: %s", crate_path)
-    profiles = detect_profiles(ValidationSettings(
-        rocrate_uri=URI(crate_path)
-    ))
+    profiles = detect_profiles(ValidationSettings(rocrate_uri=URI(crate_path)))
     assert len(profiles) == 1, "Expected a single profile"
     assert profiles[0].identifier == "workflow-ro-crate-1.0", "Expected the 'workflow-ro-crate-1.0' profile"
 
@@ -87,9 +85,7 @@ def test_valid_local_process_run_crate():
     # Set the rocrate_uri to the process run RO-Crate
     crate_path = ValidROC().process_run_crate
     logger.debug("Validating a local RO-Crate: %s", crate_path)
-    profiles = detect_profiles(ValidationSettings(
-        rocrate_uri=URI(crate_path)
-    ))
+    profiles = detect_profiles(ValidationSettings(rocrate_uri=URI(crate_path)))
     assert len(profiles) == 1, "Expected a single profile"
     assert profiles[0].identifier == "process-run-crate-0.5", "Expected the 'process-run-crate-0.5' profile"
 
@@ -98,12 +94,11 @@ def test_valid_local_workflow_testing_ro_crate():
     # Set the rocrate_uri to the workflow testing RO-Crate
     crate_path = ValidROC().workflow_testing_ro_crate
     logger.debug("Validating a local RO-Crate: %s", crate_path)
-    profiles = detect_profiles(ValidationSettings(
-        rocrate_uri=URI(crate_path)
-    ))
+    profiles = detect_profiles(ValidationSettings(rocrate_uri=URI(crate_path)))
     assert len(profiles) == 1, "Expected a single profile"
-    assert profiles[0].identifier == "workflow-testing-ro-crate-0.1", \
+    assert profiles[0].identifier == "workflow-testing-ro-crate-0.1", (
         "Expected the 'workflow-testing-ro-crate-0.1' profile"
+    )
 
 
 def test_disable_inherited_profiles_issue_reporting():
@@ -112,10 +107,7 @@ def test_disable_inherited_profiles_issue_reporting():
     logger.debug("Validating a local RO-Crate: %s", crate_path)
 
     # First, validate with inherited profiles issue reporting enabled
-    settings = ValidationSettings(
-        rocrate_uri=URI(crate_path),
-        disable_inherited_profiles_issue_reporting=False
-    )
+    settings = ValidationSettings(rocrate_uri=URI(crate_path), disable_inherited_profiles_issue_reporting=False)
     result = validate(settings)
     total_issues_with_inheritance = len(result.get_issues())
     logger.debug("Total issues with inherited profiles issue reporting enabled: %d", total_issues_with_inheritance)
@@ -127,14 +119,16 @@ def test_disable_inherited_profiles_issue_reporting():
     logger.debug("Total issues with inherited profiles issue reporting disabled: %d", total_issues_without_inheritance)
 
     # Check that disabling inherited profiles issue reporting reduces the number of reported issues
-    assert total_issues_without_inheritance <= total_issues_with_inheritance, \
+    assert total_issues_without_inheritance <= total_issues_with_inheritance, (
         "Disabling inherited profiles issue reporting should not increase the number of reported issues"
+    )
 
     # Check that all reported issues are from the main profile
     main_profile_identifier = "workflow-testing-ro-crate-0.1"
     for issue in result.get_issues():
-        assert issue.check.requirement.profile.identifier == main_profile_identifier, \
+        assert issue.check.requirement.profile.identifier == main_profile_identifier, (
             "All reported issues should belong to the main profile when inherited profiles issue reporting is disabled"
+        )
 
 
 def test_skip_pycheck_on_workflow_ro_crate():
@@ -143,19 +137,23 @@ def test_skip_pycheck_on_workflow_ro_crate():
     logger.debug("Validating a local RO-Crate: %s", crate_path)
     settings = ValidationSettings(rocrate_uri=URI(crate_path))
     result = validate(settings)
-    assert not result.passed(), \
+    assert not result.passed(), (
         "The RO-Crate is expected to be invalid because of an incorrect conformsTo field and missing resources"
+    )
     assert len(result.failed_checks) == 2, "No failed checks expected when skipping the problematic check"
-    assert any(check.identifier == "ro-crate-1.1_5.3" for check in result.failed_checks), \
+    assert any(check.identifier == "ro-crate-1.1_5.3" for check in result.failed_checks), (
         "Expected the check 'ro-crate-1.1_5.3' to fail"
-    assert any(check.identifier == "ro-crate-1.1_12.1" for check in result.failed_checks), \
+    )
+    assert any(check.identifier == "ro-crate-1.1_12.1" for check in result.failed_checks), (
         "Expected the check 'ro-crate-1.1_12.1' to fail"
+    )
 
     # Perform a new validation skipping specific checks
     settings.skip_checks = ["ro-crate-1.1_5.3", "ro-crate-1.1_12.1"]
     result = validate(settings)
-    assert result.passed(), \
+    assert result.passed(), (
         "The RO-Crate should be valid when skipping the checks related to the invalid file descriptor entity"
+    )
 
     # Ensure that the skipped checks are indeed skipped
     skipped_check_ids = {check.identifier for check in result.skipped_checks}
@@ -167,16 +165,13 @@ def test_valid_local_multi_profile_crate():
     # Set the rocrate_uri to the multi-profile RO-Crate
     crate_path = InvalidMultiProfileROC().invalid_multi_profile_crate
     logger.debug("Validating a local RO-Crate: %s", crate_path)
-    profiles = detect_profiles(ValidationSettings(
-        rocrate_uri=URI(crate_path)
-    ))
+    profiles = detect_profiles(ValidationSettings(rocrate_uri=URI(crate_path)))
     assert len(profiles) == 2, "Expected two profiles"
 
     # Extract profiles identifiers
     profiles_ids = [profile.identifier for profile in profiles]
     assert "provenance-run-crate-0.5" in profiles_ids, "Expected the 'provenance-run-crate' profile"
-    assert "workflow-testing-ro-crate-0.1" in profiles_ids, \
-        "Expected the 'workflow-testing-ro-crate-0.1' profile"
+    assert "workflow-testing-ro-crate-0.1" in profiles_ids, "Expected the 'workflow-testing-ro-crate-0.1' profile"
 
 
 def test_valid_crate_folder_with_metadata_only():
@@ -191,10 +186,7 @@ def test_valid_crate_folder_with_metadata_only():
         shutil.copy(metadata_src, metadata_dst)
 
         # Define shared settings object
-        settings = ValidationSettings(
-            rocrate_uri=URI(Path(tmpdirname)),
-            metadata_only=True
-        )
+        settings = ValidationSettings(rocrate_uri=URI(Path(tmpdirname)), metadata_only=True)
 
         profiles = detect_profiles(settings)
 
@@ -231,5 +223,6 @@ def test_valid_crate_metadata_dict_with_metadata_only():
     assert profiles[0].identifier == "ro-crate-1.1", "Expected the 'ro-crate' profile"
 
     from rocrate_validator.services import validate_metadata_as_dict
+
     result = validate_metadata_as_dict(metadata_dict, settings)
     assert result.passed(), "RO-Crate should be valid in metadata-only mode"

@@ -40,17 +40,17 @@ class DataEntityRecommendedChecker(PyFunctionCheck):
         # Perform the check
         result = True
         for entity in [
-                _ for _ in context.ro_crate.metadata.get_data_entities(exclude_web_data_entities=True)
-                if _.has_absolute_path()]:
+            _
+            for _ in context.ro_crate.metadata.get_data_entities(exclude_web_data_entities=True)
+            if _.has_absolute_path()
+        ]:
             assert entity.id is not None, "Entity has no @id"
             try:
                 if not entity.is_available():
-                    context.result.add_issue(
-                        f'Data Entity {entity.id} is not available', self)
+                    context.result.add_issue(f"Data Entity {entity.id} is not available", self)
                     result = False
             except Exception as e:
-                context.result.add_issue(
-                    f'Web-based Data Entity {entity.id} is not available: {e}', self)
+                context.result.add_issue(f"Web-based Data Entity {entity.id} is not available: {e}", self)
                 result = False
             if not result and context.fail_fast:
                 return result

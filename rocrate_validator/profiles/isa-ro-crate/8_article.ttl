@@ -39,7 +39,7 @@ isa-ro-crate:FindISAPublication a sh:NodeShape, validator:HiddenShape;
         sh:condition [
             sh:property [
                 sh:path [ sh:inversePath schema:citation ] ;
-                sh:qualifiedValueShape [ 
+                sh:qualifiedValueShape [
                     sh:or(
                         [sh:class ro-crate:RootDataEntity]
                         [sh:class isa-ro-crate:Study]
@@ -61,14 +61,14 @@ isa-ro-crate:ArticleMustHaveHeadline a sh:NodeShape ;
         sh:path schema:headline ;
         sh:datatype xsd:string ;
         sh:minCount 1 ;
-        sh:maxCount 1 ; 
+        sh:maxCount 1 ;
         sh:not [
             sh:hasValue ""
         ] ;
         sh:description "Check that article does have non-empty headline and it's a string" ;
         sh:message "Article entity MUST have a non-empty headline of type string" ;
         sh:severity sh:Violation ;
-    ] 
+    ]
 .
 
 isa-ro-crate:ArticleMustHaveIdentifier a sh:NodeShape ;
@@ -79,18 +79,18 @@ isa-ro-crate:ArticleMustHaveIdentifier a sh:NodeShape ;
         a sh:PropertyShape ;
         sh:path schema:identifier ;
         sh:or(
-            [ sh:datatype xsd:string ] 
-            [ sh:class schema:PropertyValue ] 
+            [ sh:datatype xsd:string ]
+            [ sh:class schema:PropertyValue ]
         ) ;
         sh:minCount 1 ;
-        sh:maxCount 1 ; 
+        sh:maxCount 1 ;
         sh:not [
             sh:hasValue ""
         ] ;
         sh:description "Check that article does have non-empty identifier and it's a string or PropertyValue" ;
         sh:message "Article entity MUST have a non-empty identifier of type string or PropertyValue" ;
         sh:severity sh:Violation ;
-    ] 
+    ]
 .
 
 isa-ro-crate:ArticleShouldHaveAuthorOfCorrectType a sh:NodeShape ;

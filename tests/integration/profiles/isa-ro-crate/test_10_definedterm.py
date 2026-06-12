@@ -48,9 +48,7 @@ def test_isa_defined_term_name():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
-        expected_triggered_issues=[
-            "DefinedTerm entity MUST have a non-empty name of type string"
-        ],
+        expected_triggered_issues=["DefinedTerm entity MUST have a non-empty name of type string"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
     )
@@ -81,9 +79,7 @@ def test_isa_defined_term_name_of_incorrect_type():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
-        expected_triggered_issues=[
-            "DefinedTerm entity MUST have a non-empty name of type string"
-        ],
+        expected_triggered_issues=["DefinedTerm entity MUST have a non-empty name of type string"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
     )
@@ -111,9 +107,7 @@ def test_isa_defined_term_termCode():
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
-        expected_triggered_issues=[
-            "DefinedTerm entity SHOULD have at least one termCode"
-        ],
+        expected_triggered_issues=["DefinedTerm entity SHOULD have at least one termCode"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
     )

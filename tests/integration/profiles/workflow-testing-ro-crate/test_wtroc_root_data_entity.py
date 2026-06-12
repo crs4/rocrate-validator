@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 def test_wtroc_no_suites():
-    """\
+    """
     Test a Workflow Testing RO-Crate where the root data entity does not refer to
     any TestSuite via mentions.
     """
@@ -33,5 +33,5 @@ def test_wtroc_no_suites():
         False,
         ["Root Data Entity Metadata"],
         ["The Root Data Entity MUST refer to one or more test suites via mentions"],
-        profile_identifier="workflow-testing-ro-crate"
+        profile_identifier="workflow-testing-ro-crate",
     )

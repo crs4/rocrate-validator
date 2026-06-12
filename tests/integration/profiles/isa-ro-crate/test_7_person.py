@@ -46,9 +46,7 @@ def test_isa_person_given_name():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
-        expected_triggered_issues=[
-            "Person entity MUST have a non-empty given name of type string"
-        ],
+        expected_triggered_issues=["Person entity MUST have a non-empty given name of type string"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
     )
@@ -119,9 +117,7 @@ def test_isa_person_given_name_of_incorrect_type():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
-        expected_triggered_issues=[
-            "Person entity MUST have a non-empty given name of type string"
-        ],
+        expected_triggered_issues=["Person entity MUST have a non-empty given name of type string"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
     )
@@ -149,9 +145,7 @@ def test_isa_person_family_name():
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
-        expected_triggered_issues=[
-            "Person entity SHOULD have a non-empty family name of type string"
-        ],
+        expected_triggered_issues=["Person entity SHOULD have a non-empty family name of type string"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
     )
@@ -210,9 +204,7 @@ def test_isa_person_email():
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
-        expected_triggered_issues=[
-            "Person entity SHOULD have a non-empty email of type string"
-        ],
+        expected_triggered_issues=["Person entity SHOULD have a non-empty email of type string"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
     )
@@ -272,9 +264,7 @@ def test_isa_person_identifier():
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
-        expected_triggered_issues=[
-            "Person entity SHOULD have a non-empty identifier of type string"
-        ],
+        expected_triggered_issues=["Person entity SHOULD have a non-empty identifier of type string"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
     )
@@ -335,9 +325,7 @@ def test_isa_person_affiliation():
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
-        expected_triggered_issues=[
-            "Person entity SHOULD have at least one affiliation"
-        ],
+        expected_triggered_issues=["Person entity SHOULD have at least one affiliation"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
     )

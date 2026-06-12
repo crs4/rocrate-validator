@@ -29,9 +29,9 @@ from tests.conftest import SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER
 from tests.ro_crates import ValidROC
 
 
-def _urllib3_response(payload: bytes = b'{"@context": {}}',
-                      status: int = 200,
-                      content_type: str = "application/ld+json") -> urllib3.HTTPResponse:
+def _urllib3_response(
+    payload: bytes = b'{"@context": {}}', status: int = 200, content_type: str = "application/ld+json"
+) -> urllib3.HTTPResponse:
     return urllib3.HTTPResponse(
         body=io.BytesIO(payload),
         headers={
@@ -242,7 +242,8 @@ def test_cli_no_cache_disables_cache_backend(cli_runner, tmp_path, network_inter
             str(ValidROC().wrroc_paper_long_date),
             "--no-paging",
             "--no-cache",
-            "--skip-checks", SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER,
+            "--skip-checks",
+            SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER,
         ],
     )
     # The validation itself may pass or fail depending on upstream checks; we
@@ -306,14 +307,18 @@ def test_cli_cache_warm_populates_profile_urls(cli_runner, tmp_path, network_int
         cli,
         [
             "-y",
-            "cache", "warm",
-            "--cache-path", str(cache_path),
-            "--profile-identifier", "ro-crate-1.1",
+            "cache",
+            "warm",
+            "--cache-path",
+            str(cache_path),
+            "--profile-identifier",
+            "ro-crate-1.1",
         ],
     )
     assert result.exit_code == 0, result.output
-    assert any("w3id.org" in c for c in network_interceptor["calls"]), \
+    assert any("w3id.org" in c for c in network_interceptor["calls"]), (
         f"No expected URL fetched. Calls: {network_interceptor['calls']}"
+    )
     # The URL must now be cached for offline use.
     HttpRequester.reset()
     HttpRequester.initialize_cache(cache_path=str(cache_path), cache_max_age=3600, offline=True)
@@ -327,9 +332,12 @@ def test_cli_cache_warm_crate_caches_remote_archive(cli_runner, tmp_path, networ
         cli,
         [
             "-y",
-            "cache", "warm",
-            "--cache-path", str(cache_path),
-            "--crate", crate_url,
+            "cache",
+            "warm",
+            "--cache-path",
+            str(cache_path),
+            "--crate",
+            crate_url,
         ],
     )
     assert result.exit_code == 0, result.output
@@ -357,11 +365,13 @@ def test_cli_validate_offline_warns_when_remote(cli_runner, tmp_path, network_in
             "https://example.org/fake-crate.zip",
             "--no-paging",
             "--offline",
-            "--cache-path", str(cache_path),
+            "--cache-path",
+            str(cache_path),
         ],
     )
-    assert "offline mode is enabled" in result.output.lower() \
-        or "cached version" in result.output.lower(), result.output
+    assert "offline mode is enabled" in result.output.lower() or "cached version" in result.output.lower(), (
+        result.output
+    )
 
 
 def test_cli_validate_offline_on_local_crate_succeeds(cli_runner, tmp_path):
@@ -375,8 +385,10 @@ def test_cli_validate_offline_on_local_crate_succeeds(cli_runner, tmp_path):
             str(ValidROC().wrroc_paper_long_date),
             "--no-paging",
             "--offline",
-            "--cache-path", str(cache_path),
-            "--skip-checks", SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER,
+            "--cache-path",
+            str(cache_path),
+            "--skip-checks",
+            SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER,
         ],
     )
     # The validation may report issues for locally missing contexts; what we

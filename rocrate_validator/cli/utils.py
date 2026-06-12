@@ -26,4 +26,4 @@ def running_in_jupyter():
     # that launched the current kernel.
     # It is mainly used internally to track the parent process
     # and manage kernel lifecycle.
-    return 'JPY_PARENT_PID' in os.environ
+    return "JPY_PARENT_PID" in os.environ

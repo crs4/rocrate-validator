@@ -47,9 +47,7 @@ def test_isa_property_value_name():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
-        expected_triggered_issues=[
-            "PropertyValue entity MUST have a non-empty name of type string"
-        ],
+        expected_triggered_issues=["PropertyValue entity MUST have a non-empty name of type string"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
     )
@@ -81,9 +79,7 @@ def test_isa_property_value_name_of_incorrect_type():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
-        expected_triggered_issues=[
-            "PropertyValue entity MUST have a non-empty name of type string"
-        ],
+        expected_triggered_issues=["PropertyValue entity MUST have a non-empty name of type string"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
     )
@@ -112,9 +108,7 @@ def test_isa_property_value_value():
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
-        expected_triggered_issues=[
-            "PropertyValue entity SHOULD have at least one value"
-        ],
+        expected_triggered_issues=["PropertyValue entity SHOULD have at least one value"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
     )
@@ -148,9 +142,7 @@ def test_isa_property_value_value_of_incorrect_type():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
-        expected_triggered_issues=[
-            "PropertyValue value MUST be of type string, float, or integer"
-        ],
+        expected_triggered_issues=["PropertyValue value MUST be of type string, float, or integer"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
     )

@@ -23,8 +23,7 @@ import pytest
 def fd_format():
     """Load the module with numeric prefix."""
     spec = importlib.util.spec_from_file_location(
-        "fd_format",
-        "rocrate_validator/profiles/ro-crate/must/0_file_descriptor_format.py"
+        "fd_format", "rocrate_validator/profiles/ro-crate/must/0_file_descriptor_format.py"
     )
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -59,7 +58,7 @@ class TestGetRemoteContextLogic:
         mock_response.status_code = 200
         mock_response.headers = {
             "Content-Type": "text/html",
-            "Link": '<https://example.com/alternate-context.json>; rel="alternate"; type="application/ld+json"'
+            "Link": '<https://example.com/alternate-context.json>; rel="alternate"; type="application/ld+json"',
         }
 
         mock_alternate_response = MagicMock()
@@ -80,6 +79,7 @@ class TestGetRemoteContextLogic:
                         return mock_response
                     # Return the alternate response for the second call
                     return mock_alternate_response
+
             return MockHttpRequester()
 
         fd_format.HttpRequester = mock_requester
@@ -97,7 +97,7 @@ class TestGetRemoteContextLogic:
         mock_response.status_code = 200
         mock_response.headers = {
             "Content-Type": "text/html",
-            "Link": '<./alternate-context.json>; rel="alternate"; type="application/ld+json"'
+            "Link": '<./alternate-context.json>; rel="alternate"; type="application/ld+json"',
         }
 
         mock_alternate_response = MagicMock()
@@ -117,6 +117,7 @@ class TestGetRemoteContextLogic:
                     if call_count[0] == 1:
                         return mock_response
                     return mock_alternate_response
+
             return MockHttpRequester()
 
         fd_format.HttpRequester = mock_requester
@@ -162,10 +163,7 @@ class TestGetRemoteContextLogic:
         """Test error when alternate Link header format is invalid."""
         mock_response = MagicMock()
         mock_response.status_code = 200
-        mock_response.headers = {
-            "Content-Type": "text/html",
-            "Link": "invalid-link-format"
-        }
+        mock_response.headers = {"Content-Type": "text/html", "Link": "invalid-link-format"}
 
         original_requester = fd_format.HttpRequester
         fd_format.HttpRequester = lambda: MagicMock(get=lambda url, headers=None: mock_response)
@@ -200,7 +198,7 @@ class TestGetRemoteContextLogic:
         mock_response.status_code = 200
         mock_response.headers = {
             "Content-Type": "text/html",
-            "Link": '<https://example.com/alternate-context.json>; rel="alternate"; type="application/ld+json"'
+            "Link": '<https://example.com/alternate-context.json>; rel="alternate"; type="application/ld+json"',
         }
 
         mock_alternate_response = MagicMock()
@@ -216,6 +214,7 @@ class TestGetRemoteContextLogic:
                     if call_count[0] == 1:
                         return mock_response
                     return mock_alternate_response
+
             return MockHttpRequester()
 
         fd_format.HttpRequester = mock_requester
@@ -234,7 +233,7 @@ class TestGetRemoteContextLogic:
         mock_response.status_code = 200
         mock_response.headers = {
             "Content-Type": "text/html",
-            "Link": '<https://example.com/alternate-context.json>; rel="alternate"; type="application/ld+json"'
+            "Link": '<https://example.com/alternate-context.json>; rel="alternate"; type="application/ld+json"',
         }
 
         mock_alternate_response = MagicMock()
@@ -251,6 +250,7 @@ class TestGetRemoteContextLogic:
                     if call_count[0] == 1:
                         return mock_response
                     return mock_alternate_response
+
             return MockHttpRequester()
 
         fd_format.HttpRequester = mock_requester
@@ -265,7 +265,6 @@ class TestGetRemoteContextLogic:
 
 
 class TestCheckRemoteContext:
-
     def test_check_remote_context_valid(self, fd_format):
         """Test successful remote context validation."""
         mock_response = MagicMock()
@@ -300,7 +299,6 @@ class TestCheckRemoteContext:
 
 
 class TestGetContextKeys:
-
     def test_get_context_keys_from_string(self, fd_format):
         """Test getting context keys from a remote URI string."""
         mock_response = MagicMock()

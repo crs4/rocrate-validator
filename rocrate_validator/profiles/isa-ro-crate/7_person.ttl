@@ -44,7 +44,7 @@ isa-ro-crate:FindISAPerson a sh:NodeShape, validator:HiddenShape;
                     sh:property [
                         sh:name "Person is creator of a Study, Assay, or RootDataEntity" ;
                         sh:path [ sh:inversePath schema:creator ] ;
-                        sh:qualifiedValueShape [ 
+                        sh:qualifiedValueShape [
                             sh:or(
                                 [sh:class isa-ro-crate:Assay]
                                 [sh:class isa-ro-crate:Study]
@@ -58,7 +58,7 @@ isa-ro-crate:FindISAPerson a sh:NodeShape, validator:HiddenShape;
                     sh:property [
                         sh:name "Person is author of an Article" ;
                         sh:path [ sh:inversePath schema:author ] ;
-                        sh:qualifiedValueShape [ 
+                        sh:qualifiedValueShape [
                             sh:class isa-ro-crate:Article
                         ] ;
                         sh:qualifiedMinCount 1 ;
@@ -68,7 +68,7 @@ isa-ro-crate:FindISAPerson a sh:NodeShape, validator:HiddenShape;
                     sh:property [
                         sh:name "Person is agent of a Process" ;
                         sh:path [ sh:inversePath schema:agent ] ;
-                        sh:qualifiedValueShape [ 
+                        sh:qualifiedValueShape [
                             sh:class isa-ro-crate:Process
                         ] ;
                         sh:qualifiedMinCount 1 ;
@@ -90,14 +90,14 @@ isa-ro-crate:PersonMustHaveGivenName a sh:NodeShape ;
         sh:path schema:givenName ;
         sh:datatype xsd:string ;
         sh:minCount 1 ;
-        sh:maxCount 1 ; 
+        sh:maxCount 1 ;
         sh:not [
             sh:hasValue ""
         ] ;
         sh:description "Check that person does have non-empty given name and it's a string" ;
         sh:message "Person entity MUST have a non-empty given name of type string" ;
         sh:severity sh:Violation ;
-    ] 
+    ]
 .
 
 isa-ro-crate:PersonShouldHaveAffiliationOfCorrectType a sh:NodeShape ;

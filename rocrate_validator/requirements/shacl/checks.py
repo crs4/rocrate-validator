@@ -408,12 +408,14 @@ class SHACLCheck(RequirementCheck):
                 violations.append(violation)
         return failed_requirements_checks, failed_requirements_checks_violations
 
-    def __process_failed_checks__(self, shacl_context, failed_requirements_checks,
-                                  failed_requirements_checks_violations):
+    def __process_failed_checks__(
+        self, shacl_context, failed_requirements_checks, failed_requirements_checks_violations
+    ):
         failed_requirement_checks_notified = [
             _.check.identifier
             for _ in shacl_context.result.get_issues(
-                min_severity=cast("Severity", shacl_context.settings.requirement_severity))
+                min_severity=cast("Severity", shacl_context.settings.requirement_severity)
+            )
         ]
         for requirementCheck in sorted(failed_requirements_checks, key=lambda x: (x.identifier, x.severity)):
             # if the check is not in the current profile
@@ -455,8 +457,7 @@ class SHACLCheck(RequirementCheck):
 
     def __register_check_violations__(self, shacl_context, requirementCheck, violations):
         for violation in violations:
-            violating_entity = make_uris_relative(cast("Any", violation.focusNode).toPython(),
-                                                  shacl_context.publicID)
+            violating_entity = make_uris_relative(cast("Any", violation.focusNode).toPython(), shacl_context.publicID)
             violating_property = violation.resultPath.toPython() if violation.resultPath else None
             violation_message = violation.get_result_message(str(shacl_context.rocrate_uri))
             registered_check_issues = shacl_context.result.get_issues_by_check(requirementCheck)

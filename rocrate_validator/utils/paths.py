@@ -100,8 +100,8 @@ def get_default_http_cache_path() -> Path:
 
 
 def list_matching_file_paths(
-        directory: str = '.',
-        serialization_format: constants.RDF_SERIALIZATION_FORMATS_TYPES = "turtle") -> list[str]:
+    directory: str = ".", serialization_format: constants.RDF_SERIALIZATION_FORMATS_TYPES = "turtle"
+) -> list[str]:
     """
     Get all the files in the directory matching the format.
 
@@ -121,8 +121,9 @@ def list_matching_file_paths(
     return file_paths
 
 
-def list_graph_paths(graphs_dir: str = CURRENT_DIR,
-                     serialization_format: constants.RDF_SERIALIZATION_FORMATS_TYPES = "turtle") -> list[str]:
+def list_graph_paths(
+    graphs_dir: str = CURRENT_DIR, serialization_format: constants.RDF_SERIALIZATION_FORMATS_TYPES = "turtle"
+) -> list[str]:
     """
     Get the paths to all the graphs in the directory
 
@@ -134,7 +135,7 @@ def list_graph_paths(graphs_dir: str = CURRENT_DIR,
 
 
 def shorten_path(p: Path) -> str:
-    """"
+    """ "
     Shorten the path to a relative path if possible, otherwise return the absolute path.
 
     :param p: The path to shorten

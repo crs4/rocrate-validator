@@ -47,9 +47,7 @@ def test_isa_assay_no_identifier():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["Assay MUST have base properties"],
-        expected_triggered_issues=[
-            "Assay entity MUST have a non-empty identifier of type string"
-        ],
+        expected_triggered_issues=["Assay entity MUST have a non-empty identifier of type string"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
     )
@@ -81,9 +79,7 @@ def test_isa_assay_identifier_not_string():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Root Data Entity must be Investigation"],  # noqa: ERA001
-        expected_triggered_issues=[
-            "Assay entity MUST have a non-empty identifier of type string"
-        ],
+        expected_triggered_issues=["Assay entity MUST have a non-empty identifier of type string"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
     )

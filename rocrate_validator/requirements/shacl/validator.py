@@ -47,14 +47,12 @@ class SHACLValidationSkip(Exception):
 
 
 class SHACLValidationAlreadyProcessed(Exception):
-
     def __init__(self, profile_identifier: str, result: bool | None) -> None:
         super().__init__(f"Profile {profile_identifier} has already been processed")
         self.result = result
 
 
 class SHACLValidationContextManager:
-
     def __init__(self, check: RequirementCheck, context: ValidationContext) -> None:
         self._check = check
         self._profile = check.requirement.profile
@@ -65,8 +63,9 @@ class SHACLValidationContextManager:
         logger.debug("Entering SHACLValidationContextManager")
         if not self._shacl_context.__set_current_validation_profile__(self._profile):
             raise SHACLValidationAlreadyProcessed(
-                self._profile.identifier, self._shacl_context.get_validation_result(self._profile))
-        logger.debug("Processing profile: %s (id: %s)", self._profile.name,  self._profile.identifier)
+                self._profile.identifier, self._shacl_context.get_validation_result(self._profile)
+            )
+        logger.debug("Processing profile: %s (id: %s)", self._profile.name, self._profile.identifier)
         if self._profile.identifier != self._context.settings.profile_identifier:
             logger.debug("Skipping validation of profile %s", self._profile.identifier)
             self.context.result._add_skipped_check(self._check)
@@ -92,7 +91,6 @@ class SHACLValidationContextManager:
 
 
 class SHACLValidationContext(ValidationContext):
-
     def __init__(self, context: ValidationContext):
         super().__init__(context.validator, context.settings)
         self._base_context: ValidationContext = context
@@ -129,6 +127,7 @@ class SHACLValidationContext(ValidationContext):
             # enable overriding of checks
             if self.settings.allow_requirement_check_override:
                 from rocrate_validator.requirements.shacl.requirements import SHACLRequirement  # noqa: PLC0415
+
                 for requirement in [_ for _ in profile.requirements if isinstance(_, SHACLRequirement)]:
                     for check in requirement.get_checks():
                         if check.overridden and check.requirement.profile != self.target_profile:
@@ -204,8 +203,9 @@ class SHACLValidationContext(ValidationContext):
             logger.debug("Unable to extract @base from data graph metadata: %s", e)
             return None
 
-    def __load_ontology_graph__(self, profile_path: Path,
-                                ontology_filename: str = DEFAULT_ONTOLOGY_FILE) -> Graph | None:
+    def __load_ontology_graph__(
+        self, profile_path: Path, ontology_filename: str = DEFAULT_ONTOLOGY_FILE
+    ) -> Graph | None:
         # load the graph of ontologies
         ontology_graph: Graph | None = None
         ontology_path = self.__get_ontology_path__(profile_path, ontology_filename)
@@ -224,8 +224,7 @@ class SHACLValidationContext(ValidationContext):
             else:
                 logger.debug("Using default publicID: %s", self.publicID)
 
-            ontology_graph.parse(ontology_path, format="ttl",
-                                 publicID=public_id)
+            ontology_graph.parse(ontology_path, format="ttl", publicID=public_id)
             logger.debug("Ontologies loaded: %s", ontology_graph)
         return ontology_graph
 
@@ -244,7 +243,6 @@ class SHACLValidationContext(ValidationContext):
 
 
 class SHACLViolation:
-
     def __init__(self, result: SHACLValidationResult, violation_node: Node, graph: Graph) -> None:
         # check the input
         assert result is not None, "Invalid result"
@@ -305,9 +303,11 @@ class SHACLViolation:
     def sourceConstraintComponent(self):
         if not self._source_constraint_component:
             self._source_constraint_component = self.graph.value(
-                self._violation_node, URIRef(f"{SHACL_NS}sourceConstraintComponent"))
-            assert self._source_constraint_component is not None, \
+                self._violation_node, URIRef(f"{SHACL_NS}sourceConstraintComponent")
+            )
+            assert self._source_constraint_component is not None, (
                 f"Unable to get source constraint component from violation node {self._violation_node}"
+            )
         return self._source_constraint_component
 
     def get_result_message(self, ro_crate_path: Path | str) -> str:
@@ -321,21 +321,19 @@ class SHACLViolation:
     def sourceShape(self) -> URIRef | BNode:
         if not self._source_shape_node:
             self._source_shape_node = self.graph.value(self._violation_node, URIRef(f"{SHACL_NS}sourceShape"))
-            assert self._source_shape_node is not None, \
+            assert self._source_shape_node is not None, (
                 f"Unable to get source shape node from violation node {self._violation_node}"
+            )
         return cast("URIRef | BNode", self._source_shape_node)
 
 
 class SHACLValidationResult:
-
-    def __init__(self, results_graph: Graph,
-                 results_text: str | None = None) -> None:
+    def __init__(self, results_graph: Graph, results_text: str | None = None) -> None:
         # validate the results graph input
         assert results_graph is not None, "Invalid graph"
         assert isinstance(results_graph, Graph), "Invalid graph type"
         # check if the graph is valid ValidationReport
-        assert (None, URIRef(f"{SHACL_NS}conforms"),
-                None) in results_graph, "Invalid ValidationReport"
+        assert (None, URIRef(f"{SHACL_NS}conforms"), None) in results_graph, "Invalid ValidationReport"
         # store the input properties
         self.results_graph = results_graph
         self._text = results_text
@@ -344,8 +342,12 @@ class SHACLValidationResult:
         # initialize the conforms property
         self._conforms = len(self._violations) == 0
 
-        logger.debug("Validation report. N. violations: %s, Conforms: %s; Text: %s",
-                     len(self._violations), self._conforms, self._text)
+        logger.debug(
+            "Validation report. N. violations: %s, Conforms: %s; Text: %s",
+            len(self._violations),
+            self._conforms,
+            self._text,
+        )
 
     def _parse_results_graph(self, results_graph: Graph):
         # parse the violations from the results graph
@@ -370,7 +372,6 @@ class SHACLValidationResult:
 
 
 class SHACLValidator:
-
     def __init__(
         self,
         shapes_graph: GraphLike | str | bytes | None,
@@ -414,8 +415,7 @@ class SHACLValidator:
         allow_warnings: bool | None = True,
         # serialization settings
         serialization_output_path: str | None = None,
-        serialization_output_format:
-            RDF_SERIALIZATION_FORMATS_TYPES | None = "turtle",
+        serialization_output_format: RDF_SERIALIZATION_FORMATS_TYPES | None = "turtle",
         **kwargs,
     ) -> SHACLValidationResult:
         """
@@ -448,20 +448,15 @@ class SHACLValidator:
 
         # Validate data_graph
         if not isinstance(data_graph, (Graph, str, bytes)):
-            raise TypeError(
-                "data_graph must be an instance of Graph, str, or bytes")
+            raise TypeError("data_graph must be an instance of Graph, str, or bytes")
 
         # Validate inference
         if inference and inference not in VALID_INFERENCE_OPTIONS:
-            raise ValueError(
-                f"inference must be one of {VALID_INFERENCE_OPTIONS}")
+            raise ValueError(f"inference must be one of {VALID_INFERENCE_OPTIONS}")
 
         # Validate serialization_output_format
-        if serialization_output_format and \
-                serialization_output_format not in RDF_SERIALIZATION_FORMATS:
-            raise ValueError(
-                "serialization_output_format must be one of "
-                f"{RDF_SERIALIZATION_FORMATS}")
+        if serialization_output_format and serialization_output_format not in RDF_SERIALIZATION_FORMATS:
+            raise ValueError(f"serialization_output_format must be one of {RDF_SERIALIZATION_FORMATS}")
 
         assert inference in (None, "rdfs", "owlrl", "both"), "Invalid inference option"
 
@@ -488,10 +483,7 @@ class SHACLValidator:
         logger.debug("pyshacl.validate result: Results Text: %r", results_text)
 
         if not isinstance(results_graph, Graph):
-            raise TypeError(
-                "pyshacl.validate returned a non-Graph results_graph: "
-                f"{type(results_graph).__name__}"
-            )
+            raise TypeError(f"pyshacl.validate returned a non-Graph results_graph: {type(results_graph).__name__}")
 
         # serialize the results graph
         if serialization_output_path:
@@ -503,9 +495,7 @@ class SHACLValidator:
                 "rdf",
                 "json-ld",
             ], "Invalid serialization output format"
-            results_graph.serialize(
-                serialization_output_path, format=serialization_output_format
-            )
+            results_graph.serialize(serialization_output_path, format=serialization_output_format)
         # return the validation result
         return SHACLValidationResult(results_graph, results_text)
 

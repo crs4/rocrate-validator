@@ -70,9 +70,7 @@ def test_description_fallback_parent_description():
     shape = Shape(URIRef("http://example.org/shape"), g)
     shape._name = "ChildShape"
     shape._description = None
-    shape._parent = cast("Shape", MockParentShape(
-        name="ParentShape", description="Parent Description"
-    ))
+    shape._parent = cast("Shape", MockParentShape(name="ParentShape", description="Parent Description"))
 
     req = cast("Requirement", MockRequirement())
     check = SHACLCheck(req, shape)
@@ -302,9 +300,7 @@ def test_path_based_level_takes_precedence_over_derivation():
     shape = NodeShape(URIRef("http://example.org/NodeShape"), g)
     shape.add_property(_make_property(g, f"{SHACL_NS}Info"))
 
-    check = SHACLCheck(
-        cast("Requirement", MockRequirement(requirement_level_from_path=LevelCollection.SHOULD)), shape
-    )
+    check = SHACLCheck(cast("Requirement", MockRequirement(requirement_level_from_path=LevelCollection.SHOULD)), shape)
 
     assert check.level == LevelCollection.SHOULD
 

@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 def test_procrc_application_no_name():
-    """\
+    """
     Test a Process Run Crate where the application does not have a name.
     """
     do_entity_test(
@@ -32,12 +32,12 @@ def test_procrc_application_no_name():
         False,
         ["ProcRC Application"],
         ["The Application SHOULD have a name"],
-        profile_identifier="process-run-crate"
+        profile_identifier="process-run-crate",
     )
 
 
 def test_procrc_application_no_url():
-    """\
+    """
     Test a Process Run Crate where the application does not have a url.
     """
     do_entity_test(
@@ -46,12 +46,12 @@ def test_procrc_application_no_url():
         False,
         ["ProcRC Application"],
         ["The Application SHOULD have a url"],
-        profile_identifier="process-run-crate"
+        profile_identifier="process-run-crate",
     )
 
 
 def test_procrc_application_no_version():
-    """\
+    """
     Test a Process Run Crate where the application does not have a version or
     SoftwareVersion (SoftwareApplication).
     """
@@ -61,12 +61,12 @@ def test_procrc_application_no_version():
         False,
         ["ProcRC SoftwareApplication"],
         ["The SoftwareApplication SHOULD have a version or softwareVersion"],
-        profile_identifier="process-run-crate"
+        profile_identifier="process-run-crate",
     )
 
 
 def test_procrc_application_version_softwareversion():
-    """\
+    """
     Test a Process Run Crate where the application has both a version and a
     SoftwareVersion (SoftwareApplication).
     """
@@ -76,12 +76,12 @@ def test_procrc_application_version_softwareversion():
         False,
         ["ProcRC SoftwareApplication SingleVersion"],
         ["Process Run Crate SoftwareApplication should not have both version and softwareVersion"],
-        profile_identifier="process-run-crate"
+        profile_identifier="process-run-crate",
     )
 
 
 def test_procrc_softwaresourcecode_no_version():
-    """\
+    """
     Test a Process Run Crate where the application does not have a version
     (SoftwareSourceCode).
     """
@@ -91,12 +91,12 @@ def test_procrc_softwaresourcecode_no_version():
         False,
         ["ProcRC SoftwareSourceCode or ComputationalWorkflow"],
         ["The SoftwareSourceCode or ComputationalWorkflow SHOULD have a version"],
-        profile_identifier="process-run-crate"
+        profile_identifier="process-run-crate",
     )
 
 
 def test_procrc_application_id_no_absoluteuri():
-    """\
+    """
     Test a Process Run Crate where the id of the application is not an
     absolute URI.
     """
@@ -106,12 +106,12 @@ def test_procrc_application_id_no_absoluteuri():
         False,
         ["ProcRC SoftwareApplication ID"],
         ["The SoftwareApplication id SHOULD be an absolute URI"],
-        profile_identifier="process-run-crate"
+        profile_identifier="process-run-crate",
     )
 
 
 def test_procrc_softwareapplication_no_softwarerequirements():
-    """\
+    """
     Test a Process Run Crate where the SoftwareApplication does not have a
     SoftwareRequirements.
     """
@@ -121,12 +121,12 @@ def test_procrc_softwareapplication_no_softwarerequirements():
         False,
         ["ProcRC SoftwareApplication MAY"],
         ["The SoftwareApplication MAY have a softwareRequirements that points to a SoftwareApplication"],
-        profile_identifier="process-run-crate"
+        profile_identifier="process-run-crate",
     )
 
 
 def test_procrc_softwareapplication_bad_softwarerequirements():
-    """\
+    """
     Test a Process Run Crate where the SoftwareApplication has a
     SoftwareRequirements that does not point to a SoftwareApplication.
     """
@@ -136,5 +136,5 @@ def test_procrc_softwareapplication_bad_softwarerequirements():
         False,
         ["ProcRC SoftwareApplication MAY"],
         ["The SoftwareApplication MAY have a softwareRequirements that points to a SoftwareApplication"],
-        profile_identifier="process-run-crate"
+        profile_identifier="process-run-crate",
     )

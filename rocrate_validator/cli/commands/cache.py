@@ -76,7 +76,7 @@ def cache_info(ctx, cache_path: Path | None = None):
     """
     Display information about the HTTP cache.
     """
-    console = ctx.obj['console']
+    console = ctx.obj["console"]
     try:
         resolved = _resolve_cache_path(cache_path)
         _reset_requester(resolved)
@@ -147,7 +147,7 @@ def cache_list(
     """
     List entries currently stored in the HTTP cache (alias: `ls`).
     """
-    console = ctx.obj['console']
+    console = ctx.obj["console"]
     try:
         resolved = _resolve_cache_path(cache_path)
         _reset_requester(resolved)
@@ -210,8 +210,8 @@ def cache_reset(ctx, cache_path: Path | None = None, yes: bool = False):
     """
     Remove every entry from the HTTP cache.
     """
-    console = ctx.obj['console']
-    interactive = ctx.obj.get('interactive', False)
+    console = ctx.obj["console"]
+    interactive = ctx.obj.get("interactive", False)
     exit_code = 0
     try:
         resolved = _resolve_cache_path(cache_path)
@@ -220,22 +220,17 @@ def cache_reset(ctx, cache_path: Path | None = None, yes: bool = False):
         entries = info.get("entries", 0)
         size = _format_bytes(info.get("size_bytes", 0) or 0)
         console.print(
-            f"[bold]HTTP cache:[/bold] {info.get('path') or resolved} "
-            f"([cyan]{entries}[/cyan] entries, {size})"
+            f"[bold]HTTP cache:[/bold] {info.get('path') or resolved} ([cyan]{entries}[/cyan] entries, {size})"
         )
         if entries == 0:
             console.print("[green]Cache is already empty.[/green]")
             return
         if not yes:
             if not interactive:
-                console.print(
-                    "[yellow]Use --yes to remove entries in non-interactive mode.[/yellow]"
-                )
+                console.print("[yellow]Use --yes to remove entries in non-interactive mode.[/yellow]")
                 exit_code = 1
             else:
-                confirm = click.confirm(
-                    f"Remove all {entries} cached entries?", default=False
-                )
+                confirm = click.confirm(f"Remove all {entries} cached entries?", default=False)
                 if not confirm:
                     console.print("Aborted.")
                 else:
@@ -321,7 +316,7 @@ def cache_warm(
     Pre-populate the HTTP cache with resources declared by profiles and with
     optional remote RO-Crate URLs.
     """
-    console = ctx.obj['console']
+    console = ctx.obj["console"]
     explicit_urls = list(url or [])
     invalid_urls = [u for u in explicit_urls if not u.lower().startswith(("http://", "https://"))]
     if invalid_urls:
@@ -345,28 +340,19 @@ def cache_warm(
         # source (no -p, no --crate, no --url, no --all-profiles).
         any_explicit_source = bool(crate or explicit_urls or requested_ids or all_profiles)
         if all_profiles or requested_ids or not any_explicit_source:
-            urls, profile_scope = _resolve_warmup_urls_from_profiles(
-                console, profiles_dir, extra_dir, requested_ids
-            )
+            urls, profile_scope = _resolve_warmup_urls_from_profiles(console, profiles_dir, extra_dir, requested_ids)
 
         results: list[WarmUpResult] = []
         if urls:
-            console.print(
-                f"[bold]Warming cache for {profile_scope}[/bold] "
-                f"([cyan]{len(urls)}[/cyan] URL(s))..."
-            )
+            console.print(f"[bold]Warming cache for {profile_scope}[/bold] ([cyan]{len(urls)}[/cyan] URL(s))...")
             results.extend(warm_up_urls(urls))
 
         if crate:
-            console.print(
-                f"[bold]Fetching remote RO-Crates[/bold] ([cyan]{len(crate)}[/cyan] URL(s))..."
-            )
+            console.print(f"[bold]Fetching remote RO-Crates[/bold] ([cyan]{len(crate)}[/cyan] URL(s))...")
             results.extend(_warm_remote_crates(list(crate)))
 
         if explicit_urls:
-            console.print(
-                f"[bold]Fetching explicit URLs[/bold] ([cyan]{len(explicit_urls)}[/cyan] URL(s))..."
-            )
+            console.print(f"[bold]Fetching explicit URLs[/bold] ([cyan]{len(explicit_urls)}[/cyan] URL(s))...")
             results.extend(warm_up_urls(explicit_urls))
 
         if not results:
@@ -397,10 +383,7 @@ def _render_warmup_results(console, results: list[WarmUpResult]) -> bool:
         elif r.status == "failed":
             failed += 1
     console.print(table)
-    console.print(
-        f"[bold]Summary:[/bold] {ok} cached, {failed} failed, "
-        f"{len(results) - ok - failed} skipped"
-    )
+    console.print(f"[bold]Summary:[/bold] {ok} cached, {failed} failed, {len(results) - ok - failed} skipped")
     return failed > 0
 
 
@@ -427,9 +410,7 @@ def _resolve_warmup_urls_from_profiles(console, profiles_dir, extra_dir, request
             else:
                 selected.append(profile)
         for requested, resolved, candidates in ambiguous_fallbacks:
-            other_versions = sorted(
-                p.identifier for p in candidates if p.identifier != resolved.identifier
-            )
+            other_versions = sorted(p.identifier for p in candidates if p.identifier != resolved.identifier)
             console.print(
                 f"[yellow]Note:[/yellow] '{requested}' matched multiple profiles; "
                 f"using [cyan]{resolved.identifier}[/cyan] (highest version). "
@@ -437,9 +418,7 @@ def _resolve_warmup_urls_from_profiles(console, profiles_dir, extra_dir, request
                 f"(available: {', '.join(other_versions)})."
             )
         if missing:
-            console.print(
-                f"[yellow]Profile(s) not found and skipped:[/yellow] {', '.join(missing)}"
-            )
+            console.print(f"[yellow]Profile(s) not found and skipped:[/yellow] {', '.join(missing)}")
         profile_scope = f"profiles: {', '.join(p.identifier for p in selected)}"
         urls = discover_cacheable_urls_from_profiles(selected)
     else:
@@ -531,16 +510,18 @@ def _collect_cache_entries(
         url = getattr(resp, "url", "") or ""
         if needle and needle not in url.lower():
             continue
-        entries.append({
-            "key": key,
-            "url": url,
-            "status": getattr(resp, "status_code", None),
-            "size": int(getattr(resp, "size", 0) or 0),
-            "content_type": (getattr(resp, "headers", {}) or {}).get("Content-Type"),
-            "created_at": getattr(resp, "created_at", None),
-            "expires": getattr(resp, "expires", None),
-            "is_expired": bool(getattr(resp, "is_expired", False)),
-        })
+        entries.append(
+            {
+                "key": key,
+                "url": url,
+                "status": getattr(resp, "status_code", None),
+                "size": int(getattr(resp, "size", 0) or 0),
+                "content_type": (getattr(resp, "headers", {}) or {}).get("Content-Type"),
+                "created_at": getattr(resp, "created_at", None),
+                "expires": getattr(resp, "expires", None),
+                "is_expired": bool(getattr(resp, "is_expired", False)),
+            }
+        )
     effective_order = sort_order or _DEFAULT_SORT_ORDER.get(sort_by, "desc")
     reverse = effective_order == "desc"
     if sort_by == "url":
@@ -554,8 +535,10 @@ def _collect_cache_entries(
 
 def _entry_to_dict(entry: dict) -> dict:
     """JSON-safe view of an entry produced by ``_collect_cache_entries``."""
+
     def _iso(value: datetime | None) -> str | None:
         return value.isoformat() if value is not None else None
+
     return {
         "url": entry["url"],
         "status": entry["status"],

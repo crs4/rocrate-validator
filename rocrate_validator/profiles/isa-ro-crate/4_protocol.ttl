@@ -39,7 +39,7 @@ isa-ro-crate:FindISAProtocols a sh:NodeShape, validator:HiddenShape;
         sh:condition [
             sh:property [
                 sh:path [ sh:inversePath bioschemas-prop:executesLabProtocol ] ;
-                sh:qualifiedValueShape [ 
+                sh:qualifiedValueShape [
                     sh:class isa-ro-crate:Process ;
                 ] ;
                 sh:qualifiedMinCount 1 ;
@@ -58,7 +58,7 @@ isa-ro-crate:ProtocolShouldHaveNameOfCorrectType a sh:NodeShape ;
         a sh:PropertyShape ;
         sh:path schema:name ;
         sh:minCount 1 ;
-        sh:maxCount 1 ; 
+        sh:maxCount 1 ;
         sh:not [
             sh:hasValue ""
         ] ;
@@ -84,7 +84,7 @@ isa-ro-crate:ProtocolShouldHaveDescriptionOfCorrectType a sh:NodeShape ;
         a sh:PropertyShape ;
         sh:path schema:description ;
         sh:minCount 1 ;
-        sh:maxCount 1 ; 
+        sh:maxCount 1 ;
         sh:not [
             sh:hasValue ""
         ] ;

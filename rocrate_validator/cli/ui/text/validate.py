@@ -36,12 +36,14 @@ class ValidationCommandView:
     A class to handle the validation command view
     """
 
-    def __init__(self,
-                 validation_settings: ValidationSettings | None,
-                 interactive: bool = True,
-                 no_paging: bool = False,
-                 pager: SystemPager | None = None,
-                 console: Console | None = None):
+    def __init__(
+        self,
+        validation_settings: ValidationSettings | None,
+        interactive: bool = True,
+        no_paging: bool = False,
+        pager: SystemPager | None = None,
+        console: Console | None = None,
+    ):
         self.console = console or Console()
         self.interactive = interactive
         self.pager = pager if not no_paging else None
@@ -65,10 +67,7 @@ class ValidationCommandView:
         """
         if self._report_layout is None:
             assert self.validation_settings is not None, "Validation settings must be set"
-            self._report_layout = ValidationReportLayout(
-                console=self.console,
-                settings=self.validation_settings
-            )
+            self._report_layout = ValidationReportLayout(console=self.console, settings=self.validation_settings)
 
         return self._report_layout
 
@@ -85,10 +84,7 @@ class ValidationCommandView:
         logger.debug("Starting validation with progress bar")
 
         result = self.report_layout.live(
-            lambda: validation_command(
-                self.validation_settings,
-                subscribers=self.report_layout.subscribers
-            )
+            lambda: validation_command(self.validation_settings, subscribers=self.report_layout.subscribers)
         )
         logger.debug("Validation completed  with result: %s", result)
         return result
@@ -102,8 +98,7 @@ class ValidationCommandView:
         """
         assert statistics is not None, "Validation statistics must be provided"
 
-        with (self.console.pager(pager=self.pager, styles=not self.console.no_color)
-              if self.pager else self.console):
+        with self.console.pager(pager=self.pager, styles=not self.console.no_color) if self.pager else self.console:
             self.console.print(statistics)
 
     def display_validation_result(self, result: ValidationResult) -> None:
@@ -117,6 +112,5 @@ class ValidationCommandView:
 
         logger.debug("Displaying validation result")
 
-        with (self.console.pager(pager=self.pager, styles=not self.console.no_color)
-              if self.pager else self.console):
+        with self.console.pager(pager=self.pager, styles=not self.console.no_color) if self.pager else self.console:
             self.console.print(result)

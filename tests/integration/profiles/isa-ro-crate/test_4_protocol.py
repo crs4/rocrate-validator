@@ -50,9 +50,7 @@ def test_isa_protocol_no_name():
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Protocol SHOULD have name"],  # noqa: ERA001
-        expected_triggered_issues=[
-            "Protocol entity SHOULD have a non-empty name of type string"
-        ],
+        expected_triggered_issues=["Protocol entity SHOULD have a non-empty name of type string"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
     )
@@ -114,9 +112,7 @@ def test_isa_protocol_no_description():
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Protocol SHOULD have description"],  # noqa: ERA001
-        expected_triggered_issues=[
-            "Protocol entity SHOULD have a non-empty description of type string"
-        ],
+        expected_triggered_issues=["Protocol entity SHOULD have a non-empty description of type string"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
     )

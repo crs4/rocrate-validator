@@ -32,7 +32,6 @@ logger = logging.getLogger(__name__)
 
 
 class TextOutputFormatter(BaseOutputFormatter):
-
     def __init__(self, data: Any | None = None):
         super().__init__(data)
         self.add_type_formatter(ValidationResult, ValidationResultTextOutputFormatter)

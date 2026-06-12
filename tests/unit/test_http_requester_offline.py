@@ -26,9 +26,9 @@ from rocrate_validator.utils import http as http_module
 from rocrate_validator.utils.http import OFFLINE_CACHE_MISS_STATUS, HttpRequester
 
 
-def _build_urllib3_response(body: bytes = b'{"ok": true}',
-                            status: int = 200,
-                            content_type: str = "application/json") -> urllib3.HTTPResponse:
+def _build_urllib3_response(
+    body: bytes = b'{"ok": true}', status: int = 200, content_type: str = "application/json"
+) -> urllib3.HTTPResponse:
     return urllib3.HTTPResponse(
         body=io.BytesIO(body),
         headers={"Content-Type": content_type, "Content-Length": str(len(body))},
@@ -190,6 +190,7 @@ class _RecordCollector:
         import logging as _logging
 
         from rocrate_validator.utils import http as http_module
+
         self.records.clear()
         self.handler = _logging.Handler()
         self.handler.setLevel(_logging.DEBUG)

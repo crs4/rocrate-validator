@@ -26,8 +26,14 @@ logger = logging.getLogger(__name__)
 class Console(BaseConsole):
     """Rich console that can be disabled."""
 
-    def __init__(self, *args, disabled: bool = False, interactive: bool = True,
-                 formatters: dict[type, Any] | None = None, **kwargs):
+    def __init__(
+        self,
+        *args,
+        disabled: bool = False,
+        interactive: bool = True,
+        formatters: dict[type, Any] | None = None,
+        **kwargs,
+    ):
         force_jupyter = kwargs.pop("force_jupyter", None)
         if force_jupyter is None:
             force_jupyter = False if self.__jupyter_environment__() else None
@@ -43,6 +49,7 @@ class Console(BaseConsole):
 
     def __jupyter_environment__(self) -> bool:
         from rocrate_validator.cli.utils import running_in_jupyter  # noqa: PLC0415
+
         return running_in_jupyter()
 
     def register_formatter(self, formatter: OutputFormatter, type_: type | None = None):

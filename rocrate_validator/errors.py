@@ -232,11 +232,7 @@ class ValidationError(ROCValidatorError):
 class CheckValidationError(ValidationError):
     """Raised when a validation check fails."""
 
-    def __init__(self,
-                 check,
-                 message,
-                 path: str = ".",
-                 code: int = -1):
+    def __init__(self, check, message, path: str = ".", code: int = -1):
         super().__init__(message, path, code)
         self._check = check
 
@@ -280,7 +276,7 @@ class ROCrateInvalidURIError(ROCValidatorError):
     @classmethod
     def default_error_message(cls, uri: str | Path | URI) -> str:
         return (
-            f"\"{uri!s}\" is not a valid RO-Crate URI. "
+            f'"{uri!s}" is not a valid RO-Crate URI. '
             "It MUST be either a local path to the RO-Crate root directory or a local/remote RO-Crate ZIP file."
         )
 

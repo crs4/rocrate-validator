@@ -33,22 +33,18 @@ __module__ = sys.modules[__name__]
 def get_log_format(level: int):
     """Get the log format based on the log level"""
     log_format = (
-        '[%(log_color)s%(asctime)s%(reset)s] %(levelname)s in %(yellow)s%(module)s%(reset)s: '
-        '%(light_white)s%(message)s%(reset)s'
+        "[%(log_color)s%(asctime)s%(reset)s] %(levelname)s in %(yellow)s%(module)s%(reset)s: "
+        "%(light_white)s%(message)s%(reset)s"
     )
     if level == DEBUG:
         log_format = (
-            '%(log_color)s%(levelname)s%(reset)s:%(yellow)s%(name)s:%(module)s::%(funcName)s%(reset)s '
-            '@ %(light_green)sline: %(lineno)s%(reset)s - %(light_black)s%(message)s%(reset)s'
+            "%(log_color)s%(levelname)s%(reset)s:%(yellow)s%(name)s:%(module)s::%(funcName)s%(reset)s "
+            "@ %(light_green)sline: %(lineno)s%(reset)s - %(light_black)s%(message)s%(reset)s"
         )
     return log_format
 
 
-DEFAULT_SETTINGS : dict[str, Any] = {
-    'enabled': True,
-    'level': WARNING,
-    'format': get_log_format(WARNING)
-}
+DEFAULT_SETTINGS: dict[str, Any] = {"enabled": True, "level": WARNING, "format": get_log_format(WARNING)}
 
 
 # _lock is used to serialize access to shared data structures in this module.
@@ -102,9 +98,9 @@ def __setup_logger__(logger: Logger):
     settings = __settings__.get(logger.name, __settings__)
 
     # parse the log level
-    level = settings.get('level', __settings__['level'])
+    level = settings.get("level", __settings__["level"])
     if not isinstance(level, int):
-        level = getattr(__module__, settings['level'].upper(), WARNING)
+        level = getattr(__module__, settings["level"].upper(), WARNING)
 
     # set the log level
     logger.setLevel(level)
@@ -118,7 +114,7 @@ def __setup_logger__(logger: Logger):
         logger.addHandler(ch)
 
     # enable/disable the logger
-    if settings.get('enabled', __settings__['enabled']):
+    if settings.get("enabled", __settings__["enabled"]):
         logger.disabled = False
     else:
         logger.disabled = True
@@ -126,7 +122,7 @@ def __setup_logger__(logger: Logger):
 
 def __create_logger__(name: str) -> Logger:
     if not isinstance(name, str):
-        raise TypeError('A logger name must be a string')
+        raise TypeError("A logger name must be a string")
     with _lock:
         # Return the cached logger if it already exists, otherwise create it.
         logger = __loggers__.get(name)
@@ -148,8 +144,8 @@ def basicConfig(level: int, modules_config: dict | None = None):
             level = getattr(__module__, level.upper(), None)
 
         # set the default log level and format
-        __settings__['level'] = level
-        __settings__['format'] = get_log_format(level)
+        __settings__["level"] = level
+        __settings__["format"] = get_log_format(level)
 
         # set the log level for the modules
         if modules_config:
@@ -157,16 +153,16 @@ def basicConfig(level: int, modules_config: dict | None = None):
 
         # initialize the logging module
         colorlog.basicConfig(
-            level=__settings__['level'],
-            format=__settings__['format'],
+            level=__settings__["level"],
+            format=__settings__["format"],
             log_colors={
-                'DEBUG': 'cyan',
-                'INFO': 'green',
-                'WARNING': 'yellow',
-                'ERROR': 'red',
-                'CRITICAL': 'red,bg_white',
+                "DEBUG": "cyan",
+                "INFO": "green",
+                "WARNING": "yellow",
+                "ERROR": "red",
+                "CRITICAL": "red,bg_white",
             },
-            handlers=[StreamHandler(__log_stream__)]
+            handlers=[StreamHandler(__log_stream__)],
         )
 
         # reconfigure existing loggers
@@ -179,7 +175,6 @@ def getLogger(name: str) -> "LoggerProxy":
 
 
 class LoggerProxy:
-
     """Define a proxy class for the logger to allow lazy initialization of the logger instance"""
 
     def __init__(self, name: str):
@@ -196,8 +191,7 @@ class LoggerProxy:
         return getattr(self._instance, name)
 
 
-__export__ = [get_log_format, DEFAULT_SETTINGS, Logger,
-              CRITICAL, DEBUG, ERROR, INFO, WARNING, StreamHandler, Optional]
+__export__ = [get_log_format, DEFAULT_SETTINGS, Logger, CRITICAL, DEBUG, ERROR, INFO, WARNING, StreamHandler, Optional]
 
 
 """

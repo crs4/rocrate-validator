@@ -49,9 +49,7 @@ def test_isa_process_name():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["Process MUST have name"],
-        expected_triggered_issues=[
-            "Process entity MUST have a non-empty name of type string"
-        ],
+        expected_triggered_issues=["Process entity MUST have a non-empty name of type string"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
     )
@@ -150,9 +148,7 @@ def test_isa_process_object_incorrect_type():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["Process SHOULD have an object"],
-        expected_triggered_issues=[
-            "Process objects MUST be of type File, Sample or BioSample"
-        ],
+        expected_triggered_issues=["Process objects MUST be of type File, Sample or BioSample"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
     )
@@ -213,9 +209,7 @@ def test_isa_process_result_incorrect_type():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["Process SHOULD have a result"],
-        expected_triggered_issues=[
-            "Process results MUST be of type File, Sample or BioSample"
-        ],
+        expected_triggered_issues=["Process results MUST be of type File, Sample or BioSample"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
     )
@@ -278,9 +272,7 @@ def test_isa_process_value_incorrect_type():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["Process SHOULD have a parameter value"],
-        expected_triggered_issues=[
-            "Process parameter values MUST be of type PropertyValue"
-        ],
+        expected_triggered_issues=["Process parameter values MUST be of type PropertyValue"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
     )

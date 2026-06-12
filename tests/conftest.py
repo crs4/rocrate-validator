@@ -28,7 +28,7 @@ logging.basicConfig(
     level=logging.WARNING,
     modules_config={
         # "rocrate_validator.models": {"level": logging.DEBUG}
-    }
+    },
 )
 
 CURRENT_PATH = str(Path(__file__).resolve().parent)
@@ -43,10 +43,8 @@ PROFILES_PATH = str(Path(f"{CURRENT_PATH}/../rocrate_validator/profiles").resolv
 rocrate_profile = services.get_profile("ro-crate")
 if not rocrate_profile:
     raise RuntimeError("Unable to load the RO-Crate profile")
-check_local_data_entity_existence = \
-    rocrate_profile.get_requirement_check("Data Entity: REQUIRED resource availability")
-assert check_local_data_entity_existence, \
-    "Unable to find the requirement 'Data Entity: REQUIRED resource availability'"
+check_local_data_entity_existence = rocrate_profile.get_requirement_check("Data Entity: REQUIRED resource availability")
+assert check_local_data_entity_existence, "Unable to find the requirement 'Data Entity: REQUIRED resource availability'"
 SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER = check_local_data_entity_existence.identifier
 
 
@@ -194,37 +192,41 @@ def ro_crate_profile_may_path(ro_crate_profile_path):
     return str(Path(ro_crate_profile_path) / "may")
 
 
-@fixture(params=[
-    "2024 01 01",
-    "2024 Jan 01",
-    "2021-13-01",
-    "2021-00-10",
-    "2021-01-32",
-    "2021-01-01T25:00",
-    "2021-01-01T23:60",
-    "2021-01-01T23:59:60",
-    "T23:59:59",
-])
+@fixture(
+    params=[
+        "2024 01 01",
+        "2024 Jan 01",
+        "2021-13-01",
+        "2021-00-10",
+        "2021-01-32",
+        "2021-01-01T25:00",
+        "2021-01-01T23:60",
+        "2021-01-01T23:59:60",
+        "T23:59:59",
+    ]
+)
 def invalid_datetime(request):
     return request.param
 
 
-@fixture(params=[
-    "2024",
-    "2024-01",
-    "202401",
-    "2024-01-01",
-    "20240101",
-    "2024-001",
-    "2024-W01",
-    "2024-W01-1",
-    "2024-01-01T00:00",
-    "2024-01-01T00:00:00",
-    "2024-01-01T00:00:00Z",
-    "2024-01-01T00:00:00+00:00",
-    "2024-01-01T00:00:00.000",
-    "2024-01-01T00:00:00.000Z",
-    "2024-01-01T00:00:00.000+00:00",
-])
+@fixture(
+    params=[
+        "2024",
+        "2024-01",
+        "202401",
+        "2024-01-01",
+        "20240101",
+        "2024-001",
+        "2024-W01",
+        "2024-W01-1",
+        "2024-01-01T00:00",
+        "2024-01-01T00:00:00",
+        "2024-01-01T00:00:00Z",
+        "2024-01-01T00:00:00+00:00",
+        "2024-01-01T00:00:00.000",
+        "2024-01-01T00:00:00.000Z",
+        "2024-01-01T00:00:00.000+00:00",
+    ]
+)
 def valid_datetime(request):
     return request.param

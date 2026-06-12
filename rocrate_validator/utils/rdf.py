@@ -23,9 +23,8 @@ logger = logging.getLogger(__name__)
 
 
 def get_full_graph(
-        graphs_dir: str,
-        serialization_format: constants.RDF_SERIALIZATION_FORMATS_TYPES = "turtle",
-        publicID: str = ".") -> Graph:
+    graphs_dir: str, serialization_format: constants.RDF_SERIALIZATION_FORMATS_TYPES = "turtle", publicID: str = "."
+) -> Graph:
     """
     Get the full graph from the directory
 
@@ -53,19 +52,19 @@ def extract_base_from_jsonld(json_data: dict) -> str | None:
     :param json_data: The JSON-LD data as a dictionary
     :return: The @base value if found, None otherwise
     """
-    context = json_data.get('@context')
+    context = json_data.get("@context")
 
     if not context:
         return None
 
     # If @context is a dictionary, look for @base directly
     if isinstance(context, dict):
-        return context.get('@base')
+        return context.get("@base")
 
     # If @context is a list, look for @base in each context item
     if isinstance(context, list):
         for ctx in context:
-            if isinstance(ctx, dict) and '@base' in ctx:
-                return ctx['@base']
+            if isinstance(ctx, dict) and "@base" in ctx:
+                return ctx["@base"]
 
     return None

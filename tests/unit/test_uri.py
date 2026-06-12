@@ -58,13 +58,16 @@ def test_s3_uri_is_remote():
     assert not uri.is_natively_checkable()
 
 
-@pytest.mark.parametrize("uri_str,expected_scheme", [
-    # Scheme-only (no authority) absolute URIs are valid per RFC 3986 and
-    # accepted by RO-Crate 1.1 § 4.2.2 as Data Entity `@id` values.
-    ("urn:doi:10.5281/zenodo.1234", "urn"),
-    ("doi:10.5281/zenodo.1234", "doi"),
-    ("arcp://name,foo/bar", "arcp"),
-])
+@pytest.mark.parametrize(
+    "uri_str,expected_scheme",
+    [
+        # Scheme-only (no authority) absolute URIs are valid per RFC 3986 and
+        # accepted by RO-Crate 1.1 § 4.2.2 as Data Entity `@id` values.
+        ("urn:doi:10.5281/zenodo.1234", "urn"),
+        ("doi:10.5281/zenodo.1234", "doi"),
+        ("arcp://name,foo/bar", "arcp"),
+    ],
+)
 def test_scheme_only_absolute_uri_is_remote(uri_str, expected_scheme):
     uri = URI(uri_str)
     assert uri.scheme == expected_scheme
@@ -83,10 +86,13 @@ def test_file_uri_with_remote_host_is_remote():
     assert not uri.is_natively_checkable()
 
 
-@pytest.mark.parametrize("uri_str", [
-    "file:///absolute/path/file.txt",
-    "file://localhost/absolute/path/file.txt",
-])
+@pytest.mark.parametrize(
+    "uri_str",
+    [
+        "file:///absolute/path/file.txt",
+        "file://localhost/absolute/path/file.txt",
+    ],
+)
 def test_file_uri_to_local_host_is_local(uri_str):
     # An empty or `localhost` authority denotes the local machine.
     uri = URI(uri_str)
@@ -173,7 +179,7 @@ def test_rocrate_uri_local_folder_invalid():
     with pytest.raises(ROCrateInvalidURIError) as excinfo:
         validate_rocrate_uri(uri, silent=False)
     assert str(excinfo.value) == (
-        f"\"{uri}\" is not a valid RO-Crate URI. "
+        f'"{uri}" is not a valid RO-Crate URI. '
         "It MUST be either a local path to the RO-Crate root directory "
         "or a local/remote RO-Crate ZIP file."
     )
@@ -194,7 +200,7 @@ def test_rocrate_uri_local_zip_invalid():
     with pytest.raises(ROCrateInvalidURIError) as excinfo:
         validate_rocrate_uri(uri, silent=False)
     assert str(excinfo.value) == (
-        f"\"{uri}\" is not a valid RO-Crate URI. "
+        f'"{uri}" is not a valid RO-Crate URI. '
         "It MUST be either a local path to the RO-Crate root directory "
         "or a local/remote RO-Crate ZIP file."
     )
@@ -208,8 +214,7 @@ def test_rocrate_uri_remote_valid():
 def test_rocrate_uri_remote_invalid():
     # An unknown scheme is a valid URI but cannot be used as an RO-Crate root.
     uri = URI("httpx:///example.com")
-    assert not validate_rocrate_uri(uri, silent=True), \
-        f"The URI {uri} should not be accepted as an RO-Crate root"
+    assert not validate_rocrate_uri(uri, silent=True), f"The URI {uri} should not be accepted as an RO-Crate root"
     with pytest.raises(ROCrateInvalidURIError):
         validate_rocrate_uri(uri, silent=False)
 
@@ -221,9 +226,8 @@ def test_rocrate_uri_remote_invalid():
     # Use verbose mode to print the error message
     with pytest.raises(ROCrateInvalidURIError) as excinfo:
         validate_rocrate_uri(uri, silent=False)
-    assert str(
-        excinfo.value) == f"The RO-crate at the URI \"{uri}\" is not available"
+    assert str(excinfo.value) == f'The RO-crate at the URI "{uri}" is not available'
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

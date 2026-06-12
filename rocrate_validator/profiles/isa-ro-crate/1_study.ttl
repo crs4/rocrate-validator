@@ -53,7 +53,7 @@ isa-ro-crate:StudyMustHaveBaseDescriptors a sh:NodeShape ;
         sh:path schema:identifier ;
         sh:datatype xsd:string ;
         sh:minCount 1 ;
-        sh:maxCount 1 ; 
+        sh:maxCount 1 ;
         sh:not [
             sh:hasValue ""
         ] ;
@@ -66,7 +66,7 @@ isa-ro-crate:StudyMustHaveBaseDescriptors a sh:NodeShape ;
         sh:path schema:name ;
         sh:datatype xsd:string ;
         sh:minCount 1 ;
-        sh:maxCount 1 ; 
+        sh:maxCount 1 ;
         sh:not [
             sh:hasValue ""
         ] ;
@@ -95,7 +95,7 @@ isa-ro-crate:StudyRecommendedProperties a sh:NodeShape ;
     sh:name "Study SHOULD have dateCreated, datePublished, hasPart, description, creator, and about" ;
     sh:description "A Study SHOULD have a dateCreated" ;
     sh:targetClass isa-ro-crate:Study ;
-    
+
     sh:property [
         a sh:PropertyShape ;
         sh:path schema:dateCreated ;
@@ -136,7 +136,7 @@ isa-ro-crate:StudyRecommendedProperties a sh:NodeShape ;
         a sh:PropertyShape ;
         sh:path schema:description ;
         sh:minCount 1 ;
-        sh:maxCount 1 ; 
+        sh:maxCount 1 ;
         sh:not [
             sh:hasValue ""
         ] ;
@@ -205,5 +205,5 @@ isa-ro-crate:StudyRecommendedProperties a sh:NodeShape ;
         sh:description "Check that if study does have at least one object in about, it MUST be of type LabProcess" ;
         sh:message "Study about MUST be of type LabProcess" ;
         sh:severity sh:Violation ;
-    ] 
+    ]
 .

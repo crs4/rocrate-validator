@@ -48,9 +48,7 @@ def test_isa_additionaltype_not_investigation():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["Root Data Entity must be Investigation"],
-        expected_triggered_issues=[
-            "The root data entity must have additionalType of `Investigation`"
-        ],
+        expected_triggered_issues=["The root data entity must have additionalType of `Investigation`"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
     )
@@ -79,9 +77,7 @@ def test_isa_investigation_no_identifier():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Investigation MUST have base properties"],  # noqa: ERA001
-        expected_triggered_issues=[
-            "The root data entity must have a non-empty identifier"
-        ],
+        expected_triggered_issues=["The root data entity must have a non-empty identifier"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
     )
@@ -113,9 +109,7 @@ def test_isa_investigation_identifier_not_string():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Investigation MUST have base properties"],  # noqa: ERA001
-        expected_triggered_issues=[
-            "The root data entity must have a non-empty identifier"
-        ],
+        expected_triggered_issues=["The root data entity must have a non-empty identifier"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
     )

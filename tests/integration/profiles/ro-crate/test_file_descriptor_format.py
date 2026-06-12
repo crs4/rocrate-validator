@@ -28,24 +28,12 @@ paths = InvalidFileDescriptor()
 def test_missing_file_descriptor():
     """Test a RO-Crate without a file descriptor."""
     rocrate_path = paths.missing_file_descriptor
-    do_entity_test(
-        rocrate_path,
-        models.Severity.REQUIRED,
-        False,
-        ["File Descriptor existence"],
-        []
-    )
+    do_entity_test(rocrate_path, models.Severity.REQUIRED, False, ["File Descriptor existence"], [])
 
 
 def test_not_valid_json_format():
     """Test a RO-Crate with an invalid JSON file descriptor format."""
-    do_entity_test(
-        paths.invalid_json_format,
-        models.Severity.REQUIRED,
-        False,
-        ["File Descriptor JSON format"],
-        []
-    )
+    do_entity_test(paths.invalid_json_format, models.Severity.REQUIRED, False, ["File Descriptor JSON format"], [])
 
 
 def test_not_valid_jsonld_format_missing_context():
@@ -55,7 +43,7 @@ def test_not_valid_jsonld_format_missing_context():
         models.Severity.REQUIRED,
         False,
         ["File Descriptor JSON-LD format"],
-        []
+        [],
     )
 
 
@@ -68,7 +56,7 @@ def test_not_valid_jsonld_format_not_flattened():
         models.Severity.REQUIRED,
         False,
         ["File Descriptor JSON-LD format"],
-        ["RO-Crate file descriptor \"ro-crate-metadata.json\" is not fully flattened"]
+        ['RO-Crate file descriptor "ro-crate-metadata.json" is not fully flattened'],
     )
 
 
@@ -81,11 +69,12 @@ def test_not_valid_jsonld_format_not_valid_value_object():
         models.Severity.REQUIRED,
         False,
         ["File Descriptor JSON-LD format"],
-        ["entity \"nested-file.txt\" contains both @id and @value",
-         "is not a valid value object: @language and @type cannot coexist",
-         "entity \"invalidNestedReference\" is not a valid node object reference",
-         "entity \"{'@language': 'en', '@value': 12345}\" is not a valid value object"
-         ]
+        [
+            'entity "nested-file.txt" contains both @id and @value',
+            "is not a valid value object: @language and @type cannot coexist",
+            'entity "invalidNestedReference" is not a valid node object reference',
+            "entity \"{'@language': 'en', '@value': 12345}\" is not a valid value object",
+        ],
     )
 
 
@@ -99,7 +88,7 @@ def test_not_valid_jsonld_format_missing_ids():
         models.Severity.REQUIRED,
         False,
         ["File Descriptor JSON-LD format"],
-        ["file descriptor does not contain the @id attribute"]
+        ["file descriptor does not contain the @id attribute"],
     )
 
 
@@ -113,7 +102,7 @@ def test_not_valid_jsonld_format_missing_types():
         models.Severity.REQUIRED,
         False,
         ["File Descriptor JSON-LD format"],
-        ["file descriptor does not contain the @type attribute"]
+        ["file descriptor does not contain the @type attribute"],
     )
 
 
@@ -129,7 +118,7 @@ def test_invalid_jsonld_context():
         ["File Descriptor JSON-LD format"],
         ["Unable to retrieve the JSON-LD context 'https://w3id.org/ro/terms/invalid/context'"],
         profile_identifier="ro-crate",
-        abort_on_first=True
+        abort_on_first=True,
     )
 
 
@@ -143,7 +132,7 @@ def test_invalid_jsonld_not_compacted():
         models.Severity.REQUIRED,
         False,
         ["File Descriptor JSON-LD format"],
-        ['The 1 occurrence of the "https://schema.org/name" URI cannot be used as a key']
+        ['The 1 occurrence of the "https://schema.org/name" URI cannot be used as a key'],
     )
 
 
@@ -157,8 +146,10 @@ def test_invalid_jsonld_unexpected_key():
         models.Severity.REQUIRED,
         False,
         ["File Descriptor JSON-LD format"],
-        ['The 1 occurrence of the JSON-LD key "hasPartx" is not allowed in the compacted format',
-         'The 2 occurrences of the JSON-LD key "namex" are not allowed in the compacted format']
+        [
+            'The 1 occurrence of the JSON-LD key "hasPartx" is not allowed in the compacted format',
+            'The 2 occurrences of the JSON-LD key "namex" are not allowed in the compacted format',
+        ],
     )
 
 
@@ -167,10 +158,4 @@ def test_valid_jsonld_custom_term():
     Test a RO-Crate with a valid JSON-LD file descriptor format
     which contains custom terms.
     """
-    do_entity_test(
-        ValidROC().rocrate_with_custom_terms,
-        models.Severity.REQUIRED,
-        True,
-        [],
-        []
-    )
+    do_entity_test(ValidROC().rocrate_with_custom_terms, models.Severity.REQUIRED, True, [], [])

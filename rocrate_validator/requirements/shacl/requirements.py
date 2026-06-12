@@ -37,9 +37,7 @@ logger = logging.getLogger(__name__)
 class SHACLRequirement(Requirement):
     def __init__(self, shape: Shape, profile: Profile, path: Path):
         self._shape = shape
-        super().__init__(
-            profile, shape.name or "", shape.description or "", path
-        )
+        super().__init__(profile, shape.name or "", shape.description or "", path)
         # init checks
         self._checks = self.__init_checks__()
         # assign check IDs
@@ -84,8 +82,7 @@ class SHACLRequirement(Requirement):
     @property
     def hidden(self) -> bool:
         return bool(
-            self.shape.node is not None
-            and (self.shape.node, RDF.type, VALIDATOR_NS.HiddenShape) in self.shape.graph
+            self.shape.node is not None and (self.shape.node, RDF.type, VALIDATOR_NS.HiddenShape) in self.shape.graph
         )
 
     @classmethod
@@ -140,7 +137,8 @@ class SHACLRequirement(Requirement):
             if context.maybe_warn_offline_cache_miss(e):
                 logger.debug(
                     "Forced SHACL run for zero-shape target profile %s skipped due to offline cache miss: %s",
-                    target.identifier, e,
+                    target.identifier,
+                    e,
                 )
             else:
                 logger.warning("Forced SHACL run for zero-shape target profile %s failed: %s", target.identifier, e)

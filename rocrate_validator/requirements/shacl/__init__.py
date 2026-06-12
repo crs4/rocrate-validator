@@ -18,10 +18,10 @@ from rocrate_validator.requirements.shacl.requirements import SHACLRequirement, 
 from rocrate_validator.requirements.shacl.validator import SHACLValidationResult, SHACLValidator
 
 __all__ = [
-           "SHACLCheck",
-           "SHACLRequirement",
-           "SHACLRequirementLoader",
-           "SHACLValidationError",
-           "SHACLValidationResult",
-           "SHACLValidator",
+    "SHACLCheck",
+    "SHACLRequirement",
+    "SHACLRequirementLoader",
+    "SHACLValidationError",
+    "SHACLValidationResult",
+    "SHACLValidator",
 ]

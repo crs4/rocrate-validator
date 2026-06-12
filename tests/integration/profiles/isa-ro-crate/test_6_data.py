@@ -46,9 +46,7 @@ def test_isa_file_name():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
-        expected_triggered_issues=[
-            "File entity MUST have a non-empty name of type string"
-        ],
+        expected_triggered_issues=["File entity MUST have a non-empty name of type string"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
     )
@@ -115,9 +113,7 @@ def test_isa_file_name_of_incorrect_type():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
-        expected_triggered_issues=[
-            "File entity MUST have a non-empty name of type string"
-        ],
+        expected_triggered_issues=["File entity MUST have a non-empty name of type string"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
     )

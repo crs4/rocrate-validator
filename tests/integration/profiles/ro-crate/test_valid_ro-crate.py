@@ -24,38 +24,22 @@ logger = logging.getLogger(__name__)
 
 def test_valid_roc_required():
     """Test a valid RO-Crate."""
-    do_entity_test(
-        ValidROC().wrroc_paper,
-        Severity.REQUIRED,
-        True
-    )
+    do_entity_test(ValidROC().wrroc_paper, Severity.REQUIRED, True)
 
 
 def test_valid_roc_recommended():
     """Test a valid RO-Crate."""
-    do_entity_test(
-        ValidROC().wrroc_paper,
-        Severity.RECOMMENDED,
-        True
-    )
+    do_entity_test(ValidROC().wrroc_paper, Severity.RECOMMENDED, True)
 
 
 def test_valid_roc_required_with_long_datetime():
     """Test a valid RO-Crate."""
-    do_entity_test(
-        ValidROC().wrroc_paper_long_date,
-        Severity.REQUIRED,
-        True
-    )
+    do_entity_test(ValidROC().wrroc_paper_long_date, Severity.REQUIRED, True)
 
 
 def test_valid_roc_required_with_value_objects():
     """Test a valid RO-Crate."""
-    do_entity_test(
-        ValidROC().rocrate_with_value_objects,
-        Severity.REQUIRED,
-        True
-    )
+    do_entity_test(ValidROC().rocrate_with_value_objects, Severity.REQUIRED, True)
 
 
 def test_valid_roc_with_relative_root_required():
@@ -64,44 +48,28 @@ def test_valid_roc_with_relative_root_required():
         ValidROC().rocrate_with_relative_root,
         Severity.REQUIRED,
         True,
-        rocrate_relative_root_path="custom-relative-root/"
+        rocrate_relative_root_path="custom-relative-root/",
     )
 
 
 def test_valid_roc_remote_required():
     """Test a valid RO-Crate."""
-    do_entity_test(
-        ValidROC().sort_and_change_remote,
-        Severity.REQUIRED,
-        True
-    )
+    do_entity_test(ValidROC().sort_and_change_remote, Severity.REQUIRED, True)
 
 
 def test_valid_roc_bagit_required():
     """Test a valid RO-Crate."""
-    do_entity_test(
-        ValidROC().bagit,
-        Severity.REQUIRED,
-        True
-    )
+    do_entity_test(ValidROC().bagit, Severity.REQUIRED, True)
 
 
 def test_valid_roc_bagit_zip_required():
     """Test a valid RO-Crate."""
-    do_entity_test(
-        ValidROC().bagit_zip,
-        Severity.REQUIRED,
-        True
-    )
+    do_entity_test(ValidROC().bagit_zip, Severity.REQUIRED, True)
 
 
 def test_valid_roc_remote_bagit_required():
     """Test a valid RO-Crate."""
-    do_entity_test(
-        ValidROC().bagit_remote_zip,
-        Severity.REQUIRED,
-        True
-    )
+    do_entity_test(ValidROC().bagit_remote_zip, Severity.REQUIRED, True)
 
 
 def test_valid_roc_with_at_base_set():
@@ -111,5 +79,5 @@ def test_valid_roc_with_at_base_set():
         Severity.REQUIRED,
         True,
         # Skipping check: Root Data Entity URI ending with / is not required in RO-Crate 1.2
-        skip_checks=["ro-crate-1.1_10.1"]
+        skip_checks=["ro-crate-1.1_10.1"],
     )

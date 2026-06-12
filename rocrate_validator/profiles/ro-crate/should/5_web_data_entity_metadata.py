@@ -63,12 +63,10 @@ class WebDataEntityRecommendedChecker(PyFunctionCheck):
                     logger.warning(msg)
                     context.result.add_issue(msg, self)
                 else:
-                    context.result.add_issue(
-                        f'Web-based Data Entity {entity.id} is not available', self)
+                    context.result.add_issue(f"Web-based Data Entity {entity.id} is not available", self)
                     result = False
             except Exception as e:
-                context.result.add_issue(
-                    f'Web-based Data Entity {entity.id} is not available: {e}', self)
+                context.result.add_issue(f"Web-based Data Entity {entity.id} is not available: {e}", self)
                 result = False
             if not result and context.fail_fast:
                 return result
@@ -94,10 +92,14 @@ class WebDataEntityRecommendedChecker(PyFunctionCheck):
                 actual_size = context.ro_crate.get_external_file_size(entity.id)
                 if content_size and int(content_size) != actual_size:
                     context.result.add_issue(
-                        f'The property contentSize={content_size} of the Web-based Data Entity '
-                        f'{entity.id} does not match the actual size of '
-                        f'the downloadable content, i.e., {actual_size} (bytes)', self,
-                        violatingEntity=entity.id, violatingProperty='contentSize', violatingPropertyValue=content_size)
+                        f"The property contentSize={content_size} of the Web-based Data Entity "
+                        f"{entity.id} does not match the actual size of "
+                        f"the downloadable content, i.e., {actual_size} (bytes)",
+                        self,
+                        violatingEntity=entity.id,
+                        violatingProperty="contentSize",
+                        violatingPropertyValue=content_size,
+                    )
                     result = False
             if not result and context.fail_fast:
                 return result

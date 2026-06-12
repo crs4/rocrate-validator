@@ -62,9 +62,7 @@ def validate_metadata_as_dict(
     return validate(settings, subscribers)
 
 
-def validate(
-    settings: dict | ValidationSettings, subscribers: list[Subscriber] | None = None
-) -> ValidationResult:
+def validate(settings: dict | ValidationSettings, subscribers: list[Subscriber] | None = None) -> ValidationResult:
     """
     Validate a RO-Crate against a profile and return the validation result
 

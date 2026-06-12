@@ -16,7 +16,6 @@ from __future__ import annotations
 
 
 class MapIndex:
-
     def __init__(self, name: str, unique: bool = False):
         self.name = name
         self.unique = unique

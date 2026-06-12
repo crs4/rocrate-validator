@@ -36,7 +36,6 @@ logger = logging.getLogger(__name__)
 
 
 class ValidationResultTextOutputFormatter(OutputFormatter):
-
     def __init__(self, validation_result: ValidationResult):
         self._validation_result = validation_result
 
@@ -50,41 +49,42 @@ class ValidationResultTextOutputFormatter(OutputFormatter):
             yield Align(f"\n[profile: [magenta bold]{requirement.profile.name}[/magenta bold]]", align="right")
 
             yield Padding(
-                f"[bold][cyan][u][ {requirement.identifier} ]: "
-                f"{Markdown(requirement.name).markup}[/u][/cyan][/bold]", (0, 5))
+                f"[bold][cyan][u][ {requirement.identifier} ]: {Markdown(requirement.name).markup}[/u][/cyan][/bold]",
+                (0, 5),
+            )
             yield Padding(Markdown(requirement.description), (1, 6))
             yield Padding("[white bold u]  Failed checks  [/white bold u]\n", (0, 8))
 
-            for check in sorted(result.get_failed_checks_by_requirement(requirement),
-                                key=lambda x: (-x.severity.value, x)):
+            for check in sorted(
+                result.get_failed_checks_by_requirement(requirement), key=lambda x: (-x.severity.value, x)
+            ):
                 issue_color = get_severity_color(check.level.severity)
                 yield Padding(
                     f"[bold][{issue_color}][ {check.identifier.center(16)} ][/{issue_color}] "
                     f"[magenta]{check.name}[/magenta][/bold]:",
-                    (1, 8, 0, 8)
+                    (1, 8, 0, 8),
                 )
                 yield Padding(Markdown(check.description), (0, 0, 0, len(check.identifier) + 13))
                 yield Padding("[u] Detected issues [/u]", (0, 8))
-                for issue in sorted(result.get_issues_by_check(check),
-                                    key=lambda x: (-x.severity.value, x)):
+                for issue in sorted(result.get_issues_by_check(check), key=lambda x: (-x.severity.value, x)):
                     path = ""
                     if issue.violatingProperty and issue.violatingPropertyValue:
                         path = f" of [yellow]{issue.violatingProperty}[/yellow]"
                     if issue.violatingPropertyValue:
                         if issue.violatingProperty:
                             path += "="
-                        path += f"\"[green]{issue.violatingPropertyValue}[/green]\" "  # keep the ending space
+                        path += f'"[green]{issue.violatingPropertyValue}[/green]" '  # keep the ending space
                     if issue.violatingEntity:
                         path = f"{path} on [cyan]<{issue.violatingEntity}>[/cyan]"
-                    yield Padding(f"- [[red]Violation[/red]{path}]: "
-                                  f"{Markdown(issue.message or '').markup}", (0, 9, 1, 9))
+                    yield Padding(
+                        f"- [[red]Violation[/red]{path}]: {Markdown(issue.message or '').markup}", (0, 9, 1, 9)
+                    )
                     if console.no_color:
                         yield Padding("\n", (0, 0))
             yield Padding("\n", (0, 0))
 
 
 class ValidationStatisticsTextOutputFormatter(OutputFormatter):
-
     def __init__(self, validation_statistics: ValidationStatistics):
         self._validation_statistics = validation_statistics
 
@@ -92,7 +92,7 @@ class ValidationStatisticsTextOutputFormatter(OutputFormatter):
         layout = ValidationReportLayout(
             console=console,
             settings=self._validation_statistics.validation_settings,
-            statistics=self._validation_statistics
+            statistics=self._validation_statistics,
         )
         logger.debug(layout.layout)
         if layout.layout is not None:

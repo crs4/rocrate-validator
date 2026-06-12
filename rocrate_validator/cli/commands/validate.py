@@ -61,28 +61,21 @@ def validate_uri(ctx, param, value):
 @cli.command("validate")
 @click.argument("rocrate-uri", callback=validate_uri, default=".")
 @click.option(
-    '-rr',
-    '--relative-root-path',
+    "-rr",
+    "--relative-root-path",
     help="Use root-relative paths for all file references in the RO-Crate",
     default=None,
-    show_default=True
+    show_default=True,
 )
 @click.option(
-    '-m',
-    '--metadata-only',
+    "-m",
+    "--metadata-only",
     is_flag=True,
     help="Validate only the metadata of the RO-Crate",
     default=False,
-    show_default=True
+    show_default=True,
 )
-@click.option(
-    '-ff',
-    '--fail-fast',
-    is_flag=True,
-    help="Fail fast validation mode",
-    default=False,
-    show_default=True
-)
+@click.option("-ff", "--fail-fast", is_flag=True, help="Fail fast validation mode", default=False, show_default=True)
 @click.option(
     "--profiles-path",
     type=click.Path(exists=True),
@@ -95,7 +88,7 @@ def validate_uri(ctx, param, value):
     type=click.Path(exists=True),
     default=None,
     show_default=True,
-    help="Path containing additional user profiles files"
+    help="Path containing additional user profiles files",
 )
 @click.option(
     "-p",
@@ -113,15 +106,15 @@ def validate_uri(ctx, param, value):
     is_flag=True,
     help="Disable automatic detection of the profile to use for validation",
     default=False,
-    show_default=True
+    show_default=True,
 )
 @click.option(
-    '-nh',
-    '--disable-profile-inheritance',
+    "-nh",
+    "--disable-profile-inheritance",
     is_flag=True,
     help="Disable inheritance of profiles",
     default=False,
-    show_default=True
+    show_default=True,
 )
 @click.option(
     "-l",
@@ -132,16 +125,16 @@ def validate_uri(ctx, param, value):
     help="Severity of the requirements to validate",
 )
 @click.option(
-    '-lo',
-    '--requirement-severity-only',
+    "-lo",
+    "--requirement-severity-only",
     is_flag=True,
     help="Validate only the requirements of the specified severity (no requirements with lower severity)",
     default=False,
-    show_default=True
+    show_default=True,
 )
 @click.option(
-    '-s',
-    '--skip-checks',
+    "-s",
+    "--skip-checks",
     multiple=True,
     type=click.STRING,
     default=None,
@@ -159,62 +152,62 @@ def validate_uri(ctx, param, value):
     ),
 )
 @click.option(
-    '-v',
-    '--verbose',
+    "-v",
+    "--verbose",
     is_flag=True,
     help="Output the validation details without prompting",
     default=False,
-    show_default=True
+    show_default=True,
 )
 @click.option(
-    '--no-paging',
+    "--no-paging",
     is_flag=True,
     help="Disable pagination of the validation details",
     default=False,
     show_default=True,
-    hidden=sys.platform == "win32"
+    hidden=sys.platform == "win32",
 )
 @click.option(
-    '-f',
-    '--output-format',
+    "-f",
+    "--output-format",
     type=click.Choice(["json", "text"], case_sensitive=False),
     default="text",
     show_default=True,
-    help="Output format of the validation report"
+    help="Output format of the validation report",
 )
 @click.option(
-    '-o',
-    '--output-file',
+    "-o",
+    "--output-file",
     type=click.Path(),
     default=None,
     show_default=True,
     help="Path to the output file for the validation report",
 )
 @click.option(
-    '-w',
-    '--output-line-width',
+    "-w",
+    "--output-line-width",
     type=click.INT,
     default=120,
     show_default=True,
     help="Width of the output line",
 )
 @click.option(
-    '--cache-max-age',
+    "--cache-max-age",
     type=click.INT,
     default=constants.DEFAULT_HTTP_CACHE_MAX_AGE,
     show_default=True,
     help="Maximum age of the HTTP cache in seconds ([bold green]-1[/bold green] for no expiration)",
 )
 @click.option(
-    '--cache-path',
+    "--cache-path",
     type=click.Path(),
     default=None,
     show_default=True,
     help="Path to the HTTP cache directory",
 )
 @click.option(
-    '-nc',
-    '--no-cache',
+    "-nc",
+    "--no-cache",
     is_flag=True,
     help=(
         "Disable the HTTP cache entirely: every request goes to the network "
@@ -224,7 +217,7 @@ def validate_uri(ctx, param, value):
     show_default=True,
 )
 @click.option(
-    '--offline',
+    "--offline",
     is_flag=True,
     help=(
         "Offline mode: HTTP requests are served only from the cache. "
@@ -234,34 +227,36 @@ def validate_uri(ctx, param, value):
     show_default=True,
 )
 @click.pass_context
-def validate(ctx,
-             profiles_path: Path = DEFAULT_PROFILES_PATH,
-             extra_profiles_path: Path | None = None,
-             profile_identifier: tuple[str, ...] = (),
-             metadata_only: bool = False,
-             no_auto_profile: bool = False,
-             disable_profile_inheritance: bool = False,
-             requirement_severity: str = Severity.REQUIRED.name,
-             requirement_severity_only: bool = False,
-             skip_checks: list[str] | None = None,
-             rocrate_uri: str | Path = ".",
-             relative_root_path: Path | None = None,
-             fail_fast: bool = False,
-             no_paging: bool = False,
-             verbose: bool = False,
-             output_format: str = "text",
-             output_file: Path | None = None,
-             output_line_width: int | None = None,
-             cache_max_age: int = constants.DEFAULT_HTTP_CACHE_MAX_AGE,
-             cache_path: Path | None = None,
-             no_cache: bool = False,
-             offline: bool = False):
+def validate(
+    ctx,
+    profiles_path: Path = DEFAULT_PROFILES_PATH,
+    extra_profiles_path: Path | None = None,
+    profile_identifier: tuple[str, ...] = (),
+    metadata_only: bool = False,
+    no_auto_profile: bool = False,
+    disable_profile_inheritance: bool = False,
+    requirement_severity: str = Severity.REQUIRED.name,
+    requirement_severity_only: bool = False,
+    skip_checks: list[str] | None = None,
+    rocrate_uri: str | Path = ".",
+    relative_root_path: Path | None = None,
+    fail_fast: bool = False,
+    no_paging: bool = False,
+    verbose: bool = False,
+    output_format: str = "text",
+    output_file: Path | None = None,
+    output_line_width: int | None = None,
+    cache_max_age: int = constants.DEFAULT_HTTP_CACHE_MAX_AGE,
+    cache_path: Path | None = None,
+    no_cache: bool = False,
+    offline: bool = False,
+):
     """
     [magenta]rocrate-validator:[/magenta] Validate a RO-Crate against a profile
     """
-    console: Console = ctx.obj['console']
-    pager = ctx.obj['pager']
-    interactive = ctx.obj['interactive']
+    console: Console = ctx.obj["console"]
+    pager = ctx.obj["pager"]
+    interactive = ctx.obj["interactive"]
     # Get the no_paging flag
     enable_pager = not no_paging
     # override the enable_pager flag if the interactive flag is False
@@ -495,9 +490,7 @@ def _resolve_profile_identifiers(
 
         # Prompt the user when interactive and no single profile could be auto-detected
         if interactive and (
-            not candidate_profiles
-            or len(candidate_profiles) == 0
-            or len(candidate_profiles) == len(available_profiles)
+            not candidate_profiles or len(candidate_profiles) == 0 or len(candidate_profiles) == len(available_profiles)
         ):
             console.print(
                 Padding(
@@ -505,9 +498,9 @@ def _resolve_profile_identifiers(
                         "[bold yellow]WARNING: [/bold yellow]"
                         "[bold]Unable to automatically detect the profile to use for validation[/bold]\n",
                         align="center",
-                        style="bold yellow"
+                        style="bold yellow",
                     ),
-                    (2, 2, 0, 2)
+                    (2, 2, 0, 2),
                 )
             )
             selected_options = multiple_choice(console, available_profiles)
@@ -523,12 +516,12 @@ def _resolve_profile_identifiers(
 
     # Fall back to the base profile when nothing could be resolved
     if not profile_identifiers:
-        console.print(f"\n{' '*2}[bold yellow]WARNING: [/bold yellow]", end="")
+        console.print(f"\n{' ' * 2}[bold yellow]WARNING: [/bold yellow]", end="")
         if no_auto_profile:
             console.print("[bold]Auto-detection of the profiles to use for validation is disabled[/bold]")
         else:
             console.print("[bold]Unable to automatically detect the profile to use for validation[/bold]")
-        console.print(f"{' '*11}[bold]The base `ro-crate` profile will be used for validation[/bold]")
+        console.print(f"{' ' * 11}[bold]The base `ro-crate` profile will be used for validation[/bold]")
         profile_identifiers = ["ro-crate"]
 
     return profile_identifiers, autodetection
@@ -550,16 +543,17 @@ def _render_console_result(
             console=console,
             interactive=interactive,
             no_paging=not enable_pager,
-            pager=pager
+            pager=pager,
         )
         result = command_view.show_validation_progress(services.validate)
         if not result.passed():
             verbose_choice = "n"
             if interactive and not verbose:
-                verbose_choice = get_single_char(console, choices=['y', 'n'], message=(
-                    "[bold] > Do you want to see the validation details? "
-                    "([magenta]y/n[/magenta]): [/bold]"
-                ))
+                verbose_choice = get_single_char(
+                    console,
+                    choices=["y", "n"],
+                    message=("[bold] > Do you want to see the validation details? ([magenta]y/n[/magenta]): [/bold]"),
+                )
             if verbose_choice == "y" or verbose:
                 command_view.display_validation_result(result)
         return result
@@ -592,7 +586,7 @@ def _render_file_or_collected_result(
             profile_identifier=profile,
             validation_settings=validation_settings,
             callable_service=services.validate,
-            transient=True
+            transient=True,
         ) as result:
             logger.debug("Validation result obtained")
     else:
@@ -604,7 +598,7 @@ def _render_file_or_collected_result(
     # Output processing for text format to file
     if output_file and output_format == "text":
         if interactive:
-            console.print(f"\n{' '*2}📝 [bold]Writing validation results to file[/bold]{'.'*4} ", end="")
+            console.print(f"\n{' ' * 2}📝 [bold]Writing validation results to file[/bold]{'.' * 4} ", end="")
         with output_file.open("w", encoding="utf-8") if output_file else sys.stdout as f:
             out = Console(color_system=None, width=output_line_width, height=31, file=f)
             out.register_formatter(TextOutputFormatter())
@@ -630,20 +624,20 @@ def _emit_json_report(
     if interactive:
         if is_valid:
             console.print(
-                f"\n{' '*2}✅ [bold]Validation [green]PASSED![/green]. "
-                f"\n{' '*5}RO-Crate is valid according to the profile(s): "
+                f"\n{' ' * 2}✅ [bold]Validation [green]PASSED![/green]. "
+                f"\n{' ' * 5}RO-Crate is valid according to the profile(s): "
                 f"[cyan]{', '.join(profile_identifiers)}[/cyan][/bold]"
             )
         else:
-            console.print(f"\n{' '*2}❌ [bold]Validation [red]FAILED![/red][/bold]")
+            console.print(f"\n{' ' * 2}❌ [bold]Validation [red]FAILED![/red][/bold]")
         if output_file:
             console.print(
-                f"\n{' '*2}📝 [bold]Writing validation results in JSON format "
-                f"to the file \"{output_file}\"[/bold]{'.'*4} ",
-                end=""
+                f"\n{' ' * 2}📝 [bold]Writing validation results in JSON format "
+                f'to the file "{output_file}"[/bold]{"." * 4} ',
+                end="",
             )
         else:
-            console.print(f"\n{' '*2}📋 [bold]The validation report in JSON format: [/bold]\n")
+            console.print(f"\n{' ' * 2}📋 [bold]The validation report in JSON format: [/bold]\n")
 
     # Generate the JSON output and write it to the specified output file or to stdout
     with output_file.open("w", encoding="utf-8") if output_file else nullcontext(sys.stdout) as f:

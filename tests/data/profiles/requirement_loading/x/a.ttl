@@ -57,4 +57,3 @@ ro:A
         sh:minCount 1 ;
         sh:severity sh:Info ;
     ] .
-

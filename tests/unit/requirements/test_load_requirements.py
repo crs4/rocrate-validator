@@ -47,10 +47,7 @@ def test_requirements_loading(profiles_requirement_loading: str):
     number_of_checks_per_requirement = 4
 
     # Define the settings
-    settings: dict[str, Any] = {
-        "profiles_path": profiles_requirement_loading,
-        "severity": Severity.OPTIONAL
-    }
+    settings: dict[str, Any] = {"profiles_path": profiles_requirement_loading, "severity": Severity.OPTIONAL}
 
     # Load the profiles
     profiles = Profile.load_profiles(**settings)
@@ -87,16 +84,18 @@ def test_requirements_loading(profiles_requirement_loading: str):
         if requirement_name in ["A", "B"]:
             assert requirement.severity_from_path is None, "The severity of the requirement should be None"
         elif requirement_name in ["A_MUST", "B_MUST"]:
-            assert requirement.severity_from_path == Severity.REQUIRED, \
+            assert requirement.severity_from_path == Severity.REQUIRED, (
                 "The severity of the requirement should be REQUIRED"
+            )
 
         offset = 1 if isinstance(requirement, SHACLRequirement) else 0
-        assert len(requirement.get_checks()) == number_of_checks_per_requirement + offset, \
+        assert len(requirement.get_checks()) == number_of_checks_per_requirement + offset, (
             "The number of requirement checks is incorrect"
+        )
 
         for i in range(number_of_checks_per_requirement):
             logger.debug("The requirement check: %r", f"{requirement_name}_{i}")
-            check = requirement.get_checks()[i+offset]
+            check = requirement.get_checks()[i + offset]
             assert check.name == f"{requirement_name}_{i}", "The name of the requirement check is incorrect"
             assert check.level.severity == levels[i].severity, "The level of the requirement check is incorrect"
 
@@ -119,8 +118,13 @@ def test_order_of_loaded_profile_requirements(profiles_path: str):
     requirements = profile.get_requirements()
     assert len(requirements) > 0
     for requirement in requirements:
-        logger.debug("%r The requirement: %r -> severity: %r (path: %s)", requirement.order_number,
-                     requirement.name, requirement.severity_from_path, requirement.path)
+        logger.debug(
+            "%r The requirement: %r -> severity: %r (path: %s)",
+            requirement.order_number,
+            requirement.name,
+            requirement.severity_from_path,
+            requirement.path,
+        )
 
     # Sort requirements by their order
     requirements = sorted(
@@ -150,11 +154,13 @@ def test_order_of_loaded_profile_requirements(profiles_path: str):
 
     # Inspect the first requirement check
     requirement_check = r_checks[0]
-    assert requirement_check.name == "Root Data Entity: RECOMMENDED value", \
+    assert requirement_check.name == "Root Data Entity: RECOMMENDED value", (
         "The name of the requirement check is incorrect"
-    assert requirement_check.description == \
-        "Check if the Root Data Entity is denoted by the string `./` in the file descriptor JSON-LD", \
-        "The description of the requirement check is incorrect"
+    )
+    assert (
+        requirement_check.description
+        == "Check if the Root Data Entity is denoted by the string `./` in the file descriptor JSON-LD"
+    ), "The description of the requirement check is incorrect"
     assert requirement_check.severity == Severity.RECOMMENDED, "The severity of the requirement check is incorrect"
 
 
@@ -164,10 +170,7 @@ def test_hidden_requirements(profiles_loading_hidden_requirements: str):
     requirements_names = ["A", "B", "A_MUST", "B_MUST"]
 
     # Define the settings
-    settings: dict[str, Any] = {
-        "profiles_path": profiles_loading_hidden_requirements,
-        "severity": Severity.OPTIONAL
-    }
+    settings: dict[str, Any] = {"profiles_path": profiles_loading_hidden_requirements, "severity": Severity.OPTIONAL}
 
     # Load the profiles
     profiles = Profile.load_profiles(**settings)

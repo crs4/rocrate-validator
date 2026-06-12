@@ -33,7 +33,6 @@ logger = logging.getLogger(__name__)
 
 
 class SHACLNode:
-
     # define default values
     _name: str | None = None
     _description: str | None = None
@@ -162,7 +161,6 @@ class SHACLNode:
 
 
 class SHACLNodeCollection(SHACLNode):
-
     def __init__(self, node: Node, graph: Graph, properties: list[PropertyShape] | None = None):
         super().__init__(node, graph)
         # store the properties
@@ -205,7 +203,6 @@ class PropertyGroup(SHACLNodeCollection):
 
 
 class PropertyShape(Shape):
-
     # define default values
     _name: str | None = None
     _short_name: str | None = None
@@ -216,10 +213,7 @@ class PropertyShape(Shape):
     # store the reference to the property group
     _property_group: PropertyGroup | None = None
 
-    def __init__(self,
-                 node: Node,
-                 graph: Graph,
-                 parent: Shape | None = None):
+    def __init__(self, node: Node, graph: Graph, parent: Shape | None = None):
         # call the parent constructor
         super().__init__(node, graph)
         # store the parent shape
@@ -252,9 +246,9 @@ class PropertyShape(Shape):
             property_name = self.name
             if self._short_name:
                 property_name = self._short_name
-            self._description = f"Check the property \"**{property_name}**\""
+            self._description = f'Check the property "**{property_name}**"'
             if self.parent and self.parent.name not in property_name:
-                self._description += f" of the entity \"**{self.parent.name}**\""
+                self._description += f' of the entity "**{self.parent.name}**"'
         return self._description
 
     @description.setter
@@ -283,7 +277,6 @@ class PropertyShape(Shape):
 
 
 class NodeShape(Shape, SHACLNodeCollection):
-
     @property
     def property_groups(self) -> list[PropertyGroup]:
         """Return the property groups of the shape"""
@@ -305,7 +298,6 @@ class NodeShape(Shape, SHACLNodeCollection):
 
 
 class ShapesRegistry:
-
     def __init__(self):
         self._shapes: dict[str, Shape] = {}
         self._shapes_graph: Graph = Graph()
@@ -390,8 +382,7 @@ class ShapesRegistry:
             nested_properties = node_graph.objects(subject=node_shape, predicate=shacl_ns.property)
             for property_shape in nested_properties:
                 property_graph = shapes_list.get_shape_property_graph(node_shape, property_shape)
-                p_shape = PropertyShape(
-                    property_shape, property_graph, shape)
+                p_shape = PropertyShape(property_shape, property_graph, shape)
                 shape.add_property(p_shape)
                 group = __process_property_group__(property_groups, p_shape)
                 if group and group not in shapes:
@@ -440,9 +431,7 @@ class ShapesRegistry:
         return instance
 
 
-def __process_property_group__(
-    groups: dict[str, PropertyGroup], property_shape: PropertyShape
-) -> PropertyGroup | None:
+def __process_property_group__(groups: dict[str, PropertyGroup], property_shape: PropertyShape) -> PropertyGroup | None:
     group_name = property_shape.group
     if group_name:
         if group_name not in groups:

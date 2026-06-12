@@ -31,9 +31,9 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-def __get_single_char_win32__(console: Console | None = None, end: str = "\n",
-                              message: str | None = None,
-                              choices: list[str] | None = None) -> str:
+def __get_single_char_win32__(
+    console: Console | None = None, end: str = "\n", message: str | None = None, choices: list[str] | None = None
+) -> str:
     """
     Get a single character from the console
     """
@@ -53,9 +53,9 @@ def __get_single_char_win32__(console: Console | None = None, end: str = "\n",
     return char
 
 
-def __get_single_char_unix__(console: Console | None = None, end: str = "\n",
-                             message: str | None = None,
-                             choices: list[str] | None = None) -> str:
+def __get_single_char_unix__(
+    console: Console | None = None, end: str = "\n", message: str | None = None, choices: list[str] | None = None
+) -> str:
     """
     Get a single character from the console
     """
@@ -82,9 +82,9 @@ def __get_single_char_unix__(console: Console | None = None, end: str = "\n",
     return char
 
 
-def get_single_char(console: Console | None = None, end: str = "\n",
-                    message: str | None = None,
-                    choices: list[str] | None = None) -> str:
+def get_single_char(
+    console: Console | None = None, end: str = "\n", message: str | None = None, choices: list[str] | None = None
+) -> str:
     """
     Get a single character from the console
     """
@@ -93,8 +93,7 @@ def get_single_char(console: Console | None = None, end: str = "\n",
     return __get_single_char_unix__(console, end, message, choices)
 
 
-def multiple_choice(console: Console,
-                    choices: list[Profile]):
+def multiple_choice(console: Console, choices: list[Profile]):
     """
     Display a multiple choice menu
     """
@@ -107,14 +106,14 @@ def multiple_choice(console: Console,
             "type": "checkbox",
             "name": "profiles",
             "message": prompt_text,
-            "choices": [Choice(i, f"{choices[i].identifier}: {choices[i].name}") for i in range(len(choices))]
+            "choices": [Choice(i, f"{choices[i].identifier}: {choices[i].name}") for i in range(len(choices))],
         }
     ]
     console.print("\n")
-    selected = prompt(question, style={"questionmark": "#ff9d00 bold",
-                                       "question": "bold",
-                                       "checkbox": "magenta",
-                                       "answer": "magenta"},
-                      style_override=False)
+    selected = prompt(
+        question,
+        style={"questionmark": "#ff9d00 bold", "question": "bold", "checkbox": "magenta", "answer": "magenta"},
+        style_override=False,
+    )
     logger.debug("Selected profiles: %s", selected)
     return selected["profiles"]

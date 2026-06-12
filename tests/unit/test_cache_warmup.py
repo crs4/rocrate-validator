@@ -108,10 +108,9 @@ def test_discover_urls_on_multiple_profiles_deduplicates(sample_profile, tmp_pat
     other_dir = tmp_path / "sample_other"
     other_dir.mkdir()
     (other_dir / "profile.ttl").write_text(
-        PROFILE_TTL_TEMPLATE
-        .replace("<https://example.org/profiles/sample>",
-                 "<https://example.org/profiles/other>")
-        .replace('prof:hasToken "sample"', 'prof:hasToken "other"')
+        PROFILE_TTL_TEMPLATE.replace(
+            "<https://example.org/profiles/sample>", "<https://example.org/profiles/other>"
+        ).replace('prof:hasToken "sample"', 'prof:hasToken "other"')
     )
     other_profile = Profile(profiles_base_path=tmp_path, profile_path=other_dir)
     aggregated = discover_cacheable_urls_from_profiles([sample_profile, other_profile])

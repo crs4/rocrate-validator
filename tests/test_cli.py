@@ -48,33 +48,50 @@ def test_version(cli_runner: CliRunner):
 
 
 def test_validate_subcmd_invalid_rocrate1(cli_runner: CliRunner):
-    result = cli_runner.invoke(cli, ['validate', str(
-        InvalidFileDescriptor().invalid_json_format), '--verbose', '--no-paging', '-p', 'ro-crate'])
+    result = cli_runner.invoke(
+        cli,
+        ["validate", str(InvalidFileDescriptor().invalid_json_format), "--verbose", "--no-paging", "-p", "ro-crate"],
+    )
     logger.error(result.output)
     assert result.exit_code == 1
 
 
 def test_validate_subcmd_valid_local_folder_rocrate(cli_runner: CliRunner):
-    result = cli_runner.invoke(cli, ['validate', str(ValidROC().wrroc_paper_long_date), '--verbose', '--no-paging'])
+    result = cli_runner.invoke(cli, ["validate", str(ValidROC().wrroc_paper_long_date), "--verbose", "--no-paging"])
     assert result.exit_code == 0
-    assert re.search(r'RO-Crate.*is a valid', result.output)
+    assert re.search(r"RO-Crate.*is a valid", result.output)
 
 
 def test_validate_subcmd_valid_remote_rocrate(cli_runner: CliRunner):
     result = cli_runner.invoke(
-        cli, ['validate', str(ValidROC().sort_and_change_remote),
-              '--verbose', '--no-paging',
-              '--skip-checks', SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER])
+        cli,
+        [
+            "validate",
+            str(ValidROC().sort_and_change_remote),
+            "--verbose",
+            "--no-paging",
+            "--skip-checks",
+            SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER,
+        ],
+    )
     assert result.exit_code == 0
-    assert re.search(r'RO-Crate.*is a valid', result.output)
+    assert re.search(r"RO-Crate.*is a valid", result.output)
 
 
 def test_validate_subcmd_invalid_local_archive_rocrate(cli_runner: CliRunner):
-    result = cli_runner.invoke(cli, ['validate', str(ValidROC().sort_and_change_archive),
-                                     '--verbose', '--no-paging',
-                                     '--skip-checks', SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER])
+    result = cli_runner.invoke(
+        cli,
+        [
+            "validate",
+            str(ValidROC().sort_and_change_archive),
+            "--verbose",
+            "--no-paging",
+            "--skip-checks",
+            SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER,
+        ],
+    )
     assert result.exit_code == 0
-    assert re.search(r'RO-Crate.*is a valid', result.output)
+    assert re.search(r"RO-Crate.*is a valid", result.output)
 
 
 def test_validate_skip_checks_option(cli_runner: CliRunner):
@@ -93,20 +110,24 @@ def test_validate_skip_checks_option(cli_runner: CliRunner):
         logger.debug(f"Called args: {called_args}")
         logger.debug(f"Called kwargs: {called_kwargs}")
 
-    with patch('rocrate_validator.cli.commands.validate.services.validate') as mock_validate_rocrate:
+    with patch("rocrate_validator.cli.commands.validate.services.validate") as mock_validate_rocrate:
         mock_validate_rocrate.return_value = None
         mock_validate_rocrate.side_effect = mock_validate
 
         skip_checks_1 = ("a", "b", "c")
         skip_checks_2 = ("d", "e", "f")
         result = cli_runner.invoke(
-            cli, [
-                '--no-interactive',
-                'validate', str(ValidROC().sort_and_change_remote),
-                '--skip-checks', ','.join(skip_checks_1),
-                '--skip-checks', ','.join(skip_checks_2),
-                '--no-paging'
-            ]
+            cli,
+            [
+                "--no-interactive",
+                "validate",
+                str(ValidROC().sort_and_change_remote),
+                "--skip-checks",
+                ",".join(skip_checks_1),
+                "--skip-checks",
+                ",".join(skip_checks_2),
+                "--no-paging",
+            ],
         )
 
         # Check the exit code which should be 2
@@ -120,8 +141,9 @@ def test_validate_skip_checks_option(cli_runner: CliRunner):
         assert settings["skip_checks"] is not None, "skip_checks should not be None"
 
         # Check if the skip_checks value matches the expected value
-        assert list(skip_checks_1 + skip_checks_2) == settings["skip_checks"], \
+        assert list(skip_checks_1 + skip_checks_2) == settings["skip_checks"], (
             f"Expected skip_checks to be {list(skip_checks_1 + skip_checks_2)}, but got {settings['skip_checks']}"
+        )
 
 
 def test_validate_with_invalid_profiles_path_dir(cli_runner: CliRunner):
@@ -132,10 +154,11 @@ def test_validate_with_invalid_profiles_path_dir(cli_runner: CliRunner):
         [
             "validate",
             str(ValidROC().wrroc_paper_long_date),
-            "--profiles-path", dummy_profiles_path,
+            "--profiles-path",
+            dummy_profiles_path,
             "--verbose",
-            "--no-paging"
-        ]
+            "--no-paging",
+        ],
     )
     assert result.exit_code == 2
     # On narrow terminals the Rich error panel wraps the message across lines
@@ -255,9 +278,7 @@ def test_describe_check_verbose_python(cli_runner: CliRunner):
     """Verbose single-check view on a Python-backed check shows the function source."""
     _, requirement, check = _first_visible_check()
     relative = f"{requirement.order_number}.{check.order_number}"
-    result = cli_runner.invoke(
-        cli, ["profiles", "describe", _DESCRIBE_TEST_PROFILE, relative, "-v", "--no-paging"]
-    )
+    result = cli_runner.invoke(cli, ["profiles", "describe", _DESCRIBE_TEST_PROFILE, relative, "-v", "--no-paging"])
     assert result.exit_code == 0, result.output
     assert "Source" in result.output
     # The decorated check function is what gets serialized
@@ -268,9 +289,7 @@ def test_describe_check_verbose_shacl(cli_runner: CliRunner):
     """Verbose single-check view on a SHACL-backed check shows turtle source."""
     _, requirement, check = _first_shacl_check()
     relative = f"{requirement.order_number}.{check.order_number}"
-    result = cli_runner.invoke(
-        cli, ["profiles", "describe", _DESCRIBE_TEST_PROFILE, relative, "-v", "--no-paging"]
-    )
+    result = cli_runner.invoke(cli, ["profiles", "describe", _DESCRIBE_TEST_PROFILE, relative, "-v", "--no-paging"])
     assert result.exit_code == 0, result.output
     assert "Source" in result.output
     # SHACL serialized as turtle should contain a sh: prefix and a NodeShape/PropertyShape declaration
@@ -295,12 +314,11 @@ def test_describe_check_verbose_shacl_includes_target(cli_runner: CliRunner):
         return
     requirement, check = nested
     relative = f"{requirement.order_number}.{check.order_number}"
-    result = cli_runner.invoke(
-        cli, ["profiles", "describe", _DESCRIBE_TEST_PROFILE, relative, "-v", "--no-paging"]
-    )
+    result = cli_runner.invoke(cli, ["profiles", "describe", _DESCRIBE_TEST_PROFILE, relative, "-v", "--no-paging"])
     assert result.exit_code == 0, result.output
     # The snippet must surface the owning shape's target declaration so the user can see
     # what the property check applies to.
-    assert any(t in result.output for t in ("sh:targetClass", "sh:targetNode",
-                                            "sh:targetSubjectsOf", "sh:targetObjectsOf",
-                                            "sh:target "))
+    assert any(
+        t in result.output
+        for t in ("sh:targetClass", "sh:targetNode", "sh:targetSubjectsOf", "sh:targetObjectsOf", "sh:target ")
+    )

@@ -47,15 +47,19 @@ class EventDispatcher(Subscriber):
         EventType.VALIDATION_END: "_on_validation_end",
     }
 
-    _CHECK_EVENTS: ClassVar[frozenset[EventType]] = frozenset({
-        EventType.REQUIREMENT_CHECK_VALIDATION_START,
-        EventType.REQUIREMENT_CHECK_VALIDATION_END,
-    })
+    _CHECK_EVENTS: ClassVar[frozenset[EventType]] = frozenset(
+        {
+            EventType.REQUIREMENT_CHECK_VALIDATION_START,
+            EventType.REQUIREMENT_CHECK_VALIDATION_END,
+        }
+    )
 
-    _REQUIREMENT_EVENTS: ClassVar[frozenset[EventType]] = frozenset({
-        EventType.REQUIREMENT_VALIDATION_START,
-        EventType.REQUIREMENT_VALIDATION_END,
-    })
+    _REQUIREMENT_EVENTS: ClassVar[frozenset[EventType]] = frozenset(
+        {
+            EventType.REQUIREMENT_VALIDATION_START,
+            EventType.REQUIREMENT_VALIDATION_END,
+        }
+    )
 
     def __init__(self, name: str | None = None):
         super().__init__(name or type(self).__name__)
@@ -84,44 +88,39 @@ class EventDispatcher(Subscriber):
     def _on_validation_start(self, event: Event, ctx: ValidationContext | None) -> None:
         pass
 
-    def _on_profile_validation_start(self, event: ProfileValidationEvent,
-                                     ctx: ValidationContext | None) -> None:
+    def _on_profile_validation_start(self, event: ProfileValidationEvent, ctx: ValidationContext | None) -> None:
         pass
 
-    def _on_requirement_validation_start(self, event: RequirementValidationEvent,
-                                         ctx: ValidationContext | None) -> None:
+    def _on_requirement_validation_start(
+        self, event: RequirementValidationEvent, ctx: ValidationContext | None
+    ) -> None:
         pass
 
-    def _on_requirement_check_validation_start(self, event: RequirementCheckValidationEvent,
-                                               ctx: ValidationContext | None) -> None:
+    def _on_requirement_check_validation_start(
+        self, event: RequirementCheckValidationEvent, ctx: ValidationContext | None
+    ) -> None:
         pass
 
-    def _on_requirement_check_validation_end(self, event: RequirementCheckValidationEvent,
-                                             ctx: ValidationContext | None) -> None:
+    def _on_requirement_check_validation_end(
+        self, event: RequirementCheckValidationEvent, ctx: ValidationContext | None
+    ) -> None:
         pass
 
-    def _on_requirement_validation_end(self, event: RequirementValidationEvent,
-                                       ctx: ValidationContext | None) -> None:
+    def _on_requirement_validation_end(self, event: RequirementValidationEvent, ctx: ValidationContext | None) -> None:
         pass
 
-    def _on_profile_validation_end(self, event: ProfileValidationEvent,
-                                   ctx: ValidationContext | None) -> None:
+    def _on_profile_validation_end(self, event: ProfileValidationEvent, ctx: ValidationContext | None) -> None:
         pass
 
-    def _on_validation_end(self, event: ValidationEvent,
-                           ctx: ValidationContext | None) -> None:
+    def _on_validation_end(self, event: ValidationEvent, ctx: ValidationContext | None) -> None:
         pass
 
     @staticmethod
-    def _is_check_actionable(event: RequirementCheckValidationEvent,
-                             ctx: ValidationContext | None) -> bool:
+    def _is_check_actionable(event: RequirementCheckValidationEvent, ctx: ValidationContext | None) -> bool:
         """Return ``True`` if the check is neither hidden nor overridden."""
         assert ctx is not None, "Validation context must be provided"
         if event.requirement_check.requirement.hidden:
             return False
         if event.requirement_check.overridden:
-            return (
-                ctx.target_validation_profile.identifier
-                == event.requirement_check.requirement.profile.identifier
-            )
+            return ctx.target_validation_profile.identifier == event.requirement_check.requirement.profile.identifier
         return True

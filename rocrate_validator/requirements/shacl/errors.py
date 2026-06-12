@@ -18,7 +18,6 @@ from rocrate_validator.requirements.shacl.validator import SHACLValidationResult
 
 
 class SHACLValidationError(ValidationError):
-
     def __init__(
         self,
         result: SHACLValidationResult | None = None,
@@ -34,6 +33,4 @@ class SHACLValidationError(ValidationError):
         return self._result
 
     def __repr__(self):
-        return (
-            f"SHACLValidationError({self._message!r}, {self._path!r}, {self.result!r})"
-        )
+        return f"SHACLValidationError({self._message!r}, {self._path!r}, {self.result!r})"

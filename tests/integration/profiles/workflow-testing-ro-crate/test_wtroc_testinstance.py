@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 def test_wtroc_testinstance_no_service():
-    """\
+    """
     Test a Workflow Testing RO-Crate where a TestInstance does not refer to
     a TestService.
     """
@@ -33,12 +33,12 @@ def test_wtroc_testinstance_no_service():
         False,
         ["Workflow Testing RO-Crate TestInstance MUST"],
         ["The TestInstance MUST refer to a TestService via runsOn"],
-        profile_identifier="workflow-testing-ro-crate"
+        profile_identifier="workflow-testing-ro-crate",
     )
 
 
 def test_wtroc_testinstance_no_url():
-    """\
+    """
     Test a Workflow Testing RO-Crate where a TestInstance does not refer to
     the test service base URL.
     """
@@ -48,12 +48,12 @@ def test_wtroc_testinstance_no_url():
         False,
         ["Workflow Testing RO-Crate TestInstance MUST"],
         ["The TestInstance MUST refer to the test service base URL via url"],
-        profile_identifier="workflow-testing-ro-crate"
+        profile_identifier="workflow-testing-ro-crate",
     )
 
 
 def test_wtroc_testinstance_no_resource():
-    """\
+    """
     Test a Workflow Testing RO-Crate where a TestInstance does not refer to
     the relative URL of the test project via resource.
     """
@@ -63,12 +63,12 @@ def test_wtroc_testinstance_no_resource():
         False,
         ["Workflow Testing RO-Crate TestInstance MUST"],
         ["The TestInstance MUST refer to the relative URL of the test project via resource"],
-        profile_identifier="workflow-testing-ro-crate"
+        profile_identifier="workflow-testing-ro-crate",
     )
 
 
 def test_wtroc_testinstance_bad_runson():
-    """\
+    """
     Test a Workflow Testing RO-Crate where a TestInstance has a runsOn
     property that does not refer to a TestService.
     """
@@ -78,12 +78,12 @@ def test_wtroc_testinstance_bad_runson():
         False,
         ["Workflow Testing RO-Crate TestInstance MUST"],
         ["The TestInstance MUST refer to a TestService via runsOn"],
-        profile_identifier="workflow-testing-ro-crate"
+        profile_identifier="workflow-testing-ro-crate",
     )
 
 
 def test_wtroc_testinstance_bad_url():
-    """\
+    """
     Test a Workflow Testing RO-Crate where a TestInstance has a url
     property that does not refer to a string with a URL pattern.
     """
@@ -93,12 +93,12 @@ def test_wtroc_testinstance_bad_url():
         False,
         ["Workflow Testing RO-Crate TestInstance MUST"],
         ["The TestInstance MUST refer to the test service base URL via url"],
-        profile_identifier="workflow-testing-ro-crate"
+        profile_identifier="workflow-testing-ro-crate",
     )
 
 
 def test_wtroc_testinstance_bad_resource():
-    """\
+    """
     Test a Workflow Testing RO-Crate where a TestInstance has a resource
     property that does not refer to a string.
     """
@@ -108,5 +108,5 @@ def test_wtroc_testinstance_bad_resource():
         False,
         ["Workflow Testing RO-Crate TestInstance MUST"],
         ["The TestInstance MUST refer to the relative URL of the test project via resource"],
-        profile_identifier="workflow-testing-ro-crate"
+        profile_identifier="workflow-testing-ro-crate",
     )

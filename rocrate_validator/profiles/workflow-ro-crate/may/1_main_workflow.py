@@ -59,7 +59,8 @@ class WorkflowFilesExistence(PyFunctionCheck):
                 return False
             if not context.settings.metadata_only and not main_workflow_subject.is_available():
                 context.result.add_issue(
-                    f"Workflow CWL description {main_workflow_subject.id} not found in crate", self)
+                    f"Workflow CWL description {main_workflow_subject.id} not found in crate", self
+                )
                 return False
             return True
         except Exception:

@@ -35,12 +35,10 @@ logger = logging.getLogger(__name__)
 class OutputFormatter(Protocol):
     """Protocol for output formatters."""
 
-    def __rich_console__(self, console: Console, options: ConsoleOptions) -> RenderResult:
-        ...
+    def __rich_console__(self, console: Console, options: ConsoleOptions) -> RenderResult: ...
 
 
 class BaseOutputFormatter(OutputFormatter):
-
     def __init__(self, data: Any | None = None):
         # Formatters are registered as classes (instantiated with the data to
         # render), so the map values are formatter types, not instances.

@@ -402,5 +402,3 @@ prov:Plan skos:narrowMatch schema1:HowTo,
     sssom:mapping_justification semapv:ManualMappingCuration ;
     sssom:object_label "agent" ;
     sssom:subject_label "was started by" .
-
-

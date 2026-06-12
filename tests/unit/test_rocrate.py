@@ -50,23 +50,19 @@ def test_invalid_local_ro_crate():
 
 
 def test_is_bagit_rocrate():
-    assert BagitROCrate.is_bagit_wrapping_crate(ValidROC().bagit), \
-        "Should be a BagIt RO-Crate"
+    assert BagitROCrate.is_bagit_wrapping_crate(ValidROC().bagit), "Should be a BagIt RO-Crate"
 
-    assert BagitROCrate.is_bagit_wrapping_crate(ValidROC().bagit_zip), \
-        "Should be a BagIt Zip RO-Crate"
+    assert BagitROCrate.is_bagit_wrapping_crate(ValidROC().bagit_zip), "Should be a BagIt Zip RO-Crate"
 
-    assert BagitROCrate.is_bagit_wrapping_crate(ValidROC().bagit_remote_zip), \
-        "Should be a BagIt Remote Zip RO-Crate"
+    assert BagitROCrate.is_bagit_wrapping_crate(ValidROC().bagit_remote_zip), "Should be a BagIt Remote Zip RO-Crate"
 
-    assert not BagitROCrate.is_bagit_wrapping_crate(ValidROC().wrroc_paper), \
+    assert not BagitROCrate.is_bagit_wrapping_crate(ValidROC().wrroc_paper), "Should not be a BagIt RO-Crate"
+
+    assert not BagitROCrate.is_bagit_wrapping_crate(ValidROC().sort_and_change_archive), (
         "Should not be a BagIt RO-Crate"
+    )
 
-    assert not BagitROCrate.is_bagit_wrapping_crate(ValidROC().sort_and_change_archive), \
-        "Should not be a BagIt RO-Crate"
-
-    assert not BagitROCrate.is_bagit_wrapping_crate(ValidROC().sort_and_change_remote), \
-        "Should not be a BagIt RO-Crate"
+    assert not BagitROCrate.is_bagit_wrapping_crate(ValidROC().sort_and_change_remote), "Should not be a BagIt RO-Crate"
 
 
 def test_abstract_bagit_rocrate_instantiation():
@@ -256,8 +252,9 @@ def test_valid_local_rocrate():
     assert isinstance(root_data_entity, ROCrateEntity), "Entity should be ROCrateEntity"
     assert root_data_entity.id == "./", "Id should be ./"
     assert root_data_entity.type == "Dataset", "Type should be Dataset"
-    assert root_data_entity.name == "Recording provenance of workflow runs with RO-Crate (RO-Crate and mapping)", \
+    assert root_data_entity.name == "Recording provenance of workflow runs with RO-Crate (RO-Crate and mapping)", (
         "Name should be wrroc-paper"
+    )
 
     # check metadata consistency
     assert root_data_entity.metadata == metadata, "Metadata should be the same"
@@ -273,8 +270,7 @@ def test_valid_local_folder_rocrate_with_relative_root():
     # set relative root path
     relative_root_path = Path("custom-relative-root")
     # create ROCrateLocalFolder with relative root path
-    roc = ROCrateLocalFolder(ValidROC().rocrate_with_relative_root,
-                             relative_root_path=relative_root_path)
+    roc = ROCrateLocalFolder(ValidROC().rocrate_with_relative_root, relative_root_path=relative_root_path)
     assert isinstance(roc, ROCrateLocalFolder)
     logger.debug("Testing bagit with relative root path: %s", relative_root_path)
 
@@ -287,8 +283,7 @@ def test_valid_local_folder_rocrate_with_relative_root():
 
     # test has_file
     assert roc.has_file(Path("ro-crate-metadata.json")), "Should have ro-crate-metadata.json file"
-    assert roc.has_file(Path("pics/2017-06-11%252012.56.14.jpg")), \
-        "Should have pics/2017-06-11%252012.56.14.jpg file"
+    assert roc.has_file(Path("pics/2017-06-11%252012.56.14.jpg")), "Should have pics/2017-06-11%252012.56.14.jpg file"
 
     # test get_file_content
     content = roc.get_file_content(Path("ro-crate-metadata.json"))
@@ -374,6 +369,7 @@ def test_valid_zip_rocrate():
 ################################
 #      ROCrate Local Bagit Zip
 ################################
+
 
 def test_paths_valid_bagit_rocrate():
     roc = ROCrate(ValidROC().bagit_zip)  # type: ignore[abstract]
@@ -465,7 +461,6 @@ def test_valid_bagit_zip_rocrate():
     # check metadata consistency
 
     # check availability of 'pics/2017-06-11%2012.56.14.jpg'
-
 
 
 ################################
@@ -643,9 +638,7 @@ def test_local_file_uri_data_entity_is_not_remote(entity_id):
     crate = ROCrate.from_metadata_dict(_metadata_dict_with_id(entity_id))
     entity = crate.metadata.get_entity(entity_id)
     assert entity is not None, "Entity should be present in the metadata"
-    assert not entity.is_remote(), (
-        f"Entity with local file URI '{entity_id}' should NOT be classified as remote"
-    )
+    assert not entity.is_remote(), f"Entity with local file URI '{entity_id}' should NOT be classified as remote"
     assert entity not in crate.metadata.get_web_data_entities(), (
         f"Entity '{entity_id}' should not be listed as a web data entity"
     )

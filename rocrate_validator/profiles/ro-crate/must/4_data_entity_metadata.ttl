@@ -162,7 +162,7 @@ ro-crate:GenericDataEntityRequiredProperties a sh:NodeShape ;
                 FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
                 FILTER(?this != ?root)
                 FILTER(?this != ?metadatafile)
-                FILTER NOT EXISTS { 
+                FILTER NOT EXISTS {
                     ?this a schema:MediaObject .
                     ?this a schema:Dataset .
                 }

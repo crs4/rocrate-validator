@@ -62,6 +62,7 @@ WHERE {
 @dataclass
 class WarmUpResult:
     """Outcome of a warm-up operation."""
+
     url: str
     status: str  # "ok", "skipped", "failed"
     detail: str | None = None
@@ -75,8 +76,7 @@ def discover_profile_cacheable_urls(profile: Profile) -> list[str]:
     """
     graph = profile.profile_specification_graph
     if graph is None:
-        logger.debug(
-            "Profile %s has no specification graph loaded", getattr(profile, "identifier", "?"))
+        logger.debug("Profile %s has no specification graph loaded", getattr(profile, "identifier", "?"))
         return []
     urls: list[str] = []
     try:
@@ -88,8 +88,7 @@ def discover_profile_cacheable_urls(profile: Profile) -> list[str]:
             if value.lower().startswith(("http://", "https://")) and value not in urls:
                 urls.append(value)
     except Exception as e:
-        logger.debug("Failed to query cacheable URLs for profile %s: %s",
-                     getattr(profile, "identifier", "?"), e)
+        logger.debug("Failed to query cacheable URLs for profile %s: %s", getattr(profile, "identifier", "?"), e)
     return urls
 
 
@@ -176,13 +175,15 @@ def auto_warm_up_for_settings(settings: ValidationSettings) -> list[WarmUpResult
     requester = HttpRequester()
     urls_to_fetch = [u for u in urls if not requester.has_cached(u)]
     if not urls_to_fetch:
-        logger.debug("Auto warm-up: all %d resources already cached for profile %s",
-                     len(urls), settings.profile_identifier)
+        logger.debug(
+            "Auto warm-up: all %d resources already cached for profile %s", len(urls), settings.profile_identifier
+        )
         return []
     results = warm_up_urls(urls_to_fetch)
     ok = sum(1 for r in results if r.status == "ok")
-    logger.info("Auto warm-up: pre-loaded %d/%d resources for profile %s",
-                ok, len(urls_to_fetch), settings.profile_identifier)
+    logger.info(
+        "Auto warm-up: pre-loaded %d/%d resources for profile %s", ok, len(urls_to_fetch), settings.profile_identifier
+    )
     return results
 
 

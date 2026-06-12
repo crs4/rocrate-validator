@@ -29,5 +29,5 @@ def test_valid_workflow_roc_required():
         Severity.REQUIRED,
         True,
         profile_identifier="workflow-testing-ro-crate",
-        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER]
+        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER],
     )

@@ -30,8 +30,9 @@ from rocrate_validator.utils.document_loader import (
 from rocrate_validator.utils.http import HttpRequester, OfflineCacheMissError
 
 
-def _urllib3_response(payload: bytes = b'{"@context": {"name": "https://schema.org/name"}}',
-                      status: int = 200) -> urllib3.HTTPResponse:
+def _urllib3_response(
+    payload: bytes = b'{"@context": {"name": "https://schema.org/name"}}', status: int = 200
+) -> urllib3.HTTPResponse:
     return urllib3.HTTPResponse(
         body=io.BytesIO(payload),
         headers={
@@ -125,6 +126,7 @@ def test_patched_source_to_json_routes_http_urls(tmp_path, mock_network):
     HttpRequester.initialize_cache(cache_path=str(tmp_path / "cache"), cache_max_age=60)
     install_document_loader()
     from rdflib.plugins.shared.jsonld import util as jsonld_util
+
     doc, _ = jsonld_util.source_to_json("https://example.org/context")
     assert doc == {"@context": {"name": "https://schema.org/name"}}
 
@@ -133,6 +135,7 @@ def test_patched_source_to_json_ignores_non_http(tmp_path):
     HttpRequester.initialize_cache(cache_path=str(tmp_path / "cache"), cache_max_age=60)
     install_document_loader()
     from rdflib.plugins.shared.jsonld import util as jsonld_util
+
     file_path = tmp_path / "context.jsonld"
     file_path.write_text('{"@context": {"foo": "https://example.org/foo"}}')
     doc, _ = jsonld_util.source_to_json(str(file_path))
@@ -170,7 +173,7 @@ def test_install_patches_both_util_and_context(tmp_path):
     install_document_loader()
 
     assert jsonld_util.source_to_json is document_loader._patched_source_to_json
-    assert jsonld_context.source_to_json is document_loader._patched_source_to_json # pyright: ignore[reportPrivateImportUsage]
+    assert jsonld_context.source_to_json is document_loader._patched_source_to_json  # pyright: ignore[reportPrivateImportUsage]
 
 
 def test_uninstall_restores_both_util_and_context(tmp_path):
@@ -182,7 +185,7 @@ def test_uninstall_restores_both_util_and_context(tmp_path):
     uninstall_document_loader()
 
     assert jsonld_util.source_to_json is document_loader._original_source_to_json
-    assert jsonld_context.source_to_json is document_loader._original_source_to_json # pyright: ignore[reportPrivateImportUsage]
+    assert jsonld_context.source_to_json is document_loader._original_source_to_json  # pyright: ignore[reportPrivateImportUsage]
 
 
 def test_context_module_resolution_routes_through_http(tmp_path, mock_network):
@@ -192,7 +195,7 @@ def test_context_module_resolution_routes_through_http(tmp_path, mock_network):
     install_document_loader()
     from rdflib.plugins.shared.jsonld import context as jsonld_context
 
-    doc, _ = jsonld_context.source_to_json("https://example.org/context") # pyright: ignore[reportPrivateImportUsage]
+    doc, _ = jsonld_context.source_to_json("https://example.org/context")  # pyright: ignore[reportPrivateImportUsage]
 
     assert doc == {"@context": {"name": "https://schema.org/name"}}
     assert HttpRequester().has_cached("https://example.org/context") is True

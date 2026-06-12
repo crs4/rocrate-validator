@@ -97,11 +97,7 @@ def test_sparql_profile_shape_loaded_correctly(sparql_test_profiles_path):
     # Find the test shape (AlwaysFailShape or similar name)
     test_shape = None
     for shape in shapes:
-        if (
-            "Always" in shape.name
-            or "Test" in shape.name
-            or "test" in shape.name.lower()
-        ):
+        if "Always" in shape.name or "Test" in shape.name or "test" in shape.name.lower():
             test_shape = shape
             break
 
@@ -110,9 +106,7 @@ def test_sparql_profile_shape_loaded_correctly(sparql_test_profiles_path):
     assert len(test_shape.description) > 0
 
 
-def test_sparql_constraint_with_bnode_sourceShape(
-    sparql_test_profiles_path, sparql_test_rocrate
-):
+def test_sparql_constraint_with_bnode_sourceShape(sparql_test_profiles_path, sparql_test_rocrate):
     """
     Test that SPARQL constraint violations with BNode sourceShape
     are handled gracefully by the validation pipeline.
@@ -139,10 +133,9 @@ def test_sparql_constraint_with_bnode_sourceShape(
     assert issues[0].check.description is not None, "Check should have a description"
     assert issues[0].message is not None, "Issue should have a message"
     assert len(issues[0].message) > 0, "Issue message should not be empty"
-    assert (
-        "SPARQL constraint violation" in issues[0].message
-        or "SPARQL" in issues[0].check.description
-    ), "Check description should reference parent shape"
+    assert "SPARQL constraint violation" in issues[0].message or "SPARQL" in issues[0].check.description, (
+        "Check description should reference parent shape"
+    )
 
 
 def test_resolve_parent_shape_with_sparql_bnode():

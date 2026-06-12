@@ -44,7 +44,7 @@ isa-ro-crate:FindISAOntologyAnnotation a sh:NodeShape, validator:HiddenShape;
                     sh:property [
                         sh:name "OntologyAnnotation is measurementMethod of an Assay" ;
                         sh:path [ sh:inversePath schema:measurementMethod ] ;
-                        sh:qualifiedValueShape [ 
+                        sh:qualifiedValueShape [
                             sh:class isa-ro-crate:Assay ;
                         ] ;
                         sh:qualifiedMinCount 1 ;
@@ -54,7 +54,7 @@ isa-ro-crate:FindISAOntologyAnnotation a sh:NodeShape, validator:HiddenShape;
                     sh:property [
                         sh:name "OntologyAnnotation is measurementTechnique of an Assay" ;
                         sh:path [ sh:inversePath schema:measurementTechnique ] ;
-                        sh:qualifiedValueShape [ 
+                        sh:qualifiedValueShape [
                             sh:class isa-ro-crate:Assay
                         ] ;
                         sh:qualifiedMinCount 1 ;
@@ -64,7 +64,7 @@ isa-ro-crate:FindISAOntologyAnnotation a sh:NodeShape, validator:HiddenShape;
                     sh:property [
                         sh:name "OntologyAnnotation is intendedUse of a Protocol" ;
                         sh:path [ sh:inversePath schema:intendedUse ] ;
-                        sh:qualifiedValueShape [ 
+                        sh:qualifiedValueShape [
                             sh:class isa-ro-crate:Protocol
                         ] ;
                         sh:qualifiedMinCount 1 ;
@@ -74,7 +74,7 @@ isa-ro-crate:FindISAOntologyAnnotation a sh:NodeShape, validator:HiddenShape;
                     sh:property [
                         sh:name "OntologyAnnotation is computationalTool of a Protocol" ;
                         sh:path [ sh:inversePath schema:computationalTool ] ;
-                        sh:qualifiedValueShape [ 
+                        sh:qualifiedValueShape [
                             sh:class isa-ro-crate:Protocol
                         ] ;
                         sh:qualifiedMinCount 1 ;
@@ -84,7 +84,7 @@ isa-ro-crate:FindISAOntologyAnnotation a sh:NodeShape, validator:HiddenShape;
                     sh:property [
                         sh:name "OntologyAnnotation is labEquipment of a Protocol" ;
                         sh:path [ sh:inversePath schema:labEquipment ] ;
-                        sh:qualifiedValueShape [ 
+                        sh:qualifiedValueShape [
                             sh:class isa-ro-crate:Protocol
                         ] ;
                         sh:qualifiedMinCount 1 ;
@@ -94,7 +94,7 @@ isa-ro-crate:FindISAOntologyAnnotation a sh:NodeShape, validator:HiddenShape;
                     sh:property [
                         sh:name "OntologyAnnotation is reagent of a Protocol" ;
                         sh:path [ sh:inversePath schema:reagent ] ;
-                        sh:qualifiedValueShape [ 
+                        sh:qualifiedValueShape [
                             sh:class isa-ro-crate:Protocol
                         ] ;
                         sh:qualifiedMinCount 1 ;
@@ -104,7 +104,7 @@ isa-ro-crate:FindISAOntologyAnnotation a sh:NodeShape, validator:HiddenShape;
                     sh:property [
                         sh:name "OntologyAnnotation is job title of a Person" ;
                         sh:path [ sh:inversePath schema:jobTitle ] ;
-                        sh:qualifiedValueShape [ 
+                        sh:qualifiedValueShape [
                             sh:class isa-ro-crate:Person
                         ] ;
                         sh:qualifiedMinCount 1 ;
@@ -114,7 +114,7 @@ isa-ro-crate:FindISAOntologyAnnotation a sh:NodeShape, validator:HiddenShape;
                     sh:property [
                         sh:name "OntologyAnnotation is status of a Publication" ;
                         sh:path [ sh:inversePath schema:creativeWorkStatus ] ;
-                        sh:qualifiedValueShape [ 
+                        sh:qualifiedValueShape [
                             sh:class isa-ro-crate:Publication
                         ] ;
                         sh:qualifiedMinCount 1 ;
@@ -134,14 +134,14 @@ isa-ro-crate:DefinedTermMustHaveName a sh:NodeShape ;
         sh:path schema:name ;
         sh:datatype xsd:string ;
         sh:minCount 1 ;
-        sh:maxCount 1 ; 
+        sh:maxCount 1 ;
         sh:not [
             sh:hasValue ""
         ] ;
         sh:description "Check that DefinedTerm does have non-empty name and it's a string" ;
         sh:message "DefinedTerm entity MUST have a non-empty name of type string" ;
         sh:severity sh:Violation ;
-    ] 
+    ]
 .
 
 isa-ro-crate:DefinedTermShouldHaveTermCodeOfCorrectType a sh:NodeShape ;

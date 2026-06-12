@@ -73,7 +73,7 @@ def install_document_loader() -> bool:
             # time, binding its own reference to the original function. Patching
             # only `util` would not intercept remote @context resolution, so the
             # context module must be patched separately.
-            jsonld_context.source_to_json = _patched_source_to_json # pyright: ignore[reportPrivateImportUsage]
+            jsonld_context.source_to_json = _patched_source_to_json  # pyright: ignore[reportPrivateImportUsage]
         except Exception as e:
             logger.error("Failed to install JSON-LD document loader: %s", e)
             return False
@@ -97,7 +97,7 @@ def uninstall_document_loader() -> bool:
 
         try:
             jsonld_util.source_to_json = _original_source_to_json
-            jsonld_context.source_to_json = _original_source_to_json # pyright: ignore[reportPrivateImportUsage]
+            jsonld_context.source_to_json = _original_source_to_json  # pyright: ignore[reportPrivateImportUsage]
         except Exception as e:
             logger.error("Failed to uninstall JSON-LD document loader: %s", e)
             return False

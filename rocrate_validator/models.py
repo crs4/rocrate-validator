@@ -747,9 +747,7 @@ class Profile:
         for root_profile_directory in root_profile_directories:
             # if the path is a string, convert it to a Path
             profile_root_directory = (
-                Path(root_profile_directory)
-                if isinstance(root_profile_directory, str)
-                else root_profile_directory
+                Path(root_profile_directory) if isinstance(root_profile_directory, str) else root_profile_directory
             )
             # check if the path is a directory and raise an error if not
             if not profile_root_directory.is_dir():
@@ -1376,12 +1374,14 @@ class RequirementLoader:
                     requirement_path,
                 )
             requirement_loader = RequirementLoader.__get_requirement_loader__(profile, requirement_path)
-            requirements.extend(cast("Any", requirement_loader).load(
-                profile,
-                requirement_level,
-                requirement_path,
-                publicID=profile.publicID,
-            ))
+            requirements.extend(
+                cast("Any", requirement_loader).load(
+                    profile,
+                    requirement_level,
+                    requirement_path,
+                    publicID=profile.publicID,
+                )
+            )
         # sort the requirements by severity
         requirements = sorted(
             requirements,
@@ -1408,6 +1408,7 @@ class SourceSnippet:
     :ivar code: the source code as text.
     :ivar source_path: path to the file the snippet was extracted from, when available.
     """
+
     language: str
     code: str
     source_path: Path | None = None
@@ -1415,7 +1416,6 @@ class SourceSnippet:
 
 @total_ordering
 class RequirementCheck(ABC):
-
     def __init__(
         self,
         requirement: Requirement,
@@ -1885,8 +1885,12 @@ class ValidationStatistics(Subscriber):
 
     @staticmethod
     def __collect_requirement_checks__(
-        requirement, severity_validation, validation_settings,
-        target_profile_identifier, checks, checks_by_severity,
+        requirement,
+        severity_validation,
+        validation_settings,
+        target_profile_identifier,
+        checks,
+        checks_by_severity,
     ) -> int:
         """Count and register a requirement's checks across severities >= the requested one."""
         requirement_checks_count = 0
@@ -1895,9 +1899,7 @@ class ValidationStatistics(Subscriber):
             Severity.RECOMMENDED,
             Severity.OPTIONAL,
         ):
-            logger.debug(
-                f"Checking requirement: {requirement} severity: {severity} {severity < severity_validation}"
-            )
+            logger.debug(f"Checking requirement: {requirement} severity: {severity} {severity < severity_validation}")
             # skip requirements with lower severity
             if severity < severity_validation:
                 continue
@@ -2410,9 +2412,7 @@ class AggregatedValidationStatistics:
         """
         sorted_checks_by_severity = {}
         for severity_key, severity_checks in raw_stats["checks_by_severity"].items():
-            sorted_checks_by_severity[severity_key] = sorted(
-                severity_checks, key=lambda c: c.identifier
-            )
+            sorted_checks_by_severity[severity_key] = sorted(severity_checks, key=lambda c: c.identifier)
 
         return {
             "profiles": sorted(raw_stats["profiles"], key=lambda p: p.identifier),
@@ -2605,8 +2605,7 @@ class ValidationResult:
         Get the requirements that failed at or above the configured `requirement_severity`.
         """
         min_severity = self.context.requirement_severity
-        return {issue.check.requirement for issue in self._issues
-                if issue.severity >= min_severity}
+        return {issue.check.requirement for issue in self._issues if issue.severity >= min_severity}
 
     #  --- Checks ---
     @property
@@ -2615,8 +2614,7 @@ class ValidationResult:
         Get the checks that failed at or above the configured `requirement_severity`.
         """
         min_severity = self.context.requirement_severity
-        return {issue.check for issue in self._issues
-                if issue.severity >= min_severity}
+        return {issue.check for issue in self._issues if issue.severity >= min_severity}
 
     def get_failed_checks_by_requirement(self, requirement: Requirement) -> Collection[RequirementCheck]:
         """
@@ -2767,8 +2765,7 @@ class ValidationSettings:
         # combined with an explicit cache disable.
         if self.offline and self.no_cache:
             raise ValueError(
-                "Offline mode requires the HTTP cache to be enabled; "
-                "no_cache=True is incompatible with offline=True."
+                "Offline mode requires the HTTP cache to be enabled; no_cache=True is incompatible with offline=True."
             )
         # Default to the persistent user cache whenever caching is enabled so that
         # consecutive runs (online then offline) share the same HTTP cache: this
@@ -2794,7 +2791,10 @@ class ValidationSettings:
         )
         logger.debug(
             "HTTP cache initialized at %s with max age %s seconds (offline=%s, no_cache=%s)",
-            self.cache_path, self.cache_max_age, self.offline, self.no_cache,
+            self.cache_path,
+            self.cache_max_age,
+            self.offline,
+            self.no_cache,
         )
         # Install the JSON-LD document loader so context resolution goes through the cache.
         try:

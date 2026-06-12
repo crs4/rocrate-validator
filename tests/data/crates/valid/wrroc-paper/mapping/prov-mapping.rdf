@@ -306,5 +306,3 @@
     sssom:object_source_version 3e-01 ;
     sssom:subject_source <http://www.w3.org/ns/prov-o#> ;
     sssom:subject_source_version 20130430 .
-
-
