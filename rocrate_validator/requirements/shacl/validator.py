@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# pylint: disable=cyclic-import  # lazy imports break the cycle at runtime (see PLC0415 noqa markers in requirements)
 from __future__ import annotations
 
 from pathlib import Path
