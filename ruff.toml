@@ -23,6 +23,12 @@
 # which is a common convention in Python projects.
 line-length = 120
 
+# Lowest supported Python version. Ruff only infers this from
+# `[project].requires-python`, which this (Poetry-based) project does not use,
+# so the linter would otherwise fall back to its py39 default and skip 3.10+
+# modernizations. Keep in sync with `tool.poetry.dependencies.python` (>=3.10).
+target-version = "py310"
+
 # Extend the default set of rules with additional rules from various plugins.
 [lint]
 extend-select = [
@@ -61,26 +67,24 @@ explicit-preview-rules = true
 
 # Rules intentionally disabled.
 ignore = [
-    "UP045",   # non-pep604-annotation-optional: keep `Optional[X]` instead of `X | None` (project supports 3.9)
-    "UP007",   # non-pep604-annotation: same rationale as UP045
-    "PLR0904", # too-many-public-methods: pre-existing project style
+    # "PLR0904", # too-many-public-methods: pre-existing project style
     "PLR0913", # too-many-arguments: pre-existing project style
-    "PLR0917", # too-many-positional-arguments: pre-existing project style
-    "PLW3201", # bad-dunder-method-name: project uses `__method__` convention; renaming is not viable
+    # "PLR0917", # too-many-positional-arguments: pre-existing project style
+    # "PLW3201", # bad-dunder-method-name: project uses `__method__` convention; renaming is not viable
     # --- Stable rules pulled in only as a side effect of `preview = true` ---
     # (not part of the original selection; suppressed to keep the preview flag
     # scoped to PLR0914 / PLR1702. Enable individually later if desired.)
     "BLE001",  # blind-except
-    "TRY401",  # verbose-log-message
-    "TRY201",  # verbose-raise
-    "TRY002",  # raise-vanilla-class
-    "D419",    # empty-docstring
-    "PIE804",  # unnecessary-dict-kwargs
-    "PIE810",  # multiple-starts-ends-with
-    "DTZ901",  # datetime-min-max
-    "PYI034",  # non-self-return-type
-    "PYI061",  # redundant-none-literal
-    "S110",    # try-except-pass
+    # "TRY401",  # verbose-log-message
+    # "TRY201",  # verbose-raise
+    # "TRY002",  # raise-vanilla-class
+    # "D419",    # empty-docstring
+    # "PIE804",  # unnecessary-dict-kwargs
+    # "PIE810",  # multiple-starts-ends-with
+    # "DTZ901",  # datetime-min-max
+    # "PYI034",  # non-self-return-type
+    # "PYI061",  # redundant-none-literal
+    # "S110",    # try-except-pass
 ]
 
 [lint.per-file-ignores]
