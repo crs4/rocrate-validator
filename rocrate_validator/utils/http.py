@@ -25,7 +25,7 @@ from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-import requests  # type: ignore[import-untyped]
+import requests
 
 from rocrate_validator import constants
 from rocrate_validator.utils import log as logging
