@@ -261,8 +261,8 @@ class PyRequirementLoader(RequirementLoader):
         profile: Profile,
         requirement_level: RequirementLevel,  # pylint: disable=unused-argument
         file_path: Path,
-        publicID: str | None = None,
-    ) -> list[Requirement]:  # pylint: disable=unused-argument
+        publicID: str | None = None,  # pylint: disable=unused-argument
+    ) -> list[Requirement]:
         # instantiate a list to store the requirements
         requirements: list[Requirement] = []
 

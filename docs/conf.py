@@ -17,6 +17,10 @@
 # For the full list of built-in configuration values, see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
+# Sphinx conf.py keeps several configuration options commented out as inline
+# documentation of what can be enabled; do not flag them as dead code.
+# ruff: noqa: ERA001
+
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
@@ -117,7 +121,7 @@ autodoc_member_order = "bysource"
 
 autosummary_generate = True
 
-autodoc_default_options = {
+autodoc_default_options: dict[str, bool | str] = {
     # 'members': True,
     # Does now show base classes otherwise... why such bad defaults?
     # But with this it does show useless bases like `object`. What is one to do?

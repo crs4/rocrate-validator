@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# pylint: disable=invalid-name  # profile filename uses digit prefix (load-order convention)
+
 import re
 from typing import Any
 from urllib.parse import urljoin
