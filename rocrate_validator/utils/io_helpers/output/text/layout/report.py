@@ -186,7 +186,7 @@ class ValidationReportLayout(Layout):
         result = self.result or (self.statistics.validation_result) if self.statistics else None
         # Show the overall result if available
         if result:
-            self._show_overall_result(result)
+            self.show_overall_result(result)
 
     def update_stats(self, profile_stats: ValidationStatistics | None = None):
         assert profile_stats, "Profile stats must be provided"
@@ -254,7 +254,7 @@ class ValidationReportLayout(Layout):
             )
         )
 
-    def _show_overall_result(self, result: ValidationResult | None):
+    def show_overall_result(self, result: ValidationResult | None):
         assert result, "Validation result must be provided"
         assert self.overall_result is not None, "Layout not initialized"
         self.result = result
@@ -292,7 +292,7 @@ class _ReportLayoutSubscriber(EventDispatcher):
 
     def _on_validation_end(self, event: ValidationEvent,
                            ctx: ValidationContext | None) -> None:
-        self._layout._show_overall_result(event.validation_result)
+        self._layout.show_overall_result(event.validation_result)
 
 
 def get_app_header_rule() -> Padding:
@@ -383,6 +383,7 @@ class LiveTextProgressLayout:
                 try:
                     result_container[0] = self.callable_service(self.validation_settings)
                 except Exception as e:
+                    # Captured here and re-raised on the main thread after join.
                     exception_container[0] = e
 
             validation_thread = threading.Thread(target=run_validation)
