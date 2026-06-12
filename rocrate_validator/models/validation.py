@@ -15,7 +15,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from urllib.error import HTTPError
 
 from rdflib import Graph
@@ -38,12 +38,14 @@ from rocrate_validator.models.requirement import (
     RequirementLoader,
 )
 from rocrate_validator.models.result import ValidationResult
-from rocrate_validator.models.severity import Severity
 from rocrate_validator.models.settings import ValidationSettings
+from rocrate_validator.models.severity import Severity
 from rocrate_validator.rocrate import ROCrate
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.http import find_offline_cache_miss
-from rocrate_validator.utils.uri import URI
+
+if TYPE_CHECKING:
+    from rocrate_validator.utils.uri import URI
 
 
 class Validator(Publisher):

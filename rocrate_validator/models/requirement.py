@@ -18,7 +18,6 @@ import importlib
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from functools import total_ordering
-from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
 
 from rocrate_validator.constants import (
@@ -39,6 +38,8 @@ from rocrate_validator.utils.python_helpers import (
 )
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from rocrate_validator.models.profile import Profile
     from rocrate_validator.models.validation import ValidationContext
 
@@ -473,7 +474,7 @@ class RequirementLoader:
                 )
             requirement_loader = RequirementLoader.__get_requirement_loader__(profile, requirement_path)
             requirements.extend(
-                cast("Any", requirement_loader).load(
+                cast(Any, requirement_loader).load(  # noqa: TC006
                     profile,
                     requirement_level,
                     requirement_path,

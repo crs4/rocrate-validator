@@ -18,7 +18,7 @@ import bisect
 import json
 from functools import total_ordering
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Collection, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from rocrate_validator import __version__
 from rocrate_validator.constants import JSON_OUTPUT_FORMAT_VERSION
@@ -31,9 +31,11 @@ from rocrate_validator.models.severity import (
     RequirementLevel,
     Severity,
 )
-from rocrate_validator.models.settings import ValidationSettings
 
 if TYPE_CHECKING:
+    from collections.abc import Collection
+
+    from rocrate_validator.models.settings import ValidationSettings
     from rocrate_validator.models.statistics import ValidationStatistics
     from rocrate_validator.models.validation import ValidationContext
 

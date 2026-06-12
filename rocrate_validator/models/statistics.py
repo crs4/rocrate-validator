@@ -19,25 +19,25 @@ from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Protocol, cast
 
 from rocrate_validator.events import Event, EventType, Subscriber
+from rocrate_validator.models._logging import logger
 from rocrate_validator.models.events import (
     ProfileValidationEvent,
     RequirementCheckValidationEvent,
     RequirementValidationEvent,
     ValidationEvent,
 )
-from rocrate_validator.models._logging import logger
 from rocrate_validator.models.profile import Profile
-from rocrate_validator.models.requirement import (
-    Requirement,
-    RequirementCheck,
-)
+from rocrate_validator.models.settings import ValidationSettings
 from rocrate_validator.models.severity import (
     LevelCollection,
     Severity,
 )
-from rocrate_validator.models.settings import ValidationSettings
 
 if TYPE_CHECKING:
+    from rocrate_validator.models.requirement import (
+        Requirement,
+        RequirementCheck,
+    )
     from rocrate_validator.models.result import ValidationResult
     from rocrate_validator.models.validation import ValidationContext
 

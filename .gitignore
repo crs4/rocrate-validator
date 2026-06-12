@@ -31,3 +31,8 @@ docs/_build
 # ignore IDE files
 .vscode/
 .idea/
+
+extra_crates/
+extra_profiles/
+
+*.back

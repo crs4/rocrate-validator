@@ -12,25 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from rocrate_validator.utils.uri import URI
-
 from rocrate_validator.models._logging import logger
-from rocrate_validator.models.severity import (
-    LevelCollection,
-    RequirementLevel,
-    Severity,
-)
-from rocrate_validator.models.settings import (
-    DEFAULT_PROFILES_PATH,
-    BaseTypes,
-    ValidationSettings,
-)
 from rocrate_validator.models.events import (
     ProfileValidationEvent,
     RequirementCheckValidationEvent,
     RequirementValidationEvent,
     ValidationEvent,
 )
+from rocrate_validator.models.profile import Profile
 from rocrate_validator.models.requirement import (
     Requirement,
     RequirementCheck,
@@ -38,11 +27,20 @@ from rocrate_validator.models.requirement import (
     SkipRequirementCheck,
     SourceSnippet,
 )
-from rocrate_validator.models.profile import Profile
 from rocrate_validator.models.result import (
     CheckIssue,
     CustomEncoder,
     ValidationResult,
+)
+from rocrate_validator.models.settings import (
+    DEFAULT_PROFILES_PATH,
+    BaseTypes,
+    ValidationSettings,
+)
+from rocrate_validator.models.severity import (
+    LevelCollection,
+    RequirementLevel,
+    Severity,
 )
 from rocrate_validator.models.statistics import (
     AggregatedValidationStatistics,
@@ -53,13 +51,15 @@ from rocrate_validator.models.validation import (
     ValidationContext,
     Validator,
 )
+from rocrate_validator.utils.uri import URI
 
 __all__ = [
+    "DEFAULT_PROFILES_PATH",
+    "URI",
     "AggregatedValidationStatistics",
     "BaseTypes",
     "CheckIssue",
     "CustomEncoder",
-    "DEFAULT_PROFILES_PATH",
     "LevelCollection",
     "Profile",
     "ProfileValidationEvent",
@@ -72,7 +72,6 @@ __all__ = [
     "Severity",
     "SkipRequirementCheck",
     "SourceSnippet",
-    "URI",
     "ValidationContext",
     "ValidationEvent",
     "ValidationResult",

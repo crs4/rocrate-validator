@@ -17,7 +17,7 @@ from __future__ import annotations
 import re
 from functools import total_ordering
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Collection, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from rdflib import RDF, RDFS, Graph, Namespace, URIRef
 
@@ -35,11 +35,13 @@ from rocrate_validator.errors import (
     ProfileSpecificationError,
     ProfileSpecificationNotFound,
 )
-from rocrate_validator.models.severity import Severity
 from rocrate_validator.models._logging import logger
+from rocrate_validator.models.severity import Severity
 from rocrate_validator.utils.collections import MapIndex, MultiIndexMap
 
 if TYPE_CHECKING:
+    from collections.abc import Collection
+
     from rocrate_validator.models.requirement import Requirement, RequirementCheck
 
 @total_ordering

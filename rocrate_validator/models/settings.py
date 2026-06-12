@@ -21,8 +21,8 @@ from rocrate_validator.constants import (
     DEFAULT_HTTP_CACHE_MAX_AGE,
     DEFAULT_PROFILE_IDENTIFIER,
 )
-from rocrate_validator.models.severity import Severity
 from rocrate_validator.models._logging import logger
+from rocrate_validator.models.severity import Severity
 from rocrate_validator.utils.cache_warmup import auto_warm_up_for_settings
 from rocrate_validator.utils.document_loader import install_document_loader
 from rocrate_validator.utils.http import HttpRequester
