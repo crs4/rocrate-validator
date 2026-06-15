@@ -226,8 +226,10 @@ def test_valid_local_rocrate():
     size = roc.get_file_size(metadata_file_descriptor)
     assert size == 26788, "Size should be 26788"
 
-    # test crate size
-    assert roc.size == 311817, "Size should be 311817"
+    # test crate size — updated after `f8d16ba6` trimmed trailing whitespace
+    # from `index.html` / `ro-crate-preview.html` (~6.7 KB delta from the
+    # historical 311817).
+    assert roc.size == 305049, "Size should be 305049"
 
     # test get_file_content binary mode
     content = roc.get_file_content(metadata_file_descriptor)
@@ -324,7 +326,7 @@ def test_valid_zip_rocrate():
     assert size == 3935, "Size should be 3935"
 
     # test crate size
-    assert roc.size == 137039, "Size should be 136267"
+    assert roc.size == 137039, "Size should be 137039"
 
     # test get_file_content binary mode
     content = roc.get_file_content(metadata_file_descriptor)
@@ -478,7 +480,7 @@ def test_valid_remote_zip_rocrate():
     assert len(files) == 11, "Should have 11 files"
 
     # test crate size
-    assert roc.size == 137039, "Size should be 136267"
+    assert roc.size == 137039, "Size should be 137039"
 
     # test is_file
     assert roc.has_file(metadata_file_descriptor), "Should be a file"

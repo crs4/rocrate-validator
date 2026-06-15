@@ -18,8 +18,8 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from rocrate_validator import models as models_module
 from rocrate_validator.models import ValidationContext
+from rocrate_validator.models import validation as validation_module
 from rocrate_validator.utils.http import OfflineCacheMissError, find_offline_cache_miss
 
 
@@ -81,13 +81,14 @@ def bare_context():
 @pytest.fixture
 def mock_logger(monkeypatch):
     """
-    Replace the module-level logger in ``rocrate_validator.models`` with a
-    MagicMock. The project's custom logger sets ``propagate=False``, so
-    pytest's ``caplog`` does not see its records — observing the mock is
-    both simpler and more precise.
+    Replace the module-level logger in ``rocrate_validator.models.validation``
+    with a MagicMock — this is the binding actually used by
+    ``ValidationContext.maybe_warn_offline_cache_miss``. The project's custom
+    logger sets ``propagate=False``, so pytest's ``caplog`` does not see its
+    records — observing the mock is both simpler and more precise.
     """
     fake = MagicMock()
-    monkeypatch.setattr(models_module, "logger", fake)
+    monkeypatch.setattr(validation_module, "logger", fake)
     return fake
 
 
