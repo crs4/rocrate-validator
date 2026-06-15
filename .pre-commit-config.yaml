@@ -58,3 +58,24 @@ repos:
         language: system
         types: [python]
         pass_filenames: false
+
+      # Pylint runs against the whole package (not just the changed files) so
+      # cross-module import resolution stays accurate. Two hooks are needed
+      # because pylint loads a single rcfile per run: the main package uses
+      # the `[tool.pylint.*]` sections in `pyproject.toml`, while `tests/`
+      # uses its own `tests/.pylintrc` (pytest-fixture idioms, domain camelCase
+      # allowlists). The hooks only fire when files in their respective trees
+      # change, but each one lints its whole tree.
+      - id: pylint-main
+        name: pylint (rocrate_validator)
+        entry: poetry run pylint rocrate_validator/
+        language: system
+        files: ^rocrate_validator/.*\.py$
+        pass_filenames: false
+
+      - id: pylint-tests
+        name: pylint (tests)
+        entry: poetry run pylint --rcfile=tests/.pylintrc tests/
+        language: system
+        files: ^tests/.*\.py$
+        pass_filenames: false
