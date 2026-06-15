@@ -45,11 +45,14 @@ repos:
       - id: ruff-check
       - id: ruff-format
 
-  # Run mypy to perform static type checking on the codebase.
-  # This hook is configured as a manual hook to run mypy using Poetry,
-  # ensuring that it uses the correct virtual environment and dependencies.
-  # To run this hook, use the command:
-  # `pre-commit run --hook-stage manual`
+  # Slow whole-project checks (mypy + pylint) are configured as MANUAL hooks
+  # so they do not run on every commit. They use `poetry run` to pick up the
+  # project's virtualenv and dependencies. To run them:
+  #
+  #     pre-commit run --hook-stage manual                   # all manual hooks
+  #     pre-commit run --hook-stage manual mypy              # just mypy
+  #     pre-commit run --hook-stage manual pylint-main       # just main pylint
+  #     pre-commit run --hook-stage manual pylint-tests      # just tests pylint
   - repo: local
     hooks:
       - id: mypy
@@ -58,20 +61,21 @@ repos:
         language: system
         types: [python]
         pass_filenames: false
+        stages: [manual]
 
       # Pylint runs against the whole package (not just the changed files) so
       # cross-module import resolution stays accurate. Two hooks are needed
       # because pylint loads a single rcfile per run: the main package uses
       # the `[tool.pylint.*]` sections in `pyproject.toml`, while `tests/`
       # uses its own `tests/.pylintrc` (pytest-fixture idioms, domain camelCase
-      # allowlists). The hooks only fire when files in their respective trees
-      # change, but each one lints its whole tree.
+      # allowlists).
       - id: pylint-main
         name: pylint (rocrate_validator)
         entry: poetry run pylint rocrate_validator/
         language: system
         files: ^rocrate_validator/.*\.py$
         pass_filenames: false
+        stages: [manual]
 
       - id: pylint-tests
         name: pylint (tests)
@@ -79,3 +83,4 @@ repos:
         language: system
         files: ^tests/.*\.py$
         pass_filenames: false
+        stages: [manual]
