@@ -350,7 +350,7 @@ def test_procrc_action_bad_containerimage():
     Test a Process Run Crate where the Action has a containerImage that does
     not point to a URL or to a ContainerImage object.
     """
-    for crate in (  # noqa: B007
+    for crate in (  # noqa: B007  # pylint: disable=unused-variable
         InvalidProcRC().action_bad_containerimage_url,
         InvalidProcRC().action_bad_containerimage_type,
     ):

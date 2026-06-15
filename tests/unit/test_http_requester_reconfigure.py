@@ -113,7 +113,7 @@ def test_pinned_wrapper_survives_reconfigure(tmp_path):
     wrapper must still target the live session, not a closed one."""
     requester = _initialize(tmp_path / "cache-1", cache_max_age=60)
     # pin the wrapper as an instance attribute
-    requester.get = requester.get  # pyright: ignore[reportAttributeAccessIssue]
+    requester.get = requester.get  # pyright: ignore[reportAttributeAccessIssue]  # pylint: disable=no-member
 
     _initialize(tmp_path / "cache-2", cache_max_age=60)  # rebuilds the session
 

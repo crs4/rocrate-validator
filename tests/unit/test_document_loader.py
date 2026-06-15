@@ -173,7 +173,8 @@ def test_install_patches_both_util_and_context(tmp_path):
     install_document_loader()
 
     assert jsonld_util.source_to_json is document_loader._patched_source_to_json
-    assert jsonld_context.source_to_json is document_loader._patched_source_to_json  # pyright: ignore[reportPrivateImportUsage]
+    context_source = jsonld_context.source_to_json  # pyright: ignore[reportPrivateImportUsage]
+    assert context_source is document_loader._patched_source_to_json
 
 
 def test_uninstall_restores_both_util_and_context(tmp_path):
@@ -185,7 +186,8 @@ def test_uninstall_restores_both_util_and_context(tmp_path):
     uninstall_document_loader()
 
     assert jsonld_util.source_to_json is document_loader._original_source_to_json
-    assert jsonld_context.source_to_json is document_loader._original_source_to_json  # pyright: ignore[reportPrivateImportUsage]
+    context_source = jsonld_context.source_to_json  # pyright: ignore[reportPrivateImportUsage]
+    assert context_source is document_loader._original_source_to_json
 
 
 def test_context_module_resolution_routes_through_http(tmp_path, mock_network):

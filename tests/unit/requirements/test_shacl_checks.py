@@ -12,16 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import annotations
+
 import logging
-from typing import cast
+from typing import TYPE_CHECKING, cast
 
 from rdflib import BNode, Graph, Namespace, URIRef
 
 from rocrate_validator.constants import SHACL_NS
-from rocrate_validator.models import LevelCollection, Requirement
+from rocrate_validator.models import LevelCollection
 from rocrate_validator.requirements.shacl.checks import SHACLCheck
 from rocrate_validator.requirements.shacl.models import NodeShape, PropertyShape, Shape, ShapesRegistry
 from rocrate_validator.requirements.shacl.utils import resolve_parent_shape
+
+if TYPE_CHECKING:
+    from rocrate_validator.models import Requirement
 
 logger = logging.getLogger(__name__)
 
@@ -108,7 +113,7 @@ def test_description_fallback_no_description_no_parent_description():
 
 def test_property_shape_description_fallback():
     """Test description fallback for PropertyShape without explicit description."""
-    from rocrate_validator.requirements.shacl.models import PropertyShape
+    # PropertyShape already imported at module level
 
     g = Graph()
     prop = PropertyShape(URIRef("http://example.org/property"), g)

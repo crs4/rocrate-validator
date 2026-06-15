@@ -44,6 +44,7 @@ if TYPE_CHECKING:
 
     from rocrate_validator.models.requirement import Requirement, RequirementCheck
 
+
 @total_ordering
 class Profile:
     """

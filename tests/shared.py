@@ -94,8 +94,11 @@ def _prepare_temp_rocrate(
     rocrate_entity_patch: dict | None,
     rocrate_entity_mod_sparql: str | None,
 ) -> Path:
-    temp_rocrate_path = Path(tempfile.TemporaryDirectory().name)
-    shutil.copytree(rocrate_path, temp_rocrate_path)
+    # `mkdtemp` returns a stable path the test owns; `TemporaryDirectory().name`
+    # was deleted on GC before copytree ran. `dirs_exist_ok=True` lets us copy
+    # into the (already-created) mkdtemp directory.
+    temp_rocrate_path = Path(tempfile.mkdtemp())
+    shutil.copytree(rocrate_path, temp_rocrate_path, dirs_exist_ok=True)
     with (temp_rocrate_path / "ro-crate-metadata.json").open(encoding="utf-8") as f:
         rocrate = json.load(f)
     if rocrate_entity_patch is not None:
@@ -120,7 +123,10 @@ def _prepare_temp_rocrate(
     return temp_rocrate_path
 
 
-def do_entity_test(
+def do_entity_test(  # pylint: disable=too-many-locals
+    # Shared test driver: the long signature mirrors `ValidationSettings`
+    # plus the assertion-shaping knobs, so locals scale with the surface area
+    # it has to cover. Splitting it would only push the locals to the caller.
     rocrate_path: Path | str,
     requirement_severity: models.Severity,
     expected_validation_result: bool,
@@ -189,7 +195,11 @@ def do_entity_test(
         logger.debug("Expected validation result: %s", expected_validation_result)
 
         assert result.context is not None, "Validation context should not be None"
-        f"Expected requirement severity to be {requirement_severity}, but got {result.context.requirement_severity}"
+        logger.debug(
+            "Expected requirement severity to be %s, got %s",
+            requirement_severity,
+            result.context.requirement_severity,
+        )
         assert result.passed() == expected_validation_result, (
             f"RO-Crate should be {'valid' if expected_validation_result else 'invalid'}"
         )

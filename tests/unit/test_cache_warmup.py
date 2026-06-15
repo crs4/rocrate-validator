@@ -17,12 +17,12 @@
 from __future__ import annotations
 
 import io
-from typing import cast
+from typing import TYPE_CHECKING, cast
 
 import pytest
 import urllib3
 
-from rocrate_validator.models import Profile, ValidationSettings
+from rocrate_validator.models import Profile
 from rocrate_validator.utils.cache_warmup import (
     auto_warm_up_for_settings,
     discover_cacheable_urls_from_profiles,
@@ -31,6 +31,9 @@ from rocrate_validator.utils.cache_warmup import (
 )
 from rocrate_validator.utils.http import HttpRequester
 from rocrate_validator.utils.paths import get_profiles_path
+
+if TYPE_CHECKING:
+    from rocrate_validator.models import ValidationSettings
 
 PROFILE_TTL_TEMPLATE = """
 @prefix dct: <http://purl.org/dc/terms/> .

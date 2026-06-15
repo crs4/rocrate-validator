@@ -180,7 +180,7 @@ def test_cache_info_reports_metadata(tmp_path):
     assert info["entries"] == 0
 
 
-class _RecordCollector:
+class _RecordCollector:  # pylint: disable=attribute-defined-outside-init
     """Context manager that attaches a capturing handler to the http logger."""
 
     def __init__(self):
@@ -189,14 +189,14 @@ class _RecordCollector:
     def __enter__(self):
         import logging as _logging
 
-        from rocrate_validator.utils import http as http_module
+        from rocrate_validator.utils import http as http_module  # pylint: disable=reimported
 
         self.records.clear()
         self.handler = _logging.Handler()
         self.handler.setLevel(_logging.DEBUG)
         self.handler.emit = self.records.append  # type: ignore[assignment]
         # Force initialization of the underlying logger via the proxy.
-        http_module.logger.warning  # noqa: B018
+        http_module.logger.warning  # noqa: B018  # pylint: disable=pointless-statement
         target = http_module.logger._instance
         assert target is not None  # initialized above via the proxy access
         self._target = target
@@ -246,7 +246,7 @@ def test_offline_without_requests_cache_uses_fallback_session(tmp_path, monkeypa
     """When requests_cache is unavailable, offline mode falls back to a 504 stub."""
     original_import = __import__
 
-    def fake_import(name, globals=None, locals=None, fromlist=(), level=0):
+    def fake_import(name, globals=None, locals=None, fromlist=(), level=0):  # pylint: disable=redefined-builtin
         if name == "requests_cache" or (fromlist and "CachedSession" in fromlist and name.endswith("requests_cache")):
             raise ImportError("simulated missing dependency")
         return original_import(name, globals, locals, fromlist, level)
