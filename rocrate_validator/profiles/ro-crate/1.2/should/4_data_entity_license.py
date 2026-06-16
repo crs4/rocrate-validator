@@ -47,8 +47,7 @@
 # valid crates.
 
 from rocrate_validator.models import Severity, ValidationContext
-from rocrate_validator.requirements.python import (PyFunctionCheck, check,
-                                                   requirement)
+from rocrate_validator.requirements.python import PyFunctionCheck, check, requirement
 from rocrate_validator.utils import log as logging
 
 logger = logging.getLogger(__name__)
@@ -100,8 +99,7 @@ class DataEntityLicenseDivergenceChecker(PyFunctionCheck):
     inherit the Root license.
     """
 
-    @check(name="Data Entity SHOULD NOT redundantly declare the Root license",
-           severity=Severity.RECOMMENDED)
+    @check(name="Data Entity SHOULD NOT redundantly declare the Root license", severity=Severity.RECOMMENDED)
     def check_license_divergence(self, context: ValidationContext) -> bool:
         root_entity = None
         try:
@@ -138,5 +136,7 @@ class DataEntityLicenseDivergenceChecker(PyFunctionCheck):
                     "license by default.  Remove the `license` property or "
                     "change it to a different license if the content requires "
                     "one.",
-                    entity.id, root_license_id)
+                    entity.id,
+                    root_license_id,
+                )
         return True

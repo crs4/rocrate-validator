@@ -12,10 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from rocrate_validator.utils import log as logging
 from rocrate_validator.models import ValidationContext
-from rocrate_validator.requirements.python import (PyFunctionCheck, check,
-                                                   requirement)
+from rocrate_validator.requirements.python import PyFunctionCheck, check, requirement
+from rocrate_validator.utils import log as logging
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -41,11 +40,9 @@ class RootIdentifierPropertyChecker(PyFunctionCheck):
                 if not identifier.has_type("PropertyValue"):
                     continue
                 if not identifier.get_property("value"):
-                    context.result.add_issue(
-                        "PropertyValue identifiers MUST include a `value`", self)
+                    context.result.add_issue("PropertyValue identifiers MUST include a `value`", self)
                     return False
             return True
         except Exception as e:
-            context.result.add_issue(
-                f"Error checking identifier PropertyValue: {str(e)}", self)
+            context.result.add_issue(f"Error checking identifier PropertyValue: {e!s}", self)
             return False

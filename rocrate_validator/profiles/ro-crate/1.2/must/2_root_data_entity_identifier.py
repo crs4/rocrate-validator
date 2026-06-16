@@ -14,10 +14,9 @@
 
 import re
 
-from rocrate_validator.utils import log as logging
 from rocrate_validator.models import ValidationContext
-from rocrate_validator.requirements.python import (PyFunctionCheck, check,
-                                                   requirement)
+from rocrate_validator.requirements.python import PyFunctionCheck, check, requirement
+from rocrate_validator.utils import log as logging
 
 logger = logging.getLogger(__name__)
 
@@ -34,15 +33,15 @@ class RootDataEntityIdentifierChecker(PyFunctionCheck):
             if context.ro_crate.is_detached():
                 return True
             root_entity = context.ro_crate.metadata.get_root_data_entity()
-            if root_entity.id == './':
+            if root_entity.id == "./":
                 return True
             if re.match(r"^[A-Za-z][A-Za-z0-9+\.-]*:", root_entity.id):
                 return True
             context.result.add_issue(
-                'The Root Data Entity MUST be a `Dataset` (as per `schema.org`) '
-                'and use an IRI or `./` as identifier', self)
+                "The Root Data Entity MUST be a `Dataset` (as per `schema.org`) and use an IRI or `./` as identifier",
+                self,
+            )
             return False
         except Exception as e:
-            context.result.add_issue(
-                f'Error checking Root Data Entity @id: {str(e)}', self)
+            context.result.add_issue(f"Error checking Root Data Entity @id: {e!s}", self)
             return False

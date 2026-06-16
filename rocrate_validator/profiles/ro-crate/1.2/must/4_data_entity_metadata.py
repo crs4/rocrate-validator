@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import contextlib
 import re
 
 from rocrate_validator.models import ValidationContext
@@ -97,10 +98,8 @@ class DetachedDataEntityChecker(PyFunctionCheck):
             return True
         result = True
         root_entity_id = None
-        try:
+        with contextlib.suppress(Exception):
             root_entity_id = context.ro_crate.metadata.get_root_data_entity().id
-        except Exception:
-            pass
         for entity in context.ro_crate.metadata.get_data_entities():
             if root_entity_id and entity.id == root_entity_id:
                 continue
@@ -129,15 +128,13 @@ class DataEntityIdentifierChecker(PyFunctionCheck):
         root_entity_id = None
         root_entity_is_local = False
         root_entity_absolute_path = None
-        try:
+        with contextlib.suppress(Exception):
             root_data_entity = context.ro_crate.metadata.get_root_data_entity()
             root_entity_id = root_data_entity.id
             root_entity_is_local = (
                 root_data_entity.id_as_uri.is_local_resource() if root_data_entity.id_as_uri else False
             )
             root_entity_absolute_path = root_data_entity.id_as_path if root_data_entity.has_absolute_path() else None
-        except Exception:
-            pass
         for entity in context.ro_crate.metadata.get_data_entities():
             if root_entity_id and entity.id == root_entity_id:
                 continue
@@ -159,18 +156,18 @@ class DataEntityIdentifierChecker(PyFunctionCheck):
                 result = False
                 if context.fail_fast:
                     return False
-            if root_entity_is_local and not str(entity.id_as_path).startswith(str(root_entity_absolute_path)):
-                if (
-                    root_entity_is_local
-                    and not str(entity.id).startswith("./")
-                    and (str(entity.id).startswith("/") or str(entity.id).startswith("file://"))
-                ):
-                    context.result.add_issue(
-                        f"Data Entity '{entity.id}' MUST use a relative @id within the RO-Crate root", self
-                    )
-                    result = False
-                    if context.fail_fast:
-                        return False
+            if (
+                root_entity_is_local
+                and not str(entity.id_as_path).startswith(str(root_entity_absolute_path))
+                and not str(entity.id).startswith("./")
+                and (str(entity.id).startswith(("/", "file://")))
+            ):
+                context.result.add_issue(
+                    f"Data Entity '{entity.id}' MUST use a relative @id within the RO-Crate root", self
+                )
+                result = False
+                if context.fail_fast:
+                    return False
         return result
 
     @check(name="Data Entity: relative @id for payload files")
@@ -181,14 +178,15 @@ class DataEntityIdentifierChecker(PyFunctionCheck):
         for entity in context.ro_crate.metadata.get_data_entities():
             if entity.has_local_identifier() or entity.is_remote():
                 continue
-            if entity.has_absolute_path():
-                if context.ro_crate.has_file(entity.id_as_path) or context.ro_crate.has_directory(entity.id_as_path):
-                    context.result.add_issue(
-                        f"Data Entity '{entity.id}' should use a relative @id within the RO-Crate root", self
-                    )
-                    result = False
-                    if context.fail_fast:
-                        return False
+            if entity.has_absolute_path() and (
+                context.ro_crate.has_file(entity.id_as_path) or context.ro_crate.has_directory(entity.id_as_path)
+            ):
+                context.result.add_issue(
+                    f"Data Entity '{entity.id}' should use a relative @id within the RO-Crate root", self
+                )
+                result = False
+                if context.fail_fast:
+                    return False
         return result
 
 
@@ -235,13 +233,27 @@ class WebDataEntityRequiredChecker(PyFunctionCheck):
     rel=describedby), direct Content-Type inspection, and content negotiation.
     """
 
+    @staticmethod
+    def _not_downloadable_message(entity_id: str, dl) -> str:
+        """Build the issue message for a web-based Data Entity that is not directly downloadable."""
+        if dl.reason and "HTML" in dl.reason:
+            return (
+                f"Web-based Data Entity '{entity_id}' references an HTML page "
+                f"(possible splash page or viewer application); "
+                f"it MUST be directly downloadable"
+            )
+        msg = f"Web-based Data Entity '{entity_id}' is not directly downloadable"
+        if dl.reason:
+            msg += f": {dl.reason}"
+        return msg
+
     @check(name="Web-based Data Entity: REQUIRED resource availability")
     def check_availability(self, context: ValidationContext) -> bool:
-        if context.settings.skip_availability_check:
-            return True
-        if not (context.settings.creation_time or context.settings.enforce_availability):
-            return True
-        if context.settings.metadata_only:
+        if (
+            context.settings.skip_availability_check
+            or not (context.settings.creation_time or context.settings.enforce_availability)
+            or context.settings.metadata_only
+        ):
             return True
         result = True
         for entity in context.ro_crate.metadata.get_web_data_entities():
@@ -253,16 +265,7 @@ class WebDataEntityRequiredChecker(PyFunctionCheck):
             try:
                 dl = check_downloadable(entity.id)
                 if not dl.is_downloadable:
-                    msg = f"Web-based Data Entity '{entity.id}' is not directly downloadable"
-                    if dl.reason and "HTML" in dl.reason:
-                        msg = (
-                            f"Web-based Data Entity '{entity.id}' references an HTML page "
-                            f"(possible splash page or viewer application); "
-                            f"it MUST be directly downloadable"
-                        )
-                    elif dl.reason:
-                        msg += f": {dl.reason}"
-                    context.result.add_issue(msg, self)
+                    context.result.add_issue(self._not_downloadable_message(entity.id, dl), self)
                     result = False
             except Exception as e:
                 context.result.add_issue(f"Web-based Data Entity '{entity.id}' availability check failed: {e}", self)

@@ -19,6 +19,7 @@ RECOMMENDED checks on entity @id values:
   - Contextual entities SHOULD use absolute URI (permalink) or #-prefixed @id
 """
 
+import contextlib
 import re
 
 from rocrate_validator.models import Severity, ValidationContext
@@ -27,7 +28,7 @@ from rocrate_validator.utils import log as logging
 
 logger = logging.getLogger(__name__)
 
-# Matches any %XX sequence where XX decodes to a non-ASCII byte (0x80–0xFF).
+# Matches any %XX sequence where XX decodes to a non-ASCII byte (0x80-0xFF).
 # These are UTF-8 continuation / leading bytes for multi-byte code-points.
 _PCT_NON_ASCII_RE = re.compile(r"%[89A-Fa-f][0-9A-Fa-f]")
 
@@ -102,18 +103,12 @@ class EntityIdentifierFormatChecker(PyFunctionCheck):
         result = True
         ro_crate_metadata = context.ro_crate.metadata
         non_contextual_ids = set()
-        try:
+        with contextlib.suppress(Exception):
             non_contextual_ids.add(ro_crate_metadata.get_file_descriptor_entity().id)
-        except Exception:
-            pass
-        try:
+        with contextlib.suppress(Exception):
             non_contextual_ids.add(ro_crate_metadata.get_root_data_entity().id)
-        except Exception:
-            pass
-        try:
+        with contextlib.suppress(Exception):
             non_contextual_ids.update(e.id for e in ro_crate_metadata.get_data_entities())
-        except Exception:
-            pass
 
         for entity in ro_crate_metadata.as_dict().get("@graph", []):
             entity_id = entity.get("@id", "")
@@ -125,11 +120,7 @@ class EntityIdentifierFormatChecker(PyFunctionCheck):
                 continue
             # Absolute URIs (any scheme), fragment-prefixed IDs, and blank nodes
             # are all valid; only flag bare relative paths
-            if (
-                entity_id.startswith("#")
-                or entity_id.startswith("_:")
-                or _ABSOLUTE_URI_RE.match(entity_id)
-            ):
+            if entity_id.startswith(("#", "_:")) or _ABSOLUTE_URI_RE.match(entity_id):
                 continue
             context.result.add_issue(
                 f"Entity @id '{entity_id}' of type '{raw_type}' is a local identifier "

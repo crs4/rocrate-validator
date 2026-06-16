@@ -31,14 +31,31 @@ from rocrate_validator.utils.signposting import has_signposting_cite_as
 logger = logging.getLogger(__name__)
 
 
-@requirement(
-    name="Referenced RO-Crate: Signposting cite-as refinement for sdDatePublished"
-)
+@requirement(name="Referenced RO-Crate: Signposting cite-as refinement for sdDatePublished")
 class ReferencedROCrateSignpostingCiteAsChecker(PyFunctionCheck):
     """
     Network-aware refinement of the `sdDatePublished` requirement for
     referenced RO-Crate data entities (RO-Crate 1.2, § 4.5).
     """
+
+    @staticmethod
+    def _needs_sddatepublished_check(entity, root_id) -> bool:
+        """
+        Return True when `entity` is a referenced RO-Crate (absolute-URI @id
+        conforming to RO-Crate) that declares neither `identifier` nor
+        `sdDatePublished`, and therefore requires the Signposting refinement.
+        """
+        if entity.id == root_id:
+            return False
+        if not entity.id.startswith(("http://", "https://")):
+            return False
+        conforms_to = entity.get_property("conformsTo", [])
+        if not isinstance(conforms_to, list):
+            conforms_to = [conforms_to]
+        conforms_to_ids = [c.id if hasattr(c, "id") else str(c) for c in conforms_to]
+        if not any(c and c.startswith("https://w3id.org/ro/crate") for c in conforms_to_ids):
+            return False
+        return not (entity.get_property("identifier") or entity.get_property("sdDatePublished"))
 
     @check(
         name="Referenced RO-Crate: `sdDatePublished` SHOULD be present when Signposting cite-as is not declared",
@@ -51,11 +68,11 @@ class ReferencedROCrateSignpostingCiteAsChecker(PyFunctionCheck):
         the URI declares Signposting `Link: rel="cite-as"`.  If cite-as is
         absent the entity SHOULD include `sdDatePublished`.
         """
-        if context.settings.skip_availability_check:
-            return True
-        if not (context.settings.creation_time or context.settings.enforce_availability):
-            return True
-        if context.settings.metadata_only:
+        if (
+            context.settings.skip_availability_check
+            or not (context.settings.creation_time or context.settings.enforce_availability)
+            or context.settings.metadata_only
+        ):
             return True
 
         result = True
@@ -65,41 +82,27 @@ class ReferencedROCrateSignpostingCiteAsChecker(PyFunctionCheck):
             return True
 
         for entity in context.ro_crate.metadata.get_dataset_entities():
-            if entity.id == root.id:
+            if not self._needs_sddatepublished_check(entity, root.id):
                 continue
             entity_id = entity.id
-            if not (entity_id.startswith("http://") or entity_id.startswith("https://")):
-                continue
-            conforms_to = entity.get_property("conformsTo", [])
-            if not isinstance(conforms_to, list):
-                conforms_to = [conforms_to]
-            conforms_to_ids = [c.id if hasattr(c, "id") else str(c) for c in conforms_to]
-            if not any(c and c.startswith("https://w3id.org/ro/crate") for c in conforms_to_ids):
-                continue
-            if entity.get_property("identifier"):
-                continue
-            if entity.get_property("sdDatePublished"):
-                continue
 
             cite_as_present = has_signposting_cite_as(entity_id)
             if cite_as_present is None:
                 logger.debug(
-                    "Signposting probe for referenced RO-Crate '%s' failed; "
-                    "skipping cite-as refinement.",
+                    "Signposting probe for referenced RO-Crate '%s' failed; skipping cite-as refinement.",
                     entity_id,
                 )
                 continue
             if cite_as_present:
                 logger.debug(
-                    "Referenced RO-Crate '%s' declares Signposting rel='cite-as'; "
-                    "`sdDatePublished` not required.",
+                    "Referenced RO-Crate '%s' declares Signposting rel='cite-as'; `sdDatePublished` not required.",
                     entity_id,
                 )
                 continue
 
             context.result.add_issue(
                 f"Referenced RO-Crate '{entity_id}' has no Signposting "
-                f"`Link: rel=\"cite-as\"` declared; `sdDatePublished` SHOULD be "
+                f'`Link: rel="cite-as"` declared; `sdDatePublished` SHOULD be '
                 f"present to indicate when the absolute URI was accessed",
                 self,
             )

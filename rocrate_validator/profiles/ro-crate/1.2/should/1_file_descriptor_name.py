@@ -13,10 +13,9 @@
 # limitations under the License.
 
 
-from rocrate_validator.utils import log as logging
 from rocrate_validator.models import ValidationContext
-from rocrate_validator.requirements.python import (PyFunctionCheck, check,
-                                                   requirement)
+from rocrate_validator.requirements.python import PyFunctionCheck, check, requirement
+from rocrate_validator.utils import log as logging
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -26,7 +25,7 @@ logger = logging.getLogger(__name__)
 class FileDescriptorExistence(PyFunctionCheck):
     """
     If stored in a file, SHOULD be named ${prefix}-ro-crate-metadata.json, where the variable ${prefix}
-    is a human readable version of the dataset’s ID or name.
+    is a human readable version of the dataset's ID or name.
     """
 
     @check(name="Detached RO-Crate file descriptor RECOMMENDED naming convention")
@@ -34,7 +33,7 @@ class FileDescriptorExistence(PyFunctionCheck):
         """
         Check if the file descriptor of a Detached RO-Crate exists and is named according to the convention.
         In a Detached RO-Crate, the file descriptor SHOULD be named `{prefix}-ro-crate-metadata.json`,
-        where `{prefix}` is a human readable version of the dataset’s ID or name.
+        where `{prefix}` is a human readable version of the dataset's ID or name.
         """
         if context.settings.metadata_only:
             logger.debug("Skipping file descriptor existence check in metadata-only mode")
@@ -46,11 +45,14 @@ class FileDescriptorExistence(PyFunctionCheck):
         if context.ro_crate.is_detached():
             # Check if the filename follows the convention
             fd_filename = context.ro_crate.get_descriptor_path()
-            if fd_filename and not (fd_filename.name.endswith("-ro-crate-metadata.json") or
-                                    fd_filename.name.endswith("-ro-crate-metadata.yaml")):
+            if fd_filename and not (
+                fd_filename.name.endswith("-ro-crate-metadata.json")
+                or fd_filename.name.endswith("-ro-crate-metadata.yaml")
+            ):
                 context.result.add_issue(
-                    'In a detached RO-Crate, the metadata descriptor filename '
-                    'SHOULD be named according to the convention `{prefix}-ro-crate-metadata.json` ',
-                    self)
+                    "In a detached RO-Crate, the metadata descriptor filename "
+                    "SHOULD be named according to the convention `{prefix}-ro-crate-metadata.json` ",
+                    self,
+                )
                 return False
         return True

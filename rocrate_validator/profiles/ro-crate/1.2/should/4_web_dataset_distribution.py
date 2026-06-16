@@ -13,8 +13,7 @@
 # limitations under the License.
 
 from rocrate_validator.models import Severity, ValidationContext
-from rocrate_validator.requirements.python import (PyFunctionCheck, check,
-                                                   requirement)
+from rocrate_validator.requirements.python import PyFunctionCheck, check, requirement
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.signposting import check_downloadable
 
@@ -36,8 +35,13 @@ def _resolve_distribution_url(dist) -> str | None:
         # Prefer contentUrl, fall back to @id
         content_url_raw = dist.get_property("contentUrl")
         if content_url_raw:
-            url = (content_url_raw if isinstance(content_url_raw, str)
-                   else content_url_raw.id if hasattr(content_url_raw, "id") else None)
+            url = (
+                content_url_raw
+                if isinstance(content_url_raw, str)
+                else content_url_raw.id
+                if hasattr(content_url_raw, "id")
+                else None
+            )
             if url and url.startswith("http"):
                 return url
         if hasattr(dist, "id") and dist.id and dist.id.startswith("http"):
@@ -54,39 +58,38 @@ class DatasetDistributionChecker(PyFunctionCheck):
     content negotiation.
     """
 
+    def _check_distribution(self, context: ValidationContext, entity_id, dist) -> bool:
+        """Verify a single distribution value; return False (and record an issue) if not downloadable."""
+        url = _resolve_distribution_url(dist)
+        if not url:
+            return True
+        try:
+            dl = check_downloadable(url)
+            if not dl.is_downloadable:
+                msg = f"The distribution '{url}' of Dataset '{entity_id}' SHOULD be downloadable"
+                if dl.reason:
+                    msg += f": {dl.reason}"
+                context.result.add_issue(msg, self)
+                return False
+        except Exception as e:
+            context.result.add_issue(
+                f"Error checking downloadability of distribution '{url}' for Dataset '{entity_id}': {e}", self
+            )
+            return False
+        return True
+
     @check(name="Dataset: distribution SHOULD be downloadable", severity=Severity.RECOMMENDED)
     def check_distribution_downloadable(self, context: ValidationContext) -> bool:
-        if context.settings.skip_availability_check:
-            return True
-        if context.settings.metadata_only:
+        if context.settings.skip_availability_check or context.settings.metadata_only:
             return True
         result = True
         for entity in context.ro_crate.metadata.get_dataset_entities():
             distribution_raw = entity.get_property("distribution")
             if not distribution_raw:
                 continue
-            distributions = (distribution_raw
-                             if isinstance(distribution_raw, list)
-                             else [distribution_raw])
+            distributions = distribution_raw if isinstance(distribution_raw, list) else [distribution_raw]
             for dist in distributions:
-                url = _resolve_distribution_url(dist)
-                if not url:
-                    continue
-                try:
-                    dl = check_downloadable(url)
-                    if not dl.is_downloadable:
-                        msg = (
-                            f"The distribution '{url}' of Dataset '{entity.id}' "
-                            f"SHOULD be downloadable"
-                        )
-                        if dl.reason:
-                            msg += f": {dl.reason}"
-                        context.result.add_issue(msg, self)
-                        result = False
-                except Exception as e:
-                    context.result.add_issue(
-                        f"Error checking downloadability of distribution '{url}' "
-                        f"for Dataset '{entity.id}': {e}", self)
+                if not self._check_distribution(context, entity.id, dist):
                     result = False
                 if not result and context.fail_fast:
                     return result

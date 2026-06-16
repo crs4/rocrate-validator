@@ -14,10 +14,9 @@
 
 from pathlib import Path
 
-from rocrate_validator.utils import log as logging
 from rocrate_validator.models import ValidationContext
-from rocrate_validator.requirements.python import (PyFunctionCheck, check,
-                                                   requirement)
+from rocrate_validator.requirements.python import PyFunctionCheck, check, requirement
+from rocrate_validator.utils import log as logging
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -40,10 +39,8 @@ class ROCrateWebsiteChecker(PyFunctionCheck):
             content = context.ro_crate.get_file_content(preview_path, binary_mode=False)
             if "<!doctype html" in content.lower():
                 return True
-            context.result.add_issue(
-                "ro-crate-preview.html should include an HTML5 doctype", self)
+            context.result.add_issue("ro-crate-preview.html should include an HTML5 doctype", self)
             return False
         except Exception as e:
-            context.result.add_issue(
-                f"Unable to read ro-crate-preview.html: {str(e)}", self)
+            context.result.add_issue(f"Unable to read ro-crate-preview.html: {e!s}", self)
             return False

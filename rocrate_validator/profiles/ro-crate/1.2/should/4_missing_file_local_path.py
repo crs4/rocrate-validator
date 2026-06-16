@@ -30,9 +30,10 @@
 # file can be found.  This requires distinguishing "#" identifiers from
 # regular relative paths, which SHACL cannot do.
 
+import contextlib
+
 from rocrate_validator.models import Severity, ValidationContext
-from rocrate_validator.requirements.python import (PyFunctionCheck, check,
-                                                   requirement)
+from rocrate_validator.requirements.python import PyFunctionCheck, check, requirement
 from rocrate_validator.utils import log as logging
 
 logger = logging.getLogger(__name__)
@@ -51,62 +52,66 @@ class MissingFileLocalPathChecker(PyFunctionCheck):
     (RO-Crate 1.2 specification, section on File Data Entities.)
     """
 
-    @check(name="Missing local File SHOULD use localPath",
-           severity=Severity.RECOMMENDED)
-    def check_missing_file_local_path(self, context: ValidationContext) -> bool:
-        if context.ro_crate.is_detached():
+    def _check_entity_local_path(self, context: ValidationContext, entity) -> bool:
+        """
+        Validate a single File Data Entity. Returns False (and records an issue)
+        when the entity refers to an absent local file without declaring a
+        `localPath` property; returns True otherwise.
+        """
+        if entity.has_local_identifier():
+            local_path = entity.get_property("localPath")
+            if not local_path:
+                context.result.add_issue(
+                    f"File Data Entity '{entity.id}' uses a local "
+                    f"identifier (#) for a deliberately absent file, "
+                    f"but does not declare a `localPath` property; "
+                    f"consider adding `localPath` to indicate where "
+                    f"the file can be found locally",
+                    self,
+                )
+                return False
+            local_path_value = (
+                local_path
+                if isinstance(local_path, str)
+                else local_path.id
+                if hasattr(local_path, "id")
+                else str(local_path)
+            )
+            logger.warning(
+                "File Data Entity '%s' declares localPath='%s' for a "
+                "deliberately absent file; the availability of this "
+                "path cannot be verified by the validator",
+                entity.id,
+                local_path_value,
+            )
             return True
-        if context.settings.metadata_only:
+        if not entity.has_relative_path() or entity.is_available():
+            return True
+        if not entity.get_property("localPath"):
+            context.result.add_issue(
+                f"File Data Entity '{entity.id}' is not present in the "
+                f"RO-Crate payload and does not declare a `localPath` "
+                f"property; consider adding `localPath` to indicate where "
+                f"the file can be found locally",
+                self,
+            )
+            return False
+        return True
+
+    @check(name="Missing local File SHOULD use localPath", severity=Severity.RECOMMENDED)
+    def check_missing_file_local_path(self, context: ValidationContext) -> bool:
+        if context.ro_crate.is_detached() or context.settings.metadata_only:
             return True
         root_entity_id = None
-        try:
+        with contextlib.suppress(Exception):
             root_entity_id = context.ro_crate.metadata.get_root_data_entity().id
-        except Exception:
-            pass
         result = True
-        for entity in context.ro_crate.metadata.get_data_entities(
-                exclude_web_data_entities=True):
+        for entity in context.ro_crate.metadata.get_data_entities(exclude_web_data_entities=True):
             if root_entity_id and entity.id == root_entity_id:
                 continue
             if not entity.is_file():
                 continue
-            if entity.has_local_identifier():
-                local_path = entity.get_property("localPath")
-                if not local_path:
-                    context.result.add_issue(
-                        f"File Data Entity '{entity.id}' uses a local "
-                        f"identifier (#) for a deliberately absent file, "
-                        f"but does not declare a `localPath` property; "
-                        f"consider adding `localPath` to indicate where "
-                        f"the file can be found locally",
-                        self)
-                    result = False
-                    if context.fail_fast:
-                        return False
-                else:
-                    local_path_value = (
-                        local_path if isinstance(local_path, str)
-                        else local_path.id if hasattr(local_path, "id")
-                        else str(local_path)
-                    )
-                    logger.warning(
-                        "File Data Entity '%s' declares localPath='%s' for a "
-                        "deliberately absent file; the availability of this "
-                        "path cannot be verified by the validator",
-                        entity.id, local_path_value)
-                continue
-            if not entity.has_relative_path():
-                continue
-            if entity.is_available():
-                continue
-            local_path = entity.get_property("localPath")
-            if not local_path:
-                context.result.add_issue(
-                    f"File Data Entity '{entity.id}' is not present in the "
-                    f"RO-Crate payload and does not declare a `localPath` "
-                    f"property; consider adding `localPath` to indicate where "
-                    f"the file can be found locally",
-                    self)
+            if not self._check_entity_local_path(context, entity):
                 result = False
                 if context.fail_fast:
                     return False

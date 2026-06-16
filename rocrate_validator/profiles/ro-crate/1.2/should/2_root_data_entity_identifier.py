@@ -13,8 +13,7 @@
 # limitations under the License.
 
 from rocrate_validator.models import Severity, ValidationContext
-from rocrate_validator.requirements.python import (PyFunctionCheck, check,
-                                                   requirement)
+from rocrate_validator.requirements.python import PyFunctionCheck, check, requirement
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.signposting import check_downloadable
 from rocrate_validator.utils.uri import URI
@@ -40,19 +39,20 @@ class DetachedROCrateRootDataEntityIdentifierChecker(PyFunctionCheck):
             if not root_entity.is_remote():
                 return True
 
-            if root_entity.id == './':
+            if root_entity.id == "./":
                 context.result.add_issue(
-                    'In a remote RO-Crate, the Root Data Entity @id SHOULD be an absolute URL, not `./`', self)
+                    "In a remote RO-Crate, the Root Data Entity @id SHOULD be an absolute URL, not `./`", self
+                )
                 return False
             if not URI(root_entity.id).is_remote_resource():
                 context.result.add_issue(
-                    'In a remote RO-Crate, the Root Data Entity @id SHOULD be an absolute URL', self)
+                    "In a remote RO-Crate, the Root Data Entity @id SHOULD be an absolute URL", self
+                )
                 return False
 
             return True
         except Exception as e:
-            context.result.add_issue(
-                f'Error checking Root Data Entity @id: {str(e)}', self)
+            context.result.add_issue(f"Error checking Root Data Entity @id: {e!s}", self)
             return False
 
 
@@ -77,25 +77,27 @@ class RootDataEntityCiteAsIdentifierChecker(PyFunctionCheck):
                 return True
 
             # Check if the `cite-as` property is present and references the Root Data Entity
-            cite_as = root_entity.get_property('cite-as')
-            if root_entity.id_as_uri.is_remote_resource():
-                if not cite_as:
-                    context.result.add_issue(
-                        'If the Root Data Entity has a resolvable identifier, '
-                        'it SHOULD be included in the `cite-as` property of the RO-Crate Metadata Entity.', self)
-                    return False
+            cite_as = root_entity.get_property("cite-as")
+            if root_entity.id_as_uri.is_remote_resource() and not cite_as:
+                context.result.add_issue(
+                    "If the Root Data Entity has a resolvable identifier, "
+                    "it SHOULD be included in the `cite-as` property of the RO-Crate Metadata Entity.",
+                    self,
+                )
+                return False
 
             # If the `cite-as` property is present, check that it references the Root Data Entity
             if cite_as.id != root_entity.id:
                 context.result.add_issue(
-                    'If the Root Data Entity has a resolvable identifier, '
-                    'it SHOULD be included in the `cite-as` property of the RO-Crate Metadata Entity.', self)
+                    "If the Root Data Entity has a resolvable identifier, "
+                    "it SHOULD be included in the `cite-as` property of the RO-Crate Metadata Entity.",
+                    self,
+                )
                 return False
 
             return True
         except Exception as e:
-            context.result.add_issue(
-                f'Error checking Root Data Entity `cite-as` reference: {str(e)}', self)
+            context.result.add_issue(f"Error checking Root Data Entity `cite-as` reference: {e!s}", self)
             return False
 
 
@@ -137,8 +139,7 @@ class RootDataEntityPersistentIdentifierChecker(PyFunctionCheck):
     (RO-Crate 1.2, RECOMMENDED).
     """
 
-    @check(name="Root Data Entity: identifier SHOULD resolve to RO-Crate content",
-           severity=Severity.RECOMMENDED)
+    @check(name="Root Data Entity: identifier SHOULD resolve to RO-Crate content", severity=Severity.RECOMMENDED)
     def check_identifier_resolvable(self, context: ValidationContext) -> bool:
         if context.settings.skip_availability_check:
             return True
@@ -169,6 +170,5 @@ class RootDataEntityPersistentIdentifierChecker(PyFunctionCheck):
                     result = False
             return result
         except Exception as e:
-            context.result.add_issue(
-                f"Error checking Root Data Entity identifier resolution: {str(e)}", self)
+            context.result.add_issue(f"Error checking Root Data Entity identifier resolution: {e!s}", self)
             return False

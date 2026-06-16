@@ -12,10 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from rocrate_validator.utils import log as logging
 from rocrate_validator.models import ValidationContext
-from rocrate_validator.requirements.python import (PyFunctionCheck, check,
-                                                   requirement)
+from rocrate_validator.requirements.python import PyFunctionCheck, check, requirement
+from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.signposting import check_downloadable
 
 logger = logging.getLogger(__name__)
@@ -30,49 +29,58 @@ class CiteAsDownloadableChecker(PyFunctionCheck):
     negotiation (RO-Crate 1.2, RFC 8574).
     """
 
+    @staticmethod
+    def _resolve_cite_as_url(cite_as_raw: object) -> str | None:
+        """
+        Resolve the `cite-as` value to the http(s) URL that must be checked,
+        or None when there is nothing to verify (absent value, non-URL literal,
+        or a reference without an `id`).
+        """
+        if not cite_as_raw:
+            return None
+        # cite-as can be a plain string literal or an entity reference {"@id": "..."}
+        if isinstance(cite_as_raw, str):
+            cite_as_url = cite_as_raw
+        elif hasattr(cite_as_raw, "id"):
+            cite_as_url = cite_as_raw.id
+        else:
+            return None
+        if not cite_as_url or not cite_as_url.startswith("http"):
+            return None
+        return cite_as_url
+
     @check(name="Root Data Entity: `cite-as` MUST reference a downloadable item")
     def check_cite_as_downloadable(self, context: ValidationContext) -> bool:
-        if context.settings.skip_availability_check:
-            return True
-        if not (context.settings.creation_time or context.settings.enforce_availability):
-            return True
-        if context.settings.metadata_only:
+        if (
+            context.settings.skip_availability_check
+            or not (context.settings.creation_time or context.settings.enforce_availability)
+            or context.settings.metadata_only
+        ):
             return True
 
         try:
             root_entity = context.ro_crate.metadata.get_root_data_entity()
-            cite_as_raw = root_entity.get_property("cite-as")
-            if not cite_as_raw:
-                return True
-
-            # cite-as can be a plain string literal or an entity reference {"@id": "..."}
-            if isinstance(cite_as_raw, str):
-                cite_as_url = cite_as_raw
-            elif hasattr(cite_as_raw, "id"):
-                cite_as_url = cite_as_raw.id
-            else:
-                return True
-
-            if not cite_as_url or not cite_as_url.startswith("http"):
+            cite_as_url = self._resolve_cite_as_url(root_entity.get_property("cite-as"))
+            if not cite_as_url:
                 return True
 
             result = check_downloadable(cite_as_url)
             if not result.is_downloadable:
                 context.result.add_issue(
                     f"The `cite-as` value '{cite_as_url}' MUST ultimately provide "
-                    f"the RO-Crate as a downloadable item"
-                    + (f": {result.reason}" if result.reason else ""),
+                    f"the RO-Crate as a downloadable item" + (f": {result.reason}" if result.reason else ""),
                     self,
                 )
                 return False
 
             logger.debug(
                 "cite-as '%s' is downloadable via %s (url: %s)",
-                cite_as_url, result.via, result.download_url,
+                cite_as_url,
+                result.via,
+                result.download_url,
             )
             return True
 
         except Exception as e:
-            context.result.add_issue(
-                f"Error checking `cite-as` downloadability: {str(e)}", self)
+            context.result.add_issue(f"Error checking `cite-as` downloadability: {e!s}", self)
             return False
