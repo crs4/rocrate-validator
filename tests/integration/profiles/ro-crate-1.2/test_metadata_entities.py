@@ -32,8 +32,7 @@ def test_valid_recommended_schema_type():
         __metadata_entities__.valid_recommended_schema_type,
         models.Severity.RECOMMENDED,
         True,
-        profile_identifier="ro-crate-1.2"
-
+        profile_identifier="ro-crate-1.2",
     )
 
 
@@ -48,8 +47,7 @@ def test_invalid_recommended_schema_type_warning():
         False,
         profile_identifier="ro-crate-1.2",
         expected_triggered_requirements=["RO-Crate Metadata Entity: RECOMMENDED properties"],
-        expected_triggered_issues=[
-            "RO-Crate Metadata Entity SHOULD include at least one Schema.org type"]
+        expected_triggered_issues=["RO-Crate Metadata Entity SHOULD include at least one Schema.org type"],
     )
 
 
@@ -61,8 +59,7 @@ def test_valid_recommended_entity_name():
         __metadata_entities__.valid_recommended_name,
         models.Severity.RECOMMENDED,
         True,
-        profile_identifier="ro-crate-1.2"
-
+        profile_identifier="ro-crate-1.2",
     )
 
 
@@ -77,6 +74,5 @@ def test_invalid_recommended_entity_name_warning():
         False,
         profile_identifier="ro-crate-1.2",
         expected_triggered_requirements=["RO-Crate Metadata Entity: RECOMMENDED properties"],
-        expected_triggered_issues=[
-            "Entities SHOULD have a human-readable name"]
+        expected_triggered_issues=["Entities SHOULD have a human-readable name"],
     )

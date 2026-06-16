@@ -29,5 +29,5 @@ ro-crate:AgentProjectIntersection a sh:NodeShape ;
             }
         """ ;
         sh:severity sh:Violation ;
-        
+
     ] .

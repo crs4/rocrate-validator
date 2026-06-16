@@ -93,6 +93,7 @@ ignore = [
     "PLR2004", # magic-value-comparison: tests use literal values in assertions
     "PLC0415", # import-outside-top-level: tests use local imports for mocking
     "C901",    # complex-structure: test helpers/scenarios are not held to the prod complexity gate
+    "RUF012",  # mutable-class-default: lightweight test mock/data classes, no ClassVar needed
 ]
 
 # Cyclomatic complexity threshold for the mccabe (C90) check.

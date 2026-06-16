@@ -27,21 +27,22 @@ __workflows_scripts_crates__ = WorkflowsScripts()
 # "valid" RECOMMENDED test cases so the assertion is only about the
 # workflow-specific shape.
 _GENERIC_RECOMMENDED_SKIP = [
-    "ro-crate-1.2_40.0",   # RO-Crate Metadata Entity: RECOMMENDED properties (check 0)
-    "ro-crate-1.2_40.1",   # RO-Crate Metadata Entity: RECOMMENDED properties (check 1)
-    "ro-crate-1.2_48.1",   # Root Data Entity: recommended funder
-    "ro-crate-1.2_55.1",   # Root Data Entity: recommended publisher
-    "ro-crate-1.2_62.1",   # File Data Entity: RECOMMENDED contentSize
-    "ro-crate-1.2_63.0",   # File: RECOMMENDED conformsTo profile
-    "ro-crate-1.2_75.1",   # Contextual Entity Properties
-    "ro-crate-1.2_76.1",   # Contextual Entity RECOMMENDED description
-    "ro-crate-1.2_81.2",   # License entity: RECOMMENDED properties
+    "ro-crate-1.2_40.0",  # RO-Crate Metadata Entity: RECOMMENDED properties (check 0)
+    "ro-crate-1.2_40.1",  # RO-Crate Metadata Entity: RECOMMENDED properties (check 1)
+    "ro-crate-1.2_48.1",  # Root Data Entity: recommended funder
+    "ro-crate-1.2_55.1",  # Root Data Entity: recommended publisher
+    "ro-crate-1.2_62.1",  # File Data Entity: RECOMMENDED contentSize
+    "ro-crate-1.2_63.0",  # File: RECOMMENDED conformsTo profile
+    "ro-crate-1.2_75.1",  # Contextual Entity Properties
+    "ro-crate-1.2_76.1",  # Contextual Entity RECOMMENDED description
+    "ro-crate-1.2_81.2",  # License entity: RECOMMENDED properties
 ]
 
 
 # ---------------------------------------------------------------------------
 # Script type checks (MUST)
 # ---------------------------------------------------------------------------
+
 
 def test_valid_script_type():
     """
@@ -67,15 +68,14 @@ def test_invalid_script_type():
         False,
         profile_identifier="ro-crate-1.2",
         expected_triggered_requirements=["Script: REQUIRED `File` type"],
-        expected_triggered_issues=[
-            "A Script MUST include `File` in its `@type`"
-        ],
+        expected_triggered_issues=["A Script MUST include `File` in its `@type`"],
     )
 
 
 # ---------------------------------------------------------------------------
 # Script name checks (MUST)
 # ---------------------------------------------------------------------------
+
 
 def test_valid_script_name():
     """
@@ -99,15 +99,14 @@ def test_invalid_script_name():
         False,
         profile_identifier="ro-crate-1.2",
         expected_triggered_requirements=["Script or Workflow: REQUIRED `name`"],
-        expected_triggered_issues=[
-            "Scripts and Workflows MUST have a human-readable `name` property"
-        ],
+        expected_triggered_issues=["Scripts and Workflows MUST have a human-readable `name` property"],
     )
 
 
 # ---------------------------------------------------------------------------
 # Workflow type checks (MUST)
 # ---------------------------------------------------------------------------
+
 
 def test_valid_workflow_type():
     """
@@ -133,9 +132,7 @@ def test_invalid_workflow_type_missing_file():
         False,
         profile_identifier="ro-crate-1.2",
         expected_triggered_requirements=["Workflow: REQUIRED `File` type"],
-        expected_triggered_issues=[
-            "A Workflow MUST include `File` in its `@type`"
-        ],
+        expected_triggered_issues=["A Workflow MUST include `File` in its `@type`"],
     )
 
 
@@ -150,15 +147,14 @@ def test_invalid_workflow_type_missing_ssc():
         False,
         profile_identifier="ro-crate-1.2",
         expected_triggered_requirements=["Workflow: REQUIRED `SoftwareSourceCode` type"],
-        expected_triggered_issues=[
-            "A Workflow MUST include `SoftwareSourceCode` in its `@type`"
-        ],
+        expected_triggered_issues=["A Workflow MUST include `SoftwareSourceCode` in its `@type`"],
     )
 
 
 # ---------------------------------------------------------------------------
 # Workflow name checks (MUST)
 # ---------------------------------------------------------------------------
+
 
 def test_valid_workflow_name():
     """
@@ -182,15 +178,14 @@ def test_invalid_workflow_name():
         False,
         profile_identifier="ro-crate-1.2",
         expected_triggered_requirements=["Script or Workflow: REQUIRED `name`"],
-        expected_triggered_issues=[
-            "Scripts and Workflows MUST have a human-readable `name` property"
-        ],
+        expected_triggered_issues=["Scripts and Workflows MUST have a human-readable `name` property"],
     )
 
 
 # ---------------------------------------------------------------------------
 # programmingLanguage checks (SHOULD)
 # ---------------------------------------------------------------------------
+
 
 def test_valid_programming_language():
     """
@@ -217,15 +212,14 @@ def test_invalid_programming_language():
         False,
         profile_identifier="ro-crate-1.2",
         expected_triggered_requirements=["Script or Workflow: RECOMMENDED `programmingLanguage`"],
-        expected_triggered_issues=[
-            "Scripts and Workflows SHOULD have a `programmingLanguage` property"
-        ],
+        expected_triggered_issues=["Scripts and Workflows SHOULD have a `programmingLanguage` property"],
     )
 
 
 # ---------------------------------------------------------------------------
 # Workflow conformsTo checks (SHOULD)
 # ---------------------------------------------------------------------------
+
 
 def test_valid_workflow_conformsTo():
     """
@@ -261,6 +255,7 @@ def test_invalid_workflow_conformsTo():
 # Image encodingFormat checks (SHOULD)
 # ---------------------------------------------------------------------------
 
+
 def test_valid_image_encoding_format():
     """
     A Workflow image ImageObject with `encodingFormat` SHOULD pass
@@ -295,6 +290,7 @@ def test_invalid_image_encoding_format():
 # ---------------------------------------------------------------------------
 # Image about checks (SHOULD)
 # ---------------------------------------------------------------------------
+
 
 def test_valid_image_about():
     """

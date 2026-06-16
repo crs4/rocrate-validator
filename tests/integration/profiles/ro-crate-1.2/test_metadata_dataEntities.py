@@ -33,7 +33,7 @@ def test_valid_local_entity_reference():
         __metadata_root_data_entity_crates__.valid_local_entity_reference,
         models.Severity.REQUIRED,
         True,
-        profile_identifier="ro-crate-1.2"
+        profile_identifier="ro-crate-1.2",
     )
 
 
@@ -47,9 +47,7 @@ def test_invalid_local_entity_reference():
         False,
         profile_identifier="ro-crate-1.2",
         expected_triggered_requirements=["Data Entity: identifier requirements"],
-        expected_triggered_issues=[
-            "MUST use a relative @id within the RO-Crate root"
-        ]
+        expected_triggered_issues=["MUST use a relative @id within the RO-Crate root"],
     )
 
 
@@ -61,7 +59,7 @@ def test_valid_detached_rocrate_dataEntities():
         __metadata_root_data_entity_crates__.valid_detached_rocrate_dataEntities,
         models.Severity.REQUIRED,
         True,
-        profile_identifier="ro-crate-1.2"
+        profile_identifier="ro-crate-1.2",
     )
 
 
@@ -75,9 +73,7 @@ def test_invalid_detached_rocrate_dataEntities():
         False,
         profile_identifier="ro-crate-1.2",
         expected_triggered_requirements=["Data Entity: identifier requirements"],
-        expected_triggered_issues=[
-            "has a local identifier but the Root Data Entity does not have a local identifier"
-        ]
+        expected_triggered_issues=["has a local identifier but the Root Data Entity does not have a local identifier"],
     )
 
 
@@ -89,7 +85,7 @@ def test_valid_recommended_properties():
         __metadata_root_data_entity_crates__.valid_recommended_properties,
         models.Severity.RECOMMENDED,
         True,
-        profile_identifier="ro-crate-1.2"
+        profile_identifier="ro-crate-1.2",
     )
 
 
@@ -106,7 +102,7 @@ def test_invalid_recommended_properties():
         expected_triggered_issues=[
             "Data Entities SHOULD have a `name` property",
             "Data Entities SHOULD have a `description` property",
-        ]
+        ],
     )
 
 
@@ -118,7 +114,7 @@ def test_valid_recommended_encoding_format():
         __metadata_root_data_entity_crates__.valid_recommended_encoding_format,
         models.Severity.RECOMMENDED,
         True,
-        profile_identifier="ro-crate-1.2"
+        profile_identifier="ro-crate-1.2",
     )
 
 
@@ -132,15 +128,14 @@ def test_invalid_recommended_encoding_format():
         False,
         profile_identifier="ro-crate-1.2",
         expected_triggered_requirements=["File Data Entity: RECOMMENDED `encodingFormat` property"],
-        expected_triggered_issues=[
-            "Missing or invalid `encodingFormat` linked to the `File Data Entity`"
-        ]
+        expected_triggered_issues=["Missing or invalid `encodingFormat` linked to the `File Data Entity`"],
     )
 
 
 # ---------------------------------------------------------------------------
 # Web entity @id — downloadability (MUST at creation_time / enforce_availability)
 # ---------------------------------------------------------------------------
+
 
 class _ZipResponse:
     status_code = 200
@@ -198,6 +193,7 @@ def test_invalid_required_web_entity_not_downloadable(monkeypatch):
 # Web entity @id — availability warning (RECOMMENDED, default mode)
 # ---------------------------------------------------------------------------
 
+
 def test_valid_recommended_web_entity_downloadable_warning(monkeypatch):
     """
     Web-based Data Entity whose @id returns application/zip passes the
@@ -233,6 +229,7 @@ def test_invalid_recommended_web_entity_splash_page_warning(monkeypatch):
 # ---------------------------------------------------------------------------
 # Web entity contentUrl — downloadability (RECOMMENDED)
 # ---------------------------------------------------------------------------
+
 
 def test_valid_recommended_content_url_downloadable(monkeypatch):
     """
@@ -276,9 +273,14 @@ def test_valid_missing_file_local_path():
         models.Severity.RECOMMENDED,
         True,
         profile_identifier="ro-crate-1.2",
-        skip_checks=["ro-crate-1.2_16.1", "ro-crate-1.2_38.1",
-                     "ro-crate-1.2_17.1", "ro-crate-1.2_39.0", "ro-crate-1.2_39.1",
-                     "ro-crate-1.2_18.1"],
+        skip_checks=[
+            "ro-crate-1.2_16.1",
+            "ro-crate-1.2_38.1",
+            "ro-crate-1.2_17.1",
+            "ro-crate-1.2_39.0",
+            "ro-crate-1.2_39.1",
+            "ro-crate-1.2_18.1",
+        ],
     )
 
 
@@ -293,12 +295,8 @@ def test_invalid_missing_file_no_local_path():
         False,
         profile_identifier="ro-crate-1.2",
         skip_checks=["ro-crate-1.2_16.1"],
-        expected_triggered_requirements=[
-            "Data Entity: missing file SHOULD use localPath"
-        ],
-        expected_triggered_issues=[
-            "localPath"
-        ],
+        expected_triggered_requirements=["Data Entity: missing file SHOULD use localPath"],
+        expected_triggered_issues=["localPath"],
     )
 
 
@@ -353,13 +351,13 @@ def test_redundant_license_logs_warning():
     )
 
     log_contents = __log_stream__.getvalue()
-    assert "redundant" in log_contents.lower(), \
-        f"Expected a warning log about redundant license, got:\n{log_contents}"
+    assert "redundant" in log_contents.lower(), f"Expected a warning log about redundant license, got:\n{log_contents}"
 
 
 # ---------------------------------------------------------------------------
 # File Data Entity — contentSize (SHOULD)
 # ---------------------------------------------------------------------------
+
 
 def test_valid_recommended_contentSize():
     """
@@ -370,7 +368,7 @@ def test_valid_recommended_contentSize():
         __metadata_root_data_entity_crates__.valid_recommended_contentSize,
         models.Severity.RECOMMENDED,
         True,
-        profile_identifier="ro-crate-1.2"
+        profile_identifier="ro-crate-1.2",
     )
 
 
@@ -385,13 +383,14 @@ def test_invalid_recommended_contentSize():
         False,
         profile_identifier="ro-crate-1.2",
         expected_triggered_requirements=["File Data Entity: RECOMMENDED contentSize"],
-        expected_triggered_issues=["contentSize"]
+        expected_triggered_issues=["contentSize"],
     )
 
 
 # ---------------------------------------------------------------------------
 # File Data Entity — conformsTo profile (SHOULD)
 # ---------------------------------------------------------------------------
+
 
 def test_valid_recommended_conformsto():
     """
@@ -402,7 +401,7 @@ def test_valid_recommended_conformsto():
         __metadata_root_data_entity_crates__.valid_recommended_conformsto,
         models.Severity.RECOMMENDED,
         True,
-        profile_identifier="ro-crate-1.2"
+        profile_identifier="ro-crate-1.2",
     )
 
 
@@ -417,13 +416,14 @@ def test_invalid_recommended_conformsto():
         False,
         profile_identifier="ro-crate-1.2",
         expected_triggered_requirements=["File: RECOMMENDED `conformsTo` profile"],
-        expected_triggered_issues=["conformsTo"]
+        expected_triggered_issues=["conformsTo"],
     )
 
 
 # ---------------------------------------------------------------------------
 # Web-based File Data Entity — sdDatePublished (SHOULD)
 # ---------------------------------------------------------------------------
+
 
 def test_valid_recommended_sdDatePublished(monkeypatch):
     """
@@ -453,13 +453,14 @@ def test_invalid_recommended_sdDatePublished(monkeypatch):
         False,
         profile_identifier="ro-crate-1.2",
         expected_triggered_requirements=["Web-based Data Entity: RECOMMENDED properties"],
-        expected_triggered_issues=["sdDatePublished"]
+        expected_triggered_issues=["sdDatePublished"],
     )
 
 
 # ---------------------------------------------------------------------------
 # 4.3 Dataset (Directory) Data Entity — trailing slash (RECOMMENDED)
 # ---------------------------------------------------------------------------
+
 
 def test_valid_recommended_dataset_trailing_slash():
     """
@@ -492,6 +493,7 @@ def test_invalid_recommended_dataset_trailing_slash():
 # ---------------------------------------------------------------------------
 # 4.3 Dataset (Directory) Data Entity — hasPart (RECOMMENDED)
 # ---------------------------------------------------------------------------
+
 
 def test_valid_recommended_dataset_has_part():
     """

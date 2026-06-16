@@ -14,13 +14,14 @@
 
 """Unit tests for rocrate_validator.utils.signposting.check_downloadable."""
 
-
 from rocrate_validator.utils.http import HttpRequester
-from rocrate_validator.utils.signposting import (_HTML_MIME_TYPES,
-                                                 _ROCRATE_ACCEPT,
-                                                 DownloadabilityResult,
-                                                 DownloadVia,
-                                                 check_downloadable)
+from rocrate_validator.utils.signposting import (
+    _HTML_MIME_TYPES,
+    _ROCRATE_ACCEPT,
+    DownloadabilityResult,
+    DownloadVia,
+    check_downloadable,
+)
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -63,7 +64,6 @@ def _zip_resp(**kw) -> _HeadResponse:
 # Data-model tests
 # ---------------------------------------------------------------------------
 class TestDownloadVia:
-
     def test_enum_string_values(self):
         assert DownloadVia.DIRECT == "direct"
         assert DownloadVia.SIGNPOSTING_ITEM == "signposting_item"
@@ -76,7 +76,6 @@ class TestDownloadVia:
 
 
 class TestDownloadabilityResult:
-
     def test_downloadable_result_fields(self):
         r = DownloadabilityResult(
             is_downloadable=True,
@@ -106,7 +105,6 @@ class TestDownloadabilityResult:
 # Module-level constants
 # ---------------------------------------------------------------------------
 class TestModuleConstants:
-
     def test_html_mime_types_contains_text_html(self):
         assert "text/html" in _HTML_MIME_TYPES
 
@@ -129,7 +127,6 @@ class TestModuleConstants:
 # Signposting (RFC 8288 Link headers)
 # ---------------------------------------------------------------------------
 class TestSignpostingItemLink:
-
     def test_item_link_is_downloadable(self, monkeypatch):
         item_url = "https://example.com/rocrate.zip"
         resp = _HeadResponse(links={"item": {"url": item_url}})
@@ -169,7 +166,6 @@ class TestSignpostingItemLink:
 
 
 class TestSignpostingDescribedByLink:
-
     def test_describedby_link_is_downloadable(self, monkeypatch):
         meta_url = "https://example.com/ro-crate-metadata.json"
         resp = _HeadResponse(links={"describedby": {"url": meta_url}})
@@ -198,13 +194,14 @@ class TestSignpostingDescribedByLink:
 
 
 class TestSignpostingPriority:
-
     def test_item_takes_priority_over_describedby(self, monkeypatch):
         """When both rel=item and rel=describedby are present, rel=item wins."""
-        resp = _HeadResponse(links={
-            "item": {"url": "https://example.com/rocrate.zip"},
-            "describedby": {"url": "https://example.com/meta.json"},
-        })
+        resp = _HeadResponse(
+            links={
+                "item": {"url": "https://example.com/rocrate.zip"},
+                "describedby": {"url": "https://example.com/meta.json"},
+            }
+        )
         monkeypatch.setattr(HttpRequester(), "head", lambda url, **kw: resp)
 
         result = check_downloadable(_URL)
@@ -229,7 +226,6 @@ class TestSignpostingPriority:
 # Direct download (Content-Type based)
 # ---------------------------------------------------------------------------
 class TestDirectDownload:
-
     def test_zip_content_type(self, monkeypatch):
         monkeypatch.setattr(HttpRequester(), "head", lambda url, **kw: _zip_resp())
 
@@ -295,18 +291,20 @@ class TestDirectDownload:
 # Content negotiation
 # ---------------------------------------------------------------------------
 class TestContentNegotiation:
-
     def _make_neg_head(self, plain_ct: str, neg_ct: str, neg_status: int = 200):
         """Return a fake_head function that differentiates plain and Accept-based calls."""
+
         def fake_head(url, **kwargs):
             if kwargs.get("headers", {}).get("Accept"):
                 return _HeadResponse(status_code=neg_status, content_type=neg_ct)
             return _HeadResponse(content_type=plain_ct)
+
         return fake_head
 
     def test_content_negotiation_success(self, monkeypatch):
         monkeypatch.setattr(
-            HttpRequester(), "head",
+            HttpRequester(),
+            "head",
             self._make_neg_head("text/html", "application/ld+json"),
         )
 
@@ -317,7 +315,8 @@ class TestContentNegotiation:
 
     def test_content_negotiation_download_url_equals_checked_url(self, monkeypatch):
         monkeypatch.setattr(
-            HttpRequester(), "head",
+            HttpRequester(),
+            "head",
             self._make_neg_head("text/html", "application/ld+json"),
         )
 
@@ -327,7 +326,8 @@ class TestContentNegotiation:
 
     def test_content_negotiation_zip_response(self, monkeypatch):
         monkeypatch.setattr(
-            HttpRequester(), "head",
+            HttpRequester(),
+            "head",
             self._make_neg_head("text/html", "application/zip"),
         )
 
@@ -339,7 +339,8 @@ class TestContentNegotiation:
     def test_content_negotiation_html_response_not_downloadable(self, monkeypatch):
         """Accept-based HEAD also returns HTML → not downloadable."""
         monkeypatch.setattr(
-            HttpRequester(), "head",
+            HttpRequester(),
+            "head",
             self._make_neg_head("text/html", "text/html"),
         )
 
@@ -350,7 +351,8 @@ class TestContentNegotiation:
     def test_content_negotiation_non_200_status_not_downloadable(self, monkeypatch):
         """Accept-based HEAD returns 404 → content negotiation does not count."""
         monkeypatch.setattr(
-            HttpRequester(), "head",
+            HttpRequester(),
+            "head",
             self._make_neg_head("text/html", "application/ld+json", neg_status=404),
         )
 
@@ -407,7 +409,6 @@ class TestContentNegotiation:
 # Not downloadable result
 # ---------------------------------------------------------------------------
 class TestNotDownloadable:
-
     def test_not_downloadable_is_false(self, monkeypatch):
         monkeypatch.setattr(HttpRequester(), "head", lambda url, **kw: _html_resp())
 
@@ -458,7 +459,6 @@ class TestNotDownloadable:
 
 
 class TestErrorHandling:
-
     def test_http_error_status_not_downloadable(self, monkeypatch):
         """raise_for_status() raises → is_downloadable is False."""
         resp = _HeadResponse(status_code=404, raise_on_status=True)
@@ -521,6 +521,7 @@ class TestErrorHandling:
 
     def test_error_handling_never_raises(self, monkeypatch):
         """check_downloadable must never propagate exceptions to the caller."""
+
         def fake_head(url, **kwargs):
             raise RuntimeError("catastrophic failure")
 

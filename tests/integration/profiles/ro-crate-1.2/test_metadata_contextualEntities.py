@@ -25,20 +25,21 @@ __contextual_entities_crates__ = ContextualEntities()
 # Generic RECOMMENDED checks that fire on minimal test crates regardless of the
 # contextual-entity-specific property being tested.
 _GENERIC_RECOMMENDED_SKIP = [
-    "ro-crate-1.2_48.1",   # Root Data Entity: RECOMMENDED funder
-    "ro-crate-1.2_55.1",   # Root Data Entity: RECOMMENDED publisher
+    "ro-crate-1.2_48.1",  # Root Data Entity: RECOMMENDED funder
+    "ro-crate-1.2_55.1",  # Root Data Entity: RECOMMENDED publisher
 ]
 
 # Correct IDs for funder/publisher checks (used in person entity tests).
 _PERSON_VALID_SKIP = [
-    "ro-crate-1.2_48.1",   # Root Data Entity: RECOMMENDED funder
-    "ro-crate-1.2_55.1",   # Root Data Entity: RECOMMENDED publisher
+    "ro-crate-1.2_48.1",  # Root Data Entity: RECOMMENDED funder
+    "ro-crate-1.2_55.1",  # Root Data Entity: RECOMMENDED publisher
 ]
 
 
 # ---------------------------------------------------------------------------
 # License entity: SHOULD be typed as CreativeWork (SHOULD)
 # ---------------------------------------------------------------------------
+
 
 def test_valid_license_entity():
     """
@@ -65,9 +66,7 @@ def test_invalid_license_entity_no_type():
         False,
         profile_identifier="ro-crate-1.2",
         expected_triggered_requirements=["License entity: SHOULD be typed as CreativeWork"],
-        expected_triggered_issues=[
-            "A License entity SHOULD have `CreativeWork` in its `@type`"
-        ],
+        expected_triggered_issues=["A License entity SHOULD have `CreativeWork` in its `@type`"],
     )
 
 
@@ -82,15 +81,14 @@ def test_invalid_license_entity_no_url():
         False,
         profile_identifier="ro-crate-1.2",
         expected_triggered_requirements=["License entity: SHOULD have absolute URL @id"],
-        expected_triggered_issues=[
-            "A License entity SHOULD have an absolute HTTP(S) URL as its @id"
-        ],
+        expected_triggered_issues=["A License entity SHOULD have an absolute HTTP(S) URL as its @id"],
     )
 
 
 # ---------------------------------------------------------------------------
 # License entity: name and description SHOULD be present (SHOULD)
 # ---------------------------------------------------------------------------
+
 
 def test_invalid_license_entity_no_name():
     """
@@ -103,9 +101,7 @@ def test_invalid_license_entity_no_name():
         False,
         profile_identifier="ro-crate-1.2",
         expected_triggered_requirements=["License entity: RECOMMENDED properties"],
-        expected_triggered_issues=[
-            "License entities SHOULD have a name"
-        ],
+        expected_triggered_issues=["License entities SHOULD have a name"],
     )
 
 
@@ -120,15 +116,14 @@ def test_invalid_license_entity_no_description():
         False,
         profile_identifier="ro-crate-1.2",
         expected_triggered_requirements=["License entity: RECOMMENDED properties"],
-        expected_triggered_issues=[
-            "License entities SHOULD have a description"
-        ],
+        expected_triggered_issues=["License entities SHOULD have a description"],
     )
 
 
 # ---------------------------------------------------------------------------
 # Organization entity: SHOULD have ROR identifier as @id (SHOULD)
 # ---------------------------------------------------------------------------
+
 
 def test_valid_organization_entity():
     """
@@ -155,15 +150,14 @@ def test_invalid_organization_no_ror_id():
         False,
         profile_identifier="ro-crate-1.2",
         expected_triggered_requirements=["Organization: SHOULD have ROR identifier"],
-        expected_triggered_issues=[
-            "An Organization entity SHOULD have a ROR identifier as its @id"
-        ],
+        expected_triggered_issues=["An Organization entity SHOULD have a ROR identifier as its @id"],
     )
 
 
 # ---------------------------------------------------------------------------
 # Organization/Person contactPoint: SHOULD reference ContactPoint entity (SHOULD)
 # ---------------------------------------------------------------------------
+
 
 def test_invalid_organization_contactpoint_no_entity():
     """
@@ -175,12 +169,8 @@ def test_invalid_organization_contactpoint_no_entity():
         models.Severity.RECOMMENDED,
         False,
         profile_identifier="ro-crate-1.2",
-        expected_triggered_requirements=[
-            "Organization: SHOULD have contactPoint referencing ContactPoint"
-        ],
-        expected_triggered_issues=[
-            "An Organization's contactPoint SHOULD reference a ContactPoint contextual entity"
-        ],
+        expected_triggered_requirements=["Organization: SHOULD have contactPoint referencing ContactPoint"],
+        expected_triggered_issues=["An Organization's contactPoint SHOULD reference a ContactPoint contextual entity"],
     )
 
 
@@ -194,18 +184,15 @@ def test_invalid_organization_no_contactpoint():
         models.Severity.RECOMMENDED,
         False,
         profile_identifier="ro-crate-1.2",
-        expected_triggered_requirements=[
-            "Organization: SHOULD have contactPoint referencing ContactPoint"
-        ],
-        expected_triggered_issues=[
-            "An Organization's contactPoint SHOULD reference a ContactPoint contextual entity"
-        ],
+        expected_triggered_requirements=["Organization: SHOULD have contactPoint referencing ContactPoint"],
+        expected_triggered_issues=["An Organization's contactPoint SHOULD reference a ContactPoint contextual entity"],
     )
 
 
 # ---------------------------------------------------------------------------
 # Author/Publisher: at least one SHOULD have contactPoint (SHOULD)
 # ---------------------------------------------------------------------------
+
 
 def test_invalid_no_author_publisher_contactpoint():
     """
@@ -218,9 +205,7 @@ def test_invalid_no_author_publisher_contactpoint():
         models.Severity.RECOMMENDED,
         False,
         profile_identifier="ro-crate-1.2",
-        expected_triggered_requirements=[
-            "Root Data Entity: at least one author/publisher SHOULD have contactPoint"
-        ],
+        expected_triggered_requirements=["Root Data Entity: at least one author/publisher SHOULD have contactPoint"],
         expected_triggered_issues=[
             "At least one author or publisher Person/Organization SHOULD have a contactPoint property"
         ],
@@ -230,6 +215,7 @@ def test_invalid_no_author_publisher_contactpoint():
 # ---------------------------------------------------------------------------
 # Person entity: SHOULD have ORCID identifier as @id (SHOULD)
 # ---------------------------------------------------------------------------
+
 
 def test_valid_person_entity():
     """
@@ -256,9 +242,7 @@ def test_invalid_person_no_orcid():
         False,
         profile_identifier="ro-crate-1.2",
         expected_triggered_requirements=["Person: SHOULD have ORCID identifier"],
-        expected_triggered_issues=[
-            "A Person entity SHOULD have an ORCID identifier as its @id"
-        ],
+        expected_triggered_issues=["A Person entity SHOULD have an ORCID identifier as its @id"],
     )
 
 
@@ -273,15 +257,14 @@ def test_invalid_person_affiliation_not_org():
         False,
         profile_identifier="ro-crate-1.2",
         expected_triggered_requirements=["Person: RECOMMENDED affiliation"],
-        expected_triggered_issues=[
-            "Persons SHOULD reference an Organization for affiliation"
-        ],
+        expected_triggered_issues=["Persons SHOULD reference an Organization for affiliation"],
     )
 
 
 # ---------------------------------------------------------------------------
 # Any Contextual Entity: @id SHOULD be absolute URI or '#'-prefixed (SHOULD)
 # ---------------------------------------------------------------------------
+
 
 def test_valid_contextual_entity_id_format():
     """
@@ -308,9 +291,7 @@ def test_invalid_bare_contactpoint_id():
         False,
         profile_identifier="ro-crate-1.2",
         expected_triggered_requirements=["Entity identifier: format recommendations"],
-        expected_triggered_issues=[
-            "named local entities SHOULD use a '#'-prefixed @id"
-        ],
+        expected_triggered_issues=["named local entities SHOULD use a '#'-prefixed @id"],
     )
 
 
@@ -325,15 +306,14 @@ def test_invalid_bare_propertyvalue_id():
         False,
         profile_identifier="ro-crate-1.2",
         expected_triggered_requirements=["Entity identifier: format recommendations"],
-        expected_triggered_issues=[
-            "named local entities SHOULD use a '#'-prefixed @id"
-        ],
+        expected_triggered_issues=["named local entities SHOULD use a '#'-prefixed @id"],
     )
 
 
 # ---------------------------------------------------------------------------
 # SoftwareApplication / ComputerLanguage: MUST have name, url, version (REQUIRED)
 # ---------------------------------------------------------------------------
+
 
 def test_valid_software_application():
     """
@@ -358,12 +338,8 @@ def test_invalid_software_application_no_version():
         models.Severity.REQUIRED,
         False,
         profile_identifier="ro-crate-1.2",
-        expected_triggered_requirements=[
-            "SoftwareApplication or ComputerLanguage: REQUIRED `name`, `url`, `version`"
-        ],
-        expected_triggered_issues=[
-            "A SoftwareApplication or ComputerLanguage MUST have a `version` property"
-        ],
+        expected_triggered_requirements=["SoftwareApplication or ComputerLanguage: REQUIRED `name`, `url`, `version`"],
+        expected_triggered_issues=["A SoftwareApplication or ComputerLanguage MUST have a `version` property"],
     )
 
 
@@ -377,12 +353,8 @@ def test_invalid_software_application_no_name():
         models.Severity.REQUIRED,
         False,
         profile_identifier="ro-crate-1.2",
-        expected_triggered_requirements=[
-            "SoftwareApplication or ComputerLanguage: REQUIRED `name`, `url`, `version`"
-        ],
-        expected_triggered_issues=[
-            "A SoftwareApplication or ComputerLanguage MUST have a `name` property"
-        ],
+        expected_triggered_requirements=["SoftwareApplication or ComputerLanguage: REQUIRED `name`, `url`, `version`"],
+        expected_triggered_issues=["A SoftwareApplication or ComputerLanguage MUST have a `name` property"],
     )
 
 
@@ -396,12 +368,8 @@ def test_invalid_software_application_no_url():
         models.Severity.REQUIRED,
         False,
         profile_identifier="ro-crate-1.2",
-        expected_triggered_requirements=[
-            "SoftwareApplication or ComputerLanguage: REQUIRED `name`, `url`, `version`"
-        ],
-        expected_triggered_issues=[
-            "A SoftwareApplication or ComputerLanguage MUST have a `url` property"
-        ],
+        expected_triggered_requirements=["SoftwareApplication or ComputerLanguage: REQUIRED `name`, `url`, `version`"],
+        expected_triggered_issues=["A SoftwareApplication or ComputerLanguage MUST have a `url` property"],
     )
 
 
@@ -424,9 +392,7 @@ def test_valid_computer_language():
 # of a webpage (sh:Info — optional suggestion) [5.8]
 # ---------------------------------------------------------------------------
 
-_ENCODING_FORMAT_MAY_REQUIREMENT = (
-    "Encoding format: OPTIONAL `WebPageElement` type for section references"
-)
+_ENCODING_FORMAT_MAY_REQUIREMENT = "Encoding format: OPTIONAL `WebPageElement` type for section references"
 
 
 def test_info_encoding_format_no_webpageelement():
@@ -441,9 +407,7 @@ def test_info_encoding_format_no_webpageelement():
         False,
         profile_identifier="ro-crate-1.2",
         expected_triggered_requirements=[_ENCODING_FORMAT_MAY_REQUIREMENT],
-        expected_triggered_issues=[
-            "MAY include `WebPageElement` in its `@type`"
-        ],
+        expected_triggered_issues=["MAY include `WebPageElement` in its `@type`"],
     )
 
 
@@ -454,16 +418,15 @@ def test_valid_encoding_format_with_webpageelement():
     suggestion (the optional recommendation is satisfied).
     """
     from rocrate_validator import services
-    result = services.validate({
-        "rocrate_uri": str(
-            __contextual_entities_crates__.valid_encoding_format_webpageelement
-        ),
-        "profile_identifier": "ro-crate-1.2",
-        "requirement_severity": models.Severity.OPTIONAL,
-    })
-    failed_requirement_names = {
-        issue.check.requirement.name for issue in result.get_issues()
-    }
+
+    result = services.validate(
+        {
+            "rocrate_uri": str(__contextual_entities_crates__.valid_encoding_format_webpageelement),
+            "profile_identifier": "ro-crate-1.2",
+            "requirement_severity": models.Severity.OPTIONAL,
+        }
+    )
+    failed_requirement_names = {issue.check.requirement.name for issue in result.get_issues()}
     assert _ENCODING_FORMAT_MAY_REQUIREMENT not in failed_requirement_names, (
         f"The MAY requirement {_ENCODING_FORMAT_MAY_REQUIREMENT!r} should NOT fire "
         f"when the encoding format entity already includes `WebPageElement` in its @type"
@@ -477,14 +440,15 @@ def test_encoding_format_no_fragment_not_triggered():
     not fire.
     """
     from rocrate_validator import services
-    result = services.validate({
-        "rocrate_uri": str(__contextual_entities_crates__.encoding_format_no_fragment),
-        "profile_identifier": "ro-crate-1.2",
-        "requirement_severity": models.Severity.OPTIONAL,
-    })
-    failed_requirement_names = {
-        issue.check.requirement.name for issue in result.get_issues()
-    }
+
+    result = services.validate(
+        {
+            "rocrate_uri": str(__contextual_entities_crates__.encoding_format_no_fragment),
+            "profile_identifier": "ro-crate-1.2",
+            "requirement_severity": models.Severity.OPTIONAL,
+        }
+    )
+    failed_requirement_names = {issue.check.requirement.name for issue in result.get_issues()}
     assert _ENCODING_FORMAT_MAY_REQUIREMENT not in failed_requirement_names, (
         f"The MAY requirement {_ENCODING_FORMAT_MAY_REQUIREMENT!r} should NOT fire "
         f"when the encoding format entity @id does not contain a fragment identifier"
@@ -495,9 +459,7 @@ def test_encoding_format_no_fragment_not_triggered():
 # SoftwareApplication / ComputerLanguage: MAY have `alternateName` [5.7]
 # ---------------------------------------------------------------------------
 
-_SOFTWAREAPP_COMPUTERLANG_ALTERNATENAME_REQ = (
-    "SoftwareApplication or ComputerLanguage: OPTIONAL `alternateName`"
-)
+_SOFTWAREAPP_COMPUTERLANG_ALTERNATENAME_REQ = "SoftwareApplication or ComputerLanguage: OPTIONAL `alternateName`"
 
 
 def test_info_software_application_no_alternatename():
@@ -514,9 +476,7 @@ def test_info_software_application_no_alternatename():
         False,
         profile_identifier="ro-crate-1.2",
         expected_triggered_requirements=[_SOFTWAREAPP_COMPUTERLANG_ALTERNATENAME_REQ],
-        expected_triggered_issues=[
-            "MAY declare an `alternateName` property"
-        ],
+        expected_triggered_issues=["MAY declare an `alternateName` property"],
     )
 
 

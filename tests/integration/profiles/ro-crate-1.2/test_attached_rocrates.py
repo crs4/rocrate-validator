@@ -36,8 +36,7 @@ def test_preview_not_in_hasPart():
         __attached_crates__.valid_preview_not_in_hasPart,
         models.Severity.RECOMMENDED,
         True,
-        profile_identifier="ro-crate-1.2"
-
+        profile_identifier="ro-crate-1.2",
     )
 
 
@@ -52,8 +51,7 @@ def test_preview_not_in_hasPart_warning():
         False,
         profile_identifier="ro-crate-1.2",
         expected_triggered_requirements=["Preview file descriptor should not be included in `hasPart`"],
-        expected_triggered_issues=[
-            "RO-Crate Website files SHOULD NOT be included in `hasPart`"]
+        expected_triggered_issues=["RO-Crate Website files SHOULD NOT be included in `hasPart`"],
     )
 
 
@@ -62,7 +60,7 @@ def test_root_with_IRI_identifier():
         __attached_crates__.valid_relative_root_entity_id,
         models.Severity.REQUIRED,
         True,
-        profile_identifier="ro-crate-1.2"
+        profile_identifier="ro-crate-1.2",
     )
 
 
@@ -71,7 +69,7 @@ def test_root_with_relative_identifier():
         __attached_crates__.valid_relative_root_entity_id,
         models.Severity.REQUIRED,
         True,
-        profile_identifier="ro-crate-1.2"
+        profile_identifier="ro-crate-1.2",
     )
 
 
@@ -83,7 +81,8 @@ def test_root_with_invalid_relative_identifier():
         profile_identifier="ro-crate-1.2",
         expected_triggered_requirements=["Root Data Entity identifier restriction"],
         expected_triggered_issues=[
-            "The Root Data Entity MUST be a `Dataset` (as per `schema.org`) and use an IRI or `./` as identifier"]
+            "The Root Data Entity MUST be a `Dataset` (as per `schema.org`) and use an IRI or `./` as identifier"
+        ],
     )
 
 
@@ -95,5 +94,6 @@ def test_root_with_invalid_non_relative_identifier():
         profile_identifier="ro-crate-1.2",
         expected_triggered_requirements=["Root Data Entity identifier restriction"],
         expected_triggered_issues=[
-            "The Root Data Entity MUST be a `Dataset` (as per `schema.org`) and use an IRI or `./` as identifier"]
+            "The Root Data Entity MUST be a `Dataset` (as per `schema.org`) and use an IRI or `./` as identifier"
+        ],
     )

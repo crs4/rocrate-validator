@@ -48,12 +48,8 @@ def test_invalid_referenced_rocrate_no_versionless_conformsto():
         models.Severity.RECOMMENDED,
         False,
         profile_identifier="ro-crate-1.2",
-        expected_triggered_requirements=[
-            "Referenced RO-Crate: SHOULD include version-less profile in conformsTo"
-        ],
-        expected_triggered_issues=[
-            "version-less"
-        ],
+        expected_triggered_requirements=["Referenced RO-Crate: SHOULD include version-less profile in conformsTo"],
+        expected_triggered_issues=["version-less"],
     )
 
 
@@ -66,12 +62,8 @@ def test_invalid_root_conformsto_versionless():
         models.Severity.REQUIRED,
         False,
         profile_identifier="ro-crate-1.2",
-        expected_triggered_requirements=[
-            "RO-Crate Root Data Entity: MUST NOT declare version-less conformsTo profile"
-        ],
-        expected_triggered_issues=[
-            "version-less"
-        ],
+        expected_triggered_requirements=["RO-Crate Root Data Entity: MUST NOT declare version-less conformsTo profile"],
+        expected_triggered_issues=["version-less"],
     )
 
 
@@ -85,12 +77,8 @@ def test_invalid_referenced_rocrate_no_subjectof():
         models.Severity.RECOMMENDED,
         False,
         profile_identifier="ro-crate-1.2",
-        expected_triggered_requirements=[
-            "Referenced RO-Crate: SHOULD have subjectOf"
-        ],
-        expected_triggered_issues=[
-            "subjectOf"
-        ],
+        expected_triggered_requirements=["Referenced RO-Crate: SHOULD have subjectOf"],
+        expected_triggered_issues=["subjectOf"],
     )
 
 
@@ -104,12 +92,8 @@ def test_invalid_referenced_rocrate_md_encoding_format():
         models.Severity.RECOMMENDED,
         False,
         profile_identifier="ro-crate-1.2",
-        expected_triggered_requirements=[
-            "Referenced RO-Crate metadata descriptor: recommended properties"
-        ],
-        expected_triggered_issues=[
-            "encodingFormat"
-        ],
+        expected_triggered_requirements=["Referenced RO-Crate metadata descriptor: recommended properties"],
+        expected_triggered_issues=["encodingFormat"],
     )
 
 
@@ -123,12 +107,8 @@ def test_invalid_referenced_rocrate_md_conformsto():
         models.Severity.RECOMMENDED,
         False,
         profile_identifier="ro-crate-1.2",
-        expected_triggered_requirements=[
-            "Referenced RO-Crate metadata descriptor: recommended properties"
-        ],
-        expected_triggered_issues=[
-            "conformsTo"
-        ],
+        expected_triggered_requirements=["Referenced RO-Crate metadata descriptor: recommended properties"],
+        expected_triggered_issues=["conformsTo"],
     )
 
 
@@ -142,12 +122,8 @@ def test_invalid_referenced_rocrate_md_about():
         models.Severity.RECOMMENDED,
         False,
         profile_identifier="ro-crate-1.2",
-        expected_triggered_requirements=[
-            "Referenced RO-Crate metadata descriptor: recommended properties"
-        ],
-        expected_triggered_issues=[
-            "about"
-        ],
+        expected_triggered_requirements=["Referenced RO-Crate metadata descriptor: recommended properties"],
+        expected_triggered_issues=["about"],
     )
 
 
@@ -165,9 +141,7 @@ def test_invalid_referenced_rocrate_missing_sddatepublished():
         expected_triggered_requirements=[
             "Referenced RO-Crate: SHOULD have sdDatePublished when @id is an absolute URI without persistent identifier"
         ],
-        expected_triggered_issues=[
-            "SHOULD include `sdDatePublished` to indicate when the URI was accessed"
-        ],
+        expected_triggered_issues=["SHOULD include `sdDatePublished` to indicate when the URI was accessed"],
     )
 
 
@@ -206,6 +180,7 @@ def test_invalid_referenced_rocrate_no_cite_as_signposting(monkeypatch):
     declare Signposting `Link: rel="cite-as"`, `sdDatePublished` SHOULD be
     present.  Mocked HEAD response returns no `cite-as` link.
     """
+
     class _NoCiteAsResponse:
         status_code = 200
         headers = {"Content-Type": "text/html"}
@@ -222,12 +197,8 @@ def test_invalid_referenced_rocrate_no_cite_as_signposting(monkeypatch):
         False,
         profile_identifier="ro-crate-1.2",
         enforce_availability=True,
-        expected_triggered_requirements=[
-            "Referenced RO-Crate: Signposting cite-as refinement for sdDatePublished"
-        ],
-        expected_triggered_issues=[
-            "has no Signposting `Link: rel=\"cite-as\"` declared"
-        ],
+        expected_triggered_requirements=["Referenced RO-Crate: Signposting cite-as refinement for sdDatePublished"],
+        expected_triggered_issues=['has no Signposting `Link: rel="cite-as"` declared'],
     )
 
 
@@ -238,6 +209,7 @@ def test_valid_referenced_rocrate_with_cite_as_signposting(monkeypatch):
     required; the Python check suppresses its warning.  The structural SHACL
     warning still fires (it cannot inspect network headers).
     """
+
     class _CiteAsResponse:
         status_code = 200
         headers = {"Content-Type": "text/html"}
@@ -256,16 +228,16 @@ def test_valid_referenced_rocrate_with_cite_as_signposting(monkeypatch):
     # Python check passes (cite-as present); SHACL structural shape still
     # warns.  We verify the Python-specific requirement is NOT triggered.
     from rocrate_validator import services
-    result = services.validate({
-        "rocrate_uri": str(__referenced_rocrate_crates__.invalid_missing_sddatepublished),
-        "profile_identifier": "ro-crate-1.2",
-        "requirement_severity": models.Severity.RECOMMENDED,
-        "enforce_availability": True,
-    })
-    failed_requirement_names = {
-        issue.check.requirement.name for issue in result.get_issues()
-    }
-    assert (
-        "Referenced RO-Crate: Signposting cite-as refinement for sdDatePublished"
-        not in failed_requirement_names
-    ), "Python cite-as refinement should NOT fire when cite-as is declared"
+
+    result = services.validate(
+        {
+            "rocrate_uri": str(__referenced_rocrate_crates__.invalid_missing_sddatepublished),
+            "profile_identifier": "ro-crate-1.2",
+            "requirement_severity": models.Severity.RECOMMENDED,
+            "enforce_availability": True,
+        }
+    )
+    failed_requirement_names = {issue.check.requirement.name for issue in result.get_issues()}
+    assert "Referenced RO-Crate: Signposting cite-as refinement for sdDatePublished" not in failed_requirement_names, (
+        "Python cite-as refinement should NOT fire when cite-as is declared"
+    )

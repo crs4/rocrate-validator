@@ -167,7 +167,4 @@ def test_provrc_error_violation_maps_to_process_run_crate_check():
         if issue.message and "error MAY be specified if actionStatus is set to FailedActionStatus" in issue.message
     ]
     assert matching_issues, "Expected at least one error MAY issue"
-    assert all(
-        issue.check.requirement.profile.identifier.startswith("process-run-crate")
-        for issue in matching_issues
-    )
+    assert all(issue.check.requirement.profile.identifier.startswith("process-run-crate") for issue in matching_issues)

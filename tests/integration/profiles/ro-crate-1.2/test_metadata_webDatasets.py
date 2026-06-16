@@ -79,6 +79,7 @@ def test_invalid_recommended_distribution_not_downloadable(monkeypatch):
 # Web-based Directory Data Entity: distribution SHOULD be present (RECOMMENDED)
 # ---------------------------------------------------------------------------
 
+
 def test_valid_recommended_web_directory_has_distribution(monkeypatch):
     """
     Web-based Directory Data Entity that declares a distribution passes the

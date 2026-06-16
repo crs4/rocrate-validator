@@ -36,7 +36,7 @@ def test_valid_single_value_conformsTo():
         __metadata_descriptor_crates__.valid_single_value_conformsTo,
         models.Severity.RECOMMENDED,
         True,
-        profile_identifier="ro-crate-1.2"
+        profile_identifier="ro-crate-1.2",
     )
 
 
@@ -51,9 +51,7 @@ def test_invalid_single_value_conformsTo():
         False,
         profile_identifier="ro-crate-1.2",
         expected_triggered_requirements=["RO-Crate Metadata File Descriptor RECOMMENDED conformsTo"],
-        expected_triggered_issues=[
-            "The RO-Crate metadata file descriptor SHOULD have a single `conformsTo` value"
-        ]
+        expected_triggered_issues=["The RO-Crate metadata file descriptor SHOULD have a single `conformsTo` value"],
     )
 
 
@@ -66,7 +64,7 @@ def test_valid_recommended_prefix_conformsTo():
         __metadata_descriptor_crates__.valid_recommended_prefix_conformsTo,
         models.Severity.RECOMMENDED,
         True,
-        profile_identifier="ro-crate-1.2"
+        profile_identifier="ro-crate-1.2",
     )
 
 
@@ -83,5 +81,5 @@ def test_invalid_recommended_prefix_conformsTo():
         expected_triggered_requirements=["RO-Crate Metadata File Descriptor RECOMMENDED conformsTo"],
         expected_triggered_issues=[
             "The RO-Crate metadata file descriptor `conformsTo` URI SHOULD start with https://w3id.org/ro/crate/"
-        ]
+        ],
     )

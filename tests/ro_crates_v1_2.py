@@ -32,7 +32,6 @@ BASE_PATH = CRATES_DATA_PATH / "rocrate-1.2"
 
 
 class MetadataDocument:
-
     METADATA_DOCUMENT_CRATES_PATH = BASE_PATH / "1_metadata_document"
 
     @property
@@ -85,7 +84,6 @@ class MetadataDocument:
 
 
 class MetadataDocumentFormat:
-
     METADATA_DOCUMENT_FORMAT_CRATES_PATH = MetadataDocument.METADATA_DOCUMENT_CRATES_PATH / "format"
 
     @property
@@ -106,7 +104,6 @@ class MetadataDocumentFormat:
 
 
 class AttachedROCrates:
-
     ATTACHED_ROCRATES_CRATES_PATH = BASE_PATH / "2_attached_rocrates"
 
     @property
@@ -135,10 +132,13 @@ class AttachedROCrates:
 
 
 class DetachedROCrates:
-
     DETACHED_ROCRATES_CRATES_PATH = BASE_PATH / "3_detached_rocrates"
 
     __remote_sha__ = "1a54cc4c0152575357d937982de3e2567ab4a0f8"
+
+    @property
+    def __remote_base_url__(self) -> str:
+        return f"https://bitbucket.org/kikkomep/ro-crates/raw/{self.__remote_sha__}"
 
     @property
     def valid_local_descriptor_filename(self) -> Path:
@@ -154,22 +154,18 @@ class DetachedROCrates:
 
     @property
     def invalid_root_data_entity_identifier_when_online_available(self) -> Path:
-        return f"https://bitbucket.org/kikkomep/ro-crates/raw/{self.__remote_sha__}"\
-            "/online-available/invalid/basic-ro-crate-metadata.json"
+        return f"{self.__remote_base_url__}/online-available/invalid/basic-ro-crate-metadata.json"
 
     @property
     def valid_web_data_entity(self) -> Path:
-        return f"https://bitbucket.org/kikkomep/ro-crates/raw/{self.__remote_sha__}"\
-            "/online-available/valid/basic-ro-crate-metadata.json"
+        return f"{self.__remote_base_url__}/online-available/valid/basic-ro-crate-metadata.json"
 
     @property
     def invalid_web_data_entity(self) -> Path:
-        return f"https://bitbucket.org/kikkomep/ro-crates/raw/{self.__remote_sha__}"\
-            "/online-available/invalid/basic-ro-crate-metadata.json"
+        return f"{self.__remote_base_url__}/online-available/invalid/basic-ro-crate-metadata.json"
 
 
 class MetadataEntities:
-
     METADATA_ENTITIES_CRATES_PATH = BASE_PATH / "5_metadata_entities"
 
     @property
@@ -190,7 +186,6 @@ class MetadataEntities:
 
 
 class MetadataDescriptor:
-
     METADATA_DESCRIPTOR_CRATES_PATH = BASE_PATH / "6_metadata_descriptor"
 
     @property
@@ -211,7 +206,6 @@ class MetadataDescriptor:
 
 
 class RootDataEntity:
-
     ROOT_DATA_ENTITY_CRATES_PATH = BASE_PATH / "7_root_data_entity"
 
     @property
@@ -346,18 +340,23 @@ class RootDataEntity:
 
     @property
     def invalid_hasPart_workflow_not_in_haspart(self) -> Path:
-        return self.ROOT_DATA_ENTITY_CRATES_PATH \
-            / "required_haspart_all_data_entities" / "invalid_workflow_not_in_haspart"
+        return (
+            self.ROOT_DATA_ENTITY_CRATES_PATH / "required_haspart_all_data_entities" / "invalid_workflow_not_in_haspart"
+        )
 
     @property
     def invalid_hasPart_web_entity_not_in_haspart(self) -> Path:
-        return self.ROOT_DATA_ENTITY_CRATES_PATH \
-            / "required_haspart_all_data_entities" / "invalid_web_entity_not_in_haspart"
+        return (
+            self.ROOT_DATA_ENTITY_CRATES_PATH
+            / "required_haspart_all_data_entities"
+            / "invalid_web_entity_not_in_haspart"
+        )
 
     @property
     def invalid_hasPart_dataset_not_in_haspart(self) -> Path:
-        return self.ROOT_DATA_ENTITY_CRATES_PATH \
-            / "required_haspart_all_data_entities" / "invalid_dataset_not_in_haspart"
+        return (
+            self.ROOT_DATA_ENTITY_CRATES_PATH / "required_haspart_all_data_entities" / "invalid_dataset_not_in_haspart"
+        )
 
     # R3: identifier SHOULD be present if PID exists (SHOULD)
     @property
@@ -388,7 +387,6 @@ class RootDataEntity:
 
 
 class DataEntities:
-
     DATA_ENTITIES_CRATES_PATH = BASE_PATH / "8_metadata_dataEntities"
 
     @property
@@ -515,7 +513,6 @@ class DataEntities:
 
 
 class WorkflowsScripts:
-
     WORKFLOWS_SCRIPTS_CRATES_PATH = BASE_PATH / "11_workflows_scripts"
 
     # --- Script type ---
@@ -596,7 +593,6 @@ class WorkflowsScripts:
 
 
 class ContextualEntities:
-
     CONTEXTUAL_ENTITIES_CRATES_PATH = BASE_PATH / "10_metadata_contextualEntities"
 
     # --- License entity: SHOULD be typed as CreativeWork ---
@@ -635,8 +631,9 @@ class ContextualEntities:
 
     @property
     def invalid_organization_contactpoint_no_entity(self) -> Path:
-        return self.CONTEXTUAL_ENTITIES_CRATES_PATH \
-            / "organization_entity" / "invalid_contactpoint_no_contactpoint_entity"
+        return (
+            self.CONTEXTUAL_ENTITIES_CRATES_PATH / "organization_entity" / "invalid_contactpoint_no_contactpoint_entity"
+        )
 
     @property
     def invalid_no_author_publisher_contactpoint(self) -> Path:
@@ -708,14 +705,12 @@ class ContextualEntities:
 
 
 class InvalidMultiProfileROC:
-
     @property
     def invalid_multi_profile_crate(self) -> Path:
         return INVALID_CRATES_DATA_PATH / "0_multi_profile_crate"
 
 
 class ReferencedROCrates:
-
     REFERENCED_ROCRATES_CRATES_PATH = CRATES_DATA_PATH / "rocrate-1.2" / "9_referenced_rocrate"
 
     @property
@@ -760,7 +755,6 @@ class ReferencedROCrates:
 
 
 class ValidROCrate12:
-
     base_path = VALID_CRATES_DATA_PATH
 
     @property
@@ -781,7 +775,6 @@ class ValidROCrate12:
 
 
 class InvalidROCrate12:
-
     base_path = INVALID_CRATES_DATA_PATH / "ro-crate-1.2"
 
     @property

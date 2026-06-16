@@ -103,9 +103,7 @@ def test_sparql_profile_shape_loaded_correctly(sparql_test_profiles_path):
 
     assert agent_shape is not None, "Should find AgentProjectIntersection shape"
     assert agent_shape.description is not None
-    assert (
-        "Agent" in agent_shape.description or "agent" in agent_shape.description.lower()
-    )
+    assert "Agent" in agent_shape.description or "agent" in agent_shape.description.lower()
 
 
 def test_sparql_constraint_with_bnode_sourceShape(sparql_test_profiles_path, sparql_test_rocrate):

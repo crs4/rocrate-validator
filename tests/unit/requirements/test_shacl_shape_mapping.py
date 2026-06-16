@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from rdflib import BNode, Graph, Literal, Namespace, RDF
+from rdflib import RDF, BNode, Graph, Literal, Namespace
 
 from rocrate_validator.constants import SHACL_NS
 from rocrate_validator.requirements.shacl.utils import compute_key

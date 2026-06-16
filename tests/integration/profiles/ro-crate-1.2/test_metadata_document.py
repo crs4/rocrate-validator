@@ -27,7 +27,7 @@ __metadata_document_format_crates__ = MetadataDocumentFormat()
 
 def test_not_utf8():
     """
-     Test that the metadata document is valid when it is not UTF-8 encoded.
+    Test that the metadata document is valid when it is not UTF-8 encoded.
     """
     do_entity_test(
         __metadata_document_format_crates__.not_utf8,
@@ -35,13 +35,13 @@ def test_not_utf8():
         False,
         profile_identifier="ro-crate-1.2",
         expected_triggered_requirements=["File Descriptor UTF-8 encoding"],
-        expected_triggered_issues=["RO-Crate file descriptor \"ro-crate-metadata.json\" is not UTF-8 encoded"]
+        expected_triggered_issues=['RO-Crate file descriptor "ro-crate-metadata.json" is not UTF-8 encoded'],
     )
 
 
 def test_not_json():
     """
-     Test that the metadata document is valid when it is not JSON-LD.
+    Test that the metadata document is valid when it is not JSON-LD.
     """
     do_entity_test(
         __metadata_document_format_crates__.not_jsonld,
@@ -49,16 +49,13 @@ def test_not_json():
         False,
         profile_identifier="ro-crate-1.2",
         expected_triggered_requirements=["File Descriptor JSON format"],
-        expected_triggered_issues=[
-            "RO-Crate file descriptor \"ro-crate-metadata.json\" "
-            "is not in the correct format"
-        ]
+        expected_triggered_issues=['RO-Crate file descriptor "ro-crate-metadata.json" is not in the correct format'],
     )
 
 
 def test_not_flattened():
     """
-     Test that the metadata document is valid when it is not flattened.
+    Test that the metadata document is valid when it is not flattened.
     """
     do_entity_test(
         __metadata_document_format_crates__.not_flattened,
@@ -67,15 +64,14 @@ def test_not_flattened():
         profile_identifier="ro-crate-1.2",
         expected_triggered_requirements=["File Descriptor JSON-LD format"],
         expected_triggered_issues=[
-            "RO-Crate file descriptor \"ro-crate-metadata.json\" "
-            "is not fully flattened at entity \"./\""
-        ]
+            'RO-Crate file descriptor "ro-crate-metadata.json" is not fully flattened at entity "./"'
+        ],
     )
 
 
 def test_not_compacted():
     """
-     Test that the metadata document is valid when it is not compacted.
+    Test that the metadata document is valid when it is not compacted.
     """
     do_entity_test(
         __metadata_document_format_crates__.not_compacted,
@@ -83,16 +79,13 @@ def test_not_compacted():
         False,
         profile_identifier="ro-crate-1.2",
         expected_triggered_requirements=["File Descriptor JSON-LD format"],
-        expected_triggered_issues=[
-            "The 1 occurrence of the \"https://schema.org/name\" URI "
-            "cannot be used as a key"
-        ]
+        expected_triggered_issues=['The 1 occurrence of the "https://schema.org/name" URI cannot be used as a key'],
     )
 
 
 def test_invalid_context_reference():
     """
-     Test that the metadata document is valid when it has an invalid context reference.
+    Test that the metadata document is valid when it has an invalid context reference.
     """
     do_entity_test(
         __metadata_document_crates__.invalid_context_reference,
@@ -101,20 +94,21 @@ def test_invalid_context_reference():
         profile_identifier="ro-crate-1.2",
         expected_triggered_requirements=["File Descriptor JSON-LD format"],
         expected_triggered_issues=[
-            "RO-Crate file descriptor \"ro-crate-metadata.json\" "
-            "does not reference the required context \"https://w3id.org/ro/crate/1.2/context\""]
+            'RO-Crate file descriptor "ro-crate-metadata.json" '
+            'does not reference the required context "https://w3id.org/ro/crate/1.2/context"'
+        ],
     )
 
 
 def test_valid_context_reference():
     """
-     Test that the metadata document is valid when it has a valid context reference.
+    Test that the metadata document is valid when it has a valid context reference.
     """
     do_entity_test(
         __metadata_document_crates__.valid_context_reference,
         models.Severity.REQUIRED,
         True,
-        profile_identifier="ro-crate-1.2"
+        profile_identifier="ro-crate-1.2",
     )
 
 
@@ -129,7 +123,7 @@ def test_not_referenced_contextual_entity():
         False,
         profile_identifier="ro-crate-1.2",
         expected_triggered_requirements=["Contextual Entity RECOMMENDED references"],
-        expected_triggered_issues=["Contextual entities SHOULD be referenced by other entities."]
+        expected_triggered_issues=["Contextual entities SHOULD be referenced by other entities."],
     )
 
 
@@ -142,7 +136,7 @@ def test_referenced_contextual_entity():
         __metadata_document_crates__.valid_referenced_contextual_entity,
         models.Severity.RECOMMENDED,
         True,
-        profile_identifier="ro-crate-1.2"
+        profile_identifier="ro-crate-1.2",
     )
 
 
@@ -155,7 +149,7 @@ def test_described_contextual_entity():
         __metadata_document_crates__.described_contextual_entity,
         models.Severity.RECOMMENDED,
         True,
-        profile_identifier="ro-crate-1.2"
+        profile_identifier="ro-crate-1.2",
     )
 
 
@@ -172,13 +166,15 @@ def test_not_described_contextual_entity():
         expected_triggered_requirements=["Contextual Entity RECOMMENDED description"],
         expected_triggered_issues=[
             "Contextual entities that are referenced by other entities SHOULD be "
-            "described in the same @graph, with at least an RDF type specified."]
+            "described in the same @graph, with at least an RDF type specified."
+        ],
     )
 
 
 # ---------------------------------------------------------------------------
 # @id format: no ../ parent traversal (RECOMMENDED)
 # ---------------------------------------------------------------------------
+
 
 def test_valid_no_parent_traversal():
     """
@@ -210,6 +206,7 @@ def test_invalid_no_parent_traversal():
 # @id format: native UTF-8, not percent-encoded (RECOMMENDED)
 # ---------------------------------------------------------------------------
 
+
 def test_valid_utf8_identifiers():
     """
     Crate with native UTF-8 characters in @id passes the encoding check.
@@ -239,6 +236,7 @@ def test_invalid_utf8_identifiers():
 # ---------------------------------------------------------------------------
 # @id format: named contextual entity SHOULD use # prefix (RECOMMENDED)
 # ---------------------------------------------------------------------------
+
 
 def test_valid_named_entity_id_format():
     """

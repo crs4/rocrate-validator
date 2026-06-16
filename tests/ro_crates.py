@@ -998,7 +998,6 @@ class InvalidMultiProfileROC:
 
 
 class ValidROCrate12:
-
     base_path = VALID_CRATES_DATA_PATH
 
     @property
@@ -1019,7 +1018,6 @@ class ValidROCrate12:
 
 
 class InvalidROCrate12:
-
     base_path = INVALID_CRATES_DATA_PATH / "ro-crate-1.2"
 
     @property

@@ -34,6 +34,7 @@ good-names-rgxs =
     # terms verbatim (e.g. `test_no_sdDatePublished`, `missing_hasPart_*`); the
     # mixed-case is the spec wording we want to preserve.
     ^[a-zA-Z_]*(hasPart|sdDatePublished|termCode|intendedUse|sourceShape|softwareVersion)[a-zA-Z_]*$,
+    ^[a-zA-Z_]*(conformsTo|datePublished|citeAs|dataEntities|contentSize|webDatasets|rootDataEntity|contextualEntities|IRI)[a-zA-Z_]*$,
     # PyFunctionCheck subclasses in `tests/data/profiles/**` follow the
     # SHACL severity convention (UPPERCASE class names like `B_MUST`).
     ^[A-Z][A-Z0-9]*(_[A-Z0-9]+)+$,
@@ -49,6 +50,9 @@ disable =
     too-many-public-methods,
     too-few-public-methods,
     too-many-instance-attributes,
+    # Test-data/scenario modules (e.g. `tests/ro_crates.py`) legitimately grow
+    # large as profiles accrue fixtures; the prod line-count gate does not apply.
+    too-many-lines,
     duplicate-code,
     import-outside-toplevel,
     broad-exception-caught,

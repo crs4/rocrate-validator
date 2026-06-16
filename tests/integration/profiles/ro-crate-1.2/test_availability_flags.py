@@ -27,16 +27,38 @@ valid = ValidROCrate12()
 # Minimal set of JSON-LD context keys needed to pass `check_compaction`
 # for the test crates used in this module.
 _FAKE_CONTEXT_KEYS = {
-    "about", "affiliation", "author", "cite-as", "conformsTo", "funder",
-    "contentLocation", "contentSize", "contentUrl", "dateCreated",
-    "dateModified", "datePublished", "description", "encodingFormat",
-    "hasPart", "identifier", "license", "name", "propertyID", "publisher",
-    "sdDatePublished", "url", "value", "contactPoint", "contactType", "email",
+    "about",
+    "affiliation",
+    "author",
+    "cite-as",
+    "conformsTo",
+    "funder",
+    "contentLocation",
+    "contentSize",
+    "contentUrl",
+    "dateCreated",
+    "dateModified",
+    "datePublished",
+    "description",
+    "encodingFormat",
+    "hasPart",
+    "identifier",
+    "license",
+    "name",
+    "propertyID",
+    "publisher",
+    "sdDatePublished",
+    "url",
+    "value",
+    "contactPoint",
+    "contactType",
+    "email",
 }
 
 
 class _FakeContextResponse:
     """Minimal HTTP response that satisfies `FileDescriptorJsonLdFormat` checks."""
+
     status_code = 200
     headers = {"Content-Type": "application/ld+json"}
 
@@ -84,6 +106,7 @@ def _availability_messages(result):
 def _patch_unavailable(monkeypatch):
     """Make every HEAD request fail (simulates unreachable web entities)
     and return a fake JSON-LD context for GET requests to avoid proxy errors."""
+
     def fake_head(url, *args, **kwargs):
         raise RuntimeError("Not downloadable")
 
