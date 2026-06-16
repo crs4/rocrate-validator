@@ -223,10 +223,7 @@
     "*.bck",
     "*.mdbck",
     "poetry.lock",
-    "extra_crates/",
-    "extra_profiles/",
     "tests/data/",
-    "test.txt"
   ],
   "languageSettings": [
     {
