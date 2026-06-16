@@ -36,7 +36,7 @@ ro-crate:FindROCrateMetadataFileDescriptorEntity a sh:NodeShape ;
             }
         """
     ] ;
-    
+
     # Expand data graph with triples from the file data entity
     sh:rule [
         a sh:TripleRule ;

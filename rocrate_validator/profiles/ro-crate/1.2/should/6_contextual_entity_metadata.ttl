@@ -67,8 +67,8 @@ ro-crate:ReferencedContextualEntitiesShouldBeDescribed a sh:NodeShape ;
         sh:name "Contextual Entity: REQUIRED RDF type" ;
         sh:description "Check if the Contextual Entity is described in the same graph with at least an RDF type specified." ;
         sh:message "Contextual entities that are referenced by other entities SHOULD be described in the same @graph, with at least an RDF type specified." ;
-        # One rdf:type triple is automatically added to the data graph for each Contextual Entity 
-        # by the `ContextualEntityDefinition` shape, so this constraint checks 
+        # One rdf:type triple is automatically added to the data graph for each Contextual Entity
+        # by the `ContextualEntityDefinition` shape, so this constraint checks
         # that at least that triple is present in the graph for the Contextual Entity.
         sh:path rdf:type ;
         sh:minCount 2 ;

@@ -21,7 +21,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional
+from http import HTTPStatus
 
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.http import HttpRequester
@@ -45,6 +45,7 @@ _ROCRATE_ACCEPT = (
 
 class DownloadVia(str, Enum):
     """Mechanism through which a URL was determined to be downloadable."""
+
     DIRECT = "direct"
     SIGNPOSTING_ITEM = "signposting_item"
     SIGNPOSTING_DESCRIBEDBY = "signposting_describedby"
@@ -62,10 +63,11 @@ class DownloadabilityResult:
                          from the checked URL when resolved via Signposting).
     :param reason: Human-readable explanation when ``is_downloadable`` is False.
     """
+
     is_downloadable: bool
-    via: Optional[DownloadVia] = None
-    download_url: Optional[str] = None
-    reason: Optional[str] = None
+    via: DownloadVia | None = None
+    download_url: str | None = None
+    reason: str | None = None
 
 
 def check_downloadable(url: str) -> DownloadabilityResult:
@@ -99,8 +101,7 @@ def check_downloadable(url: str) -> DownloadabilityResult:
 
         item_link = links.get("item")
         if item_link:
-            logger.debug("cite-as '%s' is downloadable via Signposting rel=item: %s",
-                         url, item_link.get("url"))
+            logger.debug("cite-as '%s' is downloadable via Signposting rel=item: %s", url, item_link.get("url"))
             return DownloadabilityResult(
                 is_downloadable=True,
                 via=DownloadVia.SIGNPOSTING_ITEM,
@@ -109,8 +110,9 @@ def check_downloadable(url: str) -> DownloadabilityResult:
 
         describedby_link = links.get("describedby")
         if describedby_link:
-            logger.debug("cite-as '%s' is downloadable via Signposting rel=describedby: %s",
-                         url, describedby_link.get("url"))
+            logger.debug(
+                "cite-as '%s' is downloadable via Signposting rel=describedby: %s", url, describedby_link.get("url")
+            )
             return DownloadabilityResult(
                 is_downloadable=True,
                 via=DownloadVia.SIGNPOSTING_DESCRIBEDBY,
@@ -120,8 +122,7 @@ def check_downloadable(url: str) -> DownloadabilityResult:
         # -- 2. Direct download -----------------------------------------------
         content_type = response.headers.get("Content-Type", "").split(";")[0].strip()
         if content_type and content_type not in _HTML_MIME_TYPES:
-            logger.debug("cite-as '%s' is directly downloadable (Content-Type: %s)",
-                         url, content_type)
+            logger.debug("cite-as '%s' is directly downloadable (Content-Type: %s)", url, content_type)
             return DownloadabilityResult(
                 is_downloadable=True,
                 via=DownloadVia.DIRECT,
@@ -134,12 +135,13 @@ def check_downloadable(url: str) -> DownloadabilityResult:
             headers={"Accept": _ROCRATE_ACCEPT},
             allow_redirects=True,
         )
-        if neg_response.status_code == 200:
+        if neg_response.status_code == HTTPStatus.OK:
             neg_ct = neg_response.headers.get("Content-Type", "").split(";")[0].strip()
             if neg_ct and neg_ct not in _HTML_MIME_TYPES:
                 logger.debug(
                     "cite-as '%s' is downloadable via content negotiation (Content-Type: %s)",
-                    url, neg_ct,
+                    url,
+                    neg_ct,
                 )
                 return DownloadabilityResult(
                     is_downloadable=True,
@@ -165,7 +167,7 @@ def check_downloadable(url: str) -> DownloadabilityResult:
         )
 
 
-def has_signposting_cite_as(url: str) -> Optional[bool]:
+def has_signposting_cite_as(url: str) -> bool | None:
     """
     Probe *url* for a Signposting ``Link: rel="cite-as"`` header (RFC 8574).
 

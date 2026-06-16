@@ -96,7 +96,7 @@ def __compute_values__(g: Graph, s: Node, seen: set | None = None) -> list[tuple
     starting from the given subject node `s`.
     """
 
-    values = []
+    values: list[tuple] = []
     seen = seen if seen is not None else set()
     if s in seen:
         return values
@@ -120,7 +120,7 @@ def __compute_context_values__(g: Graph, s: Node, seen: set | None = None) -> li
     This helps disambiguate structurally equivalent BNodes attached to different parent shapes.
     """
 
-    values = []
+    values: list[tuple] = []
     seen = seen if seen is not None else set()
     if s in seen:
         return values

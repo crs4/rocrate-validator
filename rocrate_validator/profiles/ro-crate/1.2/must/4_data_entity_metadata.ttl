@@ -51,7 +51,7 @@ ro-crate:FileDataEntity a sh:NodeShape ;
             }
         """
     ] ;
-    
+
     # Irrelevant for validation, but useful for debugging
     # sh:property [
     #     sh:name "File Data Entity: REQUIRED type" ;
@@ -102,7 +102,7 @@ ro-crate:DirectoryDataEntity a sh:NodeShape ;
             }
         """
     ] ;
-    
+
     # Uncomment for debugging
     # sh:property [
     #     sh:name "Test Directory" ;
@@ -119,7 +119,7 @@ ro-crate:DirectoryDataEntity a sh:NodeShape ;
         sh:predicate rdf:type ;
         sh:object ro-crate:Directory ;
     ] ;
-    
+
     # Expand data graph with triples from the directory data entity
     sh:rule [
         a sh:TripleRule ;
@@ -127,7 +127,7 @@ ro-crate:DirectoryDataEntity a sh:NodeShape ;
         sh:predicate rdf:type ;
         sh:object ro-crate:DataEntity ;
     ] ;
-    
+
     # Ensure that the directory data entity is a dataset
     sh:property [
         sh:name "Directory Data Entity: REQUIRED type" ;
@@ -166,14 +166,14 @@ ro-crate:GenericDataEntityRequiredProperties a sh:NodeShape ;
                 FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
                 FILTER(?this != ?root)
                 FILTER(?this != ?metadatafile)
-                FILTER NOT EXISTS { 
+                FILTER NOT EXISTS {
                     ?this a schema:MediaObject .
                     ?this a schema:Dataset .
                 }
             }
         """
     ] ;
-    
+
     # Expand data graph with triples to mark the matching entities as GenericDataEntity instances
     sh:rule [
         a sh:TripleRule ;
@@ -181,7 +181,7 @@ ro-crate:GenericDataEntityRequiredProperties a sh:NodeShape ;
         sh:predicate rdf:type ;
         sh:object ro-crate:GenericDataEntity ;
     ] ;
-    
+
     # Expand data graph with triples to mark the matching entities as DataEntity instances
     sh:rule [
         a sh:TripleRule ;

@@ -23,10 +23,10 @@ ro-crate:ROCrateMetadataEntityRecommendedType a sh:NodeShape ;
         a sh:SPARQLTarget ;
         sh:prefixes ro-crate:sparqlPrefixes ;
         sh:select """
-            SELECT ?this 
+            SELECT ?this
             WHERE {
                 ?this a ?type .
-                
+
                 # Exclude Root and RO-Crate Metadata File entities
                 ?root a schema:Dataset .
                 ?metadatafile schema:about ?root .

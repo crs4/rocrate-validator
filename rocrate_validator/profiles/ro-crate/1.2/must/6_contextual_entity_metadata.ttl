@@ -107,7 +107,7 @@ ro-crate:FindLicenseEntity a sh:NodeShape, validator:HiddenShape ;
             }
         """
     ] ;
-    
+
     # Expand data graph with triples to mark the matching entities as License instances
     sh:rule [
         a sh:TripleRule ;
@@ -115,7 +115,7 @@ ro-crate:FindLicenseEntity a sh:NodeShape, validator:HiddenShape ;
         sh:predicate rdf:type ;
         sh:object ro-crate:License ;
     ] ;
-    
+
     # Expand data graph with triples from the file data entity
     sh:rule [
         a sh:TripleRule ;

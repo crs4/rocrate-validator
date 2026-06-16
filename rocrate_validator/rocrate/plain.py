@@ -44,7 +44,7 @@ class ROCrateLocalFolder(ROCrate):
 
         # cache the list of files
         self._files = None
-        self._metadata_descriptor_id = None
+        self._metadata_descriptor_id: str | None = None
 
         # check if the path is a directory
         if not self.has_directory(self.uri.as_path()):
@@ -107,7 +107,7 @@ class ROCrateLocalZip(ROCrate):
 
         # cache the list of files
         self._files = None
-        self._metadata_descriptor_id = None
+        self._metadata_descriptor_id: str | None = None
 
     def __del__(self):
         try:
@@ -256,7 +256,7 @@ class ROCrateLocalMetadataFile(ROCrate):
     def get_file_content(self, path: Path, binary_mode: bool = True) -> str | bytes:
         if path.name != self.metadata_descriptor_id:
             raise FileNotFoundError(f"File not found: {path}")
-        return self.uri.as_path().read_bytes() if binary_mode else self.uri.as_path().read_text()
+        return self.uri.as_path().read_bytes() if binary_mode else self.uri.as_path().read_text(encoding="utf-8")
 
 
 class ROCrateRemoteMetadataFile(ROCrate):

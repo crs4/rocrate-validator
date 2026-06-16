@@ -35,7 +35,7 @@ ro-crate:MetadataAboutTarget a sh:SPARQLTarget ;
 ro-crate:FindRootDataEntity a sh:NodeShape, validator:HiddenShape ;
     sh:name "Identify the Root Data Entity of the RO-Crate" ;
     sh:description """The Root Data Entity is the top-level Data Entity in the RO-Crate and serves as the starting point for the description of the RO-Crate.
-        It is a schema:Dataset and is indirectly identified by the about property of the metadata descriptor in the RO-Crate 
+        It is a schema:Dataset and is indirectly identified by the about property of the metadata descriptor in the RO-Crate
         (see the definition at [Finding RO-Crate Root in RDF triple stores](https://www.researchobject.org/ro-crate/1.2/appendix/relative-uris.html#finding-ro-crate-root-in-rdf-triple-stores)).
     """ ;
     sh:target [
@@ -50,7 +50,7 @@ ro-crate:FindRootDataEntity a sh:NodeShape, validator:HiddenShape ;
             }
         """
     ] ;
-    
+
     # Expand data graph with triples from the file data entity
     sh:rule [
         a sh:TripleRule ;
@@ -96,7 +96,7 @@ ro-crate:RootDataEntityRequiredProperties a sh:NodeShape ;
     sh:property [
         a sh:PropertyShape ;
         sh:name "Root Data Entity: `name` property" ;
-        sh:description """Check if the Root Data Entity includes a `name` (as specified by schema.org) 
+        sh:description """Check if the Root Data Entity includes a `name` (as specified by schema.org)
         to clearly identify the dataset and distinguish it from other datasets.""" ;
         sh:minCount 1 ;
         sh:nodeKind sh:Literal ;
