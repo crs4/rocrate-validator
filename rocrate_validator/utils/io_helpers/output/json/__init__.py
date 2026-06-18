@@ -12,22 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Optional
+from typing import Any
 
+from rocrate_validator.models import ValidationResult, ValidationStatistics
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.io_helpers.output import BaseOutputFormatter
 from rocrate_validator.utils.io_helpers.output.json.formatters import (
-    ValidationResultJSONOutputFormatter, ValidationResultsJSONOutputFormatter,
-    ValidationStatisticsJSONOutputFormatter)
-from rocrate_validator.models import ValidationResult, ValidationStatistics
+    ValidationResultJSONOutputFormatter,
+    ValidationResultsJSONOutputFormatter,
+    ValidationStatisticsJSONOutputFormatter,
+)
 
 # set up logging
 logger = logging.getLogger(__name__)
 
 
 class JSONOutputFormatter(BaseOutputFormatter):
-
-    def __init__(self, data: Optional[Any] = None):
+    def __init__(self, data: Any | None = None):
         super().__init__(data)
         self.add_type_formatter(ValidationResult, ValidationResultJSONOutputFormatter)
         self.add_type_formatter(dict, ValidationResultsJSONOutputFormatter)

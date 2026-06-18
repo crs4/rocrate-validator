@@ -29,19 +29,19 @@ def test_valid_process_run_crate_required():
         Severity.REQUIRED,
         True,
         profile_identifier="process-run-crate",
-        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER]
+        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER],
     )
     do_entity_test(
         ValidROC().process_run_crate_collections,
         Severity.REQUIRED,
         True,
         profile_identifier="process-run-crate",
-        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER]
+        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER],
     )
     do_entity_test(
         ValidROC().process_run_crate_containerimage,
         Severity.REQUIRED,
         True,
         profile_identifier="process-run-crate",
-        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER]
+        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER],
     )

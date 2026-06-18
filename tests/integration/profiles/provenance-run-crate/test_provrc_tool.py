@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 def test_provrc_tool_no_input():
-    """\
+    """
     Test a Provenance Run Crate where a tool does not have an input.
     """
     do_entity_test(
@@ -32,12 +32,12 @@ def test_provrc_tool_no_input():
         False,
         ["ProvRC tool MAY"],
         ["A tool MAY have an input"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_provrc_tool_no_output():
-    """\
+    """
     Test a Provenance Run Crate where a tool does not have an output.
     """
     do_entity_test(
@@ -46,12 +46,12 @@ def test_provrc_tool_no_output():
         False,
         ["ProvRC tool MAY"],
         ["A tool MAY have an output"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_provrc_tool_no_environment():
-    """\
+    """
     Test a Provenance Run Crate where a tool does not have an environment.
     """
     do_entity_test(
@@ -60,12 +60,12 @@ def test_provrc_tool_no_environment():
         False,
         ["ProvRC tool MAY"],
         ["A tool MAY have an environment"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_provrc_tool_bad_input():
-    """\
+    """
     Test a Provenance Run Crate where a tool has an input that does not point
     to a FormalParameter.
     """
@@ -75,12 +75,12 @@ def test_provrc_tool_bad_input():
         False,
         ["ProvRC tool MUST"],
         ["Tool input and output MUST point to FormalParameter entities"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_provrc_tool_bad_output():
-    """\
+    """
     Test a Provenance Run Crate where a tool has an output that does not point
     to a FormalParameter.
     """
@@ -90,12 +90,12 @@ def test_provrc_tool_bad_output():
         False,
         ["ProvRC tool MUST"],
         ["Tool input and output MUST point to FormalParameter entities"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_provrc_tool_bad_environment():
-    """\
+    """
     Test a Provenance Run Crate where a tool has an environment that does not
     point to a FormalParameter.
     """
@@ -105,12 +105,12 @@ def test_provrc_tool_bad_environment():
         False,
         ["ProvRC tool SHOULD"],
         ["If the tool has an environment, it SHOULD point to entities of type FormalParameter"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_provrc_tool_no_inv_instrument():
-    """\
+    """
     Test a Provenance Run Crate where a tool is not referred to from an
     action via instrument.
     """
@@ -120,12 +120,12 @@ def test_provrc_tool_no_inv_instrument():
         False,
         ["ProvRC tool MUST"],
         ["A tool must be referred to from an action via instrument"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_provrc_tool_bad_inv_instrument():
-    """\
+    """
     Test a Provenance Run Crate where a tool is referred to via instrument by
     an entity that is not an action.
     """
@@ -135,12 +135,12 @@ def test_provrc_tool_bad_inv_instrument():
         False,
         ["ProvRC tool MUST"],
         ["A tool must be referred to from an action via instrument"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_provrc_tool_no_softwarerequirements():
-    """\
+    """
     Test a Provenance Run Crate where a tool does not have a
     softwarerequirements.
     """
@@ -150,12 +150,12 @@ def test_provrc_tool_no_softwarerequirements():
         False,
         ["ProvRC tool MAY"],
         ["The tool MAY have a softwareRequirements that points to a SoftwareApplication"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_provrc_tool_bad_softwarerequirements():
-    """\
+    """
     Test a Provenance Run Crate where a tool has a softwarerequirements that
     does not point to a SoftwareApplication.
     """
@@ -165,12 +165,12 @@ def test_provrc_tool_bad_softwarerequirements():
         False,
         ["ProvRC tool MAY"],
         ["The tool MAY have a softwareRequirements that points to a SoftwareApplication"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_provrc_tool_no_mainentity():
-    """\
+    """
     Test a Provenance Run Crate where a tool does not have a
     mainEntity.
     """
@@ -180,12 +180,12 @@ def test_provrc_tool_no_mainentity():
         False,
         ["ProvRC tool MAY"],
         ["The tool MAY have a mainEntity that points to a SoftwareApplication"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_provrc_tool_bad_mainentity():
-    """\
+    """
     Test a Provenance Run Crate where a tool has a mainEntity that does not
     point to a SoftwareApplication.
     """
@@ -195,5 +195,5 @@ def test_provrc_tool_bad_mainentity():
         False,
         ["ProvRC tool MAY"],
         ["The tool MAY have a mainEntity that points to a SoftwareApplication"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )

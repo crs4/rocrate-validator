@@ -18,8 +18,8 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from rocrate_validator import models as models_module
 from rocrate_validator.models import ValidationContext
+from rocrate_validator.models import validation as validation_module
 from rocrate_validator.utils.http import OfflineCacheMissError, find_offline_cache_miss
 
 
@@ -31,6 +31,7 @@ def test_find_offline_cache_miss_direct():
 
 def test_find_offline_cache_miss_walks_cause_chain():
     inner = OfflineCacheMissError("https://example.org/x")
+    found = None
     try:
         try:
             raise inner
@@ -43,15 +44,16 @@ def test_find_offline_cache_miss_walks_cause_chain():
 
 def test_find_offline_cache_miss_walks_context_chain():
     # `raise` inside `except` without `from` populates __context__.
+    found = None
     try:
         try:
             raise OfflineCacheMissError("https://example.org/y")
         except OfflineCacheMissError:
-            raise RuntimeError("wrapped via context")
+            raise RuntimeError("wrapped via context")  # noqa: B904  # pylint: disable=raise-missing-from
     except Exception as outer:
         found = find_offline_cache_miss(outer)
     assert isinstance(found, OfflineCacheMissError)
-    assert found.url == "https://example.org/y"
+    assert found.url == "https://example.org/y"  # pylint: disable=no-member
 
 
 def test_find_offline_cache_miss_returns_none_for_unrelated():
@@ -79,13 +81,14 @@ def bare_context():
 @pytest.fixture
 def mock_logger(monkeypatch):
     """
-    Replace the module-level logger in ``rocrate_validator.models`` with a
-    MagicMock. The project's custom logger sets ``propagate=False``, so
-    pytest's ``caplog`` does not see its records — observing the mock is
-    both simpler and more precise.
+    Replace the module-level logger in ``rocrate_validator.models.validation``
+    with a MagicMock — this is the binding actually used by
+    ``ValidationContext.maybe_warn_offline_cache_miss``. The project's custom
+    logger sets ``propagate=False``, so pytest's ``caplog`` does not see its
+    records — observing the mock is both simpler and more precise.
     """
     fake = MagicMock()
-    monkeypatch.setattr(models_module, "logger", fake)
+    monkeypatch.setattr(validation_module, "logger", fake)
     return fake
 
 
@@ -119,6 +122,7 @@ def test_maybe_warn_emits_once_per_distinct_url(bare_context, mock_logger):
 
 def test_maybe_warn_dedups_when_miss_is_wrapped(bare_context, mock_logger):
     url = "https://example.org/ctx"
+    wrapped = None
     try:
         raise RuntimeError("wrapped") from OfflineCacheMissError(url)
     except RuntimeError as wrapped_exc:

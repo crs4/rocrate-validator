@@ -12,17 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import annotations
+
 import logging
+from typing import TYPE_CHECKING, cast
 
 from rdflib import BNode, Graph, Namespace, URIRef
 
 from rocrate_validator.constants import SHACL_NS
 from rocrate_validator.models import LevelCollection
 from rocrate_validator.requirements.shacl.checks import SHACLCheck
-from rocrate_validator.requirements.shacl.models import (NodeShape,
-                                                         PropertyShape, Shape,
-                                                         ShapesRegistry)
+from rocrate_validator.requirements.shacl.models import NodeShape, PropertyShape, Shape, ShapesRegistry
 from rocrate_validator.requirements.shacl.utils import resolve_parent_shape
+
+if TYPE_CHECKING:
+    from rocrate_validator.models import Requirement
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +50,7 @@ def test_description_fallback_shape_with_description():
     shape._name = "TestShape"
     shape._description = "Test Description"
 
-    req = MockRequirement()
+    req = cast("Requirement", MockRequirement())
     check = SHACLCheck(req, shape)
 
     assert check.description == "Test Description"
@@ -59,7 +63,7 @@ def test_description_fallback_shape_without_description():
     shape._name = "TestShape"
     shape._description = None
 
-    req = MockRequirement()
+    req = cast("Requirement", MockRequirement())
     check = SHACLCheck(req, shape)
 
     assert check.description == "Check for TestShape"
@@ -71,11 +75,9 @@ def test_description_fallback_parent_description():
     shape = Shape(URIRef("http://example.org/shape"), g)
     shape._name = "ChildShape"
     shape._description = None
-    shape._parent = MockParentShape(
-        name="ParentShape", description="Parent Description"
-    )
+    shape._parent = cast("Shape", MockParentShape(name="ParentShape", description="Parent Description"))
 
-    req = MockRequirement()
+    req = cast("Requirement", MockRequirement())
     check = SHACLCheck(req, shape)
 
     assert check.description == "Parent Description"
@@ -88,7 +90,7 @@ def test_description_fallback_no_name_no_description():
     shape._name = None
     shape._description = None
 
-    req = MockRequirement()
+    req = cast("Requirement", MockRequirement())
     check = SHACLCheck(req, shape)
 
     # BNode generates a name from node_name, so we check it starts with the fallback prefix
@@ -101,9 +103,9 @@ def test_description_fallback_no_description_no_parent_description():
     shape = Shape(BNode(), g)
     shape._name = "ChildShape"
     shape._description = None
-    shape._parent = MockParentShape(name="ParentShape", description=None)
+    shape._parent = cast("Shape", MockParentShape(name="ParentShape", description=None))
 
-    req = MockRequirement()
+    req = cast("Requirement", MockRequirement())
     check = SHACLCheck(req, shape)
 
     assert check.description == "Check for ChildShape"
@@ -111,15 +113,15 @@ def test_description_fallback_no_description_no_parent_description():
 
 def test_property_shape_description_fallback():
     """Test description fallback for PropertyShape without explicit description."""
-    from rocrate_validator.requirements.shacl.models import PropertyShape
+    # PropertyShape already imported at module level
 
     g = Graph()
     prop = PropertyShape(URIRef("http://example.org/property"), g)
     prop._name = "testProperty"
     prop._description = None
-    prop._parent = MockParentShape(name="ParentShape", description="Parent Description")
+    prop._parent = cast("Shape", MockParentShape(name="ParentShape", description="Parent Description"))
 
-    req = MockRequirement()
+    req = cast("Requirement", MockRequirement())
     check = SHACLCheck(req, prop)
 
     assert "testProperty" in check.description
@@ -225,7 +227,7 @@ def test_resolve_parent_shape_with_property_bnode():
     assert result.key == shape.key
 
 
-def _make_property(graph: Graph, severity_term: str = None) -> PropertyShape:
+def _make_property(graph: Graph, severity_term: str | None = None) -> PropertyShape:
     """Build a PropertyShape on a fresh BNode, optionally setting sh:severity."""
     prop = PropertyShape(BNode(), graph)
     if severity_term is not None:
@@ -244,7 +246,7 @@ def test_derive_level_picks_most_stringent_declared_property_severity():
     shape.add_property(_make_property(g, f"{SHACL_NS}Warning"))
     shape.add_property(_make_property(g, f"{SHACL_NS}Info"))
 
-    check = SHACLCheck(MockRequirement(), shape)
+    check = SHACLCheck(cast("Requirement", MockRequirement()), shape)
 
     assert check.level == LevelCollection.RECOMMENDED
 
@@ -256,7 +258,7 @@ def test_derive_level_with_uniform_property_severity():
     shape.add_property(_make_property(g, f"{SHACL_NS}Info"))
     shape.add_property(_make_property(g, f"{SHACL_NS}Info"))
 
-    check = SHACLCheck(MockRequirement(), shape)
+    check = SHACLCheck(cast("Requirement", MockRequirement()), shape)
 
     assert check.level == LevelCollection.OPTIONAL
 
@@ -268,7 +270,7 @@ def test_derive_level_ignores_properties_without_declared_severity():
     shape.add_property(_make_property(g))  # no severity declared
     shape.add_property(_make_property(g, f"{SHACL_NS}Warning"))
 
-    check = SHACLCheck(MockRequirement(), shape)
+    check = SHACLCheck(cast("Requirement", MockRequirement()), shape)
 
     assert check.level == LevelCollection.RECOMMENDED
 
@@ -280,7 +282,7 @@ def test_derive_level_falls_back_to_required_when_no_property_declares_severity(
     shape.add_property(_make_property(g))
     shape.add_property(_make_property(g))
 
-    check = SHACLCheck(MockRequirement(), shape)
+    check = SHACLCheck(cast("Requirement", MockRequirement()), shape)
 
     assert check.level == LevelCollection.REQUIRED
 
@@ -292,7 +294,7 @@ def test_shape_declared_severity_takes_precedence_over_derivation():
     shape.severity = f"{SHACL_NS}Warning"
     shape.add_property(_make_property(g, f"{SHACL_NS}Violation"))
 
-    check = SHACLCheck(MockRequirement(), shape)
+    check = SHACLCheck(cast("Requirement", MockRequirement()), shape)
 
     assert check.level == LevelCollection.RECOMMENDED
 
@@ -303,9 +305,7 @@ def test_path_based_level_takes_precedence_over_derivation():
     shape = NodeShape(URIRef("http://example.org/NodeShape"), g)
     shape.add_property(_make_property(g, f"{SHACL_NS}Info"))
 
-    check = SHACLCheck(
-        MockRequirement(requirement_level_from_path=LevelCollection.SHOULD), shape
-    )
+    check = SHACLCheck(cast("Requirement", MockRequirement(requirement_level_from_path=LevelCollection.SHOULD)), shape)
 
     assert check.level == LevelCollection.SHOULD
 
@@ -315,6 +315,6 @@ def test_derive_level_for_node_shape_without_properties():
     g = Graph()
     shape = NodeShape(URIRef("http://example.org/NodeShape"), g)
 
-    check = SHACLCheck(MockRequirement(), shape)
+    check = SHACLCheck(cast("Requirement", MockRequirement()), shape)
 
     assert check.level == LevelCollection.REQUIRED

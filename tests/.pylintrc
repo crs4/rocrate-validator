@@ -1,0 +1,70 @@
+# Pylint configuration scoped to the tests tree.
+#
+# Pylint loads one rcfile per run (CWD-walking discovery); to apply these
+# overrides, invoke pylint with `--rcfile=tests/.pylintrc` when linting
+# `tests/`, e.g.:
+#
+#     poetry run pylint --rcfile=tests/.pylintrc tests/
+#
+# The project-wide config in `pyproject.toml` continues to govern the main
+# package (`rocrate_validator/`). This file intentionally mirrors the parts
+# of that config we still want, then adds disables that only make sense for
+# pytest-based test code.
+
+[MAIN]
+py-version = 3.10
+ignored-modules = msvcrt
+
+[FORMAT]
+max-line-length = 120
+
+[BASIC]
+# Mirror the project-wide allowlist (kept in sync with pyproject.toml) and
+# extend it with patterns that only appear in the test tree.
+good-names-rgxs =
+    ^_?publicID$,
+    ^_?(violating[A-Za-z]+|propertyValue)$,
+    ^(basicConfig|getLogger)$,
+    ^(_installed|_config|__profiles_loaded)$,
+    ^[A-Z][A-Z0-9_]*_TYPES$,
+    ^(focusNode|resultPath|sourceConstraintComponent|sourceShape|propertyGroup|requirementCheck)$,
+    ^SHACL$,
+    ^jsonLD(_[a-zA-Z]+)?$,
+    # Test names and helper attributes carry RO-Crate / SHACL camelCase domain
+    # terms verbatim (e.g. `test_no_sdDatePublished`, `missing_hasPart_*`); the
+    # mixed-case is the spec wording we want to preserve.
+    ^[a-zA-Z_]*(hasPart|sdDatePublished|termCode|intendedUse|sourceShape|softwareVersion)[a-zA-Z_]*$,
+    # PyFunctionCheck subclasses in `tests/data/profiles/**` follow the
+    # SHACL severity convention (UPPERCASE class names like `B_MUST`).
+    ^[A-Z][A-Z0-9]*(_[A-Z0-9]+)+$,
+
+[MESSAGES CONTROL]
+# Inherit the project-wide disables (kept in sync with pyproject.toml) ...
+disable =
+    missing-module-docstring,
+    missing-class-docstring,
+    missing-function-docstring,
+    too-many-arguments,
+    too-many-positional-arguments,
+    too-many-public-methods,
+    too-few-public-methods,
+    too-many-instance-attributes,
+    duplicate-code,
+    import-outside-toplevel,
+    broad-exception-caught,
+    wrong-import-position,
+    global-statement,
+    protected-access,
+    # ... then add the pytest-specific noise:
+    # Pytest fixtures are passed by *name*: the test function parameter must
+    # match the fixture name, which pylint flags as shadowing the outer-scope
+    # `@pytest.fixture` symbol. This is the canonical pytest pattern, not a
+    # bug — disable globally for the test tree.
+    redefined-outer-name,                  # W0621
+    # Many fixtures (`mock_network`, `monkeypatch`, `tmp_path`, ...) are
+    # requested for side effects only; the parameter is intentionally unused
+    # inside the test body. Same for HTTP-mock callbacks that must mirror the
+    # `requests` signature `(url, headers, ...)`.
+    unused-argument,                       # W0613
+    # `TODO:` markers in tests are work-in-progress notes, not lint signal.
+    fixme,                                 # W0511

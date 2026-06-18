@@ -14,15 +14,18 @@
 
 from __future__ import annotations
 
-from typing import Any, Callable, Optional
+from typing import TYPE_CHECKING, Any
 
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.io_helpers.output.console import Console
-from rocrate_validator.utils.io_helpers.output.pager import SystemPager
 from rocrate_validator.utils.io_helpers.output.text import TextOutputFormatter
 from rocrate_validator.utils.io_helpers.output.text.layout.report import ValidationReportLayout
-from rocrate_validator.models import (ValidationResult, ValidationSettings,
-                                      ValidationStatistics)
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from rocrate_validator.models import ValidationResult, ValidationSettings, ValidationStatistics
+    from rocrate_validator.utils.io_helpers.output.pager import SystemPager
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -33,19 +36,21 @@ class ValidationCommandView:
     A class to handle the validation command view
     """
 
-    def __init__(self,
-                 validation_settings: Optional[ValidationSettings],
-                 interactive: bool = True,
-                 no_paging: bool = False,
-                 pager: Optional[SystemPager] = None,
-                 console: Optional[Console] = None):
+    def __init__(
+        self,
+        validation_settings: ValidationSettings | None,
+        interactive: bool = True,
+        no_paging: bool = False,
+        pager: SystemPager | None = None,
+        console: Console | None = None,
+    ):
         self.console = console or Console()
         self.interactive = interactive
         self.pager = pager if not no_paging else None
         # reference to the validation settings
         self.validation_settings = validation_settings
         # reference to the report layout
-        self._report_layout: Optional[ValidationReportLayout] = None
+        self._report_layout: ValidationReportLayout | None = None
 
         # Register text output formatter
         self.console.register_formatter(TextOutputFormatter())
@@ -61,10 +66,8 @@ class ValidationCommandView:
             The current report layout
         """
         if self._report_layout is None:
-            self._report_layout = ValidationReportLayout(
-                console=self.console,
-                settings=self.validation_settings
-            )
+            assert self.validation_settings is not None, "Validation settings must be set"
+            self._report_layout = ValidationReportLayout(console=self.console, settings=self.validation_settings)
 
         return self._report_layout
 
@@ -81,10 +84,7 @@ class ValidationCommandView:
         logger.debug("Starting validation with progress bar")
 
         result = self.report_layout.live(
-            lambda: validation_command(
-                self.validation_settings,
-                subscribers=[self.report_layout, self.report_layout.progress_monitor]
-            )
+            lambda: validation_command(self.validation_settings, subscribers=self.report_layout.subscribers)
         )
         logger.debug("Validation completed  with result: %s", result)
         return result
@@ -98,8 +98,7 @@ class ValidationCommandView:
         """
         assert statistics is not None, "Validation statistics must be provided"
 
-        with (self.console.pager(pager=self.pager, styles=not self.console.no_color)
-              if self.pager else self.console):
+        with self.console.pager(pager=self.pager, styles=not self.console.no_color) if self.pager else self.console:
             self.console.print(statistics)
 
     def display_validation_result(self, result: ValidationResult) -> None:
@@ -113,6 +112,5 @@ class ValidationCommandView:
 
         logger.debug("Displaying validation result")
 
-        with (self.console.pager(pager=self.pager, styles=not self.console.no_color)
-              if self.pager else self.console):
+        with self.console.pager(pager=self.pager, styles=not self.console.no_color) if self.pager else self.console:
             self.console.print(result)

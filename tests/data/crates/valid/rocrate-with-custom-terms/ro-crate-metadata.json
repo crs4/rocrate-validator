@@ -2,7 +2,7 @@
     "@context": [
         "https://w3id.org/ro/crate/1.1/context",
         "https://w3id.org/ro/terms/workflow-run/context",
-        { 
+        {
             "myCustomTerm": "https://example.org#myCustomTerm",
             "rdfs": "http://www.w3.org/2000/01/rdf-schema#"
         }

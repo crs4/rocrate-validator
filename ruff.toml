@@ -1,0 +1,100 @@
+# Copyright (c) 2024-2026 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+########################################################################
+# **Ruff** configuration for rocrate-validator.
+########################################################################
+# This file is read by both the Ruff CLI and the VS Code Ruff extension;
+# a config file takes precedence over the editor's `ruff.*` settings,
+# so it is the single source of truth for what Ruff reports.
+
+# Set the maximum line length to 120 characters,
+# which is a common convention in Python projects.
+line-length = 120
+
+# Lowest supported Python version. Ruff only infers this from
+# `[project].requires-python`, which this (Poetry-based) project does not use,
+# so the linter would otherwise fall back to its py39 default and skip 3.10+
+# modernizations. Keep in sync with `tool.poetry.dependencies.python` (>=3.10).
+target-version = "py310"
+
+# Extend the default set of rules with additional rules from various plugins.
+[lint]
+extend-select = [
+    "F",    # Pyflakes – runtime logic errors
+    "E",    # PyCodeStyle errors – PEP 8
+    "W",    # PyCodeStyle warnings
+    "I",    # isort – import ordering
+    "UP",   # pyupgrade – modern syntax
+    "B",    # flake8-bugbear – common bugs and bad practices
+    "C4",   # flake8-comprehensions – proper use of list/dict/set
+    "SIM",  # flake8-simplify – idiomatic simplifications
+    "RET",  # flake8-return – return statement practices
+    "TID",  # tidy imports
+    "TC",   # TYPE_CHECKING import enforcement
+    "PTH",  # pathlib over os.path
+    "FA",   # from __future__ import annotations
+    "ISC",  # implicit string concatenation
+    "FURB", # refurb – more idiomatic Python patterns
+    "RUF",  # Ruff-specific rules
+    "PL",   # pylint – PLC/PLE/PLR/PLW
+    "C90",     # mccabe – cyclomatic complexity
+    "ERA",     # eradicate – commented-out code
+    "PLR0914", # too-many-locals (preview) – pylint R0914 parity
+    "PLR1702", # too-many-nested-blocks (preview) – pylint R1702 parity
+]
+
+# Activate the preview-stage rules selected above (PLR0914 / PLR1702 are
+# not yet stabilised in Ruff). `explicit-preview-rules` keeps preview-stage
+# rules from being pulled in via the category selectors above (PL, E, B, ...),
+# so only PLR0914 / PLR1702 are added from the preview set. NOTE: enabling
+# `preview` also widens category membership to a handful of *stable* rules
+# (BLE/TRY/D/PIE/...); those are explicitly suppressed in `ignore` below to
+# keep the net effect limited to the two pylint-parity rules requested.
+preview = true
+explicit-preview-rules = true
+
+# Rules intentionally disabled.
+ignore = [
+    # "PLR0904", # too-many-public-methods: pre-existing project style
+    "PLR0913", # too-many-arguments: pre-existing project style
+    # "PLR0917", # too-many-positional-arguments: pre-existing project style
+    # "PLW3201", # bad-dunder-method-name: project uses `__method__` convention; renaming is not viable
+    # --- Stable rules pulled in only as a side effect of `preview = true` ---
+    # (not part of the original selection; suppressed to keep the preview flag
+    # scoped to PLR0914 / PLR1702. Enable individually later if desired.)
+    "BLE001",  # blind-except
+    # "TRY401",  # verbose-log-message
+    # "TRY201",  # verbose-raise
+    # "TRY002",  # raise-vanilla-class
+    # "D419",    # empty-docstring
+    # "PIE804",  # unnecessary-dict-kwargs
+    # "PIE810",  # multiple-starts-ends-with
+    # "DTZ901",  # datetime-min-max
+    # "PYI034",  # non-self-return-type
+    # "PYI061",  # redundant-none-literal
+    # "S110",    # try-except-pass
+]
+
+[lint.per-file-ignores]
+# Allow magic value comparisons and local imports in test files.
+"tests/**" = [
+    "PLR2004", # magic-value-comparison: tests use literal values in assertions
+    "PLC0415", # import-outside-top-level: tests use local imports for mocking
+    "C901",    # complex-structure: test helpers/scenarios are not held to the prod complexity gate
+]
+
+# Cyclomatic complexity threshold for the mccabe (C90) check.
+[lint.mccabe]
+max-complexity = 10

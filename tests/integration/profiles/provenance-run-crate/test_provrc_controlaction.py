@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 def test_provrc_controlaction_no_instrument():
-    """\
+    """
     Test a Provenance Run Crate where a ControlAction has no instrument.
     """
     do_entity_test(
@@ -31,14 +31,16 @@ def test_provrc_controlaction_no_instrument():
         Severity.REQUIRED,
         False,
         ["ProvRC ControlAction MUST"],
-        ["A ControlAction must reference a HowToStep instance representing "
-         "the corresponding workflow step via instrument"],
-        profile_identifier="provenance-run-crate"
+        [
+            "A ControlAction must reference a HowToStep instance representing "
+            "the corresponding workflow step via instrument"
+        ],
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_provrc_controlaction_bad_instrument():
-    """\
+    """
     Test a Provenance Run Crate where a ControlAction instrument does not
     point to a HowToStep.
     """
@@ -47,14 +49,16 @@ def test_provrc_controlaction_bad_instrument():
         Severity.REQUIRED,
         False,
         ["ProvRC ControlAction MUST"],
-        ["A ControlAction must reference a HowToStep instance representing "
-         "the corresponding workflow step via instrument"],
-        profile_identifier="provenance-run-crate"
+        [
+            "A ControlAction must reference a HowToStep instance representing "
+            "the corresponding workflow step via instrument"
+        ],
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_provrc_controlaction_no_object():
-    """\
+    """
     Test a Provenance Run Crate where a ControlAction has no object.
     """
     do_entity_test(
@@ -63,12 +67,12 @@ def test_provrc_controlaction_no_object():
         False,
         ["ProvRC ControlAction MUST"],
         ["A ControlAction must reference the action representing the corresponding tool run via object"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_provrc_controlaction_bad_object():
-    """\
+    """
     Test a Provenance Run Crate where a ControlAction object does not point to
     an action.
     """
@@ -78,12 +82,12 @@ def test_provrc_controlaction_bad_object():
         False,
         ["ProvRC ControlAction MUST"],
         ["A ControlAction must reference the action representing the corresponding tool run via object"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_provrc_controlaction_no_actionstatus():
-    """\
+    """
     Test a Provenance Run Crate where a ControlAction has no actionStatus.
     """
     do_entity_test(
@@ -92,12 +96,12 @@ def test_provrc_controlaction_no_actionstatus():
         False,
         ["ProvRC ControlAction and OrganizeAction MAY"],
         ["The Action MAY have an actionStatus"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_provrc_controlaction_bad_actionstatus():
-    """\
+    """
     Test a Provenance Run Crate where a ControlAction has an invalid
     actionStatus.
     """
@@ -106,15 +110,17 @@ def test_provrc_controlaction_bad_actionstatus():
         Severity.RECOMMENDED,
         False,
         ["ProvRC ControlAction and OrganizeAction SHOULD"],
-        ["If the action has an actionStatus, it should be "
-         "http://schema.org/CompletedActionStatus or "
-         "http://schema.org/FailedActionStatus"],
-        profile_identifier="provenance-run-crate"
+        [
+            "If the action has an actionStatus, it should be "
+            "http://schema.org/CompletedActionStatus or "
+            "http://schema.org/FailedActionStatus"
+        ],
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_provrc_controlaction_no_error():
-    """\
+    """
     Test a Provenance Run Crate where a ControlAction with an actionStatus
     set to FailedActionStatus has no error.
     """
@@ -124,12 +130,12 @@ def test_provrc_controlaction_no_error():
         False,
         ["ProvRC ControlAction and OrganizeAction error"],
         ["error MAY be specified if actionStatus is set to FailedActionStatus"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_provrc_controlaction_error_not_failed_status():
-    """\
+    """
     Test a Provenance Run Crate where a ControlAction with an actionStatus
     different from FailedActionStatus sets the error property
     """
@@ -139,5 +145,5 @@ def test_provrc_controlaction_error_not_failed_status():
         False,
         ["Provenance Run Crate ControlAction and OrganizeAction error"],
         ["error SHOULD NOT be specified unless actionStatus is set to FailedActionStatus"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )

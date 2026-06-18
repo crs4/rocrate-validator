@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from rocrate_validator.utils import log as logging
+# pylint: disable=invalid-name  # profile filename uses digit prefix (load-order convention)
+
 from rocrate_validator.models import ValidationContext
-from rocrate_validator.requirements.python import (PyFunctionCheck, check,
-                                                   requirement)
+from rocrate_validator.requirements.python import PyFunctionCheck, check, requirement
+from rocrate_validator.utils import log as logging
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -31,12 +32,10 @@ class RootDataEntityRelativeURI(PyFunctionCheck):
     def check_relative_uris(self, context: ValidationContext) -> bool:
         """Check if the Root Data Entity is denoted by the string `./` in the file descriptor JSON-LD"""
         try:
-            if not context.ro_crate.metadata.get_root_data_entity().id == './':
-                context.result.add_issue(
-                    'Root Data Entity URI is not denoted by the string `./`', self)
+            if context.ro_crate.metadata.get_root_data_entity().id != "./":
+                context.result.add_issue("Root Data Entity URI is not denoted by the string `./`", self)
                 return False
             return True
         except Exception as e:
-            context.result.add_issue(
-                f'Error checking Root Data Entity URI: {str(e)}', self)
+            context.result.add_issue(f"Error checking Root Data Entity URI: {e!s}", self)
             return False

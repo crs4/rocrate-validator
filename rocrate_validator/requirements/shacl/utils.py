@@ -15,8 +15,10 @@
 from __future__ import annotations
 
 import hashlib
-from pathlib import Path
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, Any, cast  # pylint: disable=unused-import
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 from rdflib import RDF, BNode, Graph, Namespace
 from rdflib.term import Node
@@ -59,38 +61,32 @@ def map_severity(shacl_severity: str) -> Severity:
     """
     if f"{SHACL_NS}Violation" == shacl_severity:
         return Severity.REQUIRED
-    elif f"{SHACL_NS}Warning" == shacl_severity:
+    if f"{SHACL_NS}Warning" == shacl_severity:
         return Severity.RECOMMENDED
-    elif f"{SHACL_NS}Info" == shacl_severity:
+    if f"{SHACL_NS}Info" == shacl_severity:
         return Severity.OPTIONAL
-    else:
-        raise RuntimeError(f"Unrecognized SHACL severity term {shacl_severity}")
+    raise RuntimeError(f"Unrecognized SHACL severity term {shacl_severity}")
 
 
-def make_uris_relative(text: str, ro_crate_path: Union[Path, str]) -> str:
+def make_uris_relative(text: str, ro_crate_path: Path | str) -> str:
     # globally replace the string "file://" with "./
-    return text.replace(str(ro_crate_path), './')
+    return text.replace(str(ro_crate_path), "./")
 
 
-def inject_attributes(obj: object, node_graph: Graph, node: Node, exclude: Optional[list] = None) -> object:
+def inject_attributes(obj: object, node_graph: Graph, node: Node, exclude: list | None = None) -> object:
     # inject attributes of the shape property
-    # logger.debug("Injecting attributes of node %s", node)
-    skip_properties = ["node"] if exclude is None else exclude + ["node"]
+    skip_properties = ["node"] if exclude is None else [*exclude, "node"]
     triples = node_graph.triples((node, None, None))
-    for node, p, o in triples:
-        predicate_as_string = p.toPython()
-        # logger.debug(f"Processing {predicate_as_string} of property graph {node}")
+    for _node, p, o in triples:
+        predicate_as_string = cast("Any", p).toPython()
         if predicate_as_string.startswith(SHACL_NS):
             property_name = predicate_as_string.split("#")[-1]
             if property_name in skip_properties:
                 continue
             try:
-                setattr(obj, property_name, o.toPython())
+                setattr(obj, property_name, cast("Any", o).toPython())
             except AttributeError as e:
                 logger.error(f"Error injecting attribute {property_name}: {e}")
-            # logger.debug("Injected attribute %s: %s", property_name, o.toPython())
-    # logger.debug("Injected attributes ig node %s: %s", node, len(list(triples)))
-    # return the object
     return obj
 
 
@@ -103,13 +99,13 @@ def __compute_values__(g: Graph, s: Node) -> list[tuple]:
     # Collect the values of the triples in the graph (excluding BNodes)
     values = []
     # Assuming the list of triples values is stored in a variable called 'triples_values'
-    triples_values = list([(_, x, _) for (_, x, _) in g.triples((s, None, None)) if x != RDF.type])
+    triples_values = [(_, x, _) for (_, x, _) in g.triples((s, None, None)) if x != RDF.type]
 
-    for (s, p, o) in triples_values:
-        if isinstance(o, BNode):
-            values.extend(__compute_values__(g, o))
+    for subj, pred, obj in triples_values:
+        if isinstance(obj, BNode):
+            values.extend(__compute_values__(g, obj))
         else:
-            values.append((s, p, o) if not isinstance(s, BNode) else (p, o))
+            values.append((subj, pred, obj) if not isinstance(subj, BNode) else (pred, obj))
     return values
 
 
@@ -123,10 +119,8 @@ def compute_hash(g: Graph, s: Node):
     triples_values = sorted(__compute_values__(g, s))
     # Convert the list of triples values to a string representation
     triples_string = str(triples_values)
-    # Calculate the hash of the triples string
-    hash_value = hashlib.sha256(triples_string.encode()).hexdigest()
-    # Return the hash value
-    return hash_value
+    # Calculate and return the hash of the triples string
+    return hashlib.sha256(triples_string.encode()).hexdigest()
 
 
 def compute_key(g: Graph, s: Node) -> str:
@@ -138,16 +132,17 @@ def compute_key(g: Graph, s: Node) -> str:
 
     if isinstance(s, BNode):
         return compute_hash(g, s)
-    else:
-        return s.toPython()
+    return cast("Any", s).toPython()
 
 
 class ShapesList:
-    def __init__(self,
-                 node_shapes: list[Node],
-                 property_shapes: list[Node],
-                 shapes_graphs: dict[Node, Graph],
-                 shapes_graph: Graph):
+    def __init__(
+        self,
+        node_shapes: list[Node],
+        property_shapes: list[Node],
+        shapes_graphs: dict[Node, Graph],
+        shapes_graph: Graph,
+    ):
         self._node_shapes = node_shapes
         self._property_shapes = property_shapes
         self._shapes_graph = shapes_graph
@@ -210,7 +205,7 @@ class ShapesList:
         return property_graph
 
     @classmethod
-    def load_from_file(cls, file_path: str, publicID: str = None) -> ShapesList:
+    def load_from_file(cls, file_path: str, publicID: str | None = None) -> ShapesList:
         """
         Load the shapes from the file
 
@@ -239,7 +234,7 @@ def __extract_related_triples__(graph, subject_node, processed_nodes=None):
     Recursively extract all triples related to a given shape.
     """
 
-    related_triples = []
+    related_triples: list = []
 
     processed_nodes = processed_nodes if processed_nodes is not None else set()
 
@@ -261,7 +256,7 @@ def __extract_related_triples__(graph, subject_node, processed_nodes=None):
     return related_triples
 
 
-def load_shapes_from_file(file_path: str, publicID: str = None) -> ShapesList:
+def load_shapes_from_file(file_path: str, publicID: str | None = None) -> ShapesList:
     try:
         # Check the file path is not None
         assert file_path is not None, "The file path cannot be None"
@@ -278,21 +273,17 @@ def load_shapes_from_graph(g: Graph) -> ShapesList:
     # define the SHACL namespace
     SHACL = Namespace(SHACL_NS)
     # find all NodeShapes
-    node_shapes = [s for (s, _, _) in g.triples(
-        (None, RDF.type, SHACL.NodeShape)) if not isinstance(s, BNode)]
+    node_shapes = [s for (s, _, _) in g.triples((None, RDF.type, SHACL.NodeShape)) if not isinstance(s, BNode)]
     logger.debug("Loaded Node Shapes: %s", node_shapes)
     # find all PropertyShapes
-    property_shapes = [s for (s, _, _) in g.triples((None, RDF.type, SHACL.PropertyShape))
-                       if not isinstance(s, BNode)]
+    property_shapes = [s for (s, _, _) in g.triples((None, RDF.type, SHACL.PropertyShape)) if not isinstance(s, BNode)]
     logger.debug("Loaded Property Shapes: %s", property_shapes)
     # define the list of shapes to extract
     shapes = node_shapes + property_shapes
 
     # Split the graph into subgraphs for each shape
     subgraphs = {}
-    count = 0
     for shape in shapes:
-        count += 1
         subgraph = Graph()
         # Extract all related triples for the current shape
         related_triples = __extract_related_triples__(g, shape)
@@ -303,9 +294,7 @@ def load_shapes_from_graph(g: Graph) -> ShapesList:
     return ShapesList(node_shapes, property_shapes, subgraphs, g)
 
 
-def resolve_parent_shape(
-    shapes_graph: Graph, source_shape_node: Node, shapes_registry
-) -> Optional[Shape]:
+def resolve_parent_shape(shapes_graph: Graph, source_shape_node: Node, shapes_registry) -> Shape | None:
     """
     Try to resolve the parent NodeShape/PropertyShape for a BNode constraint node.
 
@@ -314,26 +303,27 @@ def resolve_parent_shape(
     in the ShapesRegistry directly; instead the containing NodeShape is.
     This helper walks up via sh:sparql and sh:property predicates to find it.
     """
-    from rocrate_validator.requirements.shacl.models import Shape
+    from rocrate_validator.requirements.shacl.models import Shape  # noqa: PLC0415
 
     if not isinstance(source_shape_node, BNode):
         return None
     SHACL = Namespace(SHACL_NS)
-    # Predicates via which a NodeShape/PropertyShape can own a constraint BNode
     parent_predicates = [SHACL.sparql, SHACL.property]
+
+    def _safe_get_shape(graph, node):
+        try:
+            return shapes_registry.get_shape(Shape.compute_key(graph, node))
+        except (ValueError, KeyError):
+            return None
+
     for predicate in parent_predicates:
         for parent_node in shapes_graph.subjects(predicate, source_shape_node):
-            try:
-                parent_shape = shapes_registry.get_shape(
-                    Shape.compute_key(shapes_graph, parent_node)
+            parent_shape = _safe_get_shape(shapes_graph, parent_node)
+            if parent_shape is not None:
+                logger.debug(
+                    "Resolved parent shape %s for SPARQL/inline constraint BNode %s",
+                    parent_shape.key,
+                    source_shape_node,
                 )
-                if parent_shape is not None:
-                    logger.debug(
-                        "Resolved parent shape %s for SPARQL/inline constraint BNode %s",
-                        parent_shape.key,
-                        source_shape_node,
-                    )
-                    return parent_shape
-            except (ValueError, KeyError):
-                continue
+                return parent_shape
     return None

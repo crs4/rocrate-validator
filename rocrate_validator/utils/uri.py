@@ -15,7 +15,6 @@
 import enum
 import re
 from pathlib import Path
-from typing import Optional, Union
 from urllib.parse import ParseResult, parse_qsl, urlparse, urlsplit
 
 from rocrate_validator import errors
@@ -70,10 +69,7 @@ def is_external_reference(value: object) -> bool:
 
     # Reject scheme-only input (``urn:``, ``doi:``): syntactically valid
     # per the grammar but semantically unusable as an identifier.
-    if not (parts.netloc or parts.path or parts.query or parts.fragment):
-        return False
-
-    return True
+    return bool(parts.netloc or parts.path or parts.query or parts.fragment)
 
 
 class URI:
@@ -121,7 +117,7 @@ class URI:
     # Backwards-compatible alias kept for callers that still inspect it.
     REMOTE_SUPPORTED_SCHEMA = SUPPORTED_ROCRATE_SCHEMES[:-1]  # http, https, ftp
 
-    def __init__(self, uri: Union[str, Path]):
+    def __init__(self, uri: str | Path):
         if uri is None or (isinstance(uri, str) and not uri.strip()):
             raise ValueError("Invalid URI: empty value")
         self._uri = uri = str(uri)
@@ -148,7 +144,7 @@ class URI:
         except Exception as e:
             if logger.isEnabledFor(logging.DEBUG):
                 logger.debug(e)
-            raise ValueError("Invalid URI: %s" % uri)
+            raise ValueError(f"Invalid URI: {uri}") from e
 
     @property
     def uri(self) -> str:
@@ -167,9 +163,9 @@ class URI:
         return self._parse_result.scheme
 
     @property
-    def fragment(self) -> Optional[str]:
+    def fragment(self) -> str | None:
         fragment = self._parse_result.fragment
-        return fragment if fragment else None
+        return fragment or None
 
     def get_scheme(self) -> str:
         return self._parse_result.scheme
@@ -183,7 +179,7 @@ class URI:
     def get_query_string(self) -> str:
         return self._parse_result.query
 
-    def get_query_param(self, param: str) -> Optional[str]:
+    def get_query_param(self, param: str) -> str | None:
         query_params = dict(parse_qsl(self._parse_result.query))
         return query_params.get(param)
 
@@ -285,7 +281,7 @@ class URI:
         return hash(self._uri)
 
 
-def validate_rocrate_uri(uri: Union[str, Path, URI], silent: bool = False) -> bool:
+def validate_rocrate_uri(uri: str | Path | URI, silent: bool = False) -> bool:
     """
     Validate the RO-Crate URI
 
@@ -298,7 +294,7 @@ def validate_rocrate_uri(uri: Union[str, Path, URI], silent: bool = False) -> bo
         assert isinstance(uri, (str, Path, URI)), "The RO-Crate URI must be a string, Path, or URI object"
         try:
             # parse the value to extract the scheme
-            uri = URI(str(uri)) if isinstance(uri, str) or isinstance(uri, Path) else uri
+            uri = URI(str(uri)) if isinstance(uri, (str, Path)) else uri
             # restrict RO-Crate roots to schemes the loader can actually handle
             if not uri.has_supported_rocrate_scheme():
                 raise errors.ROCrateInvalidURIError(uri)
@@ -315,9 +311,9 @@ def validate_rocrate_uri(uri: Union[str, Path, URI], silent: bool = False) -> bo
         except ValueError as e:
             logger.error(e)
             if logger.isEnabledFor(logging.DEBUG):
-                logger.exception(e)
-            raise errors.ROCrateInvalidURIError(uri)
-    except Exception as e:
+                logger.exception("Invalid RO-Crate URI: %s", uri)
+            raise errors.ROCrateInvalidURIError(uri) from e
+    except Exception:
         if not silent:
-            raise e
+            raise
         return False

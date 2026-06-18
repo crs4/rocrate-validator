@@ -15,4 +15,4 @@
 from rocrate_validator.cli.commands import cache, profiles, validate
 from rocrate_validator.cli.main import cli
 
-__all__ = ["cli", "cache", "profiles", "validate"]
+__all__ = ["cache", "cli", "profiles", "validate"]

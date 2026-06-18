@@ -91,12 +91,12 @@
         {
             "@id": "foo/",
             "@type": "Dataset"
-            
+
         },
         {
             "@id": "foo/xxx",
             "@type": "File"
-            
+
         },
         {
             "@id": "blank.png",

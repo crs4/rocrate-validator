@@ -23,7 +23,7 @@ from tests.shared import do_entity_test
 logger = logging.getLogger(__name__)
 
 
-#  Global set up the paths
+# Global set up the paths
 paths = InvalidRootDataEntity()
 
 
@@ -34,7 +34,7 @@ def test_missing_root_data_entity():
         models.Severity.REQUIRED,
         False,
         ["RO-Crate Root Data Entity type"],
-        ["The Root Data Entity MUST be a `Dataset` (as per `schema.org`)"]
+        ["The Root Data Entity MUST be a `Dataset` (as per `schema.org`)"],
     )
 
 
@@ -45,7 +45,7 @@ def test_invalid_root_data_entity_value():
         models.Severity.REQUIRED,
         False,
         ["RO-Crate Root Data Entity value restriction"],
-        ["The Root Data Entity URI MUST end with `/`"]
+        ["The Root Data Entity URI MUST end with `/`"],
     )
 
 
@@ -56,7 +56,7 @@ def test_missing_root_data_entity_name():
         models.Severity.REQUIRED,
         False,
         ["RO-Crate Root Data Entity REQUIRED properties"],
-        ["The Root Data Entity MUST have a `name` property (as specified by schema.org)"]
+        ["The Root Data Entity MUST have a `name` property (as specified by schema.org)"],
     )
 
 
@@ -67,7 +67,7 @@ def test_missing_root_data_entity_description():
         models.Severity.REQUIRED,
         False,
         ["RO-Crate Root Data Entity REQUIRED properties"],
-        ["The Root Data Entity MUST have a `description` property (as specified by schema.org)"]
+        ["The Root Data Entity MUST have a `description` property (as specified by schema.org)"],
     )
 
 
@@ -78,7 +78,7 @@ def test_missing_root_data_entity_license():
         models.Severity.REQUIRED,
         False,
         ["RO-Crate Root Data Entity REQUIRED properties"],
-        ["The Root Data Entity MUST have a `license` property (as specified by schema.org)"]
+        ["The Root Data Entity MUST have a `license` property (as specified by schema.org)"],
     )
 
 
@@ -89,7 +89,7 @@ def test_recommended_root_data_entity_value():
         models.Severity.RECOMMENDED,
         False,
         ["RO-Crate Root Data Entity RECOMMENDED value"],
-        ["Root Data Entity URI is not denoted by the string `./`"]
+        ["Root Data Entity URI is not denoted by the string `./`"],
     )
 
 
@@ -100,9 +100,11 @@ def test_invalid_required_root_date(invalid_datetime):
         models.Severity.REQUIRED,
         False,
         ["RO-Crate Root Data Entity REQUIRED properties"],
-        ["The Root Data Entity MUST have a `datePublished` property (as specified by schema.org) "
-            "with a valid ISO 8601 date"],
-        rocrate_entity_patch={"./": {"datePublished": invalid_datetime}}
+        [
+            "The Root Data Entity MUST have a `datePublished` property (as specified by schema.org) "
+            "with a valid ISO 8601 date"
+        ],
+        rocrate_entity_patch={"./": {"datePublished": invalid_datetime}},
     )
 
 
@@ -113,7 +115,7 @@ def test_valid_required_root_date(valid_datetime):
         models.Severity.REQUIRED,
         True,
         rocrate_entity_patch={"./": {"datePublished": valid_datetime}},
-        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER]
+        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER],
     )
 
 
@@ -124,8 +126,10 @@ def test_invalid_recommended_root_date():
         models.Severity.RECOMMENDED,
         False,
         ["RO-Crate Root Data Entity RECOMMENDED properties"],
-        ["The Root Data Entity MUST have a `datePublished` property (as specified by schema.org) "
-            "with a valid ISO 8601 date and the precision of at least the day level"]
+        [
+            "The Root Data Entity MUST have a `datePublished` property (as specified by schema.org) "
+            "with a valid ISO 8601 date and the precision of at least the day level"
+        ],
     )
 
 
@@ -135,7 +139,7 @@ def test_valid_referenced_generic_data_entities():
         paths.valid_referenced_generic_data_entities,
         models.Severity.REQUIRED,
         True,
-        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER]
+        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER],
     )
 
 
@@ -146,7 +150,7 @@ def test_missing_root_license_contextual_entity():
         models.Severity.RECOMMENDED,
         False,
         ["RO-Crate Root Data Entity RECOMMENDED properties"],
-        ["The Root Data Entity SHOULD have a link to a Contextual Entity representing the schema_org:license type"]
+        ["The Root Data Entity SHOULD have a link to a Contextual Entity representing the schema_org:license type"],
     )
 
 
@@ -157,7 +161,7 @@ def test_missing_root_license_name():
         models.Severity.OPTIONAL,
         False,
         ["License definition"],
-        ["Missing license name"]
+        ["Missing license name"],
     )
 
 
@@ -168,14 +172,10 @@ def test_missing_root_license_description():
         models.Severity.OPTIONAL,
         False,
         ["License definition"],
-        ["Missing license description"]
+        ["Missing license description"],
     )
 
 
 def test_availability_of_root_entity_rocrate_archive():
     """Test a RO-Crate without a root data entity license description."""
-    do_entity_test(
-        ValidROC().sort_and_change_archive,
-        models.Severity.REQUIRED,
-        True
-    )
+    do_entity_test(ValidROC().sort_and_change_archive, models.Severity.REQUIRED, True)

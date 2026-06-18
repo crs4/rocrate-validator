@@ -17,7 +17,7 @@ import logging
 
 from rocrate_validator.models import Severity
 from tests.ro_crates import ValidROC
-from tests.shared import do_entity_test, SPARQL_PREFIXES
+from tests.shared import SPARQL_PREFIXES, do_entity_test
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -46,10 +46,8 @@ def test_isa_sample_name():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Study MUST have base properties"],
-        expected_triggered_issues=[
-            "Sample entity MUST have a non-empty name of type string"
-        ],
+        # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
+        expected_triggered_issues=["Sample entity MUST have a non-empty name of type string"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
     )
@@ -116,10 +114,8 @@ def test_isa_sample_name_of_incorrect_type():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Study MUST have base properties"],
-        expected_triggered_issues=[
-            "Sample entity MUST have a non-empty name of type string"
-        ],
+        # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
+        expected_triggered_issues=["Sample entity MUST have a non-empty name of type string"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
     )
@@ -149,10 +145,8 @@ def test_isa_sample_no_additional_property():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Study MUST have base properties"],
-        expected_triggered_issues=[
-            "Sample entity SHOULD have at least one additional property"
-        ],
+        # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
+        expected_triggered_issues=["Sample entity SHOULD have at least one additional property"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
     )
@@ -185,10 +179,8 @@ def test_isa_sample_additional_property_of_incorrect_type():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Study MUST have base properties"],
-        expected_triggered_issues=[
-            "Sample additional property MUST be of type PropertyValue"
-        ],
+        # expected_triggered_requirements=["Study MUST have base properties"],  # noqa: ERA001
+        expected_triggered_issues=["Sample additional property MUST be of type PropertyValue"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
     )

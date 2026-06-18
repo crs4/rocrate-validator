@@ -15,37 +15,36 @@
 # calculate the absolute path of the rocrate-validator package
 # and add it to the system path
 import os
+from pathlib import Path
 
 import pytest
 from pytest import fixture
 
-from rocrate_validator.utils import log as logging
 from rocrate_validator import services
+from rocrate_validator.utils import log as logging
 
 # set up logging
 logging.basicConfig(
-    level="warning",
+    level=logging.WARNING,
     modules_config={
         # "rocrate_validator.models": {"level": logging.DEBUG}
-    }
+    },
 )
 
-CURRENT_PATH = os.path.dirname(os.path.realpath(__file__))
+CURRENT_PATH = str(Path(__file__).resolve().parent)
 
 # test data paths
-TEST_DATA_PATH = os.path.abspath(os.path.join(CURRENT_PATH, "data"))
+TEST_DATA_PATH = str(Path(CURRENT_PATH) / "data")
 
 # profiles paths
-PROFILES_PATH = os.path.abspath(f"{CURRENT_PATH}/../rocrate_validator/profiles")
+PROFILES_PATH = str(Path(f"{CURRENT_PATH}/../rocrate_validator/profiles").resolve())
 
 # Dynamically update the SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER
 rocrate_profile = services.get_profile("ro-crate")
 if not rocrate_profile:
     raise RuntimeError("Unable to load the RO-Crate profile")
-check_local_data_entity_existence = \
-    rocrate_profile.get_requirement_check("Data Entity: REQUIRED resource availability")
-assert check_local_data_entity_existence, \
-    "Unable to find the requirement 'Data Entity: REQUIRED resource availability'"
+check_local_data_entity_existence = rocrate_profile.get_requirement_check("Data Entity: REQUIRED resource availability")
+assert check_local_data_entity_existence, "Unable to find the requirement 'Data Entity: REQUIRED resource availability'"
 SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER = check_local_data_entity_existence.identifier
 
 
@@ -175,55 +174,59 @@ def graph_books_path():
 
 @fixture
 def ro_crate_profile_path(profiles_path):
-    return os.path.join(profiles_path, "ro-crate")
+    return str(Path(profiles_path) / "ro-crate")
 
 
 @fixture
 def ro_crate_profile_must_path(ro_crate_profile_path):
-    return os.path.join(ro_crate_profile_path, "must")
+    return str(Path(ro_crate_profile_path) / "must")
 
 
 @fixture
 def ro_crate_profile_should_path(ro_crate_profile_path):
-    return os.path.join(ro_crate_profile_path, "should")
+    return str(Path(ro_crate_profile_path) / "should")
 
 
 @fixture
 def ro_crate_profile_may_path(ro_crate_profile_path):
-    return os.path.join(ro_crate_profile_path, "may")
+    return str(Path(ro_crate_profile_path) / "may")
 
 
-@fixture(params=[
-    "2024 01 01",
-    "2024 Jan 01",
-    "2021-13-01",
-    "2021-00-10",
-    "2021-01-32",
-    "2021-01-01T25:00",
-    "2021-01-01T23:60",
-    "2021-01-01T23:59:60",
-    "T23:59:59",
-])
+@fixture(
+    params=[
+        "2024 01 01",
+        "2024 Jan 01",
+        "2021-13-01",
+        "2021-00-10",
+        "2021-01-32",
+        "2021-01-01T25:00",
+        "2021-01-01T23:60",
+        "2021-01-01T23:59:60",
+        "T23:59:59",
+    ]
+)
 def invalid_datetime(request):
     return request.param
 
 
-@fixture(params=[
-    "2024",
-    "2024-01",
-    "202401",
-    "2024-01-01",
-    "20240101",
-    "2024-001",
-    "2024-W01",
-    "2024-W01-1",
-    "2024-01-01T00:00",
-    "2024-01-01T00:00:00",
-    "2024-01-01T00:00:00Z",
-    "2024-01-01T00:00:00+00:00",
-    "2024-01-01T00:00:00.000",
-    "2024-01-01T00:00:00.000Z",
-    "2024-01-01T00:00:00.000+00:00",
-])
+@fixture(
+    params=[
+        "2024",
+        "2024-01",
+        "202401",
+        "2024-01-01",
+        "20240101",
+        "2024-001",
+        "2024-W01",
+        "2024-W01-1",
+        "2024-01-01T00:00",
+        "2024-01-01T00:00:00",
+        "2024-01-01T00:00:00Z",
+        "2024-01-01T00:00:00+00:00",
+        "2024-01-01T00:00:00.000",
+        "2024-01-01T00:00:00.000Z",
+        "2024-01-01T00:00:00.000+00:00",
+    ]
+)
 def valid_datetime(request):
     return request.param

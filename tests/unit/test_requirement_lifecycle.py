@@ -15,7 +15,7 @@
 import pytest
 
 from rocrate_validator import services
-from rocrate_validator.models import RequirementLoader, Severity, ValidationContext, ValidationSettings
+from rocrate_validator.models import URI, RequirementLoader, Severity, ValidationContext, ValidationSettings
 from tests.ro_crates import InvalidRootDataEntity
 
 
@@ -39,7 +39,7 @@ class _RequirementTypeSpy:
 @pytest.fixture
 def validation_settings():
     return ValidationSettings(
-        rocrate_uri=str(InvalidRootDataEntity().invalid_root_type),
+        rocrate_uri=URI(str(InvalidRootDataEntity().invalid_root_type)),
         requirement_severity=Severity.OPTIONAL,
         abort_on_first=False,
     )

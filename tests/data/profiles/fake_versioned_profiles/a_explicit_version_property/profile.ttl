@@ -33,7 +33,7 @@
 
     # the version of the profile
     schema:version "1.0.0" ;
-    
+
     # a short code to refer to the Profile with when a URI can't be used
     prof:hasToken "a" ;
 

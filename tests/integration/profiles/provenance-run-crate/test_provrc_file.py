@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 def test_provrc_environment_file_no_encodingformat():
-    """\
+    """
     Test a Provenance Run Crate where an environment file has no
     encodingFormat.
     """
@@ -33,12 +33,12 @@ def test_provrc_environment_file_no_encodingformat():
         False,
         ["Provenance Run Crate build instructions file SHOULD"],
         ["the environment file SHOULD have an encodingFormat"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_provrc_environment_file_no_conformsto():
-    """\
+    """
     Test a Provenance Run Crate where an environment file has no conformsTo.
     """
     do_entity_test(
@@ -47,5 +47,5 @@ def test_provrc_environment_file_no_conformsto():
         False,
         ["Provenance Run Crate build instructions file SHOULD"],
         ["the environment file SHOULD have a conformsTo"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )

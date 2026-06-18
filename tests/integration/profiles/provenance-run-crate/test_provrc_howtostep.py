@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 def test_provrc_howtostep_no_inv_step():
-    """\
+    """
     Test a Provenance Run Crate where a HowToStep is not referred to via step.
     """
     do_entity_test(
@@ -32,12 +32,12 @@ def test_provrc_howtostep_no_inv_step():
         False,
         ["ProvRC HowToStep MUST"],
         ["A HowToStep must be referred to from a ComputationalWorkflow via step"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_provrc_howtostep_bad_inv_step():
-    """\
+    """
     Test a Provenance Run Crate where a HowToStep is not referred to from a
     ComputationalWorkflow via step.
     """
@@ -47,12 +47,12 @@ def test_provrc_howtostep_bad_inv_step():
         False,
         ["ProvRC HowToStep MUST"],
         ["A HowToStep must be referred to from a ComputationalWorkflow via step"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_provrc_howtostep_no_workexample():
-    """\
+    """
     Test a Provenance Run Crate where a HowToStep has no workExample.
     """
     do_entity_test(
@@ -61,12 +61,12 @@ def test_provrc_howtostep_no_workexample():
         False,
         ["ProvRC HowToStep MUST"],
         ["A HowToStep must refer to its corresponding tool via workExample"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_provrc_howtostep_bad_workexample():
-    """\
+    """
     Test a Provenance Run Crate where a HowToStep does not refer to a tool via
     workExample.
     """
@@ -76,12 +76,12 @@ def test_provrc_howtostep_bad_workexample():
         False,
         ["ProvRC HowToStep MUST"],
         ["A HowToStep must refer to its corresponding tool via workExample"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_provrc_howtostep_no_position():
-    """\
+    """
     Test a Provenance Run Crate where a HowToStep has no position.
     """
     do_entity_test(
@@ -90,12 +90,12 @@ def test_provrc_howtostep_no_position():
         False,
         ["ProvRC HowToStep MAY"],
         ["A HowToStep may indicate its position in the execution order via position"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_provrc_howtostep_bad_position():
-    """\
+    """
     Test a Provenance Run Crate where a HowToStep has a position that is not
     an integer or a string representing an integer.
     """
@@ -105,12 +105,12 @@ def test_provrc_howtostep_bad_position():
         False,
         ["ProvRC HowToStep MUST"],
         ["If specified, position must be an integer or a string representing an integer"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_provrc_howtostep_no_connection():
-    """\
+    """
     Test a Provenance Run Crate where a HowToStep has no connection.
     """
     do_entity_test(
@@ -119,12 +119,12 @@ def test_provrc_howtostep_no_connection():
         False,
         ["ProvRC HowToStep MAY"],
         ["HowToStep may have a connection property"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_provrc_howtostep_bad_connection():
-    """\
+    """
     Test a Provenance Run Crate where a HowToStep has a connection that does
     not point to a ParameterConnection.
     """
@@ -134,12 +134,12 @@ def test_provrc_howtostep_bad_connection():
         False,
         ["ProvRC HowToStep MUST"],
         ["If the HowToStep has a connection, it must point to a ParameterConnection"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_provrc_howtostep_no_buildinstructions():
-    """\
+    """
     Test a Provenance Run Crate where a HowToStep has no buildInstructions.
     """
     do_entity_test(
@@ -148,12 +148,12 @@ def test_provrc_howtostep_no_buildinstructions():
         False,
         ["ProvRC HowToStep MAY"],
         ["A HowToStep MAY have a buildInstructions pointing to a File"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_provrc_howtostep_bad_buildinstructions():
-    """\
+    """
     Test a Provenance Run Crate where a HowToStep has a buildInstructions
     that does not point to a File.
     """
@@ -163,5 +163,5 @@ def test_provrc_howtostep_bad_buildinstructions():
         False,
         ["ProvRC HowToStep MAY"],
         ["A HowToStep MAY have a buildInstructions pointing to a File"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )

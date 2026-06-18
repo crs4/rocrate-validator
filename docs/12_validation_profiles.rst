@@ -1,14 +1,14 @@
 Validation Profiles
 ===================
 
-The system comes with a set of **predefined validation profiles** that are loaded 
-automatically when the application starts (see `supported profiles <../#features>`_). 
+The system comes with a set of **predefined validation profiles** that are loaded
+automatically when the application starts (see `supported profiles <../#features>`_).
 These profiles define the standard rules and checks that are applied during RO-Crate validation.
 
 Additional Profiles
 -------------------
 
-You can **extend or override** the predefined validation profiles by specifying 
+You can **extend or override** the predefined validation profiles by specifying
 the path to additional profiles using the ``--extra-profiles-path`` option on the command line.
 
 CLI Usage
@@ -44,11 +44,11 @@ API Usage
 Behavior
 ^^^^^^^^
 
-* Profiles provided via ``--extra-profiles-path`` are **loaded in addition to** the system’s predefined profiles.  
-* If an additional profile has the **same name** as a predefined profile, the additional profile **overrides** the predefined one.  
+* Profiles provided via ``--extra-profiles-path`` are **loaded in addition to** the system’s predefined profiles.
+* If an additional profile has the **same name** as a predefined profile, the additional profile **overrides** the predefined one.
 
 This mechanism allows you to:
 
-* **Add new custom validation profiles** to implement project-specific checks.  
-* **Modify existing profiles** without altering the system’s predefined configuration files.  
-* **Maintain a clear separation** between standard validation logic and project-specific customizations.  
+* **Add new custom validation profiles** to implement project-specific checks.
+* **Modify existing profiles** without altering the system’s predefined configuration files.
+* **Maintain a clear separation** between standard validation logic and project-specific customizations.

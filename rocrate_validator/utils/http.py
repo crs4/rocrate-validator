@@ -15,11 +15,15 @@
 from __future__ import annotations
 
 import atexit
-import os
+import contextlib
 import random
 import string
 import threading
-from typing import Any, Optional
+from pathlib import Path
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from typing_extensions import Self
 
 import requests
 
@@ -71,14 +75,14 @@ class OfflineCacheMissError(RuntimeError):
         self.url = url
 
 
-def find_offline_cache_miss(exc: BaseException) -> Optional[OfflineCacheMissError]:
+def find_offline_cache_miss(exc: BaseException) -> OfflineCacheMissError | None:
     """
     Walk the chain of an exception (``__cause__``/``__context__``) looking
     for an :class:`OfflineCacheMissError`. Returns the first match, or
     ``None`` if the chain does not contain one.
     """
     seen: set[int] = set()
-    current: Optional[BaseException] = exc
+    current: BaseException | None = exc
     while current is not None and id(current) not in seen:
         seen.add(id(current))
         if isinstance(current, OfflineCacheMissError):
@@ -95,25 +99,28 @@ class HttpRequester:
     supports an offline mode in which only cached responses are served
     (cache misses yield a 504 response instead of hitting the network).
     """
+
     _instance = None
     _lock = threading.Lock()
 
-    def __new__(cls, *args, **kwargs) -> HttpRequester:
+    def __new__(cls, *args, **kwargs) -> Self:
         if cls._instance is None:
             logger.debug(f"Creating instance of {cls.__name__} with args: {args}, kwargs: {kwargs}")
             with cls._lock:
                 if cls._instance is None:
                     logger.debug(f"Creating instance of {cls.__name__}")
-                    cls._instance = super(HttpRequester, cls).__new__(cls)
+                    cls._instance = super().__new__(cls)
                     atexit.register(cls._instance.__del__)
                     logger.debug(f"Instance created: {cls._instance.__class__.__name__}")
         return cls._instance
 
-    def __init__(self,
-                 cache_max_age: int = constants.DEFAULT_HTTP_CACHE_MAX_AGE,
-                 cache_path: Optional[str] = None,
-                 offline: bool = False,
-                 no_cache: bool = False):
+    def __init__(
+        self,
+        cache_max_age: int = constants.DEFAULT_HTTP_CACHE_MAX_AGE,
+        cache_path: str | None = None,
+        offline: bool = False,
+        no_cache: bool = False,
+    ):
         logger.debug(f"Initializing instance of {self.__class__.__name__} {self}")
         # check if the instance is already initialized
         if not hasattr(self, "_initialized"):
@@ -127,7 +134,7 @@ class HttpRequester:
                         logger.debug(f"Setting cache_max_age to {cache_max_age}")
                         self.cache_max_age = int(cache_max_age)
                     except ValueError:
-                        raise TypeError("cache_max_age must be an integer")
+                        raise TypeError("cache_max_age must be an integer") from None
                     self.cache_path_prefix = cache_path
                     self.offline = bool(offline)
                     self.no_cache = bool(no_cache)
@@ -140,22 +147,25 @@ class HttpRequester:
         else:
             logger.debug(f"Instance of {self} already initialized")
 
-    def __initialize_session__(self, cache_max_age: int, cache_path: Optional[str] = None):
+    def __initialize_session__(self, cache_max_age: int, cache_path: str | None = None):
         # initialize the session
-        self.session = None
+        # The session can be a CachedSession, a plain requests.Session, or the
+        # duck-typed _OfflineFallbackSession; HTTP methods are delegated dynamically
+        # via __getattr__, so it is typed as Any.
+        self.session: Any = None
         logger.debug(f"Initializing instance of {self.__class__.__name__}")
         assert not self._initialized, "Session already initialized"
         # check if requests_cache is installed
         # and set up the cached session
         try:
             if not self.no_cache:
-                from requests_cache import CachedSession
+                from requests_cache import CachedSession  # noqa: PLC0415
 
                 # If cache_path is not provided, use the default path prefix
                 if not cache_path:
                     # Generate a random path for the cache
                     # to avoid conflicts with other instances
-                    random_suffix = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+                    random_suffix = "".join(random.choices(string.ascii_letters + string.digits, k=8))
                     cache_path = constants.DEFAULT_HTTP_CACHE_PATH_PREFIX + f"_{random_suffix}"
                     logger.debug(f"Using default cache path: {cache_path}")
                 else:
@@ -169,9 +179,9 @@ class HttpRequester:
                     # Cache name with random suffix
                     cache_name=str(cache_path),
                     expire_after=expire_after,  # Cache expiration time in seconds
-                    backend='sqlite',  # Use SQLite backend
-                    allowable_methods=('GET',),  # Cache GET
-                    allowable_codes=(200, 302, 404)  # Cache responses with these status codes
+                    backend="sqlite",  # Use SQLite backend
+                    allowable_methods=("GET",),  # Cache GET
+                    allowable_codes=(200, 302, 404),  # Cache responses with these status codes
                 )
                 # Apply offline policy: only return cached responses.
                 if self.offline:
@@ -179,7 +189,7 @@ class HttpRequester:
                         self.session.settings.only_if_cached = True
                     except AttributeError:
                         # Older requests_cache versions expose the flag on the session directly.
-                        setattr(self.session, "only_if_cached", True)
+                        self.session.only_if_cached = True
         except ImportError:
             logger.warning("requests_cache is not installed. Using requests instead.")
         except Exception as e:
@@ -191,8 +201,7 @@ class HttpRequester:
         if not self.session:
             if self.offline:
                 logger.warning(
-                    "Offline mode requested but requests_cache is not available: "
-                    "HTTP requests will be blocked."
+                    "Offline mode requested but requests_cache is not available: HTTP requests will be blocked."
                 )
                 self.session = _OfflineFallbackSession()
             else:
@@ -212,12 +221,12 @@ class HttpRequester:
         Remove the SQLite cache file when the cache is marked as temporary.
         """
         logger.debug(f"Deleting instance of {self.__class__.__name__}")
-        if self.session and hasattr(self.session, 'cache') and self.session.cache:
+        if self.session and hasattr(self.session, "cache") and self.session.cache:
             try:
                 logger.debug(f"Deleting cache directory: {self.session.cache.cache_name}")
                 cache_path = f"{self.session.cache.cache_name}.sqlite"
-                if os.path.exists(cache_path):
-                    os.remove(cache_path)
+                if Path(cache_path).exists():
+                    Path(cache_path).unlink()
                     logger.debug(f"Deleted cache directory: {cache_path}")
             except Exception as e:
                 logger.error(f"Error deleting cache directory: {e}")
@@ -338,19 +347,19 @@ class HttpRequester:
                 info["entries"] = sum(1 for _ in cache.urls())
             except Exception as e:
                 logger.debug("Unable to count cache entries: %s", e)
-        if info["path"] and os.path.exists(info["path"]):
-            try:
-                info["size_bytes"] = os.path.getsize(info["path"])
-            except OSError:
-                pass
+        if info["path"] and Path(info["path"]).exists():
+            with contextlib.suppress(OSError):
+                info["size_bytes"] = Path(info["path"]).stat().st_size
         return info
 
     @classmethod
-    def initialize_cache(cls,
-                         cache_max_age: int = constants.DEFAULT_HTTP_CACHE_MAX_AGE,
-                         cache_path: Optional[str] = None,
-                         offline: bool = False,
-                         no_cache: bool = False) -> HttpRequester:
+    def initialize_cache(
+        cls,
+        cache_max_age: int = constants.DEFAULT_HTTP_CACHE_MAX_AGE,
+        cache_path: str | None = None,
+        offline: bool = False,
+        no_cache: bool = False,
+    ) -> HttpRequester:
         """
         Initialize the HttpRequester singleton with cache settings.
 
@@ -364,13 +373,11 @@ class HttpRequester:
         with cls._lock:
             instance = cls._instance
         if instance is None:
-            return cls(cache_max_age=cache_max_age, cache_path=cache_path,
-                       offline=offline, no_cache=no_cache)
+            return cls(cache_max_age=cache_max_age, cache_path=cache_path, offline=offline, no_cache=no_cache)
         # Re-apply the configuration without recreating the instance:
         # we keep the same singleton in place and only rebuild its underlying session,
         # rather than dropping and recreating the object (as ``reset`` does).
-        instance._reconfigure(cache_max_age=cache_max_age, cache_path=cache_path,
-                              offline=offline, no_cache=no_cache)
+        instance._reconfigure(cache_max_age=cache_max_age, cache_path=cache_path, offline=offline, no_cache=no_cache)
         return instance
 
     def _close_session(self) -> None:
@@ -387,11 +394,13 @@ class HttpRequester:
             except Exception as e:
                 logger.debug("Error cleaning up previous cache: %s", e)
 
-    def _reconfigure(self,
-                     cache_max_age: int = constants.DEFAULT_HTTP_CACHE_MAX_AGE,
-                     cache_path: Optional[str] = None,
-                     offline: bool = False,
-                     no_cache: bool = False) -> None:
+    def _reconfigure(
+        self,
+        cache_max_age: int = constants.DEFAULT_HTTP_CACHE_MAX_AGE,
+        cache_path: str | None = None,
+        offline: bool = False,
+        no_cache: bool = False,
+    ) -> None:
         """
         Rebuild the underlying session with new cache settings while preserving
         the singleton instance (and any attributes set on it, e.g. test patches).
@@ -400,8 +409,8 @@ class HttpRequester:
             self._close_session()
             try:
                 self.cache_max_age = int(cache_max_age)
-            except ValueError:
-                raise TypeError("cache_max_age must be an integer")
+            except ValueError as exc:
+                raise TypeError("cache_max_age must be an integer") from exc
             self.cache_path_prefix = cache_path
             self.offline = bool(offline)
             self.no_cache = bool(no_cache)
@@ -438,7 +447,6 @@ class _OfflineFallbackSession:
         response.status_code = OFFLINE_CACHE_MISS_STATUS
         response.reason = "Offline: no HTTP cache backend available"
         response.url = url
-        # response._content = b""
         return response
 
     def get(self, url, **_kwargs):

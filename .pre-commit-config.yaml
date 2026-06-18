@@ -1,0 +1,86 @@
+# Copyright (c) 2024-2026 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+repos:
+  # Run typos to check for common spelling mistakes in the codebase.
+  - repo: https://github.com/crate-ci/typos
+    rev: v1.47.2
+    hooks:
+      - id: typos
+        # Pre-commit passes explicit file paths to the hook, bypassing the
+        # `[tool.typos.files] extend-exclude` config; replicate the excludes
+        # here so generated SVGs, JSON fixtures and HTML aren't scanned.
+        exclude: ^(tests/data/|docs/diagrams/|.*\.json$|.*\.html$|.*__init__\.py$)
+        args:
+          - --config
+          - pyproject.toml
+          - --write-changes
+
+  # Performs basic checks on files, such as removing trailing whitespace,
+  # ensuring files end with a newline, and validating YAML files.
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+
+  # Run Ruff for both linting and formatting.
+  # The ruff-check hook will report linting issues,
+  # while the ruff-format hook will automatically fix formatting issues.
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.15
+    hooks:
+      - id: ruff-check
+      - id: ruff-format
+
+  # Slow whole-project checks (mypy + pylint) are configured as MANUAL hooks
+  # so they do not run on every commit. They use `poetry run` to pick up the
+  # project's virtualenv and dependencies. To run them:
+  #
+  #     pre-commit run --hook-stage manual                   # all manual hooks
+  #     pre-commit run --hook-stage manual mypy              # just mypy
+  #     pre-commit run --hook-stage manual pylint-main       # just main pylint
+  #     pre-commit run --hook-stage manual pylint-tests      # just tests pylint
+  - repo: local
+    hooks:
+      - id: mypy
+        name: mypy
+        entry: poetry run mypy
+        language: system
+        types: [python]
+        pass_filenames: false
+        stages: [manual]
+
+      # Pylint runs against the whole package (not just the changed files) so
+      # cross-module import resolution stays accurate. Two hooks are needed
+      # because pylint loads a single rcfile per run: the main package uses
+      # the `[tool.pylint.*]` sections in `pyproject.toml`, while `tests/`
+      # uses its own `tests/.pylintrc` (pytest-fixture idioms, domain camelCase
+      # allowlists).
+      - id: pylint-main
+        name: pylint (rocrate_validator)
+        entry: poetry run pylint rocrate_validator/
+        language: system
+        files: ^rocrate_validator/.*\.py$
+        pass_filenames: false
+        stages: [manual]
+
+      - id: pylint-tests
+        name: pylint (tests)
+        entry: poetry run pylint --rcfile=tests/.pylintrc tests/
+        language: system
+        files: ^tests/.*\.py$
+        pass_filenames: false
+        stages: [manual]

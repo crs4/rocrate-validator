@@ -12,16 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 from rocrate_validator.errors import ValidationError
-from rocrate_validator.requirements.shacl.validator import \
-    SHACLValidationResult
+from rocrate_validator.requirements.shacl.validator import SHACLValidationResult
 
 
 class SHACLValidationError(ValidationError):
-
     def __init__(
         self,
-        result: SHACLValidationResult = None,
+        result: SHACLValidationResult | None = None,
         message: str = "Document does not conform to SHACL shapes.",
         path: str = ".",
         code: int = 500,
@@ -30,10 +29,8 @@ class SHACLValidationError(ValidationError):
         self._result = result
 
     @property
-    def result(self) -> SHACLValidationResult:
+    def result(self) -> SHACLValidationResult | None:
         return self._result
 
     def __repr__(self):
-        return (
-            f"SHACLValidationError({self._message!r}, {self._path!r}, {self.result!r})"
-        )
+        return f"SHACLValidationError({self._message!r}, {self._path!r}, {self.result!r})"

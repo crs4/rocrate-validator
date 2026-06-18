@@ -21,14 +21,14 @@
 
 ro-crate:RootDataEntityDirectRecommendedProperties a sh:NodeShape ;
     sh:name "RO-Crate Root Data Entity RECOMMENDED properties" ;
-    sh:description """The Root Data Entity SHOULD have 
+    sh:description """The Root Data Entity SHOULD have
     the properties `name`, `description` and `license` defined as described
     in the RO-Crate specification <https://www.researchobject.org/ro-crate/1.1/root-data-entity.html>""";
     sh:targetClass ro-crate:RootDataEntity ;
     sh:property [
         a sh:PropertyShape ;
         sh:name "Root Data Entity: `license` SHOULD link to a Contextual Entity" ;
-        sh:description """Check if the Root Data Entity includes a `license` property 
+        sh:description """Check if the Root Data Entity includes a `license` property
         that links to a Contextual Entity with type `schema_org:CreativeWork` to describe the license.""" ;
         sh:nodeKind sh:BlankNodeOrIRI ;
         sh:class schema_org:CreativeWork ;

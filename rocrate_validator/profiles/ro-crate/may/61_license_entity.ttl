@@ -24,11 +24,11 @@ ro-crate:LicenseOptionalAllowedValues a sh:NodeShape ;
     sh:name "Root Data Entity: optional properties" ;
     sh:description """Define the optional properties for the Root Data Entity (e.g., license)""" ;
     sh:targetClass ro-crate:RootDataEntity ;
-    sh:property [ 
+    sh:property [
         a sh:PropertyShape ;
         sh:name "License" ;
         sh:description """Check if the RO-Crate has a license property with a URI or a textual description""" ;
-        sh:message """MAY have a URI (eg for Creative Commons or Open Source licenses). 
+        sh:message """MAY have a URI (eg for Creative Commons or Open Source licenses).
         MAY, if necessary be a textual description of how the RO-Crate may be used.""" ;
         sh:minCount 1 ;
         sh:nodeKind sh:IRIOrLiteral ;
@@ -43,7 +43,7 @@ ro-crate:LicenseDefinition a sh:NodeShape ;
     sh:name "License definition" ;
     sh:description """Contextual entity representing a license with a name and description.""";
     sh:targetClass schema_org:license ;
-    sh:property [ 
+    sh:property [
         a sh:PropertyShape ;
         sh:name "License name" ;
         sh:description "The license MAY have a name" ;
@@ -53,7 +53,7 @@ ro-crate:LicenseDefinition a sh:NodeShape ;
         sh:path schema_org:name ;
         sh:message "Missing license name" ;
     ] ;
-    sh:property [ 
+    sh:property [
         a sh:PropertyShape ;
         sh:name "License description" ;
         sh:description """The license MAY have a description""" ;
@@ -63,4 +63,3 @@ ro-crate:LicenseDefinition a sh:NodeShape ;
         sh:path schema_org:description ;
         sh:message "Missing license description" ;
     ] .
- 

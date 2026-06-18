@@ -12,26 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Union
 
 from rocrate_validator.models import LevelCollection, Severity
 
 
-def get_severity_color(severity: Union[str, Severity]) -> str:
+def get_severity_color(severity: str | Severity) -> str:
     """
     Get the color for the severity
 
     :param severity: The severity
     :return: The color
     """
-    if severity == Severity.REQUIRED or severity == "REQUIRED":
+    if severity in (Severity.REQUIRED, "REQUIRED"):
         return "red"
-    elif severity == Severity.RECOMMENDED or severity == "RECOMMENDED":
+    if severity in (Severity.RECOMMENDED, "RECOMMENDED"):
         return "orange1"
-    elif severity == Severity.OPTIONAL or severity == "OPTIONAL":
+    if severity in (Severity.OPTIONAL, "OPTIONAL"):
         return "yellow"
-    else:
-        return "white"
+    return "white"
 
 
 def get_req_level_color(level: LevelCollection) -> str:
@@ -42,13 +40,12 @@ def get_req_level_color(level: LevelCollection) -> str:
     """
     if level in (LevelCollection.MUST, LevelCollection.SHALL, LevelCollection.REQUIRED):
         return "red"
-    elif level in (LevelCollection.MUST_NOT, LevelCollection.SHALL_NOT):
+    if level in (LevelCollection.MUST_NOT, LevelCollection.SHALL_NOT):
         return "purple"
-    elif level in (LevelCollection.SHOULD, LevelCollection.RECOMMENDED):
+    if level in (LevelCollection.SHOULD, LevelCollection.RECOMMENDED):
         return "orange1"
-    elif level == LevelCollection.SHOULD_NOT:
+    if level == LevelCollection.SHOULD_NOT:
         return "lightyellow"
-    elif level in (LevelCollection.MAY, LevelCollection.OPTIONAL):
+    if level in (LevelCollection.MAY, LevelCollection.OPTIONAL):
         return "yellow"
-    else:
-        return "white"
+    return "white"

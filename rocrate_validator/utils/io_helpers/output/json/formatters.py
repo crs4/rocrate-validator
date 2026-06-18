@@ -13,13 +13,17 @@
 # limitations under the License.
 
 import json
+from typing import Any
 
 from rich.console import ConsoleOptions, RenderResult
 
+from rocrate_validator.models import (
+    AggregatedValidationStatistics,
+    CustomEncoder,
+    ValidationResult,
+    ValidationStatistics,
+)
 from rocrate_validator.utils import log as logging
-from rocrate_validator.models import (AggregatedValidationStatistics,
-                                      CustomEncoder, ValidationResult,
-                                      ValidationStatistics)
 from rocrate_validator.utils.io_helpers.output import OutputFormatter
 from rocrate_validator.utils.io_helpers.output.console import Console
 from rocrate_validator.utils.versioning import get_version
@@ -28,19 +32,20 @@ from rocrate_validator.utils.versioning import get_version
 logger = logging.getLogger(__name__)
 
 
-def format_validation_result(data: ValidationResult,
-                             console: Console,
-                             console_options: ConsoleOptions) -> str:
-    return format_validation_results({data.context.profile_identifier: data},
-                                     console=console, console_options=console_options)
+def format_validation_result(data: ValidationResult, console: Console, console_options: ConsoleOptions) -> str:
+    return format_validation_results(
+        {data.context.profile_identifier: data}, console=console, console_options=console_options
+    )
 
 
-def format_validation_results(data: ValidationResult,
-                              console: Console = None,
-                              console_options: ConsoleOptions = None) -> str:
+def format_validation_results(
+    data: dict[str, ValidationResult],
+    console: Console | None = None,  # pylint: disable=unused-argument
+    console_options: ConsoleOptions | None = None,  # pylint: disable=unused-argument
+) -> str:
 
     # Initialize an empty JSON output
-    json_output = {
+    json_output: dict[str, Any] = {
         "meta": {
             "generated_by": "rocrate-validator",
             "version": get_version(),
@@ -62,17 +67,15 @@ def format_validation_results(data: ValidationResult,
     verbose = settings.verbose if settings else False
 
     # Set the list of validation profiles
-    json_output["validation_settings"]["profile_identifiers"] = [
-        profile_identifier for profile_identifier in data.keys()
-    ]
+    json_output["validation_settings"]["profile_identifiers"] = list(data)
 
     # Initialize the overall passed status
     json_output["passed"] = True
 
     # Initialize the profile results dictionary
-    _RESULTS_KEY = "validation_results_by_profile"
+    results_key = "validation_results_by_profile"
     if verbose:
-        json_output[_RESULTS_KEY] = {}
+        json_output[results_key] = {}
 
     # Iterate over each validation result
     for profile_identifier, result in data.items():
@@ -84,7 +87,7 @@ def format_validation_results(data: ValidationResult,
             result_dict["statistics"] = result.statistics.to_dict()
         # Add the result to the profiles dictionary in verbose mode
         if verbose:
-            json_output[_RESULTS_KEY][profile_identifier] = result_dict
+            json_output[results_key][profile_identifier] = result_dict
         # Update the overall passed status
         json_output["passed"] = json_output["passed"] and result.passed()
         # Update the overall list of issues
@@ -93,19 +96,31 @@ def format_validation_results(data: ValidationResult,
         json_output["issues"].extend(result_dict.get("issues", []))
 
     # Add overall statistics
-    stats = AggregatedValidationStatistics([r.statistics for r in results if r.statistics])
-    if stats:
-        stats_dict = stats.to_dict()
-        # If not verbose, remove detailed lists from statistics
-        if not verbose:
-            for key in ["passed_requirements", "failed_requirements",
-                        "passed_checks", "failed_checks", "checks", "requirements"]:
-                if key in stats_dict:
-                    stats_dict.pop(key, None)
+    stats_dict = _compute_overall_statistics(results, verbose=verbose)
+    if stats_dict is not None:
         json_output["statistics"] = stats_dict
 
     # Return the formatted JSON output
     return json.dumps(json_output, indent=4, cls=CustomEncoder)
+
+
+def _compute_overall_statistics(results: list[ValidationResult], verbose: bool) -> dict[str, Any] | None:
+    """Aggregate per-result statistics, dropping detailed lists unless verbose."""
+    stats = AggregatedValidationStatistics([r.statistics for r in results if r.statistics])
+    if not stats:
+        return None
+    stats_dict = stats.to_dict()
+    if not verbose:
+        for key in (
+            "passed_requirements",
+            "failed_requirements",
+            "passed_checks",
+            "failed_checks",
+            "checks",
+            "requirements",
+        ):
+            stats_dict.pop(key, None)
+    return stats_dict
 
 
 def format_validation_statistics(data: ValidationStatistics) -> str:
@@ -113,7 +128,6 @@ def format_validation_statistics(data: ValidationStatistics) -> str:
 
 
 class ValidationResultJSONOutputFormatter(OutputFormatter):
-
     def __init__(self, result: ValidationResult):
         self._result = result
 
@@ -122,7 +136,6 @@ class ValidationResultJSONOutputFormatter(OutputFormatter):
 
 
 class ValidationStatisticsJSONOutputFormatter(OutputFormatter):
-
     def __init__(self, statistics: ValidationStatistics):
         self._statistics = statistics
 
@@ -131,7 +144,6 @@ class ValidationStatisticsJSONOutputFormatter(OutputFormatter):
 
 
 class ValidationResultsJSONOutputFormatter(OutputFormatter):
-
     def __init__(self, results: dict[str, ValidationResult]):
         self._results = results
 

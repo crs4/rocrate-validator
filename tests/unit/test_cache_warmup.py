@@ -17,16 +17,23 @@
 from __future__ import annotations
 
 import io
+from typing import TYPE_CHECKING, cast
 
 import pytest
 import urllib3
 
 from rocrate_validator.models import Profile
 from rocrate_validator.utils.cache_warmup import (
-    auto_warm_up_for_settings, discover_cacheable_urls_from_profiles,
-    discover_profile_cacheable_urls, warm_up_urls)
+    auto_warm_up_for_settings,
+    discover_cacheable_urls_from_profiles,
+    discover_profile_cacheable_urls,
+    warm_up_urls,
+)
 from rocrate_validator.utils.http import HttpRequester
 from rocrate_validator.utils.paths import get_profiles_path
+
+if TYPE_CHECKING:
+    from rocrate_validator.models import ValidationSettings
 
 PROFILE_TTL_TEMPLATE = """
 @prefix dct: <http://purl.org/dc/terms/> .
@@ -76,7 +83,7 @@ def sample_profile(tmp_path):
 
 @pytest.fixture
 def mock_network(monkeypatch):
-    from requests.adapters import HTTPAdapter
+    from requests.adapters import HTTPAdapter  # type: ignore[import-untyped]
 
     def fake_send(self, request, **kwargs):
         raw = urllib3.HTTPResponse(
@@ -104,10 +111,9 @@ def test_discover_urls_on_multiple_profiles_deduplicates(sample_profile, tmp_pat
     other_dir = tmp_path / "sample_other"
     other_dir.mkdir()
     (other_dir / "profile.ttl").write_text(
-        PROFILE_TTL_TEMPLATE
-        .replace("<https://example.org/profiles/sample>",
-                 "<https://example.org/profiles/other>")
-        .replace('prof:hasToken "sample"', 'prof:hasToken "other"')
+        PROFILE_TTL_TEMPLATE.replace(
+            "<https://example.org/profiles/sample>", "<https://example.org/profiles/other>"
+        ).replace('prof:hasToken "sample"', 'prof:hasToken "other"')
     )
     other_profile = Profile(profiles_base_path=tmp_path, profile_path=other_dir)
     aggregated = discover_cacheable_urls_from_profiles([sample_profile, other_profile])
@@ -146,7 +152,7 @@ def test_auto_warm_up_noop_when_offline(tmp_path):
         profiles_path = get_profiles_path()
         extra_profiles_path = None
 
-    assert auto_warm_up_for_settings(_Settings()) is None
+    assert auto_warm_up_for_settings(cast("ValidationSettings", _Settings())) is None
 
 
 def test_auto_warm_up_disabled_via_env(monkeypatch, tmp_path):
@@ -159,7 +165,7 @@ def test_auto_warm_up_disabled_via_env(monkeypatch, tmp_path):
         profiles_path = get_profiles_path()
         extra_profiles_path = None
 
-    assert auto_warm_up_for_settings(_Settings()) is None
+    assert auto_warm_up_for_settings(cast("ValidationSettings", _Settings())) is None
 
 
 def test_auto_warm_up_noop_when_no_cache_path():
@@ -170,4 +176,4 @@ def test_auto_warm_up_noop_when_no_cache_path():
         profiles_path = get_profiles_path()
         extra_profiles_path = None
 
-    assert auto_warm_up_for_settings(_Settings()) is None
+    assert auto_warm_up_for_settings(cast("ValidationSettings", _Settings())) is None

@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 def test_procrc_collection_not_mentioned():
-    """\
+    """
     Test a Process Run Crate where the collection is not listed in the Root
     Data Entity's mentions.
     """
@@ -33,12 +33,12 @@ def test_procrc_collection_not_mentioned():
         False,
         ["Process Run Crate Collection SHOULD"],
         ["The Collection SHOULD be referenced from the Root Data Entity via mentions"],
-        profile_identifier="process-run-crate"
+        profile_identifier="process-run-crate",
     )
 
 
 def test_procrc_collection_no_haspart():
-    """\
+    """
     Test a Process Run Crate where the collection does not have a hasPart.
     """
     do_entity_test(
@@ -47,12 +47,12 @@ def test_procrc_collection_no_haspart():
         False,
         ["Process Run Crate Collection SHOULD"],
         ["The Collection SHOULD have a hasPart"],
-        profile_identifier="process-run-crate"
+        profile_identifier="process-run-crate",
     )
 
 
 def test_procrc_collection_no_mainentity():
-    """\
+    """
     Test a Process Run Crate where the collection does not have a mainEntity.
     """
     do_entity_test(
@@ -61,5 +61,5 @@ def test_procrc_collection_no_mainentity():
         False,
         ["Process Run Crate Collection SHOULD"],
         ["The Collection SHOULD have a mainEntity"],
-        profile_identifier="process-run-crate"
+        profile_identifier="process-run-crate",
     )

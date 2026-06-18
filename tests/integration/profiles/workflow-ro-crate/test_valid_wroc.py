@@ -29,12 +29,12 @@ def test_valid_workflow_roc_required():
         Severity.REQUIRED,
         True,
         profile_identifier="workflow-ro-crate",
-        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER]
+        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER],
     )
     do_entity_test(
         ValidROC().workflow_roc_string_license,
         Severity.REQUIRED,
         True,
         profile_identifier="workflow-ro-crate",
-        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER]
+        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER],
     )

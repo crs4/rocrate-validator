@@ -20,11 +20,12 @@ import json
 import logging
 import shutil
 import tempfile
-import rdflib
 from collections.abc import Collection
 from pathlib import Path
-from typing import Optional, TypeVar, Union
+from typing import TypeVar
 from urllib.parse import urljoin
+
+import rdflib
 
 from rocrate_validator import models, services
 from rocrate_validator.constants import DEFAULT_PROFILE_IDENTIFIER
@@ -34,8 +35,7 @@ logger = logging.getLogger(__name__)
 
 T = TypeVar("T")
 
-SPARQL_PREFIXES = """PREFIX schema: <http://schema.org/>
-"""
+SPARQL_PREFIXES = "PREFIX schema: <http://schema.org/>"
 
 
 def first(c: Collection[T]) -> T:
@@ -50,9 +50,7 @@ def load_graph_and_preserve_relative_ids(json_data, base="http://example.org/"):
         if isinstance(obj, dict):
             if "@id" in obj:
                 idv = obj["@id"]
-                if isinstance(idv, str) and (
-                    idv.startswith("./") or idv.startswith("../") or idv.startswith("#")
-                ):
+                if isinstance(idv, str) and idv.startswith(("./", "../", "#")):
                     rel_ids.add(idv)
             for v in obj.values():
                 collect_ids(v)
@@ -91,20 +89,57 @@ def load_graph_and_preserve_relative_ids(json_data, base="http://example.org/"):
     return g
 
 
-def do_entity_test(
-    rocrate_path: Union[Path, str],
+def _prepare_temp_rocrate(
+    rocrate_path: Path,
+    rocrate_entity_patch: dict | None,
+    rocrate_entity_mod_sparql: str | None,
+) -> Path:
+    # `mkdtemp` returns a stable path the test owns; `TemporaryDirectory().name`
+    # was deleted on GC before copytree ran. `dirs_exist_ok=True` lets us copy
+    # into the (already-created) mkdtemp directory.
+    temp_rocrate_path = Path(tempfile.mkdtemp())
+    shutil.copytree(rocrate_path, temp_rocrate_path, dirs_exist_ok=True)
+    with (temp_rocrate_path / "ro-crate-metadata.json").open(encoding="utf-8") as f:
+        rocrate = json.load(f)
+    if rocrate_entity_patch is not None:
+        for key, value in rocrate_entity_patch.items():
+            for entity in rocrate["@graph"]:
+                if entity["@id"] == key:
+                    entity.update(value)
+                    break
+        with (temp_rocrate_path / "ro-crate-metadata.json").open("w", encoding="utf-8") as f:
+            json.dump(rocrate, f)
+    if rocrate_entity_mod_sparql is not None:
+        rocrate_graph = load_graph_and_preserve_relative_ids(rocrate)
+        rocrate_graph.update(rocrate_entity_mod_sparql)
+        context_uri = "https://w3id.org/ro/crate/1.1/context"
+        rocrate_graph.serialize(
+            Path(temp_rocrate_path, "ro-crate-metadata.json"),
+            format="json-ld",
+            context=context_uri,
+            indent=2,
+            use_native_types=True,
+        )
+    return temp_rocrate_path
+
+
+def do_entity_test(  # pylint: disable=too-many-locals
+    # Shared test driver: the long signature mirrors `ValidationSettings`
+    # plus the assertion-shaping knobs, so locals scale with the surface area
+    # it has to cover. Splitting it would only push the locals to the caller.
+    rocrate_path: Path | str,
     requirement_severity: models.Severity,
     expected_validation_result: bool,
-    expected_triggered_requirements: Optional[list[str]] = None,
-    expected_triggered_issues: Optional[list[str]] = None,
+    expected_triggered_requirements: list[str] | None = None,
+    expected_triggered_issues: list[str] | None = None,
     abort_on_first: bool = False,
     profile_identifier: str = DEFAULT_PROFILE_IDENTIFIER,
-    rocrate_entity_patch: Optional[dict] = None,
-    rocrate_entity_mod_sparql: Optional[str] = None,
-    skip_checks: Optional[list[str]] = (),
-    rocrate_relative_root_path: Optional[str] = None,
+    rocrate_entity_patch: dict | None = None,
+    rocrate_entity_mod_sparql: str | None = None,
+    skip_checks: list[str] | None = None,
+    rocrate_relative_root_path: str | None = None,
     metadata_only: bool = False,
-    metadata_dict: Optional[dict] = None,
+    metadata_dict: dict | None = None,
     **kwargs,
 ):
     """
@@ -112,9 +147,9 @@ def do_entity_test(
 
     Additional keyword arguments (kwargs) are passed along to initialise ValidationSettings.
     """
-    assert not (
-        rocrate_entity_patch and rocrate_entity_mod_sparql
-    ), "Cannot use rocrate_entity_patch and rocrate_entity_mod_sparql together"
+    assert not (rocrate_entity_patch and rocrate_entity_mod_sparql), (
+        "Cannot use rocrate_entity_patch and rocrate_entity_mod_sparql together"
+    )
 
     # declare variables
     failed_requirements = None
@@ -124,39 +159,12 @@ def do_entity_test(
         rocrate_path = Path(rocrate_path)
 
     temp_rocrate_path = None
-    if any([rocrate_entity_patch, rocrate_entity_mod_sparql]) and rocrate_path.is_dir():
-        # create a temporary copy of the RO-Crate
-        temp_rocrate_path = Path(tempfile.TemporaryDirectory().name)
-        # copy the RO-Crate to the temporary path using shutil
-        shutil.copytree(rocrate_path, temp_rocrate_path)
-        # load the RO-Crate metadata as RO-Crate JSON-LD
-        with open(temp_rocrate_path / "ro-crate-metadata.json", "r") as f:
-            rocrate = json.load(f)
-        # update the RO-Crate metadata with the patch
-        if rocrate_entity_patch is not None:
-            for key, value in rocrate_entity_patch.items():
-                for entity in rocrate["@graph"]:
-                    if entity["@id"] == key:
-                        entity.update(value)
-                        break
-            # save the updated RO-Crate metadata
-            with open(temp_rocrate_path / "ro-crate-metadata.json", "w") as f:
-                json.dump(rocrate, f)
-        # update the RO-Crate metadata using SPARQL, if required
-        if rocrate_entity_mod_sparql is not None:
-            rocrate_graph = load_graph_and_preserve_relative_ids(rocrate)
-
-            rocrate_graph.update(rocrate_entity_mod_sparql)
-
-            # save the updated RO-Crate metadata
-            context = "https://w3id.org/ro/crate/1.1/context"
-            rocrate_graph.serialize(
-                Path(temp_rocrate_path, "ro-crate-metadata.json"),
-                format="json-ld",
-                context=context,
-                indent=2,
-                use_native_types=True,
-            )
+    if (
+        any([rocrate_entity_patch, rocrate_entity_mod_sparql])
+        and isinstance(rocrate_path, Path)
+        and rocrate_path.is_dir()
+    ):
+        temp_rocrate_path = _prepare_temp_rocrate(rocrate_path, rocrate_entity_patch, rocrate_entity_mod_sparql)
         rocrate_path = temp_rocrate_path
 
     if expected_triggered_requirements is None:
@@ -169,75 +177,63 @@ def do_entity_test(
         logger.debug("Requirement severity: %s", requirement_severity)
         logger.debug("Checks to skip: %s", skip_checks)
 
-        # set abort_on_first to False
-        abort_on_first = abort_on_first
-
         # validate RO-Crate
+        relative_root_path = Path(rocrate_relative_root_path) if rocrate_relative_root_path is not None else None
         result: models.ValidationResult = services.validate(
             models.ValidationSettings(
-                **{
-                    "rocrate_uri": rocrate_path,
-                    "requirement_severity": requirement_severity,
-                    "abort_on_first": abort_on_first,
-                    "profile_identifier": profile_identifier,
-                    "skip_checks": skip_checks,
-                    "rocrate_relative_root_path": rocrate_relative_root_path,
-                    "metadata_only": metadata_only,
-                    "metadata_dict": metadata_dict,
-                },
+                rocrate_uri=models.URI(rocrate_path),
+                requirement_severity=requirement_severity,
+                abort_on_first=abort_on_first,
+                profile_identifier=profile_identifier,
+                skip_checks=skip_checks,
+                rocrate_relative_root_path=relative_root_path,
+                metadata_only=metadata_only,
+                metadata_dict=metadata_dict,
                 **kwargs,
             )
         )
         logger.debug("Expected validation result: %s", expected_validation_result)
 
         assert result.context is not None, "Validation context should not be None"
-        f"Expected requirement severity to be {requirement_severity}, but got {result.context.requirement_severity}"
-        assert (
-            result.passed() == expected_validation_result
-        ), f"RO-Crate should be {'valid' if expected_validation_result else 'invalid'}"
+        logger.debug(
+            "Expected requirement severity to be %s, got %s",
+            requirement_severity,
+            result.context.requirement_severity,
+        )
+        assert result.passed() == expected_validation_result, (
+            f"RO-Crate should be {'valid' if expected_validation_result else 'invalid'}"
+        )
 
         # check requirement
         failed_requirements = [_.name for _ in result.failed_requirements]
-        # assert len(failed_requirements) == len(expected_triggered_requirements), \
-        #     f"Expected {len(expected_triggered_requirements)} requirements to be "\
-        #     f"triggered, but got {len(failed_requirements)}"
 
         # check that the expected requirements are triggered
         for expected_triggered_requirement in expected_triggered_requirements:
             if expected_triggered_requirement not in failed_requirements:
-                assert False, (
+                raise AssertionError(
                     f"The expected requirement "
                     f'"{expected_triggered_requirement}" was not found in the failed requirements'
                 )
 
         # check requirement issues
         detected_issues = [
-            issue.message
-            for issue in result.get_issues(requirement_severity)
-            if issue.message is not None
+            issue.message for issue in result.get_issues(requirement_severity) if issue.message is not None
         ]
         logger.debug("Detected issues: %s", detected_issues)
         logger.debug("Expected issues: %s", expected_triggered_issues)
         for expected_issue in expected_triggered_issues:
-            if not any(
-                expected_issue in issue for issue in detected_issues
-            ):  # support partial match
-                assert (
-                    False
-                ), f'The expected issue "{expected_issue}" was not found in the detected issues'
-    except Exception as e:
+            if not any(expected_issue in issue for issue in detected_issues):  # support partial match
+                raise AssertionError(f'The expected issue "{expected_issue}" was not found in the detected issues')
+    except Exception:
         if logger.isEnabledFor(logging.DEBUG):
-            logger.exception(e)
-            logger.debug("Failed to validate RO-Crate @ path: %s", rocrate_path)
+            logger.exception("Failed to validate RO-Crate @ path: %s", rocrate_path)
             logger.debug("Requirement severity: %s", requirement_severity)
             logger.debug("Expected validation result: %s", expected_validation_result)
-            logger.debug(
-                "Expected triggered requirements: %s", expected_triggered_requirements
-            )
+            logger.debug("Expected triggered requirements: %s", expected_triggered_requirements)
             logger.debug("Expected triggered issues: %s", expected_triggered_issues)
             logger.debug("Failed requirements: %s", failed_requirements)
             logger.debug("Detected issues: %s", detected_issues)
-        raise e
+        raise
     finally:
         # cleanup
         if temp_rocrate_path is not None:

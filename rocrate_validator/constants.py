@@ -64,31 +64,56 @@ RDF_SERIALIZATION_FILE_FORMAT_MAP = {
     "n3": "n3",
     "turtle": "ttl",
     "nt": "nt",
-    "json-ld": "json-ld"
+    "json-ld": "json-ld",
 }
 
 # Define allowed RDF serialization formats
 RDF_SERIALIZATION_FORMATS_TYPES = typing.Literal[
-    "xml", "pretty-xml", "trig", "n3", "turtle", "nt", "json-ld"
+    "xml",
+    "pretty-xml",
+    "trig",
+    "n3",
+    "turtle",
+    "nt",
+    "json-ld",
 ]
 RDF_SERIALIZATION_FORMATS = typing.get_args(RDF_SERIALIZATION_FORMATS_TYPES)
 
 # Define allowed inference options
-VALID_INFERENCE_OPTIONS_TYPES = typing.Literal["owlrl", "rdfs", "both", None]
+VALID_INFERENCE_OPTIONS_TYPES = typing.Literal["owlrl", "rdfs", "both"] | None
 VALID_INFERENCE_OPTIONS = typing.get_args(VALID_INFERENCE_OPTIONS_TYPES)
 
 # Define allowed requirement levels
 VALID_REQUIREMENT_LEVELS_TYPES = typing.Literal[
-    'MAY', 'OPTIONAL', 'SHOULD', 'SHOULD_NOT',
-    'REQUIRED', 'MUST', 'MUST_NOT', 'SHALL', 'SHALL_NOT', 'RECOMMENDED'
+    "MAY",
+    "OPTIONAL",
+    "SHOULD",
+    "SHOULD_NOT",
+    "REQUIRED",
+    "MUST",
+    "MUST_NOT",
+    "SHALL",
+    "SHALL_NOT",
+    "RECOMMENDED",
 ]
 
 # Current JSON output format
 JSON_OUTPUT_FORMAT_VERSION = "0.2"
 
+# HTTP Status Codes
+HTTP_STATUS_OK = 200
+HTTP_STATUS_BAD_REQUEST = 400
+HTTP_STATUS_GATEWAY_TIMEOUT = 504
+
+# Number of bytes per kibibyte
+BYTES_PER_KIB = 1024
+
+# Expected number of parameters for check function signatures
+EXPECTED_CHECK_PARAM_COUNT = 2
+
 # Http Cache Settings
 DEFAULT_HTTP_CACHE_MAX_AGE = -1  # in seconds; negative means "never expire"
-DEFAULT_HTTP_CACHE_PATH_PREFIX = '/tmp/rocrate_validator_cache'
+DEFAULT_HTTP_CACHE_PATH_PREFIX = "/tmp/rocrate_validator_cache"
 # Directory name used under the user's cache root for the persistent HTTP cache
 USER_CACHE_DIR_NAME = "rocrate-validator"
 # Filename (without extension) of the persistent HTTP cache under the user cache dir

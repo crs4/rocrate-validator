@@ -77,4 +77,3 @@ ro-crate:Directory rdf:type owl:Class ;
 
 # Declare the individual representing the RO-Crate Metadata File Descriptor entity
 ro:ro-crate-metadata.json a owl:NamedIndividual, ro-crate:ROCrateMetadataFileDescriptor .
-

@@ -15,50 +15,52 @@
 from __future__ import annotations
 
 import sys
-from typing import Optional
+from typing import TYPE_CHECKING
 
-from InquirerPy import prompt
 from InquirerPy.base.control import Choice
-from rich.console import Console
+from InquirerPy.resolver import prompt
 
 from rocrate_validator.utils import log as logging
-from rocrate_validator.models import Profile
+
+if TYPE_CHECKING:
+    from rich.console import Console
+
+    from rocrate_validator.models import Profile
 
 # set up logging
 logger = logging.getLogger(__name__)
 
 
-def __get_single_char_win32__(console: Optional[Console] = None, end: str = "\n",
-                              message: Optional[str] = None,
-                              choices: Optional[list[str]] = None) -> str:
+def __get_single_char_win32__(
+    console: Console | None = None, end: str = "\n", message: str | None = None, choices: list[str] | None = None
+) -> str:
     """
     Get a single character from the console
     """
-    import msvcrt
+    import msvcrt  # noqa: PLC0415
 
     char = None
     while char is None or (choices and char not in choices):
         if console and message:
             console.print(f"\n{message}", end="")
         try:
-            char = msvcrt.getch().decode()
+            char = msvcrt.getch().decode()  # type: ignore[attr-defined]  # Windows-only
         finally:
             if console:
                 console.print(char, end=end if choices and char in choices else "")
-        if choices and char not in choices:
-            if console:
-                console.print(" [bold red]INVALID CHOICE[/bold red]", end=end)
+        if choices and char not in choices and console:
+            console.print(" [bold red]INVALID CHOICE[/bold red]", end=end)
     return char
 
 
-def __get_single_char_unix__(console: Optional[Console] = None, end: str = "\n",
-                             message: Optional[str] = None,
-                             choices: Optional[list[str]] = None) -> str:
+def __get_single_char_unix__(
+    console: Console | None = None, end: str = "\n", message: str | None = None, choices: list[str] | None = None
+) -> str:
     """
     Get a single character from the console
     """
-    import termios
-    import tty
+    import termios  # noqa: PLC0415
+    import tty  # noqa: PLC0415
 
     fd = sys.stdin.fileno()
     old_settings = termios.tcgetattr(fd)
@@ -75,15 +77,14 @@ def __get_single_char_unix__(console: Optional[Console] = None, end: str = "\n",
             termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
             if console:
                 console.print(char, end=end if choices and char in choices else "")
-        if choices and char not in choices:
-            if console:
-                console.print(" [bold red]INVALID CHOICE[/bold red]", end=end)
+        if choices and char not in choices and console:
+            console.print(" [bold red]INVALID CHOICE[/bold red]", end=end)
     return char
 
 
-def get_single_char(console: Optional[Console] = None, end: str = "\n",
-                    message: Optional[str] = None,
-                    choices: Optional[list[str]] = None) -> str:
+def get_single_char(
+    console: Console | None = None, end: str = "\n", message: str | None = None, choices: list[str] | None = None
+) -> str:
     """
     Get a single character from the console
     """
@@ -92,8 +93,7 @@ def get_single_char(console: Optional[Console] = None, end: str = "\n",
     return __get_single_char_unix__(console, end, message, choices)
 
 
-def multiple_choice(console: Console,
-                    choices: list[Profile]):
+def multiple_choice(console: Console, choices: list[Profile]):
     """
     Display a multiple choice menu
     """
@@ -106,14 +106,14 @@ def multiple_choice(console: Console,
             "type": "checkbox",
             "name": "profiles",
             "message": prompt_text,
-            "choices": [Choice(i, f"{choices[i].identifier}: {choices[i].name}") for i in range(0, len(choices))]
+            "choices": [Choice(i, f"{choices[i].identifier}: {choices[i].name}") for i in range(len(choices))],
         }
     ]
     console.print("\n")
-    selected = prompt(question, style={"questionmark": "#ff9d00 bold",
-                                       "question": "bold",
-                                       "checkbox": "magenta",
-                                       "answer": "magenta"},
-                      style_override=False)
+    selected = prompt(
+        question,
+        style={"questionmark": "#ff9d00 bold", "question": "bold", "checkbox": "magenta", "answer": "magenta"},
+        style_override=False,
+    )
     logger.debug("Selected profiles: %s", selected)
     return selected["profiles"]

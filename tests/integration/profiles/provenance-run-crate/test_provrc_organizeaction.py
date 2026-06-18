@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 def test_provrc_organizeaction_no_instrument():
-    """\
+    """
     Test a Provenance Run Crate where an OrganizeAction has no instrument.
     """
     do_entity_test(
@@ -31,14 +31,16 @@ def test_provrc_organizeaction_no_instrument():
         Severity.REQUIRED,
         False,
         ["ProvRC OrganizeAction MUST"],
-        ["An OrganizeAction must reference an entity representing the "
-         "workflow engine (e.g. a SoftwareApplication) via instrument"],
-        profile_identifier="provenance-run-crate"
+        [
+            "An OrganizeAction must reference an entity representing the "
+            "workflow engine (e.g. a SoftwareApplication) via instrument"
+        ],
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_provrc_organizeaction_bad_instrument():
-    """\
+    """
     Test a Provenance Run Crate where an OrganizeAction does not reference
     an application via instrument.
     """
@@ -47,14 +49,16 @@ def test_provrc_organizeaction_bad_instrument():
         Severity.REQUIRED,
         False,
         ["ProvRC OrganizeAction MUST"],
-        ["An OrganizeAction must reference an entity representing the "
-         "workflow engine (e.g. a SoftwareApplication) via instrument"],
-        profile_identifier="provenance-run-crate"
+        [
+            "An OrganizeAction must reference an entity representing the "
+            "workflow engine (e.g. a SoftwareApplication) via instrument"
+        ],
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_provrc_organizeaction_no_result():
-    """\
+    """
     Test a Provenance Run Crate where an OrganizeAction has no result.
     """
     do_entity_test(
@@ -63,12 +67,12 @@ def test_provrc_organizeaction_no_result():
         False,
         ["ProvRC OrganizeAction MUST"],
         ["An OrganizeAction must reference the action representing the workflow run via result"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_provrc_organizeaction_bad_result():
-    """\
+    """
     Test a Provenance Run Crate where an OrganizeAction does not reference an
     action via result.
     """
@@ -78,12 +82,12 @@ def test_provrc_organizeaction_bad_result():
         False,
         ["ProvRC OrganizeAction MUST"],
         ["An OrganizeAction must reference the action representing the workflow run via result"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_provrc_organizeaction_no_object():
-    """\
+    """
     Test a Provenance Run Crate where an OrganizeAction has no object.
     """
     do_entity_test(
@@ -92,12 +96,12 @@ def test_provrc_organizeaction_no_object():
         False,
         ["ProvRC OrganizeAction MUST"],
         ["An OrganizeAction must reference the ControlAction instances representing the step executions via object"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_provrc_organizeaction_bad_object():
-    """\
+    """
     Test a Provenance Run Crate where an OrganizeAction object does not point
     to a ControlAction.
     """
@@ -107,12 +111,12 @@ def test_provrc_organizeaction_bad_object():
         False,
         ["ProvRC OrganizeAction MUST"],
         ["An OrganizeAction must reference the ControlAction instances representing the step executions via object"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_provrc_organizeaction_no_actionstatus():
-    """\
+    """
     Test a Provenance Run Crate where an OrganizeAction has no actionStatus.
     """
     do_entity_test(
@@ -121,12 +125,12 @@ def test_provrc_organizeaction_no_actionstatus():
         False,
         ["ProvRC ControlAction and OrganizeAction MAY"],
         ["The Action MAY have an actionStatus"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_provrc_organizeaction_bad_actionstatus():
-    """\
+    """
     Test a Provenance Run Crate where an OrganizeAction has an invalid
     actionStatus.
     """
@@ -135,15 +139,17 @@ def test_provrc_organizeaction_bad_actionstatus():
         Severity.RECOMMENDED,
         False,
         ["ProvRC ControlAction and OrganizeAction SHOULD"],
-        ["If the action has an actionStatus, it should be "
-         "http://schema.org/CompletedActionStatus or "
-         "http://schema.org/FailedActionStatus"],
-        profile_identifier="provenance-run-crate"
+        [
+            "If the action has an actionStatus, it should be "
+            "http://schema.org/CompletedActionStatus or "
+            "http://schema.org/FailedActionStatus"
+        ],
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_provrc_organizeaction_no_error():
-    """\
+    """
     Test a Provenance Run Crate where an OrganizeAction with an actionStatus
     set to FailedActionStatus has no error.
     """
@@ -153,12 +159,12 @@ def test_provrc_organizeaction_no_error():
         False,
         ["ProvRC ControlAction and OrganizeAction error"],
         ["error MAY be specified if actionStatus is set to FailedActionStatus"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_provrc_organizeaction_error_not_failed_status():
-    """\
+    """
     Test a Provenance Run Crate where an OrganizeAction with an actionStatus
     different from FailedActionStatus sets the error property
     """
@@ -168,5 +174,5 @@ def test_provrc_organizeaction_error_not_failed_status():
         False,
         ["Provenance Run Crate ControlAction and OrganizeAction error"],
         ["error SHOULD NOT be specified unless actionStatus is set to FailedActionStatus"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )

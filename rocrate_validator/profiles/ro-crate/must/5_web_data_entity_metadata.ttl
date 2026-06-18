@@ -26,7 +26,7 @@
 ro-crate:WebBasedDataEntity a sh:NodeShape, validator:HiddenShape ;
     sh:name "Web-based Data Entity: REQUIRED properties" ;
     sh:description """A Web-based Data Entity is a `File` identified by an absolute URL""" ;
-    
+
     sh:target [
         a sh:SPARQLTarget ;
         sh:prefixes ro-crate:sparqlPrefixes ;
@@ -47,4 +47,3 @@ ro-crate:WebBasedDataEntity a sh:NodeShape, validator:HiddenShape ;
         sh:predicate rdf:type ;
         sh:object ro-crate:WebDataEntity ;
     ] .
-

@@ -27,14 +27,15 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Iterable, List, Optional, Sequence
+from typing import TYPE_CHECKING, Any, cast  # pylint: disable=unused-import
 
 from rocrate_validator import constants
 from rocrate_validator.utils import log as logging
-from rocrate_validator.utils.http import (OFFLINE_CACHE_MISS_STATUS,
-                                          HttpRequester)
+from rocrate_validator.utils.http import OFFLINE_CACHE_MISS_STATUS, HttpRequester
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable, Sequence
+
     from rocrate_validator.models import Profile, ValidationSettings
 
 # set up logging
@@ -61,12 +62,13 @@ WHERE {
 @dataclass
 class WarmUpResult:
     """Outcome of a warm-up operation."""
+
     url: str
     status: str  # "ok", "skipped", "failed"
-    detail: Optional[str] = None
+    detail: str | None = None
 
 
-def discover_profile_cacheable_urls(profile: "Profile") -> List[str]:
+def discover_profile_cacheable_urls(profile: Profile) -> list[str]:
     """
     Return the list of HTTP(S) URLs declared by ``profile`` as cacheable
     artifacts. Returns an empty list when the profile has no declared
@@ -74,31 +76,29 @@ def discover_profile_cacheable_urls(profile: "Profile") -> List[str]:
     """
     graph = profile.profile_specification_graph
     if graph is None:
-        logger.debug(
-            "Profile %s has no specification graph loaded", getattr(profile, "identifier", "?"))
+        logger.debug("Profile %s has no specification graph loaded", getattr(profile, "identifier", "?"))
         return []
-    urls: List[str] = []
+    urls: list[str] = []
     try:
         for row in graph.query(_CACHEABLE_URLS_SPARQL):
-            artifact = row.artifact
+            artifact = cast("Any", row).artifact
             if artifact is None:
                 continue
             value = str(artifact)
             if value.lower().startswith(("http://", "https://")) and value not in urls:
                 urls.append(value)
     except Exception as e:
-        logger.debug("Failed to query cacheable URLs for profile %s: %s",
-                     getattr(profile, "identifier", "?"), e)
+        logger.debug("Failed to query cacheable URLs for profile %s: %s", getattr(profile, "identifier", "?"), e)
     return urls
 
 
-def discover_cacheable_urls_from_profiles(profiles: Iterable["Profile"]) -> List[str]:
+def discover_cacheable_urls_from_profiles(profiles: Iterable[Profile]) -> list[str]:
     """
     Aggregate cacheable URLs from the given profiles, preserving order and
     removing duplicates.
     """
     seen: set[str] = set()
-    result: List[str] = []
+    result: list[str] = []
     for profile in profiles:
         for url in discover_profile_cacheable_urls(profile):
             if url not in seen:
@@ -107,7 +107,7 @@ def discover_cacheable_urls_from_profiles(profiles: Iterable["Profile"]) -> List
     return result
 
 
-def warm_up_urls(urls: Sequence[str]) -> List[WarmUpResult]:
+def warm_up_urls(urls: Sequence[str]) -> list[WarmUpResult]:
     """
     Fetch each URL so that its response is stored in the HTTP cache.
 
@@ -115,23 +115,20 @@ def warm_up_urls(urls: Sequence[str]) -> List[WarmUpResult]:
     offline cache misses) are reported but do not raise.
     """
     requester = HttpRequester()
-    results: List[WarmUpResult] = []
+    results: list[WarmUpResult] = []
     offline = bool(getattr(requester, "offline", False))
     for url in urls:
         try:
             if requester.has_cached(url):
                 results.append(WarmUpResult(url=url, status="skipped", detail="already cached"))
                 continue
-            if offline:
-                response = requester.get(url)
-            else:
-                response = requester.fetch_fresh(url)
+            response = requester.get(url) if offline else requester.fetch_fresh(url)
             status_code = getattr(response, "status_code", None)
             if status_code is None:
                 results.append(WarmUpResult(url=url, status="failed", detail="no status code"))
             elif status_code == OFFLINE_CACHE_MISS_STATUS and offline:
                 results.append(WarmUpResult(url=url, status="failed", detail="offline cache miss"))
-            elif status_code >= 400:
+            elif status_code >= constants.HTTP_STATUS_BAD_REQUEST:
                 results.append(WarmUpResult(url=url, status="failed", detail=f"HTTP {status_code}"))
             else:
                 results.append(WarmUpResult(url=url, status="ok", detail=f"HTTP {status_code}"))
@@ -141,7 +138,22 @@ def warm_up_urls(urls: Sequence[str]) -> List[WarmUpResult]:
     return results
 
 
-def auto_warm_up_for_settings(settings: "ValidationSettings") -> Optional[List[WarmUpResult]]:
+def _get_profile_for_warmup(settings) -> Profile | None:
+    if getattr(settings, "offline", False):
+        return None
+    if getattr(settings, "cache_path", None) is None:
+        return None
+    env_value = os.environ.get(constants.AUTO_WARM_ENV_VAR, "1").strip().lower()
+    if env_value in {"0", "false", "no", "off"}:
+        logger.debug("Auto warm-up disabled via %s=%s", constants.AUTO_WARM_ENV_VAR, env_value)
+        return None
+    profile_identifier = getattr(settings, "profile_identifier", None)
+    if not profile_identifier:
+        return None
+    return _find_profile(profile_identifier, settings)
+
+
+def auto_warm_up_for_settings(settings: ValidationSettings) -> list[WarmUpResult] | None:
     """
     Perform a best-effort synchronous warm-up triggered by
     ``ValidationSettings.__post_init__``.
@@ -154,20 +166,7 @@ def auto_warm_up_for_settings(settings: "ValidationSettings") -> Optional[List[W
     - the environment variable ``ROCRATE_VALIDATOR_AUTO_WARM`` is set to a
       value disabling the feature (``0``, ``false``, ``no``, ``off``).
     """
-    if getattr(settings, "offline", False):
-        return None
-    if getattr(settings, "cache_path", None) is None:
-        return None
-    env_value = os.environ.get(constants.AUTO_WARM_ENV_VAR, "1").strip().lower()
-    if env_value in {"0", "false", "no", "off"}:
-        logger.debug("Auto warm-up disabled via %s=%s", constants.AUTO_WARM_ENV_VAR, env_value)
-        return None
-
-    profile_identifier = getattr(settings, "profile_identifier", None)
-    if not profile_identifier:
-        return None
-
-    profile = _find_profile(profile_identifier, settings)
+    profile = _get_profile_for_warmup(settings)
     if profile is None:
         return None
     urls = discover_profile_cacheable_urls(profile)
@@ -176,27 +175,29 @@ def auto_warm_up_for_settings(settings: "ValidationSettings") -> Optional[List[W
     requester = HttpRequester()
     urls_to_fetch = [u for u in urls if not requester.has_cached(u)]
     if not urls_to_fetch:
-        logger.debug("Auto warm-up: all %d resources already cached for profile %s",
-                     len(urls), profile_identifier)
+        logger.debug(
+            "Auto warm-up: all %d resources already cached for profile %s", len(urls), settings.profile_identifier
+        )
         return []
     results = warm_up_urls(urls_to_fetch)
     ok = sum(1 for r in results if r.status == "ok")
-    logger.info("Auto warm-up: pre-loaded %d/%d resources for profile %s",
-                ok, len(urls_to_fetch), profile_identifier)
+    logger.info(
+        "Auto warm-up: pre-loaded %d/%d resources for profile %s", ok, len(urls_to_fetch), settings.profile_identifier
+    )
     return results
 
 
-def _find_profile(identifier, settings) -> Optional["Profile"]:
+def _find_profile(identifier, settings) -> Profile | None:
     """
     Look up a loaded profile by identifier. Accepts either a string or a list
     (the settings sometimes store a list of identifiers).
     """
     # Import here to avoid a circular import with models.py.
-    from rocrate_validator.models import Profile
-    from rocrate_validator.utils.paths import get_profiles_path
+    from rocrate_validator.models import Profile  # noqa: PLC0415
+    from rocrate_validator.utils.paths import get_profiles_path  # noqa: PLC0415
 
     # Load profiles to ensure the requested one is available and its graph is parsed.
-    global __profiles_loaded
+    global __profiles_loaded  # noqa: PLW0603
     if not __profiles_loaded:
         profiles_path = getattr(settings, "profiles_path", None) or get_profiles_path()
         extra_profiles_path = getattr(settings, "extra_profiles_path", None)

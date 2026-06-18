@@ -27,7 +27,7 @@ isa-ro-crate:FindAssays a sh:NodeShape, validator:HiddenShape;
     sh:name "Identify Assays within the RO-Crate" ;
     sh:description "An Assay has type Dataset and additionalType 'Assay'." ;
     sh:targetClass schema:Dataset ;
-    sh:order 1 ; 
+    sh:order 1 ;
     # Expand data graph with triples from the file data entity
     sh:rule [
         a sh:TripleRule ;
@@ -53,7 +53,7 @@ isa-ro-crate:AssayMustHaveBaseDescriptors a sh:NodeShape ;
         sh:path schema:identifier ;
         sh:datatype xsd:string ;
         sh:minCount 1 ;
-        sh:maxCount 1 ; 
+        sh:maxCount 1 ;
         sh:not [
             sh:hasValue ""
         ] ;
@@ -70,9 +70,9 @@ isa-ro-crate:AssayMustBeReferencedFromInvestigation a sh:NodeShape ;
   sh:property[
         a sh:PropertyShape ;
         sh:path [ sh:inversePath schema:hasPart ] ;
-        sh:qualifiedValueShape [ 
+        sh:qualifiedValueShape [
             sh:or (
-                [ sh:class ro-crate:RootDataEntity ] 
+                [ sh:class ro-crate:RootDataEntity ]
                 [ sh:class isa-ro-crate:Study ]
             ) ;
         ] ;
@@ -92,7 +92,7 @@ isa-ro-crate:AssayRecommendedProperties a sh:NodeShape ;
         a sh:PropertyShape ;
         sh:path schema:name ;
         sh:minCount 1 ;
-        sh:maxCount 1 ; 
+        sh:maxCount 1 ;
         sh:not [
             sh:hasValue ""
         ] ;
@@ -113,7 +113,7 @@ isa-ro-crate:AssayRecommendedProperties a sh:NodeShape ;
         a sh:PropertyShape ;
         sh:path schema:description ;
         sh:minCount 1 ;
-        sh:maxCount 1 ; 
+        sh:maxCount 1 ;
         sh:not [
             sh:hasValue ""
         ] ;
@@ -222,5 +222,5 @@ isa-ro-crate:AssayRecommendedProperties a sh:NodeShape ;
         sh:description "Check that if assay does have at least one object in about, it MUST be of type LabProcess" ;
         sh:message "Assay about MUST be of type LabProcess" ;
         sh:severity sh:Violation ;
-    ] 
+    ]
 .
