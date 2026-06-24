@@ -14,7 +14,7 @@
 
 import logging
 
-from rocrate_validator import models
+from rocrate_validator import models, services
 from tests.ro_crates import InvalidFileDescriptor, ValidROC
 from tests.shared import do_entity_test
 
@@ -32,8 +32,44 @@ def test_missing_file_descriptor():
 
 
 def test_not_valid_json_format():
-    """Test a RO-Crate with an invalid JSON file descriptor format."""
-    do_entity_test(paths.invalid_json_format, models.Severity.REQUIRED, False, ["File Descriptor JSON format"], [])
+    """
+    Test a RO-Crate with an invalid JSON file descriptor format.
+
+    The validator must emit an ad-hoc issue reporting that the file descriptor is
+    not valid JSON, including the position of the parsing error.
+    """
+    do_entity_test(
+        paths.invalid_json_format,
+        models.Severity.REQUIRED,
+        False,
+        ["File Descriptor JSON format"],
+        ['RO-Crate file descriptor "ro-crate-metadata.json" is not valid JSON'],
+    )
+
+
+def test_not_valid_json_format_aborts_validation():
+    """
+    An unparsable JSON file descriptor must abort the validation (fail-fast).
+
+    Since the metadata cannot be read, no further check can run meaningfully, so the
+    only reported failure must be the JSON-format one (no false positives).
+    """
+    result = services.validate(
+        models.ValidationSettings(
+            rocrate_uri=models.URI(paths.invalid_json_format),
+            requirement_severity=models.Severity.REQUIRED,
+        )
+    )
+    assert not result.passed(), "An invalid-JSON crate must not pass validation"
+
+    failed_requirements = [r.name for r in result.failed_requirements]
+    assert failed_requirements == ["File Descriptor JSON format"], (
+        f"Only the JSON-format requirement should fail, got: {failed_requirements}"
+    )
+
+    issues = [i.message for i in result.get_issues(models.Severity.REQUIRED) if i.message]
+    assert len(issues) == 1, f"Exactly one issue expected, got: {issues}"
+    assert "is not valid JSON" in issues[0]
 
 
 def test_not_valid_jsonld_format_missing_context():
