@@ -14,31 +14,31 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-from typing import Optional, Union
+from typing import TYPE_CHECKING, cast
 
 from rdflib import Graph, Literal, Namespace, URIRef
-from rdflib.term import Node
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from rdflib.term import Node
 
 from rocrate_validator.constants import SHACL_NS
-from rocrate_validator.utils import log as logging
 from rocrate_validator.models import LevelCollection, RequirementLevel, Severity
-from rocrate_validator.requirements.shacl.utils import (ShapesList,
-                                                        compute_key,
-                                                        inject_attributes)
+from rocrate_validator.requirements.shacl.utils import ShapesList, compute_key, inject_attributes
+from rocrate_validator.utils import log as logging
 
 # set up logging
 logger = logging.getLogger(__name__)
 
 
 class SHACLNode:
-
     # define default values
-    _name: str = None
-    _description: str = None
-    severity: str = None
+    _name: str | None = None
+    _description: str | None = None
+    severity: str | None = None
 
-    def __init__(self, node: Node, graph: Graph, parent: Optional[SHACLNode] = None):
+    def __init__(self, node: Node, graph: Graph, parent: SHACLNode | None = None):
 
         # store the shape key
         self._key = None
@@ -47,7 +47,7 @@ class SHACLNode:
         # store the shapes graph
         self._graph = graph
         # cache the hash
-        self._hash = None
+        self._hash: int | None = None
         # store the parent shape
         self._parent = parent
 
@@ -59,14 +59,14 @@ class SHACLNode:
         """Return the name of the shape"""
         if not self._name:
             self._name = self.node_name
-        return self._name or self._node.split("/")[-1]
+        return self._name or str(self._node).rsplit("/", maxsplit=1)[-1]
 
     @name.setter
     def name(self, value: str):
         self._name = value
 
     @property
-    def description(self) -> str:
+    def description(self) -> str | None:
         """Return the description of the shape"""
         return self._description
 
@@ -89,7 +89,8 @@ class SHACLNode:
     @property
     def node_name(self):
         """Return the name of the node"""
-        return self._node.split("#")[-1] if "#" in self.node else self._node.split("/")[-1]
+        node_str = str(self._node)
+        return node_str.rsplit("#", maxsplit=1)[-1] if "#" in node_str else node_str.rsplit("/", maxsplit=1)[-1]
 
     @property
     def graph(self):
@@ -97,7 +98,7 @@ class SHACLNode:
         return self._graph
 
     @property
-    def parent(self) -> Optional[SHACLNode]:
+    def parent(self) -> SHACLNode | None:
         """Return the parent shape of the shape"""
         return self._parent
 
@@ -106,7 +107,7 @@ class SHACLNode:
         """Return the requirement level of the shape"""
         return self.get_declared_level() or LevelCollection.REQUIRED
 
-    def get_declared_level(self) -> Optional[RequirementLevel]:
+    def get_declared_level(self) -> RequirementLevel | None:
         """Return the declared level of the shape"""
         severity = self.get_declared_severity()
         if severity:
@@ -116,14 +117,14 @@ class SHACLNode:
                 pass
         return None
 
-    def get_declared_severity(self) -> Optional[Severity]:
+    def get_declared_severity(self) -> Severity | None:
         """Return the declared severity of the shape"""
         severity = getattr(self, "severity", None)
         if severity == f"{SHACL_NS}Violation":
             return Severity.REQUIRED
-        elif severity == f"{SHACL_NS}Warning":
+        if severity == f"{SHACL_NS}Warning":
             return Severity.RECOMMENDED
-        elif severity == f"{SHACL_NS}Info":
+        if severity == f"{SHACL_NS}Info":
             return Severity.OPTIONAL
         return None
 
@@ -131,12 +132,11 @@ class SHACLNode:
         class_name = self.__class__.__name__
         if self.name and self.description:
             return f"{class_name} - {self.name}: {self.description} ({hash(self)})"
-        elif self.name:
+        if self.name:
             return f"{class_name} - {self.name} ({hash(self)})"
-        elif self.description:
+        if self.description:
             return f"{class_name} - {self.description} ({hash(self)})"
-        else:
-            return f"{class_name} ({hash(self)})"
+        return f"{class_name} ({hash(self)})"
 
     def __repr__(self):
         return f"{self.__class__.__name__}({hash(self)})"
@@ -161,18 +161,17 @@ class SHACLNode:
 
 
 class SHACLNodeCollection(SHACLNode):
-
-    def __init__(self, node: Node, graph: Graph, properties: list[PropertyShape] = None):
+    def __init__(self, node: Node, graph: Graph, properties: list[PropertyShape] | None = None):
         super().__init__(node, graph)
         # store the properties
-        self._properties = properties if properties else []
+        self._properties = properties or []
 
     @property
     def properties(self) -> list[PropertyShape]:
         """Return the properties of the shape"""
         return self._properties.copy()
 
-    def get_property(self, name) -> PropertyShape:
+    def get_property(self, name) -> PropertyShape | None:
         """Return the property of the shape with the given name"""
         for prop in self._properties:
             if prop.name == name:
@@ -186,13 +185,13 @@ class SHACLNodeCollection(SHACLNode):
                 return i
         return -1
 
-    def add_property(self, property: PropertyShape):
+    def add_property(self, prop: PropertyShape):
         """Add a property to the shape"""
-        self._properties.append(property)
+        self._properties.append(prop)
 
-    def remove_property(self, property: PropertyShape):
+    def remove_property(self, prop: PropertyShape):
         """Remove a property from the shape"""
-        self._properties.remove(property)
+        self._properties.remove(prop)
 
 
 class Shape(SHACLNode):
@@ -204,21 +203,17 @@ class PropertyGroup(SHACLNodeCollection):
 
 
 class PropertyShape(Shape):
-
     # define default values
-    _name: str = None
-    _short_name: str = None
-    _description: str = None
-    group: str = None
-    defaultValue: str = None
+    _name: str | None = None
+    _short_name: str | None = None
+    _description: str | None = None
+    group: str | None = None
+    defaultValue: str | None = None
     order: int = 0
     # store the reference to the property group
-    _property_group: PropertyGroup = None
+    _property_group: PropertyGroup | None = None
 
-    def __init__(self,
-                 node: Node,
-                 graph: Graph,
-                 parent: Optional[Shape] = None):
+    def __init__(self, node: Node, graph: Graph, parent: Shape | None = None):
         # call the parent constructor
         super().__init__(node, graph)
         # store the parent shape
@@ -232,10 +227,12 @@ class PropertyShape(Shape):
             shacl_ns = Namespace(SHACL_NS)
             path = self.graph.value(subject=self.node, predicate=shacl_ns.path)
             if path:
-                self._short_name = path.split("#")[-1] if "#" in path else path.split("/")[-1]
+                path_str = str(path)
+                sep = "#" if "#" in path_str else "/"
+                self._short_name = path_str.rsplit(sep, maxsplit=1)[-1]
                 if self.parent:
                     self._name = f"{self._short_name} of {self.parent.name}"
-        return self._name
+        return self._name or str(self._node).rsplit("/", maxsplit=1)[-1]
 
     @name.setter
     def name(self, value: str):
@@ -245,14 +242,13 @@ class PropertyShape(Shape):
     def description(self) -> str:
         """Return the description of the shape property"""
         if not self._description:
-            # get the object of the predicate sh:description
-            if not self._description:
-                property_name = self.name
-                if self._short_name:
-                    property_name = self._short_name
-                self._description = f"Check the property \"**{property_name}**\""
-                if self.parent and self.parent.name not in property_name:
-                    self._description += f" of the entity \"**{self.parent.name}**\""
+            # build a default description from the property (and parent) name
+            property_name = self.name
+            if self._short_name:
+                property_name = self._short_name
+            self._description = f'Check the property "**{property_name}**"'
+            if self.parent and self.parent.name not in property_name:
+                self._description += f' of the entity "**{self.parent.name}**"'
         return self._description
 
     @description.setter
@@ -270,18 +266,17 @@ class PropertyShape(Shape):
         return self._graph
 
     @property
-    def parent(self) -> Optional[Shape]:
+    def parent(self) -> Shape | None:
         """Return the parent shape of the shape property"""
-        return self._parent
+        return cast("Shape | None", self._parent)
 
     @property
-    def propertyGroup(self) -> PropertyGroup:
+    def propertyGroup(self) -> PropertyGroup | None:
         """Return the group of the shape property"""
         return self._property_group
 
 
 class NodeShape(Shape, SHACLNodeCollection):
-
     @property
     def property_groups(self) -> list[PropertyGroup]:
         """Return the property groups of the shape"""
@@ -303,9 +298,8 @@ class NodeShape(Shape, SHACLNodeCollection):
 
 
 class ShapesRegistry:
-
     def __init__(self):
-        self._shapes = {}
+        self._shapes: dict[str, Shape] = {}
         self._shapes_graph: Graph = Graph()
 
     def add_shape(self, shape: Shape):
@@ -317,7 +311,7 @@ class ShapesRegistry:
         self._shapes.pop(shape.key, None)
         self._shapes_graph -= shape.graph
 
-    def get_shape(self, shape_key: str) -> Optional[Shape]:
+    def get_shape(self, shape_key: str) -> Shape | None:
         logger.debug("Searching for shape %s in the registry: %s", shape_key, self._shapes)
         result = self._shapes.get(shape_key, None)
         if not result:
@@ -329,7 +323,7 @@ class ShapesRegistry:
         self._shapes.update(shapes)
         self._shapes_graph += graph
 
-    def get_shape_by_name(self, name: str) -> Optional[Shape]:
+    def get_shape_by_name(self, name: str) -> Shape | None:
         for shape in self._shapes.values():
             if shape.name == name:
                 return shape
@@ -354,68 +348,77 @@ class ShapesRegistry:
                 return True
         return False
 
-    def load_shapes(self, shapes_path: Union[str, Path], publicID: Optional[str] = None) -> list[Shape]:
+    def load_shapes(self, shapes_path: str | Path, publicID: str | None = None) -> list[Shape]:
         """
         Load the shapes from the graph
         """
         logger.debug(f"Loading shapes from: {shapes_path}")
         # load shapes (nodes and properties) from the shapes graph
-        shapes_list: ShapesList = ShapesList.load_from_file(shapes_path, publicID)
+        shapes_list: ShapesList = ShapesList.load_from_file(str(shapes_path), publicID)
         logger.debug(f"Shapes List: {shapes_list}")
 
         # append the partial shapes graph to the global shapes graph
         self._shapes_graph += shapes_list.shapes_graph
 
-        # list of instantiated shapes
-        shapes = []
+        # list of instantiated shapes (NodeShape/PropertyShape, plus PropertyGroups
+        # which are shape-like collections registered alongside the shapes)
+        shapes: list[Shape] = []
 
         # list of property groups
-        property_groups = {}
+        property_groups: dict[str, PropertyGroup] = {}
 
         # register Node Shapes
         for node_shape in shapes_list.node_shapes:
-            # flag to check if the nested properties are in a group
-            grouped = False
-            # list of properties ungrouped
-            ungrouped_properties = []
-            # get the shape graph
-            node_graph = shapes_list.get_shape_graph(node_shape)
-            # create a node shape object
-            shape = NodeShape(node_shape, node_graph)
-            # load the nested properties
-            shacl_ns = Namespace(SHACL_NS)
-            nested_properties = node_graph.objects(subject=node_shape, predicate=shacl_ns.property)
-            for property_shape in nested_properties:
-                property_graph = shapes_list.get_shape_property_graph(node_shape, property_shape)
-                p_shape = PropertyShape(
-                    property_shape, property_graph, shape)
-                shape.add_property(p_shape)
-                group = __process_property_group__(property_groups, p_shape)
-                if group and group not in shapes:
-                    grouped = True
-                    shapes.append(group)
-                if not group:
-                    ungrouped_properties.append(p_shape)
-
-                # store the property shape in the registry
-                self.add_shape(p_shape)
-            # store the node shape in the registry
-            self.add_shape(shape)
-
-            #  store the node in the list of shapes
-            if not grouped:
-                shapes.append(shape)
-            else:
-                for prop in ungrouped_properties:
-                    shapes.append(prop)
+            self._register_node_shape(node_shape, shapes_list, property_groups, shapes)
 
         # register Property Shapes
         for property_shape in shapes_list.property_shapes:
-            shape = PropertyShape(property_shape, shapes_list.get_shape_graph(property_shape))
-            self.add_shape(shape)
-            shapes.append(shape)
+            prop_shape = PropertyShape(property_shape, shapes_list.get_shape_graph(property_shape))
+            self.add_shape(prop_shape)
+            shapes.append(prop_shape)
 
         return shapes
+
+    def _register_node_shape(
+        self,
+        node_shape: Node,
+        shapes_list: ShapesList,
+        property_groups: dict[str, PropertyGroup],
+        shapes: list[Shape],
+    ) -> None:
+        """Instantiate ``node_shape`` and its nested PropertyShapes, registering them and appending to ``shapes``."""
+        # flag to check if the nested properties are in a group
+        grouped = False
+        # list of properties ungrouped
+        ungrouped_properties: list[PropertyShape] = []
+        # get the shape graph
+        node_graph = shapes_list.get_shape_graph(node_shape)
+        # create a node shape object
+        shape = NodeShape(node_shape, node_graph)
+        # load the nested properties
+        shacl_ns = Namespace(SHACL_NS)
+        nested_properties = node_graph.objects(subject=node_shape, predicate=shacl_ns.property)
+        for property_shape in nested_properties:
+            property_graph = shapes_list.get_shape_property_graph(node_shape, property_shape)
+            p_shape = PropertyShape(property_shape, property_graph, shape)
+            shape.add_property(p_shape)
+            group = __process_property_group__(property_groups, p_shape)
+            if group and group not in shapes:
+                grouped = True
+                shapes.append(cast("Shape", group))
+            if not group:
+                ungrouped_properties.append(p_shape)
+
+            # store the property shape in the registry
+            self.add_shape(p_shape)
+        # store the node shape in the registry
+        self.add_shape(shape)
+
+        # store the node in the list of shapes
+        if not grouped:
+            shapes.append(shape)
+        else:
+            shapes.extend(ungrouped_properties)
 
     def __str__(self):
         return f"ShapesRegistry: {self._shapes}"
@@ -432,15 +435,17 @@ class ShapesRegistry:
         instance = getattr(ctx, "_shapes_registry_instance", None)
         if not instance:
             instance = cls()
-            setattr(ctx, "_shapes_registry_instance", instance)
+            # `ctx` is intentionally typed `object`: the instance is cached as a
+            # dynamic attribute on whatever context is passed in.
+            ctx._shapes_registry_instance = instance  # type: ignore[attr-defined]
         return instance
 
 
-def __process_property_group__(groups: dict[str, PropertyGroup], property_shape: PropertyShape) -> PropertyGroup:
+def __process_property_group__(groups: dict[str, PropertyGroup], property_shape: PropertyShape) -> PropertyGroup | None:
     group_name = property_shape.group
     if group_name:
         if group_name not in groups:
-            groups[group_name] = PropertyGroup(URIRef(property_shape.group), property_shape.graph)
+            groups[group_name] = PropertyGroup(URIRef(group_name), property_shape.graph)
         groups[group_name].add_property(property_shape)
         property_shape._property_group = groups[group_name]
         return groups[group_name]

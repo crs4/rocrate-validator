@@ -26,7 +26,7 @@ from tests.shared import do_entity_test
 logger = logging.getLogger(__name__)
 
 
-#  Global set up the paths
+# Global set up the paths
 paths = InvalidDataEntity()
 
 
@@ -83,7 +83,6 @@ def test_directory_data_entity_wo_trailing_slash():
 
 
 def test_missing_data_entity_encoding_format():
-    """"""
     do_entity_test(
         paths.missing_data_entity_encoding_format,
         models.Severity.RECOMMENDED,
@@ -94,7 +93,6 @@ def test_missing_data_entity_encoding_format():
 
 
 def test_invalid_data_entity_encoding_format_pronom():
-    """"""
     do_entity_test(
         paths.invalid_data_entity_encoding_format_pronom,
         models.Severity.RECOMMENDED,
@@ -105,7 +103,6 @@ def test_invalid_data_entity_encoding_format_pronom():
 
 
 def test_invalid_data_entity_encoding_format_ctx_website_type():
-    """"""
     do_entity_test(
         paths.invalid_encoding_format_ctx_entity_missing_ws_type,
         models.Severity.RECOMMENDED,
@@ -116,7 +113,6 @@ def test_invalid_data_entity_encoding_format_ctx_website_type():
 
 
 def test_invalid_data_entity_encoding_format_ctx_website_name():
-    """"""
     do_entity_test(
         paths.invalid_encoding_format_ctx_entity_missing_ws_name,
         models.Severity.RECOMMENDED,
@@ -127,7 +123,6 @@ def test_invalid_data_entity_encoding_format_ctx_website_name():
 
 
 def test_valid_data_entity_encoding_format_pronom():
-    """"""
     do_entity_test(
         paths.valid_encoding_format_pronom,
         models.Severity.RECOMMENDED,
@@ -137,7 +132,6 @@ def test_valid_data_entity_encoding_format_pronom():
 
 
 def test_valid_data_entity_encoding_format_ctx_website():
-    """"""
     do_entity_test(
         paths.valid_encoding_format_ctx_entity,
         models.Severity.RECOMMENDED,
@@ -147,7 +141,6 @@ def test_valid_data_entity_encoding_format_ctx_website():
 
 
 def test_missing_file_data_entity_with_quoted_name():
-    """"""
     do_entity_test(
         paths.missing_file_data_entity_with_quoted_name,
         models.Severity.REQUIRED,
@@ -158,7 +151,6 @@ def test_missing_file_data_entity_with_quoted_name():
 
 
 def test_missing_file_data_entity_with_unquoted_name():
-    """"""
     do_entity_test(
         paths.missing_file_data_entity_with_unquoted_name,
         models.Severity.REQUIRED,
@@ -169,7 +161,6 @@ def test_missing_file_data_entity_with_unquoted_name():
 
 
 def test_missing_dataset_entity_with_quoted_name():
-    """"""
     do_entity_test(
         paths.missing_dataset_data_entity_with_quoted_name,
         models.Severity.REQUIRED,
@@ -180,7 +171,6 @@ def test_missing_dataset_entity_with_quoted_name():
 
 
 def test_missing_dataset_entity_with_unquoted_name():
-    """"""
     do_entity_test(
         paths.missing_dataset_data_entity_with_unquoted_name,
         models.Severity.REQUIRED,
@@ -191,7 +181,6 @@ def test_missing_dataset_entity_with_unquoted_name():
 
 
 def test_missing_absolute_path_data_entity():
-    """"""
     do_entity_test(
         paths.missing_file_data_entity_with_absolute_path,
         models.Severity.RECOMMENDED,
@@ -202,8 +191,9 @@ def test_missing_absolute_path_data_entity():
 
 
 def test_valid_rocrate_with_data_entities():
-    """"""
-    do_entity_test(ValidROC().rocrate_with_data_entities, models.Severity.REQUIRED, True, profile_identifier="ro-crate")
+    do_entity_test(
+        ValidROC().rocrate_with_data_entities, models.Severity.REQUIRED, True, profile_identifier="ro-crate-1.1"
+    )
 
 
 @pytest.mark.parametrize(
@@ -260,7 +250,7 @@ def test_remote_data_entity_does_not_fail_required_check(tmp_path, remote_entity
         models.ValidationSettings(
             rocrate_uri=crate_dir,
             requirement_severity=models.Severity.REQUIRED,
-            profile_identifier="ro-crate",
+            profile_identifier="ro-crate-1.1",
         )
     )
     assert result.passed(), (

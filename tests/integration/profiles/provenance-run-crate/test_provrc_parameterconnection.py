@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 def test_parameterconnection_no_sourceparameter():
-    """\
+    """
     Test a Provenance Run Crate where a ParameterConnection does not have a
     SourceParameter.
     """
@@ -33,12 +33,12 @@ def test_parameterconnection_no_sourceparameter():
         False,
         ["ProvRC ParameterConnection MUST"],
         ["ParameterConnection must have a sourceParameter that references a FormalParameter"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_parameterconnection_bad_sourceparameter():
-    """\
+    """
     Test a Provenance Run Crate where a ParameterConnection has a
     SourceParameter that does not reference a FormalParameter.
     """
@@ -48,12 +48,12 @@ def test_parameterconnection_bad_sourceparameter():
         False,
         ["ProvRC ParameterConnection MUST"],
         ["ParameterConnection must have a sourceParameter that references a FormalParameter"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_parameterconnection_no_targetparameter():
-    """\
+    """
     Test a Provenance Run Crate where a ParameterConnection does not have a
     TargetParameter.
     """
@@ -63,12 +63,12 @@ def test_parameterconnection_no_targetparameter():
         False,
         ["ProvRC ParameterConnection MUST"],
         ["ParameterConnection must have a targetParameter that references a FormalParameter"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_parameterconnection_bad_targetparameter():
-    """\
+    """
     Test a Provenance Run Crate where a ParameterConnection has a
     TargetParameter that does not reference a FormalParameter.
     """
@@ -78,12 +78,12 @@ def test_parameterconnection_bad_targetparameter():
         False,
         ["ProvRC ParameterConnection MUST"],
         ["ParameterConnection must have a targetParameter that references a FormalParameter"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_parameterconnection_not_referenced():
-    """\
+    """
     Test a Provenance Run Crate where a ParameterConnection is not referenced
     by any other entity through the connection property.
     """
@@ -93,12 +93,12 @@ def test_parameterconnection_not_referenced():
         False,
         ["ParameterConnection references"],
         ["Missing `connection` to this `ParameterConnection` entity"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_parameterconnection_not_workflow_referenced():
-    """\
+    """
     Test a Provenance Run Crate where a ParameterConnection is not referenced
     by any Workflow through the connection property.
     """
@@ -108,12 +108,12 @@ def test_parameterconnection_not_workflow_referenced():
         False,
         ["ParameterConnection references on computational workflows"],
         ["Missing `ComputationalWorkflow` connection to this `ParameterConnection` entity"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_parameterconnection_not_step_referenced():
-    """\
+    """
     Test a Provenance Run Crate where a ParameterConnection is not referenced
     by any HowToStep through the connection property.
     """
@@ -123,5 +123,5 @@ def test_parameterconnection_not_step_referenced():
         False,
         ["ParameterConnection references on HowToStep instances"],
         ["Missing `HowToStep` connection to this `ParameterConnection` entity"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )

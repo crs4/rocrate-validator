@@ -27,7 +27,6 @@ and includes a NodeShape with a sh:sparql constraint.
 
 import json
 import logging
-import os
 import tempfile
 from pathlib import Path
 
@@ -40,12 +39,11 @@ from rocrate_validator.requirements.shacl.models import Shape, ShapesRegistry
 from rocrate_validator.requirements.shacl.utils import resolve_parent_shape
 from tests.conftest import TEST_DATA_PATH
 
-
 logger = logging.getLogger(__name__)
 
-CURRENT_PATH = os.path.dirname(os.path.realpath(__file__))
+CURRENT_PATH = str(Path(__file__).resolve().parent)
 
-SPARQL_TEST_PROFILES_PATH = os.path.join(TEST_DATA_PATH, "profiles", "sparql_test")
+SPARQL_TEST_PROFILES_PATH = str(Path(TEST_DATA_PATH) / "profiles" / "sparql_test")
 
 
 @pytest.fixture
@@ -81,42 +79,34 @@ def sparql_test_rocrate():
             ],
         }
 
-        with open(rocrate_dir / "ro-crate-metadata.json", "w") as f:
+        with (rocrate_dir / "ro-crate-metadata.json").open("w", encoding="utf-8") as f:
             json.dump(metadata, f, indent=2)
 
         yield rocrate_dir
 
 
 def test_sparql_profile_shape_loaded_correctly(sparql_test_profiles_path):
-    """Test that the sparql-test profile loads the test shape with SPARQL constraint."""
+    """Test that the sparql-test profile loads the AgentProjectIntersection shape."""
     registry = ShapesRegistry()
-    shape_file = os.path.join(
-        sparql_test_profiles_path, "must", "agent_project_intersection.ttl"
-    )
+    shape_file = str(Path(sparql_test_profiles_path) / "must" / "agent_project_intersection.ttl")
 
     shapes = registry.load_shapes(shape_file)
 
     assert len(shapes) > 0, "Should load at least one shape"
 
-    # Find the test shape (AlwaysFailShape or similar name)
-    test_shape = None
+    # Find the AgentProjectIntersection shape
+    agent_shape = None
     for shape in shapes:
-        if (
-            "Always" in shape.name
-            or "Test" in shape.name
-            or "test" in shape.name.lower()
-        ):
-            test_shape = shape
+        if "Agent" in shape.name or "agent" in shape.name.lower():
+            agent_shape = shape
             break
 
-    assert test_shape is not None, "Should find the test SPARQL shape"
-    assert test_shape.description is not None
-    assert len(test_shape.description) > 0
+    assert agent_shape is not None, "Should find AgentProjectIntersection shape"
+    assert agent_shape.description is not None
+    assert "Agent" in agent_shape.description or "agent" in agent_shape.description.lower()
 
 
-def test_sparql_constraint_with_bnode_sourceShape(
-    sparql_test_profiles_path, sparql_test_rocrate
-):
+def test_sparql_constraint_with_bnode_sourceShape(sparql_test_profiles_path, sparql_test_rocrate):
     """
     Test that SPARQL constraint violations with BNode sourceShape
     are handled gracefully by the validation pipeline.
@@ -143,10 +133,9 @@ def test_sparql_constraint_with_bnode_sourceShape(
     assert issues[0].check.description is not None, "Check should have a description"
     assert issues[0].message is not None, "Issue should have a message"
     assert len(issues[0].message) > 0, "Issue message should not be empty"
-    assert (
-        "SPARQL constraint violation" in issues[0].message
-        or "SPARQL" in issues[0].check.description
-    ), "Check description should reference parent shape"
+    assert "SPARQL constraint violation" in issues[0].message or "SPARQL" in issues[0].check.description, (
+        "Check description should reference parent shape"
+    )
 
 
 def test_resolve_parent_shape_with_sparql_bnode():
@@ -159,12 +148,13 @@ def test_resolve_parent_shape_with_sparql_bnode():
     SHACL = Namespace("http://www.w3.org/ns/shacl#")
 
     registry = ShapesRegistry()
-    profiles_path = "rocrate_validator/profiles/ro-crate/must"
+    profiles_path = "rocrate_validator/profiles/ro-crate/1.1/must"
 
     # Load shapes from profile
-    for filename in os.listdir(profiles_path):
-        if filename.endswith(".ttl"):
-            registry.load_shapes(os.path.join(profiles_path, filename))
+    for filename in Path(profiles_path).iterdir():
+        name = filename.name
+        if name.endswith(".ttl"):
+            registry.load_shapes(str(Path(profiles_path) / name))
 
     g = Graph()
 

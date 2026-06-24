@@ -27,7 +27,7 @@
 
     # regular metadata, a basic description of the Profile
     rdfs:comment """Comment for the Profile C."""@en ;
-    
+
     # the version of the profile
     schema:version "1.0.0" ;
 

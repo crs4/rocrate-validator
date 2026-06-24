@@ -15,7 +15,7 @@
 import re
 import sys
 from pathlib import Path
-from typing import Optional
+from typing import Any
 
 from rich.align import Align
 from rich.markdown import Markdown
@@ -28,13 +28,10 @@ from rocrate_validator import services
 from rocrate_validator.cli.commands.errors import handle_error
 from rocrate_validator.cli.main import cli, click
 from rocrate_validator.constants import DEFAULT_PROFILE_IDENTIFIER
-from rocrate_validator.models import (LevelCollection, Profile,
-                                      RequirementCheck, RequirementLevel,
-                                      Severity)
+from rocrate_validator.models import LevelCollection, Profile, RequirementCheck, RequirementLevel, Severity
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.io_helpers.colors import get_severity_color
-from rocrate_validator.utils.io_helpers.output.text.layout.report import \
-    get_app_header_rule
+from rocrate_validator.utils.io_helpers.output.text.layout.report import get_app_header_rule
 from rocrate_validator.utils.paths import get_profiles_path, shorten_path
 
 # set the default profiles path
@@ -50,45 +47,39 @@ logger = logging.getLogger(__name__)
     type=click.Path(exists=True),
     default=DEFAULT_PROFILES_PATH,
     show_default=True,
-    help="Path containing the profiles files"
+    help="Path containing the profiles files",
 )
 @click.option(
     "--extra-profiles-path",
     type=click.Path(exists=True),
     default=None,
     show_default=True,
-    help="Path containing additional user profiles files"
+    help="Path containing additional user profiles files",
 )
 @click.pass_context
-def profiles(ctx, profiles_path: Path = DEFAULT_PROFILES_PATH,
-             extra_profiles_path: Path = None):
+def profiles(ctx, profiles_path: Path = DEFAULT_PROFILES_PATH, extra_profiles_path: Path | None = None):
     """
     [magenta]rocrate-validator:[/magenta] Manage profiles
     """
     logger.debug("Profiles path: %s", profiles_path)
-    ctx.obj['profiles_path'] = profiles_path
-    ctx.obj['extra_profiles_path'] = extra_profiles_path
+    ctx.obj["profiles_path"] = profiles_path
+    ctx.obj["extra_profiles_path"] = extra_profiles_path
 
 
 @profiles.command("list")
 @click.option(
-    '--no-paging',
-    is_flag=True,
-    help="Disable paging",
-    default=False,
-    show_default=True,
-    hidden=True if sys.platform == "win32" else False
+    "--no-paging", is_flag=True, help="Disable paging", default=False, show_default=True, hidden=sys.platform == "win32"
 )
 @click.pass_context
 def list_profiles(ctx, no_paging: bool = False):  # , profiles_path: Path = DEFAULT_PROFILES_PATH):
     """
     List available profiles
     """
-    profiles_path = ctx.obj['profiles_path']
-    extra_profiles_path = ctx.obj['extra_profiles_path']
-    console = ctx.obj['console']
-    pager = ctx.obj['pager']
-    interactive = ctx.obj['interactive']
+    profiles_path = ctx.obj["profiles_path"]
+    extra_profiles_path = ctx.obj["extra_profiles_path"]
+    console = ctx.obj["console"]
+    pager = ctx.obj["pager"]
+    interactive = ctx.obj["interactive"]
     # Get the no_paging flag
     enable_pager = not no_paging
     # override the enable_pager flag if the interactive flag is False
@@ -97,18 +88,19 @@ def list_profiles(ctx, no_paging: bool = False):  # , profiles_path: Path = DEFA
 
     try:
         # Get the profiles
-        profiles = services.get_profiles(profiles_path=profiles_path,
-                                         extra_profiles_path=extra_profiles_path)
+        profiles = services.get_profiles(profiles_path=profiles_path, extra_profiles_path=extra_profiles_path)
 
-        table = Table(show_header=True,
-                      title="   Available profiles",
-                      title_style="italic bold cyan",
-                      title_justify="left",
-                      header_style="bold cyan",
-                      border_style="bright_black",
-                      show_footer=False,
-                      caption_style="italic bold",
-                      caption="[cyan](*)[/cyan] Number of requirements checks by severity")
+        table = Table(
+            show_header=True,
+            title="   Available profiles",
+            title_style="italic bold cyan",
+            title_justify="left",
+            header_style="bold cyan",
+            border_style="bright_black",
+            show_footer=False,
+            caption_style="italic bold",
+            caption="[cyan](*)[/cyan] Number of requirements checks by severity",
+        )
 
         # Define columns
         table.add_column("Identifier", style="magenta bold", justify="center")
@@ -125,12 +117,9 @@ def list_profiles(ctx, no_paging: bool = False):  # , profiles_path: Path = DEFA
         # Add data to the table
         for profile in profiles:
             # Count requirements by severity
-            checks_info = {}
+            checks_info: dict[str, dict[str, Any]] = {}
             for level in levels:
-                checks_info[level.severity.name] = {
-                    "count": 0,
-                    "color": get_severity_color(level.severity)
-                }
+                checks_info[level.severity.name] = {"count": 0, "color": get_severity_color(level.severity)}
 
             requirements = [_ for _ in profile.get_requirements(severity=Severity.OPTIONAL) if not _.hidden]
             for requirement in requirements:
@@ -139,13 +128,23 @@ def list_profiles(ctx, no_paging: bool = False):  # , profiles_path: Path = DEFA
                     checks_info[level.severity.name]["count"] += count
 
             checks_summary = "\n".join(
-                [f"[{v['color']}]{k}[/{v['color']}]: {v['count']}" for k, v in checks_info.items()])
+                [f"[{v['color']}]{k}[/{v['color']}]: {v['count']}" for k, v in checks_info.items()]
+            )
 
             # Add the row to the table
-            table.add_row(profile.identifier, profile.uri, profile.version,
-                          profile.name, Markdown(profile.description.strip()),
-                          "\n".join([p.identifier for p in profile.inherited_profiles]),
-                          checks_summary)
+            profile_name = (
+                "\n".join(map(str, profile.name)) if isinstance(profile.name, list) else str(profile.name or "")
+            )
+
+            table.add_row(
+                profile.identifier,
+                profile.uri,
+                profile.version,
+                profile_name,
+                Markdown((profile.description or "").strip()),
+                "\n".join([p.identifier for p in profile.inherited_profiles]),
+                checks_summary,
+            )
             table.add_row()
 
         # Print the table
@@ -159,31 +158,28 @@ def list_profiles(ctx, no_paging: bool = False):  # , profiles_path: Path = DEFA
 
 @profiles.command("describe")
 @click.option(
-    '-v',
-    '--verbose',
+    "-v",
+    "--verbose",
     is_flag=True,
-    help="Show detailed list of requirements (or, when a check identifier is given, "
-         "show the source code of the check)",
+    help="Show detailed list of requirements (or, when a check identifier is given, show the source code of the check)",
     default=False,
-    show_default=True
+    show_default=True,
 )
 @click.argument("profile-identifier", type=click.STRING, default=DEFAULT_PROFILE_IDENTIFIER, required=True)
 @click.argument("check-identifier", type=click.STRING, required=False, default=None)
 @click.option(
-    '--no-paging',
-    is_flag=True,
-    help="Disable paging",
-    default=False,
-    show_default=True,
-    hidden=True if sys.platform == "win32" else False
+    "--no-paging", is_flag=True, help="Disable paging", default=False, show_default=True, hidden=sys.platform == "win32"
 )
 @click.pass_context
-def describe_profile(ctx,
-                     profile_identifier: str = DEFAULT_PROFILE_IDENTIFIER,
-                     check_identifier: Optional[str] = None,
-                     profiles_path: Path = DEFAULT_PROFILES_PATH,
-                     extra_profiles_path: Path = None,
-                     verbose: bool = False, no_paging: bool = False):
+def describe_profile(
+    ctx,
+    profile_identifier: str = DEFAULT_PROFILE_IDENTIFIER,
+    check_identifier: str | None = None,
+    profiles_path: Path = DEFAULT_PROFILES_PATH,
+    extra_profiles_path: Path | None = None,
+    verbose: bool = False,
+    no_paging: bool = False,
+):
     """
     Show a profile, or — when CHECK_IDENTIFIER is given — show a single requirement check.
 
@@ -195,11 +191,11 @@ def describe_profile(ctx,
     With -v on a single check, the source code of the check is shown.
     """
     # Get the console
-    console = ctx.obj['console']
-    pager = ctx.obj['pager']
-    interactive = ctx.obj['interactive']
-    profiles_path = ctx.obj['profiles_path']
-    extra_profiles_path = ctx.obj['extra_profiles_path']
+    console = ctx.obj["console"]
+    pager = ctx.obj["pager"]
+    interactive = ctx.obj["interactive"]
+    profiles_path = ctx.obj["profiles_path"]
+    extra_profiles_path = ctx.obj["extra_profiles_path"]
     # Get the no_paging flag
     enable_pager = not no_paging
     # override the enable_pager flag if the interactive flag is False
@@ -208,8 +204,9 @@ def describe_profile(ctx,
 
     try:
         # Get the profile
-        profile = services.get_profile(profile_identifier, profiles_path=profiles_path,
-                                       extra_profiles_path=extra_profiles_path)
+        profile = services.get_profile(
+            profile_identifier, profiles_path=profiles_path, extra_profiles_path=extra_profiles_path
+        )
 
         # Single-check view
         if check_identifier:
@@ -225,8 +222,15 @@ def describe_profile(ctx,
         # Set the subheader content
         subheader_content = f"[bold cyan]Version:[/bold cyan] [italic green]{profile.version}[/italic green]\n"
         subheader_content += f"[bold cyan]URI:[/bold cyan] [italic yellow]{profile.uri}[/italic yellow]\n\n"
-        subheader_content += f"[bold cyan]Name:[/bold cyan] [italic]{profile.name.strip()}[/italic]\n"
-        subheader_content += f"[bold cyan]Description:[/bold cyan] [italic]{profile.description.strip()}[/italic]"
+        profile_name = profile.name or ""
+        if isinstance(profile_name, list):
+            profile_name = ", ".join(str(name).strip() for name in profile_name if str(name).strip())
+        else:
+            profile_name = str(profile_name).strip()
+        subheader_content += f"[bold cyan]Name:[/bold cyan] [italic]{profile_name}[/italic]\n"
+        subheader_content += (
+            f"[bold cyan]Description:[/bold cyan] [italic]{(profile.description or '').strip()}[/italic]"
+        )
         # Add path info to the subheader
         subheader_content += (
             "\n\n"
@@ -248,15 +252,22 @@ def describe_profile(ctx,
             )
 
         # Build the profile table
-        if not verbose:
-            table = __compacted_describe_profile__(profile)
-        else:
-            table = __verbose_describe_profile__(profile)
+        table = __compacted_describe_profile__(profile) if not verbose else __verbose_describe_profile__(profile)
 
         with console.pager(pager=pager, styles=not console.no_color) if enable_pager else console:
             console.print(get_app_header_rule())
-            console.print(Padding(Panel(subheader_content, title=subheader_title, padding=(1, 1, 0, 1),
-                                        title_align="left", border_style="cyan"), (0, 1, 0, 1)))
+            console.print(
+                Padding(
+                    Panel(
+                        subheader_content,
+                        title=subheader_title,
+                        padding=(1, 1, 0, 1),
+                        title_align="left",
+                        border_style="cyan",
+                    ),
+                    (0, 1, 0, 1),
+                )
+            )
             console.print(Padding(table, (1, 1)))
 
     except click.ClickException:
@@ -292,22 +303,28 @@ def __compacted_describe_profile__(profile):
                 color = get_severity_color(level.severity)
                 level_info = f"[{color}]{level.severity.name}[/{color}]"
                 levels_list.add(level_info)
-        table_rows.append((str(requirement.order_number), requirement.name,
-                           Markdown(requirement.description.strip()),
-                           f"{levels_count[0]}",
-                           f"{levels_count[1]}",
-                           f"{levels_count[2]}"))
+        table_rows.append(
+            (
+                str(requirement.order_number),
+                requirement.name,
+                Markdown(requirement.description.strip()),
+                f"{levels_count[0]}",
+                f"{levels_count[1]}",
+                f"{levels_count[2]}",
+            )
+        )
 
-    table = Table(show_header=True,
-                  #   renderer=renderer,
-                  title=f"[cyan]{len(requirements)}[/cyan] Profile Requirements",
-                  title_style="italic bold",
-                  header_style="bold cyan",
-                  border_style="bright_black",
-                  show_footer=False,
-                  show_lines=True,
-                  caption_style="italic bold",
-                  caption=f"[cyan](*)[/cyan] number of checks by severity level: {', '.join(levels_list)}")
+    table = Table(
+        show_header=True,
+        title=f"[cyan]{len(requirements)}[/cyan] Profile Requirements",
+        title_style="italic bold",
+        header_style="bold cyan",
+        border_style="bright_black",
+        show_footer=False,
+        show_lines=True,
+        caption_style="italic bold",
+        caption=f"[cyan](*)[/cyan] number of checks by severity level: {', '.join(levels_list)}",
+    )
 
     # Define columns
     table.add_column("#", style="cyan bold", justify="right")
@@ -345,21 +362,20 @@ def __verbose_describe_profile__(profile):
                 description_table.add_row(Align(Padding(override, (0, 0, 1, 0)), align="right"))
             description_table.add_row(Markdown(check.description.strip()))
 
-            table_rows.append((
-                check.identifier, check.name,
-                description_table, level_info))
+            table_rows.append((check.identifier, check.name, description_table, level_info))
             count_checks += 1
 
-    table = Table(show_header=True,
-                  #   renderer=renderer,
-                  title=f"[cyan]{count_checks}[/cyan] Profile Requirements Checks",
-                  title_style="italic bold",
-                  header_style="bold cyan",
-                  border_style="bright_black",
-                  show_footer=False,
-                  show_lines=True,
-                  caption_style="italic bold",
-                  caption=f"[cyan](*)[/cyan] number of checks by severity level: {', '.join(levels_list)}")
+    table = Table(
+        show_header=True,
+        title=f"[cyan]{count_checks}[/cyan] Profile Requirements Checks",
+        title_style="italic bold",
+        header_style="bold cyan",
+        border_style="bright_black",
+        show_footer=False,
+        show_lines=True,
+        caption_style="italic bold",
+        caption=f"[cyan](*)[/cyan] number of checks by severity level: {', '.join(levels_list)}",
+    )
 
     # Define columns
     table.add_column("Identifier", style="cyan bold", justify="right")
@@ -391,7 +407,7 @@ def __resolve_check__(profile: Profile, check_identifier: str) -> RequirementChe
                 f"Check identifier '{raw}' does not belong to profile '{profile.identifier}'.",
                 param_hint="CHECK_IDENTIFIER",
             )
-        relative = raw[len(prefix):]
+        relative = raw[len(prefix) :]
 
     match = _CHECK_ID_RE.match(relative)
     if not match:
@@ -461,16 +477,15 @@ def __describe_check__(console, profile: Profile, check: RequirementCheck, verbo
         f"[italic]#{requirement.order_number} — {requirement.name}[/italic]"
     )
     if requirement.path:
-        header += (
-            "\n[bold cyan]Source file:[/bold cyan] "
-            f"[italic green]{shorten_path(requirement.path)}[/italic green]"
-        )
+        header += f"\n[bold cyan]Source file:[/bold cyan] [italic green]{shorten_path(requirement.path)}[/italic green]"
 
     title = f"[bold][cyan]Check:[/cyan] [magenta italic]{check.identifier}[/magenta italic][/bold]"
-    console.print(Padding(
-        Panel(header, title=title, padding=(1, 1, 1, 1), title_align="left", border_style="cyan"),
-        (0, 1, 0, 1),
-    ))
+    console.print(
+        Padding(
+            Panel(header, title=title, padding=(1, 1, 1, 1), title_align="left", border_style="cyan"),
+            (0, 1, 0, 1),
+        )
+    )
 
     description_panel = Panel(
         Markdown(check.description.strip()),
@@ -483,47 +498,67 @@ def __describe_check__(console, profile: Profile, check: RequirementCheck, verbo
 
     if check.overrides:
         overrides_text = __format_overrides__(check.overrides, label="overrides")
-        console.print(Padding(Panel(
-            overrides_text,
-            title="[bold cyan]Overrides[/bold cyan]",
-            title_align="left",
-            border_style="bright_black",
-            padding=(1, 1, 1, 1),
-        ), (1, 1, 0, 1)))
+        console.print(
+            Padding(
+                Panel(
+                    overrides_text,
+                    title="[bold cyan]Overrides[/bold cyan]",
+                    title_align="left",
+                    border_style="bright_black",
+                    padding=(1, 1, 1, 1),
+                ),
+                (1, 1, 0, 1),
+            )
+        )
     if check.overridden_by:
         overridden_text = __format_overrides__(check.overridden_by, label="overridden by")
-        console.print(Padding(Panel(
-            overridden_text,
-            title="[bold cyan]Overridden by[/bold cyan]",
-            title_align="left",
-            border_style="bright_black",
-            padding=(1, 1, 1, 1),
-        ), (1, 1, 0, 1)))
+        console.print(
+            Padding(
+                Panel(
+                    overridden_text,
+                    title="[bold cyan]Overridden by[/bold cyan]",
+                    title_align="left",
+                    border_style="bright_black",
+                    padding=(1, 1, 1, 1),
+                ),
+                (1, 1, 0, 1),
+            )
+        )
 
     if verbose:
         snippet = check.get_source_snippet()
         if snippet is None:
-            console.print(Padding(Panel(
-                "[italic]Source code not available for this check kind.[/italic]",
-                title="[bold cyan]Source[/bold cyan]",
-                title_align="left",
-                border_style="bright_black",
-                padding=(1, 1, 1, 1),
-            ), (1, 1, 0, 1)))
+            console.print(
+                Padding(
+                    Panel(
+                        "[italic]Source code not available for this check kind.[/italic]",
+                        title="[bold cyan]Source[/bold cyan]",
+                        title_align="left",
+                        border_style="bright_black",
+                        padding=(1, 1, 1, 1),
+                    ),
+                    (1, 1, 0, 1),
+                )
+            )
         else:
             source_title = f"[bold cyan]Source ({snippet.language})[/bold cyan]"
             if snippet.source_path:
                 source_title += f': [italic green]"{snippet.source_path.name}"[/italic green]'
-            console.print(Padding(Panel(
-                Syntax(
-                    snippet.code,
-                    snippet.language,
-                    theme="ansi_dark",
-                    line_numbers=False,
-                    word_wrap=True,
-                ),
-                title=source_title,
-                title_align="left",
-                border_style="bright_black",
-                padding=(1, 1, 1, 1),
-            ), (1, 1, 1, 1)))
+            console.print(
+                Padding(
+                    Panel(
+                        Syntax(
+                            snippet.code,
+                            snippet.language,
+                            theme="ansi_dark",
+                            line_numbers=False,
+                            word_wrap=True,
+                        ),
+                        title=source_title,
+                        title_align="left",
+                        border_style="bright_black",
+                        padding=(1, 1, 1, 1),
+                    ),
+                    (1, 1, 1, 1),
+                )
+            )

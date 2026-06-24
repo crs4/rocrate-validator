@@ -29,5 +29,5 @@ def test_valid_workflow_run_crate_required():
         Severity.REQUIRED,
         True,
         profile_identifier="workflow-run-crate",
-        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER]
+        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER],
     )

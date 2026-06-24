@@ -169,6 +169,49 @@ To run the `rocrate-validator` tests, use the following command:
 poetry run pytest
 ```
 
+## Development
+
+When working from source, install the dependencies (including the dev and test
+groups) with:
+
+```bash
+poetry install
+```
+
+### Pre-commit hooks
+
+The repository ships a [pre-commit](https://pre-commit.com/) configuration
+(`.pre-commit-config.yaml`) that runs spell checking (`typos`), linting and
+formatting (`ruff`), static type checking (`mypy`), and static analysis
+(`pylint`). The hooks are **not** active until you install them once in your
+local clone:
+
+```bash
+poetry run pre-commit install
+```
+
+After this, the **fast** checks (typos, ruff, basic file hygiene) run
+automatically on every `git commit`. The **slow whole-project checks** —
+`mypy`, `pylint (rocrate_validator)`, and `pylint (tests)` — are configured
+as manual-stage hooks and are *not* triggered by `git commit`; run them
+explicitly when you want a full review:
+
+```bash
+# Run all auto hooks against the whole codebase
+poetry run pre-commit run --all-files
+
+# Run a single auto hook (e.g. typos or ruff)
+poetry run pre-commit run typos --all-files
+
+# Run ALL manual hooks (mypy + both pylint runs)
+poetry run pre-commit run --hook-stage manual --all-files
+
+# Run a single manual hook
+poetry run pre-commit run --hook-stage manual mypy
+poetry run pre-commit run --hook-stage manual pylint-main    # rocrate_validator/
+poetry run pre-commit run --hook-stage manual pylint-tests   # tests/  (uses tests/.pylintrc)
+```
+
 <!-- ## Contributing
 
 Contributions are welcome! Please read our [contributing guidelines](CONTRIBUTING.md) for details. -->

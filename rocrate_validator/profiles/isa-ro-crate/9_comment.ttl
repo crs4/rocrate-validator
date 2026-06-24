@@ -39,7 +39,7 @@ isa-ro-crate:FindISAComment a sh:NodeShape, validator:HiddenShape;
         sh:condition [
             sh:property [
                 sh:path [ sh:inversePath schema:comment ] ;
-                sh:qualifiedValueShape [ 
+                sh:qualifiedValueShape [
                     sh:or(
                         [sh:class ro-crate:RootDataEntity]
                         [sh:class isa-ro-crate:Study]

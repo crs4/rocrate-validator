@@ -14,35 +14,28 @@
 
 from __future__ import annotations
 
-import os
 import sys
 from contextlib import nullcontext
 from pathlib import Path
-from typing import Optional
 
 import rich_click as click
 from rich.padding import Padding
 from rich.rule import Rule
 
-from rocrate_validator.utils import log as logging
 from rocrate_validator import constants, services
 from rocrate_validator.cli.commands.errors import handle_error
 from rocrate_validator.cli.main import cli
 from rocrate_validator.cli.ui.text.validate import ValidationCommandView
 from rocrate_validator.errors import ROCrateInvalidURIError
+from rocrate_validator.models import Severity, ValidationResult, ValidationSettings
+from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.io_helpers.input import get_single_char, multiple_choice
 from rocrate_validator.utils.io_helpers.output.console import Console
 from rocrate_validator.utils.io_helpers.output.json import JSONOutputFormatter
 from rocrate_validator.utils.io_helpers.output.text import TextOutputFormatter
-from rocrate_validator.utils.io_helpers.output.text.layout.report import (
-    LiveTextProgressLayout, get_app_header_rule)
-from rocrate_validator.models import (Severity, ValidationResult,
-                                      ValidationSettings)
-from rocrate_validator.utils.uri import validate_rocrate_uri
+from rocrate_validator.utils.io_helpers.output.text.layout.report import LiveTextProgressLayout, get_app_header_rule
 from rocrate_validator.utils.paths import get_profiles_path
-
-# from rich.markdown import Markdown
-# from rich.table import Table
+from rocrate_validator.utils.uri import validate_rocrate_uri
 
 # set the default profiles path
 DEFAULT_PROFILES_PATH = get_profiles_path()
@@ -60,35 +53,49 @@ def validate_uri(ctx, param, value):
             validate_rocrate_uri(value)
         except ROCrateInvalidURIError as e:
             if logger.isEnabledFor(logging.DEBUG):
-                logger.exception(e)
-            raise click.BadParameter(e.message, param=param)
+                logger.exception("Invalid RO-Crate URI provided: %s", value)
+            raise click.BadParameter(e.message, param=param) from e
     return value
 
 
 @cli.command("validate")
 @click.argument("rocrate-uri", callback=validate_uri, default=".")
 @click.option(
-    '-rr',
-    '--relative-root-path',
+    "-rr",
+    "--relative-root-path",
     help="Use root-relative paths for all file references in the RO-Crate",
     default=None,
-    show_default=True
+    show_default=True,
 )
 @click.option(
-    '-m',
-    '--metadata-only',
+    "-m",
+    "--metadata-only",
     is_flag=True,
     help="Validate only the metadata of the RO-Crate",
     default=False,
-    show_default=True
+    show_default=True,
+)
+@click.option("-ff", "--fail-fast", is_flag=True, help="Fail fast validation mode", default=False, show_default=True)
+@click.option(
+    "--creation-time",
+    is_flag=True,
+    help="Treat availability checks as required (creation time validation)",
+    default=False,
+    show_default=True,
 )
 @click.option(
-    '-ff',
-    '--fail-fast',
+    "--enforce-availability",
     is_flag=True,
-    help="Fail fast validation mode",
+    help="Force availability checks as required",
     default=False,
-    show_default=True
+    show_default=True,
+)
+@click.option(
+    "--skip-availability-check",
+    is_flag=True,
+    help="Skip availability checks for web-based data entities",
+    default=False,
+    show_default=True,
 )
 @click.option(
     "--profiles-path",
@@ -102,7 +109,7 @@ def validate_uri(ctx, param, value):
     type=click.Path(exists=True),
     default=None,
     show_default=True,
-    help="Path containing additional user profiles files"
+    help="Path containing additional user profiles files",
 )
 @click.option(
     "-p",
@@ -120,15 +127,15 @@ def validate_uri(ctx, param, value):
     is_flag=True,
     help="Disable automatic detection of the profile to use for validation",
     default=False,
-    show_default=True
+    show_default=True,
 )
 @click.option(
-    '-nh',
-    '--disable-profile-inheritance',
+    "-nh",
+    "--disable-profile-inheritance",
     is_flag=True,
     help="Disable inheritance of profiles",
     default=False,
-    show_default=True
+    show_default=True,
 )
 @click.option(
     "-l",
@@ -139,16 +146,16 @@ def validate_uri(ctx, param, value):
     help="Severity of the requirements to validate",
 )
 @click.option(
-    '-lo',
-    '--requirement-severity-only',
+    "-lo",
+    "--requirement-severity-only",
     is_flag=True,
     help="Validate only the requirements of the specified severity (no requirements with lower severity)",
     default=False,
-    show_default=True
+    show_default=True,
 )
 @click.option(
-    '-s',
-    '--skip-checks',
+    "-s",
+    "--skip-checks",
     multiple=True,
     type=click.STRING,
     default=None,
@@ -166,62 +173,62 @@ def validate_uri(ctx, param, value):
     ),
 )
 @click.option(
-    '-v',
-    '--verbose',
+    "-v",
+    "--verbose",
     is_flag=True,
     help="Output the validation details without prompting",
     default=False,
-    show_default=True
+    show_default=True,
 )
 @click.option(
-    '--no-paging',
+    "--no-paging",
     is_flag=True,
     help="Disable pagination of the validation details",
     default=False,
     show_default=True,
-    hidden=True if sys.platform == "win32" else False
+    hidden=sys.platform == "win32",
 )
 @click.option(
-    '-f',
-    '--output-format',
+    "-f",
+    "--output-format",
     type=click.Choice(["json", "text"], case_sensitive=False),
     default="text",
     show_default=True,
-    help="Output format of the validation report"
+    help="Output format of the validation report",
 )
 @click.option(
-    '-o',
-    '--output-file',
+    "-o",
+    "--output-file",
     type=click.Path(),
     default=None,
     show_default=True,
     help="Path to the output file for the validation report",
 )
 @click.option(
-    '-w',
-    '--output-line-width',
+    "-w",
+    "--output-line-width",
     type=click.INT,
     default=120,
     show_default=True,
     help="Width of the output line",
 )
 @click.option(
-    '--cache-max-age',
+    "--cache-max-age",
     type=click.INT,
     default=constants.DEFAULT_HTTP_CACHE_MAX_AGE,
     show_default=True,
     help="Maximum age of the HTTP cache in seconds ([bold green]-1[/bold green] for no expiration)",
 )
 @click.option(
-    '--cache-path',
+    "--cache-path",
     type=click.Path(),
     default=None,
     show_default=True,
     help="Path to the HTTP cache directory",
 )
 @click.option(
-    '-nc',
-    '--no-cache',
+    "-nc",
+    "--no-cache",
     is_flag=True,
     help=(
         "Disable the HTTP cache entirely: every request goes to the network "
@@ -231,7 +238,7 @@ def validate_uri(ctx, param, value):
     show_default=True,
 )
 @click.option(
-    '--offline',
+    "--offline",
     is_flag=True,
     help=(
         "Offline mode: HTTP requests are served only from the cache. "
@@ -241,56 +248,58 @@ def validate_uri(ctx, param, value):
     show_default=True,
 )
 @click.pass_context
-def validate(ctx,
-             profiles_path: Path = DEFAULT_PROFILES_PATH,
-             extra_profiles_path: Optional[Path] = None,
-             profile_identifier: Optional[str] = None,
-             metadata_only: bool = False,
-             no_auto_profile: bool = False,
-             disable_profile_inheritance: bool = False,
-             requirement_severity: str = Severity.REQUIRED.name,
-             requirement_severity_only: bool = False,
-             skip_checks: list[str] = None,
-             rocrate_uri: Path = ".",
-             relative_root_path: Optional[Path] = None,
-             fail_fast: bool = False,
-             no_paging: bool = False,
-             verbose: bool = False,
-             output_format: str = "text",
-             output_file: Optional[Path] = None,
-             output_line_width: Optional[int] = None,
-             cache_max_age: int = constants.DEFAULT_HTTP_CACHE_MAX_AGE,
-             cache_path: Optional[Path] = None,
-             no_cache: bool = False,
-             offline: bool = False):
+def validate(
+    ctx,
+    profiles_path: Path = DEFAULT_PROFILES_PATH,
+    extra_profiles_path: Path | None = None,
+    profile_identifier: tuple[str, ...] = (),
+    metadata_only: bool = False,
+    creation_time: bool = False,
+    enforce_availability: bool = False,
+    skip_availability_check: bool = False,
+    no_auto_profile: bool = False,
+    disable_profile_inheritance: bool = False,
+    requirement_severity: str = Severity.REQUIRED.name,
+    requirement_severity_only: bool = False,
+    skip_checks: list[str] | None = None,
+    rocrate_uri: str | Path = ".",
+    relative_root_path: Path | None = None,
+    fail_fast: bool = False,
+    no_paging: bool = False,
+    verbose: bool = False,
+    output_format: str = "text",
+    output_file: Path | None = None,
+    output_line_width: int | None = None,
+    cache_max_age: int = constants.DEFAULT_HTTP_CACHE_MAX_AGE,
+    cache_path: Path | None = None,
+    no_cache: bool = False,
+    offline: bool = False,
+):
     """
     [magenta]rocrate-validator:[/magenta] Validate a RO-Crate against a profile
     """
-    console: Console = ctx.obj['console']
-    pager = ctx.obj['pager']
-    interactive = ctx.obj['interactive']
+    console: Console = ctx.obj["console"]
+    pager = ctx.obj["pager"]
+    interactive = ctx.obj["interactive"]
     # Get the no_paging flag
     enable_pager = not no_paging
     # override the enable_pager flag if the interactive flag is False
     if not interactive or sys.platform == "win32":
         enable_pager = False
-    # Log the input parameters for debugging
-    logger.debug("profiles_path: %s", os.path.abspath(profiles_path))
-    logger.debug("extra_profiles_path: %s", os.path.abspath(extra_profiles_path) if extra_profiles_path else None)
-    logger.debug("profile_identifier: %s", profile_identifier)
-    logger.debug("requirement_severity: %s", requirement_severity)
-    logger.debug("requirement_severity_only: %s", requirement_severity_only)
-
-    logger.debug("disable_inheritance: %s", disable_profile_inheritance)
-    logger.debug("rocrate_uri: %s", rocrate_uri)
-    logger.debug("fail_fast: %s", fail_fast)
-    logger.debug("no fail fast: %s", not fail_fast)
-
-    # Cache settings
-    logger.debug("cache_max_age: %s", cache_max_age)
-    logger.debug("cache_path: %s", os.path.abspath(cache_path) if cache_path else None)
-    logger.debug("no_cache: %s", no_cache)
-    logger.debug("offline: %s", offline)
+    _log_validation_inputs(
+        profiles_path=profiles_path,
+        extra_profiles_path=extra_profiles_path,
+        profile_identifier=profile_identifier,
+        requirement_severity=requirement_severity,
+        requirement_severity_only=requirement_severity_only,
+        disable_profile_inheritance=disable_profile_inheritance,
+        rocrate_uri=rocrate_uri,
+        fail_fast=fail_fast,
+        cache_max_age=cache_max_age,
+        cache_path=cache_path,
+        no_cache=no_cache,
+        offline=offline,
+    )
 
     # --no-cache and --offline are contradictory: offline mode requires a cache
     # to serve requests from, while no-cache disables caching entirely.
@@ -301,43 +310,11 @@ def validate(ctx,
         )
 
     if rocrate_uri:
-        logger.debug("rocrate_path: %s", os.path.abspath(rocrate_uri))
+        logger.debug("rocrate_path: %s", Path(rocrate_uri).resolve())
 
-    # Warn the user when a remote RO-Crate is about to be validated in offline mode:
-    # the cached copy (if any) will be used, and it may be out of sync with the remote.
-    if offline and isinstance(rocrate_uri, str) and rocrate_uri.split(":", 1)[0].lower() in ("http", "https", "ftp"):
-        console.print(
-            Padding(
-                Rule(
-                    "[bold yellow]WARNING:[/bold yellow] "
-                    "[bold]The target RO-Crate is remote and offline mode is enabled.[/bold]\n"
-                    "The cached version of the RO-Crate will be used if available.\n"
-                    "The cached copy may be out of sync with the version currently published remotely.",
-                    align="center",
-                    style="bold yellow",
-                ),
-                (1, 2, 0, 2),
-            )
-        )
+    _warn_if_remote_offline(console, rocrate_uri, offline)
 
-    # Parse the skip_checks option
-    logger.debug("skip_checks: %s", skip_checks)
-    # Parse the skip_checks option
-    skip_checks_list = []
-    if skip_checks:
-        try:
-            for s in skip_checks:
-                skip_checks_list.extend(_.strip() for _ in s.split(",") if _.strip())
-            logger.debug("skip_checks_list: %s", skip_checks_list)
-        except Exception as e:
-            logger.error("Error parsing skip_checks: %s", e)
-            if logger.isEnabledFor(logging.DEBUG):
-                logger.exception("Error parsing skip_checks: %s", e)
-            raise ValueError(
-                f"Invalid skip_checks value: {s}. "
-                "It must be a comma-separated list of Fully Qualified Check IDs."
-            )
-    logger.debug("Skip checks: %s", skip_checks_list)
+    skip_checks_list = _parse_skip_checks(skip_checks)
 
     try:
         # Validation settings
@@ -353,13 +330,16 @@ def validate(ctx,
             "abort_on_first": fail_fast,
             "skip_checks": skip_checks_list,
             "metadata_only": metadata_only,
-            "cache_max_age": cache_max_age,
+            "cache_max_age": cache_max_age if not no_cache else -1,
             "cache_path": cache_path,
             "offline": offline,
             "no_cache": no_cache,
             # When offline is requested, remote crate fetching must use the cache
             # instead of the "disable download" short-circuit.
-            "disable_remote_crate_download": False if offline else True,
+            "disable_remote_crate_download": not offline,
+            "creation_time": creation_time,
+            "enforce_availability": enforce_availability,
+            "skip_availability_check": skip_availability_check,
         }
 
         # Print the application header
@@ -369,152 +349,50 @@ def validate(ctx,
         # Get the available profiles
         available_profiles = services.get_profiles(profiles_path, extra_profiles_path=extra_profiles_path)
 
-        # Detect the profile to use for validation
-        autodetection = False
-        selected_profile = profile_identifier
-        if selected_profile is None or len(selected_profile) == 0:
-
-            # Auto-detect the profile to use for validation (if not disabled)
-            candidate_profiles = None
-            if not no_auto_profile:
-                candidate_profiles = services.detect_profiles(settings=validation_settings)
-                logger.debug("Candidate profiles: %s", candidate_profiles)
-            else:
-                logger.info("Auto-detection of the profiles to use for validation is disabled")
-
-            # Prompt the user to select the profile to use for validation if the interactive mode is enabled
-            # and no profile is auto-detected or multiple profiles are detected
-            if interactive and (
-                not candidate_profiles or
-                len(candidate_profiles) == 0 or
-                len(candidate_profiles) == len(available_profiles)
-            ):
-                # Define the list of choices
-                console.print(
-                    Padding(
-                        Rule(
-                            "[bold yellow]WARNING: [/bold yellow]"
-                            "[bold]Unable to automatically detect the profile to use for validation[/bold]\n",
-                            align="center",
-                            style="bold yellow"
-                        ),
-                        (2, 2, 0, 2)
-                    )
-                )
-                selected_options = multiple_choice(console, available_profiles)
-                profile_identifier = [available_profiles[int(
-                    selected_option)].identifier for selected_option in selected_options]
-                logger.debug("Profile selected: %s", selected_options)
-                console.print(Padding(Rule(style="bold yellow"), (1, 2)))
-
-            elif candidate_profiles and len(candidate_profiles) < len(available_profiles):
-                logger.debug("Profile identifier autodetected: %s", candidate_profiles[0].identifier)
-                autodetection = True
-                profile_identifier = [_.identifier for _ in candidate_profiles]
-
-        # Fall back to the selected profile
-        if not profile_identifier or len(profile_identifier) == 0:
-            console.print(f"\n{' '*2}[bold yellow]WARNING: [/bold yellow]", end="")
-            if no_auto_profile:
-                console.print("[bold]Auto-detection of the profiles to use for validation is disabled[/bold]")
-            else:
-                console.print("[bold]Unable to automatically detect the profile to use for validation[/bold]")
-            console.print(f"{' '*11}[bold]The base `ro-crate` profile will be used for validation[/bold]")
-            profile_identifier = ["ro-crate"]
+        # Resolve the concrete list of profile identifiers (auto-detection,
+        # interactive selection, or fallback to the base `ro-crate` profile).
+        profile_identifiers, autodetection = _resolve_profile_identifiers(
+            console,
+            interactive,
+            no_auto_profile,
+            available_profiles,
+            list(profile_identifier),
+            validation_settings,
+        )
 
         # Validate the RO-Crate against the selected profiles
         is_valid = True
         results = {}
-        for profile in profile_identifier:
+        for profile in profile_identifiers:
             # Duplicate settings for each profile and set the profile identifier
             logger.info("\nValidating RO-Crate against profile: [bold cyan]%s[/bold cyan]", profile)
-            validation_settings = validation_settings.copy()
-            # Set the selected profile
-            validation_settings["profile_identifier"] = profile
-            logger.debug("Profile selected for validation: %s", validation_settings["profile_identifier"])
+            profile_settings = validation_settings.copy()
+            profile_settings["profile_identifier"] = profile
+            logger.debug("Profile selected for validation: %s", profile)
             logger.debug("Profile autodetected: %s", autodetection)
 
-            # Initialize the validation result variable
-            result: ValidationResult = None
-
-            #########################################################################################
-            # Perform and display the validation with progress bar to the console
-            #########################################################################################
-            # Perform the validation and get the validation result
+            # Perform the validation and render the result for the chosen output target.
             if output_format == "text" and not output_file:
-                # If in interactive mode, show the validation progress with a progress bar
-                # with a live updating layout
-                if interactive:
-                    # Initialize the command view for text output
-                    command_view = ValidationCommandView(
-                        validation_settings=ValidationSettings.parse(validation_settings),
-                        console=console,
-                        interactive=interactive,
-                        no_paging=not enable_pager,
-                        pager=pager
-                    )
-                    # Validate RO-Crate against the profile and get the validation result
-                    result = command_view.show_validation_progress(services.validate)
-
-                    # Print the validation result
-                    if not result.passed():
-                        verbose_choice = "n"
-                        if interactive and not verbose:
-                            verbose_choice = get_single_char(console, choices=['y', 'n'],
-                                                             message=(
-                                "[bold] > Do you want to see the validation details? "
-                                "([magenta]y/n[/magenta]): [/bold]"
-                            ))
-                        if verbose_choice == "y" or verbose:
-                            command_view.display_validation_result(result)
-                else:
-                    # Validate RO-Crate against the profile and get the validation result
-                    result: ValidationResult = services.validate(validation_settings)
-                    # Init TextOutputFormatter for console output
-                    console.register_formatter(TextOutputFormatter())
-                    # Show the final overview of the validation if no interactive mode
-                    console.print(result.statistics)
-
-                    # Print the validation result
-                    if not result.passed() and verbose:
-                        out = Console(no_color=console.no_color, width=console.width, height=console.height)
-                        out.register_formatter(TextOutputFormatter())
-                        out.print(result)
-
-            ###########################################################################################
-            # Perform the validation without progress bar (for JSON output or text output to file)
-            ###########################################################################################
+                result = _render_console_result(
+                    profile_settings,
+                    console=console,
+                    pager=pager,
+                    interactive=interactive,
+                    enable_pager=enable_pager,
+                    verbose=verbose,
+                )
             else:
-                # Notify the start of the validation
-                if interactive:
-                    with LiveTextProgressLayout(
-                        console=console,
-                        profile_identifier=profile,
-                        validation_settings=validation_settings,
-                        callable_service=services.validate,
-                        transient=True
-                    ) as result:
-                        logger.debug("Validation result obtained")
-                else:
-                    # Validate RO-Crate against the profile and get the validation result
-                    result: ValidationResult = services.validate(validation_settings)
-                results[profile] = result
-
-                # Output processing for text format to file
-                ###################################################################################
-                if output_file and output_format == "text":
-                    if interactive:
-                        console.print(f"\n{' '*2}📝 [bold]Writing validation results to file[/bold]{'.'*4} ", end="")
-                    with open(output_file, "w", encoding="utf-8") if output_file else sys.stdout as f:
-                        out = Console(color_system=None, width=output_line_width, height=31, file=f)
-                        if output_format == "text":
-                            out.register_formatter(TextOutputFormatter())
-                            # Print the report layout
-                            out.print(result.statistics)  # Output the statistics first
-                            if not result.passed() and verbose:
-                                out.print(result)
-                    if interactive:
-                        console.print(f"[bold green]{output_file}[/bold green]", end="\n")
+                result = _render_file_or_collected_result(
+                    profile,
+                    profile_settings,
+                    console=console,
+                    interactive=interactive,
+                    verbose=verbose,
+                    output_format=output_format,
+                    output_file=output_file,
+                    output_line_width=output_line_width,
+                )
+            results[profile] = result
 
             # Update the global validation status
             is_valid = is_valid and result.passed()
@@ -523,48 +401,276 @@ def validate(ctx,
             if fail_fast and not is_valid:
                 break
 
-        ###################################################################
-        # ############## JSON OUTPUT FORMAT PROCESSING ################## #
-        ###################################################################
         # Process JSON output format
         if output_format == "json":
-            # Notify completion of the validation
-            if interactive:
-                if is_valid:
-                    console.print(
-                        f"\n{' '*2}✅ [bold]Validation [green]PASSED![/green]. "
-                        f"\n{' '*5}RO-Crate is valid according to the profile(s): "
-                        f"[cyan]{', '.join(profile_identifier)}[/cyan][/bold]"
-                    )
-                else:
-                    console.print(f"\n{' '*2}❌ [bold]Validation [red]FAILED![/red][/bold]")
-            # Notify the start of JSON output generation
-            if interactive:
-                if output_file:
-                    console.print(
-                        f"\n{' '*2}📝 [bold]Writing validation results in JSON format "
-                        f"to the file \"{output_file}\"[/bold]{'.'*4} ",
-                        end=""
-                    )
-                else:
-                    console.print(f"\n{' '*2}📋 [bold]The validation report in JSON format: [/bold]\n")
+            _emit_json_report(
+                results,
+                profile_identifiers,
+                is_valid,
+                console=console,
+                interactive=interactive,
+                output_file=output_file,
+                output_line_width=output_line_width,
+            )
 
-            # Generate the JSON output and write it to the specified output file or to stdout
-            with open(output_file, "w", encoding="utf-8") if output_file else nullcontext(sys.stdout) as f:
-                out = Console(width=output_line_width, file=f)
-                out.register_formatter(JSONOutputFormatter())
-                out.print(results)
-
-            # Notify completion of JSON output generation
-            if interactive and output_file:
-                console.print("[bold]DONE![/bold]", end="\n\n")
-
-        ################################################################################
-        # Exit with appropriate status code
-        ################################################################################
-
+        # Exit with appropriate status code.
         # using ctx.exit seems to raise an Exception that gets caught below,
         # so we use sys.exit instead.
         sys.exit(0 if is_valid else 1)
     except Exception as e:
         handle_error(e, console)
+
+
+def _log_validation_inputs(
+    *,
+    profiles_path,
+    extra_profiles_path,
+    profile_identifier,
+    requirement_severity,
+    requirement_severity_only,
+    disable_profile_inheritance,
+    rocrate_uri,
+    fail_fast,
+    cache_max_age,
+    cache_path,
+    no_cache,
+    offline,
+) -> None:
+    """Log the raw validation input parameters for debugging."""
+    logger.debug("profiles_path: %s", Path(profiles_path).resolve())
+    logger.debug("extra_profiles_path: %s", Path(extra_profiles_path).resolve() if extra_profiles_path else None)
+    logger.debug("profile_identifier: %s", profile_identifier)
+    logger.debug("requirement_severity: %s", requirement_severity)
+    logger.debug("requirement_severity_only: %s", requirement_severity_only)
+    logger.debug("disable_inheritance: %s", disable_profile_inheritance)
+    logger.debug("rocrate_uri: %s", rocrate_uri)
+    logger.debug("fail_fast: %s", fail_fast)
+    logger.debug("no fail fast: %s", not fail_fast)
+    logger.debug("cache_max_age: %s", cache_max_age)
+    logger.debug("cache_path: %s", Path(cache_path).resolve() if cache_path else None)
+    logger.debug("no_cache: %s", no_cache)
+    logger.debug("offline: %s", offline)
+
+
+def _warn_if_remote_offline(console: Console, rocrate_uri: str | Path, offline: bool) -> None:
+    """Warn when a remote RO-Crate is validated in offline mode (the cached copy is used)."""
+    if offline and isinstance(rocrate_uri, str) and rocrate_uri.split(":", 1)[0].lower() in ("http", "https", "ftp"):
+        console.print(
+            Padding(
+                Rule(
+                    "[bold yellow]WARNING:[/bold yellow] "
+                    "[bold]The target RO-Crate is remote and offline mode is enabled.[/bold]\n"
+                    "The cached version of the RO-Crate will be used if available.\n"
+                    "The cached copy may be out of sync with the version currently published remotely.",
+                    align="center",
+                    style="bold yellow",
+                ),
+                (1, 2, 0, 2),
+            )
+        )
+
+
+def _parse_skip_checks(skip_checks: list[str] | None) -> list[str]:
+    """Parse the comma-separated ``--skip-checks`` option into a flat list of check IDs."""
+    logger.debug("skip_checks: %s", skip_checks)
+    skip_checks_list: list[str] = []
+    if skip_checks:
+        try:
+            for s in skip_checks:
+                skip_checks_list.extend(_.strip() for _ in s.split(",") if _.strip())
+        except Exception as e:
+            logger.error("Error parsing skip_checks: %s", e)
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.exception("Error parsing skip_checks")
+            raise ValueError(
+                f"Invalid skip_checks value: {skip_checks}. "
+                "It must be a comma-separated list of Fully Qualified Check IDs."
+            ) from e
+    logger.debug("Skip checks: %s", skip_checks_list)
+    return skip_checks_list
+
+
+def _resolve_profile_identifiers(
+    console: Console,
+    interactive: bool,
+    no_auto_profile: bool,
+    available_profiles: list,
+    profile_identifiers: list[str],
+    validation_settings: dict,
+) -> tuple[list[str], bool]:
+    """
+    Resolve the concrete list of profile identifiers to validate against.
+
+    Applies auto-detection and interactive selection when no profile is given,
+    and falls back to the base ``ro-crate`` profile when nothing can be resolved.
+    Returns the identifiers and whether they were auto-detected.
+    """
+    autodetection = False
+    if not profile_identifiers:
+        # Auto-detect the profile to use for validation (if not disabled)
+        candidate_profiles = None
+        if not no_auto_profile:
+            candidate_profiles = services.detect_profiles(settings=validation_settings)
+            logger.debug("Candidate profiles: %s", candidate_profiles)
+        else:
+            logger.info("Auto-detection of the profiles to use for validation is disabled")
+
+        # Prompt the user when interactive and no single profile could be auto-detected
+        if interactive and (
+            not candidate_profiles or len(candidate_profiles) == 0 or len(candidate_profiles) == len(available_profiles)
+        ):
+            console.print(
+                Padding(
+                    Rule(
+                        "[bold yellow]WARNING: [/bold yellow]"
+                        "[bold]Unable to automatically detect the profile to use for validation[/bold]\n",
+                        align="center",
+                        style="bold yellow",
+                    ),
+                    (2, 2, 0, 2),
+                )
+            )
+            selected_options = multiple_choice(console, available_profiles)
+            if selected_options is None or isinstance(selected_options, bool):
+                selected_options = []
+            profile_identifiers = [available_profiles[int(o)].identifier for o in selected_options]
+            logger.debug("Profile selected: %s", selected_options)
+            console.print(Padding(Rule(style="bold yellow"), (1, 2)))
+        elif candidate_profiles and len(candidate_profiles) < len(available_profiles):
+            logger.debug("Profile identifier autodetected: %s", candidate_profiles[0].identifier)
+            autodetection = True
+            profile_identifiers = [_.identifier for _ in candidate_profiles]
+
+    # Fall back to the base profile when nothing could be resolved
+    if not profile_identifiers:
+        console.print(f"\n{' ' * 2}[bold yellow]WARNING: [/bold yellow]", end="")
+        if no_auto_profile:
+            console.print("[bold]Auto-detection of the profiles to use for validation is disabled[/bold]")
+        else:
+            console.print("[bold]Unable to automatically detect the profile to use for validation[/bold]")
+        console.print(f"{' ' * 11}[bold]The base `ro-crate` profile will be used for validation[/bold]")
+        profile_identifiers = ["ro-crate"]
+
+    return profile_identifiers, autodetection
+
+
+def _render_console_result(
+    validation_settings: dict,
+    *,
+    console: Console,
+    pager,
+    interactive: bool,
+    enable_pager: bool,
+    verbose: bool,
+) -> ValidationResult:
+    """Validate and render the result to the interactive/text console (no output file)."""
+    if interactive:
+        command_view = ValidationCommandView(
+            validation_settings=ValidationSettings.parse(validation_settings),
+            console=console,
+            interactive=interactive,
+            no_paging=not enable_pager,
+            pager=pager,
+        )
+        result = command_view.show_validation_progress(services.validate)
+        if not result.passed():
+            verbose_choice = "n"
+            if interactive and not verbose:
+                verbose_choice = get_single_char(
+                    console,
+                    choices=["y", "n"],
+                    message=("[bold] > Do you want to see the validation details? ([magenta]y/n[/magenta]): [/bold]"),
+                )
+            if verbose_choice == "y" or verbose:
+                command_view.display_validation_result(result)
+        return result
+
+    result = services.validate(validation_settings)
+    console.register_formatter(TextOutputFormatter())
+    console.print(result.statistics)
+    if not result.passed() and verbose:
+        out = Console(no_color=console.no_color, width=console.width, height=console.height)
+        out.register_formatter(TextOutputFormatter())
+        out.print(result)
+    return result
+
+
+def _render_file_or_collected_result(
+    profile: str,
+    validation_settings: dict,
+    *,
+    console: Console,
+    interactive: bool,
+    verbose: bool,
+    output_format: str,
+    output_file: Path | None,
+    output_line_width: int | None,
+) -> ValidationResult:
+    """Validate for the file/JSON-input path, optionally writing a text report to file."""
+    if interactive:
+        with LiveTextProgressLayout(
+            console=console,
+            profile_identifier=profile,
+            validation_settings=validation_settings,
+            callable_service=services.validate,
+            transient=True,
+        ) as result:
+            logger.debug("Validation result obtained")
+    else:
+        result = services.validate(validation_settings)
+
+    if result is None:
+        raise RuntimeError("Validation did not produce a result")
+
+    # Output processing for text format to file
+    if output_file and output_format == "text":
+        if interactive:
+            console.print(f"\n{' ' * 2}📝 [bold]Writing validation results to file[/bold]{'.' * 4} ", end="")
+        with output_file.open("w", encoding="utf-8") if output_file else sys.stdout as f:
+            out = Console(color_system=None, width=output_line_width, height=31, file=f)
+            out.register_formatter(TextOutputFormatter())
+            out.print(result.statistics)  # Output the statistics first
+            if not result.passed() and verbose:
+                out.print(result)
+        if interactive:
+            console.print(f"[bold green]{output_file}[/bold green]", end="\n")
+    return result
+
+
+def _emit_json_report(
+    results: dict,
+    profile_identifiers: list[str],
+    is_valid: bool,
+    *,
+    console: Console,
+    interactive: bool,
+    output_file: Path | None,
+    output_line_width: int | None,
+) -> None:
+    """Write the aggregated validation results as JSON to a file or stdout."""
+    if interactive:
+        if is_valid:
+            console.print(
+                f"\n{' ' * 2}✅ [bold]Validation [green]PASSED![/green]. "
+                f"\n{' ' * 5}RO-Crate is valid according to the profile(s): "
+                f"[cyan]{', '.join(profile_identifiers)}[/cyan][/bold]"
+            )
+        else:
+            console.print(f"\n{' ' * 2}❌ [bold]Validation [red]FAILED![/red][/bold]")
+        if output_file:
+            console.print(
+                f"\n{' ' * 2}📝 [bold]Writing validation results in JSON format "
+                f'to the file "{output_file}"[/bold]{"." * 4} ',
+                end="",
+            )
+        else:
+            console.print(f"\n{' ' * 2}📋 [bold]The validation report in JSON format: [/bold]\n")
+
+    # Generate the JSON output and write it to the specified output file or to stdout
+    with output_file.open("w", encoding="utf-8") if output_file else nullcontext(sys.stdout) as f:
+        out = Console(width=output_line_width, file=f)
+        out.register_formatter(JSONOutputFormatter())
+        out.print(results)
+
+    if interactive and output_file:
+        console.print("[bold]DONE![/bold]", end="\n\n")

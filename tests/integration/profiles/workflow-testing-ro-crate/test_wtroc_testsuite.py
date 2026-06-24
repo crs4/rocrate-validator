@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 def test_wtroc_testsuite_not_mentioned():
-    """\
+    """
     Test a Workflow Testing RO-Crate where a TestSuite is not listed in the
     Root Data Entity's mentions.
     """
@@ -33,12 +33,12 @@ def test_wtroc_testsuite_not_mentioned():
         False,
         ["Workflow Testing RO-Crate TestSuite MUST"],
         ["The TestSuite MUST be referenced from the Root Data Entity via mentions"],
-        profile_identifier="workflow-testing-ro-crate"
+        profile_identifier="workflow-testing-ro-crate",
     )
 
 
 def test_wtroc_testsuite_no_instance_no_def():
-    """\
+    """
     Test a Workflow Testing RO-Crate where a TestSuite does not refer to
     either a TestSuite or a TestDefinition.
     """
@@ -48,12 +48,12 @@ def test_wtroc_testsuite_no_instance_no_def():
         False,
         ["TestSuite instance or definition"],
         ["The TestSuite MUST refer to a TestInstance or TestDefinition"],
-        profile_identifier="workflow-testing-ro-crate"
+        profile_identifier="workflow-testing-ro-crate",
     )
 
 
 def test_wtroc_testsuite_no_mainentity():
-    """\
+    """
     Test a Workflow Testing RO-Crate where a TestSuite does not refer to
     the tested workflow via mainEntity.
     """
@@ -63,12 +63,12 @@ def test_wtroc_testsuite_no_mainentity():
         False,
         ["Workflow Testing RO-Crate TestSuite SHOULD"],
         ["The TestSuite SHOULD refer to the tested workflow via mainEntity"],
-        profile_identifier="workflow-testing-ro-crate"
+        profile_identifier="workflow-testing-ro-crate",
     )
 
 
 def test_wtroc_testsuite_bad_instance():
-    """\
+    """
     Test a Workflow Testing RO-Crate where a TestSuite has an instance
     property that does not refer to a TestInstance.
     """
@@ -78,12 +78,12 @@ def test_wtroc_testsuite_bad_instance():
         False,
         ["TestSuite instance or definition"],
         ["The TestSuite MUST refer to a TestInstance or TestDefinition"],
-        profile_identifier="workflow-testing-ro-crate"
+        profile_identifier="workflow-testing-ro-crate",
     )
 
 
 def test_wtroc_testsuite_bad_definition():
-    """\
+    """
     Test a Workflow Testing RO-Crate where a TestSuite has a definition
     property that does not refer to a TestDefinition.
     """
@@ -93,12 +93,12 @@ def test_wtroc_testsuite_bad_definition():
         False,
         ["TestSuite instance or definition"],
         ["The TestSuite MUST refer to a TestInstance or TestDefinition"],
-        profile_identifier="workflow-testing-ro-crate"
+        profile_identifier="workflow-testing-ro-crate",
     )
 
 
 def test_wtroc_testsuite_bad_mainentity():
-    """\
+    """
     Test a Workflow Testing RO-Crate where a TestSuite has a mainEntity
     property that does not refer to a workflow.
     """
@@ -108,5 +108,5 @@ def test_wtroc_testsuite_bad_mainentity():
         False,
         ["Workflow Testing RO-Crate TestSuite SHOULD"],
         ["The TestSuite SHOULD refer to the tested workflow via mainEntity"],
-        profile_identifier="workflow-testing-ro-crate"
+        profile_identifier="workflow-testing-ro-crate",
     )

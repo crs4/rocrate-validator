@@ -4,7 +4,7 @@
 The profile hierarchy is as follows:
 
 ```
-               A 
+               A
               / \
              B   C
             / \  |

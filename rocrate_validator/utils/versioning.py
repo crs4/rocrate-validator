@@ -13,8 +13,8 @@
 # limitations under the License.
 
 import re
+import subprocess
 import sys
-from typing import Optional
 
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.config import get_config
@@ -23,18 +23,16 @@ from rocrate_validator.utils.config import get_config
 logger = logging.getLogger(__name__)
 
 
-def run_git_command(command: list[str]) -> Optional[str]:
+def run_git_command(command: list[str]) -> str | None:
     """
     Run a git command and return the output
 
     :param command: The git command
     :return: The output of the command
     """
-    import subprocess
 
     try:
-        output = subprocess.check_output(command, stderr=subprocess.DEVNULL).decode().strip()
-        return output
+        return subprocess.check_output(command, stderr=subprocess.DEVNULL).decode().strip()
     except Exception as e:
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug(e)
@@ -47,7 +45,7 @@ def get_git_commit() -> str:
 
     :return: The git commit hash
     """
-    return run_git_command(['git', 'rev-parse', '--short', 'HEAD'])
+    return run_git_command(["git", "rev-parse", "--short", "HEAD"]) or ""
 
 
 def is_release_tag(git_sha: str) -> bool:
@@ -57,7 +55,7 @@ def is_release_tag(git_sha: str) -> bool:
     :param git_sha: The git sha
     :return: True if the sha corresponds to a release tag, False otherwise
     """
-    tags = run_git_command(['git', 'tag', '--points-at', git_sha])
+    tags = run_git_command(["git", "tag", "--points-at", git_sha])
     return bool(tags)
 
 
@@ -67,10 +65,10 @@ def get_last_tag() -> str:
 
     :return: The last tag
     """
-    return run_git_command(['git', 'describe', '--tags', '--abbrev=0'])
+    return run_git_command(["git", "describe", "--tags", "--abbrev=0"]) or ""
 
 
-def get_commit_distance(tag: Optional[str] = None) -> int:
+def get_commit_distance(tag: str | None = None) -> int:
     """
     Get the distance in commits between the current commit and the last tag
 
@@ -79,7 +77,8 @@ def get_commit_distance(tag: Optional[str] = None) -> int:
     if not tag:
         tag = get_last_tag()
     try:
-        return int(run_git_command(['git', 'rev-list', '--count', f"{tag}..HEAD"]))
+        count = run_git_command(["git", "rev-list", "--count", f"{tag}..HEAD"])
+        return int(count) if count else 0
     except Exception as e:
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug(e)
@@ -93,7 +92,7 @@ def has_uncommitted_changes() -> bool:
 
     :return: True if there are uncommitted changes, False otherwise
     """
-    return bool(run_git_command(['git', 'status', '--porcelain']))
+    return bool(run_git_command(["git", "status", "--porcelain"]))
 
 
 def get_version() -> str:
@@ -114,15 +113,12 @@ def get_version() -> str:
         version = latest_tag
     else:
         commit_distance = get_commit_distance(latest_tag)
-        if commit_sha:
-            version = f"{declared_version}_{commit_sha}+{commit_distance}"
-        else:
-            version = declared_version
+        version = f"{declared_version}_{commit_sha}+{commit_distance}" if commit_sha else declared_version
     dirty = has_uncommitted_changes()
     return f"{version}-dirty" if dirty else version
 
 
-def get_min_python_version() -> tuple[int, int, Optional[int]]:
+def get_min_python_version() -> tuple[int, ...]:
     """
     Get the minimum Python version required by the package
 
@@ -132,7 +128,7 @@ def get_min_python_version() -> tuple[int, int, Optional[int]]:
     min_version_str = config["tool"]["poetry"]["dependencies"]["python"]
     assert min_version_str, "The minimum Python version is required"
     # remove any non-digit characters
-    min_version_str = re.sub(r'[^\d.]+', '', min_version_str)
+    min_version_str = re.sub(r"[^\d.]+", "", min_version_str)
     # convert the version string to a tuple
     min_version = tuple(map(int, min_version_str.split(".")))
     logger.debug(f"Minimum Python version: {min_version}")

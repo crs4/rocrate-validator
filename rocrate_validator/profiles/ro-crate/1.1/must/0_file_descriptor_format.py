@@ -1,0 +1,477 @@
+# Copyright (c) 2024-2026 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# pylint: disable=invalid-name  # profile filename uses digit prefix (load-order convention)
+
+import re
+from typing import Any
+from urllib.parse import urljoin
+
+from rocrate_validator.constants import HTTP_STATUS_OK
+from rocrate_validator.models import ValidationContext
+from rocrate_validator.requirements.python import PyFunctionCheck, check, requirement
+from rocrate_validator.utils import log as logging
+from rocrate_validator.utils.http import HttpRequester
+
+# set up logging
+logger = logging.getLogger(__name__)
+
+
+@requirement(name="File Descriptor existence")
+class FileDescriptorExistence(PyFunctionCheck):
+    """The file descriptor MUST be present in the RO-Crate and MUST not be empty."""
+
+    @check(name="File Descriptor Existence")
+    def test_existence(self, context: ValidationContext) -> bool:
+        """
+        Check if the file descriptor is present in the RO-Crate
+        """
+        if context.settings.metadata_only:
+            logger.debug("Skipping file descriptor existence check in metadata-only mode")
+            return True
+        if not context.ro_crate.has_descriptor():
+            message = f'file descriptor "{context.rel_fd_path}" is not present'
+            context.result.add_issue(message, self)
+            return False
+        return True
+
+    @check(name="File Descriptor size check")
+    def test_size(self, context: ValidationContext) -> bool:
+        """
+        Check if the file descriptor is not empty
+        """
+        if context.settings.metadata_only:
+            logger.debug("Skipping file descriptor existence check in metadata-only mode")
+            return True
+        if not context.ro_crate.has_descriptor():
+            message = f"file descriptor {context.rel_fd_path} is empty"
+            context.result.add_issue(message, self)
+            return False
+        if context.ro_crate.metadata.size == 0:
+            context.result.add_issue(f'RO-Crate "{context.rel_fd_path}" file descriptor is empty', self)
+            return False
+        return True
+
+
+@requirement(name="File Descriptor JSON format")
+class FileDescriptorJsonFormat(PyFunctionCheck):
+    """
+    The file descriptor MUST be a valid JSON file
+    """
+
+    @check(name="File Descriptor JSON format")
+    def check(self, context: ValidationContext) -> bool:
+        """Check if the file descriptor is in the correct format"""
+        try:
+            logger.debug("Checking validity of JSON file at %s", context.ro_crate.metadata)
+            context.ro_crate.metadata.as_dict()
+            return True
+        except Exception:
+            context.result.add_issue(
+                f'RO-Crate file descriptor "{context.rel_fd_path}" is not in the correct format', self
+            )
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.exception("RO-Crate file descriptor is not in the correct format")
+            return False
+
+
+@requirement(name="File Descriptor JSON-LD format")
+class FileDescriptorJsonLdFormat(PyFunctionCheck):
+    """
+    The file descriptor MUST be a valid JSON-LD file
+    """
+
+    def __get_remote_context__(self, context_uri: str) -> object:
+        raw_data = HttpRequester().get(context_uri, headers={"Accept": "application/ld+json, application/json"})
+        if raw_data.status_code != HTTP_STATUS_OK:
+            raise RuntimeError(f"Unable to retrieve the JSON-LD context '{context_uri}'", self)
+        logger.debug(f"Retrieved context from {context_uri}")
+
+        # Check if the response header contains the correct content type
+        content_type = raw_data.headers.get("Content-Type", "")
+        is_valid_content_type = "application/ld+json" in content_type or "application/json" in content_type
+        # If the content type is not application/ld+json or application/json,
+        # try to find an alternate link for the JSON-LD context in the response header
+        if not is_valid_content_type:
+            logger.debug(
+                f"The retrieved context from {context_uri} "
+                f"does not have a Content-Type of application/ld+json or application/json: "
+                f"the actual Content-Type is {content_type}. "
+            )
+            # check if the response header contains an alternate link location for the JSON-LD context
+            # (https headers are case-insensitive, according to RFC 7230,
+            #  so we can use .get() without worrying about the case)
+            link_header = raw_data.headers.get("Link", "")
+            logger.debug(f"Checking Link header for alternate JSON-LD context: {link_header}")
+            has_alternate_link = 'rel="alternate"' in link_header and (
+                'type="application/ld+json"' in link_header or 'type="application/json"' in link_header
+            )
+
+            if has_alternate_link:
+                logger.debug(f"Found alternate link for JSON-LD context in Link header: {link_header}")
+                # extract the URL of the alternate link
+                match = re.search(r'<([^>]+)>;\s*rel="alternate";\s*type="application/(ld\+json|json)"', link_header)
+                if match:
+                    alternate_url = match.group(1)
+                    # If the alternate URL is relative, resolve it against the original context URI
+                    if not alternate_url.startswith("http"):
+                        alternate_url = urljoin(context_uri, alternate_url)
+                    logger.debug(f"Trying to retrieve JSON-LD context from alternate URL: {alternate_url}")
+                    raw_data = HttpRequester().get(
+                        alternate_url, headers={"Accept": "application/ld+json, application/json"}
+                    )
+                    if raw_data.status_code != HTTP_STATUS_OK:
+                        raise RuntimeError(
+                            f"Unable to retrieve the JSON-LD context from alternate URL '{alternate_url}'", self
+                        )
+                    logger.debug(f"Retrieved context from alternate URL {alternate_url}")
+                    content_type = raw_data.headers.get("Content-Type", "")
+                    if "application/ld+json" not in content_type and "application/json" not in content_type:
+                        raise RuntimeError(
+                            f"The retrieved context from alternate URL {alternate_url} "
+                            "does not have a Content-Type of application/ld+json or application/json: "
+                            f"the actual Content-Type is {content_type}. ",
+                            self,
+                        )
+                else:
+                    logger.debug(f"No valid alternate link found in Link header: {link_header}")
+                    raise RuntimeError(
+                        f"Unable to retrieve the JSON-LD context from {context_uri} and no valid "
+                        f"alternate link found in Link header: {link_header}",
+                        self,
+                    )
+            else:
+                logger.debug(f"No alternate link for JSON-LD context found in Link header: {link_header}")
+                raise RuntimeError(
+                    f"Unable to retrieve the JSON-LD context from {context_uri} "
+                    f"and no alternate link found in Link header: {link_header}",
+                    self,
+                )
+
+        # Try to parse the JSON-LD and access the context
+        jsonLD = raw_data.json()["@context"]
+        assert isinstance(jsonLD, dict)
+        # return the JSON-LD context
+        return jsonLD
+
+    def __check_remote_context__(self, context_uri: str) -> bool:
+        # Try to retrieve the context
+        try:
+            # Try to parse the JSON-LD and access the context
+            jsonLD = self.__get_remote_context__(context_uri)
+            assert isinstance(jsonLD, dict), (
+                f"The retrieved context from {context_uri} is not \
+                a valid JSON-LD context: it is not a dictionary"
+            )
+            return True
+        except Exception:
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.exception("Error validating JSON-LD context is a dictionary")
+        return False
+
+    def __check_contexts__(self, context: ValidationContext, jsonld_context: object) -> bool:
+        """Get the keys of the context URI"""
+        is_valid = True
+        # if the context is a string, check if it is a valid URI
+        if isinstance(jsonld_context, str) and not self.__check_remote_context__(jsonld_context):
+            context.result.add_issue(f'Unable to retrieve the JSON-LD context "{jsonld_context}"', self)
+            is_valid = False
+
+        # if the context is a dictionary, get the keys of the dictionary
+        if isinstance(jsonld_context, dict):
+            logger.debug(f"Detected dictionary context: {jsonld_context}")
+
+        # if the context is a list of contexts, get the keys of each context
+        if isinstance(jsonld_context, list):
+            for ctx in jsonld_context:
+                if not self.__check_contexts__(context, ctx):
+                    is_valid = False
+        # return if the context is valid
+        return is_valid
+
+    @check(name="File Descriptor @context property validation")
+    def check_context(self, context: ValidationContext) -> bool:
+        """Check if the file descriptor contains
+        the @context property and it is a valid JSON-LD context
+        """
+        try:
+            json_dict = context.ro_crate.metadata.as_dict()
+            if "@context" not in json_dict:
+                context.result.add_issue(
+                    f'RO-Crate file descriptor "{context.rel_fd_path}" does not contain a context', self
+                )
+                return False
+
+            # Check if the context is valid
+            return self.__check_contexts__(context, json_dict["@context"])
+        except Exception:
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.exception("Error extracting @context from file descriptor")
+        return False
+
+    @check(name="File Descriptor JSON-LD must be flattened")
+    def check_flattened(self, context: ValidationContext) -> bool:
+        """Check if the file descriptor is flattened"""
+        return self._check_flattened_graph(
+            context,
+            lambda entity, fail_fast: self._is_entity_flat(context, entity, fail_fast=fail_fast),
+        )
+
+    def _is_entity_flat(
+        self, context: ValidationContext, entity: Any, is_first: bool = True, fail_fast: bool = False
+    ) -> bool:
+        """Recursively check that an entity (and its children) is flattened."""
+        if isinstance(entity, dict):
+            if is_first:
+                return self._all_children_flat(context, entity.values(), fail_fast)
+            return self._validate_non_root_entity(context, entity, fail_fast)
+        if isinstance(entity, list):
+            return self._all_children_flat(context, entity, fail_fast)
+        return True
+
+    def _all_children_flat(self, context: ValidationContext, children: Any, fail_fast: bool) -> bool:
+        """Check that every child entity is flattened, honoring fail-fast."""
+        result = True
+        for child in children:
+            if not self._is_entity_flat(context, child, is_first=False, fail_fast=fail_fast):
+                result = False
+                if fail_fast:
+                    return False
+        return result
+
+    def _validate_non_root_entity(self, context: ValidationContext, entity: Any, fail_fast: bool) -> bool:
+        """Validate a non-root entity, collecting any flattening issues then emitting them."""
+        issues: list[str] = []
+        if "@id" in entity and "@value" in entity:
+            issues.append(
+                f'entity "{entity.get("@id", entity)}" contains both @id and @value: '
+                "an object with an @value represents a value object, which is a literal value such as "
+                "a string, number, date, or language-tagged string. This object is not an identifiable "
+                "resource, but a simple literal value."
+            )
+        if "@value" in entity:
+            if not isinstance(entity, dict):
+                issues.append(
+                    f'entity "{entity.get("@id", entity)}" is not a valid value object: it MUST be a dictionary.'
+                )
+            has_language = "@language" in entity
+            has_type = "@type" in entity
+            if has_language and has_type:
+                issues.append(
+                    f'entity "{entity.get("@id", entity)}" is not a valid value object: '
+                    "@language and @type cannot coexist."
+                )
+            if has_language and not isinstance(entity["@value"], str):
+                issues.append(
+                    f'entity "{entity.get("@id", entity)}" is not a valid value object: '
+                    "if @language is present, @value must be a string."
+                )
+        elif "@id" not in entity or len(entity) > 1:
+            issues.append(
+                f'entity "{entity.get("@id", entity)}" is not a valid node object reference: '
+                "it MUST have only @id, but no other properties."
+            )
+        return self._emit_entity_issues(context, issues, fail_fast)
+
+    def _emit_entity_issues(self, context: ValidationContext, issues: list[str], fail_fast: bool) -> bool:
+        """Emit collected entity issues; in fail-fast mode stop after the first."""
+        for message in issues:
+            context.result.add_issue(message, self)
+            if fail_fast:
+                return False
+        return not issues
+
+    def _check_flattened_graph(self, context, is_flat):
+        try:
+            fail_fast = bool(context.settings.abort_on_first)
+            json_dict = context.ro_crate.metadata.as_dict()
+            result = True
+            for entity in json_dict["@graph"]:
+                if not is_flat(entity, fail_fast=fail_fast):
+                    context.result.add_issue(
+                        f'RO-Crate file descriptor "{context.rel_fd_path}" '
+                        f'is not fully flattened at entity "{entity.get("@id", entity)}"',
+                        self,
+                    )
+                    result = False
+                    if fail_fast:
+                        return False
+            return result
+        except Exception:
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.exception("Error flattening JSON-LD file descriptor")
+        return False
+
+    @check(name="Validation of the @id property of the file descriptor entities")
+    def check_identifiers(self, context: ValidationContext) -> bool:
+        """Check if the file descriptor entities have the @id property"""
+        try:
+            json_dict = context.ro_crate.metadata.as_dict()
+            for entity in json_dict["@graph"]:
+                if "@id" not in entity:
+                    context.result.add_issue(
+                        f'Entity "{entity.get("name", None) or entity}" '
+                        f'of RO-Crate "{context.rel_fd_path}" '
+                        "file descriptor does not contain the @id attribute",
+                        self,
+                    )
+                    return False
+            return True
+        except Exception:
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.exception("Error validating @id property of file descriptor entities")
+        return False
+
+    @check(name="Validation of the @type property of the file descriptor entities")
+    def check_types(self, context: ValidationContext) -> bool:
+        """Check if the file descriptor entities have the @type property"""
+        try:
+            json_dict = context.ro_crate.metadata.as_dict()
+            for entity in json_dict["@graph"]:
+                if "@type" not in entity:
+                    context.result.add_issue(
+                        f'Entity "{entity.get("name", None) or entity}" '
+                        f'of RO-Crate "{context.rel_fd_path}" '
+                        "file descriptor does not contain the @type attribute",
+                        self,
+                    )
+                    return False
+            return True
+        except Exception:
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.exception("Error validating @type property of file descriptor entities")
+        return False
+
+    def __get_context_keys__(self, context: object) -> set:
+        """Get the keys of the context URI"""
+        if isinstance(context, str):
+            return self.__get_remote_context_keys__(context)
+
+        # if the context is a dictionary, get the keys of the dictionary
+        if isinstance(context, dict):
+            return set(context.keys())
+
+        # if the context is a list of contexts, get the keys of each context
+        if isinstance(context, list):
+            keys = set()
+            for ctx in context:
+                keys.update(self.__get_context_keys__(ctx))
+            return keys
+
+        # any other context type contributes no keys
+        return set()
+
+    def __get_remote_context_keys__(self, context_uri: str) -> set:
+        """Get the keys of the context URI"""
+
+        logger.debug(f"Retrieving context from {context_uri}...")
+        # Get the keys of the context
+        jsonLD_ctx = self.__get_remote_context__(context_uri)
+        if not isinstance(jsonLD_ctx, dict):
+            raise TypeError("The context is not a dictionary")
+        return set(jsonLD_ctx.keys())
+
+    # Reserved JSON-LD keywords that are always allowed as entity keys.
+    __RESERVED_JSONLD_KEYS__ = frozenset({"@id", "@type", "@context", "@value", "@language"})
+
+    def __check_entity_keys__(
+        self, entity: Any, context_keys: set, unexpected_keys: dict[str, int] | None = None
+    ) -> dict[str, int]:
+        """Check if the entity is in the correct format"""
+        # Ensure unexpected_keys is initialized
+        if unexpected_keys is None:
+            unexpected_keys = {}
+
+        # If the entity is a dictionary, classify each key and recurse into values
+        if isinstance(entity, dict):
+            for k, v in entity.items():
+                self.__record_unexpected_key__(k, context_keys, unexpected_keys)
+                # If the value is a dictionary or a list, check its keys recursively
+                if isinstance(v, (dict, list)):
+                    self.__check_entity_keys__(v, context_keys, unexpected_keys)
+
+        # If the entity is a list, check each element
+        elif isinstance(entity, list):
+            for elem in entity:
+                self.__check_entity_keys__(elem, context_keys, unexpected_keys)
+
+        return unexpected_keys
+
+    def __record_unexpected_key__(self, k: str, context_keys: set, unexpected_keys: dict[str, int]) -> None:
+        """Record ``k`` as unexpected unless it is reserved or a valid compact IRI prefix"""
+        # If the key is a reserved JSON-LD keyword, skip it
+        if k in self.__RESERVED_JSONLD_KEYS__:
+            logger.debug(f"Key {k} is a reserved JSON-LD keyword, skipping")
+            return
+
+        # A key not in the context can still be valid in compacted format if it is
+        # a compact IRI whose prefix is in the context.
+        if k not in context_keys:
+            logger.debug(f"Key {k} not in context keys")
+            prefix = k.split(":", 1)[0] if ":" in k else None
+            logger.debug(f"Checking prefix {prefix} of key {k}")
+            if prefix is None or prefix not in context_keys:
+                logger.debug(f"Key {k} does not have a valid prefix in context keys, adding to unexpected keys")
+                unexpected_keys[k] = unexpected_keys.get(k, 0) + 1
+
+    @check(name="Validation of the compaction format of the file descriptor")
+    def check_compaction(self, context: ValidationContext) -> bool:
+        """Check if the file descriptor is in the **compacted** JSON-LD format"""
+        try:
+            logger.debug("Checking compaction format of JSON-LD file at %s", context.ro_crate.metadata)
+            json_dict = context.ro_crate.metadata.as_dict()
+            logger.debug(f"JSONLD keys:{json_dict.keys()}")
+
+            jsonld_context = json_dict.get("@context", None)
+            logger.debug(f"Context: {jsonld_context}")
+
+            try:
+                context_keys = self.__get_context_keys__(jsonld_context)
+                logger.debug(f"{context_keys}")
+            except Exception as e:
+                if logger.isEnabledFor(logging.DEBUG):
+                    logger.exception("Error getting context keys from JSON-LD")
+                context.result.add_issue(str(e), self)
+                return False
+
+            unexpected_keys = self.__check_entity_keys__(json_dict.get("@graph"), context_keys)
+            logger.debug(f"Unexpected keys: {unexpected_keys}")
+            if len(unexpected_keys) > 0:
+                for k, v in unexpected_keys.items():
+                    logger.debug(f"Key {k} appears {v} times")
+                    # Add the correct suffix to the message
+                    suffix = "s" if v > 1 else ""
+                    # Check if k is a term or a URI
+                    if k.startswith("http"):
+                        context.result.add_issue(
+                            f'The {v} occurrence{suffix} of the "{k}" URI cannot be used as a key{suffix} "'
+                            "because the compacted format requires simple terms as keys "
+                            "(see https://www.w3.org/TR/json-ld-api/#compaction for more details).",
+                            self,
+                        )
+                    else:
+                        context.result.add_issue(
+                            f'The {v} occurrence{suffix} of the JSON-LD key "{k}" '
+                            f"{'is' if v == 1 else 'are'} not allowed in the compacted format "
+                            "because it is not present in the @context of the document",
+                            self,
+                        )
+                return False
+
+            return True
+        except Exception as e:
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.exception("Unexpected error during file descriptor validation")
+            context.result.add_issue(f"Unexpected error: {e}", self)
+        return False

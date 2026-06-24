@@ -16,22 +16,21 @@ from __future__ import annotations
 
 
 class MapIndex:
-
     def __init__(self, name: str, unique: bool = False):
         self.name = name
         self.unique = unique
 
 
 class MultiIndexMap:
-    def __init__(self, key: str = "id", indexes: list[MapIndex] = None):
+    def __init__(self, key: str = "id", indexes: list[MapIndex] | None = None):
         self._key = key
         # initialize an empty dictionary to store the indexes
-        self._indices: list[MapIndex] = {}
+        self._indices: dict[str, dict] = {}
         if indexes:
             for index in indexes:
                 self.add_index(index)
         # initialize an empty dictionary to store the data
-        self._data = {}
+        self._data: dict = {}
 
     @property
     def key(self) -> str:
@@ -52,7 +51,7 @@ class MultiIndexMap:
         self._indices.pop(index_name)
 
     def get_index(self, index_name: str) -> MapIndex:
-        return self._indices.get(index_name)["__meta__"]
+        return self._indices[index_name]["__meta__"]
 
     def add(self, key, obj, **indices):
         self._data[key] = obj

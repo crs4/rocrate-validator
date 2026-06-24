@@ -5,6 +5,78 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.11.0] - 2026-06-24
+
+Full changelog: https://github.com/crs4/rocrate-validator/compare/0.10.0...0.11.0
+
+### ✨ Added
+
+- feat(profiles): add RO-Crate 1.2 validation profile with comprehensive SHACL shapes and Python checks covering required/recommended/optional properties for Root Data Entity, Data Entities, File Data Entities, Web Data Entities, Contextual Entities, SoftwareApplication, ComputerLanguage, Organization, License, Person, Workflow, Script entities, and detached/referenced RO-Crates ([cb7d3653](https://github.com/crs4/rocrate-validator/commit/cb7d3653))
+- feat(profiles/ro-crate-1.2): check recommended entity name and base type for all entities ([41ef61f6](https://github.com/crs4/rocrate-validator/commit/41ef61f6), [c464f526](https://github.com/crs4/rocrate-validator/commit/c464f526))
+- feat(profiles/ro-crate-1.2): check recommended reachability of metadata entities ([b4935f81](https://github.com/crs4/rocrate-validator/commit/b4935f81))
+- feat(profiles/ro-crate-1.2): check additional license, funder property, and hasPart for Data Entities ([2f673d82](https://github.com/crs4/rocrate-validator/commit/2f673d82), [bbe137e1](https://github.com/crs4/rocrate-validator/commit/bbe137e1), [364cc549](https://github.com/crs4/rocrate-validator/commit/364cc549))
+- feat(profiles/ro-crate-1.2): check resolvable identifiers via cite-as property and downloadability via Signposting ([468fe8de](https://github.com/crs4/rocrate-validator/commit/468fe8de), [7b459f34](https://github.com/crs4/rocrate-validator/commit/7b459f34), [bf67d10a](https://github.com/crs4/rocrate-validator/commit/bf67d10a))
+- feat(profiles/ro-crate-1.2): check UTF-8 encoding of metadata descriptor and recommended file descriptor naming convention ([00f842b7](https://github.com/crs4/rocrate-validator/commit/00f842b7), [74589852](https://github.com/crs4/rocrate-validator/commit/74589852))
+- feat(profiles/ro-crate-1.2): check recommended version property of Software entities and optional alternateName for SoftwareApplication/ComputerLanguage ([2dfd023e](https://github.com/crs4/rocrate-validator/commit/2dfd023e), [364ec58c](https://github.com/crs4/rocrate-validator/commit/364ec58c))
+- feat(core): add support for detached metadata files (JSON/JSON-LD as crate source) ([2c7036ac](https://github.com/crs4/rocrate-validator/commit/2c7036ac), [5b6ffea6](https://github.com/crs4/rocrate-validator/commit/5b6ffea6))
+- feat(cli): add `--check-availability` / `--no-check-availability` flags for availability control ([5b6ffea6](https://github.com/crs4/rocrate-validator/commit/5b6ffea6))
+- feat(shacl): inject default prefixes and improve BNode disambiguation ([2fbfa047](https://github.com/crs4/rocrate-validator/commit/2fbfa047))
+- feat(http): reconfigure existing HttpRequester singleton instead of recreating it ([80b15c95](https://github.com/crs4/rocrate-validator/commit/80b15c95))
+- ci: add pre-commit configuration with ruff, typos, mypy, and pylint hooks ([e6c3ea46](https://github.com/crs4/rocrate-validator/commit/e6c3ea46), [9fe1a05f](https://github.com/crs4/rocrate-validator/commit/9fe1a05f), [2f498481](https://github.com/crs4/rocrate-validator/commit/2f498481))
+- ci: add CSpell dictionary for project-specific terms ([3790e4e9](https://github.com/crs4/rocrate-validator/commit/3790e4e9))
+
+### 🔧 Changed
+
+- refactor(models): split models.py into a package with cohesive submodules ([e662801e](https://github.com/crs4/rocrate-validator/commit/e662801e))
+- refactor(rocrate): split rocrate.py into a package with cohesive submodules ([17c6720e](https://github.com/crs4/rocrate-validator/commit/17c6720e))
+- refactor(profiles): move RO-Crate 1.1 validation profile to dedicated directory ([71009cc1](https://github.com/crs4/rocrate-validator/commit/71009cc1))
+- refactor(shacl): extract node-shape registration helper and helpers to lower complexity ([035494bd](https://github.com/crs4/rocrate-validator/commit/035494bd), [4d0a57b6](https://github.com/crs4/rocrate-validator/commit/4d0a57b6))
+- refactor(cli): extract EventDispatcher to route validation events and expose show_overall_result ([a6af0e99](https://github.com/crs4/rocrate-validator/commit/a6af0e99), [f379c448](https://github.com/crs4/rocrate-validator/commit/f379c448))
+- refactor: migrate from flake8 to ruff; add ruff.toml configuration with mccabe, eradicate, and pylint-parity rules ([4db08800](https://github.com/crs4/rocrate-validator/commit/4db08800), [cfe6ec4f](https://github.com/crs4/rocrate-validator/commit/cfe6ec4f))
+- style: modernize type hints with PEP 604 union syntax (X | Y, X | None) across the codebase ([98426c09](https://github.com/crs4/rocrate-validator/commit/98426c09), [95e05ebb](https://github.com/crs4/rocrate-validator/commit/95e05ebb))
+- style: move type-only imports to TYPE_CHECKING blocks and fix import order ([b05efd93](https://github.com/crs4/rocrate-validator/commit/b05efd93), [fb928d07](https://github.com/crs4/rocrate-validator/commit/fb928d07), [d7203517](https://github.com/crs4/rocrate-validator/commit/d7203517), [7871bb18](https://github.com/crs4/rocrate-validator/commit/7871bb18))
+- refactor: replace os.path operations with pathlib equivalents across the codebase and tests ([67bb87d5](https://github.com/crs4/rocrate-validator/commit/67bb87d5), [b105c0ed](https://github.com/crs4/rocrate-validator/commit/b105c0ed), [e50fe0dc](https://github.com/crs4/rocrate-validator/commit/e50fe0dc))
+- refactor: reduce cyclomatic complexity across validation checks, CLI, and cache modules ([f1c407ee](https://github.com/crs4/rocrate-validator/commit/f1c407ee), [276b9643](https://github.com/crs4/rocrate-validator/commit/276b9643), [e3ed5048](https://github.com/crs4/rocrate-validator/commit/e3ed5048), [d9952040](https://github.com/crs4/rocrate-validator/commit/d9952040), [4614940d](https://github.com/crs4/rocrate-validator/commit/4614940d))
+- refactor: replace manual loops with comprehensions and extend(), enumerate, and or-idioms ([1c4bec98](https://github.com/crs4/rocrate-validator/commit/1c4bec98), [4385777c](https://github.com/crs4/rocrate-validator/commit/4385777c), [0c730230](https://github.com/crs4/rocrate-validator/commit/0c730230), [50de8a2e](https://github.com/crs4/rocrate-validator/commit/50de8a2e))
+- refactor: replace relative imports with absolute imports ([74b31374](https://github.com/crs4/rocrate-validator/commit/74b31374))
+- refactor: use context-managed lock instead of manual acquire/release ([2d7984e8](https://github.com/crs4/rocrate-validator/commit/2d7984e8))
+- refactor(console): match rich Console.print signature ([5339b33e](https://github.com/crs4/rocrate-validator/commit/5339b33e))
+- build: configure poetry to create in-project virtualenv ([ffcde868](https://github.com/crs4/rocrate-validator/commit/ffcde868))
+- build(ruff): set target-version = py310 to align linter with project ([4c3501dd](https://github.com/crs4/rocrate-validator/commit/4c3501dd))
+- build(pylint): whitelist SHACL/JSON-LD names and disable R0801 ([5339b33e](https://github.com/crs4/rocrate-validator/commit/5339b33e))
+
+### 🐛 Fixed
+
+- fix(http): resolve session method lazily and reconfigure HttpRequester in place ([9a82482d](https://github.com/crs4/rocrate-validator/commit/9a82482d), [c9b4cc2f](https://github.com/crs4/rocrate-validator/commit/c9b4cc2f), [80b15c95](https://github.com/crs4/rocrate-validator/commit/80b15c95))
+- fix(profiles/ro-crate-1.2): correct contentSize check for File DataEntity ([5e7f3120](https://github.com/crs4/rocrate-validator/commit/5e7f3120))
+- fix(profiles/ro-crate-1.2): fix conformsTo check for File DataEntity and Root DataEntity identifier ([415bd27d](https://github.com/crs4/rocrate-validator/commit/415bd27d), [919a1421](https://github.com/crs4/rocrate-validator/commit/919a1421))
+- fix(profiles/ro-crate-1.2): remove duplicate Web Data Entity checks and fix shape targets ([fbed5c82](https://github.com/crs4/rocrate-validator/commit/fbed5c82), [6877898a](https://github.com/crs4/rocrate-validator/commit/6877898a))
+- fix(profiles): raise ProfileNotFound when profile is not found in get_profile ([fdbbc1e2](https://github.com/crs4/rocrate-validator/commit/fdbbc1e2))
+- fix(profiles): show actual size in Web Data Entity contentSize mismatch message ([51e7a767](https://github.com/crs4/rocrate-validator/commit/51e7a767))
+- fix(models): add missing return statement and call as_json() before as_graph() ([ff196b4a](https://github.com/crs4/rocrate-validator/commit/ff196b4a), [667d8b93](https://github.com/crs4/rocrate-validator/commit/667d8b93))
+- fix(typing): add None guards, implicit Optional annotations, and missing type annotations across the codebase ([4156d7d8](https://github.com/crs4/rocrate-validator/commit/4156d7d8), [dda588ae](https://github.com/crs4/rocrate-validator/commit/dda588ae), [e39e28b1](https://github.com/crs4/rocrate-validator/commit/e39e28b1))
+- fix(shacl): return real bool from SHACLCheck.check and is_external_reference ([982e3257](https://github.com/crs4/rocrate-validator/commit/982e3257), [896b419d](https://github.com/crs4/rocrate-validator/commit/896b419d))
+- fix(logging): fall back to WARNING for unknown log level names ([b586b973](https://github.com/crs4/rocrate-validator/commit/b586b973))
+- fix(progress): respect severity threshold in progress tracking ([43ce7a15](https://github.com/crs4/rocrate-validator/commit/43ce7a15))
+- fix(utils): fix logger factory and add exception chaining ([5afa76a3](https://github.com/crs4/rocrate-validator/commit/5afa76a3), [f672de2b](https://github.com/crs4/rocrate-validator/commit/f672de2b))
+- fix(utils): improve dynamic module loading to avoid collisions ([997a3c5d](https://github.com/crs4/rocrate-validator/commit/997a3c5d))
+- fix(services): guard original_data_path against None on restore ([bcbbdc34](https://github.com/crs4/rocrate-validator/commit/bcbbdc34))
+- fix(isa-ro-crate): terminate isa-ro-crate:Data triple in ontology.ttl ([f4fd0446](https://github.com/crs4/rocrate-validator/commit/f4fd0446))
+- fix(test): use str() instead of as_uri() for local crate paths and fix context manager on Path ([4b3d5847](https://github.com/crs4/rocrate-validator/commit/4b3d5847), [b15e301b](https://github.com/crs4/rocrate-validator/commit/b15e301b))
+- fix: add explicit encoding="utf-8" to open() calls and read_text ([c73e6b2e](https://github.com/crs4/rocrate-validator/commit/c73e6b2e), [8de1aa68](https://github.com/crs4/rocrate-validator/commit/8de1aa68))
+- fix: add proper exception chaining in except blocks ([b18d02ac](https://github.com/crs4/rocrate-validator/commit/b18d02ac))
+- fix: use bare raise instead of raise e and ValueError instead of generic Exception ([ba2ef280](https://github.com/crs4/rocrate-validator/commit/ba2ef280), [5d00a4fc](https://github.com/crs4/rocrate-validator/commit/5d00a4fc))
+
+### 🗑️ Removed
+
+- chore: remove flake8 config and dependency ([c7286047](https://github.com/crs4/rocrate-validator/commit/c7286047), [35095f82](https://github.com/crs4/rocrate-validator/commit/35095f82))
+- chore(cspell): remove stale ignore entries ([85d3e9b8](https://github.com/crs4/rocrate-validator/commit/85d3e9b8))
+
+### 📚 Documentation
+
+- docs(readme): add Development section with pre-commit usage ([686db620](https://github.com/crs4/rocrate-validator/commit/686db620))
+- docs(log): convert usage example from commented code to docstring ([d21aa857](https://github.com/crs4/rocrate-validator/commit/d21aa857))
+
 ## [0.10.0] - 2026-06-01
 
 Full changelog: https://github.com/crs4/rocrate-validator/compare/0.9.0...0.10.0

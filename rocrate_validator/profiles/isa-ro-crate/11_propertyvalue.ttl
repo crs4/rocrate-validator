@@ -44,7 +44,7 @@ isa-ro-crate:FindISAPropertyValue a sh:NodeShape, validator:HiddenShape;
                     sh:property [
                         sh:name "PropertyValue is measurementMethod of an Assay" ;
                         sh:path [ sh:inversePath schema:variableMeasured ] ;
-                        sh:qualifiedValueShape [ 
+                        sh:qualifiedValueShape [
                             sh:class isa-ro-crate:Assay ;
                         ] ;
                         sh:qualifiedMinCount 1 ;
@@ -54,7 +54,7 @@ isa-ro-crate:FindISAPropertyValue a sh:NodeShape, validator:HiddenShape;
                     sh:property [
                         sh:name "PropertyValue is parameterValue of a Process" ;
                         sh:path [ sh:inversePath bioschemas-prop:parameterValue ] ;
-                        sh:qualifiedValueShape [ 
+                        sh:qualifiedValueShape [
                             sh:class isa-ro-crate:Process
                         ] ;
                         sh:qualifiedMinCount 1 ;
@@ -64,7 +64,7 @@ isa-ro-crate:FindISAPropertyValue a sh:NodeShape, validator:HiddenShape;
                     sh:property [
                         sh:name "PropertyValue is computationalTool of a Protocol" ;
                         sh:path [ sh:inversePath schema:computationalTool ] ;
-                        sh:qualifiedValueShape [ 
+                        sh:qualifiedValueShape [
                             sh:class isa-ro-crate:Protocol
                         ] ;
                         sh:qualifiedMinCount 1 ;
@@ -74,7 +74,7 @@ isa-ro-crate:FindISAPropertyValue a sh:NodeShape, validator:HiddenShape;
                     sh:property [
                         sh:name "PropertyValue is labEquipment of a Protocol" ;
                         sh:path [ sh:inversePath schema:labEquipment ] ;
-                        sh:qualifiedValueShape [ 
+                        sh:qualifiedValueShape [
                             sh:class isa-ro-crate:Protocol
                         ] ;
                         sh:qualifiedMinCount 1 ;
@@ -84,7 +84,7 @@ isa-ro-crate:FindISAPropertyValue a sh:NodeShape, validator:HiddenShape;
                     sh:property [
                         sh:name "PropertyValue is reagent of a Protocol" ;
                         sh:path [ sh:inversePath schema:reagent ] ;
-                        sh:qualifiedValueShape [ 
+                        sh:qualifiedValueShape [
                             sh:class isa-ro-crate:Protocol
                         ] ;
                         sh:qualifiedMinCount 1 ;
@@ -94,7 +94,7 @@ isa-ro-crate:FindISAPropertyValue a sh:NodeShape, validator:HiddenShape;
                     sh:property [
                         sh:name "PropertyValue is characteristic of a Sample" ;
                         sh:path [ sh:inversePath bioschemas-prop:additionalProperty ] ;
-                        sh:qualifiedValueShape [ 
+                        sh:qualifiedValueShape [
                             sh:class isa-ro-crate:Sample
                         ] ;
                         sh:qualifiedMinCount 1 ;
@@ -104,7 +104,7 @@ isa-ro-crate:FindISAPropertyValue a sh:NodeShape, validator:HiddenShape;
                     sh:property [
                         sh:name "PropertyValue is identifier of a Person" ;
                         sh:path [ sh:inversePath schema:identifier ] ;
-                        sh:qualifiedValueShape [ 
+                        sh:qualifiedValueShape [
                             sh:class isa-ro-crate:Person
                         ] ;
                         sh:qualifiedMinCount 1 ;
@@ -114,7 +114,7 @@ isa-ro-crate:FindISAPropertyValue a sh:NodeShape, validator:HiddenShape;
                     sh:property [
                         sh:name "PropertyValue is identifier of a Publication" ;
                         sh:path [ sh:inversePath schema:identifier ] ;
-                        sh:qualifiedValueShape [ 
+                        sh:qualifiedValueShape [
                             sh:class isa-ro-crate:Publication
                         ] ;
                         sh:qualifiedMinCount 1 ;
@@ -193,14 +193,14 @@ isa-ro-crate:PropertyValueMustHaveName a sh:NodeShape ;
         sh:path schema:name ;
         sh:datatype xsd:string ;
         sh:minCount 1 ;
-        sh:maxCount 1 ; 
+        sh:maxCount 1 ;
         sh:not [
             sh:hasValue ""
         ] ;
         sh:description "Check that PropertyValue does have non-empty name and it's a string" ;
         sh:message "PropertyValue entity MUST have a non-empty name of type string" ;
         sh:severity sh:Violation ;
-    ] 
+    ]
 .
 
 isa-ro-crate:PropertyValueShouldHaveValueOfCorrectType a sh:NodeShape ;
@@ -222,9 +222,9 @@ isa-ro-crate:PropertyValueShouldHaveValueOfCorrectType a sh:NodeShape ;
         a sh:PropertyShape ;
         sh:path schema:value ;
         sh:or(
-            [ sh:datatype xsd:string ] 
-            [ sh:datatype xsd:float ] 
-            [ sh:datatype xsd:integer ] 
+            [ sh:datatype xsd:string ]
+            [ sh:datatype xsd:float ]
+            [ sh:datatype xsd:integer ]
         ) ;
         sh:description "The value of a PropertyValue MUST be of type string or a number" ;
         sh:message "PropertyValue value MUST be of type string, float, or integer" ;

@@ -39,7 +39,7 @@ env:
     FORCE_COLOR: "1"  # Force color output in CI
 
 jobs:
-    # Verifies pep8, pyflakes, circular complexity, and spelling
+    # Verifies code style, bugs, complexity, and spelling via **ruff** + **typos**
     lint:
         name: 🚨 Lint and spellcheck
         runs-on: ubuntu-latest
@@ -51,10 +51,28 @@ jobs:
               uses: actions/setup-python@v6
               with:
                   python-version: ${{ env.PYTHON_VERSION }}
-            - name: 🔽 Install flake8
-              run: pip install flake8
-            - name: ⌛ Lint Python code
-              run: flake8 -v rocrate_validator tests
+            - name: 🔽 Install ruff (version from pyproject.toml)
+              run: |
+                # Read the ruff version constraint from pyproject.toml.
+                # Poetry uses caret syntax (e.g. "^0.15.15") which means
+                # "compatible with 0.15.x".  pip uses PEP 440 "~=" for the
+                # same semantics on pre-1.0 packages.
+                pip install "$(
+                  python -c "
+                import tomllib
+                cfg = tomllib.loads(open('pyproject.toml').read())
+                constraint = cfg['tool']['poetry']['group']['dev']['dependencies']['ruff']
+                # Drop the caret prefix so we can pass ~= to pip
+                version = constraint.lstrip('^')
+                print(f'ruff~={version}')
+                ")"
+            - name: ⌛ Lint Python code with ruff
+              run: |
+                # Produce GitHub annotations; suppress exit code so the
+                # statistics summary still runs.
+                ruff check rocrate_validator tests --output-format github || true
+                # Emit a compact rule-count summary and fail the job if needed.
+                ruff check rocrate_validator tests --statistics
             - name: ⌛ Spell check code and profiles (covers Python and SHACL)
               uses: crate-ci/typos@v1.47.0
 

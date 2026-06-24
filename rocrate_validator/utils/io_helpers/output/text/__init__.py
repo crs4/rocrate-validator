@@ -14,24 +14,25 @@
 
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any
 
-from rich.console import Console, ConsoleOptions, RenderResult
-
-from rocrate_validator.utils import log as logging
 from rocrate_validator.models import ValidationResult, ValidationStatistics
+from rocrate_validator.utils import log as logging
+from rocrate_validator.utils.io_helpers.output import BaseOutputFormatter
 
-from .. import BaseOutputFormatter
-from .formatters import (ValidationResultTextOutputFormatter,
-                         ValidationStatisticsTextOutputFormatter)
+from .formatters import ValidationResultTextOutputFormatter, ValidationStatisticsTextOutputFormatter
+
+if TYPE_CHECKING:
+    from rich.console import ConsoleOptions, RenderResult
+
+    from rocrate_validator.utils.io_helpers.output.console import Console
 
 # set up logging
 logger = logging.getLogger(__name__)
 
 
 class TextOutputFormatter(BaseOutputFormatter):
-
-    def __init__(self, data: Optional[Any] = None):
+    def __init__(self, data: Any | None = None):
         super().__init__(data)
         self.add_type_formatter(ValidationResult, ValidationResultTextOutputFormatter)
         self.add_type_formatter(ValidationStatistics, ValidationStatisticsTextOutputFormatter)

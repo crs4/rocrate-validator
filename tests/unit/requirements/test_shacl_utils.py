@@ -33,7 +33,7 @@ SH = Namespace(SHACL_NS)
 EX = Namespace("http://example.org/")
 
 
-def _build_two_property_shape() -> tuple[Graph, URIRef, URIRef, URIRef]:
+def _build_two_property_shape() -> tuple[Graph, URIRef, BNode, BNode]:
     """
     Build a NodeShape with two sibling property shapes.
 

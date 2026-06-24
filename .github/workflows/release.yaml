@@ -49,11 +49,11 @@ jobs:
                 token: ${{ secrets.GITHUB_TOKEN }}
                 checkName: ⌛ Run tests
                 ref: ${{ github.sha }}
-      
+
             - name: Do something with a passing build
               if: steps.wait-for-testing.outputs.conclusion == 'success'
               run: echo "Testing pipeline passed" && exit 0
-      
+
             - name: Do something with a failing build
               if: steps.wait-for-testing.outputs.conclusion == 'failure'
               run: echo "Testing pipeline failed" && exit 1
@@ -166,7 +166,7 @@ jobs:
               with:
                   name: python-package-signatures
                   path: dist/*.json
-    
+
     # Create GitHub Release
     github_release:
         name: 🎉 Release on GitHub

@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 def test_provrc_workflow_no_haspart():
-    """\
+    """
     Test a Provenance Run Crate where a ComputationalWorkflow does not have
     the hasPart property.
     """
@@ -33,12 +33,12 @@ def test_provrc_workflow_no_haspart():
         False,
         ["Provenance Run Crate ComputationalWorkflow MUST"],
         ["ComputationalWorkflow MUST refer to orchestrated tools via hasPart"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_provrc_workflow_bad_haspart():
-    """\
+    """
     Test a Provenance Run Crate where a ComputationalWorkflow does not point
     to the orchestrated tools via hasPart.
     """
@@ -48,12 +48,12 @@ def test_provrc_workflow_bad_haspart():
         False,
         ["Provenance Run Crate ComputationalWorkflow MUST"],
         ["ComputationalWorkflow MUST refer to orchestrated tools via hasPart"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_provrc_workflow_type_no_howto():
-    """\
+    """
     Test a Provenance Run Crate where a ComputationalWorkflow that points to
     steps does not have the HowTo type.
     """
@@ -63,12 +63,12 @@ def test_provrc_workflow_type_no_howto():
         False,
         ["Provenance Run Crate ComputationalWorkflow with steps MUST"],
         ["A ComputationalWorkflow that links to steps MUST have the HowTo type"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_provrc_workflow_no_step():
-    """\
+    """
     Test a Provenance Run Crate where a ComputationalWorkflow does not have
     the step property.
     """
@@ -78,12 +78,12 @@ def test_provrc_workflow_no_step():
         False,
         ["Provenance Run Crate ComputationalWorkflow SHOULD"],
         ["ComputationalWorkflow SHOULD refer to HowToStep instances via step"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_provrc_workflow_bad_step():
-    """\
+    """
     Test a Provenance Run Crate where a ComputationalWorkflow does not have
     the step property.
     """
@@ -93,12 +93,12 @@ def test_provrc_workflow_bad_step():
         False,
         ["Provenance Run Crate ComputationalWorkflow SHOULD"],
         ["ComputationalWorkflow SHOULD refer to HowToStep instances via step"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_provrc_workflow_no_connection():
-    """\
+    """
     Test a Provenance Run Crate where a ComputationalWorkflow does not have
     the connection property.
     """
@@ -108,12 +108,12 @@ def test_provrc_workflow_no_connection():
         False,
         ["Provenance Run Crate ComputationalWorkflow MAY"],
         ["ComputationalWorkflow may have a connection property"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_provrc_workflow_bad_connection():
-    """\
+    """
     Test a Provenance Run Crate where a ComputationalWorkflow has a connection
     that does not point to a ParameterConnection.
     """
@@ -123,12 +123,12 @@ def test_provrc_workflow_bad_connection():
         False,
         ["Provenance Run Crate ComputationalWorkflow MUST"],
         ["If the ComputationalWorkflow has a connection, it must point to a ParameterConnection"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_provrc_workflow_no_buildinstructions():
-    """\
+    """
     Test a Provenance Run Crate where a ComputationalWorkflow / HowTo does not
     have the buildInstructions property.
     """
@@ -138,12 +138,12 @@ def test_provrc_workflow_no_buildinstructions():
         False,
         ["Provenance Run Crate ComputationalWorkflow / HowTo MAY"],
         ["A ComputationalWorkflow / HowTo MAY have a buildInstructions pointing to a File"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_provrc_workflow_bad_buildinstructions():
-    """\
+    """
     Test a Provenance Run Crate where a ComputationalWorkflow / HowTo has a
     buildInstructions that does not point to a File.
     """
@@ -153,5 +153,5 @@ def test_provrc_workflow_bad_buildinstructions():
         False,
         ["Provenance Run Crate ComputationalWorkflow / HowTo MAY"],
         ["A ComputationalWorkflow / HowTo MAY have a buildInstructions pointing to a File"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )

@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 def test_provrc_action_no_resourceusage():
-    """\
+    """
     Test a Provenance Run Crate where a tool action has no resourceUsage.
     """
     do_entity_test(
@@ -32,12 +32,12 @@ def test_provrc_action_no_resourceusage():
         False,
         ["Provenance Run Crate tool action MAY"],
         ["A tool action MAY have a resourceUsage"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_provrc_action_bad_resourceusage():
-    """\
+    """
     Test a Provenance Run Crate where a tool action has a resourceUsage that
     does not point to PropertyValue.
     """
@@ -47,5 +47,5 @@ def test_provrc_action_bad_resourceusage():
         False,
         ["Provenance Run Crate tool action MUST"],
         ["If present, resourceUsage MUST point to PropertyValue"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )

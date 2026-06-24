@@ -1,4 +1,3 @@
-
 # Copyright (c) 2024-2026 CRS4
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,4 +16,4 @@
 from .progress import Progress
 from .report import ValidationReportLayout
 
-__all__ = ["ValidationReportLayout", "Progress"]
+__all__ = ["Progress", "ValidationReportLayout"]

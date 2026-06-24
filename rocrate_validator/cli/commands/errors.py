@@ -17,9 +17,8 @@ import textwrap
 
 from rich.console import Console
 
+from rocrate_validator.errors import InvalidProfilePath, ProfileNotFound, ProfilesDirectoryNotFound
 from rocrate_validator.utils import log as logging
-from rocrate_validator.errors import (InvalidProfilePath, ProfileNotFound,
-                                      ProfilesDirectoryNotFound)
 
 # Create a logger for this module
 logger = logging.getLogger(__name__)
@@ -50,9 +49,14 @@ def handle_error(e: Exception, console: Console) -> None:
         error_message = f"\n\n[bold][[red]FAILED[/red]] Unexpected error: {e} !!![/bold]\n"
         if logger.isEnabledFor(logging.DEBUG):
             console.print_exception()
-        console.print(textwrap.indent("This error may be due to a bug.\n"
-                                      "Please report it to the issue tracker "
-                                      "along with the following stack trace:\n", ' ' * 9))
+        console.print(
+            textwrap.indent(
+                "This error may be due to a bug.\n"
+                "Please report it to the issue tracker "
+                "along with the following stack trace:\n",
+                " " * 9,
+            )
+        )
         console.print_exception()
 
     console.print(f"\n\n[bold][[red]ERROR[/red]] {error_message}[/bold]\n", style="white")

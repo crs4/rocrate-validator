@@ -12,13 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import hashlib
 import inspect
-import os
 import re
 import sys
-from importlib import import_module
+from importlib import import_module, util
 from pathlib import Path
-from typing import Optional
 
 from rocrate_validator.utils import log as logging
 
@@ -26,10 +25,10 @@ from rocrate_validator.utils import log as logging
 logger = logging.getLogger(__name__)
 
 
-def get_classes_from_file(file_path: Path,
-                          filter_class: Optional[type] = None,
-                          class_name_suffix: Optional[str] = None) -> dict[str, type]:
-    """Get all classes in a Python file """
+def get_classes_from_file(
+    file_path: Path, filter_class: type | None = None, class_name_suffix: str | None = None
+) -> dict[str, type]:
+    """Get all classes in a Python file"""
     # ensure the file path is a Path object
     assert file_path, "The file path is required"
     if not isinstance(file_path, Path):
@@ -43,24 +42,29 @@ def get_classes_from_file(file_path: Path,
     if file_path.suffix != ".py":
         raise ValueError("The file is not a Python file")
 
-    # Get the module name from the file path
-    module_name = file_path.stem
+    # Build a unique module name from the file path to avoid collisions
+    module_hash = hashlib.sha256(str(file_path).encode("utf-8")).hexdigest()[:12]
+    module_name = f"rocrate_validator.dynamic.{file_path.stem}_{module_hash}"
     logger.debug("Module: %r", module_name)
 
-    # Add the directory containing the file to the system path
-    sys.path.insert(0, os.path.dirname(file_path))
-
-    # Import the module
-    module = import_module(module_name)
+    module = sys.modules.get(module_name)
+    if module is None:
+        spec = util.spec_from_file_location(module_name, file_path)
+        if spec is None or spec.loader is None:
+            raise RuntimeError(f"Unable to load module from {file_path}")
+        module = util.module_from_spec(spec)
+        sys.modules[module_name] = module
+        spec.loader.exec_module(module)
     logger.debug("Module: %r", module)
 
     # Get all classes in the module that are subclasses of filter_class
-    classes = {name: cls for name, cls in inspect.getmembers(module, inspect.isclass)
-               if cls.__module__ == module_name
-               and (not class_name_suffix or cls.__name__.endswith(class_name_suffix))
-               and (not filter_class or (issubclass(cls, filter_class) and cls != filter_class))}
-
-    return classes
+    return {
+        name: cls
+        for name, cls in inspect.getmembers(module, inspect.isclass)
+        if cls.__module__ == module_name
+        and (not class_name_suffix or cls.__name__.endswith(class_name_suffix))
+        and (not filter_class or (issubclass(cls, filter_class) and cls != filter_class))
+    }
 
 
 def to_camel_case(snake_str: str) -> str:
@@ -70,11 +74,11 @@ def to_camel_case(snake_str: str) -> str:
     :param snake_str: The snake case string
     :return: The camel case string
     """
-    components = re.split('_|-', snake_str)
-    return components[0].capitalize() + ''.join(x.title() for x in components[1:])
+    components = re.split(r"_|-", snake_str)
+    return components[0].capitalize() + "".join(x.title() for x in components[1:])
 
 
-def get_requirement_name_from_file(file: Path, check_name: Optional[str] = None) -> str:
+def get_requirement_name_from_file(file: Path, check_name: str | None = None) -> str:
     """
     Get the requirement name from the file
 
@@ -102,7 +106,7 @@ def get_requirement_class_by_name(requirement_name: str) -> type:
     # convert the module name to a path
     module_path = module_name.replace(".", "/")
     # add the path to the system path
-    sys.path.insert(0, os.path.dirname(module_path))
+    sys.path.insert(0, str(Path(module_path).parent))
 
     # Import the module
     module = import_module(module_name)

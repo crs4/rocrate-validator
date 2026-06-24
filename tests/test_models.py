@@ -15,8 +15,7 @@
 import pytest
 
 from rocrate_validator import models, services
-from rocrate_validator.models import (LevelCollection, RequirementLevel,
-                                      Severity, ValidationSettings)
+from rocrate_validator.models import URI, LevelCollection, RequirementLevel, Severity, ValidationSettings
 from tests.ro_crates import InvalidRootDataEntity, WROCInvalidReadme
 
 
@@ -32,27 +31,27 @@ def test_severity_ordering():
 
 
 def test_level_ordering():
-    may = RequirementLevel('MAY', Severity.OPTIONAL)
-    should = RequirementLevel('SHOULD', Severity.RECOMMENDED)
+    may = RequirementLevel("MAY", Severity.OPTIONAL)
+    should = RequirementLevel("SHOULD", Severity.RECOMMENDED)
     assert may < should
     assert should > may
     assert should != may
-    assert may == may
+    assert RequirementLevel("MAY", Severity.OPTIONAL) == may
     assert may != 1
-    assert may != RequirementLevel('OPTIONAL', Severity.OPTIONAL)
+    assert may != RequirementLevel("OPTIONAL", Severity.OPTIONAL)
     with pytest.raises(TypeError):
         _ = may > 1
 
 
 def test_level_basics():
-    may = RequirementLevel('MAY', Severity.OPTIONAL)
+    may = RequirementLevel("MAY", Severity.OPTIONAL)
     assert str(may) == "MAY"
     assert int(may) == Severity.OPTIONAL.value
     assert hash(may) != 0  # should be find as long as it runs
 
 
 def test_level_collection():
-    assert LevelCollection.get('may') == LevelCollection.MAY
+    assert LevelCollection.get("may") == LevelCollection.MAY
 
     # Test ordering
     assert LevelCollection.MAY < LevelCollection.SHOULD
@@ -61,26 +60,23 @@ def test_level_collection():
     assert LevelCollection.MAY == LevelCollection.MAY
 
     all_levels = LevelCollection.all()
-    assert 10 == len(all_levels)
+    assert len(all_levels) == 10
     level_names = [level.name for level in all_levels]
     # Test a few of the keys
-    assert 'MAY' in level_names
-    assert 'SHOULD_NOT' in level_names
-    assert 'RECOMMENDED' in level_names
-    assert 'REQUIRED' in level_names
+    assert "MAY" in level_names
+    assert "SHOULD_NOT" in level_names
+    assert "RECOMMENDED" in level_names
+    assert "REQUIRED" in level_names
 
 
 @pytest.fixture
 def validation_settings():
-    return ValidationSettings(
-        requirement_severity=Severity.OPTIONAL,
-        abort_on_first=False
-    )
+    return ValidationSettings(rocrate_uri=URI("file:///"), requirement_severity=Severity.OPTIONAL, abort_on_first=False)
 
 
 # @pytest.mark.skip(reason="Temporarily disabled: we need an RO-Crate with multiple failed requirements to test this.")
 def test_sortability_requirements(validation_settings: ValidationSettings):
-    validation_settings.rocrate_uri = InvalidRootDataEntity().invalid_root_type
+    validation_settings.rocrate_uri = URI(str(InvalidRootDataEntity().invalid_root_type))
     result: models.ValidationResult = services.validate(validation_settings)
     failed_requirements = sorted(result.failed_requirements, reverse=True)
     assert len(failed_requirements) > 1
@@ -89,7 +85,7 @@ def test_sortability_requirements(validation_settings: ValidationSettings):
 
 
 def test_sortability_checks(validation_settings: ValidationSettings):
-    validation_settings.rocrate_uri = WROCInvalidReadme().wroc_readme_wrong_encoding_format
+    validation_settings.rocrate_uri = URI(str(WROCInvalidReadme().wroc_readme_wrong_encoding_format))
     result: models.ValidationResult = services.validate(validation_settings)
     failed_checks = sorted(result.failed_checks, reverse=True)
     assert len(failed_checks) > 1
@@ -100,7 +96,7 @@ def test_sortability_checks(validation_settings: ValidationSettings):
 
 
 def test_sortability_issues(validation_settings: ValidationSettings):
-    validation_settings.rocrate_uri = WROCInvalidReadme().wroc_readme_wrong_encoding_format
+    validation_settings.rocrate_uri = URI(str(WROCInvalidReadme().wroc_readme_wrong_encoding_format))
     result: models.ValidationResult = services.validate(validation_settings)
     issues = sorted(result.get_issues(min_severity=Severity.OPTIONAL), reverse=True)
     assert len(issues) > 1

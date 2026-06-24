@@ -19,7 +19,7 @@ from rocrate_validator import constants, errors
 from rocrate_validator.utils import log as logging
 
 # current directory
-CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
+CURRENT_DIR = str(Path(__file__).resolve().parent)
 
 
 # set up logging
@@ -100,8 +100,8 @@ def get_default_http_cache_path() -> Path:
 
 
 def list_matching_file_paths(
-        directory: str = '.',
-        serialization_format: constants.RDF_SERIALIZATION_FORMATS_TYPES = "turtle") -> list[str]:
+    directory: str = ".", serialization_format: constants.RDF_SERIALIZATION_FORMATS_TYPES = "turtle"
+) -> list[str]:
     """
     Get all the files in the directory matching the format.
 
@@ -110,25 +110,20 @@ def list_matching_file_paths(
     :return: A list of file paths
     """
     # initialize an empty list to store the file paths
-    file_paths = []
+    file_paths: list[str] = []
 
     # extension
     extension = get_format_extension(serialization_format)
 
     # iterate through the directory and subdirectories
     for root, _, files in os.walk(directory):
-        # iterate through the files
-        for file in files:
-            # check if the file has a .ttl extension
-            if file.endswith(extension):
-                # append the file path to the list
-                file_paths.append(os.path.join(root, file))
-    # return the list of file paths
+        file_paths.extend(str(Path(root) / f) for f in files if f.endswith(extension))
     return file_paths
 
 
-def list_graph_paths(graphs_dir: str = CURRENT_DIR,
-                     serialization_format: constants.RDF_SERIALIZATION_FORMATS_TYPES = "turtle") -> list[str]:
+def list_graph_paths(
+    graphs_dir: str = CURRENT_DIR, serialization_format: constants.RDF_SERIALIZATION_FORMATS_TYPES = "turtle"
+) -> list[str]:
     """
     Get the paths to all the graphs in the directory
 
@@ -140,7 +135,7 @@ def list_graph_paths(graphs_dir: str = CURRENT_DIR,
 
 
 def shorten_path(p: Path) -> str:
-    """"
+    """ "
     Shorten the path to a relative path if possible, otherwise return the absolute path.
 
     :param p: The path to shorten
@@ -148,7 +143,7 @@ def shorten_path(p: Path) -> str:
     :raises ValueError: If the path is not a valid Path object
     """
     if not isinstance(p, Path):
-        raise ValueError("The path must be a Path or ParseResult object")
+        raise TypeError("The path must be a Path or ParseResult object")
 
     try:
         cwd = Path.cwd()

@@ -23,7 +23,7 @@ from tests.shared import do_entity_test
 # set up logging
 logger = logging.getLogger(__name__)
 
-#  Global set up the paths
+# Global set up the paths
 paths = InvalidFileDescriptorEntity()
 
 
@@ -34,7 +34,7 @@ def test_missing_entity():
         models.Severity.REQUIRED,
         False,
         ["RO-Crate Metadata File Descriptor entity existence"],
-        ["The root of the document MUST have an entity with @id `ro-crate-metadata.json`"]
+        ["The root of the document MUST have an entity with @id `ro-crate-metadata.json`"],
     )
 
 
@@ -45,7 +45,7 @@ def test_invalid_entity_type():
         models.Severity.REQUIRED,
         False,
         ["RO-Crate Metadata File Descriptor REQUIRED properties"],
-        ["The RO-Crate metadata file MUST be a CreativeWork, as per schema.org"]
+        ["The RO-Crate metadata file MUST be a CreativeWork, as per schema.org"],
     )
 
 
@@ -56,8 +56,10 @@ def test_missing_entity_about():
         models.Severity.REQUIRED,
         False,
         ["RO-Crate Metadata File Descriptor REQUIRED properties"],
-        ["The RO-Crate metadata file MUST be a CreativeWork, as per schema.org",
-         "The RO-Crate metadata file descriptor MUST have an `about` property referencing the Root Data Entity"]
+        [
+            "The RO-Crate metadata file MUST be a CreativeWork, as per schema.org",
+            "The RO-Crate metadata file descriptor MUST have an `about` property referencing the Root Data Entity",
+        ],
     )
 
 
@@ -69,7 +71,7 @@ def test_invalid_entity_about():
         models.Severity.REQUIRED,
         False,
         ["RO-Crate Metadata File Descriptor REQUIRED properties"],
-        ["The RO-Crate metadata file descriptor MUST have an `about` property referencing the Root Data Entity"]
+        ["The RO-Crate metadata file descriptor MUST have an `about` property referencing the Root Data Entity"],
     )
 
 
@@ -80,7 +82,7 @@ def test_invalid_entity_about_type():
         models.Severity.REQUIRED,
         False,
         ["RO-Crate Metadata File Descriptor REQUIRED properties"],
-        ["The RO-Crate metadata file descriptor MUST have an `about` property referencing the Root Data Entity"]
+        ["The RO-Crate metadata file descriptor MUST have an `about` property referencing the Root Data Entity"],
     )
 
 
@@ -91,8 +93,10 @@ def test_missing_conforms_to():
         models.Severity.REQUIRED,
         False,
         ["RO-Crate Metadata File Descriptor REQUIRED properties"],
-        ["The RO-Crate metadata file descriptor MUST have a `conformsTo` "
-         "property with the RO-Crate specification version"]
+        [
+            "The RO-Crate metadata file descriptor MUST have a `conformsTo` "
+            "property with the RO-Crate specification version"
+        ],
     )
 
 
@@ -103,6 +107,8 @@ def test_invalid_conforms_to():
         models.Severity.REQUIRED,
         False,
         ["RO-Crate Metadata File Descriptor REQUIRED properties"],
-        ["The RO-Crate metadata file descriptor MUST have a `conformsTo` "
-         "property with the RO-Crate specification version"]
+        [
+            "The RO-Crate metadata file descriptor MUST have a `conformsTo` "
+            "property with the RO-Crate specification version"
+        ],
     )

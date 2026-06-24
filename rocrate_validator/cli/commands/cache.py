@@ -21,14 +21,14 @@ from __future__ import annotations
 
 import copy as _copy
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
-from typing import List, Optional
 
 from rich.table import Table
 
 from rocrate_validator.cli.commands.errors import handle_error
 from rocrate_validator.cli.main import cli, click
+from rocrate_validator.constants import BYTES_PER_KIB, HTTP_STATUS_BAD_REQUEST
 from rocrate_validator.models import Profile
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.cache_warmup import WarmUpResult, discover_cacheable_urls_from_profiles, warm_up_urls
@@ -38,12 +38,9 @@ from rocrate_validator.utils.paths import get_default_http_cache_path, get_profi
 logger = logging.getLogger(__name__)
 
 
-def _resolve_cache_path(cache_path: Optional[Path]) -> Path:
+def _resolve_cache_path(cache_path: Path | None) -> Path:
     """Return the effective cache path, creating the parent directory."""
-    if cache_path is None:
-        path = get_default_http_cache_path()
-    else:
-        path = Path(cache_path)
+    path = get_default_http_cache_path() if cache_path is None else Path(cache_path)
     path.parent.mkdir(parents=True, exist_ok=True)
     return path
 
@@ -75,11 +72,11 @@ def cache(ctx):
     help="Path to the HTTP cache directory (defaults to the user cache dir)",
 )
 @click.pass_context
-def cache_info(ctx, cache_path: Optional[Path] = None):
+def cache_info(ctx, cache_path: Path | None = None):
     """
     Display information about the HTTP cache.
     """
-    console = ctx.obj['console']
+    console = ctx.obj["console"]
     try:
         resolved = _resolve_cache_path(cache_path)
         _reset_requester(resolved)
@@ -141,16 +138,16 @@ def cache_info(ctx, cache_path: Optional[Path] = None):
 @click.pass_context
 def cache_list(
     ctx,
-    cache_path: Optional[Path] = None,
-    url_filter: Optional[str] = None,
+    cache_path: Path | None = None,
+    url_filter: str | None = None,
     sort_by: str = "created",
-    sort_order: Optional[str] = None,
+    sort_order: str | None = None,
     as_json: bool = False,
 ):
     """
     List entries currently stored in the HTTP cache (alias: `ls`).
     """
-    console = ctx.obj['console']
+    console = ctx.obj["console"]
     try:
         resolved = _resolve_cache_path(cache_path)
         _reset_requester(resolved)
@@ -209,12 +206,12 @@ def cache_list(
     help="Do not prompt for confirmation before removing cache entries",
 )
 @click.pass_context
-def cache_reset(ctx, cache_path: Optional[Path] = None, yes: bool = False):
+def cache_reset(ctx, cache_path: Path | None = None, yes: bool = False):
     """
     Remove every entry from the HTTP cache.
     """
-    console = ctx.obj['console']
-    interactive = ctx.obj.get('interactive', False)
+    console = ctx.obj["console"]
+    interactive = ctx.obj.get("interactive", False)
     exit_code = 0
     try:
         resolved = _resolve_cache_path(cache_path)
@@ -223,22 +220,17 @@ def cache_reset(ctx, cache_path: Optional[Path] = None, yes: bool = False):
         entries = info.get("entries", 0)
         size = _format_bytes(info.get("size_bytes", 0) or 0)
         console.print(
-            f"[bold]HTTP cache:[/bold] {info.get('path') or resolved} "
-            f"([cyan]{entries}[/cyan] entries, {size})"
+            f"[bold]HTTP cache:[/bold] {info.get('path') or resolved} ([cyan]{entries}[/cyan] entries, {size})"
         )
         if entries == 0:
             console.print("[green]Cache is already empty.[/green]")
             return
         if not yes:
             if not interactive:
-                console.print(
-                    "[yellow]Use --yes to remove entries in non-interactive mode.[/yellow]"
-                )
+                console.print("[yellow]Use --yes to remove entries in non-interactive mode.[/yellow]")
                 exit_code = 1
             else:
-                confirm = click.confirm(
-                    f"Remove all {entries} cached entries?", default=False
-                )
+                confirm = click.confirm(f"Remove all {entries} cached entries?", default=False)
                 if not confirm:
                     console.print("Aborted.")
                 else:
@@ -312,19 +304,19 @@ def cache_reset(ctx, cache_path: Optional[Path] = None, yes: bool = False):
 @click.pass_context
 def cache_warm(
     ctx,
-    cache_path: Optional[Path] = None,
-    profiles_path: Optional[Path] = None,
-    extra_profiles_path: Optional[Path] = None,
-    profile_identifier: Optional[List[str]] = None,
+    cache_path: Path | None = None,
+    profiles_path: Path | None = None,
+    extra_profiles_path: Path | None = None,
+    profile_identifier: list[str] | None = None,
     all_profiles: bool = False,
-    crate: Optional[List[str]] = None,
-    url: Optional[List[str]] = None,
+    crate: list[str] | None = None,
+    url: list[str] | None = None,
 ):
     """
     Pre-populate the HTTP cache with resources declared by profiles and with
     optional remote RO-Crate URLs.
     """
-    console = ctx.obj['console']
+    console = ctx.obj["console"]
     explicit_urls = list(url or [])
     invalid_urls = [u for u in explicit_urls if not u.lower().startswith(("http://", "https://"))]
     if invalid_urls:
@@ -341,103 +333,33 @@ def cache_warm(
         extra_dir = Path(extra_profiles_path) if extra_profiles_path else None
 
         requested_ids = list(profile_identifier or [])
-        urls: List[str] = []
-        profile_scope: Optional[str] = None
+        urls: list[str] = []
+        profile_scope: str | None = None
 
         # Only fall back to "warm all profiles" when the user gave no other
         # source (no -p, no --crate, no --url, no --all-profiles).
         any_explicit_source = bool(crate or explicit_urls or requested_ids or all_profiles)
         if all_profiles or requested_ids or not any_explicit_source:
-            Profile.load_profiles(
-                profiles_path=profiles_dir,
-                extra_profiles_path=extra_dir,
-            )
-            loaded_profiles = list(Profile.all())
-            if requested_ids:
-                selected = []
-                missing = []
-                # (requested, resolved, all candidates) for tokens that matched
-                # more than one versioned profile — we warn so the user knows
-                # which one was picked and how to opt for a different version.
-                ambiguous_fallbacks = []
-                for ident in requested_ids:
-                    profile = Profile.get_by_identifier(ident)
-                    if profile is None:
-                        # Mirror the fallback used by `validate`: if no exact
-                        # identifier match, treat the value as a token and
-                        # pick the highest-version profile sharing it.
-                        candidates = Profile.get_by_token(ident) or []
-                        if candidates:
-                            profile = max(candidates, key=lambda p: p.version)
-                            if len(candidates) > 1:
-                                ambiguous_fallbacks.append((ident, profile, candidates))
-                    if profile is None:
-                        missing.append(ident)
-                    else:
-                        selected.append(profile)
-                for requested, resolved, candidates in ambiguous_fallbacks:
-                    other_versions = sorted(
-                        p.identifier for p in candidates if p.identifier != resolved.identifier
-                    )
-                    console.print(
-                        f"[yellow]Note:[/yellow] '{requested}' matched multiple profiles; "
-                        f"using [cyan]{resolved.identifier}[/cyan] (highest version). "
-                        f"Pass the full identifier to pick a different one "
-                        f"(available: {', '.join(other_versions)})."
-                    )
-                if missing:
-                    console.print(
-                        f"[yellow]Profile(s) not found and skipped:[/yellow] {', '.join(missing)}"
-                    )
-                profile_scope = f"profiles: {', '.join(p.identifier for p in selected)}"
-                urls = discover_cacheable_urls_from_profiles(selected)
-            else:
-                profile_scope = "all installed profiles"
-                urls = discover_cacheable_urls_from_profiles(loaded_profiles)
+            urls, profile_scope = _resolve_warmup_urls_from_profiles(console, profiles_dir, extra_dir, requested_ids)
 
-        results: List[WarmUpResult] = []
+        results: list[WarmUpResult] = []
         if urls:
-            console.print(
-                f"[bold]Warming cache for {profile_scope}[/bold] "
-                f"([cyan]{len(urls)}[/cyan] URL(s))..."
-            )
+            console.print(f"[bold]Warming cache for {profile_scope}[/bold] ([cyan]{len(urls)}[/cyan] URL(s))...")
             results.extend(warm_up_urls(urls))
 
         if crate:
-            console.print(
-                f"[bold]Fetching remote RO-Crates[/bold] ([cyan]{len(crate)}[/cyan] URL(s))..."
-            )
+            console.print(f"[bold]Fetching remote RO-Crates[/bold] ([cyan]{len(crate)}[/cyan] URL(s))...")
             results.extend(_warm_remote_crates(list(crate)))
 
         if explicit_urls:
-            console.print(
-                f"[bold]Fetching explicit URLs[/bold] ([cyan]{len(explicit_urls)}[/cyan] URL(s))..."
-            )
+            console.print(f"[bold]Fetching explicit URLs[/bold] ([cyan]{len(explicit_urls)}[/cyan] URL(s))...")
             results.extend(warm_up_urls(explicit_urls))
 
         if not results:
             console.print("[yellow]Nothing to warm up.[/yellow]")
             return
 
-        table = Table(title="Warm-up results", show_lines=False)
-        table.add_column("URL", overflow="fold")
-        table.add_column("Status")
-        table.add_column("Detail")
-        ok = 0
-        failed = 0
-        for r in results:
-            colour = {"ok": "green", "skipped": "cyan", "failed": "red"}.get(r.status, "white")
-            table.add_row(r.url, f"[{colour}]{r.status}[/{colour}]", r.detail or "")
-            if r.status == "ok":
-                ok += 1
-            elif r.status == "failed":
-                failed += 1
-        console.print(table)
-        console.print(
-            f"[bold]Summary:[/bold] {ok} cached, {failed} failed, "
-            f"{len(results) - ok - failed} skipped"
-        )
-        exit_with_failure = failed > 0
+        exit_with_failure = _render_warmup_results(console, results)
     except Exception as e:
         handle_error(e, console)
         return
@@ -445,13 +367,73 @@ def cache_warm(
         ctx.exit(1)
 
 
-def _warm_remote_crates(urls: List[str]) -> List[WarmUpResult]:
+def _render_warmup_results(console, results: list[WarmUpResult]) -> bool:
+    """Render the warm-up results table and summary; return True if any URL failed."""
+    table = Table(title="Warm-up results", show_lines=False)
+    table.add_column("URL", overflow="fold")
+    table.add_column("Status")
+    table.add_column("Detail")
+    ok = 0
+    failed = 0
+    for r in results:
+        colour = {"ok": "green", "skipped": "cyan", "failed": "red"}.get(r.status, "white")
+        table.add_row(r.url, f"[{colour}]{r.status}[/{colour}]", r.detail or "")
+        if r.status == "ok":
+            ok += 1
+        elif r.status == "failed":
+            failed += 1
+    console.print(table)
+    console.print(f"[bold]Summary:[/bold] {ok} cached, {failed} failed, {len(results) - ok - failed} skipped")
+    return failed > 0
+
+
+def _resolve_warmup_urls_from_profiles(console, profiles_dir, extra_dir, requested_ids):
+    Profile.load_profiles(
+        profiles_path=profiles_dir,
+        extra_profiles_path=extra_dir,
+    )
+    loaded_profiles = list(Profile.all())
+    if requested_ids:
+        selected = []
+        missing: list[str] = []
+        ambiguous_fallbacks: list[tuple[str, Profile, list[Profile]]] = []
+        for ident in requested_ids:
+            profile = Profile.get_by_identifier(ident)
+            if profile is None:
+                candidates = Profile.get_by_token(ident) or []
+                if candidates:
+                    profile = max(candidates, key=lambda p: p.version or "")
+                    if len(candidates) > 1:
+                        ambiguous_fallbacks.append((ident, profile, candidates))
+            if profile is None:
+                missing.append(ident)
+            else:
+                selected.append(profile)
+        for requested, resolved, candidates in ambiguous_fallbacks:
+            other_versions = sorted(p.identifier for p in candidates if p.identifier != resolved.identifier)
+            console.print(
+                f"[yellow]Note:[/yellow] '{requested}' matched multiple profiles; "
+                f"using [cyan]{resolved.identifier}[/cyan] (highest version). "
+                f"Pass the full identifier to pick a different one "
+                f"(available: {', '.join(other_versions)})."
+            )
+        if missing:
+            console.print(f"[yellow]Profile(s) not found and skipped:[/yellow] {', '.join(missing)}")
+        profile_scope = f"profiles: {', '.join(p.identifier for p in selected)}"
+        urls = discover_cacheable_urls_from_profiles(selected)
+    else:
+        profile_scope = "all installed profiles"
+        urls = discover_cacheable_urls_from_profiles(loaded_profiles)
+    return urls, profile_scope
+
+
+def _warm_remote_crates(urls: list[str]) -> list[WarmUpResult]:
     """
     Download each remote RO-Crate URL via ``HttpRequester.fetch_fresh``
     so that its response is stored in the cache.
     """
     requester = HttpRequester()
-    results: List[WarmUpResult] = []
+    results: list[WarmUpResult] = []
     for url in urls:
         try:
             response = requester.fetch_fresh(url, allow_redirects=True)
@@ -459,7 +441,7 @@ def _warm_remote_crates(urls: List[str]) -> List[WarmUpResult]:
             if status is None:
                 results.append(WarmUpResult(url=url, status="failed", detail="no status code"))
                 continue
-            if status >= 400:
+            if status >= HTTP_STATUS_BAD_REQUEST:
                 results.append(WarmUpResult(url=url, status="failed", detail=f"HTTP {status}"))
                 continue
             # Touch the body so the cache backend stores the full response.
@@ -477,19 +459,19 @@ def _format_bytes(size: int) -> str:
     units = ["B", "KiB", "MiB", "GiB", "TiB"]
     idx = 0
     value = float(size)
-    while value >= 1024 and idx < len(units) - 1:
-        value /= 1024
+    while value >= BYTES_PER_KIB and idx < len(units) - 1:
+        value /= BYTES_PER_KIB
         idx += 1
     return f"{value:.2f} {units[idx]}"
 
 
-def _format_dt(value: Optional[datetime]) -> str:
+def _format_dt(value: datetime | None) -> str:
     if value is None:
         return "—"
     return value.strftime("%Y-%m-%d %H:%M:%SZ") if value.tzinfo else value.strftime("%Y-%m-%d %H:%M:%S")
 
 
-def _format_expires(value: Optional[datetime], is_expired: bool) -> str:
+def _format_expires(value: datetime | None, is_expired: bool) -> str:
     if value is None:
         return "never"
     formatted = _format_dt(value)
@@ -500,10 +482,10 @@ _DEFAULT_SORT_ORDER = {"url": "asc", "size": "desc", "created": "desc"}
 
 
 def _collect_cache_entries(
-    url_filter: Optional[str] = None,
+    url_filter: str | None = None,
     sort_by: str = "size",
-    sort_order: Optional[str] = None,
-) -> List[dict]:
+    sort_order: str | None = None,
+) -> list[dict]:
     """
     Read every cached response and return a list of plain dicts. Filtering
     and sorting happen here so the CLI rendering paths (table / JSON) share
@@ -517,7 +499,7 @@ def _collect_cache_entries(
     if cache is None:
         return []
     needle = url_filter.lower() if url_filter else None
-    entries: List[dict] = []
+    entries: list[dict] = []
     responses = getattr(cache, "responses", None) or {}
     for key in list(responses):
         try:
@@ -528,22 +510,24 @@ def _collect_cache_entries(
         url = getattr(resp, "url", "") or ""
         if needle and needle not in url.lower():
             continue
-        entries.append({
-            "key": key,
-            "url": url,
-            "status": getattr(resp, "status_code", None),
-            "size": int(getattr(resp, "size", 0) or 0),
-            "content_type": (getattr(resp, "headers", {}) or {}).get("Content-Type"),
-            "created_at": getattr(resp, "created_at", None),
-            "expires": getattr(resp, "expires", None),
-            "is_expired": bool(getattr(resp, "is_expired", False)),
-        })
+        entries.append(
+            {
+                "key": key,
+                "url": url,
+                "status": getattr(resp, "status_code", None),
+                "size": int(getattr(resp, "size", 0) or 0),
+                "content_type": (getattr(resp, "headers", {}) or {}).get("Content-Type"),
+                "created_at": getattr(resp, "created_at", None),
+                "expires": getattr(resp, "expires", None),
+                "is_expired": bool(getattr(resp, "is_expired", False)),
+            }
+        )
     effective_order = sort_order or _DEFAULT_SORT_ORDER.get(sort_by, "desc")
     reverse = effective_order == "desc"
     if sort_by == "url":
         entries.sort(key=lambda e: e["url"].lower(), reverse=reverse)
     elif sort_by == "created":
-        entries.sort(key=lambda e: e["created_at"] or datetime.min, reverse=reverse)
+        entries.sort(key=lambda e: e["created_at"] or datetime.min.replace(tzinfo=timezone.utc), reverse=reverse)
     else:  # "size"
         entries.sort(key=lambda e: e["size"], reverse=reverse)
     return entries
@@ -551,8 +535,10 @@ def _collect_cache_entries(
 
 def _entry_to_dict(entry: dict) -> dict:
     """JSON-safe view of an entry produced by ``_collect_cache_entries``."""
-    def _iso(value: Optional[datetime]) -> Optional[str]:
+
+    def _iso(value: datetime | None) -> str | None:
         return value.isoformat() if value is not None else None
+
     return {
         "url": entry["url"],
         "status": entry["status"],

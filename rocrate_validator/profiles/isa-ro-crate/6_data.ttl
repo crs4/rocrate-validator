@@ -39,7 +39,7 @@ isa-ro-crate:FindISAFiles a sh:NodeShape, validator:HiddenShape;
         sh:condition [
             sh:property [
                 sh:path [ sh:inversePath schema:hasPart ] ;
-                sh:qualifiedValueShape [ 
+                sh:qualifiedValueShape [
                     sh:or(
                         [sh:class isa-ro-crate:Assay]
                         [sh:class isa-ro-crate:Study]
@@ -62,12 +62,12 @@ isa-ro-crate:FileMustHaveName a sh:NodeShape ;
         sh:path schema:name ;
         sh:datatype xsd:string ;
         sh:minCount 1 ;
-        sh:maxCount 1 ; 
+        sh:maxCount 1 ;
         sh:not [
             sh:hasValue ""
         ] ;
         sh:description "Check that file does have non-empty name and it's a string" ;
         sh:message "File entity MUST have a non-empty name of type string" ;
         sh:severity sh:Violation ;
-    ] 
+    ]
 .

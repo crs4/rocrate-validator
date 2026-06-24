@@ -16,8 +16,8 @@ import sys
 
 import rich_click as click
 
-from rocrate_validator.utils import log as logging
 from rocrate_validator.cli.utils import running_in_jupyter
+from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.io_helpers.output.console import Console
 from rocrate_validator.utils.io_helpers.output.pager import SystemPager
 from rocrate_validator.utils.versioning import get_version
@@ -31,30 +31,30 @@ __all__ = ["cli", "click"]
 @click.group(invoke_without_command=True)
 @click.rich_config(help_config=click.RichHelpConfiguration(text_markup="rich"))
 @click.option(
-    '--debug',
+    "--debug",
     is_flag=True,
     help="Enable debug logging",
-    default=False
+    default=False,
 )
 @click.option(
-    '-v',
-    '--version',
+    "-v",
+    "--version",
     is_flag=True,
     help="Show the version of the rocrate-validator package",
-    default=False
+    default=False,
 )
 @click.option(
-    '-y',
-    '--no-interactive',
+    "-y",
+    "--no-interactive",
     is_flag=True,
     help="Disable interactive mode",
-    default=False
+    default=False,
 )
 @click.option(
-    '--disable-color',
+    "--disable-color",
     is_flag=True,
     help="Disable colored console output",
-    default=False
+    default=False,
 )
 @click.pass_context
 def cli(ctx: click.Context, debug: bool, version: bool, disable_color: bool, no_interactive: bool):
@@ -65,36 +65,27 @@ def cli(ctx: click.Context, debug: bool, version: bool, disable_color: bool, no_
 
     console = Console(no_color=disable_color or not interactive, interactive=interactive)
     # pass the console to subcommands through the click context, after configuration
-    ctx.obj['console'] = console
-    ctx.obj['pager'] = SystemPager()
-    ctx.obj['interactive'] = interactive
+    ctx.obj["console"] = console
+    ctx.obj["pager"] = SystemPager()
+    ctx.obj["interactive"] = interactive
 
     try:
-        # Check the python version
-        # from rocrate_validator.utils import check_python_version, get_min_python_version
-        # if not check_python_version():
-        #     console.print(
-        #         "\n[bold][red]ERROR:[/red] A Python version "
-        #         f"{'.'.join([str(_) for _ in get_min_python_version()])} or newer is required ! [/bold]")
-        #     sys.exit(1)
-
         # If the version flag is set, print the version and exit
         if version:
-            console.print(
-                f"[bold]rocrate-validator [cyan]{get_version()}[/cyan][/bold]")
+            console.print(f"[bold]rocrate-validator [cyan]{get_version()}[/cyan][/bold]")
             sys.exit(0)
         # Set the log level
         logging.basicConfig(level=logging.DEBUG if debug else logging.WARNING)
         # If no subcommand is provided, invoke the default command
         if ctx.invoked_subcommand is None:
             # If no subcommand is provided, invoke the default command
-            from rocrate_validator.cli.commands.validate import validate
+            from rocrate_validator.cli.commands.validate import validate  # noqa: PLC0415
+
             ctx.invoke(validate)
         else:
             logger.debug("Command invoked: %s", ctx.invoked_subcommand)
     except Exception as e:
-        console.print(
-            f"\n\n[bold][[red]FAILED[/red]] Unexpected error: {e} !!![/bold]\n", style="white")
+        console.print(f"\n\n[bold][[red]FAILED[/red]] Unexpected error: {e} !!![/bold]\n", style="white")
         console.print("""This error may be due to a bug.
                       Please report it to the issue tracker
             along with the following stack trace:
@@ -105,8 +96,8 @@ def cli(ctx: click.Context, debug: bool, version: bool, disable_color: bool, no_
 
 if __name__ == "__main__":
     try:
-        cli()
-    except Exception as e:
+        cli()  # pylint: disable=no-value-for-parameter  # click injects the parameters
+    except Exception:
         if logger.isEnabledFor(logging.DEBUG):
-            logger.exception(f"An unexpected error occurred: {e}")
-        exit(2)
+            logger.exception("An unexpected error occurred")
+        sys.exit(2)

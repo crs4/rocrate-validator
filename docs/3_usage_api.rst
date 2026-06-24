@@ -45,9 +45,9 @@ the library also supports metadata-only validation. This is useful when you
 want to ensure that the metadata conforms to the expected schema without
 checking the actual data files.
 
-To perform metadata-only validation, you can use the `validate_metadata_as_dict` 
+To perform metadata-only validation, you can use the `validate_metadata_as_dict`
 from the `rocrate_validator.services` module. This function takes a dictionary
-representing the metadata and validates it against a given validation profile. 
+representing the metadata and validates it against a given validation profile.
 
 .. code-block:: python
 
@@ -61,7 +61,7 @@ representing the metadata and validates it against a given validation profile.
     with open('tests/data/crates/invalid/0_main_workflow/main_workflow_bad_type/ro-crate-metadata.json', 'r') as f:
         # load the metadata from the JSON file
         rocrate_metadata = json.load(f)
-        
+
         # validate the metadata dictionary
         result = validate_metadata_as_dict(rocrate_metadata, settings=settings)
 
@@ -73,7 +73,7 @@ Formatting Validation Results
 -----------------------------
 
 Validation results can be rendered using different output formatters provided by
-the library. Two formatter types are available: *text* and *JSON*.  
+the library. Two formatter types are available: *text* and *JSON*.
 Both rely on the ``rich`` Python library and integrate with the
 ``rocrate_validator.utils.io_helpers.output.console.Console`` class, which extends
 ``rich.console.Console`` to support custom formatter registration.
@@ -86,7 +86,7 @@ aggregated statistics).
 TextOutputFormatter
 ~~~~~~~~~~~~~~~~~~~
 
-``TextOutputFormatter`` renders validation reports as human-readable, styled text.  
+``TextOutputFormatter`` renders validation reports as human-readable, styled text.
 It is typically used for console output, report generation, or writing results
 to a file.
 

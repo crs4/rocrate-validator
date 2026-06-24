@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 def test_provrc_propertyvalue_no_unitcode():
-    """\
+    """
     Test a Provenance Run Crate where a PropertyValue does not have a
     unitCode.
     """
@@ -33,12 +33,12 @@ def test_provrc_propertyvalue_no_unitcode():
         False,
         ["Provenance Run Crate resource usage PropertyValue SHOULD"],
         ["A PropertyValue used to represent resourceUsage SHOULD have a unitCode"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )
 
 
 def test_provrc_propertyvalue_no_propertyid():
-    """\
+    """
     Test a Provenance Run Crate where a PropertyValue does not have a
     propertyID.
     """
@@ -48,5 +48,5 @@ def test_provrc_propertyvalue_no_propertyid():
         False,
         ["Provenance Run Crate resource usage PropertyValue MUST"],
         ["A PropertyValue used to represent resourceUsage MUST have a propertyID"],
-        profile_identifier="provenance-run-crate"
+        profile_identifier="provenance-run-crate",
     )

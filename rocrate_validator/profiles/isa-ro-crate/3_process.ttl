@@ -39,7 +39,7 @@ isa-ro-crate:FindISAProcesses a sh:NodeShape, validator:HiddenShape;
         sh:condition [
             sh:property [
                 sh:path [ sh:inversePath schema:about ] ;
-                sh:qualifiedValueShape [ 
+                sh:qualifiedValueShape [
                     sh:or(
                         [sh:class isa-ro-crate:Assay]
                         [sh:class isa-ro-crate:Study]
@@ -66,7 +66,7 @@ isa-ro-crate:ProcessMustHaveName a sh:NodeShape ;
         sh:path schema:name ;
         sh:datatype xsd:string ;
         sh:minCount 1 ;
-        sh:maxCount 1 ; 
+        sh:maxCount 1 ;
         sh:not [
             sh:hasValue ""
         ] ;

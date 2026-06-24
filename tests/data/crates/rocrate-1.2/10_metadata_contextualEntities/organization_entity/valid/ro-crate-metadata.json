@@ -1,0 +1,74 @@
+{
+  "@context": "https://w3id.org/ro/crate/1.2/context",
+  "@graph": [
+    {
+      "@id": "ro-crate-metadata.json",
+      "@type": "CreativeWork",
+      "about": {
+        "@id": "./"
+      },
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.2"
+      }
+    },
+    {
+      "@id": "./",
+      "@type": "Dataset",
+      "name": "Organization entity — valid",
+      "description": "RO-Crate with a well-formed Organization entity: ROR @id, contactPoint referencing ContactPoint, and author with contactPoint.",
+      "datePublished": "2024-01-01",
+      "license": {
+        "@id": "https://spdx.org/licenses/MIT.html"
+      },
+      "publisher": {
+        "@id": "https://ror.org/03f0f6041"
+      },
+      "author": {
+        "@id": "https://orcid.org/0000-0001-6121-5409"
+      },
+      "funder": {
+        "@id": "https://ror.org/03f0f6041"
+      }
+    },
+    {
+      "@id": "https://ror.org/03f0f6041",
+      "@type": "Organization",
+      "name": "University of Technology Sydney",
+      "url": "https://ror.org/03f0f6041",
+      "contactPoint": {
+        "@id": "mailto:contact@uts.edu.au"
+      }
+    },
+    {
+      "@id": "mailto:contact@uts.edu.au",
+      "@type": "ContactPoint",
+      "contactType": "customer service",
+      "email": "contact@uts.edu.au",
+      "name": "UTS contact point"
+    },
+    {
+      "@id": "https://orcid.org/0000-0001-6121-5409",
+      "@type": "Person",
+      "name": "Tim Luckett",
+      "contactPoint": {
+        "@id": "mailto:tim.luckett@uts.edu.au"
+      },
+      "affiliation": {
+        "@id": "https://ror.org/03f0f6041"
+      }
+    },
+    {
+      "@id": "mailto:tim.luckett@uts.edu.au",
+      "@type": "ContactPoint",
+      "contactType": "customer service",
+      "email": "tim.luckett@uts.edu.au",
+      "name": "Tim Luckett's contact point"
+    },
+    {
+      "@id": "https://spdx.org/licenses/MIT.html",
+      "@type": "CreativeWork",
+      "name": "MIT License",
+      "description": "A permissive license."
+    }
+  ]
+}

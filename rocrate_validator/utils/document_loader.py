@@ -26,14 +26,14 @@ from __future__ import annotations
 
 import json
 import threading
-from typing import Any, Optional, Tuple
+from typing import Any
 
 from rdflib.plugins.shared.jsonld import context as jsonld_context
 from rdflib.plugins.shared.jsonld import util as jsonld_util
 
+from rocrate_validator.constants import HTTP_STATUS_BAD_REQUEST
 from rocrate_validator.utils import log as logging
-from rocrate_validator.utils.http import (OFFLINE_CACHE_MISS_STATUS,
-                                          HttpRequester, OfflineCacheMissError)
+from rocrate_validator.utils.http import OFFLINE_CACHE_MISS_STATUS, HttpRequester, OfflineCacheMissError
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +61,7 @@ def install_document_loader() -> bool:
     Returns ``True`` when the loader is active after the call, ``False`` when
     installation raised an unexpected error (which is logged).
     """
-    global _installed
+    global _installed  # noqa: PLW0603
 
     with _install_lock:
         if _installed:
@@ -69,9 +69,11 @@ def install_document_loader() -> bool:
 
         try:
             jsonld_util.source_to_json = _patched_source_to_json
-            # The context module imports source_to_json at module import time,
-            # so it must be patched separately.
-            jsonld_context.source_to_json = _patched_source_to_json  # type: ignore[attr-defined]
+            # The context module does `from .util import source_to_json` at import
+            # time, binding its own reference to the original function. Patching
+            # only `util` would not intercept remote @context resolution, so the
+            # context module must be patched separately.
+            jsonld_context.source_to_json = _patched_source_to_json  # pyright: ignore[reportPrivateImportUsage]
         except Exception as e:
             logger.error("Failed to install JSON-LD document loader: %s", e)
             return False
@@ -88,14 +90,14 @@ def uninstall_document_loader() -> bool:
     Returns ``True`` when the loader is no longer active after the call,
     ``False`` when uninstallation raised an unexpected error (which is logged).
     """
-    global _installed
+    global _installed  # noqa: PLW0603
     with _install_lock:
         if not _installed:
             return True
 
         try:
             jsonld_util.source_to_json = _original_source_to_json
-            jsonld_context.source_to_json = _original_source_to_json  # type: ignore[attr-defined]
+            jsonld_context.source_to_json = _original_source_to_json  # pyright: ignore[reportPrivateImportUsage]
         except Exception as e:
             logger.error("Failed to uninstall JSON-LD document loader: %s", e)
             return False
@@ -118,7 +120,7 @@ def _fetch_json_ld(url: str) -> Any:
     status = getattr(response, "status_code", None)
     if status == OFFLINE_CACHE_MISS_STATUS and getattr(requester, "offline", False):
         raise OfflineCacheMissError(url)
-    if status is None or status >= 400:
+    if status is None or status >= HTTP_STATUS_BAD_REQUEST:
         raise RuntimeError(f"Unable to retrieve JSON-LD document from {url} (status {status})")
     try:
         return response.json()
@@ -126,7 +128,7 @@ def _fetch_json_ld(url: str) -> Any:
         return json.loads(response.text)
 
 
-def resolve_remote_document(url: str) -> Tuple[Optional[dict], Optional[str]]:
+def resolve_remote_document(url: str) -> tuple[dict | None, str | None]:
     """
     Resolve a remote JSON-LD document, returning ``(json, content_type)``.
 

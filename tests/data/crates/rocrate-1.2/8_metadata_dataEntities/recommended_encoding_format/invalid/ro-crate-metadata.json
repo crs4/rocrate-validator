@@ -1,0 +1,78 @@
+{
+  "@context": "https://w3id.org/ro/crate/1.2/context",
+  "@graph": [
+    {
+      "@id": "ro-crate-metadata.json",
+      "@type": "CreativeWork",
+      "about": {
+        "@id": "./"
+      },
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.2"
+      }
+    },
+    {
+      "@id": "./",
+      "@type": "Dataset",
+      "name": "Example: contextual entity linked from other entities",
+      "description": "This RO-Crate demonstrates the RO-Crate 1.2 requirement that any contextual entity in the @graph SHOULD be linked to from at least one of the other entities using its @id. The Person entity below is correctly referenced from the Root Data Entity via the author property.",
+      "datePublished": "2024-01-01",
+      "license": {
+        "@id": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "author": {
+        "@id": "https://orcid.org/0000-0002-1825-0097"
+      },
+      "hasPart": [
+        {
+          "@id": "data.csv"
+        }
+      ]
+    },
+    {
+      "@id": "https://creativecommons.org/licenses/by/4.0/",
+      "@type": "CreativeWork",
+      "name": "Creative Commons Attribution 4.0 International",
+      "description": "A Creative Commons license that lets others distribute, remix, adapt, and build upon your work, even commercially."
+    },
+    {
+      "@id": "https://orcid.org/0000-0002-1825-0097",
+      "@type": "Person",
+      "name": "Josiah Carberry",
+      "contactPoint": {
+        "@id": "#josiah-carberry-contact"
+      },
+      "affiliation": {
+        "@id": "https://ror.org/05f9q8d28"
+      }
+    },
+    {
+      "@id": "#josiah-carberry-contact",
+      "@type": "ContactPoint",
+      "name": "Josiah Carberry Contact",
+      "email": "mailto:josiah.carberry@example.com"
+    },
+    {
+      "@id": "https://ror.org/05f9q8d28",
+      "@type": "Organization",
+      "name": "Example University",
+      "description": "An example university that the Person entity is affiliated with.",
+      "url": "https://www.exampleuniversity.edu"
+    },
+    {
+      "@id": "data.csv",
+      "@type": "File",
+      "name": "Sample data",
+      "description": "A sample data file.",
+      "contentSize": "42",
+      "contentLocation": {
+        "@id": "#location"
+      }
+    },
+    {
+      "@id": "#location",
+      "@type": "Place",
+      "name": "Example location"
+    }
+  ]
+}

@@ -15,9 +15,9 @@
 import enum
 from abc import ABC, abstractmethod
 from functools import total_ordering
-from typing import Any, Optional, Union
+from typing import Any
 
-import enum_tools
+from enum_tools.documentation import document_enum
 
 from rocrate_validator.utils import log as logging
 
@@ -26,10 +26,10 @@ logger = logging.getLogger(__name__)
 
 
 @enum.unique
-@enum_tools.documentation.document_enum
+@document_enum
 @total_ordering
 class EventType(enum.Enum):
-    """ Event types """
+    """Event types"""
 
     #: Validation start
     VALIDATION_START = 0
@@ -59,7 +59,7 @@ class Event:
     Base class for representing events
     """
 
-    def __init__(self, event_type: EventType, message: Optional[str] = None):
+    def __init__(self, event_type: EventType, message: str | None = None):
         """
         Initialize the event.
 
@@ -127,7 +127,6 @@ class Event:
 
 
 class Subscriber(ABC):
-
     """
     Subscriber interface.
     Objects that want to be notified of events generated during the validation process
@@ -138,7 +137,7 @@ class Subscriber(ABC):
         self.name = name
 
     @abstractmethod
-    def update(self, event: Event, ctx: Optional[Any] = None):
+    def update(self, event: Event, ctx: Any | None = None):
         """
         Update the subscriber with the event
 
@@ -148,13 +147,12 @@ class Subscriber(ABC):
         :param ctx: optional context
         :type ctx: Optional[Any]
         """
-        pass
 
 
 class Publisher:
     def __init__(self, avoid_duplicate_notifications: bool = False):
-        self.__subscribers = set()
-        self.__notified_events = set()
+        self.__subscribers: set[Subscriber] = set()
+        self.__notified_events: set[Event] = set()
         self.__avoid_duplicate_notifications = avoid_duplicate_notifications
 
     @property
@@ -167,15 +165,14 @@ class Publisher:
     def remove_subscriber(self, subscriber):
         self.subscribers.remove(subscriber)
 
-    def notify(self, event: Union[Event, EventType], ctx: Optional[Any] = None):
+    def notify(self, event: Event | EventType, ctx: Any | None = None):
         if isinstance(event, EventType):
             event = Event(event)
         # Check if the event has already been notified
         # This is to avoid notifying the same event multiple times
-        if self.__avoid_duplicate_notifications:
-            if event in self.__notified_events:
-                logger.warning(f"Event {event} already notified")
-                return
+        if self.__avoid_duplicate_notifications and event in self.__notified_events:
+            logger.warning(f"Event {event} already notified")
+            return
         # Add the event to the notified events
         self.__notified_events.add(event)
         logger.debug(f"Notifying event {event}")

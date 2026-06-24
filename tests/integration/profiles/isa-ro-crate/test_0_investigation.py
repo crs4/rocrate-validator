@@ -17,7 +17,7 @@ import logging
 
 from rocrate_validator.models import Severity
 from tests.ro_crates import ValidROC
-from tests.shared import do_entity_test, SPARQL_PREFIXES
+from tests.shared import SPARQL_PREFIXES, do_entity_test
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -48,9 +48,7 @@ def test_isa_additionaltype_not_investigation():
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
         expected_triggered_requirements=["Root Data Entity must be Investigation"],
-        expected_triggered_issues=[
-            "The root data entity must have additionalType of `Investigation`"
-        ],
+        expected_triggered_issues=["The root data entity must have additionalType of `Investigation`"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
     )
@@ -78,10 +76,8 @@ def test_isa_investigation_no_identifier():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Investigation MUST have base properties"],
-        expected_triggered_issues=[
-            "The root data entity must have a non-empty identifier"
-        ],
+        # expected_triggered_requirements=["Investigation MUST have base properties"],  # noqa: ERA001
+        expected_triggered_issues=["The root data entity must have a non-empty identifier"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
     )
@@ -112,10 +108,8 @@ def test_isa_investigation_identifier_not_string():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Investigation MUST have base properties"],
-        expected_triggered_issues=[
-            "The root data entity must have a non-empty identifier"
-        ],
+        # expected_triggered_requirements=["Investigation MUST have base properties"],  # noqa: ERA001
+        expected_triggered_issues=["The root data entity must have a non-empty identifier"],
         profile_identifier="isa-ro-crate",
         rocrate_entity_mod_sparql=sparql,
     )
@@ -146,7 +140,7 @@ def test_isa_investigation_no_shoulds():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.RECOMMENDED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Investigation MUST have base properties"],
+        # expected_triggered_requirements=["Investigation MUST have base properties"],  # noqa: ERA001
         expected_triggered_issues=[
             "Investigation entity SHOULD have a dateCreated",
             "Investigation entity SHOULD have a creator",
@@ -184,7 +178,7 @@ def test_isa_investigation_shoulds_have_wrong_types():
         rocrate_path=ValidROC().isa_ro_crate,
         requirement_severity=Severity.REQUIRED,
         expected_validation_result=False,
-        # expected_triggered_requirements=["Investigation MUST have base properties"],
+        # expected_triggered_requirements=["Investigation MUST have base properties"],  # noqa: ERA001
         expected_triggered_issues=[
             "Investigation dateCreated MUST be a valid ISO 8601 date",
             "Investigation creator MUST be of type Person",

@@ -15,6 +15,7 @@
 import toml
 
 from rocrate_validator.utils import log as logging
+from rocrate_validator.utils.paths import get_config_path
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -29,11 +30,8 @@ def get_config() -> dict:
 
     :return: The configuration
     """
-    global _config
+    global _config  # noqa: PLW0603
     if _config is None:
-        from .paths import get_config_path
-
-        # Read the pyproject.toml file
         _config = toml.load(get_config_path())
 
     return _config

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional
+from typing import Any
 
 from rich.console import Console as BaseConsole
 
@@ -26,15 +26,21 @@ logger = logging.getLogger(__name__)
 class Console(BaseConsole):
     """Rich console that can be disabled."""
 
-    def __init__(self, *args, disabled: bool = False, interactive: bool = True,
-                 formatters: dict[type, OutputFormatter] = None, **kwargs):
+    def __init__(
+        self,
+        *args,
+        disabled: bool = False,
+        interactive: bool = True,
+        formatters: dict[type, Any] | None = None,
+        **kwargs,
+    ):
         force_jupyter = kwargs.pop("force_jupyter", None)
         if force_jupyter is None:
             force_jupyter = False if self.__jupyter_environment__() else None
         super().__init__(*args, force_jupyter=force_jupyter, **kwargs)
         self.disabled = disabled
         self.interactive = interactive
-        self._formatters = {}
+        self._formatters: dict[type, Any] = {}
         self._formatters_opts: dict[type, BaseOutputFormatter] = {}
         # Register provided formatters if any
         if formatters:
@@ -42,26 +48,27 @@ class Console(BaseConsole):
                 self.register_formatter(formatter, type_)
 
     def __jupyter_environment__(self) -> bool:
-        from rocrate_validator.cli.utils import running_in_jupyter
+        from rocrate_validator.cli.utils import running_in_jupyter  # noqa: PLC0415
+
         return running_in_jupyter()
 
-    def register_formatter(self, formatter: OutputFormatter, type_: Optional[type] = None):
+    def register_formatter(self, formatter: OutputFormatter, type_: type | None = None):
         if type_ is None and not isinstance(formatter, BaseOutputFormatter):
             raise ValueError("type_ must be provided if formatter is not a BaseOutputFormatter")
         if isinstance(formatter, BaseOutputFormatter):
             for t, f in formatter.get_type_formatters().items():
                 self._formatters[t] = f
         else:
+            assert type_ is not None  # guaranteed by the check above
             self._formatters[type_] = formatter
 
-    def __format_data__(self, obj, *args, **kwargs):
+    def __format_data__(self, obj):
         formatter = self._formatters.get(type(obj))
         if formatter:
             return formatter(obj)
-        else:
-            return obj
+        return obj
 
-    def print(self, obj, *args, **kwargs):
+    def print(self, *objects, **kwargs):
         if not self.disabled:
-            out = self.__format_data__(obj, *args, **kwargs)
-            super().print(out, *args, **kwargs)
+            formatted = tuple(self.__format_data__(o) for o in objects)
+            super().print(*formatted, **kwargs)

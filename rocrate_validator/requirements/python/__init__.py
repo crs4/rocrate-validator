@@ -14,14 +14,23 @@
 
 import inspect
 import re
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable, Optional, Type
+from typing import Any, cast
 
+from rocrate_validator.constants import EXPECTED_CHECK_PARAM_COUNT
+from rocrate_validator.models import (
+    LevelCollection,
+    Profile,
+    Requirement,
+    RequirementCheck,
+    RequirementLevel,
+    RequirementLoader,
+    Severity,
+    SourceSnippet,
+    ValidationContext,
+)
 from rocrate_validator.utils import log as logging
-from rocrate_validator.models import (LevelCollection, Profile, Requirement,
-                                      RequirementCheck, RequirementLevel,
-                                      RequirementLoader, Severity,
-                                      SourceSnippet, ValidationContext)
 from rocrate_validator.utils.python_helpers import get_classes_from_file
 
 # set up logging
@@ -33,37 +42,48 @@ class PyFunctionCheck(RequirementCheck):
     Concrete class that implements a check that calls a function.
     """
 
-    def __init__(self,
-                 requirement: Requirement,
-                 name: str,
-                 check_function: Callable[[RequirementCheck, ValidationContext], bool],
-                 description: Optional[str] = None,
-                 level: Optional[LevelCollection] = LevelCollection.REQUIRED,
-                 deactivated: bool = False):
+    def __init__(
+        self,
+        requirement: Requirement,  # pylint: disable=redefined-outer-name
+        name: str,
+        check_function: Callable[[RequirementCheck, ValidationContext], bool],
+        description: str | None = None,
+        level: RequirementLevel | None = LevelCollection.REQUIRED,
+        deactivated: bool = False,
+    ):
         """
         check_function: a function that accepts an instance of PyFunctionCheck and a ValidationContext.
         """
         super().__init__(requirement, name, description=description, level=level, deactivated=deactivated)
 
         sig = inspect.signature(check_function)
-        if len(sig.parameters) != 2:
-            raise RuntimeError("Invalid PyFunctionCheck function. Checks are expected to accept "
-                               f"arguments [RequirementCheck, ValidationContext] but this has signature {sig}")
+        if len(sig.parameters) != EXPECTED_CHECK_PARAM_COUNT:
+            raise RuntimeError(
+                "Invalid PyFunctionCheck function. Checks are expected to accept "
+                f"arguments [RequirementCheck, ValidationContext] but this has signature {sig}"
+            )
         if sig.return_annotation not in (bool, inspect.Signature.empty):
-            raise RuntimeError("Invalid PyFunctionCheck function. Checks are expected to "
-                               f"return bool but this only returns {sig.return_annotation}")
+            raise RuntimeError(
+                "Invalid PyFunctionCheck function. Checks are expected to "
+                f"return bool but this only returns {sig.return_annotation}"
+            )
 
         self._check_function = check_function
 
     def execute_check(self, context: ValidationContext) -> bool:
-        if self.requirement.profile.identifier != context.profile_identifier and \
-                context.settings.disable_inherited_profiles_issue_reporting:
-            logger.debug("Skipping requirement %s as it belongs to an inherited profile %s",
-                         self.requirement.identifier, self.requirement.profile.identifier)
+        if (
+            self.requirement.profile.identifier != context.profile_identifier
+            and context.settings.disable_inherited_profiles_issue_reporting
+        ):
+            logger.debug(
+                "Skipping requirement %s as it belongs to an inherited profile %s",
+                self.requirement.identifier,
+                self.requirement.profile.identifier,
+            )
             return True
         return self._check_function(self, context)
 
-    def get_source_snippet(self) -> Optional[SourceSnippet]:
+    def get_source_snippet(self) -> SourceSnippet | None:
         try:
             code = inspect.getsource(self._check_function)
         except (OSError, TypeError) as e:
@@ -96,46 +116,54 @@ class PyRequirement(Requirement):
     The class should define one or more methods that are decorated with the :py:func:`check` decorator.
     """
 
-    def __init__(self,
-                 profile: Profile,
-                 requirement_check_class: Type[PyFunctionCheck],
-                 name: str = "",
-                 description: Optional[str] = None,
-                 path: Optional[Path] = None):
+    def __init__(
+        self,
+        profile: Profile,
+        requirement_check_class: type[PyFunctionCheck],
+        name: str = "",
+        description: str | None = None,
+        path: Path | None = None,
+    ):
         self.requirement_check_class = requirement_check_class
         super().__init__(profile, name, description, path, initialize_checks=True)
 
     def __init_checks__(self):
         # initialize the list of checks
-        checks = []
+        checks: list = []
         for name, member in inspect.getmembers(self.requirement_check_class, inspect.isfunction):
             # verify that the attribute set by the check decorator is present
-            if hasattr(member, "check") and member.check is True:
+            if bool(getattr(member, "check", False)):
                 check_name = None
                 try:
-                    check_name = member.name.strip()
+                    # `name`/`severity` are attributes attached dynamically by the @check decorator
+                    check_name = cast("Any", member).name.strip()
                 except Exception:
                     check_name = name.strip()
                 check_description = member.__doc__.strip() if member.__doc__ else ""
                 # init the check with the requirement level
                 severity = None
                 try:
-                    severity = member.severity
+                    severity = cast("Any", member).severity
                     logger.debug("Severity set for check '%r' from decorator: %r", check_name, severity)
                 except Exception:
-                    pass
+                    logger.debug(f"No severity set for check '{check_name}' from decorator.")
                 if not severity:
-                    logger.debug(f"No explicit severity set for check '{check_name}' from decorator."
-                                 f"Getting severity from path: {self.severity_from_path}")
+                    logger.debug(
+                        f"No explicit severity set for check '{check_name}' from decorator."
+                        f"Getting severity from path: {self.severity_from_path}"
+                    )
                     severity = self.severity_from_path or Severity.REQUIRED
                 logger.debug("Severity log: %r", severity)
                 deactivated = bool(getattr(member, "deactivated", False))
-                check = self.requirement_check_class(self,
-                                                     check_name,
-                                                     member,
-                                                     description=check_description,
-                                                     level=LevelCollection.get(severity.name) if severity else None,
-                                                     deactivated=deactivated)
+                # pylint: disable-next=redefined-outer-name  # local 'check' mirrors the decorator name
+                check = self.requirement_check_class(
+                    self,
+                    check_name,
+                    member,
+                    description=check_description,
+                    level=LevelCollection.get(severity.name) if severity else None,
+                    deactivated=deactivated,
+                )
                 self._checks.append(check)
                 logger.debug("Added check: %s %r", check_name, check)
 
@@ -146,7 +174,7 @@ class PyRequirement(Requirement):
         return getattr(self.requirement_check_class, "hidden", False)
 
 
-def requirement(name: str, description: Optional[str] = None, hidden: bool = False):
+def requirement(name: str, description: str | None = None, hidden: bool = False):
     """
     A decorator to mark a class as a requirement class.
 
@@ -164,6 +192,7 @@ def requirement(name: str, description: Optional[str] = None, hidden: bool = Fal
 
     :return: the decorated class
     """
+
     def decorator(cls):
         if name:
             cls.__rq_name__ = name
@@ -175,9 +204,7 @@ def requirement(name: str, description: Optional[str] = None, hidden: bool = Fal
     return decorator
 
 
-def check(name: Optional[str] = None,
-          severity: Optional[Severity] = None,
-          deactivated: bool = False):
+def check(name: str | None = None, severity: Severity | None = None, deactivated: bool = False):
     """
     A decorator to mark a function as a check.
 
@@ -205,29 +232,37 @@ def check(name: Optional[str] = None,
     :return: the decorated function
     :rtype: Callable
     """
+
     def decorator(func):
-        check_name = name if name else func.__name__
+        check_name = name or func.__name__
         sig = inspect.signature(func)
-        if len(sig.parameters) != 2:
-            raise RuntimeError(f"Invalid check {check_name}. Checks are expected to "
-                               f"accept two arguments but this only takes {len(sig.parameters)}")
+        if len(sig.parameters) != EXPECTED_CHECK_PARAM_COUNT:
+            raise RuntimeError(
+                f"Invalid check {check_name}. Checks are expected to "
+                f"accept two arguments but this only takes {len(sig.parameters)}"
+            )
         if sig.return_annotation not in (bool, inspect.Signature.empty):
-            raise RuntimeError(f"Invalid check {check_name}. Checks are expected to "
-                               f"return bool but this only returns {sig.return_annotation}")
+            raise RuntimeError(
+                f"Invalid check {check_name}. Checks are expected to "
+                f"return bool but this only returns {sig.return_annotation}"
+            )
         func.check = True
         func.name = check_name
         func.severity = severity
         func.deactivated = deactivated
         return func
+
     return decorator
 
 
 class PyRequirementLoader(RequirementLoader):
-
-    def load(self, profile: Profile,
-             requirement_level: RequirementLevel,
-             file_path: Path,
-             publicID: Optional[str] = None) -> list[Requirement]:
+    def load(
+        self,
+        profile: Profile,
+        requirement_level: RequirementLevel,  # pylint: disable=unused-argument
+        file_path: Path,
+        publicID: str | None = None,  # pylint: disable=unused-argument
+    ) -> list[Requirement]:
         # instantiate a list to store the requirements
         requirements: list[Requirement] = []
 
@@ -239,24 +274,25 @@ class PyRequirementLoader(RequirementLoader):
         for requirement_name, check_class in classes.items():
             # set default requirement name and description
             rq = {}
-            rq["name"] = " ".join(re.findall(r'[A-Z](?:[a-z]+|[A-Z]*(?=[A-Z]|$))',
-                                             requirement_name.strip())) if requirement_name else ""
+            rq["name"] = (
+                " ".join(re.findall(r"[A-Z](?:[a-z]+|[A-Z]*(?=[A-Z]|$))", requirement_name.strip()))
+                if requirement_name
+                else ""
+            )
             rq["description"] = check_class.__doc__.strip() if check_class.__doc__ else ""
             # handle default overrides via decorators
-            for pn in ("name", "description"):
-                try:
-                    pv = getattr(check_class, f"__rq_{pn}__", None)
-                    if pv and isinstance(pv, str):
-                        rq[pn] = pv
-                except AttributeError:
-                    pass
+            for on in ("name", "description"):
+                pv = getattr(check_class, f"__rq_{on}__", None)
+                if pv and isinstance(pv, str):
+                    rq[on] = pv
             logger.debug("Processing requirement: %r", requirement_name)
             r = PyRequirement(
                 profile,
                 requirement_check_class=check_class,
                 name=rq["name"],
                 description=rq["description"],
-                path=file_path)
+                path=file_path,
+            )
             logger.debug("Created requirement: %r", r)
             requirements.append(r)
 

@@ -64,8 +64,8 @@ isa-ro-crate:Sample rdf:type owl:Class ;
 # Data
 isa-ro-crate:Data rdf:type owl:Class ;
   rdfs:subClassOf schema:MediaObject ;
-  rdfs:label "Data"@en 
-  
+  rdfs:label "Data"@en .
+
 # Comment
 isa-ro-crate:Comment rdf:type owl:Class ;
   rdfs:subClassOf schema:MediaObject ;
@@ -125,7 +125,7 @@ isa-ro-crate:Data rdf:type owl:Class ;
     ] ;
     rdfs:label "Data Entity"@en .
 
-    
+
 ###  https://schema.org/PropertyValue
 schema:PropertyValue rdf:type owl:Class ;
                      rdfs:label "PropertyValue"@en .

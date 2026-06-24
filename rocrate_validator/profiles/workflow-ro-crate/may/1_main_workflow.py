@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from rocrate_validator.utils import log as logging
+# pylint: disable=invalid-name  # profile filename uses digit prefix (load-order convention)
+
 from rocrate_validator.models import ValidationContext
-from rocrate_validator.requirements.python import (PyFunctionCheck, check,
-                                                   requirement)
+from rocrate_validator.requirements.python import PyFunctionCheck, check, requirement
+from rocrate_validator.utils import log as logging
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -43,9 +44,9 @@ class WorkflowFilesExistence(PyFunctionCheck):
                 context.result.add_issue(f"Workflow diagram '{image.id}' not found in crate", self)
                 return False
             return True
-        except Exception as e:
+        except Exception:
             if logger.isEnabledFor(logging.DEBUG):
-                logger.exception(f"Unexpected error: {e}")
+                logger.exception("Unexpected error checking main workflow image existence")
             return False
 
     @check(name="Workflow description existence")
@@ -60,10 +61,11 @@ class WorkflowFilesExistence(PyFunctionCheck):
                 return False
             if not context.settings.metadata_only and not main_workflow_subject.is_available():
                 context.result.add_issue(
-                    f"Workflow CWL description {main_workflow_subject.id} not found in crate", self)
+                    f"Workflow CWL description {main_workflow_subject.id} not found in crate", self
+                )
                 return False
             return True
-        except Exception as e:
+        except Exception:
             if logger.isEnabledFor(logging.DEBUG):
-                logger.exception(f"Unexpected error: {e}")
+                logger.exception("Unexpected error checking workflow description existence")
             return False
