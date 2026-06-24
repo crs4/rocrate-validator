@@ -191,7 +191,9 @@ def test_missing_absolute_path_data_entity():
 
 
 def test_valid_rocrate_with_data_entities():
-    do_entity_test(ValidROC().rocrate_with_data_entities, models.Severity.REQUIRED, True, profile_identifier="ro-crate")
+    do_entity_test(
+        ValidROC().rocrate_with_data_entities, models.Severity.REQUIRED, True, profile_identifier="ro-crate-1.1"
+    )
 
 
 @pytest.mark.parametrize(
@@ -248,7 +250,7 @@ def test_remote_data_entity_does_not_fail_required_check(tmp_path, remote_entity
         models.ValidationSettings(
             rocrate_uri=crate_dir,
             requirement_severity=models.Severity.REQUIRED,
-            profile_identifier="ro-crate",
+            profile_identifier="ro-crate-1.1",
         )
     )
     assert result.passed(), (

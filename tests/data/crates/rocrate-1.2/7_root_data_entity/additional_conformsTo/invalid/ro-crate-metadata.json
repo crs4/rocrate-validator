@@ -1,0 +1,55 @@
+{
+  "@context": "https://w3id.org/ro/crate/1.2/context",
+  "@graph": [
+    {
+      "@id": "ro-crate-metadata.json",
+      "@type": "CreativeWork",
+      "about": {
+        "@id": "./"
+      },
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.2"
+      }
+    },
+    {
+      "@id": "./",
+      "@type": "Dataset",
+      "name": "Counterexample: preview incorrectly in hasPart",
+      "description": "This RO-Crate INCORRECTLY includes ro-crate-preview.html in hasPart. In RO-Crate 1.2, ro-crate-preview.html SHOULD NOT be listed in hasPart of the Root Data Entity or any Dataset entity (unless it is also the profile description in a Profile Crate).",
+      "datePublished": "2024-01-01",
+      "license": {
+        "@id": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "hasPart": [],
+      "cite-as": {
+        "@id": "https://doi.org/10.1234/example-doi"
+      },
+      "conformsTo": [
+        {
+          "@id": "https://w3id.org/ro/crate/1.1x"
+        }
+      ]
+    },
+    {
+      "@id": "https://creativecommons.org/licenses/by/4.0/",
+      "@type": "CreativeWork",
+      "name": "Creative Commons Attribution 4.0 International",
+      "description": "A Creative Commons license that lets others distribute, remix, adapt, and build upon your work, even commercially."
+    },
+    {
+      "@id": "https://doi.org/10.1234/example-doi",
+      "@type": "CreativeWork",
+      "name": "Example DOI Citation",
+      "description": "An example citation for the Root Data Entity using a DOI.",
+      "url": "https://example.com/download/ro-crate.zip"
+    },
+    {
+      "@id": "https://w3id.org/ro/crate/1.1x",
+      "@type": [
+        "CreativeWork"
+      ],
+      "name": "RO-Crate 1.1x Profile",
+      "description": "An example of an additional `conformsTo` profile reference in the Root Data Entity metadata."
+    }
+  ]
+}

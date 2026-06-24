@@ -110,6 +110,21 @@ class ROCrate(ABC):
             self._metadata = ROCrateMetadata(self)
         return self._metadata
 
+    def is_detached(self) -> bool:
+        root = self.metadata.get_root_data_entity()
+        if root and root.has_type("Dataset") and root.id == "./":
+            return False
+        if root and root.id_as_uri.is_remote_resource():
+            # An absolute root @id doesn't necessarily mean detached;
+            # check if there are any local (non-web) data entities
+            local_data_entities = self.metadata.get_data_entities(exclude_web_data_entities=True)
+            return all(entity.id == root.id for entity in local_data_entities)
+        return False
+
+    @property
+    def metadata_descriptor_id(self) -> str:
+        return ROCrateMetadata.METADATA_FILE_DESCRIPTOR
+
     @property
     @abstractmethod
     def size(self) -> int:
@@ -206,9 +221,27 @@ class ROCrate(ABC):
         :return: `True` if the RO-Crate has a metadata descriptor file, `False` otherwise
         :rtype: bool
         """
-        path = self.__parse_path__(Path(self.metadata.METADATA_FILE_DESCRIPTOR))
+        path = self.__parse_path__(Path(self.metadata_descriptor_id))
         logger.debug("Checking for metadata descriptor at path: %s", path)
         return self.has_file(path)
+
+    def get_descriptor_path(self) -> Path | None:
+        """
+        Get the path to the metadata descriptor file if it exists.
+
+        :return: the path to the metadata descriptor file if it exists, `None` otherwise
+        :rtype: Path | None
+        """
+        try:
+            path = self.__parse_path__(Path(self.metadata_descriptor_id))
+            logger.debug("Checking for metadata descriptor at path: %s", path)
+            if self.has_file(path):
+                return path
+            return None
+        except Exception:
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.exception("Error getting the metadata descriptor path")
+            return None
 
     def has_file(self, path: Path) -> bool:
         """
@@ -290,21 +323,24 @@ class ROCrate(ABC):
         return response.content if binary_mode else response.text
 
     @staticmethod
-    def get_external_file_size(uri: str) -> int:
+    def get_external_file_size(uri: str) -> int | None:
         """
         Get the size of an external file.
 
         :param uri: the URI of the file
         :type uri: str
 
-        :return: the size of the file
-        :rtype: int
+        :return: the size of the file, or None if the server did not provide a Content-Length header
+        :rtype: int | None
 
         :raises requests.HTTPError: if the request fails
         """
         response = HttpRequester().head(str(uri))
         response.raise_for_status()
-        return int(response.headers.get("Content-Length"))
+        content_length = response.headers.get("Content-Length")
+        if content_length is None:
+            return None
+        return int(content_length)
 
     @staticmethod
     def from_metadata_dict(metadata_dict: dict) -> ROCrate:
@@ -345,7 +381,13 @@ class ROCrate(ABC):
             ROCrateBagitLocalZip,
             ROCrateBagitRemoteZip,
         )
-        from .plain import ROCrateLocalFolder, ROCrateLocalZip, ROCrateRemoteZip  # noqa: PLC0415
+        from .plain import (  # noqa: PLC0415
+            ROCrateLocalFolder,
+            ROCrateLocalMetadataFile,
+            ROCrateLocalZip,
+            ROCrateRemoteMetadataFile,
+            ROCrateRemoteZip,
+        )
 
         # check if the URI is valid
         validate_rocrate_uri(uri, silent=False)
@@ -364,17 +406,23 @@ class ROCrate(ABC):
             )
         # check if the URI is a local zip file
         if uri.is_local_file():
-            return (
-                ROCrateBagitLocalZip(uri, relative_root_path=relative_root_path)
-                if is_bagit_crate
-                else ROCrateLocalZip(uri, relative_root_path=relative_root_path)
-            )
+            suffix = uri.as_path().suffix.lower()
+            if suffix == ".zip":
+                return (
+                    ROCrateBagitLocalZip(uri, relative_root_path=relative_root_path)
+                    if is_bagit_crate
+                    else ROCrateLocalZip(uri, relative_root_path=relative_root_path)
+                )
+            return ROCrateLocalMetadataFile(uri, relative_root_path=relative_root_path)
         # check if the URI is a remote zip file
         if uri.is_remote_resource():
-            return (
-                ROCrateBagitRemoteZip(uri, relative_root_path=relative_root_path)
-                if is_bagit_crate
-                else ROCrateRemoteZip(uri, relative_root_path=relative_root_path)
-            )
+            path_suffix = Path(uri.get_path()).suffix.lower()
+            if path_suffix == ".zip":
+                return (
+                    ROCrateBagitRemoteZip(uri, relative_root_path=relative_root_path)
+                    if is_bagit_crate
+                    else ROCrateRemoteZip(uri, relative_root_path=relative_root_path)
+                )
+            return ROCrateRemoteMetadataFile(uri, relative_root_path=relative_root_path)
         # if the URI is not supported, raise an error
         raise ROCrateInvalidURIError(uri=uri, message="Unsupported RO-Crate URI")

@@ -27,6 +27,16 @@ from rocrate_validator.utils import log as logging
 logger = logging.getLogger(__name__)
 
 
+def _is_check_actionable(event: RequirementCheckValidationEvent, ctx: ValidationContext | None) -> bool:
+    """Return ``True`` if the check is neither hidden nor overridden."""
+    assert ctx is not None, "Validation context must be provided"
+    if event.requirement_check.requirement.hidden:
+        return False
+    if event.requirement_check.overridden:
+        return ctx.target_validation_profile.identifier == event.requirement_check.requirement.profile.identifier
+    return True
+
+
 class EventDispatcher(Subscriber):
     """
     Subscriber that routes validation events to typed ``_on_*`` hooks.
@@ -76,7 +86,7 @@ class EventDispatcher(Subscriber):
         et = event.event_type
         if et in self._CHECK_EVENTS:
             assert isinstance(event, RequirementCheckValidationEvent)
-            if self._is_check_actionable(event, ctx):
+            if _is_check_actionable(event, ctx):
                 return True
             logger.debug("Skipping check: %s", event.requirement_check.identifier)
             return False
@@ -114,13 +124,3 @@ class EventDispatcher(Subscriber):
 
     def _on_validation_end(self, event: ValidationEvent, ctx: ValidationContext | None) -> None:
         pass
-
-    @staticmethod
-    def _is_check_actionable(event: RequirementCheckValidationEvent, ctx: ValidationContext | None) -> bool:
-        """Return ``True`` if the check is neither hidden nor overridden."""
-        assert ctx is not None, "Validation context must be provided"
-        if event.requirement_check.requirement.hidden:
-            return False
-        if event.requirement_check.overridden:
-            return ctx.target_validation_profile.identifier == event.requirement_check.requirement.profile.identifier
-        return True

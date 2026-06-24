@@ -1,0 +1,117 @@
+{
+  "@context": "https://w3id.org/ro/crate/1.2/context",
+  "@graph": [
+    {
+      "@id": "ro-crate-metadata.json",
+      "@type": "CreativeWork",
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.2"
+      },
+      "about": {
+        "@id": "./"
+      },
+      "name": "RO-Crate Metadata Descriptor"
+    },
+    {
+      "@id": "./",
+      "@type": "Dataset",
+      "name": "Attached crate referencing a nested RO-Crate by relative path",
+      "description": "An attached RO-Crate (A) referencing another nested RO-Crate (B) via a relative path (case #2): no sdDatePublished required.",
+      "license": {
+        "@id": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "datePublished": "2024-01-01",
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.2"
+      },
+      "publisher": {
+        "@id": "https://ror.org/012345678"
+      },
+      "funder": {
+        "@id": "https://ror.org/012345678"
+      },
+      "hasPart": [
+        {
+          "@id": "subcrate/"
+        }
+      ],
+      "identifier": {
+        "@id": "#uuid"
+      }
+    },
+    {
+      "@id": "#uuid",
+      "@type": "PropertyValue",
+      "name": "UUID",
+      "propertyID": "UUID",
+      "value": "550e8400-e29b-41d4-a716-446655440000"
+    },
+    {
+      "@id": "subcrate/",
+      "@type": "Dataset",
+      "name": "Nested RO-Crate",
+      "description": "A referenced RO-Crate nested within A, identified by relative path.",
+      "conformsTo": [
+        {
+          "@id": "https://w3id.org/ro/crate"
+        },
+        {
+          "@id": "https://w3id.org/ro/crate/1.2"
+        }
+      ],
+      "hasPart": [
+        {
+          "@id": "subcrate/data.txt"
+        }
+      ],
+      "subjectOf": {
+        "@id": "#subcrate-metadata"
+      }
+    },
+    {
+      "@id": "subcrate/data.txt",
+      "@type": "File",
+      "name": "Nested data file",
+      "description": "A data file inside the nested RO-Crate.",
+      "encodingFormat": "text/plain",
+      "contentSize": "0"
+    },
+    {
+      "@id": "#subcrate-metadata",
+      "@type": "CreativeWork",
+      "name": "Nested RO-Crate Metadata Descriptor",
+      "encodingFormat": "application/ld+json"
+    },
+    {
+      "@id": "https://ror.org/012345678",
+      "@type": "Organization",
+      "name": "Example Research Institute",
+      "url": "https://example.org",
+      "contactPoint": {
+        "@id": "#contact-point"
+      }
+    },
+    {
+      "@id": "https://creativecommons.org/licenses/by/4.0/",
+      "@type": "CreativeWork",
+      "name": "Creative Commons Attribution 4.0 International",
+      "description": "A Creative Commons license."
+    },
+    {
+      "@id": "https://w3id.org/ro/crate",
+      "@type": ["CreativeWork", "Profile"],
+      "name": "RO-Crate"
+    },
+    {
+      "@id": "https://w3id.org/ro/crate/1.2",
+      "@type": ["CreativeWork", "Profile"],
+      "name": "RO-Crate 1.2"
+    },
+    {
+      "@id": "#contact-point",
+      "@type": "ContactPoint",
+      "name": "Contact for Example Research Institute",
+      "email": "mailto:contact@example.org"
+    }
+  ]
+}

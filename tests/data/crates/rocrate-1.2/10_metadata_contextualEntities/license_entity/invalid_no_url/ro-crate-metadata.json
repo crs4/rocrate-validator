@@ -1,0 +1,25 @@
+{
+  "@context": "https://w3id.org/ro/crate/1.2/context",
+  "@graph": [
+    {
+      "@id": "ro-crate-metadata.json",
+      "@type": "CreativeWork",
+      "about": { "@id": "./" },
+      "conformsTo": { "@id": "https://w3id.org/ro/crate/1.2" }
+    },
+    {
+      "@id": "./",
+      "@type": "Dataset",
+      "name": "License entity — non-absolute URL @id",
+      "description": "RO-Crate whose license entity is identified by a fragment URI, not an absolute HTTP(S) URL.",
+      "datePublished": "2024-01-01",
+      "license": { "@id": "#local-license" }
+    },
+    {
+      "@id": "#local-license",
+      "@type": "CreativeWork",
+      "name": "Local License",
+      "description": "A locally-defined license without an absolute URL identifier."
+    }
+  ]
+}

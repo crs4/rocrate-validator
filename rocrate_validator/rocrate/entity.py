@@ -152,6 +152,8 @@ class ROCrateEntity:
         return self.get_id_as_uri(self.id, self.ro_crate)
 
     def has_absolute_path(self) -> bool:
+        if self.id_as_uri.is_remote_resource():
+            return True
         return self.get_id_as_path(self.id).is_absolute()
 
     def has_relative_path(self) -> bool:

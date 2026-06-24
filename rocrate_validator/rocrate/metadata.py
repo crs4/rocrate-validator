@@ -54,10 +54,17 @@ class ROCrateMetadata:
             return 0
 
     def get_file_descriptor_entity(self) -> ROCrateEntity:
-        metadata_file_descriptor = self.get_entity(self.METADATA_FILE_DESCRIPTOR)
-        if not metadata_file_descriptor:
-            raise ValueError("no metadata file descriptor in crate")
-        return metadata_file_descriptor
+        metadata_file_descriptor = self.get_entity(self.ro_crate.metadata_descriptor_id)
+        if metadata_file_descriptor:
+            return metadata_file_descriptor
+
+        for entity in self.get_entities():
+            if not entity.id or not entity.id.endswith(self.METADATA_FILE_DESCRIPTOR):
+                continue
+            if entity.has_type("CreativeWork"):
+                return entity
+
+        raise ValueError("no metadata file descriptor in crate")
 
     def get_root_data_entity(self) -> ROCrateEntity:
         metadata_file_descriptor = self.get_file_descriptor_entity()
@@ -135,7 +142,7 @@ class ROCrateMetadata:
     def as_json(self) -> str:
         if not self._json:
             self._json = cast(
-                "str", self.ro_crate.get_file_content(Path(self.METADATA_FILE_DESCRIPTOR), binary_mode=False)
+                "str", self.ro_crate.get_file_content(Path(self.ro_crate.metadata_descriptor_id), binary_mode=False)
             )
         return self._json
 

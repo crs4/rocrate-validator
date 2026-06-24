@@ -1,0 +1,148 @@
+{
+  "@context": "https://w3id.org/ro/crate/1.2/context",
+  "@graph": [
+    {
+      "@id": "ro-crate-metadata.json",
+      "@type": "CreativeWork",
+      "about": {
+        "@id": "./"
+      },
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.2"
+      }
+    },
+    {
+      "@id": "./",
+      "@type": "Dataset",
+      "name": "Example: preview not in hasPart",
+      "description": "This RO-Crate correctly omits ro-crate-preview.html from hasPart, following the new RO-Crate 1.2 requirement.",
+      "datePublished": "2024-01-01",
+      "license": {
+        "@id": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "publisher": {
+        "@id": "https://ror.org/00k4n6c32"
+      },
+      "hasPart": [
+        {
+          "@id": "data.csv"
+        }
+      ],
+      "funder": {
+        "@id": "https://ror.org/00k4n6c32"
+      },
+      "identifier": {
+        "@id": "#uuid"
+      }
+    },
+    {
+      "@id": "#uuid",
+      "@type": "PropertyValue",
+      "name": "UUID",
+      "propertyID": "UUID",
+      "value": "550e8400-e29b-41d4-a716-446655440000"
+    },
+    {
+      "@id": "https://ror.org/00k4n6c32",
+      "@type": "Organization",
+      "name": "Example Research Institute",
+      "url": "https://example.org",
+      "contactPoint": {
+        "@id": "mailto:contact@example.org"
+      },
+      "identifier": {
+        "@id": "https://ror.org/00k4n6c32"
+      }
+    },
+    {
+      "@id": "mailto:contact@example.org",
+      "@type": "ContactPoint",
+      "contactType": "customer service",
+      "email": "contact@example.org",
+      "name": "Example Research Institute contact point"
+    },
+    {
+      "@id": "https://creativecommons.org/licenses/by/4.0/",
+      "@type": "CreativeWork",
+      "name": "Creative Commons Attribution 4.0 International",
+      "description": "A Creative Commons license that lets others distribute, remix, adapt, and build upon your work, even commercially."
+    },
+    {
+      "@id": "data.csv",
+      "@type": "File",
+      "name": "Sample data file",
+      "description": "A sample CSV data file containing temperature readings.",
+      "encodingFormat": [
+        "text/csv",
+        {
+          "@id": "https://www.nationalarchives.gov.uk/PRONOM/x-fmt/18"
+        }
+      ],
+      "contentSize": "42",
+      "contentLocation": {
+        "@id": "#bologna"
+      },
+      "conformsTo": {
+        "@id": "#csv-profile"
+      },
+      "dateCreated": "2025-06-15",
+      "dateModified": "2025-12-01",
+      "author": {
+        "@id": "https://orcid.org/0000-0001-2345-6789"
+      },
+      "sdDatePublished": "2026-04-15"
+    },
+    {
+      "@id": "#csv-profile",
+      "@type": "CreativeWork",
+      "name": "CSV Profile for RO-Crate 1.2",
+      "description": "A profile describing the expected structure and content of CSV files used in RO-Crates.",
+      "conformsTo": {
+        "@id": "https://www.iana.org/assignments/media-types/text/csv"
+      }
+    },
+    {
+      "@id": "#bologna",
+      "@type": "Place",
+      "name": "Bologna, Italy",
+      "geo": {
+        "@id": "#bologna-geo"
+      }
+    },
+    {
+      "@id": "#bologna-geo",
+      "@type": [
+        "GeoCoordinates",
+        "Geometry"
+      ],
+      "name": "Geographical coordinates of Bologna",
+      "latitude": 44.4949,
+      "longitude": 11.3426,
+      "asWKT": "POINT(11.3426 44.4949)"
+    },
+    {
+      "@id": "https://orcid.org/0000-0001-2345-6789",
+      "@type": "Person",
+      "name": "Dr. Jane Doe",
+      "affiliation": {
+        "@id": "https://ror.org/12345"
+      }
+    },
+    {
+      "@id": "https://ror.org/12345",
+      "@type": "Organization",
+      "name": "Example University",
+      "url": "https://www.exampleuniversity.edu",
+      "contactPoint": {
+        "@id": "mailto:contact@exampleuniversity.edu"
+      }
+    },
+    {
+      "@id": "mailto:contact@exampleuniversity.edu",
+      "@type": "ContactPoint",
+      "contactType": "customer service",
+      "email": "contact@exampleuniversity.edu",
+      "name": "Example University contact point"
+    }
+  ]
+}

@@ -25,6 +25,7 @@ from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.http import HttpRequester
 
 from .base import ROCrate
+from .metadata import ROCrateMetadata
 
 if TYPE_CHECKING:
     from rocrate_validator.utils.uri import URI
@@ -43,6 +44,7 @@ class ROCrateLocalFolder(ROCrate):
 
         # cache the list of files
         self._files = None
+        self._metadata_descriptor_id: str | None = None
 
         # check if the path is a directory
         if not self.has_directory(self.uri.as_path()):
@@ -51,6 +53,21 @@ class ROCrateLocalFolder(ROCrate):
     @property
     def size(self) -> int:
         return sum(f.stat().st_size for f in self.list_files() if f.is_file())
+
+    @property
+    def metadata_descriptor_id(self) -> str:
+        if self._metadata_descriptor_id:
+            return self._metadata_descriptor_id
+        base_path = self.uri.as_path()
+        candidates = sorted(
+            (p for p in base_path.rglob(f"*{ROCrateMetadata.METADATA_FILE_DESCRIPTOR}") if p.is_file()),
+            key=lambda p: (len(p.relative_to(base_path).parts), str(p)),
+        )
+        if not candidates:
+            self._metadata_descriptor_id = ROCrateMetadata.METADATA_FILE_DESCRIPTOR
+            return self._metadata_descriptor_id
+        self._metadata_descriptor_id = str(candidates[0].relative_to(base_path))
+        return self._metadata_descriptor_id
 
     def list_files(self) -> list[Path]:
         if not self._files:
@@ -90,6 +107,7 @@ class ROCrateLocalZip(ROCrate):
 
         # cache the list of files
         self._files = None
+        self._metadata_descriptor_id: str | None = None
 
     def __del__(self):
         try:
@@ -133,8 +151,22 @@ class ROCrateLocalZip(ROCrate):
         Check if the RO-Crate has a metadata descriptor file.
         :rtype: bool
         """
-        path = self.__parse_path__(Path(self.metadata.METADATA_FILE_DESCRIPTOR))
+        path = self.__parse_path__(Path(self.metadata_descriptor_id))
         return str(path) in [str(_) for _ in self.list_files()]
+
+    @property
+    def metadata_descriptor_id(self) -> str:
+        if self._metadata_descriptor_id:
+            return self._metadata_descriptor_id
+        candidates = sorted(
+            (p for p in self.list_files() if str(p).endswith(ROCrateMetadata.METADATA_FILE_DESCRIPTOR)),
+            key=lambda p: (len(p.parts), str(p)),
+        )
+        if not candidates:
+            self._metadata_descriptor_id = ROCrateMetadata.METADATA_FILE_DESCRIPTOR
+            return self._metadata_descriptor_id
+        self._metadata_descriptor_id = str(candidates[0])
+        return self._metadata_descriptor_id
 
     def has_file(self, path: Path) -> bool:
         path = self.__parse_path__(path)
@@ -183,6 +215,93 @@ class ROCrateLocalZip(ROCrate):
         assert self._zipref is not None, "Zip reference not initialized"
         data = self._zipref.read(str(path))
         return data if binary_mode else data.decode("utf-8")
+
+
+class ROCrateLocalMetadataFile(ROCrate):
+    def __init__(self, path: str | Path | URI, relative_root_path: Path | None = None):
+        super().__init__(path, relative_root_path=relative_root_path)
+
+        if not self.uri.is_local_file():
+            raise ROCrateInvalidURIError(uri=path)
+
+        suffix = self.uri.as_path().suffix.lower()
+        if suffix not in (".json", ".jsonld"):
+            raise ROCrateInvalidURIError(uri=path, message="Unsupported metadata file format")
+
+    def is_detached(self) -> bool:
+        return True
+
+    @property
+    def metadata_descriptor_id(self) -> str:
+        return self.uri.as_path().name
+
+    @property
+    def size(self) -> int:
+        return self.uri.as_path().stat().st_size
+
+    def list_files(self) -> list[Path]:
+        return [Path(self.metadata_descriptor_id)]
+
+    def has_descriptor(self) -> bool:
+        return True
+
+    def has_file(self, path: Path) -> bool:
+        return path.name == self.metadata_descriptor_id
+
+    def get_file_size(self, path: Path) -> int:
+        if path.name != self.metadata_descriptor_id:
+            raise FileNotFoundError(f"File not found: {path}")
+        return self.uri.as_path().stat().st_size
+
+    def get_file_content(self, path: Path, binary_mode: bool = True) -> str | bytes:
+        if path.name != self.metadata_descriptor_id:
+            raise FileNotFoundError(f"File not found: {path}")
+        return self.uri.as_path().read_bytes() if binary_mode else self.uri.as_path().read_text(encoding="utf-8")
+
+
+class ROCrateRemoteMetadataFile(ROCrate):
+    def __init__(self, uri: str | Path | URI, relative_root_path: Path | None = None):
+        super().__init__(uri, relative_root_path=relative_root_path)
+
+        if not self.uri.is_remote_resource():
+            raise ROCrateInvalidURIError(uri=uri)
+
+    def is_detached(self) -> bool:
+        return True
+
+    @property
+    def metadata_descriptor_id(self) -> str:
+        return Path(self.uri.get_path()).name
+
+    @property
+    def size(self) -> int:
+        response = HttpRequester().head(str(self.uri))
+        response.raise_for_status()
+        file_size = response.headers.get("Content-Length")
+        if file_size is None:
+            raise ValueError("Could not determine the file size from the headers")
+        return int(file_size)
+
+    def list_files(self) -> list[Path]:
+        return [Path(self.metadata_descriptor_id)]
+
+    def has_descriptor(self) -> bool:
+        return True
+
+    def has_file(self, path: Path) -> bool:
+        return path.name == self.metadata_descriptor_id
+
+    def get_file_size(self, path: Path) -> int:
+        if path.name != self.metadata_descriptor_id:
+            raise FileNotFoundError(f"File not found: {path}")
+        return self.size
+
+    def get_file_content(self, path: Path, binary_mode: bool = True) -> str | bytes:
+        if path.name != self.metadata_descriptor_id:
+            raise FileNotFoundError(f"File not found: {path}")
+        response = HttpRequester().get(str(self.uri), headers={"Accept": "application/ld+json"})
+        response.raise_for_status()
+        return response.content if binary_mode else response.text
 
 
 class ROCrateRemoteZip(ROCrateLocalZip):

@@ -1,0 +1,39 @@
+{
+  "@context": "https://w3id.org/ro/crate/1.2/context",
+  "@graph": [
+    {
+      "@id": "ro-crate-metadata.json",
+      "@type": "CreativeWork",
+      "about": {"@id": "./"},
+      "conformsTo": {"@id": "https://w3id.org/ro/crate/1.2"}
+    },
+    {
+      "@id": "./",
+      "@type": "Dataset",
+      "name": "Percent-encoded UTF-8 — invalid",
+      "description": "RO-Crate where a contextual entity @id uses percent-encoded non-ASCII bytes instead of native UTF-8.",
+      "datePublished": "2024-01-01",
+      "license": {"@id": "https://creativecommons.org/licenses/by/4.0/"},
+      "publisher": {"@id": "#publisher-org"},
+      "hasPart": []
+    },
+    {
+      "@id": "https://creativecommons.org/licenses/by/4.0/",
+      "@type": "CreativeWork",
+      "name": "Creative Commons Attribution 4.0 International",
+      "description": "CC BY 4.0 license."
+    },
+    {
+      "@id": "#publisher-org",
+      "@type": "Organization",
+      "name": "Example Research Institute",
+      "url": "https://example.org"
+    },
+    {
+      "@id": "#donn%C3%A9es-schema",
+      "@type": "DefinedTerm",
+      "name": "Données (percent-encoded)",
+      "description": "A contextual entity whose @id uses %C3%A9 (percent-encoded é) instead of native UTF-8."
+    }
+  ]
+}

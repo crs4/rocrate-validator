@@ -1,0 +1,94 @@
+# Copyright (c) 2024-2026 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.2/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema_org: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+
+ro-crate:RootDataEntityRecommendedFunder a sh:NodeShape ;
+    sh:name "Root Data Entity: recommended funder" ;
+    sh:description """If the RO-Crate describes a research project, grant, or
+        monetary grant (via a `schema:Project`, `schema:Grant`, or
+        `schema:MonetaryGrant` entity in the @graph), the Root Data Entity
+        SHOULD reference the funding source via the `funder` property
+        (RO-Crate 1.2, Funding and Grants).""" ;
+    sh:targetClass ro-crate:RootDataEntity ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:name "Root Data Entity: RECOMMENDED `funder` property (conditional)" ;
+        sh:description """Fire a warning only if the crate contains project or
+            grant entities AND the Root Data Entity has no `funder` property.""" ;
+        sh:select """
+            SELECT $this
+            WHERE {
+                # Trigger: at least one project/grant entity is present.
+                ?project a ?projectType .
+                FILTER(?projectType IN (schema:Project, schema:Grant, schema:MonetaryGrant))
+                # Violation condition: the Root has no `funder` property.
+                FILTER NOT EXISTS { $this schema:funder ?f }
+            }
+        """ ;
+        sh:severity sh:Warning ;
+        sh:message "The Root Data Entity SHOULD reference funders directly via the `funder` property when the crate describes a research project, grant, or monetary grant" ;
+    ] .
+
+# funder values SHOULD be Organization entities;
+# Organization funder entities SHOULD themselves reference an external funder.
+ro-crate:FunderEntityRecommendedType a sh:NodeShape ;
+    sh:name "Funder entity: recommended Organization type" ;
+    sh:description """Entities referenced via `funder` from the Root Data Entity SHOULD be of
+        type Organization (RO-Crate 1.2, Funding and Grants — K1/K2).""" ;
+    sh:targetClass ro-crate:RootDataEntity ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Funder entity: RECOMMENDED `Organization` type" ;
+        sh:description """Check if funder entities referenced from the Root Data Entity
+            are of type Organization.""" ;
+        sh:path schema_org:funder ;
+        sh:class schema_org:Organization ;
+        sh:severity sh:Warning ;
+        sh:message "Funder entities referenced from the Root Data Entity SHOULD be of type `Organization`" ;
+    ] .
+
+# An Organization that is referenced as funder from Root SHOULD itself
+# carry a `funder` property pointing to an external funding body.
+ro-crate:ProjectOrganizationRecommendedFunder a sh:NodeShape ;
+    sh:name "Project Organization: recommended funder reference" ;
+    sh:description """An Organization entity referenced via `funder` from the Root Data Entity
+        SHOULD itself reference the external funding body via its own `funder` property
+        (RO-Crate 1.2, Funding and Grants — K2).""" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?root a ro-crate:RootDataEntity .
+                ?root schema:funder ?this .
+                ?this a schema:Organization .
+                FILTER(!regex(str(?this), "^https?://", "i"))
+            }
+        """
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Project Organization: RECOMMENDED `funder` property" ;
+        sh:description """Check if an Organization referenced as funder from the Root Data Entity
+            itself references an external funding body via `funder`.""" ;
+        sh:path schema_org:funder ;
+        sh:minCount 1 ;
+        sh:severity sh:Warning ;
+        sh:message "An Organization referenced as `funder` from the Root Data Entity SHOULD itself reference an external `funder`" ;
+    ] .

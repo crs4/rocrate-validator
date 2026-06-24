@@ -77,6 +77,27 @@ def validate_uri(ctx, param, value):
 )
 @click.option("-ff", "--fail-fast", is_flag=True, help="Fail fast validation mode", default=False, show_default=True)
 @click.option(
+    "--creation-time",
+    is_flag=True,
+    help="Treat availability checks as required (creation time validation)",
+    default=False,
+    show_default=True,
+)
+@click.option(
+    "--enforce-availability",
+    is_flag=True,
+    help="Force availability checks as required",
+    default=False,
+    show_default=True,
+)
+@click.option(
+    "--skip-availability-check",
+    is_flag=True,
+    help="Skip availability checks for web-based data entities",
+    default=False,
+    show_default=True,
+)
+@click.option(
     "--profiles-path",
     type=click.Path(exists=True),
     default=DEFAULT_PROFILES_PATH,
@@ -233,6 +254,9 @@ def validate(
     extra_profiles_path: Path | None = None,
     profile_identifier: tuple[str, ...] = (),
     metadata_only: bool = False,
+    creation_time: bool = False,
+    enforce_availability: bool = False,
+    skip_availability_check: bool = False,
     no_auto_profile: bool = False,
     disable_profile_inheritance: bool = False,
     requirement_severity: str = Severity.REQUIRED.name,
@@ -306,13 +330,16 @@ def validate(
             "abort_on_first": fail_fast,
             "skip_checks": skip_checks_list,
             "metadata_only": metadata_only,
-            "cache_max_age": cache_max_age,
+            "cache_max_age": cache_max_age if not no_cache else -1,
             "cache_path": cache_path,
             "offline": offline,
             "no_cache": no_cache,
             # When offline is requested, remote crate fetching must use the cache
             # instead of the "disable download" short-circuit.
             "disable_remote_crate_download": not offline,
+            "creation_time": creation_time,
+            "enforce_availability": enforce_availability,
+            "skip_availability_check": skip_availability_check,
         }
 
         # Print the application header
