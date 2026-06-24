@@ -101,6 +101,12 @@ class SHACLRequirement(Requirement):
 
         logger.debug("Starting %s requirement finalization for context %s", cls.__name__, context)
 
+        # If the validation was aborted (e.g. the metadata is not valid JSON), the data
+        # graph cannot be parsed: skip the forced SHACL run to avoid false positives.
+        if context.aborted:
+            logger.debug("Skipping forced SHACL run: validation aborted (%s)", context.abort_reason)
+            return
+
         # extract profiles and target profile from context
         profiles = context.profiles
 
