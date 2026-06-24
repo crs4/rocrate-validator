@@ -227,6 +227,12 @@ class Validator(Publisher):
                             logger.debug("Aborting on first requirement failure")
                             terminate = True
                             break
+                    # Unconditional abort: the metadata is unusable (e.g. not valid JSON),
+                    # so stop now instead of reporting false positives from later checks.
+                    if context.aborted:
+                        logger.debug("Aborting validation: %s", context.abort_reason)
+                        terminate = True
+                        break
                 self.notify(ProfileValidationEvent(EventType.PROFILE_VALIDATION_END, profile=profile))
                 if terminate:
                     break
@@ -287,6 +293,10 @@ class ValidationContext:
         self._properties: dict = {}
         # URLs already reported as missing from the HTTP cache during this run
         self._offline_cache_misses_warned: set[str] = set()
+        # flag set when the validation must be aborted because the metadata
+        # cannot be read (e.g. the file descriptor is not valid JSON)
+        self._aborted: bool = False
+        self._abort_reason: str | None = None
 
         # initialize the ROCrate object
         if settings.metadata_dict:
@@ -425,6 +435,43 @@ class ValidationContext:
         :rtype: bool
         """
         return bool(self.settings.abort_on_first)
+
+    @property
+    def aborted(self) -> bool:
+        """
+        Whether the validation has been aborted because the metadata cannot be read.
+
+        Unlike :attr:`fail_fast`, this abort is unconditional: when the file descriptor
+        cannot be parsed (e.g. it is not valid JSON) no metadata can be read, so any
+        further check would only produce false positives.
+
+        :return: ``True`` if the validation has been aborted, ``False`` otherwise
+        :rtype: bool
+        """
+        return self._aborted
+
+    @property
+    def abort_reason(self) -> str | None:
+        """
+        The reason why the validation has been aborted, if any.
+        """
+        return self._abort_reason
+
+    def abort_validation(self, reason: str | None = None) -> None:
+        """
+        Signal that the validation cannot meaningfully continue because the metadata
+        is unusable (e.g. the file descriptor is not valid JSON).
+
+        The check that detects the problem is expected to record its issue first and
+        then call this method; the validation loop stops as soon as the current
+        requirement completes, avoiding false positives from checks that depend on
+        readable metadata.
+
+        :param reason: An optional human-readable description of the abort cause
+        """
+        self._aborted = True
+        self._abort_reason = reason
+        logger.debug("Validation aborted: %s", reason)
 
     @property
     def rel_fd_path(self) -> Path:
