@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.11.2] - 2026-06-25
+
+Full changelog: https://github.com/crs4/rocrate-validator/compare/0.11.1...0.11.2
+
+### 🐛 Fixed
+
+- fix(cli): use Path type for `--output-file` option so Click returns a `pathlib.Path` rather than a plain string ([31f3785e](https://github.com/crs4/rocrate-validator/commit/31f3785e))
+
 ## [0.11.1] - 2026-06-25
 
 Full changelog: https://github.com/crs4/rocrate-validator/compare/0.11.0...0.11.1

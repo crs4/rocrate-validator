@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 import re
 from pathlib import Path
 from unittest.mock import patch
@@ -144,6 +145,47 @@ def test_validate_skip_checks_option(cli_runner: CliRunner):
         assert list(skip_checks_1 + skip_checks_2) == settings["skip_checks"], (
             f"Expected skip_checks to be {list(skip_checks_1 + skip_checks_2)}, but got {settings['skip_checks']}"
         )
+
+
+def test_validate_output_file_text_report(cli_runner: CliRunner, tmp_path: Path):
+    output_file = tmp_path / "report.txt"
+    result = cli_runner.invoke(
+        cli,
+        [
+            "validate",
+            str(ValidROC().wrroc_paper_long_date),
+            "--verbose",
+            "--no-paging",
+            "-o",
+            str(output_file),
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    assert "AttributeError" not in result.output
+    assert output_file.exists(), "The text report file was not created"
+    assert output_file.read_text(encoding="utf-8").strip(), "The text report file is empty"
+
+
+def test_validate_output_file_json_report(cli_runner: CliRunner, tmp_path: Path):
+    output_file = tmp_path / "report.json"
+    result = cli_runner.invoke(
+        cli,
+        [
+            "validate",
+            str(ValidROC().wrroc_paper_long_date),
+            "--no-paging",
+            "--output-format",
+            "json",
+            "-w",
+            "10000",
+            "-o",
+            str(output_file),
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    assert "AttributeError" not in result.output
+    assert output_file.exists(), "The JSON report file was not created"
+    json.loads(output_file.read_text(encoding="utf-8"))  # must be valid JSON
 
 
 def test_validate_with_invalid_profiles_path_dir(cli_runner: CliRunner):

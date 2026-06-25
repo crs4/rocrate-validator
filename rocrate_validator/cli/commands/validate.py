@@ -199,7 +199,7 @@ def validate_uri(ctx, param, value):
 @click.option(
     "-o",
     "--output-file",
-    type=click.Path(),
+    type=click.Path(path_type=Path),
     default=None,
     show_default=True,
     help="Path to the output file for the validation report",
