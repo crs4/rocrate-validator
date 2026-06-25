@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.11.1] - 2026-06-25
+
+Full changelog: https://github.com/crs4/rocrate-validator/compare/0.11.0...0.11.1
+
+### ✨ Added
+
+- feat(validation): support unconditional validation abort so a check can stop the entire run when metadata is unreadable, instead of letting downstream checks emit false positives ([40f9a568](https://github.com/crs4/rocrate-validator/commit/40f9a568))
+- feat(profiles): detect invalid JSON in the file descriptor and abort validation with a precise parse error message and line/column info ([05c7b258](https://github.com/crs4/rocrate-validator/commit/05c7b258))
+
 ## [0.11.0] - 2026-06-24
 
 Full changelog: https://github.com/crs4/rocrate-validator/compare/0.10.0...0.11.0
