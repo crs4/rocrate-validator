@@ -49,7 +49,7 @@ def test_not_json():
         False,
         profile_identifier="ro-crate-1.2",
         expected_triggered_requirements=["File Descriptor JSON format"],
-        expected_triggered_issues=['RO-Crate file descriptor "ro-crate-metadata.json" is not in the correct format'],
+        expected_triggered_issues=['RO-Crate file descriptor "ro-crate-metadata.json" is not valid JSON'],
     )
 
 

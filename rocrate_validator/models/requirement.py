@@ -15,6 +15,7 @@
 from __future__ import annotations
 
 import importlib
+import json
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from functools import total_ordering
@@ -225,6 +226,11 @@ class Requirement(ABC):
                 logger.debug("Skipping check '%s' because: %s", check.name, e)
                 context.result._add_skipped_check(check)
                 continue
+            except json.JSONDecodeError as e:
+                # The file descriptor is not valid JSON, so this check could not run.
+                # This is a malformed-input problem (reported as an ad-hoc issue by the
+                # dedicated "File Descriptor JSON format" check), not a validator bug.
+                logger.debug("Skipping check %s: file descriptor is not valid JSON: %s", check, e)
             except Exception as e:
                 if context.maybe_warn_offline_cache_miss(e):
                     logger.debug("Offline cache miss during check %s: %s", check, e)
@@ -233,6 +239,9 @@ class Requirement(ABC):
                     logger.warning("Consider reporting this as a bug.")
                     if logger.isEnabledFor(logging.DEBUG):
                         logger.exception("Unhandled exception during check execution", exc_info=e)
+            # Stop running further checks once the metadata is known to be unusable.
+            if context.aborted:
+                break
         skipped_checks = set(self._checks) - set(checks_to_perform)
         context.result.skipped_checks.update(skipped_checks)
         logger.debug(

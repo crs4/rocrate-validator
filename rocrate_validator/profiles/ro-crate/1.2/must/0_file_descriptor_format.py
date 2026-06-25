@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 import re
 from http import HTTPStatus
 from pathlib import Path
@@ -128,6 +129,17 @@ class FileDescriptorJsonFormat(PyFunctionCheck):
             logger.debug("Checking validity of JSON file at %s", context.ro_crate.metadata)
             context.ro_crate.metadata.as_dict()
             return True
+        except json.JSONDecodeError as e:
+            context.result.add_issue(
+                f'RO-Crate file descriptor "{context.rel_fd_path}" is not valid JSON: '
+                f"{e.msg} at line {e.lineno}, column {e.colno} (char {e.pos})",
+                self,
+            )
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.debug("RO-Crate file descriptor is not valid JSON", exc_info=True)
+            # The metadata cannot be parsed: abort to avoid false positives downstream.
+            context.abort_validation(f"file descriptor is not valid JSON: {e}")
+            return False
         except Exception:
             context.result.add_issue(
                 f'RO-Crate file descriptor "{context.rel_fd_path}" is not in the correct format', self
