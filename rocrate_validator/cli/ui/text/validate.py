@@ -88,9 +88,7 @@ def format_crate_line(
     iw = index_width if index_width is not None else len(str(total))
     idx = f"[{index:>{iw}}/{total}]"
     name_cell = f"{name:<{name_width}}"
-    prof = (
-        f"  [white]profile:[/white] [bold magenta]{', '.join(profiles)}[/bold magenta]" if profiles else ""
-    )
+    prof = f"  [white]profile:[/white] [bold magenta]{', '.join(profiles)}[/bold magenta]" if profiles else ""
     if status == "passed":
         return f"  [green]✓[/green] {idx} {name_cell}  [bold green]passed[/bold green] [green]{detail}[/green]{prof}"
     if status == "failed":
@@ -349,10 +347,7 @@ class BatchValidationCommandView:
                 if status == "passed":
                     passed_count += 1
                     progress.update(task, advance=1)
-                elif status == "failed":
-                    failed_count += 1
-                    progress.update(task, advance=1)
-                elif status == "error":
+                elif status in ("failed", "error"):
                     failed_count += 1
                     progress.update(task, advance=1)
                 if status in ("passed", "failed", "error"):

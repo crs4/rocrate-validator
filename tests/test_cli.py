@@ -879,9 +879,7 @@ def test_batch_session_path_reflects_profile_selection(tmp_path):
     # Sanity: a stable selection resolves to a stable path.
     assert services.resolve_batch_session_path(
         settings, tmp_path, "*", profile_identifiers=["ro-crate-1.1"]
-    ) == services.resolve_batch_session_path(
-        settings, tmp_path, "*", profile_identifiers=["ro-crate-1.1"]
-    )
+    ) == services.resolve_batch_session_path(settings, tmp_path, "*", profile_identifiers=["ro-crate-1.1"])
 
 
 def test_batch_footer_reports_saved_paths(cli_runner: CliRunner, tmp_path):
@@ -1195,7 +1193,12 @@ def test_validate_stats_ignored_for_json(cli_runner: CliRunner, tmp_path):
 
 def test_sessions_show_stats(cli_runner: CliRunner, isolated_sessions_dir):
     _write_fake_session(
-        isolated_sessions_dir, "stat01", status="completed", total=2, completed=2, failed=0,
+        isolated_sessions_dir,
+        "stat01",
+        status="completed",
+        total=2,
+        completed=2,
+        failed=0,
         paths=["/data/crateA", "/data/crateB"],
     )
     result = cli_runner.invoke(cli, ["--no-interactive", "sessions", "show", "stat01", "--stats"])
@@ -1207,12 +1210,15 @@ def test_sessions_show_stats(cli_runner: CliRunner, isolated_sessions_dir):
 def test_sessions_show_output_file_requires_stats(cli_runner: CliRunner, isolated_sessions_dir):
     """--output-file without --stats should raise a usage error."""
     _write_fake_session(
-        isolated_sessions_dir, "s1", status="completed", total=1, completed=1, failed=0,
+        isolated_sessions_dir,
+        "s1",
+        status="completed",
+        total=1,
+        completed=1,
+        failed=0,
         paths=["/a/x"],
     )
-    result = cli_runner.invoke(
-        cli, ["--no-interactive", "sessions", "show", "s1", "-o", "/tmp/out.txt"]
-    )
+    result = cli_runner.invoke(cli, ["--no-interactive", "sessions", "show", "s1", "-o", "/tmp/out.txt"])
     assert result.exit_code != 0
     assert "requires --stats" in result.output
 
@@ -1221,13 +1227,15 @@ def test_sessions_show_stats_output_file_text(cli_runner: CliRunner, isolated_se
     """Write statistics in text format (default, no colour) to a file."""
     output_file = tmp_path / "stats.txt"
     _write_fake_session(
-        isolated_sessions_dir, "s1", status="completed", total=2, completed=2, failed=0,
+        isolated_sessions_dir,
+        "s1",
+        status="completed",
+        total=2,
+        completed=2,
+        failed=0,
         paths=["/a/x", "/a/y"],
     )
-    result = cli_runner.invoke(
-        cli, ["--no-interactive", "sessions", "show", "s1", "--stats",
-              "-o", str(output_file)]
-    )
+    result = cli_runner.invoke(cli, ["--no-interactive", "sessions", "show", "s1", "--stats", "-o", str(output_file)])
     assert result.exit_code == 0, result.output
     assert "Statistics written to" in result.output
     content = output_file.read_text()
@@ -1237,18 +1245,20 @@ def test_sessions_show_stats_output_file_text(cli_runner: CliRunner, isolated_se
     assert "\x1b[" not in content
 
 
-def test_sessions_show_stats_output_file_text_with_color(
-    cli_runner: CliRunner, isolated_sessions_dir, tmp_path
-):
+def test_sessions_show_stats_output_file_text_with_color(cli_runner: CliRunner, isolated_sessions_dir, tmp_path):
     """Write statistics in text format with ANSI colour codes."""
     output_file = tmp_path / "stats_color.txt"
     _write_fake_session(
-        isolated_sessions_dir, "s1", status="completed", total=2, completed=2, failed=0,
+        isolated_sessions_dir,
+        "s1",
+        status="completed",
+        total=2,
+        completed=2,
+        failed=0,
         paths=["/a/x", "/a/y"],
     )
     result = cli_runner.invoke(
-        cli, ["--no-interactive", "sessions", "show", "s1", "--stats",
-              "-o", str(output_file), "--color"]
+        cli, ["--no-interactive", "sessions", "show", "s1", "--stats", "-o", str(output_file), "--color"]
     )
     assert result.exit_code == 0, result.output
     content = output_file.read_text()
@@ -1261,12 +1271,16 @@ def test_sessions_show_stats_output_file_md(cli_runner: CliRunner, isolated_sess
     """Write statistics in markdown format to a file."""
     output_file = tmp_path / "stats.md"
     _write_fake_session(
-        isolated_sessions_dir, "s1", status="completed", total=2, completed=2, failed=0,
+        isolated_sessions_dir,
+        "s1",
+        status="completed",
+        total=2,
+        completed=2,
+        failed=0,
         paths=["/a/x", "/a/y"],
     )
     result = cli_runner.invoke(
-        cli, ["--no-interactive", "sessions", "show", "s1", "--stats",
-              "-o", str(output_file), "-f", "md"]
+        cli, ["--no-interactive", "sessions", "show", "s1", "--stats", "-o", str(output_file), "-f", "md"]
     )
     assert result.exit_code == 0, result.output
     content = output_file.read_text()
@@ -1277,9 +1291,7 @@ def test_sessions_show_stats_output_file_md(cli_runner: CliRunner, isolated_sess
     assert "## Checks/Passed Combinations" in content
 
 
-def test_sessions_show_stats_output_file_md_with_failures(
-    cli_runner: CliRunner, isolated_sessions_dir, tmp_path
-):
+def test_sessions_show_stats_output_file_md_with_failures(cli_runner: CliRunner, isolated_sessions_dir, tmp_path):
     """Write statistics in markdown format for a session with failures."""
     output_file = tmp_path / "stats_fail.md"
     sessions_dir = isolated_sessions_dir
@@ -1350,8 +1362,7 @@ def test_sessions_show_stats_output_file_md_with_failures(
     (sessions_dir / "s1.json").write_text(json.dumps(data), encoding="utf-8")
 
     result = cli_runner.invoke(
-        cli, ["--no-interactive", "sessions", "show", "s1", "--stats",
-              "-o", str(output_file), "-f", "md"]
+        cli, ["--no-interactive", "sessions", "show", "s1", "--stats", "-o", str(output_file), "-f", "md"]
     )
     assert result.exit_code == 0, result.output
     content = output_file.read_text()
@@ -1364,10 +1375,15 @@ def test_sessions_show_stats_output_file_md_with_failures(
 
 def test_sessions_show_renders_session(cli_runner: CliRunner, isolated_sessions_dir):
     _write_fake_session(
-        isolated_sessions_dir, "shw001", status="completed", total=2, completed=2, failed=0,
+        isolated_sessions_dir,
+        "sess001",
+        status="completed",
+        total=2,
+        completed=2,
+        failed=0,
         paths=["/data/crateA", "/data/crateB"],
     )
-    result = cli_runner.invoke(cli, ["--no-interactive", "sessions", "show", "shw001"])
+    result = cli_runner.invoke(cli, ["--no-interactive", "sessions", "show", "sess001"])
     assert result.exit_code == 0, result.output
     out = result.output
     # Header, per-crate list (relative names + profile) and summary are all shown.

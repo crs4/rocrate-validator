@@ -772,9 +772,7 @@ def _discover_batch_crates(
     """
     scan_dir = Path(rocrate_uri).resolve()
     if not scan_dir.is_dir():
-        raise click.BadParameter(
-            f"Batch target must be a directory: {scan_dir}", param_hint="RO-CRATE-URI"
-        )
+        raise click.BadParameter(f"Batch target must be a directory: {scan_dir}", param_hint="RO-CRATE-URI")
     return [str(p) for p in services.discover_ro_crates(scan_dir, pattern=batch_pattern)]
 
 

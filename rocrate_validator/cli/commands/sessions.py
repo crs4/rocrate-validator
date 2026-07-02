@@ -22,7 +22,7 @@ from __future__ import annotations
 import copy as _copy
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 from rich.table import Table
@@ -159,7 +159,9 @@ def _select_session(console, summaries: list[dict], session_id: str | None) -> d
             console.print(f"[yellow]No session matches ID:[/yellow] {session_id}")
             return None
         if len(matches) > 1:
-            console.print(f"[yellow]Ambiguous ID '{session_id}' matches {len(matches)} sessions; use a longer ID.[/yellow]")
+            console.print(
+                f"[yellow]Ambiguous ID '{session_id}' matches {len(matches)} sessions; use a longer ID.[/yellow]"
+            )
             return None
         return matches[0]
     if not summaries:
@@ -414,20 +416,26 @@ def sessions_clear(
                 console.print("Aborted.")
 
         if proceed:
-            removed = 0
-            for s in targets:
-                try:
-                    Path(s["file"]).unlink()
-                    removed += 1
-                except OSError as e:
-                    logger.debug("Could not remove session %s: %s", s["file"], e)
-                    console.print(f"[red]Failed to remove {s['id'][:12]}: {e}[/red]")
+            removed = _remove_sessions(console, targets)
             console.print(f"[green]Removed {removed} session(s).[/green]")
     except Exception as e:
         handle_error(e, console)
         return
     if exit_code:
         ctx.exit(exit_code)
+
+
+def _remove_sessions(console, targets: list[dict]) -> int:
+    """Delete the session files for ``targets``, returning how many were removed."""
+    removed = 0
+    for s in targets:
+        try:
+            Path(s["file"]).unlink()
+            removed += 1
+        except OSError as e:
+            logger.debug("Could not remove session %s: %s", s["file"], e)
+            console.print(f"[red]Failed to remove {s['id'][:12]}: {e}[/red]")
+    return removed
 
 
 def _select_sessions_to_clear(
@@ -459,6 +467,22 @@ def _select_sessions_to_clear(
     return unique
 
 
+def _resolve_resumable_by_id(console, summaries: list[dict], session_id: str) -> dict | None:
+    """Match a resumable session by ID prefix, printing why when it cannot be resolved."""
+    matches = [s for s in summaries if s["id"].startswith(session_id)]
+    if not matches:
+        console.print(f"[yellow]No session matches ID:[/yellow] {session_id}")
+        return None
+    if len(matches) > 1:
+        console.print(f"[yellow]Ambiguous ID '{session_id}' matches {len(matches)} sessions; use a longer ID.[/yellow]")
+        return None
+    target = matches[0]
+    if target["status"] not in _RESUMABLE_STATUSES:
+        console.print(f"[green]Session {target['id'][:12]} is already '{target['status']}'; nothing to resume.[/green]")
+        return None
+    return target
+
+
 def _select_resume_target(
     console,
     summaries: list[dict],
@@ -474,20 +498,7 @@ def _select_resume_target(
     (a message is printed in that case).
     """
     if session_id:
-        matches = [s for s in summaries if s["id"].startswith(session_id)]
-        if not matches:
-            console.print(f"[yellow]No session matches ID:[/yellow] {session_id}")
-            return None
-        if len(matches) > 1:
-            console.print(f"[yellow]Ambiguous ID '{session_id}' matches {len(matches)} sessions; use a longer ID.[/yellow]")
-            return None
-        target = matches[0]
-        if target["status"] not in _RESUMABLE_STATUSES:
-            console.print(
-                f"[green]Session {target['id'][:12]} is already '{target['status']}'; nothing to resume.[/green]"
-            )
-            return None
-        return target
+        return _resolve_resumable_by_id(console, summaries, session_id)
 
     resumable = [s for s in summaries if s["status"] in _RESUMABLE_STATUSES]
     if not resumable:
@@ -596,7 +607,7 @@ def _collect_sessions(status_filter: str | None = None) -> list[dict]:
             continue
         summaries.append(summary)
     summaries.sort(
-        key=lambda s: s["updated_at"] or datetime.min,
+        key=lambda s: s["updated_at"] or datetime.min.replace(tzinfo=timezone.utc),
         reverse=True,
     )
     return summaries
@@ -616,7 +627,7 @@ def _read_session_summary(path: Path) -> dict:
         "completed_crates": None,
         "failed_crates": None,
         "created_at": None,
-        "updated_at": datetime.fromtimestamp(stat.st_mtime),
+        "updated_at": datetime.fromtimestamp(stat.st_mtime, tz=timezone.utc),
         "target": None,
         "size_bytes": stat.st_size,
     }

@@ -46,9 +46,16 @@ if TYPE_CHECKING:
     from rich.console import Console
 
 
+# Minimum sample sizes for descriptive statistics: quartiles need at least four
+# data points, spread measures (stdev/variance) at least two.
+_MIN_SAMPLES_FOR_QUARTILES = 4
+_MIN_SAMPLES_FOR_SPREAD = 2
+
+
 # ===========================================================================
 # Normalisation and aggregation
 # ===========================================================================
+
 
 def _error_types(issues: list[dict]) -> list[tuple[str, str]]:
     """Distinct ``(check identifier, check name)`` pairs, first-seen order."""
@@ -134,21 +141,24 @@ def crates_per_check(failed: list[dict]) -> tuple[Counter, dict[str, str]]:
 
 # Semantic colour palette, shared across all statistics tables/bars so the same
 # kind of datum always reads with the same colour:
-_C_CRATES = "cyan"        # a neutral count of crates
-_C_CHECKS = "blue"        # total checks
-_C_PASSED = "green"       # passed checks / passed crates
-_C_ISSUES = "red"         # issues / REQUIRED issues / failed-or-affected crates
-_C_ERROR = "yellow"       # crates that errored out
-_C_DURATION = "yellow"    # validation time
-_C_TYPE = "magenta"       # check / issue-type identifiers
+_C_CRATES = "cyan"  # a neutral count of crates
+_C_CHECKS = "blue"  # total checks
+_C_PASSED = "green"  # passed checks / passed crates
+_C_ISSUES = "red"  # issues / REQUIRED issues / failed-or-affected crates
+_C_ERROR = "yellow"  # crates that errored out
+_C_DURATION = "yellow"  # validation time
+_C_TYPE = "magenta"  # check / issue-type identifiers
 _C_CRATE_ID = "bold cyan"  # crate names / ids
-_C_PERCENT = "dim"        # percentages / shares
+_C_PERCENT = "dim"  # percentages / shares
 
 
 def _rtable(title: str = "") -> Table:
     return Table(
-        title=title, title_style="bold", title_justify="left",
-        box=box.SIMPLE_HEAVY, header_style="bold",
+        title=title,
+        title_style="bold",
+        title_justify="left",
+        box=box.SIMPLE_HEAVY,
+        header_style="bold",
     )
 
 
@@ -172,7 +182,7 @@ def _spanel(title: str, description: str, *renderables, title_style: str = _TITL
 
 def _bar(value: float, maxv: float, width: int = 18, color: str = "cyan") -> str:
     """A small horizontal bar made of block characters (for visual scale)."""
-    filled = int(round(width * value / maxv)) if maxv else 0
+    filled = round(width * value / maxv) if maxv else 0
     return f"[{color}]{'█' * filled}[/][dim]{'·' * (width - filled)}[/]"
 
 
@@ -196,13 +206,13 @@ def _describe_lines(
     total = sum(values)
     mean_val = _stats.mean(values)
     median_val = _stats.median(values)
-    if n >= 4:
+    if n >= _MIN_SAMPLES_FOR_QUARTILES:
         q1_val, _, q3_val = _stats.quantiles(values, n=4)
     else:
         q1_val, q3_val = ordered[0], ordered[-1]
     iqr_val = q3_val - q1_val
-    std_val = _stats.stdev(values) if n >= 2 else 0.0
-    var_val = _stats.variance(values) if n >= 2 else 0.0
+    std_val = _stats.stdev(values) if n >= _MIN_SAMPLES_FOR_SPREAD else 0.0
+    var_val = _stats.variance(values) if n >= _MIN_SAMPLES_FOR_SPREAD else 0.0
 
     def r(x: float) -> str:  # range values: integer when whole, else 2 decimals
         body = f"{int(x)}" if float(x).is_integer() else f"{x:.2f}"
@@ -258,13 +268,15 @@ def _render_overview(con: Console, crates, failed, errored) -> None:
         maxv = max(dist.values())
         for k, v in sorted(dist.items()):
             t.add_row(f"[{_C_ISSUES}]{k}[/]", f"[{_C_CRATES}]{v}[/]", _bar(v, maxv, color=_C_CRATES))
-        con.print(_spanel(
-            "Issues Per Crate (Failed)",
-            "Distribution of issue counts among crates that did not pass validation",
-            t,
-            Text(""),
-            *_describe_lines(issues, value_style=_C_ISSUES),
-        ))
+        con.print(
+            _spanel(
+                "Issues Per Crate (Failed)",
+                "Distribution of issue counts among crates that did not pass validation",
+                t,
+                Text(""),
+                *_describe_lines(issues, value_style=_C_ISSUES),
+            )
+        )
 
     combos = Counter((c["checks"], c["passed_checks"]) for c in crates)
     t = _rtable()
@@ -273,11 +285,13 @@ def _render_overview(con: Console, crates, failed, errored) -> None:
     t.add_column("Passed", justify="right")
     for (chk, ps), v in combos.most_common():
         t.add_row(f"[bold {_C_CRATES}]{v}[/]", f"[bold {_C_CHECKS}]{chk}[/]", f"[bold {_C_PASSED}]{ps}[/]")
-    con.print(_spanel(
-        "Checks/Passed Combinations",
-        "Number of crates sharing the same total checks and passed checks",
-        t,
-    ))
+    con.print(
+        _spanel(
+            "Checks/Passed Combinations",
+            "Number of crates sharing the same total checks and passed checks",
+            t,
+        )
+    )
 
     if errored:
         t = _rtable()
@@ -285,11 +299,13 @@ def _render_overview(con: Console, crates, failed, errored) -> None:
         t.add_column("Reason", style="yellow")
         for reason, v in Counter(c["error"] for c in errored).most_common():
             t.add_row(f"[bold {_C_ERROR}]{v}[/]", reason or "(no message)")
-        con.print(_spanel(
-            "Validation Errors",
-            "Crates that encountered errors during validation and produced no results",
-            t,
-        ))
+        con.print(
+            _spanel(
+                "Validation Errors",
+                "Crates that encountered errors during validation and produced no results",
+                t,
+            )
+        )
 
 
 def _render_error_types(con: Console, failed) -> None:
@@ -304,19 +320,27 @@ def _render_error_types(con: Console, failed) -> None:
     t.add_column("Description")
     for code, cnt in counter.most_common():
         pct = 100 * cnt / total if total else 0
-        t.add_row(code, f"[bold {_C_ISSUES}]{cnt}[/]", f"[{_C_PERCENT}]{pct:.1f}%[/]", _bar(cnt, maxv, color=_C_ISSUES), names[code])
+        t.add_row(
+            code,
+            f"[bold {_C_ISSUES}]{cnt}[/]",
+            f"[{_C_PERCENT}]{pct:.1f}%[/]",
+            _bar(cnt, maxv, color=_C_ISSUES),
+            names[code],
+        )
     single = sum(1 for c in failed if len(c["error_types"]) == 1)
     multi = sum(1 for c in failed if len(c["error_types"]) > 1)
-    con.print(_spanel(
-        "Error-Type Distribution",
-        "How many crates are affected by each type of validation error",
-        t,
-        Text(""),
-        Text.from_markup(
-            f"Crates with exactly 1 error type: [bold {_C_CRATES}]{single}[/]   "
-            f"more than one: [bold {_C_CRATES}]{multi}[/]"
-        ),
-    ))
+    con.print(
+        _spanel(
+            "Error-Type Distribution",
+            "How many crates are affected by each type of validation error",
+            t,
+            Text(""),
+            Text.from_markup(
+                f"Crates with exactly 1 error type: [bold {_C_CRATES}]{single}[/]   "
+                f"more than one: [bold {_C_CRATES}]{multi}[/]"
+            ),
+        )
+    )
 
 
 def _render_issue_attribution(con: Console, failed) -> None:
@@ -356,11 +380,13 @@ def _render_issue_attribution(con: Console, failed) -> None:
         renderables.append(Text(""))
         renderables.append(t)
 
-    con.print(_spanel(
-        "Issue Attribution",
-        "Detailed breakdown of REQUIRED issues by check type",
-        *renderables,
-    ))
+    con.print(
+        _spanel(
+            "Issue Attribution",
+            "Detailed breakdown of REQUIRED issues by check type",
+            *renderables,
+        )
+    )
 
 
 def _render_durations(con: Console, failed, top_n: int) -> None:
@@ -374,13 +400,15 @@ def _render_durations(con: Console, failed, top_n: int) -> None:
     t.add_column("REQUIRED Issues", justify="right")
     for dur, c in sorted(durations, key=lambda x: -x[0])[:top_n]:
         t.add_row(c["name"], f"[bold {_C_DURATION}]{dur:.2f}s[/]", f"[bold {_C_ISSUES}]{c['subissues']}[/]")
-    con.print(_spanel(
-        "Slowest Crates",
-        f"Top {top_n} crates with the longest validation durations",
-        t,
-        Text(""),
-        *_describe_lines(vals, value_style=_C_DURATION, unit="s"),
-    ))
+    con.print(
+        _spanel(
+            "Slowest Crates",
+            f"Top {top_n} crates with the longest validation durations",
+            t,
+            Text(""),
+            *_describe_lines(vals, value_style=_C_DURATION, unit="s"),
+        )
+    )
 
 
 def _render_outliers(con: Console, failed, threshold: int) -> None:
@@ -389,11 +417,13 @@ def _render_outliers(con: Console, failed, threshold: int) -> None:
         key=lambda x: -x["subissues"],
     )
     if not outliers:
-        con.print(_spanel(
-            f"Outlier Crates (≥ {threshold} REQUIRED issues)",
-            "Crates with an unusually high number of REQUIRED issues",
-            Text.from_markup(f"[dim]No outlier crates with ≥ {threshold} REQUIRED issues.[/]"),
-        ))
+        con.print(
+            _spanel(
+                f"Outlier Crates (≥ {threshold} REQUIRED issues)",
+                "Crates with an unusually high number of REQUIRED issues",
+                Text.from_markup(f"[dim]No outlier crates with ≥ {threshold} REQUIRED issues.[/]"),
+            )
+        )
         return
     t = _rtable()
     t.add_column("Crate", style=_C_CRATE_ID, no_wrap=True)
@@ -402,11 +432,13 @@ def _render_outliers(con: Console, failed, threshold: int) -> None:
     for c in outliers:
         types = ", ".join(code for code, _ in c["error_types"])
         t.add_row(c["name"], f"[bold {_C_ISSUES}]{c['subissues']}[/]", types)
-    con.print(_spanel(
-        f"Outlier Crates (≥ {threshold} REQUIRED issues)",
-        "Crates with an unusually high number of REQUIRED issues",
-        t,
-    ))
+    con.print(
+        _spanel(
+            f"Outlier Crates (≥ {threshold} REQUIRED issues)",
+            "Crates with an unusually high number of REQUIRED issues",
+            t,
+        )
+    )
 
 
 def _render_detailed(con: Console, crates, failed, errored, top_n: int, outlier_threshold: int) -> None:
@@ -425,6 +457,7 @@ def _render_detailed(con: Console, crates, failed, errored, top_n: int, outlier_
 # ===========================================================================
 # Public entry point
 # ===========================================================================
+
 
 def render_statistics(
     console: Console,
@@ -454,9 +487,7 @@ def render_statistics(
     console.rule("[bold cyan]Statistics[/]")
     analysed = f"Crates analysed: [bold cyan]{len(crates)}[/]"
     if errored:
-        analysed += (
-            f"   [dim]·[/dim]   [bold red]{len(errored)}[/] could not be validated [dim](ERROR)[/dim]"
-        )
+        analysed += f"   [dim]·[/dim]   [bold red]{len(errored)}[/] could not be validated [dim](ERROR)[/dim]"
     console.print(analysed)
     console.print()
     _print_summary_table(console, crates)
@@ -467,6 +498,7 @@ def render_statistics(
 # ===========================================================================
 # Markdown file output
 # ===========================================================================
+
 
 def _md_table(headers: list[str], rows: list[list[str]], align_left: list[int] | None = None) -> str:
     """Build a GF markdown table from headers and row data."""
@@ -491,13 +523,13 @@ def _md_describe_lines(values: list[float], *, unit: str = "") -> str:
     total = sum(values)
     mean_val = _stats.mean(values)
     median_val = _stats.median(values)
-    if n >= 4:
+    if n >= _MIN_SAMPLES_FOR_QUARTILES:
         q1_val, _, q3_val = _stats.quantiles(values, n=4)
     else:
         q1_val, q3_val = ordered[0], ordered[-1]
     iqr_val = q3_val - q1_val
-    std_val = _stats.stdev(values) if n >= 2 else 0.0
-    var_val = _stats.variance(values) if n >= 2 else 0.0
+    std_val = _stats.stdev(values) if n >= _MIN_SAMPLES_FOR_SPREAD else 0.0
+    var_val = _stats.variance(values) if n >= _MIN_SAMPLES_FOR_SPREAD else 0.0
 
     def r(x: float) -> str:
         return f"{int(x)}" if float(x).is_integer() else f"{x:.2f}"
@@ -506,12 +538,14 @@ def _md_describe_lines(values: list[float], *, unit: str = "") -> str:
         return f"{x:.2f}"
 
     lines: list[str] = []
-    lines.append(f"- **Range**   →   total={r(total)}{unit}   n={n}   "
-                  f"min={r(ordered[0])}{unit}   max={r(ordered[-1])}{unit}")
-    lines.append(f"- **Central** →   mean={f(mean_val)}{unit}   median={f(median_val)}{unit}   "
-                  f"Q1={f(q1_val)}{unit}   Q3={f(q3_val)}{unit}")
-    lines.append(f"- **Spread**  →   stddev={f(std_val)}{unit}   variance={f(var_val)}{unit}   "
-                  f"IQR={f(iqr_val)}{unit}")
+    lines.append(
+        f"- **Range**   →   total={r(total)}{unit}   n={n}   min={r(ordered[0])}{unit}   max={r(ordered[-1])}{unit}"
+    )
+    lines.append(
+        f"- **Central** →   mean={f(mean_val)}{unit}   median={f(median_val)}{unit}   "
+        f"Q1={f(q1_val)}{unit}   Q3={f(q3_val)}{unit}"
+    )
+    lines.append(f"- **Spread**  →   stddev={f(std_val)}{unit}   variance={f(var_val)}{unit}   IQR={f(iqr_val)}{unit}")
     return "\n".join(lines) + "\n"
 
 
@@ -554,9 +588,7 @@ def _md_write_outcome_summary(w, crates, failed, errored) -> None:
     w("## Outcome Summary\n\n")
     total = len(crates)
     rows: list[list[str]] = []
-    for label, n in [("PASSED", len(passed_crates(crates))),
-                      ("FAILED", len(failed)),
-                      ("ERROR", len(errored))]:
+    for label, n in [("PASSED", len(passed_crates(crates))), ("FAILED", len(failed)), ("ERROR", len(errored))]:
         pct = 100 * n / total if total else 0
         rows.append([label, str(n), f"{pct:.1f}%"])
     rows.append(["**TOTAL**", f"**{total}**", "**100.0%**"])
@@ -609,8 +641,7 @@ def _md_write_error_types(w, failed) -> None:
     w(_md_table(["Check", "Crates", "Share", "Description"], rows, align_left=[0, 3]))
     single = sum(1 for c in failed if len(c["error_types"]) == 1)
     multi = sum(1 for c in failed if len(c["error_types"]) > 1)
-    w(f"\nCrates with exactly 1 error type: **{single}**  "
-      f"more than one: **{multi}**\n\n")
+    w(f"\nCrates with exactly 1 error type: **{single}**  more than one: **{multi}**\n\n")
 
 
 def _md_write_issue_attribution(w, failed) -> None:
@@ -628,14 +659,11 @@ def _md_write_issue_attribution(w, failed) -> None:
             multi_crates.append(crate)
     w(f"Total REQUIRED issues: **{total_subs}**\n\n")
     if single_attrib:
-        rows = [[code, str(cnt)] for code, cnt in
-                sorted(single_attrib.items(), key=lambda x: -x[1])]
+        rows = [[code, str(cnt)] for code, cnt in sorted(single_attrib.items(), key=lambda x: -x[1])]
         w(_md_table(["Check", "REQUIRED Issues"], rows, align_left=[0]))
         w("\n")
     if multi_crates:
-        rows = [[c["name"], str(c["subissues"]),
-                 ", ".join(code for code, _ in c["error_types"])]
-                for c in multi_crates]
+        rows = [[c["name"], str(c["subissues"]), ", ".join(code for code, _ in c["error_types"])] for c in multi_crates]
         w(_md_table(["Crate", "REQUIRED Issues", "Types"], rows, align_left=[0, 2]))
         w("\n")
 
@@ -668,8 +696,6 @@ def _md_write_outliers(w, failed, outlier_threshold) -> None:
     if not outliers:
         w(f"No outlier crates with ≥ {outlier_threshold} REQUIRED issues.\n\n")
     else:
-        rows = [[c["name"], str(c["subissues"]),
-                 ", ".join(code for code, _ in c["error_types"])]
-                for c in outliers]
+        rows = [[c["name"], str(c["subissues"]), ", ".join(code for code, _ in c["error_types"])] for c in outliers]
         w(_md_table(["Crate", "REQUIRED Issues", "Types"], rows, align_left=[0, 2]))
         w("\n")

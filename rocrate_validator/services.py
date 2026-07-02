@@ -282,15 +282,14 @@ def resolve_batch_session_path(
     different multi-profile sets) on separate sessions.
     """
     settings_dict = settings.to_dict() if hasattr(settings, "to_dict") else {}
-    if profile_identifiers:
-        profile_key = str(sorted(profile_identifiers))
-    else:
-        # No explicit profile: per-crate auto-detection, or the base-profile
-        # fallback when auto-detection is disabled.
-        profile_key = f"auto:{not no_auto_profile}"
+    # With explicit profiles the key is their sorted list; otherwise it encodes
+    # per-crate auto-detection (or the base-profile fallback when disabled).
+    profile_key = str(sorted(profile_identifiers)) if profile_identifiers else f"auto:{not no_auto_profile}"
     # `requirement_severity_only` is dropped by ``ValidationSettings.to_dict()``,
     # so read it from the settings object directly rather than from the dict.
-    severity_only = bool(getattr(settings, "requirement_severity_only", settings_dict.get("requirement_severity_only", False)))
+    severity_only = bool(
+        getattr(settings, "requirement_severity_only", settings_dict.get("requirement_severity_only", False))
+    )
     key_parts = [
         str(Path(scan_root).resolve()),
         pattern,
