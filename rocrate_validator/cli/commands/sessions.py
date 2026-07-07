@@ -329,7 +329,7 @@ def sessions_list(ctx, status_filter: str | None = None, as_json: bool = False):
                 console.print("[yellow]No batch sessions stored.[/yellow]")
             return
 
-        table = Table(title=f"Batch sessions ({len(summaries)})", show_lines=False)
+        table = Table(title=f"Batch sessions ({len(summaries)})", show_lines=True)
         table.add_column("ID", no_wrap=True)
         table.add_column("Status")
         table.add_column("Crates", justify="right")
@@ -679,16 +679,26 @@ def _summary_to_dict(summary: dict) -> dict:
 
 
 def _format_crates(summary: dict) -> str:
-    """Render the completed/total (and failed) crate counts for the table."""
+    """
+    Render the crates cell: the processed/total fraction on the first line,
+    then the valid (✓) and invalid (✗) counts on their own lines. Zero counts
+    are omitted so all-passed and all-failed sessions stay compact.
+    """
     total = summary["total_crates"]
-    completed = summary["completed_crates"]
-    failed = summary["failed_crates"] or 0
     if total is None:
         return "—"
-    text = f"{completed or 0}/{total}"
+    completed = summary["completed_crates"] or 0
+    failed = summary["failed_crates"] or 0
+    valid = max(completed - failed, 0)
+    # Orange flags partial progress; once every crate is processed the count
+    # takes the same colour as the total.
+    completed_colour = "orange3" if completed < total else "cyan"
+    lines = [f"[bold {completed_colour}]{completed}[/bold {completed_colour}]/[bold cyan]{total}[/bold cyan]"]
+    if valid:
+        lines.append(f"[green]✓ {valid}[/green]")
     if failed:
-        text += f" [red]({failed}✗)[/red]"
-    return text
+        lines.append(f"[red]✗ {failed}[/red]")
+    return "\n".join(lines)
 
 
 def _format_status(status: str) -> str:
