@@ -477,7 +477,7 @@ def batch_validate(
     :param profile_identifiers: explicit profiles to validate every crate against
     :param no_auto_profile: disable per-crate profile auto-detection
     :param keep_results: retain the live :class:`ValidationResult` of every
-        crate in :attr:`BatchValidationResult.results`. Off by default because
+        crate in :attr:`BatchValidationResult.live_results`. Off by default because
         each result pins its full validation context (loaded profiles with
         their shape graphs, the crate data graph), so memory grows linearly
         with the batch size; enable it only for debugging or interactive

@@ -877,7 +877,7 @@ def test_batch_validate_keep_results(tmp_path):
         profile_identifiers=["ro-crate"],
         no_auto_profile=True,
     )
-    assert dropped.results == [], "live results must not be retained by default"
+    assert dropped.live_results == [], "live results must not be retained by default"
     assert dropped.total_crates() == 1, "the session outcome is recorded regardless"
 
     kept = services.batch_validate(
@@ -888,8 +888,8 @@ def test_batch_validate_keep_results(tmp_path):
         no_auto_profile=True,
         keep_results=True,
     )
-    assert [path for path, _ in kept.results] == [crate]
-    assert all(hasattr(result, "passed") for _, result in kept.results)
+    assert [path for path, _ in kept.live_results] == [crate]
+    assert all(hasattr(result, "passed") for _, result in kept.live_results)
 
 
 def test_batch_prepare_session_auto_resume(tmp_path):

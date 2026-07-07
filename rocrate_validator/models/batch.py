@@ -251,31 +251,34 @@ class BatchValidationResult:
     """
     Aggregated result of a batch validation run.
 
-    Everything (totals, pass/fail counts, JSON/CSV/summary rows and the verbose
-    per-crate details) is sourced from the persistent ``session`` entries, so
-    the result remains complete even when a run resumes a previously
-    interrupted session. Live ``ValidationResult`` objects are *not* retained
-    by default: each one pins its full validation context (data graph,
-    RO-Crate and loaded profiles with their shape graphs), which makes the
-    memory footprint of a batch grow linearly with the number of crates. They
-    are kept in :attr:`results` only when the batch runs with
-    ``keep_results=True`` (see :func:`~rocrate_validator.services.batch_validate`).
+    The per-crate outcomes of the batch are always available in :attr:`crates`
+    (the persistent ``session`` entries): totals, pass/fail counts, issues and
+    the JSON/CSV/summary rows are all sourced from there, so the result remains
+    complete even when a run resumes a previously interrupted session. Live
+    ``ValidationResult`` objects are *not* retained by default: each one pins
+    its full validation context (data graph, RO-Crate and loaded profiles with
+    their shape graphs), which makes the memory footprint of a batch grow
+    linearly with the number of crates. They are kept in :attr:`live_results`
+    only when the batch runs with ``keep_results=True``
+    (see :func:`~rocrate_validator.services.batch_validate`).
     """
 
-    def __init__(self, session: BatchSession, results: list[tuple[str, ValidationResult]] | None = None):
+    def __init__(self, session: BatchSession, live_results: list[tuple[str, ValidationResult]] | None = None):
         self.session = session
-        self._results = results if results is not None else []
+        self._live_results = live_results if live_results is not None else []
 
     @property
-    def results(self) -> list[tuple[str, ValidationResult]]:
+    def live_results(self) -> list[tuple[str, ValidationResult]]:
         """
         Live ``(crate_path, ValidationResult)`` pairs of the crates validated in
         the current invocation. Empty unless the batch was run with
         ``keep_results=True``, which is meant for debugging and interactive
         exploration: every retained result pins its full validation context in
-        memory for the whole batch.
+        memory for the whole batch. For the recorded outcome of *every* crate
+        (including those validated by an earlier run of a resumed session), use
+        :attr:`crates`.
         """
-        return self._results
+        return self._live_results
 
     @property
     def crates(self) -> list[BatchCrateEntry]:
