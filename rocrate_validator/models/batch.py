@@ -254,14 +254,28 @@ class BatchValidationResult:
     Everything (totals, pass/fail counts, JSON/CSV/summary rows and the verbose
     per-crate details) is sourced from the persistent ``session`` entries, so
     the result remains complete even when a run resumes a previously
-    interrupted session. Live ``ValidationResult`` objects are deliberately
-    *not* retained: each one pins its full validation context (data graph,
+    interrupted session. Live ``ValidationResult`` objects are *not* retained
+    by default: each one pins its full validation context (data graph,
     RO-Crate and loaded profiles with their shape graphs), which makes the
-    memory footprint of a batch grow linearly with the number of crates.
+    memory footprint of a batch grow linearly with the number of crates. They
+    are kept in :attr:`results` only when the batch runs with
+    ``keep_results=True`` (see :func:`~rocrate_validator.services.batch_validate`).
     """
 
-    def __init__(self, session: BatchSession):
+    def __init__(self, session: BatchSession, results: list[tuple[str, ValidationResult]] | None = None):
         self.session = session
+        self._results = results if results is not None else []
+
+    @property
+    def results(self) -> list[tuple[str, ValidationResult]]:
+        """
+        Live ``(crate_path, ValidationResult)`` pairs of the crates validated in
+        the current invocation. Empty unless the batch was run with
+        ``keep_results=True``, which is meant for debugging and interactive
+        exploration: every retained result pins its full validation context in
+        memory for the whole batch.
+        """
+        return self._results
 
     @property
     def crates(self) -> list[BatchCrateEntry]:

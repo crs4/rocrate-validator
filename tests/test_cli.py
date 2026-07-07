@@ -865,6 +865,33 @@ def test_batch_verbose_details_rendered_from_session_entries():
     assert "RO-Crate metadata not found" in rendered
 
 
+def test_batch_validate_keep_results(tmp_path):
+    """Live results are dropped by default and retained only with keep_results=True."""
+    crate = str(ValidROC().wrroc_paper_long_date)
+    settings = ValidationSettings.parse({"profile_identifier": ("ro-crate",)})
+
+    dropped = services.batch_validate(
+        settings,
+        [crate],
+        session_path=tmp_path / "dropped.json",
+        profile_identifiers=["ro-crate"],
+        no_auto_profile=True,
+    )
+    assert dropped.results == [], "live results must not be retained by default"
+    assert dropped.total_crates() == 1, "the session outcome is recorded regardless"
+
+    kept = services.batch_validate(
+        settings,
+        [crate],
+        session_path=tmp_path / "kept.json",
+        profile_identifiers=["ro-crate"],
+        no_auto_profile=True,
+        keep_results=True,
+    )
+    assert [path for path, _ in kept.results] == [crate]
+    assert all(hasattr(result, "passed") for _, result in kept.results)
+
+
 def test_batch_prepare_session_auto_resume(tmp_path):
     """An interrupted session is auto-resumed: completed crates are carried over."""
     session_file = tmp_path / "auto_session.json"
