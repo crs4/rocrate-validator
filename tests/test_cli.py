@@ -818,6 +818,51 @@ def test_batch_validate_mixed_crates(cli_runner: CliRunner, tmp_path):
     # Should fail because at least one crate fails
     assert result.exit_code == 1, result.output
     assert "Batch Validation Summary" in result.output
+    # Verbose per-crate details are rendered (from the session entries)
+    assert "Failed crate details:" in result.output
+
+
+def test_batch_verbose_details_rendered_from_session_entries():
+    """
+    Verbose failed-crate details must come from the persisted session entries:
+    no live ValidationResult is retained by a batch run (their contexts would
+    pin every crate's graphs in memory for the whole batch).
+    """
+    import io
+
+    from rocrate_validator.cli.ui.text.validate import BatchValidationCommandView
+    from rocrate_validator.models import BatchValidationResult
+    from rocrate_validator.utils.io_helpers.output.console import Console
+
+    session = BatchSession(validation_settings={}, crate_paths=["/tmp/crate_x", "/tmp/crate_y"])
+    failed = session.crates[0]
+    failed.status = "completed"
+    failed.passed = False
+    failed.duration = 1.2
+    failed.statistics = {"total_checks": 3, "total_passed_checks": 2, "total_failed_checks": 1}
+    failed.issues = [
+        {
+            "severity": "REQUIRED",
+            "message": "The root entity is missing",
+            "check": {"identifier": "ro-crate-1.1_1.1", "name": "Root entity existence"},
+        }
+    ]
+    errored = session.crates[1]
+    errored.status = "failed"
+    errored.passed = False
+    errored.error = "RO-Crate metadata not found"
+    session.completed_crates = 2
+    session.failed_crates = 2
+
+    out = Console(file=io.StringIO(), width=200, color_system=None)
+    BatchValidationCommandView(console=out).show_summary(BatchValidationResult(session), verbose=True)
+    rendered = out.file.getvalue()
+
+    assert "Failed crate details:" in rendered
+    assert "ro-crate-1.1_1.1" in rendered
+    assert "The root entity is missing" in rendered
+    # Entries that errored out (no check breakdown) show their error message
+    assert "RO-Crate metadata not found" in rendered
 
 
 def test_batch_prepare_session_auto_resume(tmp_path):

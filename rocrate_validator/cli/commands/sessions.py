@@ -204,7 +204,7 @@ def _show_session(
     # Summary table + final verdict (or interruption note). The per-crate list
     # shown live during `validate` is intentionally not reproduced here — the
     # summary table already lists every crate.
-    result = BatchValidationResult(session, [])
+    result = BatchValidationResult(session)
     BatchValidationCommandView(console=console).show_summary(result, verbose=False)
 
     crate_dicts = [e.to_dict() for e in entries]

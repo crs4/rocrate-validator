@@ -25,6 +25,7 @@ from rich.progress import BarColumn, Progress, TextColumn, TimeElapsedColumn
 from rich.rule import Rule
 from rich.table import Table
 
+from rocrate_validator.models.severity import Severity
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.io_helpers.colors import get_severity_color
 from rocrate_validator.utils.io_helpers.output.console import Console
@@ -37,7 +38,6 @@ if TYPE_CHECKING:
     from rocrate_validator.models import (
         BatchCrateEntry,
         BatchValidationResult,
-        Severity,
         ValidationResult,
         ValidationSettings,
         ValidationStatistics,
@@ -51,6 +51,14 @@ logger = logging.getLogger(__name__)
 _BYTES_PER_UNIT = 1024
 # Minimum path components below the common prefix needed to derive a source label.
 _MIN_REL_PARTS_FOR_SOURCE = 2
+
+
+def _severity_rank(severity_name: str) -> int:
+    """Sort key for serialized severity names (unknown names sort last)."""
+    try:
+        return int(Severity[severity_name].value)
+    except KeyError:
+        return -1
 
 
 class _SpacedProgress(Progress):
@@ -454,10 +462,9 @@ class BatchValidationCommandView:
         """
         Show the batch validation summary table and optional per-crate details.
 
-        The table is sourced from the persistent session entries, so it stays
-        complete even when this invocation only re-validated part of a resumed
-        batch. The verbose per-crate details below use the live results, which
-        are available only for crates validated in the current run.
+        Both the table and the verbose per-crate details are sourced from the
+        persistent session entries, so they stay complete even when this
+        invocation only re-validated part of a resumed batch.
         """
         total = batch_result.total_crates()
         passed = len(batch_result.passed_entries())
@@ -512,68 +519,70 @@ class BatchValidationCommandView:
             )
         )
 
-        # Per-crate details in verbose mode. These rely on the live, in-memory
-        # results, so only crates validated in the current run are shown (e.g.
-        # after resuming, previously-failed crates appear in the table above but
-        # their deep details are not re-rendered).
-        live_failures = [(p, r) for p, r in batch_result.results if not r.passed()]
-        if verbose and live_failures:
+        # Per-crate details in verbose mode, sourced from the session entries
+        # like the summary table: details are available for every failed crate,
+        # including those validated by an earlier run of a resumed session.
+        failures = batch_result.failed_entries()
+        if verbose and failures:
             self.console.print(Padding(Rule(style="dim"), (1, 0)))
             self.console.print(Padding("[bold]Failed crate details:[/bold]", (0, 2)))
-            for crate_path, result in live_failures:
-                self._show_crate_detail(crate_path, result)
+            for entry in failures:
+                self._show_crate_detail(entry)
                 self.console.print(Padding(Rule(style="dim"), (0, 0)))
 
-    def _show_crate_detail(self, crate_path: str, result: ValidationResult):
+    def _show_crate_detail(self, entry: BatchCrateEntry):
         """
-        Show detailed validation result for a single crate in verbose batch mode.
+        Show the detailed outcome of a failed crate in verbose batch mode.
+
+        Rendered entirely from the persisted session entry (headline statistics
+        and serialized issues), so it needs no in-memory validation result.
         """
-        stats = result.statistics
-        if not stats:
+        header = f"\n[red]✗ FAILED[/red]: [bold]{entry.path}[/bold]"
+        if entry.duration:
+            header += f" ({entry.duration:.2f}s)"
+        self.console.print(Padding(header, (1, 2)))
+
+        if entry.error:
+            # The validation itself errored out (e.g. unreadable crate): there
+            # is no check breakdown, only the error message.
+            self.console.print(Padding(f"[red]Error:[/red] {entry.error}", (0, 4)))
             return
 
-        status = "PASSED" if result.passed() else "FAILED"
-        color = "green" if result.passed() else "red"
-        header = f"\n[{color}]✗ {status}[/{color}]: [bold]{crate_path}[/bold]"
-        if stats.duration:
-            header += f" ({stats.duration:.2f}s)"
-        self.console.print(Padding(header, (1, 2)))
-        self.console.print(
-            Padding(
-                f"Checks executed: {stats.total_checks} | "
-                f"Passed: {len(stats.passed_checks)} | "
-                f"Failed: {len(stats.failed_checks)}",
-                (0, 4),
-            )
-        )
-
-        # Group failed checks by severity
-        checks_by_severity: dict[Severity, list] = {}
-        for check in stats.failed_checks:
-            checks_by_severity.setdefault(check.severity, []).append(check)
-
-        for severity in sorted(checks_by_severity.keys(), key=lambda s: s.value, reverse=True):
-            checks = checks_by_severity[severity]
-            color = get_severity_color(severity)
-            severity_name = severity.name.capitalize()
+        stats = entry.statistics or {}
+        if stats:
             self.console.print(
                 Padding(
-                    f"\n[bold {color}]╔══ {severity_name} ({len(checks)} failed) ═══[/bold {color}]",
+                    f"Checks executed: {stats.get('total_checks', 0)} | "
+                    f"Passed: {stats.get('total_passed_checks', 0)} | "
+                    f"Failed: {stats.get('total_failed_checks', 0)}",
                     (0, 4),
                 )
             )
-            for check in checks:
-                self.console.print(
-                    Padding(
-                        f"  [bold]{check.identifier}[/bold] - {check.name}",
-                        (0, 6),
-                    )
+
+        # Group the crate's issues by severity, then by failed check.
+        issues_by_severity: dict[str, dict[str, list[dict]]] = {}
+        for issue in entry.issues or []:
+            severity_name = issue.get("severity") or "REQUIRED"
+            check = issue.get("check") or {}
+            check_label = f"[bold]{check.get('identifier', '?')}[/bold] - {check.get('name', '')}"
+            issues_by_severity.setdefault(severity_name, {}).setdefault(check_label, []).append(issue)
+
+        for severity_name in sorted(issues_by_severity, key=_severity_rank, reverse=True):
+            checks = issues_by_severity[severity_name]
+            color = get_severity_color(severity_name)
+            severity_label = severity_name.capitalize()
+            self.console.print(
+                Padding(
+                    f"\n[bold {color}]╔══ {severity_label} ({len(checks)} failed) ═══[/bold {color}]",
+                    (0, 4),
                 )
-                issues = result.get_issues_by_check(check)
+            )
+            for check_label, issues in checks.items():
+                self.console.print(Padding(f"  {check_label}", (0, 6)))
                 for issue in issues:
                     self.console.print(
                         Padding(
-                            f"    └─ [{color}]{severity_name}[/{color}] {issue.message}",
+                            f"    └─ [{color}]{severity_label}[/{color}] {issue.get('message', '')}",
                             (0, 8),
                         )
                     )

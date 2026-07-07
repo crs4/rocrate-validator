@@ -483,7 +483,6 @@ def batch_validate(
     session.profile_identifiers = list(profile_identifiers) if profile_identifiers else None
     session.no_auto_profile = no_auto_profile
     session.requirement_severity_only = bool(getattr(settings, "requirement_severity_only", False))
-    results: list[tuple[str, ValidationResult]] = []
 
     # Register SIGINT handler for graceful interruption
     def _sigint_handler(_signum, _frame):
@@ -499,7 +498,12 @@ def batch_validate(
         total = len(rocrate_uris)
         last_save = time.time()
         for idx, crate_path in enumerate(rocrate_uris):
-            outcome = _validate_one_in_batch(
+            # The returned live results are intentionally dropped: the outcome
+            # is already recorded in the session entry, and retaining every
+            # ValidationResult would pin each crate's full validation context
+            # (profiles, shape graphs, data graph), growing memory linearly
+            # with the batch size until the OOM killer steps in.
+            _validate_one_in_batch(
                 settings,
                 session,
                 crate_path,
@@ -509,8 +513,6 @@ def batch_validate(
                 profile_identifiers,
                 no_auto_profile,
             )
-            if outcome is not None:
-                results.extend(outcome)
             # Save the session incrementally for crash/interrupt recovery, but
             # throttle it: re-serialising the whole (possibly large) session
             # after every crate is O(n^2) and dominates the run for big batches.
@@ -528,7 +530,7 @@ def batch_validate(
     session.status = "completed" if session.is_completed() else "interrupted"
     session.save()
 
-    return BatchValidationResult(session, results)
+    return BatchValidationResult(session)
 
 
 def get_profiles(

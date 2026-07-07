@@ -251,21 +251,17 @@ class BatchValidationResult:
     """
     Aggregated result of a batch validation run.
 
-    Headline figures (totals, pass/fail counts, JSON/CSV/summary rows) are
-    sourced from the persistent ``session``, so they remain complete even when
-    a run resumes a previously interrupted session. The live ``results`` of the
-    crates validated in *this* invocation are kept separately and used only for
-    the verbose per-crate details, which require the in-memory result objects.
+    Everything (totals, pass/fail counts, JSON/CSV/summary rows and the verbose
+    per-crate details) is sourced from the persistent ``session`` entries, so
+    the result remains complete even when a run resumes a previously
+    interrupted session. Live ``ValidationResult`` objects are deliberately
+    *not* retained: each one pins its full validation context (data graph,
+    RO-Crate and loaded profiles with their shape graphs), which makes the
+    memory footprint of a batch grow linearly with the number of crates.
     """
 
-    def __init__(self, session: BatchSession, results: list[tuple[str, ValidationResult]]):
+    def __init__(self, session: BatchSession):
         self.session = session
-        self._results = results
-
-    @property
-    def results(self) -> list[tuple[str, ValidationResult]]:
-        """Live results for the crates validated in the current invocation."""
-        return self._results
 
     @property
     def crates(self) -> list[BatchCrateEntry]:
