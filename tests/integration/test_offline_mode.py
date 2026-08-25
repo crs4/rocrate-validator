@@ -301,7 +301,16 @@ def test_cli_cache_reset_yes_clears_entries(cli_runner, tmp_path, network_interc
     assert HttpRequester().cache_info()["entries"] == 0
 
 
-def test_cli_cache_warm_populates_profile_urls(cli_runner, tmp_path, network_interceptor):
+@pytest.mark.parametrize(
+    ("profile_identifier", "context_url"),
+    [
+        ("ro-crate-1.1", "https://w3id.org/ro/crate/1.1/context"),
+        ("ro-crate-1.2", "https://w3id.org/ro/crate/1.2/context"),
+    ],
+)
+def test_cli_cache_warm_populates_profile_urls(
+    cli_runner, tmp_path, network_interceptor, profile_identifier, context_url
+):
     cache_path = tmp_path / "cache"
     result = cli_runner.invoke(
         cli,
@@ -312,7 +321,7 @@ def test_cli_cache_warm_populates_profile_urls(cli_runner, tmp_path, network_int
             "--cache-path",
             str(cache_path),
             "--profile-identifier",
-            "ro-crate-1.1",
+            profile_identifier,
         ],
     )
     assert result.exit_code == 0, result.output
@@ -322,7 +331,7 @@ def test_cli_cache_warm_populates_profile_urls(cli_runner, tmp_path, network_int
     # The URL must now be cached for offline use.
     HttpRequester.reset()
     HttpRequester.initialize_cache(cache_path=str(cache_path), cache_max_age=3600, offline=True)
-    assert HttpRequester().has_cached("https://w3id.org/ro/crate/1.1/context") is True
+    assert HttpRequester().has_cached(context_url) is True
 
 
 def test_cli_cache_warm_crate_caches_remote_archive(cli_runner, tmp_path, network_interceptor):
