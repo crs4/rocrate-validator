@@ -100,11 +100,11 @@ Before going offline you can pre-fetch everything you will need with
     rocrate-validator cache warm --all-profiles
 
     # Warm only specific profiles
-    rocrate-validator cache warm -p ro-crate-1.1 -p workflow-ro-crate-1.0
+    rocrate-validator cache warm -p ro-crate-1.2 -p workflow-ro-crate-1.0
 
     # Also fetch and cache remote RO-Crates or arbitrary URLs
     rocrate-validator cache warm --crate https://example.org/crate.zip
-    rocrate-validator cache warm -u https://w3id.org/ro/crate/1.1/context
+    rocrate-validator cache warm -u https://w3id.org/ro/crate/1.2/context
 
 When invoked without any source option, ``cache warm`` defaults to warming all
 installed profiles. A summary table reports which URLs were cached, skipped or
@@ -125,7 +125,7 @@ The same offline behaviour can be enabled programmatically through
 
     settings = services.ValidationSettings(
         rocrate_uri='/path/to/ro-crate',
-        profile_identifier='ro-crate-1.1',
+        profile_identifier='ro-crate-1.2',
         # Serve every HTTP request from the cache; uncached resources fail.
         offline=True,
         # Optional: use a dedicated cache directory (defaults to the user cache).
