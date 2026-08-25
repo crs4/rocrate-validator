@@ -28,7 +28,6 @@ from urllib.parse import urljoin
 import rdflib
 
 from rocrate_validator import models, services
-from rocrate_validator.constants import DEFAULT_PROFILE_IDENTIFIER
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +35,24 @@ logger = logging.getLogger(__name__)
 T = TypeVar("T")
 
 SPARQL_PREFIXES = "PREFIX schema: <http://schema.org/>"
+
+# Identifier of the RO-Crate 1.1 profile. It is the profile assumed by the tests
+# that exercise 1.1 semantics on the 1.1 crate corpus, and the default used by
+# `do_entity_test()`; tests that target another profile (e.g. 1.2) pass its
+# identifier explicitly.
+#
+# This is a hard-coded literal on purpose, NOT `DEFAULT_PROFILE_IDENTIFIER`: the
+# validator's default profile changes over time (it is 1.2 today), while the tests
+# that use this constant must keep targeting 1.1 even when the default moves on.
+RO_CRATE_1_1_PROFILE_IDENTIFIER = "ro-crate-1.1"
+
+# JSON-LD context to use when re-serialising a crate patched via SPARQL, per
+# profile. Profiles that are not listed inherit from RO-Crate 1.1 and use its context.
+_PROFILE_CONTEXT_URIS = {
+    "ro-crate-1.1": "https://w3id.org/ro/crate/1.1/context",
+    "ro-crate-1.2": "https://w3id.org/ro/crate/1.2/context",
+}
+_DEFAULT_CONTEXT_URI = _PROFILE_CONTEXT_URIS[RO_CRATE_1_1_PROFILE_IDENTIFIER]
 
 
 def first(c: Collection[T]) -> T:
@@ -89,10 +106,22 @@ def load_graph_and_preserve_relative_ids(json_data, base="http://example.org/"):
     return g
 
 
+def _context_uri_for_profile(profile_identifier: str) -> str:
+    """
+    Return the JSON-LD context matching the profile under test.
+
+    Keeping the context aligned with the profile matters: re-serialising a 1.1
+    context while validating against 1.2 trips the `ro-crate-1.2_2.2` check and
+    the test would fail for a reason unrelated to what it is asserting.
+    """
+    return _PROFILE_CONTEXT_URIS.get(profile_identifier, _DEFAULT_CONTEXT_URI)
+
+
 def _prepare_temp_rocrate(
     rocrate_path: Path,
     rocrate_entity_patch: dict | None,
     rocrate_entity_mod_sparql: str | None,
+    context_uri: str = _DEFAULT_CONTEXT_URI,
 ) -> Path:
     # `mkdtemp` returns a stable path the test owns; `TemporaryDirectory().name`
     # was deleted on GC before copytree ran. `dirs_exist_ok=True` lets us copy
@@ -112,7 +141,6 @@ def _prepare_temp_rocrate(
     if rocrate_entity_mod_sparql is not None:
         rocrate_graph = load_graph_and_preserve_relative_ids(rocrate)
         rocrate_graph.update(rocrate_entity_mod_sparql)
-        context_uri = "https://w3id.org/ro/crate/1.1/context"
         rocrate_graph.serialize(
             Path(temp_rocrate_path, "ro-crate-metadata.json"),
             format="json-ld",
@@ -133,7 +161,7 @@ def do_entity_test(  # pylint: disable=too-many-locals
     expected_triggered_requirements: list[str] | None = None,
     expected_triggered_issues: list[str] | None = None,
     abort_on_first: bool = False,
-    profile_identifier: str = DEFAULT_PROFILE_IDENTIFIER,
+    profile_identifier: str = RO_CRATE_1_1_PROFILE_IDENTIFIER,
     rocrate_entity_patch: dict | None = None,
     rocrate_entity_mod_sparql: str | None = None,
     skip_checks: list[str] | None = None,
@@ -164,7 +192,12 @@ def do_entity_test(  # pylint: disable=too-many-locals
         and isinstance(rocrate_path, Path)
         and rocrate_path.is_dir()
     ):
-        temp_rocrate_path = _prepare_temp_rocrate(rocrate_path, rocrate_entity_patch, rocrate_entity_mod_sparql)
+        temp_rocrate_path = _prepare_temp_rocrate(
+            rocrate_path,
+            rocrate_entity_patch,
+            rocrate_entity_mod_sparql,
+            context_uri=_context_uri_for_profile(profile_identifier),
+        )
         rocrate_path = temp_rocrate_path
 
     if expected_triggered_requirements is None:
