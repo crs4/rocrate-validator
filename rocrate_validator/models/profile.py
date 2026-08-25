@@ -768,10 +768,62 @@ class Profile:
         """
         return list(cls.__profiles_map.values())
 
+    @staticmethod
+    def version_sort_key(version: str | None) -> tuple[int, ...]:
+        """
+        Sort key for a profile version.
+
+        The version is compared component by component as a tuple of integers, so that
+        e.g. `1.10` sorts after `1.9` (a plain string comparison would get this wrong).
+        Non-numeric components and missing versions sort lowest.
+
+        :param version: the version string
+        :type version: str | None
+
+        :return: the sort key
+        :rtype: tuple[int, ...]
+        """
+        if not version:
+            return ()
+        return tuple(int(part) if part.isdigit() else 0 for part in str(version).split("."))
+
+    @classmethod
+    def resolve_in_list(cls, profiles: Collection[Profile], profile_identifier: str) -> Profile | None:
+        """
+        Resolve the given identifier against the given list of profiles.
+
+        An exact match on the profile identifier (e.g. `ro-crate-1.2`) always wins.
+        Failing that, the identifier is treated as a bare token (e.g. `ro-crate`) and
+        resolves to the **highest available version** of that token.
+
+        :param profiles: the list of profiles
+        :type profiles: Collection[Profile]
+
+        :param profile_identifier: the identifier or token
+        :type profile_identifier: str
+
+        :return: the profile if found, None otherwise
+        :rtype: Optional[Profile]
+        """
+        exact_match = next((p for p in profiles if p.identifier == profile_identifier), None)
+        if exact_match is not None:
+            return exact_match
+        candidates = [
+            p
+            for p in profiles
+            if p.token == profile_identifier or str(p.identifier).replace(f"-{p.version}", "") == profile_identifier
+        ]
+        if not candidates:
+            return None
+        return max(candidates, key=lambda p: cls.version_sort_key(p.version))
+
     @classmethod
     def find_in_list(cls, profiles: Collection[Profile], profile_identifier: str) -> Profile | None:
         """
-        Find a profile with the given identifier in the given list of profiles
+        Find a profile with the given identifier in the given list of profiles.
+
+        Resolution follows :meth:`resolve_in_list`: an exact identifier match wins,
+        otherwise a bare token resolves to the highest available version.
 
         :param profiles: the list of profiles
         :type profiles: Collection[Profile]
@@ -782,10 +834,7 @@ class Profile:
         :return: the profile if found, None otherwise
         :rtype: Optional[Profile]
         """
-        profile = next((p for p in profiles if p.identifier == profile_identifier), None) or next(
-            (p for p in profiles if str(p.identifier).replace(f"-{p.version}", "") == profile_identifier),
-            None,
-        )
+        profile = cls.resolve_in_list(profiles, profile_identifier)
         if not profile:
             raise ProfileNotFound(profile_identifier)
         return profile
