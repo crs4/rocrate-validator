@@ -586,6 +586,64 @@ def _metadata_dict_with_id(entity_id: str) -> dict:
     }
 
 
+def _metadata_dict_with_main_entity(main_entity: object) -> dict:
+    """Build a minimal RO-Crate metadata dict with a configurable mainEntity."""
+    return {
+        "@context": "https://w3id.org/ro/crate/1.1/context",
+        "@graph": [
+            {
+                "@id": "ro-crate-metadata.json",
+                "@type": "CreativeWork",
+                "about": {"@id": "./"},
+            },
+            {
+                "@id": "./",
+                "@type": "Dataset",
+                "mainEntity": main_entity,
+            },
+            {
+                "@id": "workflow.ga",
+                "@type": "File",
+            },
+        ],
+    }
+
+
+@pytest.mark.parametrize("main_entity", [{"@id": "workflow.ga"}, [{"@id": "workflow.ga"}]])
+def test_get_main_workflow_returns_entity_for_object_and_singleton_array(main_entity):
+    """A singular main workflow accessor accepts both JSON-LD representations."""
+    crate = ROCrate.from_metadata_dict(_metadata_dict_with_main_entity(main_entity))
+    root_data_entity = crate.metadata.get_root_data_entity()
+
+    raw_main_entity = root_data_entity.get_property("mainEntity")
+    main_workflow = crate.metadata.get_main_workflow()
+
+    if isinstance(main_entity, list):
+        assert isinstance(raw_main_entity, list), "Generic property access must preserve list values"
+    else:
+        assert isinstance(raw_main_entity, ROCrateEntity), "Object values must resolve to an entity"
+    assert isinstance(main_workflow, ROCrateEntity), "The singular accessor must return one entity"
+    assert main_workflow.id == "workflow.ga"
+
+
+@pytest.mark.parametrize(
+    "main_entity",
+    [
+        [],
+        [{"@id": "workflow.ga"}, {"@id": "other-workflow.ga"}],
+        "workflow.ga",
+        {"name": "workflow.ga"},
+        {"@id": 42},
+    ],
+)
+def test_get_main_workflow_rejects_invalid_values(main_entity):
+    """Invalid mainEntity cardinality and value shapes raise controlled errors."""
+    crate = ROCrate.from_metadata_dict(_metadata_dict_with_main_entity(main_entity))
+
+    with pytest.raises((TypeError, ValueError), match="mainEntity"):
+        crate.metadata.get_main_workflow()
+
+
 @pytest.mark.parametrize(
     "entity_id",
     [
