@@ -1,0 +1,68 @@
+# Copyright (c) 2024-2026 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.2/> .
+@prefix schema_org: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+
+# Selects local (relative-URI) non-root Dataset entities (directory Data Entities).
+ro-crate:LocalDatasetTarget a sh:SPARQLTarget ;
+    sh:prefixes ro-crate:sparqlPrefixes ;
+    sh:select """
+        SELECT ?this
+        WHERE {
+            ?this a schema:Dataset .
+            ?metadatafile schema:about ?root .
+            FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
+            FILTER(?this != ?root)
+            FILTER(!STRSTARTS(STR(?this), CONCAT(STR(?root), "#")))
+            FILTER(!regex(str(?this), "^https?://", "i"))
+        }
+    """ .
+
+# SHOULD: relative @id SHOULD end with '/'
+ro-crate:DirectoryDataEntityTrailingSlash a sh:NodeShape ;
+    sh:name "Dataset Data Entity: SHOULD end with trailing slash" ;
+    sh:description """A Dataset Data Entity whose @id is a relative URI SHOULD end with '/'
+        (RO-Crate 1.2, Dataset Data Entities).""" ;
+    sh:target ro-crate:LocalDatasetTarget ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                FILTER(!regex(str(?this), "/$"))
+            }
+        """ ;
+        sh:name "Dataset Data Entity: RECOMMENDED trailing slash" ;
+        sh:description "Check that a local Dataset Data Entity @id ends with '/'." ;
+        sh:severity sh:Warning ;
+        sh:message "The @id of a local Dataset Data Entity SHOULD end with '/'" ;
+    ] .
+
+# SHOULD: hasPart SHOULD list contained Data Entities
+ro-crate:DirectoryDataEntityHasPart a sh:NodeShape ;
+    sh:name "Dataset Data Entity: SHOULD have hasPart" ;
+    sh:description """A local Dataset Data Entity SHOULD use `hasPart` to list
+        the Data Entities it contains (RO-Crate 1.2, Dataset Data Entities).""" ;
+    sh:target ro-crate:LocalDatasetTarget ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Dataset Data Entity: RECOMMENDED `hasPart` property" ;
+        sh:description "Check that a local Dataset Data Entity lists its contents via `hasPart`." ;
+        sh:path schema_org:hasPart ;
+        sh:minCount 1 ;
+        sh:severity sh:Warning ;
+        sh:message "Local Dataset Data Entities SHOULD list their contents via `hasPart`" ;
+    ] .
