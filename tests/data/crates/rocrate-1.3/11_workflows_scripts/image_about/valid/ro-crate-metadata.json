@@ -1,0 +1,124 @@
+{
+  "@context": "https://w3id.org/ro/crate/1.2/context",
+  "@graph": [
+    {
+      "@id": "ro-crate-metadata.json",
+      "@type": "CreativeWork",
+      "about": {
+        "@id": "./"
+      },
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.2"
+      }
+    },
+    {
+      "@id": "./",
+      "@type": "Dataset",
+      "name": "Image about \u2014 valid",
+      "description": "RO-Crate with a Workflow whose image ImageObject has the recommended about property referencing the workflow.",
+      "datePublished": "2024-01-01",
+      "license": {
+        "@id": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "publisher": {
+        "@id": "https://ror.org/05f9q8d28"
+      },
+      "funder": {
+        "@id": "https://ror.org/05f9q8d28"
+      },
+      "conformsTo": {
+        "@id": "https://bioschemas.org/profiles/ComputationalWorkflow/1.0-RELEASE"
+      },
+      "hasPart": [
+        {
+          "@id": "workflow.ga"
+        },
+        {
+          "@id": "diagram.png"
+        }
+      ],
+      "identifier": {
+        "@id": "#uuid"
+      }
+    },
+    {
+      "@id": "#uuid",
+      "@type": "PropertyValue",
+      "name": "UUID",
+      "propertyID": "UUID",
+      "value": "550e8400-e29b-41d4-a716-446655440000"
+    },
+    {
+      "@id": "https://creativecommons.org/licenses/by/4.0/",
+      "@type": "CreativeWork",
+      "name": "CC BY 4.0",
+      "description": "Creative Commons Attribution 4.0 International license."
+    },
+    {
+      "@id": "https://ror.org/05f9q8d28",
+      "@type": "Organization",
+      "name": "Example University",
+      "url": "https://example.edu",
+      "contactPoint": {
+        "@id": "#contact-point"
+      }
+    },
+    {
+      "@id": "#contact-point",
+      "@type": "ContactPoint",
+      "name": "Example University Contact",
+      "email": "contact@example.edu"
+    },
+    {
+      "@id": "workflow.ga",
+      "@type": [
+        "File",
+        "SoftwareSourceCode",
+        "ComputationalWorkflow"
+      ],
+      "name": "My Workflow",
+      "description": "A Galaxy workflow with a diagram image.",
+      "encodingFormat": "application/json",
+      "contentSize": "2048",
+      "programmingLanguage": {
+        "@id": "#galaxy"
+      },
+      "conformsTo": {
+        "@id": "https://bioschemas.org/profiles/ComputationalWorkflow/1.0-RELEASE"
+      },
+      "image": {
+        "@id": "diagram.png"
+      }
+    },
+    {
+      "@id": "#galaxy",
+      "@type": "ComputerLanguage",
+      "name": "Galaxy",
+      "url": "https://galaxyproject.org/",
+      "version": "1.0"
+    },
+    {
+      "@id": "diagram.png",
+      "@type": [
+        "File",
+        "ImageObject"
+      ],
+      "name": "Workflow diagram",
+      "description": "A diagram with about referencing the workflow.",
+      "encodingFormat": "image/png",
+      "contentSize": "10240",
+      "about": {
+        "@id": "workflow.ga"
+      }
+    },
+    {
+      "@id": "https://bioschemas.org/profiles/ComputationalWorkflow/1.0-RELEASE",
+      "@type": [
+        "CreativeWork",
+        "Profile"
+      ],
+      "name": "Bioschemas ComputationalWorkflow Profile 1.0-RELEASE",
+      "description": "Bioschemas profile for computational workflows."
+    }
+  ]
+}
