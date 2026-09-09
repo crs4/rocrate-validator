@@ -49,7 +49,7 @@ class MissingFileLocalPathChecker(PyFunctionCheck):
     Additionally, a File Data Entity whose ``@id`` begins with ``#`` denotes a
     deliberately absent file; in that case ``localPath`` SHOULD also be
     declared to indicate where the file can be found when it exists.
-    (RO-Crate 1.2 specification, section on File Data Entities.)
+    (RO-Crate 1.3 specification, section on File Data Entities.)
     """
 
     def _check_entity_local_path(self, context: ValidationContext, entity) -> bool:

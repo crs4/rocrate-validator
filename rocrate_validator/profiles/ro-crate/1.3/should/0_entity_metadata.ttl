@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.2/> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.3/> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix schema: <http://schema.org/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
@@ -40,7 +40,7 @@ ro-crate:ROCrateMetadataEntityRecommendedType a sh:NodeShape ;
                 FILTER(!STRSTARTS(STR(?this), "http://schema.org/"))
                 FILTER(!STRSTARTS(STR(?this), "https://schema.org/"))
                 FILTER(!STRSTARTS(STR(?this), "http://purl.org/"))
-                FILTER(!STRSTARTS(STR(?this), "https://bioschemas.org/"))
+                FILTER(!STRSTARTS(STR(?this), "https://bioschemas.org/terms/"))
                 FILTER(!STRSTARTS(STR(?this), "https://github.com/crs4/rocrate-validator/"))
                 FILTER(!STRSTARTS(STR(?this), "urn:"))
             }

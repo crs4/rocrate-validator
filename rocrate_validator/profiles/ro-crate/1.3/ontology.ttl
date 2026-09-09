@@ -19,8 +19,8 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix schema: <http://schema.org/> .
-@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/1.2/> .
-@prefix bioschemas: <https://bioschemas.org/> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/1.3/> .
+@prefix bioschemas: <https://bioschemas.org/terms/> .
 # @base <./.> .
 
 <urn:absolute:.> rdf:type owl:Ontology ;
@@ -50,35 +50,35 @@ schema:SoftwareSourceCode rdf:type owl:Class ;
                           rdfs:subClassOf schema:CreativeWork .
 
 
-###  https://bioschemas.org/ComputationalWorkflow
+###  https://bioschemas.org/terms/ComputationalWorkflow
 bioschemas:ComputationalWorkflow rdf:type owl:Class .
 
 
-###  https://github.com/crs4/rocrate-validator/profiles/ro-crate/1.2/Script
+###  https://github.com/crs4/rocrate-validator/profiles/ro-crate/1.3/Script
 ro-crate:Script rdf:type owl:Class ;
   rdfs:subClassOf schema:SoftwareSourceCode, schema:MediaObject ;
   rdfs:label "Script"@en .
 
 
-###  https://github.com/crs4/rocrate-validator/profiles/ro-crate/1.2/Workflow
+###  https://github.com/crs4/rocrate-validator/profiles/ro-crate/1.3/Workflow
 ro-crate:Workflow rdf:type owl:Class ;
   rdfs:subClassOf schema:SoftwareSourceCode, schema:MediaObject, bioschemas:ComputationalWorkflow ;
   rdfs:label "Workflow"@en .
 
 
-###  https://w3id.org/ro/crate/1.2/DataEntity
+###  https://w3id.org/ro/crate/1.3/DataEntity
 ro-crate:DataEntity rdf:type owl:Class ;
                    rdfs:subClassOf schema:CreativeWork ;
                    rdfs:label "DataEntity"@en .
 
 
-# # ###  https://w3id.org/ro/crate/1.2/Directory
+# # ###  https://w3id.org/ro/crate/1.3/Directory
 ro-crate:Directory rdf:type owl:Class ;
                 rdfs:subClassOf schema:Dataset ;
                 rdfs:label "Directory"@en .
 
 
-###  https://w3id.org/ro/crate/1.2/ContextualEntity
+###  https://w3id.org/ro/crate/1.3/ContextualEntity
 ro-crate:ContextualEntity rdf:type owl:Class ;
                    rdfs:subClassOf schema:Thing ;
                    rdfs:label "ContextualEntity"@en .

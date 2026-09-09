@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 @prefix ro: <./> .
-@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.2/> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.3/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix schema: <http://schema.org/> .
-@prefix bioschemas: <https://bioschemas.org/> .
+@prefix bioschemas: <https://bioschemas.org/terms/> .
 @prefix dct: <http://purl.org/dc/terms/> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
@@ -42,7 +42,7 @@ ro-crate:ScriptOrWorkflowProgrammingLanguage a sh:NodeShape ;
     sh:name "Script or Workflow: RECOMMENDED `programmingLanguage`" ;
     sh:description """Scripts and Workflows SHOULD have a `programmingLanguage`
         property referencing a contextual entity of type `ComputerLanguage`
-        (RO-Crate 1.2, Workflows and Scripts).""" ;
+        (RO-Crate 1.3, Workflows and Scripts).""" ;
     sh:target ro-crate:SoftwareSourceCodeTarget ;
     sh:property [
         a sh:PropertyShape ;
@@ -80,7 +80,7 @@ ro-crate:WorkflowRecommendedConformsTo a sh:NodeShape ;
     sh:description """A Workflow SHOULD declare `conformsTo` pointing to a
         versioned Bioschemas ComputationalWorkflow profile URI
         (https://bioschemas.org/profiles/ComputationalWorkflow/)
-        (RO-Crate 1.2, Workflows and Scripts).""" ;
+        (RO-Crate 1.3, Workflows and Scripts).""" ;
     sh:targetClass ro-crate:Workflow ;
     sh:property [
         a sh:PropertyShape ;
@@ -121,7 +121,7 @@ ro-crate:ScriptOrWorkflowImageEncodingFormat a sh:NodeShape ;
     sh:description """ImageObject entities referenced via `image` from a
         Script or Workflow SHOULD have an `encodingFormat` property with an
         IANA media type string and/or a Pronom identifier reference
-        (RO-Crate 1.2, Workflows and Scripts — related ImageObject).""" ;
+        (RO-Crate 1.3, Workflows and Scripts — related ImageObject).""" ;
     sh:target ro-crate:ScriptOrWorkflowImageTarget ;
     sh:property [
         a sh:PropertyShape ;
@@ -143,7 +143,7 @@ ro-crate:ScriptOrWorkflowImageAbout a sh:NodeShape ;
     sh:description """ImageObject entities referenced via `image` from a
         Script or Workflow SHOULD have an `about` property that references
         the script or workflow entity
-        (RO-Crate 1.2, Workflows and Scripts — related ImageObject).""" ;
+        (RO-Crate 1.3, Workflows and Scripts — related ImageObject).""" ;
     sh:target ro-crate:ScriptOrWorkflowImageTarget ;
     sh:sparql [
         a sh:SPARQLConstraint ;

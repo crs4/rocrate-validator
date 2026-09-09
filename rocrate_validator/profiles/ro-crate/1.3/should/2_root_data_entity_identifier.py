@@ -136,7 +136,7 @@ class RootDataEntityPersistentIdentifierChecker(PyFunctionCheck):
     If the Root Data Entity has an ``identifier`` property with a resolvable
     HTTP URL, resolving that URL SHOULD ultimately provide the RO-Crate Metadata
     Document or an archive, accessible via Signposting or content negotiation
-    (RO-Crate 1.2, RECOMMENDED).
+    (RO-Crate 1.3, RECOMMENDED).
     """
 
     @check(name="Root Data Entity: identifier SHOULD resolve to RO-Crate content", severity=Severity.RECOMMENDED)
