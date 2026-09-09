@@ -61,7 +61,7 @@ class DataEntityCitationChecker(PyFunctionCheck):
 @requirement(name="Web-based Data Entity: REQUIRED availability")
 class WebDataEntityRequiredChecker(PyFunctionCheck):
     """
-    Web-based Data Entities SHOULD be directly downloadable (RO-Crate 1.2).
+    Web-based Data Entities SHOULD be directly downloadable (RO-Crate 1.3).
     Downloadability is checked via Signposting, Content-Type, and content negotiation.
     Entities returning an HTML page (splash page / viewer) are also flagged.
     """

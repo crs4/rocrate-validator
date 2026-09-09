@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 @prefix ro: <./> .
-@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.2/> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.3/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix schema: <http://schema.org/> .
-@prefix bioschemas: <https://bioschemas.org/> .
+@prefix bioschemas: <https://bioschemas.org/terms/> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix validator: <https://github.com/crs4/rocrate-validator/> .
@@ -98,7 +98,7 @@ ro-crate:ScriptRequiredFileType a sh:NodeShape ;
     sh:name "Script: REQUIRED `File` type" ;
     sh:description """A Script entity MUST include `File` (schema:MediaObject)
         in its @type alongside `SoftwareSourceCode`
-        (RO-Crate 1.2, Workflows and Scripts — Script).""" ;
+        (RO-Crate 1.3, Workflows and Scripts — Script).""" ;
     sh:targetClass ro-crate:Script ;
     sh:property [
         a sh:PropertyShape ;
@@ -119,7 +119,7 @@ ro-crate:WorkflowRequiredFileType a sh:NodeShape ;
     sh:name "Workflow: REQUIRED `File` type" ;
     sh:description """A Workflow entity MUST include `File` (schema:MediaObject)
         in its @type alongside `SoftwareSourceCode` and `ComputationalWorkflow`
-        (RO-Crate 1.2, Workflows and Scripts — Workflow).""" ;
+        (RO-Crate 1.3, Workflows and Scripts — Workflow).""" ;
     sh:targetClass ro-crate:Workflow ;
     sh:property [
         a sh:PropertyShape ;
@@ -140,7 +140,7 @@ ro-crate:WorkflowRequiredSoftwareSourceCodeType a sh:NodeShape ;
     sh:name "Workflow: REQUIRED `SoftwareSourceCode` type" ;
     sh:description """A Workflow entity MUST include `SoftwareSourceCode`
         in its @type alongside `File` and `ComputationalWorkflow`
-        (RO-Crate 1.2, Workflows and Scripts — Workflow).""" ;
+        (RO-Crate 1.3, Workflows and Scripts — Workflow).""" ;
     sh:targetClass ro-crate:Workflow ;
     sh:property [
         a sh:PropertyShape ;
@@ -160,7 +160,7 @@ ro-crate:WorkflowRequiredSoftwareSourceCodeType a sh:NodeShape ;
 ro-crate:ScriptOrWorkflowRequiredName a sh:NodeShape ;
     sh:name "Script or Workflow: REQUIRED `name`" ;
     sh:description """Scripts and Workflows MUST have a human-readable `name`
-        property (RO-Crate 1.2, Workflows and Scripts).""" ;
+        property (RO-Crate 1.3, Workflows and Scripts).""" ;
     sh:target ro-crate:SoftwareSourceCodeTarget ;
     sh:property [
         a sh:PropertyShape ;

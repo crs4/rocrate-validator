@@ -16,7 +16,7 @@
 # NOTE
 # ==================================================================
 #
-# The RO-Crate 1.2 specification (section on Licensing) states:
+# The RO-Crate 1.3 specification (section on Licensing) states:
 #
 #   "Data Entities with different license SHOULD have own license property"
 #   (requirement L4 / P2.2)

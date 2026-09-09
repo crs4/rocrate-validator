@@ -53,7 +53,7 @@ def _resolve_distribution_url(dist) -> str | None:
 class DatasetDistributionChecker(PyFunctionCheck):
     """
     If a Dataset declares a ``distribution`` property pointing to a DataDownload
-    entity, the referenced archive SHOULD be directly downloadable (RO-Crate 1.2,
+    entity, the referenced archive SHOULD be directly downloadable (RO-Crate 1.3,
     RECOMMENDED). Downloadability is verified via Signposting, Content-Type, and
     content negotiation.
     """

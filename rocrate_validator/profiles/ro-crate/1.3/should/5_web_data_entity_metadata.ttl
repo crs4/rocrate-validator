@@ -13,7 +13,7 @@
 # limitations under the License.
 
 @prefix ro: <./> .
-@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.2/> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.3/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix schema_org: <http://schema.org/> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .

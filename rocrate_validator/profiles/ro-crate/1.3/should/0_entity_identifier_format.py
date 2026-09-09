@@ -40,7 +40,7 @@ _ABSOLUTE_URI_RE = re.compile(r"^[a-zA-Z][a-zA-Z0-9+\-.]*:")
 @requirement(name="Entity identifier: format recommendations")
 class EntityIdentifierFormatChecker(PyFunctionCheck):
     """
-    Checks that entity @id values follow RO-Crate 1.2 RECOMMENDED conventions:
+    Checks that entity @id values follow RO-Crate 1.3 RECOMMENDED conventions:
     no parent-directory traversal, native UTF-8 for international characters,
     and '#'-prefixed identifiers for named local entities.
     """
@@ -49,7 +49,7 @@ class EntityIdentifierFormatChecker(PyFunctionCheck):
     def check_no_parent_traversal(self, context: ValidationContext) -> bool:
         """
         @id paths SHOULD NOT use `../` to climb out of the RO-Crate Root
-        (RO-Crate 1.2, JSON-LD appendix).
+        (RO-Crate 1.3, JSON-LD appendix).
         """
         result = True
         for entity in context.ro_crate.metadata.as_dict().get("@graph", []):
@@ -72,7 +72,7 @@ class EntityIdentifierFormatChecker(PyFunctionCheck):
     def check_utf8_identifiers(self, context: ValidationContext) -> bool:
         """
         International characters in @id values SHOULD be written in native
-        UTF-8 rather than percent-encoded (RO-Crate 1.2, JSON-LD appendix).
+        UTF-8 rather than percent-encoded (RO-Crate 1.3, JSON-LD appendix).
         """
         result = True
         for entity in context.ro_crate.metadata.as_dict().get("@graph", []):
@@ -98,7 +98,7 @@ class EntityIdentifierFormatChecker(PyFunctionCheck):
         Any Contextual Entity (Person, Organization, ContactPoint, PropertyValue,
         Place, etc.) SHOULD use an @id that is an absolute URI (permalink),
         a '#'-prefixed local identifier, or a blank node — not a bare relative
-        path (RO-Crate 1.2, 5.1 Any Contextual Entity).
+        path (RO-Crate 1.3, 5.1 Any Contextual Entity).
         """
         result = True
         ro_crate_metadata = context.ro_crate.metadata

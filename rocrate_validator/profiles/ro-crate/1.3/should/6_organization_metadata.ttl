@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 @prefix ro: <./> .
-@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.2/> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.3/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix schema: <http://schema.org/> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
@@ -22,7 +22,7 @@ ro-crate:OrganizationRorIdentifier a sh:NodeShape ;
     sh:name "Organization: SHOULD have ROR identifier" ;
     sh:description """An Organization entity SHOULD use a ROR (Research Organization Registry) identifier
         as its @id, if possible.
-        (RO-Crate 1.2, Contextual Entities — Organizations as values; Metadata — Recommended Identifiers)""" ;
+        (RO-Crate 1.3, Contextual Entities — Organizations as values; Metadata — Recommended Identifiers)""" ;
     sh:targetClass schema:Organization ;
     sh:sparql [
         a sh:SPARQLConstraint ;
@@ -40,7 +40,7 @@ ro-crate:OrganizationRorIdentifier a sh:NodeShape ;
 ro-crate:OrganizationContactPoint a sh:NodeShape ;
     sh:name "Organization: SHOULD have contactPoint referencing ContactPoint" ;
     sh:description """An Organization SHOULD have a contactPoint property referencing a ContactPoint contextual entity.
-        (RO-Crate 1.2, Contextual Entities — Contact Information)""" ;
+        (RO-Crate 1.3, Contextual Entities — Contact Information)""" ;
     sh:targetClass schema:Organization ;
     sh:property [
         sh:path schema:contactPoint ;
@@ -55,7 +55,7 @@ ro-crate:OrganizationContactPoint a sh:NodeShape ;
 ro-crate:PersonContactPoint a sh:NodeShape ;
     sh:name "Person: SHOULD have contactPoint referencing ContactPoint" ;
     sh:description """A Person's contactPoint property SHOULD reference a ContactPoint contextual entity.
-        (RO-Crate 1.2, Contextual Entities — Contact Information)""" ;
+        (RO-Crate 1.3, Contextual Entities — Contact Information)""" ;
     sh:targetClass schema:Person ;
     sh:property [
         sh:path schema:contactPoint ;
@@ -70,7 +70,7 @@ ro-crate:AuthorPublisherContactPoint a sh:NodeShape ;
     sh:name "Root Data Entity: at least one author/publisher SHOULD have contactPoint" ;
     sh:description """At least one of the Person or Organization entities referenced as author or publisher
         from the Root Data Entity SHOULD have a contactPoint property.
-        (RO-Crate 1.2, Contextual Entities — Contact Information)""" ;
+        (RO-Crate 1.3, Contextual Entities — Contact Information)""" ;
     sh:targetClass ro-crate:RootDataEntity ;
     sh:sparql [
         a sh:SPARQLConstraint ;
@@ -101,7 +101,7 @@ ro-crate:AuthorPublisherContactPoint a sh:NodeShape ;
 ro-crate:PersonOrcidIdentifier a sh:NodeShape ;
     sh:name "Person: SHOULD have ORCID identifier" ;
     sh:description """A Person entity SHOULD use an ORCID identifier as its @id.
-        (RO-Crate 1.2, Contextual Entities — People)""" ;
+        (RO-Crate 1.3, Contextual Entities — People)""" ;
     sh:targetClass schema:Person ;
     sh:sparql [
         a sh:SPARQLConstraint ;

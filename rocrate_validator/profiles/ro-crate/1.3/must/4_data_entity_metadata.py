@@ -229,7 +229,7 @@ class DataEntityCitationChecker(PyFunctionCheck):
 class WebDataEntityRequiredChecker(PyFunctionCheck):
     """
     Web-based Data Entities MUST be directly downloadable at the time of creation
-    (RO-Crate 1.2). Downloadability is verified via Signposting (rel=item,
+    (RO-Crate 1.3). Downloadability is verified via Signposting (rel=item,
     rel=describedby), direct Content-Type inspection, and content negotiation.
     """
 

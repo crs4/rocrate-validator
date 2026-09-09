@@ -13,7 +13,7 @@
 # limitations under the License.
 
 @prefix ro: <./> .
-@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.2/> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.3/> .
 @prefix dct: <http://purl.org/dc/terms/> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 
@@ -21,7 +21,7 @@ ro-crate:ROCrateMetadataFileDescriptorConformsTo
     a sh:NodeShape ;
     sh:name "RO-Crate Metadata File Descriptor RECOMMENDED conformsTo" ;
     sh:description """The RO-Crate Metadata Descriptor SHOULD indicate the versioned RO-Crate specification URI.
-        In RO-Crate 1.2, conformsTo SHOULD have a single value which is a versioned permalink URI
+        In RO-Crate 1.3, conformsTo SHOULD have a single value which is a versioned permalink URI
         of the RO-Crate specification that the RO-Crate JSON-LD conforms to.
         The URI SHOULD start with https://w3id.org/ro/crate/.""" ;
     sh:targetClass ro-crate:ROCrateMetadataFileDescriptor ;
@@ -33,7 +33,7 @@ ro-crate:ROCrateMetadataFileDescriptorConformsTo
         sh:severity sh:Warning ;
         sh:nodeKind sh:IRI ;
         sh:path dct:conformsTo ;
-        sh:hasValue <https://w3id.org/ro/crate/1.2> ;
+        sh:hasValue <https://w3id.org/ro/crate/1.3> ;
         sh:message "The RO-Crate metadata file descriptor SHOULD have a `conformsTo` property with the RO-Crate specification version" ;
     ] ;
     sh:property [

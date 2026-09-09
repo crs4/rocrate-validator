@@ -261,7 +261,7 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
                 )
                 return False
 
-            expected_context = "https://w3id.org/ro/crate/1.2/context"
+            expected_context = "https://w3id.org/ro/crate/1.3/context"
             jsonld_context = json_dict.get("@context")
 
             def has_expected_context(ctx: object) -> bool:

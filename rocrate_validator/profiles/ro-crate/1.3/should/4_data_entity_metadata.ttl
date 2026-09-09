@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 @prefix ro: <./> .
-@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.2/> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.3/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix schema_org: <http://schema.org/> .
 @prefix dct: <http://purl.org/dc/terms/> .
@@ -157,7 +157,7 @@ ro-crate:WebDirectoryDistributionRecommended a sh:NodeShape ;
     sh:name "Web-based Directory Data Entity: recommended distribution" ;
     sh:description """If a non-root Dataset Data Entity has a web URI (absolute https?://),
         it SHOULD include a `distribution` property pointing to a downloadable archive
-        (RO-Crate 1.2, Data Entities — Directories on the web).""" ;
+        (RO-Crate 1.3, Data Entities — Directories on the web).""" ;
     sh:target [
         a sh:SPARQLTarget ;
         sh:prefixes ro-crate:sparqlPrefixes ;
