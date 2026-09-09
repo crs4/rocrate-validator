@@ -129,11 +129,25 @@ def test_main_workflow_file_existence():
 
 
 def test_main_workflow_singleton_array():
-    """A singleton-array mainEntity resolves to the same workflow as an object."""
+    """A singleton-array mainEntity is JSON-LD-equivalent and passes REQUIRED checks."""
     do_entity_test(
         ValidROC().workflow_roc,
         Severity.REQUIRED,
         True,
+        profile_identifier="workflow-ro-crate",
+        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER],
+        rocrate_entity_patch={"./": {"mainEntity": [{"@id": "sort-and-change-case.ga"}]}},
+    )
+
+
+def test_main_workflow_singleton_array_should_be_unpacked():
+    """RO-Crate 1.1 recommends unpacking a singleton array in compacted JSON-LD."""
+    do_entity_test(
+        ValidROC().workflow_roc,
+        Severity.RECOMMENDED,
+        False,
+        ["Entity properties compact representation"],
+        ['property "mainEntity" SHOULD be represented as a single value'],
         profile_identifier="workflow-ro-crate",
         skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER],
         rocrate_entity_patch={"./": {"mainEntity": [{"@id": "sort-and-change-case.ga"}]}},

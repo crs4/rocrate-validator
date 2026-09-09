@@ -224,12 +224,12 @@ def test_valid_local_rocrate():
 
     # test file size
     size = roc.get_file_size(metadata_file_descriptor)
-    assert size == 26788, "Size should be 26788"
+    assert size == 26708, "Size should be 26708"
 
     # test crate size — updated after `f8d16ba6` trimmed trailing whitespace
     # from `index.html` / `ro-crate-preview.html` (~6.7 KB delta from the
     # historical 311817).
-    assert roc.size == 305049, "Size should be 305049"
+    assert roc.size == 304969, "Size should be 304969"
 
     # test get_file_content binary mode
     content = roc.get_file_content(metadata_file_descriptor)

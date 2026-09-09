@@ -40,11 +40,9 @@
             "about": {
                 "@id": "https://researchobject.org/workflow-run-crate/"
             },
-            "author": [
-                {
-                    "@id": "https://orcid.org/0000-0001-8271-5429"
-                }
-            ],
+            "author": {
+                "@id": "https://orcid.org/0000-0001-8271-5429"
+            },
             "description": "RO-Crate for the manuscript that describes Workflow Run Crate, includes mapping to PROV using SKOS/SSSOM",
             "hasPart": [
                 {
@@ -392,11 +390,9 @@
                     "@id": "https://mapping-commons.github.io/sssom/spec/#tsv"
                 }
             ],
-            "author": [
-                {
-                    "@id": "https://orcid.org/0000-0001-8271-5429"
-                }
-            ],
+            "author": {
+                "@id": "https://orcid.org/0000-0001-8271-5429"
+            },
             "creator": {
                 "@id": "https://orcid.org/0000-0001-9842-9718"
             },

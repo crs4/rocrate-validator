@@ -26,11 +26,9 @@
       "funder": {
         "@id": "https://ror.org/00k4n6c32"
       },
-      "hasPart": [
-        {
-          "@id": "data.csv"
-        }
-      ],
+      "hasPart": {
+        "@id": "data.csv"
+      },
       "identifier": {
         "@id": "#uuid"
       }
