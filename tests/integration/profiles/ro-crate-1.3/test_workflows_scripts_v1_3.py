@@ -15,7 +15,7 @@
 import logging
 
 from rocrate_validator import models
-from tests.ro_crates_v1_2 import WorkflowsScripts
+from tests.ro_crates_v1_3 import WorkflowsScripts
 from tests.shared import do_entity_test
 
 logger = logging.getLogger(__name__)
@@ -27,15 +27,15 @@ __workflows_scripts_crates__ = WorkflowsScripts()
 # "valid" RECOMMENDED test cases so the assertion is only about the
 # workflow-specific shape.
 _GENERIC_RECOMMENDED_SKIP = [
-    "ro-crate-1.2_40.0",  # RO-Crate Metadata Entity: RECOMMENDED properties (check 0)
-    "ro-crate-1.2_40.1",  # RO-Crate Metadata Entity: RECOMMENDED properties (check 1)
-    "ro-crate-1.2_48.1",  # Root Data Entity: recommended funder
-    "ro-crate-1.2_55.1",  # Root Data Entity: recommended publisher
-    "ro-crate-1.2_62.1",  # File Data Entity: RECOMMENDED contentSize
-    "ro-crate-1.2_63.0",  # File: RECOMMENDED conformsTo profile
-    "ro-crate-1.2_75.1",  # Contextual Entity Properties
-    "ro-crate-1.2_76.1",  # Contextual Entity RECOMMENDED description
-    "ro-crate-1.2_81.2",  # License entity: RECOMMENDED properties
+    "ro-crate-1.3_40.0",  # RO-Crate Metadata Entity: RECOMMENDED properties (check 0)
+    "ro-crate-1.3_40.1",  # RO-Crate Metadata Entity: RECOMMENDED properties (check 1)
+    "ro-crate-1.3_48.1",  # Root Data Entity: recommended funder
+    "ro-crate-1.3_55.1",  # Root Data Entity: recommended publisher
+    "ro-crate-1.3_62.1",  # File Data Entity: RECOMMENDED contentSize
+    "ro-crate-1.3_63.0",  # File: RECOMMENDED conformsTo profile
+    "ro-crate-1.3_75.1",  # Contextual Entity Properties
+    "ro-crate-1.3_76.1",  # Contextual Entity RECOMMENDED description
+    "ro-crate-1.3_81.2",  # License entity: RECOMMENDED properties
 ]
 
 
@@ -53,7 +53,7 @@ def test_valid_script_type():
         __workflows_scripts_crates__.valid_script_type,
         models.Severity.REQUIRED,
         True,
-        profile_identifier="ro-crate-1.2",
+        profile_identifier="ro-crate-1.3",
     )
 
 
@@ -66,7 +66,7 @@ def test_invalid_script_type():
         __workflows_scripts_crates__.invalid_script_type,
         models.Severity.REQUIRED,
         False,
-        profile_identifier="ro-crate-1.2",
+        profile_identifier="ro-crate-1.3",
         expected_triggered_requirements=["Script: REQUIRED `File` type"],
         expected_triggered_issues=["A Script MUST include `File` in its `@type`"],
     )
@@ -85,7 +85,7 @@ def test_valid_script_name():
         __workflows_scripts_crates__.valid_script_name,
         models.Severity.REQUIRED,
         True,
-        profile_identifier="ro-crate-1.2",
+        profile_identifier="ro-crate-1.3",
     )
 
 
@@ -97,7 +97,7 @@ def test_invalid_script_name():
         __workflows_scripts_crates__.invalid_script_name,
         models.Severity.REQUIRED,
         False,
-        profile_identifier="ro-crate-1.2",
+        profile_identifier="ro-crate-1.3",
         expected_triggered_requirements=["Script or Workflow: REQUIRED `name`"],
         expected_triggered_issues=["Scripts and Workflows MUST have a human-readable `name` property"],
     )
@@ -117,7 +117,7 @@ def test_valid_workflow_type():
         __workflows_scripts_crates__.valid_workflow_type,
         models.Severity.REQUIRED,
         True,
-        profile_identifier="ro-crate-1.2",
+        profile_identifier="ro-crate-1.3",
     )
 
 
@@ -130,7 +130,7 @@ def test_invalid_workflow_type_missing_file():
         __workflows_scripts_crates__.invalid_workflow_type_missing_file,
         models.Severity.REQUIRED,
         False,
-        profile_identifier="ro-crate-1.2",
+        profile_identifier="ro-crate-1.3",
         expected_triggered_requirements=["Workflow: REQUIRED `File` type"],
         expected_triggered_issues=["A Workflow MUST include `File` in its `@type`"],
     )
@@ -145,7 +145,7 @@ def test_invalid_workflow_type_missing_ssc():
         __workflows_scripts_crates__.invalid_workflow_type_missing_ssc,
         models.Severity.REQUIRED,
         False,
-        profile_identifier="ro-crate-1.2",
+        profile_identifier="ro-crate-1.3",
         expected_triggered_requirements=["Workflow: REQUIRED `SoftwareSourceCode` type"],
         expected_triggered_issues=["A Workflow MUST include `SoftwareSourceCode` in its `@type`"],
     )
@@ -164,7 +164,7 @@ def test_valid_workflow_name():
         __workflows_scripts_crates__.valid_workflow_name,
         models.Severity.REQUIRED,
         True,
-        profile_identifier="ro-crate-1.2",
+        profile_identifier="ro-crate-1.3",
     )
 
 
@@ -176,7 +176,7 @@ def test_invalid_workflow_name():
         __workflows_scripts_crates__.invalid_workflow_name,
         models.Severity.REQUIRED,
         False,
-        profile_identifier="ro-crate-1.2",
+        profile_identifier="ro-crate-1.3",
         expected_triggered_requirements=["Script or Workflow: REQUIRED `name`"],
         expected_triggered_issues=["Scripts and Workflows MUST have a human-readable `name` property"],
     )
@@ -196,7 +196,7 @@ def test_valid_programming_language():
         __workflows_scripts_crates__.valid_programming_language,
         models.Severity.RECOMMENDED,
         True,
-        profile_identifier="ro-crate-1.2",
+        profile_identifier="ro-crate-1.3",
         skip_checks=_GENERIC_RECOMMENDED_SKIP,
     )
 
@@ -210,7 +210,7 @@ def test_invalid_programming_language():
         __workflows_scripts_crates__.invalid_programming_language,
         models.Severity.RECOMMENDED,
         False,
-        profile_identifier="ro-crate-1.2",
+        profile_identifier="ro-crate-1.3",
         expected_triggered_requirements=["Script or Workflow: RECOMMENDED `programmingLanguage`"],
         expected_triggered_issues=["Scripts and Workflows SHOULD have a `programmingLanguage` property"],
     )
@@ -230,7 +230,7 @@ def test_valid_workflow_conformsTo():
         __workflows_scripts_crates__.valid_workflow_conformsTo,
         models.Severity.RECOMMENDED,
         True,
-        profile_identifier="ro-crate-1.2",
+        profile_identifier="ro-crate-1.3",
         skip_checks=_GENERIC_RECOMMENDED_SKIP,
     )
 
@@ -243,7 +243,7 @@ def test_invalid_workflow_conformsTo():
         __workflows_scripts_crates__.invalid_workflow_conformsTo,
         models.Severity.RECOMMENDED,
         False,
-        profile_identifier="ro-crate-1.2",
+        profile_identifier="ro-crate-1.3",
         expected_triggered_requirements=["Workflow: RECOMMENDED Bioschemas `conformsTo`"],
         expected_triggered_issues=[
             "Workflows SHOULD declare `conformsTo` referencing a versioned Bioschemas ComputationalWorkflow profile URI"
@@ -265,7 +265,7 @@ def test_valid_image_encoding_format():
         __workflows_scripts_crates__.valid_image_encoding_format,
         models.Severity.RECOMMENDED,
         True,
-        profile_identifier="ro-crate-1.2",
+        profile_identifier="ro-crate-1.3",
         skip_checks=_GENERIC_RECOMMENDED_SKIP,
     )
 
@@ -279,7 +279,7 @@ def test_invalid_image_encoding_format():
         __workflows_scripts_crates__.invalid_image_encoding_format,
         models.Severity.RECOMMENDED,
         False,
-        profile_identifier="ro-crate-1.2",
+        profile_identifier="ro-crate-1.3",
         expected_triggered_requirements=["Script/Workflow ImageObject: RECOMMENDED `encodingFormat`"],
         expected_triggered_issues=[
             "An ImageObject referenced via `image` from a Script or Workflow SHOULD have an `encodingFormat` property"
@@ -301,7 +301,7 @@ def test_valid_image_about():
         __workflows_scripts_crates__.valid_image_about,
         models.Severity.RECOMMENDED,
         True,
-        profile_identifier="ro-crate-1.2",
+        profile_identifier="ro-crate-1.3",
         skip_checks=_GENERIC_RECOMMENDED_SKIP,
     )
 
@@ -315,7 +315,7 @@ def test_invalid_image_about():
         __workflows_scripts_crates__.invalid_image_about,
         models.Severity.RECOMMENDED,
         False,
-        profile_identifier="ro-crate-1.2",
+        profile_identifier="ro-crate-1.3",
         expected_triggered_requirements=["Script/Workflow ImageObject: RECOMMENDED `about` reference"],
         expected_triggered_issues=[
             "An ImageObject referenced via `image` from a Script or Workflow SHOULD have an `about` property "
