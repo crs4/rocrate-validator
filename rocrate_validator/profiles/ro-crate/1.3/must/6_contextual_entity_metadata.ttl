@@ -14,7 +14,7 @@
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix ro: <./> .
-@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.2/> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.3/> .
 @prefix schema: <http://schema.org/> .
 @prefix schema_org: <http://schema.org/> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
@@ -56,7 +56,7 @@ ro-crate:ContextualEntityDefinition a sh:NodeShape, validator:HiddenShape ;
                 FILTER NOT EXISTS { ?this a owl:Ontology }
 
                 # Vocabulary / profile namespace exclusions.  Required because
-                # the RO-Crate 1.2 profile loads ontology.ttl into the same data
+                # the RO-Crate 1.3 profile loads ontology.ttl into the same data
                 # graph as the metadata file; terms from those vocabularies
                 # appear as subjects with rdf:type + rdfs:label and would
                 # otherwise be misclassified.
@@ -65,7 +65,7 @@ ro-crate:ContextualEntityDefinition a sh:NodeShape, validator:HiddenShape ;
                 FILTER(!STRSTARTS(STR(?this), "http://schema.org/"))
                 FILTER(!STRSTARTS(STR(?this), "https://schema.org/"))
                 FILTER(!STRSTARTS(STR(?this), "http://purl.org/"))
-                FILTER(!STRSTARTS(STR(?this), "https://bioschemas.org/"))
+                FILTER(!STRSTARTS(STR(?this), "https://bioschemas.org/terms/"))
                 FILTER(!STRSTARTS(STR(?this), "http://www.opengis.net/"))
                 FILTER(!STRSTARTS(STR(?this), "https://w3id.org/"))
                 FILTER(!STRSTARTS(STR(?this), "https://github.com/crs4/rocrate-validator/"))
@@ -171,7 +171,7 @@ ro-crate:SoftwareApplicationOrComputerLanguageRequiredProperties a sh:NodeShape 
     sh:name "SoftwareApplication or ComputerLanguage: REQUIRED `name`, `url`, `version`" ;
     sh:description """A contextual entity representing a `SoftwareApplication`
         or a `ComputerLanguage` MUST declare `name`, `url`, and `version`
-        properties (RO-Crate 1.2, Provenance — Software Applications;
+        properties (RO-Crate 1.3, Provenance — Software Applications;
         Workflows — programmingLanguage).""" ;
     sh:target [
         a sh:SPARQLTarget ;

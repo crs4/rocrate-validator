@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 @prefix ro: <./> .
-@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.2/> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.3/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix schema_org: <http://schema.org/> .
 @prefix dct: <http://purl.org/dc/terms/> .
@@ -65,7 +65,7 @@ ro-crate:ReferencedROCrateMetadataDescriptorTarget a sh:SPARQLTarget ;
 # These shapes validate data entities that represent referenced RO-Crates.
 # A "referenced RO-Crate" is a Dataset entity whose conformsTo property
 # includes an RO-Crate specification URI (starting with
-# https://w3id.org/ro/crate).  The RO-Crate 1.2 specification requires
+# https://w3id.org/ro/crate).  The RO-Crate 1.3 specification requires
 # that such entities follow specific conventions regarding conformsTo,
 # subjectOf, and the structure of their associated metadata descriptor.
 
@@ -122,7 +122,7 @@ ro-crate:ReferencedROCrateSubjectOfRecommended a sh:NodeShape ;
 #  accessed (unless Signposting rel=cite-as is declared — that
 #  conditional refinement is verified separately by the Python
 #  check `ReferencedROCrateSignpostingCiteAsChecker`).
-#  (RO-Crate 1.2, § 4.5 — Determining entity identifier for a
+#  (RO-Crate 1.3, § 4.5 — Determining entity identifier for a
 #  referenced RO-Crate, step #3.)
 # ---------------------------------------------------------------
 ro-crate:ReferencedROCrateSdDatePublishedRecommended a sh:NodeShape ;
@@ -131,7 +131,7 @@ ro-crate:ReferencedROCrateSdDatePublishedRecommended a sh:NodeShape ;
         whose @id is an absolute HTTP(S) URI — and that does not declare a
         persistent identifier via `identifier` — SHOULD include the
         `sdDatePublished` timestamp to indicate when the URI was accessed
-        (RO-Crate 1.2, § 4.5).  This structural check does not inspect
+        (RO-Crate 1.3, § 4.5).  This structural check does not inspect
         Signposting `Link: rel=cite-as` headers; that refinement is performed
         by a separate network-aware Python check.""" ;
     sh:target ro-crate:ReferencedROCrateDataEntityTarget ;

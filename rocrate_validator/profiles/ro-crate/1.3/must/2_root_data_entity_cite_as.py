@@ -26,7 +26,7 @@ class CiteAsDownloadableChecker(PyFunctionCheck):
     If present, the `cite-as` value of the Root Data Entity MUST ultimately
     provide the RO-Crate as a downloadable item, accessible via Signposting
     (Link rel="item" or rel="describedby"), direct download, or content
-    negotiation (RO-Crate 1.2, RFC 8574).
+    negotiation (RO-Crate 1.3, RFC 8574).
     """
 
     @staticmethod

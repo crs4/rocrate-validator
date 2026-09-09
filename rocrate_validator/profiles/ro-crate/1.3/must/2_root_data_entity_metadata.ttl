@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 @prefix ro: <./> .
-@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.2/> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.3/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix schema_org: <http://schema.org/> .
 @prefix prof: <http://www.w3.org/ns/dx/prof/> .
@@ -36,7 +36,7 @@ ro-crate:FindRootDataEntity a sh:NodeShape, validator:HiddenShape ;
     sh:name "Identify the Root Data Entity of the RO-Crate" ;
     sh:description """The Root Data Entity is the top-level Data Entity in the RO-Crate and serves as the starting point for the description of the RO-Crate.
         It is a schema:Dataset and is indirectly identified by the about property of the metadata descriptor in the RO-Crate
-        (see the definition at [Finding RO-Crate Root in RDF triple stores](https://www.researchobject.org/ro-crate/1.2/appendix/relative-uris.html#finding-ro-crate-root-in-rdf-triple-stores)).
+        (see the definition at [Finding RO-Crate Root in RDF triple stores](https://www.researchobject.org/ro-crate/1.3/appendix/relative-uris.html#finding-ro-crate-root-in-rdf-triple-stores)).
     """ ;
     sh:target [
         a sh:SPARQLTarget ;
@@ -153,7 +153,7 @@ ro-crate:RootDataEntityVersionlessProfileProhibition a sh:NodeShape ;
     sh:name "RO-Crate Root Data Entity: MUST NOT declare version-less conformsTo profile" ;
     sh:description """The Root Data Entity MUST NOT declare the version-less generic RO-Crate profile URI
         (https://w3id.org/ro/crate) in its conformsTo property.
-        Only versioned profile URIs (e.g., https://w3id.org/ro/crate/1.2) are permitted on the Root Data Entity.
+        Only versioned profile URIs (e.g., https://w3id.org/ro/crate/1.3) are permitted on the Root Data Entity.
         The version-less URI is reserved for referenced RO-Crate data entities.""" ;
     sh:target ro-crate:MetadataAboutTarget ;
     sh:sparql [
@@ -166,5 +166,5 @@ ro-crate:RootDataEntityVersionlessProfileProhibition a sh:NodeShape ;
             }
         """ ;
         sh:name "Root Data Entity: MUST NOT declare version-less conformsTo" ;
-        sh:message "The Root Data Entity MUST NOT declare the version-less RO-Crate profile URI (https://w3id.org/ro/crate) in its conformsTo property. Use a versioned URI such as https://w3id.org/ro/crate/1.2 instead." ;
+        sh:message "The Root Data Entity MUST NOT declare the version-less RO-Crate profile URI (https://w3id.org/ro/crate) in its conformsTo property. Use a versioned URI such as https://w3id.org/ro/crate/1.3 instead." ;
     ] .

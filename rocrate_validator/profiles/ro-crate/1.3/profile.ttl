@@ -19,13 +19,13 @@
 
 
 
-<https://w3id.org/ro/crate/1.2>  # a Profile; it's identifying URI
+<https://w3id.org/ro/crate/1.3>  # a Profile; it's identifying URI
     a prof:Profile ;
 
     # common metadata for the Profile
 
     # the Profile's label
-    rdfs:label "RO-Crate Metadata Specification 1.2" ;
+    rdfs:label "RO-Crate Metadata Specification 1.3" ;
 
     # regular metadata, a basic description of the Profile
     rdfs:comment """RO-Crate Metadata Specification."""@en ;
@@ -48,7 +48,7 @@
         prof:hasRole role:Vocabulary ;
 
         # this profile resource's actual file
-        prof:hasArtifact <https://w3id.org/ro/crate/1.2/context> ;
+        prof:hasArtifact <https://w3id.org/ro/crate/1.3/context> ;
     ] ;
 
     # this profile has a human-readable documentation resource
@@ -66,7 +66,7 @@
         prof:hasRole role:Specification ;
 
         # this profile resource's actual file
-        prof:hasArtifact <https://www.researchobject.org/ro-crate/specification/1.2/index.html> ;
+        prof:hasArtifact <https://www.researchobject.org/ro-crate/specification/1.3/index.html> ;
     ] ;
 
     # a short code to refer to the Profile with when a URI can't be used

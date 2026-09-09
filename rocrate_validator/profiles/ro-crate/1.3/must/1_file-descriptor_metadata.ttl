@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 @prefix ro: <./> .
-@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.2/> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.3/> .
 @prefix dct: <http://purl.org/dc/terms/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix schema_org: <http://schema.org/> .
@@ -23,7 +23,7 @@ ro-crate:FindROCrateMetadataFileDescriptorEntity a sh:NodeShape ;
     sh:name "Identify the RO-Crate Metadata File Descriptor" ;
     sh:description """The RO-Crate Metadata File Descriptor entity describes the RO-Crate itself, and it is named as `*-ro-crate-metadata.json`.
         It can be identified by name according to the RO-Crate specification
-        available at [Finding RO-Crate Root in RDF triple stores](https://www.researchobject.org/ro-crate/1.2/appendix/relative-uris.html#finding-ro-crate-root-in-rdf-triple-stores).""" ;
+        available at [Finding RO-Crate Root in RDF triple stores](https://www.researchobject.org/ro-crate/1.3/appendix/relative-uris.html#finding-ro-crate-root-in-rdf-triple-stores).""" ;
     sh:target [
         a sh:SPARQLTarget ;
         sh:prefixes ro-crate:sparqlPrefixes ;
@@ -64,7 +64,7 @@ ro-crate:ROCrateMetadataFileDescriptorRecommendedProperties a sh:NodeShape ;
     sh:name "RO-Crate Metadata File Descriptor REQUIRED properties" ;
     sh:description """RO-Crate Metadata Descriptor MUST be defined
     according with the requirements details defined in
-    [RO-Crate Metadata File Descriptor](https://www.researchobject.org/ro-crate/1.2/root-data-entity.html#ro-crate-metadata-file-descriptor)""" ;
+    [RO-Crate Metadata File Descriptor](https://www.researchobject.org/ro-crate/1.3/root-data-entity.html#ro-crate-metadata-file-descriptor)""" ;
     sh:targetClass ro-crate:ROCrateMetadataFileDescriptor ;
     sh:property [
         a sh:PropertyShape ;

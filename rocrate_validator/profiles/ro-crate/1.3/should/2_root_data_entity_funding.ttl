@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.2/> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.3/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix schema_org: <http://schema.org/> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
@@ -22,7 +22,7 @@ ro-crate:RootDataEntityRecommendedFunder a sh:NodeShape ;
         monetary grant (via a `schema:Project`, `schema:Grant`, or
         `schema:MonetaryGrant` entity in the @graph), the Root Data Entity
         SHOULD reference the funding source via the `funder` property
-        (RO-Crate 1.2, Funding and Grants).""" ;
+        (RO-Crate 1.3, Funding and Grants).""" ;
     sh:targetClass ro-crate:RootDataEntity ;
     sh:sparql [
         a sh:SPARQLConstraint ;
@@ -49,7 +49,7 @@ ro-crate:RootDataEntityRecommendedFunder a sh:NodeShape ;
 ro-crate:FunderEntityRecommendedType a sh:NodeShape ;
     sh:name "Funder entity: recommended Organization type" ;
     sh:description """Entities referenced via `funder` from the Root Data Entity SHOULD be of
-        type Organization (RO-Crate 1.2, Funding and Grants — K1/K2).""" ;
+        type Organization (RO-Crate 1.3, Funding and Grants — K1/K2).""" ;
     sh:targetClass ro-crate:RootDataEntity ;
     sh:property [
         a sh:PropertyShape ;
@@ -68,7 +68,7 @@ ro-crate:ProjectOrganizationRecommendedFunder a sh:NodeShape ;
     sh:name "Project Organization: recommended funder reference" ;
     sh:description """An Organization entity referenced via `funder` from the Root Data Entity
         SHOULD itself reference the external funding body via its own `funder` property
-        (RO-Crate 1.2, Funding and Grants — K2).""" ;
+        (RO-Crate 1.3, Funding and Grants — K2).""" ;
     sh:target [
         a sh:SPARQLTarget ;
         sh:prefixes ro-crate:sparqlPrefixes ;

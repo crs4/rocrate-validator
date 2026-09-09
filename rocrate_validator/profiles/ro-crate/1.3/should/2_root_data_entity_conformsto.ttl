@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.2/> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.3/> .
 @prefix schema_org: <http://schema.org/> .
 @prefix dct: <http://purl.org/dc/terms/> .
 @prefix prof: <http://www.w3.org/ns/dx/prof/> .
@@ -22,7 +22,7 @@ ro-crate:RootDataEntityConformsToIfProfiles a sh:NodeShape ;
     sh:name "Root Data Entity: conformsTo SHOULD be present if profiles exist" ;
     sh:description """If the RO-Crate conforms to additional profiles,
         the Root Data Entity SHOULD have a conformsTo property referencing
-        Profile entities (RO-Crate 1.2).""" ;
+        Profile entities (RO-Crate 1.3).""" ;
     sh:target [
         a sh:SPARQLTarget ;
         sh:prefixes ro-crate:sparqlPrefixes ;
@@ -32,7 +32,7 @@ ro-crate:RootDataEntityConformsToIfProfiles a sh:NodeShape ;
                 ?this a ro-crate:RootDataEntity .
                 FILTER EXISTS {
                     ?profile a prof:Profile .
-                    FILTER(?profile != <https://w3id.org/ro/crate/1.2>)
+                    FILTER(?profile != <https://w3id.org/ro/crate/1.3>)
                 }
             }
         """

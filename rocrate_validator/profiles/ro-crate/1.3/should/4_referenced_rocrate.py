@@ -17,7 +17,7 @@ Network-aware refinement for Referenced RO-Crate `sdDatePublished` check.
 
 The structural SHACL shape `ReferencedROCrateSdDatePublishedRecommended`
 already warns when a referenced RO-Crate data entity with an absolute URI
-@id omits both `identifier` and `sdDatePublished`.  RO-Crate 1.2 § 4.5
+@id omits both `identifier` and `sdDatePublished`.  RO-Crate 1.3 § 4.5
 relaxes that obligation when the URI declares Signposting
 `Link: rel="cite-as"` (which supplies a persistent citation surrogate).
 This Python check performs the network-dependent refinement.
@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 class ReferencedROCrateSignpostingCiteAsChecker(PyFunctionCheck):
     """
     Network-aware refinement of the `sdDatePublished` requirement for
-    referenced RO-Crate data entities (RO-Crate 1.2, § 4.5).
+    referenced RO-Crate data entities (RO-Crate 1.3, § 4.5).
     """
 
     @staticmethod
