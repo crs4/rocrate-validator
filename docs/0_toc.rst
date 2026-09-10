@@ -29,6 +29,7 @@
 
     12_validation_profiles
     11_writing_a_profile
+    13_optimizing_shacl_target_selection
     10_api
     genindex
 
