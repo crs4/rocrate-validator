@@ -19,6 +19,7 @@ from typing import TYPE_CHECKING
 from rocrate_validator.events import Event, EventType
 
 if TYPE_CHECKING:
+    from rocrate_validator.models.check_result import CheckResultValue
     from rocrate_validator.models.profile import Profile
     from rocrate_validator.models.requirement import Requirement, RequirementCheck
     from rocrate_validator.models.result import ValidationResult
@@ -122,7 +123,7 @@ class RequirementCheckValidationEvent(Event):
         self,
         event_type: EventType,
         requirement_check: RequirementCheck,
-        validation_result: bool | None = None,
+        validation_result: CheckResultValue = None,
         message: str | None = None,
     ):
         assert event_type in (
@@ -138,7 +139,7 @@ class RequirementCheckValidationEvent(Event):
         return self._requirement_check
 
     @property
-    def validation_result(self) -> bool | None:
+    def validation_result(self) -> CheckResultValue:
         return self._validation_result
 
     def __str__(self) -> str:

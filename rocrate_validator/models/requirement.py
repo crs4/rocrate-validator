@@ -27,6 +27,7 @@ from rocrate_validator.constants import (
 )
 from rocrate_validator.events import EventType
 from rocrate_validator.models._logging import logger
+from rocrate_validator.models.check_result import CheckResult, CheckResultValue, normalize_check_result
 from rocrate_validator.models.severity import (
     LevelCollection,
     RequirementLevel,
@@ -281,32 +282,25 @@ class Requirement(ABC):
             )
         # Execute the check and get the result
         check_result = check.execute_check(context)
-        logger.debug("Result of check %s: %s", check.identifier, check_result)
-        context.result._add_executed_check(check, check_result)
+        normalized_result = normalize_check_result(check_result)
+        logger.debug("Result of check %s: %s", check.identifier, normalized_result.value)
+        context.result._add_executed_check(check, normalized_result)
         # Notify the end of the check execution if not skip_event_notify is set to True
         if not skip_event_notify:
             context.validator.notify(
                 RequirementCheckValidationEvent(
                     EventType.REQUIREMENT_CHECK_VALIDATION_END,
                     check,
-                    validation_result=check_result,
+                    validation_result=normalized_result,
                 )
             )
         logger.debug(
             "Ran check '%s'. Got result %s",
             check.identifier,
-            check_result,
+            normalized_result,
         )
-        # Ensure the check result is a boolean value, otherwise log a warning and ignore the check result
-        if not isinstance(check_result, bool):
-            logger.warning(
-                "Ignoring the check %s as it returned the value %r instead of a boolean",
-                check.name,
-                check_result,
-            )
-            raise TypeError(f"Ignoring invalid result from check {check.name}")
-        new_all_passed = all_passed and check_result
-        should_break = not new_all_passed and context.fail_fast
+        new_all_passed = all_passed and normalized_result is not CheckResult.FAILED
+        should_break = normalized_result is CheckResult.FAILED and context.fail_fast
         return new_all_passed, should_break
 
     def __eq__(self, other: object) -> bool:
@@ -610,7 +604,7 @@ class RequirementCheck(ABC):
         return self.requirement.hidden
 
     @abstractmethod
-    def execute_check(self, context: ValidationContext) -> bool:
+    def execute_check(self, context: ValidationContext) -> CheckResultValue:
         raise NotImplementedError()
 
     def get_source_snippet(self) -> SourceSnippet | None:

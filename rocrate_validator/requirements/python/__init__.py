@@ -16,10 +16,13 @@ import inspect
 import re
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any, cast
+from types import UnionType
+from typing import Any, Union, cast, get_args, get_origin, get_type_hints
 
 from rocrate_validator.constants import EXPECTED_CHECK_PARAM_COUNT
 from rocrate_validator.models import (
+    CheckResult,
+    CheckResultValue,
     LevelCollection,
     Profile,
     Requirement,
@@ -46,7 +49,7 @@ class PyFunctionCheck(RequirementCheck):
         self,
         requirement: Requirement,  # pylint: disable=redefined-outer-name
         name: str,
-        check_function: Callable[[RequirementCheck, ValidationContext], bool],
+        check_function: Callable[[RequirementCheck, ValidationContext], CheckResultValue],
         description: str | None = None,
         level: RequirementLevel | None = LevelCollection.REQUIRED,
         deactivated: bool = False,
@@ -62,15 +65,31 @@ class PyFunctionCheck(RequirementCheck):
                 "Invalid PyFunctionCheck function. Checks are expected to accept "
                 f"arguments [RequirementCheck, ValidationContext] but this has signature {sig}"
             )
-        if sig.return_annotation not in (bool, inspect.Signature.empty):
+        try:
+            return_annotation = get_type_hints(check_function).get("return", sig.return_annotation)
+        except (NameError, TypeError):
+            # Keep the original annotation for dynamically loaded functions whose
+            # forward references cannot be resolved in their defining module.
+            return_annotation = sig.return_annotation
+        allowed_return_types = {bool, CheckResult, type(None)}
+        return_origin = get_origin(return_annotation)
+        valid_return_annotation = (
+            return_annotation is inspect.Signature.empty
+            or return_annotation in allowed_return_types
+            or (
+                return_origin in (Union, UnionType)
+                and set(get_args(return_annotation)).issubset(allowed_return_types)
+            )
+        )
+        if not valid_return_annotation:
             raise RuntimeError(
                 "Invalid PyFunctionCheck function. Checks are expected to "
-                f"return bool but this only returns {sig.return_annotation}"
+                f"return bool, CheckResult, or None but this only returns {return_annotation}"
             )
 
         self._check_function = check_function
 
-    def execute_check(self, context: ValidationContext) -> bool:
+    def execute_check(self, context: ValidationContext) -> CheckResultValue:
         if (
             self.requirement.profile.identifier != context.profile_identifier
             and context.settings.disable_inherited_profiles_issue_reporting
@@ -80,7 +99,7 @@ class PyFunctionCheck(RequirementCheck):
                 self.requirement.identifier,
                 self.requirement.profile.identifier,
             )
-            return True
+            return CheckResult.SKIPPED
         return self._check_function(self, context)
 
     def get_source_snippet(self) -> SourceSnippet | None:
@@ -204,7 +223,11 @@ def requirement(name: str, description: str | None = None, hidden: bool = False)
     return decorator
 
 
-def check(name: str | None = None, severity: Severity | None = None, deactivated: bool = False):
+def check(
+    name: str | None = None,
+    severity: Severity | None = None,
+    deactivated: bool = False,
+):
     """
     A decorator to mark a function as a check.
 
@@ -213,7 +236,7 @@ def check(name: str | None = None, severity: Severity | None = None, deactivated
     - a :py:class:`rocrate_validator.models.RequirementCheck` instance
     - a :py:class:`rocrate_validator.models.ValidationContext` instance
 
-    The function should return a boolean value.
+    The function should return a boolean value, ``CheckResult``, or ``None``.
 
     The decorator can be used to set the name of the check and the severity level.
 
@@ -241,10 +264,19 @@ def check(name: str | None = None, severity: Severity | None = None, deactivated
                 f"Invalid check {check_name}. Checks are expected to "
                 f"accept two arguments but this only takes {len(sig.parameters)}"
             )
-        if sig.return_annotation not in (bool, inspect.Signature.empty):
+        try:
+            return_annotation = get_type_hints(func).get("return", sig.return_annotation)
+        except (NameError, TypeError):
+            return_annotation = sig.return_annotation
+        valid_return_annotation = return_annotation in (bool, CheckResult, type(None))
+        if get_origin(return_annotation) in (UnionType, Union):
+            valid_return_annotation = all(
+                annotation in (bool, CheckResult, type(None)) for annotation in get_args(return_annotation)
+            )
+        if return_annotation is not inspect.Signature.empty and not valid_return_annotation:
             raise RuntimeError(
                 f"Invalid check {check_name}. Checks are expected to "
-                f"return bool but this only returns {sig.return_annotation}"
+                f"return bool, CheckResult, or None but this returns {sig.return_annotation}"
             )
         func.check = True
         func.name = check_name
