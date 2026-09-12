@@ -50,6 +50,7 @@ class PyFunctionCheck(RequirementCheck):
         requirement: Requirement,  # pylint: disable=redefined-outer-name
         name: str,
         check_function: Callable[[RequirementCheck, ValidationContext], CheckResultValue],
+        *,
         description: str | None = None,
         level: RequirementLevel | None = LevelCollection.REQUIRED,
         deactivated: bool = False,

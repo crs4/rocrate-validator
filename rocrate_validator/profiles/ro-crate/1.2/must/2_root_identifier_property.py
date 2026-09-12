@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from rocrate_validator.errors import ROCrateMetadataNotFoundError
-from rocrate_validator.models import ValidationContext
+from rocrate_validator.models import CheckResult, CheckResultValue, ValidationContext
 from rocrate_validator.requirements.python import PyFunctionCheck, check, requirement
 from rocrate_validator.utils import log as logging
 
@@ -28,7 +28,7 @@ class RootIdentifierPropertyChecker(PyFunctionCheck):
     """
 
     @check(name="Root Data Entity: identifier PropertyValue value")
-    def check_identifier_values(self, context: ValidationContext) -> bool:
+    def check_identifier_values(self, context: ValidationContext) -> CheckResultValue:
         try:
             root = context.ro_crate.metadata.get_root_data_entity()
             identifiers = root.get_property("identifier")
@@ -46,7 +46,7 @@ class RootIdentifierPropertyChecker(PyFunctionCheck):
             return True
         except ROCrateMetadataNotFoundError:
             logger.debug("Skipping Root Data Entity identifier check: metadata descriptor is not available")
-            return True
+            return CheckResult.SKIPPED
         except Exception as e:
             context.result.add_issue(f"Error checking identifier PropertyValue: {e!s}", self)
             return False

@@ -519,6 +519,7 @@ class RequirementCheck(ABC):
         level: RequirementLevel | None = LevelCollection.REQUIRED,
         description: str | None = None,
         hidden: bool | None = None,
+        *,
         deactivated: bool = False,
     ):
         self._requirement: Requirement = requirement
