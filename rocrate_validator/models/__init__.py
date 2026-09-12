@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from rocrate_validator.models._logging import logger
+from rocrate_validator.models.check_result import CheckResult, CheckResultValue, normalize_check_result
 from rocrate_validator.models.events import (
     ProfileValidationEvent,
     RequirementCheckValidationEvent,
@@ -59,6 +60,8 @@ __all__ = [
     "AggregatedValidationStatistics",
     "BaseTypes",
     "CheckIssue",
+    "CheckResult",
+    "CheckResultValue",
     "CustomEncoder",
     "LevelCollection",
     "Profile",
@@ -80,4 +83,5 @@ __all__ = [
     "ValidationStatisticsListener",
     "Validator",
     "logger",
+    "normalize_check_result",
 ]
