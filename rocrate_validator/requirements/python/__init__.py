@@ -54,11 +54,19 @@ class PyFunctionCheck(RequirementCheck):
         description: str | None = None,
         level: RequirementLevel | None = LevelCollection.REQUIRED,
         deactivated: bool = False,
+        depends_on: tuple[str, ...] | None = None,
     ):
         """
         check_function: a function that accepts an instance of PyFunctionCheck and a ValidationContext.
         """
-        super().__init__(requirement, name, description=description, level=level, deactivated=deactivated)
+        super().__init__(
+            requirement,
+            name,
+            description=description,
+            level=level,
+            deactivated=deactivated,
+            depends_on=tuple(getattr(check_function, "depends_on", depends_on or ())),
+        )
 
         sig = inspect.signature(check_function)
         if len(sig.parameters) != EXPECTED_CHECK_PARAM_COUNT:
@@ -77,10 +85,7 @@ class PyFunctionCheck(RequirementCheck):
         valid_return_annotation = (
             return_annotation is inspect.Signature.empty
             or return_annotation in allowed_return_types
-            or (
-                return_origin in (Union, UnionType)
-                and set(get_args(return_annotation)).issubset(allowed_return_types)
-            )
+            or (return_origin in (Union, UnionType) and set(get_args(return_annotation)).issubset(allowed_return_types))
         )
         if not valid_return_annotation:
             raise RuntimeError(
@@ -228,6 +233,7 @@ def check(
     name: str | None = None,
     severity: Severity | None = None,
     deactivated: bool = False,
+    depends_on: tuple[str, ...] | None = None,
 ):
     """
     A decorator to mark a function as a check.
@@ -252,6 +258,8 @@ def check(
         a check with the same name as one in a parent profile and set this
         flag to disable the inherited check.
     :type deactivated: bool
+    :param depends_on: names of checks that must run before this check.
+    :type depends_on: Optional[Tuple[str, ...]]
 
     :return: the decorated function
     :rtype: Callable
@@ -265,6 +273,10 @@ def check(
                 f"Invalid check {check_name}. Checks are expected to "
                 f"accept two arguments but this only takes {len(sig.parameters)}"
             )
+        if depends_on is not None and (
+            not isinstance(depends_on, tuple) or not all(isinstance(dependency, str) for dependency in depends_on)
+        ):
+            raise TypeError("Check dependencies must be provided as a tuple of strings")
         try:
             return_annotation = get_type_hints(func).get("return", sig.return_annotation)
         except (NameError, TypeError):
@@ -283,6 +295,7 @@ def check(
         func.name = check_name
         func.severity = severity
         func.deactivated = deactivated
+        func.depends_on = depends_on or ()
         return func
 
     return decorator

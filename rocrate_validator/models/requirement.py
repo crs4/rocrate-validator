@@ -25,6 +25,7 @@ from rocrate_validator.constants import (
     PROFILE_FILE_EXTENSIONS,
     PROFILE_SPECIFICATION_FILE,
 )
+from rocrate_validator.errors import CheckDependencyError
 from rocrate_validator.events import EventType
 from rocrate_validator.models._logging import logger
 from rocrate_validator.models.check_result import CheckResult, CheckResultValue, normalize_check_result
@@ -185,6 +186,12 @@ class Requirement(ABC):
 
     def get_checks(self) -> list[RequirementCheck]:
         return self._checks.copy()
+
+    def set_checks_order(self, checks: list[RequirementCheck]) -> None:
+        """Replace the check order and refresh the public check numbers."""
+        self._checks = checks.copy()
+        for i, check in enumerate(self._checks, start=1):
+            check.order_number = i
 
     def get_check(self, name: str) -> RequirementCheck | None:
         for check in self._checks:
@@ -488,12 +495,145 @@ class RequirementLoader:
             ),
             reverse=False,
         )
+        requirements = RequirementLoader.order_by_dependencies(requirements)
         # assign order numbers to requirements
         for i, requirement in enumerate(requirements):
             requirement._order_number = i + 1
         # log and return the requirements
         logger.debug("Profile %s loaded %s requirements: %s", profile.identifier, len(requirements), requirements)
         return requirements
+
+    @staticmethod
+    def _check_index(requirements: list[Requirement]) -> dict[str, list[RequirementCheck]]:
+        checks_by_name: dict[str, list[RequirementCheck]] = {}
+        for requirement in requirements:
+            for check in requirement.get_checks():
+                checks_by_name.setdefault(check.name, []).append(check)
+        return checks_by_name
+
+    @staticmethod
+    def _resolve_dependency(
+        check: RequirementCheck,
+        dependency_name: str,
+        checks_by_name: dict[str, list[RequirementCheck]],
+    ) -> RequirementCheck:
+        candidates = checks_by_name.get(dependency_name, [])
+        profile_name = check.requirement.profile.identifier
+        if not candidates:
+            raise CheckDependencyError(
+                f"check {check.name!r} depends on unknown check {dependency_name!r}",
+                profile_name,
+            )
+        if len(candidates) > 1:
+            raise CheckDependencyError(
+                f"check {check.name!r} depends on ambiguous check {dependency_name!r}",
+                profile_name,
+            )
+        return candidates[0]
+
+    @staticmethod
+    def _topological_order(
+        nodes: list[Any], edges: dict[int, set[int]], profile_name: str, node_type: str
+    ) -> list[Any]:
+        indegree = [0] * len(nodes)
+        for targets in edges.values():
+            for target in targets:
+                indegree[target] += 1
+
+        ready = [index for index, degree in enumerate(indegree) if degree == 0]
+        ordered_indices: list[int] = []
+        while ready:
+            ready.sort()
+            index = ready.pop(0)
+            ordered_indices.append(index)
+            for target in sorted(edges.get(index, ())):
+                indegree[target] -= 1
+                if indegree[target] == 0:
+                    ready.append(target)
+
+        if len(ordered_indices) != len(nodes):
+            cycle_nodes = [nodes[index] for index, degree in enumerate(indegree) if degree > 0]
+            cycle_names = ", ".join(getattr(node, "name", str(node)) for node in cycle_nodes)
+            raise CheckDependencyError(f"dependency cycle detected among {node_type}: {cycle_names}", profile_name)
+
+        return [nodes[index] for index in ordered_indices]
+
+    @classmethod
+    def order_by_dependencies(cls, requirements: list[Requirement]) -> list[Requirement]:
+        """Apply check dependencies while preserving the baseline requirement order."""
+        if not requirements:
+            return []
+
+        checks_by_name = cls._check_index(requirements)
+        requirement_indices = {id(requirement): index for index, requirement in enumerate(requirements)}
+        requirement_edges: dict[int, set[int]] = {}
+
+        for requirement in requirements:
+            checks = requirement.get_checks()
+            check_indices = {id(check): index for index, check in enumerate(checks)}
+            check_edges: dict[int, set[int]] = {}
+            for check in checks:
+                for dependency_name in check.depends_on:
+                    dependency = cls._resolve_dependency(check, dependency_name, checks_by_name)
+                    dependency_requirement_index = requirement_indices[id(dependency.requirement)]
+                    source_requirement_index = requirement_indices[id(requirement)]
+                    if dependency_requirement_index == source_requirement_index:
+                        check_edges.setdefault(check_indices[id(dependency)], set()).add(check_indices[id(check)])
+                    else:
+                        requirement_edges.setdefault(dependency_requirement_index, set()).add(source_requirement_index)
+
+            if check_edges:
+                ordered_checks = cls._topological_order(
+                    checks,
+                    check_edges,
+                    requirement.profile.identifier,
+                    "checks",
+                )
+                requirement.set_checks_order(ordered_checks)
+
+        return cls._topological_order(
+            requirements,
+            requirement_edges,
+            requirements[0].profile.identifier,
+            "requirements",
+        )
+
+    @classmethod
+    def dependency_closure(
+        cls,
+        requirements: list[Requirement],
+        *,
+        include_dependencies: bool = True,
+    ) -> list[Requirement]:
+        """Return selected requirements plus their transitive check dependencies."""
+        selected: list[Requirement] = []
+        selected_ids: set[int] = set()
+        queue = list(requirements)
+
+        while queue:
+            requirement = queue.pop(0)
+            if id(requirement) in selected_ids:
+                continue
+            selected_ids.add(id(requirement))
+            selected.append(requirement)
+
+            profile_requirements = requirement.profile.requirements
+            checks_by_name = cls._check_index(profile_requirements)
+            for check in requirement.get_checks():
+                for dependency_name in check.depends_on:
+                    dependency = cls._resolve_dependency(check, dependency_name, checks_by_name)
+                    dependency_requirement = dependency.requirement
+                    if id(dependency_requirement) in selected_ids:
+                        continue
+                    if not include_dependencies:
+                        raise CheckDependencyError(
+                            f"check {check.name!r} depends on {dependency_name!r}, "
+                            "but its requirement was not selected",
+                            requirement.profile.identifier,
+                        )
+                    queue.append(dependency_requirement)
+
+        return selected
 
 
 @dataclass(frozen=True)
@@ -521,6 +661,7 @@ class RequirementCheck(ABC):
         hidden: bool | None = None,
         *,
         deactivated: bool = False,
+        depends_on: tuple[str, ...] | None = None,
     ):
         self._requirement: Requirement = requirement
         self._order_number = 0
@@ -529,6 +670,7 @@ class RequirementCheck(ABC):
         self._description = description
         self._hidden = hidden
         self._deactivated = deactivated
+        self._depends_on = tuple(depends_on or ())
 
     @property
     def order_number(self) -> int:
@@ -599,6 +741,11 @@ class RequirementCheck(ABC):
         return self._deactivated
 
     @property
+    def depends_on(self) -> tuple[str, ...]:
+        """Names of checks that must run before this check."""
+        return self._depends_on
+
+    @property
     def hidden(self) -> bool:
         if self._hidden is not None:
             return self._hidden
@@ -624,6 +771,7 @@ class RequirementCheck(ABC):
             "name": self.name,
             "description": self.description,
             "severity": self.severity.name,
+            "depends_on": list(self.depends_on),
         }
         if with_requirement:
             result["requirement"] = self.requirement.to_dict(with_profile=with_profile, with_checks=False)

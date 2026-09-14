@@ -142,15 +142,27 @@ class Validator(Publisher):
         """
         return self.__do_validate__()
 
-    def validate_requirements(self, requirements: list[Requirement]) -> ValidationResult:
+    def validate_requirements(
+        self,
+        requirements: list[Requirement],
+        *,
+        include_dependencies: bool = True,
+    ) -> ValidationResult:
         """
-        Validates the RO-Crate against the specified subset of the profile requirements
+        Validates the RO-Crate against the specified subset of the profile requirements.
+
+        By default, requirements containing transitive check dependencies are added to
+        the selected subset. Set ``include_dependencies`` to ``False`` to require the
+        caller to provide the complete dependency closure explicitly.
         """
         assert all(isinstance(requirement, Requirement) for requirement in requirements), "Invalid requirement type"
-        # perform the requirements validation
-        return self.__do_validate__(requirements)
+        resolved_requirements = RequirementLoader.dependency_closure(
+            requirements,
+            include_dependencies=include_dependencies,
+        )
+        return self.__do_validate__(resolved_requirements)
 
-    def __do_validate__(self, requirements: list[Requirement] | None = None) -> ValidationResult:
+    def __do_validate__(self, requirements: list[Requirement] | None = None) -> ValidationResult:  # noqa: C901, PLR0912
 
         # initialize the validation context
         context = ValidationContext(self, self.validation_settings)
@@ -170,6 +182,9 @@ class Validator(Publisher):
             # profiles that have not yet been visited.
             for p in profiles:
                 _ = p.requirements
+            selected_requirement_ids = (
+                None if requirements is None else {id(requirement) for requirement in requirements}
+            )
             self.notify(EventType.VALIDATION_START)
             for profile in profiles:
                 logger.debug(
@@ -181,23 +196,30 @@ class Validator(Publisher):
                 context._target_validation_profile = profile
                 self.notify(ProfileValidationEvent(EventType.PROFILE_VALIDATION_START, profile=profile))
                 # perform the requirements validation
-                requirements = profile.get_requirements(
-                    context.requirement_severity,
-                    exact_match=context.requirement_severity_only,
-                )
+                if selected_requirement_ids is None:
+                    profile_requirements = profile.get_requirements(
+                        context.requirement_severity,
+                        exact_match=context.requirement_severity_only,
+                    )
+                else:
+                    profile_requirements = [
+                        requirement
+                        for requirement in profile.requirements
+                        if id(requirement) in selected_requirement_ids
+                    ]
                 logger.debug(
                     "Validating profile %s with %s requirements",
                     profile.identifier,
-                    len(requirements),
+                    len(profile_requirements),
                 )
                 logger.debug(
                     "For profile %s, validating these %s requirements: %s",
                     profile.identifier,
-                    len(requirements),
-                    requirements,
+                    len(profile_requirements),
+                    profile_requirements,
                 )
                 terminate = False
-                for requirement in requirements:
+                for requirement in profile_requirements:
                     if not requirement.overridden:
                         self.notify(
                             RequirementValidationEvent(
