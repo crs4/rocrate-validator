@@ -28,11 +28,7 @@ from rocrate_validator.models.requirement import (
     SkipRequirementCheck,
     SourceSnippet,
 )
-from rocrate_validator.models.result import (
-    CheckIssue,
-    CustomEncoder,
-    ValidationResult,
-)
+from rocrate_validator.models.result import CheckIssue, CustomEncoder, ValidationResult
 from rocrate_validator.models.settings import (
     DEFAULT_PROFILES_PATH,
     BaseTypes,
@@ -43,6 +39,7 @@ from rocrate_validator.models.severity import (
     RequirementLevel,
     Severity,
 )
+from rocrate_validator.models.skipped_check import SkipCategory, SkippedCheckDetail
 from rocrate_validator.models.statistics import (
     AggregatedValidationStatistics,
     ValidationStatistics,
@@ -73,7 +70,9 @@ __all__ = [
     "RequirementLoader",
     "RequirementValidationEvent",
     "Severity",
+    "SkipCategory",
     "SkipRequirementCheck",
+    "SkippedCheckDetail",
     "SourceSnippet",
     "ValidationContext",
     "ValidationEvent",
