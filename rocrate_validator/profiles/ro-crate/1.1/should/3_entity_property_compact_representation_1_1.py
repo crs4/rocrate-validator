@@ -14,9 +14,13 @@
 
 # pylint: disable=invalid-name  # profile filename uses digit prefix (load-order convention)
 
+from rocrate_validator.errors import ROCrateMetadataNotFoundError
 from rocrate_validator.models import ValidationContext
 from rocrate_validator.requirements.python import PyFunctionCheck, check, requirement
+from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.jsonld import find_singleton_property_arrays
+
+logger = logging.getLogger(__name__)
 
 
 @requirement(name="Entity properties compact representation")
@@ -31,8 +35,12 @@ class EntityPropertyCompactRepresentation(PyFunctionCheck):
         """Check the RO-Crate 1.1 recommendation for singleton property arrays."""
         try:
             findings = find_singleton_property_arrays(context.ro_crate.metadata.as_dict())
-        except (AttributeError, TypeError, ValueError):
+        except ROCrateMetadataNotFoundError as error:
+            logger.debug("Skipping singleton property array check: metadata descriptor is not available (%s)", error)
+            return True
+        except (AttributeError, TypeError, ValueError) as error:
             # Required format checks report malformed metadata structure.
+            logger.debug("Skipping singleton property array check: metadata cannot be inspected (%s)", error)
             return True
 
         result = True
