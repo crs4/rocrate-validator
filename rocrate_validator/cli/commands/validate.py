@@ -21,6 +21,8 @@ from pathlib import Path
 import rich_click as click
 from rich.padding import Padding
 from rich.rule import Rule
+from rich.table import Table
+from rich.text import Text
 
 from rocrate_validator import constants, services
 from rocrate_validator.cli.commands.errors import handle_error
@@ -29,6 +31,7 @@ from rocrate_validator.cli.ui.text.validate import ValidationCommandView
 from rocrate_validator.errors import ROCrateInvalidURIError
 from rocrate_validator.models import Severity, ValidationResult, ValidationSettings
 from rocrate_validator.utils import log as logging
+from rocrate_validator.utils.io_helpers.colors import get_severity_color
 from rocrate_validator.utils.io_helpers.input import get_single_char, multiple_choice
 from rocrate_validator.utils.io_helpers.output.console import Console
 from rocrate_validator.utils.io_helpers.output.json import JSONOutputFormatter
@@ -173,6 +176,13 @@ def validate_uri(ctx, param, value):
     ),
 )
 @click.option(
+    "--show-skipped-checks",
+    is_flag=True,
+    help="List skipped checks and their reasons at the end of the validation",
+    default=False,
+    show_default=True,
+)
+@click.option(
     "-v",
     "--verbose",
     is_flag=True,
@@ -250,6 +260,7 @@ def validate_uri(ctx, param, value):
 @click.pass_context
 def validate(
     ctx,
+    *,
     profiles_path: Path = DEFAULT_PROFILES_PATH,
     extra_profiles_path: Path | None = None,
     profile_identifier: tuple[str, ...] = (),
@@ -262,6 +273,7 @@ def validate(
     requirement_severity: str = Severity.REQUIRED.name,
     requirement_severity_only: bool = False,
     skip_checks: list[str] | None = None,
+    show_skipped_checks: bool = False,
     rocrate_uri: str | Path = ".",
     relative_root_path: Path | None = None,
     fail_fast: bool = False,
@@ -412,6 +424,14 @@ def validate(
                 output_file=output_file,
                 output_line_width=output_line_width,
             )
+        _emit_skipped_checks_report(
+            results,
+            show_skipped_checks=show_skipped_checks,
+            output_format=output_format,
+            output_file=output_file,
+            output_line_width=output_line_width,
+            console=console,
+        )
 
         # Exit with appropriate status code.
         # using ctx.exit seems to raise an Exception that gets caught below,
@@ -677,3 +697,50 @@ def _emit_json_report(
 
     if interactive and output_file:
         console.print("[bold]DONE![/bold]", end="\n\n")
+
+
+def _print_skipped_checks(results: dict[str, ValidationResult], console: Console) -> None:
+    """Render the collected skipped-check details using the validation palette."""
+    details = [detail for result in results.values() for detail in result.skipped_check_details]
+    if not details:
+        return
+
+    table = Table(
+        title=f"Skipped Checks ({len(details)})",
+        title_style="bold yellow",
+        border_style="yellow",
+        header_style="bold yellow",
+        show_lines=False,
+    )
+    table.add_column("Profile", style="cyan", no_wrap=True)
+    table.add_column("Check", no_wrap=True)
+    table.add_column("Category", style="yellow", no_wrap=True)
+    table.add_column("Reason")
+    for detail in details:
+        table.add_row(
+            Text(detail.check.requirement.profile.identifier, style="cyan"),
+            Text(detail.check.identifier, style=get_severity_color(detail.check.severity)),
+            Text(detail.category.value, style="yellow"),
+            Text(f"{detail.check.name}: {detail.message}"),
+        )
+    console.print(Padding(table, (1, 2)))
+
+
+def _emit_skipped_checks_report(
+    results: dict[str, ValidationResult],
+    *,
+    show_skipped_checks: bool,
+    output_format: str,
+    output_file: Path | None,
+    output_line_width: int | None,
+    console: Console,
+) -> None:
+    """Write the optional skipped-check report without affecting JSON output."""
+    if not show_skipped_checks or output_format == "json":
+        return
+    if output_file:
+        with output_file.open("a", encoding="utf-8") as output:
+            output_console = Console(color_system=None, width=output_line_width, file=output)
+            _print_skipped_checks(results, output_console)
+    else:
+        _print_skipped_checks(results, console)
