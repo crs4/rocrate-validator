@@ -14,6 +14,7 @@
 
 # pylint: disable=invalid-name  # profile filename uses digit prefix (load-order convention)
 
+from rocrate_validator.errors import ROCrateMetadataNotFoundError
 from rocrate_validator.models import ValidationContext
 from rocrate_validator.requirements.python import PyFunctionCheck, check, requirement
 from rocrate_validator.utils import log as logging
@@ -42,7 +43,12 @@ class WebDataEntityRecommendedChecker(PyFunctionCheck):
         and logged as warnings, without invalidating the validation.
         """
         result = True
-        for entity in context.ro_crate.metadata.get_web_data_entities():
+        try:
+            entities = context.ro_crate.metadata.get_web_data_entities()
+        except ROCrateMetadataNotFoundError:
+            logger.debug("Skipping web-based Data Entity availability check: metadata descriptor is not available")
+            return True
+        for entity in entities:
             assert entity.id is not None, "Entity has no @id"
             try:
                 status = entity.check_availability()
@@ -81,7 +87,12 @@ class WebDataEntityRecommendedChecker(PyFunctionCheck):
         and if it is set to actual size of the downloadable content
         """
         result = True
-        for entity in context.ro_crate.metadata.get_web_data_entities():
+        try:
+            entities = context.ro_crate.metadata.get_web_data_entities()
+        except ROCrateMetadataNotFoundError:
+            logger.debug("Skipping web-based Data Entity content size check: metadata descriptor is not available")
+            return True
+        for entity in entities:
             assert entity.id is not None, "Entity has no @id"
             # Skip entities whose scheme the validator cannot natively fetch
             # (e.g. scp://, s3://): without retrieving the content there is

@@ -14,6 +14,7 @@
 
 # pylint: disable=invalid-name  # profile filename uses digit prefix (load-order convention)
 
+from rocrate_validator.errors import ROCrateMetadataNotFoundError
 from rocrate_validator.models import ValidationContext
 from rocrate_validator.requirements.python import PyFunctionCheck, check, requirement
 from rocrate_validator.utils import log as logging
@@ -44,6 +45,9 @@ class WorkflowFilesExistence(PyFunctionCheck):
                 context.result.add_issue(f"Workflow diagram '{image.id}' not found in crate", self)
                 return False
             return True
+        except ROCrateMetadataNotFoundError:
+            logger.debug("Skipping workflow diagram check: metadata descriptor is not available")
+            return True
         except Exception:
             if logger.isEnabledFor(logging.DEBUG):
                 logger.exception("Unexpected error checking main workflow image existence")
@@ -64,6 +68,9 @@ class WorkflowFilesExistence(PyFunctionCheck):
                     f"Workflow CWL description {main_workflow_subject.id} not found in crate", self
                 )
                 return False
+            return True
+        except ROCrateMetadataNotFoundError:
+            logger.debug("Skipping workflow description check: metadata descriptor is not available")
             return True
         except Exception:
             if logger.isEnabledFor(logging.DEBUG):

@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from rocrate_validator.errors import ROCrateMetadataNotFoundError
 from rocrate_validator.models import Severity, ValidationContext
 from rocrate_validator.requirements.python import PyFunctionCheck, check, requirement
 from rocrate_validator.utils import log as logging
@@ -28,7 +29,7 @@ class DetachedROCrateRootDataEntityIdentifierChecker(PyFunctionCheck):
     """
 
     @check(name="Root Data Entity: RECOMMENDED identifier")
-    def check_identifier(self, context: ValidationContext) -> bool:
+    def check_identifier(self, context: ValidationContext) -> bool:  # noqa: PLR0911
         """
         In a detached RO-Crate, the Root Data Entity @id SHOULD be an absolute URI.
         """
@@ -51,6 +52,9 @@ class DetachedROCrateRootDataEntityIdentifierChecker(PyFunctionCheck):
                 return False
 
             return True
+        except ROCrateMetadataNotFoundError:
+            logger.debug("Skipping Root Data Entity identifier check: metadata descriptor is not available")
+            return True
         except Exception as e:
             context.result.add_issue(f"Error checking Root Data Entity @id: {e!s}", self)
             return False
@@ -64,7 +68,7 @@ class RootDataEntityCiteAsIdentifierChecker(PyFunctionCheck):
     """
 
     @check(name="Root Data Entity: use cite-as for resolvable identifiers")
-    def check_cite_as_reference(self, context: ValidationContext) -> bool:
+    def check_cite_as_reference(self, context: ValidationContext) -> bool:  # noqa: PLR0911
         """
         If the Root Data Entity has a resolvable identifier,
         it SHOULD be included in the `cite-as` property of the RO-Crate Metadata Entity.
@@ -95,6 +99,9 @@ class RootDataEntityCiteAsIdentifierChecker(PyFunctionCheck):
                 )
                 return False
 
+            return True
+        except ROCrateMetadataNotFoundError:
+            logger.debug("Skipping Root Data Entity cite-as check: metadata descriptor is not available")
             return True
         except Exception as e:
             context.result.add_issue(f"Error checking Root Data Entity `cite-as` reference: {e!s}", self)
@@ -140,7 +147,7 @@ class RootDataEntityPersistentIdentifierChecker(PyFunctionCheck):
     """
 
     @check(name="Root Data Entity: identifier SHOULD resolve to RO-Crate content", severity=Severity.RECOMMENDED)
-    def check_identifier_resolvable(self, context: ValidationContext) -> bool:
+    def check_identifier_resolvable(self, context: ValidationContext) -> bool:  # noqa: PLR0911
         if context.settings.skip_availability_check:
             return True
         if context.settings.metadata_only:
@@ -169,6 +176,9 @@ class RootDataEntityPersistentIdentifierChecker(PyFunctionCheck):
                     context.result.add_issue(msg, self)
                     result = False
             return result
+        except ROCrateMetadataNotFoundError:
+            logger.debug("Skipping Root Data Entity identifier resolution check: metadata descriptor is not available")
+            return True
         except Exception as e:
             context.result.add_issue(f"Error checking Root Data Entity identifier resolution: {e!s}", self)
             return False

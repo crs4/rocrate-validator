@@ -14,6 +14,7 @@
 
 # pylint: disable=invalid-name  # profile filename uses digit prefix (load-order convention)
 
+from rocrate_validator.errors import ROCrateMetadataNotFoundError
 from rocrate_validator.models import ValidationContext
 from rocrate_validator.requirements.python import PyFunctionCheck, check, requirement
 from rocrate_validator.utils import log as logging
@@ -35,6 +36,9 @@ class RootDataEntityRelativeURI(PyFunctionCheck):
             if context.ro_crate.metadata.get_root_data_entity().id != "./":
                 context.result.add_issue("Root Data Entity URI is not denoted by the string `./`", self)
                 return False
+            return True
+        except ROCrateMetadataNotFoundError:
+            logger.debug("Skipping Root Data Entity URI check: metadata descriptor is not available")
             return True
         except Exception as e:
             context.result.add_issue(f"Error checking Root Data Entity URI: {e!s}", self)

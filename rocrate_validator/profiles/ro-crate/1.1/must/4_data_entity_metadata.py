@@ -14,6 +14,7 @@
 
 # pylint: disable=invalid-name  # profile filename uses digit prefix (load-order convention)
 
+from rocrate_validator.errors import ROCrateMetadataNotFoundError
 from rocrate_validator.models import ValidationContext
 from rocrate_validator.requirements.python import PyFunctionCheck, check, requirement
 from rocrate_validator.utils import log as logging
@@ -42,7 +43,12 @@ class DataEntityRequiredChecker(PyFunctionCheck):
         # Web-based Data Entities (absolute URIs with any scheme other than `file`,
         # e.g. http://, https://, ftp://, scp://, s3://, ...) are not required to
         # be part of the local payload per the RO-Crate specification.
-        for entity in context.ro_crate.metadata.get_data_entities(exclude_web_data_entities=True):
+        try:
+            entities = context.ro_crate.metadata.get_data_entities(exclude_web_data_entities=True)
+        except ROCrateMetadataNotFoundError:
+            logger.debug("Skipping Data Entity availability check: metadata descriptor is not available")
+            return True
+        for entity in entities:
             assert entity.id is not None, "Entity has no @id"
             logger.debug("Ensure the presence of the Data Entity '%s' within the RO-Crate", entity.id)
             try:

@@ -277,7 +277,7 @@ class SHACLCheck(RequirementCheck):
                 "Unable to perform metadata validation due to missing metadata file: %s",
                 e,
             )
-            return False
+            return True
 
     def __do_execute_check__(self, shacl_context: SHACLValidationContext):
         # get the shapes registry

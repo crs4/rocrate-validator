@@ -22,6 +22,7 @@ RECOMMENDED checks on entity @id values:
 import contextlib
 import re
 
+from rocrate_validator.errors import ROCrateMetadataNotFoundError
 from rocrate_validator.models import Severity, ValidationContext
 from rocrate_validator.requirements.python import PyFunctionCheck, check, requirement
 from rocrate_validator.utils import log as logging
@@ -52,7 +53,12 @@ class EntityIdentifierFormatChecker(PyFunctionCheck):
         (RO-Crate 1.2, JSON-LD appendix).
         """
         result = True
-        for entity in context.ro_crate.metadata.as_dict().get("@graph", []):
+        try:
+            entities = context.ro_crate.metadata.as_dict().get("@graph", [])
+        except ROCrateMetadataNotFoundError:
+            logger.debug("Skipping parent traversal check: metadata descriptor is not available")
+            return True
+        for entity in entities:
             entity_id = entity.get("@id", "")
             if "../" in entity_id:
                 context.result.add_issue(
@@ -75,7 +81,12 @@ class EntityIdentifierFormatChecker(PyFunctionCheck):
         UTF-8 rather than percent-encoded (RO-Crate 1.2, JSON-LD appendix).
         """
         result = True
-        for entity in context.ro_crate.metadata.as_dict().get("@graph", []):
+        try:
+            entities = context.ro_crate.metadata.as_dict().get("@graph", [])
+        except ROCrateMetadataNotFoundError:
+            logger.debug("Skipping entity identifier encoding check: metadata descriptor is not available")
+            return True
+        for entity in entities:
             entity_id = entity.get("@id", "")
             if _PCT_NON_ASCII_RE.search(entity_id):
                 context.result.add_issue(
@@ -110,7 +121,12 @@ class EntityIdentifierFormatChecker(PyFunctionCheck):
         with contextlib.suppress(Exception):
             non_contextual_ids.update(e.id for e in ro_crate_metadata.get_data_entities())
 
-        for entity in ro_crate_metadata.as_dict().get("@graph", []):
+        try:
+            entities = ro_crate_metadata.as_dict().get("@graph", [])
+        except ROCrateMetadataNotFoundError:
+            logger.debug("Skipping named entity identifier check: metadata descriptor is not available")
+            return True
+        for entity in entities:
             entity_id = entity.get("@id", "")
             if entity_id in non_contextual_ids:
                 continue
