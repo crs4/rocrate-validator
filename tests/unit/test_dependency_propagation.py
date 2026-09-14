@@ -14,7 +14,7 @@
 
 from types import SimpleNamespace
 
-from rocrate_validator.models import CheckResult, Requirement, RequirementCheck, RequirementLoader
+from rocrate_validator.models import CheckResult, Requirement, RequirementCheck, RequirementLoader, SkipCategory
 from rocrate_validator.models.check_result import normalize_check_result
 
 
@@ -69,15 +69,26 @@ class _Result:
         self._check_results = {}
         self.skipped_checks = set()
 
-    def _add_executed_check(self, check, result):
+    def _record_check_result(
+        self,
+        check,
+        result,
+        skip_message=None,
+        skip_category=SkipCategory.RETURNED,
+    ):
         normalized_result = normalize_check_result(result)
         self._check_results[check.identifier] = normalized_result
         if normalized_result is CheckResult.SKIPPED:
             self.skipped_checks.add(check)
+        else:
+            self.skipped_checks.discard(check)
+        return normalized_result
+
+    def _add_executed_check(self, check, result):
+        self._record_check_result(check, result)
 
     def _add_skipped_check(self, check):
-        self._check_results[check.identifier] = CheckResult.SKIPPED
-        self.skipped_checks.add(check)
+        self._record_check_result(check, CheckResult.SKIPPED)
 
     def get_check_result(self, check):
         return self._check_results.get(check.identifier)
