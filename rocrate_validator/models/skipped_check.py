@@ -45,6 +45,23 @@ class SkipCategory(str, Enum):
         return self._description
 
 
+class SkipRequirementCheck(Exception):
+    """Signal that a requirement check should be skipped."""
+
+    def __init__(
+        self,
+        check: RequirementCheck,
+        message: str = "",
+        category: SkipCategory = SkipCategory.RETURNED,
+    ):
+        self.check = check
+        self.message = message
+        self.category = SkipCategory(category)
+
+    def __str__(self) -> str:
+        return f"SkipRequirementCheck(check={self.check})"
+
+
 @dataclass(frozen=True)
 class SkippedCheckDetail:
     """Structured information explaining why a check was skipped."""

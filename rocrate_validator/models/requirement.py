@@ -34,7 +34,7 @@ from rocrate_validator.models.severity import (
     RequirementLevel,
     Severity,
 )
-from rocrate_validator.models.skipped_check import SkipCategory
+from rocrate_validator.models.skipped_check import SkipCategory, SkipRequirementCheck
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.python_helpers import (
     get_requirement_name_from_file,
@@ -45,21 +45,6 @@ if TYPE_CHECKING:
 
     from rocrate_validator.models.profile import Profile
     from rocrate_validator.models.validation import ValidationContext
-
-
-class SkipRequirementCheck(Exception):
-    def __init__(
-        self,
-        check: RequirementCheck,
-        message: str = "",
-        category: SkipCategory = SkipCategory.RETURNED,
-    ):
-        self.check = check
-        self.message = message
-        self.category = SkipCategory(category)
-
-    def __str__(self):
-        return f"SkipRequirementCheck(check={self.check})"
 
 
 @total_ordering
