@@ -14,8 +14,11 @@
 
 import logging
 
+import pytest
+
 from rocrate_validator.models import Severity
-from tests.ro_crates import InvalidMainWorkflow
+from tests.conftest import SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER
+from tests.ro_crates import InvalidMainWorkflow, ValidROC
 from tests.shared import do_entity_test
 
 # set up logging
@@ -122,6 +125,69 @@ def test_main_workflow_file_existence():
         ["Main Workflow file existence"],
         ["Main Workflow", "not found in crate"],
         profile_identifier="workflow-ro-crate",
+    )
+
+
+def test_main_workflow_singleton_array():
+    """A singleton-array mainEntity is JSON-LD-equivalent and passes REQUIRED checks."""
+    do_entity_test(
+        ValidROC().workflow_roc,
+        Severity.REQUIRED,
+        True,
+        profile_identifier="workflow-ro-crate",
+        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER],
+        rocrate_entity_patch={"./": {"mainEntity": [{"@id": "sort-and-change-case.ga"}]}},
+    )
+
+
+def test_main_workflow_singleton_array_should_be_unpacked():
+    """RO-Crate 1.1 recommends unpacking a singleton array in compacted JSON-LD."""
+    do_entity_test(
+        ValidROC().workflow_roc,
+        Severity.RECOMMENDED,
+        False,
+        ["Entity properties compact representation"],
+        ['property "mainEntity" SHOULD be represented as a single value'],
+        profile_identifier="workflow-ro-crate",
+        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER],
+        rocrate_entity_patch={"./": {"mainEntity": [{"@id": "sort-and-change-case.ga"}]}},
+    )
+
+
+def test_main_workflow_singleton_array_file_existence():
+    """A missing workflow in a singleton array produces the normal validation issue."""
+    do_entity_test(
+        InvalidMainWorkflow().main_workflow_no_files,
+        Severity.REQUIRED,
+        False,
+        ["Main Workflow file existence"],
+        ["Main Workflow", "not found in crate"],
+        profile_identifier="workflow-ro-crate",
+        rocrate_entity_patch={"./": {"mainEntity": [{"@id": "sort-and-change-case.ga"}]}},
+    )
+
+
+@pytest.mark.parametrize(
+    "main_entity",
+    [
+        [],
+        [{"@id": "sort-and-change-case.ga"}, {"@id": "other-workflow.ga"}],
+        "sort-and-change-case.ga",
+        {"name": "sort-and-change-case.ga"},
+        {"@id": 42},
+    ],
+)
+def test_main_workflow_invalid_main_entity_is_reported(main_entity):
+    """Malformed mainEntity values fail validation without an unexpected exception."""
+    do_entity_test(
+        ValidROC().workflow_roc,
+        Severity.REQUIRED,
+        False,
+        ["Main Workflow file existence"],
+        ["mainEntity"],
+        profile_identifier="workflow-ro-crate",
+        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER],
+        rocrate_entity_patch={"./": {"mainEntity": main_entity}},
     )
 
 

@@ -26,11 +26,9 @@
         "@id": "https://ror.org/123456789"
       },
       "datePublished": "2024-01-01",
-      "hasPart": [
-        {
-          "@id": "https://raw.githubusercontent.com/crs4/pydoop/refs/heads/develop/README.md"
-        }
-      ],
+      "hasPart": {
+        "@id": "https://raw.githubusercontent.com/crs4/pydoop/refs/heads/develop/README.md"
+      },
       "cite-as": {
         "@id": "https://github.com/crs4/pydoop/tree/develop/"
       },

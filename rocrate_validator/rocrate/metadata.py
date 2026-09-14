@@ -91,8 +91,16 @@ class ROCrateMetadata:
     def get_main_workflow(self) -> ROCrateEntity:
         root_data_entity = self.get_root_data_entity()
         main_workflow = root_data_entity.get_property("mainEntity")
-        if not main_workflow:
+        if main_workflow is None:
             raise ValueError("no main workflow in metadata file descriptor")
+        if isinstance(main_workflow, list):
+            if len(main_workflow) != 1:
+                raise ValueError("mainEntity must contain exactly one entity")
+            main_workflow = main_workflow[0]
+        if not isinstance(main_workflow, ROCrateEntity):
+            raise TypeError("mainEntity must reference an entity")
+        if not isinstance(main_workflow.id, str) or not main_workflow.id:
+            raise ValueError("mainEntity must reference an entity with a valid @id")
         return main_workflow
 
     def get_entity(self, entity_id: str) -> ROCrateEntity | None:

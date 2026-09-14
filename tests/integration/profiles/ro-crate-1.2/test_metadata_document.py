@@ -190,6 +190,21 @@ def test_valid_context_reference():
     )
 
 
+def test_singleton_entity_property_is_recommended_as_a_single_value():
+    """
+    Test the RO-Crate 1.2 recommendation that a singleton property array is
+    represented as a single value in compacted JSON-LD.
+    """
+    do_entity_test(
+        __metadata_document_crates__.valid_context_reference,
+        models.Severity.RECOMMENDED,
+        False,
+        ["Entity properties compact representation"],
+        ['property "hasPart" SHOULD be represented as a single value'],
+        profile_identifier="ro-crate-1.2",
+    )
+
+
 def test_not_referenced_contextual_entity():
     """
     Test that the metadata document is not valid

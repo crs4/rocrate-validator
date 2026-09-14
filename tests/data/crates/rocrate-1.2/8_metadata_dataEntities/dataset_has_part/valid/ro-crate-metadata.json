@@ -29,11 +29,9 @@
       "identifier": {
         "@id": "#uuid"
       },
-      "hasPart": [
-        {
-          "@id": "subdir/"
-        }
-      ]
+      "hasPart": {
+        "@id": "subdir/"
+      }
     },
     {
       "@id": "#uuid",
@@ -47,11 +45,9 @@
       "@type": "Dataset",
       "name": "Sub-directory with hasPart",
       "description": "A local Dataset sub-entity that correctly lists its contents via hasPart.",
-      "hasPart": [
-        {
-          "@id": "subdir/data.csv"
-        }
-      ]
+      "hasPart": {
+        "@id": "subdir/data.csv"
+      }
     },
     {
       "@id": "subdir/data.csv",

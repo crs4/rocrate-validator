@@ -15,6 +15,7 @@
 import logging
 
 from rocrate_validator import models, services
+from tests.conftest import SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER
 from tests.ro_crates import InvalidFileDescriptor, ValidROC
 from tests.shared import do_entity_test
 
@@ -153,7 +154,7 @@ def test_invalid_jsonld_context():
         False,
         ["File Descriptor JSON-LD format"],
         ["Unable to retrieve the JSON-LD context 'https://w3id.org/ro/terms/invalid/context'"],
-        profile_identifier="ro-crate",
+        profile_identifier="ro-crate-1.1",
         abort_on_first=True,
     )
 
@@ -195,3 +196,32 @@ def test_valid_jsonld_custom_term():
     which contains custom terms.
     """
     do_entity_test(ValidROC().rocrate_with_custom_terms, models.Severity.REQUIRED, True, [], [])
+
+
+def test_singleton_entity_property_is_recommended_as_a_single_value():
+    """
+    Test the RO-Crate 1.1 recommendation that a singleton property array is
+    represented as a single value in compacted JSON-LD.
+    """
+    do_entity_test(
+        ValidROC().workflow_roc,
+        models.Severity.RECOMMENDED,
+        False,
+        ["Entity properties compact representation"],
+        ['property "name" SHOULD be represented as a single value'],
+        profile_identifier="ro-crate-1.1",
+        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER],
+        rocrate_entity_patch={"sort-and-change-case.ga": {"name": ["sort-and-change-case"]}},
+    )
+
+
+def test_singleton_entity_property_remains_valid_at_required_severity():
+    """A singleton property array is valid when only REQUIRED checks are run."""
+    do_entity_test(
+        ValidROC().workflow_roc,
+        models.Severity.REQUIRED,
+        True,
+        profile_identifier="ro-crate-1.1",
+        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER],
+        rocrate_entity_patch={"sort-and-change-case.ga": {"name": ["sort-and-change-case"]}},
+    )
