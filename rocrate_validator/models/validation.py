@@ -34,11 +34,13 @@ from rocrate_validator.models.events import (
 from rocrate_validator.models.profile import Profile
 from rocrate_validator.models.requirement import (
     Requirement,
+    RequirementCheck,
     RequirementLoader,
 )
 from rocrate_validator.models.result import ValidationResult
 from rocrate_validator.models.settings import ValidationSettings
 from rocrate_validator.models.severity import Severity
+from rocrate_validator.models.skipped_check import SkipCategory
 from rocrate_validator.rocrate import ROCrate
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.http import find_offline_cache_miss
@@ -162,7 +164,7 @@ class Validator(Publisher):
         )
         return self.__do_validate__(resolved_requirements)
 
-    def __do_validate__(self, requirements: list[Requirement] | None = None) -> ValidationResult:  # noqa: C901, PLR0912
+    def __do_validate__(self, requirements: list[Requirement] | None = None) -> ValidationResult:  # noqa: C901, PLR0912, PLR0915
 
         # initialize the validation context
         context = ValidationContext(self, self.validation_settings)
@@ -186,7 +188,7 @@ class Validator(Publisher):
                 None if requirements is None else {id(requirement) for requirement in requirements}
             )
             self.notify(EventType.VALIDATION_START)
-            for profile in profiles:
+            for profile_index, profile in enumerate(profiles):
                 logger.debug(
                     "Validating profile %s (id: %s)",
                     profile.name,
@@ -219,7 +221,8 @@ class Validator(Publisher):
                     profile_requirements,
                 )
                 terminate = False
-                for requirement in profile_requirements:
+                for requirement_index in range(len(profile_requirements)):
+                    requirement = profile_requirements[requirement_index]
                     if not requirement.overridden:
                         self.notify(
                             RequirementValidationEvent(
@@ -257,6 +260,20 @@ class Validator(Publisher):
                         break
                 self.notify(ProfileValidationEvent(EventType.PROFILE_VALIDATION_END, profile=profile))
                 if terminate:
+                    Requirement.record_skipped_checks(profile_requirements[requirement_index + 1 :], context)
+                    for remaining_profile in profiles[profile_index + 1 :]:
+                        if selected_requirement_ids is None:
+                            remaining_requirements = remaining_profile.get_requirements(
+                                context.requirement_severity,
+                                exact_match=context.requirement_severity_only,
+                            )
+                        else:
+                            remaining_requirements = [
+                                requirement
+                                for requirement in remaining_profile.requirements
+                                if id(requirement) in selected_requirement_ids
+                            ]
+                        Requirement.record_skipped_checks(remaining_requirements, context)
                     break
 
             # finalize the requirement types
@@ -363,6 +380,15 @@ class ValidationContext:
         if self._result is None:
             self._result = ValidationResult(self)
         return self._result
+
+    def record_skip(
+        self,
+        check: RequirementCheck,
+        message: str,
+        category: SkipCategory = SkipCategory.RETURNED,
+    ) -> None:
+        """Record a structured reason while a check is returning ``SKIPPED``."""
+        self.result.record_skip(check, message, category)
 
     @property
     def settings(self) -> ValidationSettings:

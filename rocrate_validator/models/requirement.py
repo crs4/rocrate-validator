@@ -34,6 +34,7 @@ from rocrate_validator.models.severity import (
     RequirementLevel,
     Severity,
 )
+from rocrate_validator.models.skipped_check import SkipCategory
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.python_helpers import (
     get_requirement_name_from_file,
@@ -47,9 +48,15 @@ if TYPE_CHECKING:
 
 
 class SkipRequirementCheck(Exception):
-    def __init__(self, check: RequirementCheck, message: str = ""):
+    def __init__(
+        self,
+        check: RequirementCheck,
+        message: str = "",
+        category: SkipCategory = SkipCategory.RETURNED,
+    ):
         self.check = check
         self.message = message
+        self.category = SkipCategory(category)
 
     def __str__(self):
         return f"SkipRequirementCheck(check={self.check})"
@@ -226,8 +233,15 @@ class Requirement(ABC):
         ]
         configured_skips = [check for check in self._checks if check not in checks_to_perform]
         for check in configured_skips:
-            context.result._add_skipped_check(check)
+            context.result._record_check_result(
+                check,
+                CheckResult.SKIPPED,
+                "Check was skipped by validation settings",
+                SkipCategory.CONFIGURED,
+            )
+        processed_checks: set[RequirementCheck] = set()
         for check in checks_to_perform:
+            processed_checks.add(check)
             dependency_skip_reason = self.__dependency_skip_reason__(check, context)
             if dependency_skip_reason:
                 logger.debug("Skipping check '%s' because: %s", check.name, dependency_skip_reason)
@@ -239,7 +253,7 @@ class Requirement(ABC):
                     break
             except SkipRequirementCheck as e:
                 logger.debug("Skipping check '%s' because: %s", check.name, e)
-                context.result._add_skipped_check(check)
+                self.__record_skipped_check__(check, context, e.message or "Check requested a skip", e.category)
                 continue
             except Exception as e:
                 if context.maybe_warn_offline_cache_miss(e):
@@ -252,12 +266,70 @@ class Requirement(ABC):
             # Stop running further checks once the metadata is known to be unusable.
             if context.aborted:
                 break
+        self.__record_skipped_checks__(
+            configured_skips,
+            context,
+            "Check was skipped by validation settings",
+            SkipCategory.CONFIGURED,
+        )
+        self.__record_skipped_checks__(
+            set(checks_to_perform) - processed_checks,
+            context,
+            "Validation stopped before this check was executed",
+            SkipCategory.NOT_REACHED,
+        )
         logger.debug(
             "Checks for Requirement '%s' completed. Checks passed? %s",
             self.name,
             all_passed,
         )
         return all_passed
+
+    @staticmethod
+    def __record_skipped_check__(
+        check,
+        context,
+        message: str = "Check was skipped",
+        category: SkipCategory = SkipCategory.RETURNED,
+    ) -> None:
+        from rocrate_validator.models.events import (  # noqa: PLC0415
+            RequirementCheckValidationEvent,
+        )
+
+        context.result._record_check_result(check, CheckResult.SKIPPED, message, category)
+        inherited_reporting_disabled = (
+            check.requirement.profile.identifier != context.profile_identifier
+            and context.settings.disable_inherited_profiles_issue_reporting
+        )
+        if not inherited_reporting_disabled:
+            context.validator.notify(
+                RequirementCheckValidationEvent(
+                    EventType.REQUIREMENT_CHECK_VALIDATION_END,
+                    check,
+                    validation_result=CheckResult.SKIPPED,
+                    message=message,
+                )
+            )
+
+    @classmethod
+    def __record_skipped_checks__(
+        cls,
+        checks,
+        context,
+        message: str = "Check was skipped",
+        category: SkipCategory = SkipCategory.RETURNED,
+    ) -> None:
+        for check in sorted(checks):
+            cls.__record_skipped_check__(check, context, message, category)
+
+    @classmethod
+    def record_skipped_checks(cls, requirements: list[Requirement], context: ValidationContext) -> None:
+        """Record checks belonging to requirements that validation will not reach."""
+        message = "Validation stopped before this check was executed"
+        if context.abort_reason:
+            message = f"Validation stopped before this check was executed: {context.abort_reason}"
+        for requirement in requirements:
+            cls.__record_skipped_checks__(requirement.get_checks(), context, message, SkipCategory.NOT_REACHED)
 
     @staticmethod
     def __dependency_skip_reason__(check, context: ValidationContext) -> str | None:
@@ -283,24 +355,7 @@ class Requirement(ABC):
 
     @staticmethod
     def __record_dependency_skip__(check, context: ValidationContext, message: str) -> None:
-        from rocrate_validator.models.events import (  # noqa: PLC0415
-            RequirementCheckValidationEvent,
-        )
-
-        context.result._add_skipped_check(check)
-        inherited_reporting_disabled = (
-            check.requirement.profile.identifier != context.profile_identifier
-            and context.settings.disable_inherited_profiles_issue_reporting
-        )
-        if not inherited_reporting_disabled:
-            context.validator.notify(
-                RequirementCheckValidationEvent(
-                    EventType.REQUIREMENT_CHECK_VALIDATION_END,
-                    check,
-                    validation_result=CheckResult.SKIPPED,
-                    message=message,
-                )
-            )
+        Requirement.__record_skipped_check__(check, context, message, SkipCategory.DEPENDENCY)
 
     def __execute_check__(self, check, context, all_passed):
         from rocrate_validator.models.events import (  # noqa: PLC0415
@@ -316,7 +371,7 @@ class Requirement(ABC):
             return all_passed, False
         if check.deactivated:
             logger.debug("Skipping check '%s' because deactivated", check.identifier)
-            context.result._add_skipped_check(check)
+            self.__record_skipped_check__(check, context, "Check is deactivated", SkipCategory.DEACTIVATED)
             return all_passed, False
         # Determine whether to skip event notification for inherited profiles
         skip_event_notify = False
@@ -340,7 +395,12 @@ class Requirement(ABC):
         check_result = check.execute_check(context)
         normalized_result = normalize_check_result(check_result)
         logger.debug("Result of check %s: %s", check.identifier, normalized_result.value)
-        context.result._add_executed_check(check, normalized_result)
+        skip_message = None
+        skip_category = SkipCategory.RETURNED
+        if skip_event_notify and normalized_result is CheckResult.SKIPPED:
+            skip_message = "Inherited profile issue reporting is disabled"
+            skip_category = SkipCategory.INHERITED
+        context.result._record_check_result(check, normalized_result, skip_message, skip_category)
         # Notify the end of the check execution if not skip_event_notify is set to True
         if not skip_event_notify:
             context.validator.notify(
@@ -348,6 +408,7 @@ class Requirement(ABC):
                     EventType.REQUIREMENT_CHECK_VALIDATION_END,
                     check,
                     validation_result=normalized_result,
+                    message=skip_message,
                 )
             )
         logger.debug(
