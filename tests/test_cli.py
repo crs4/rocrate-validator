@@ -27,7 +27,7 @@ from rocrate_validator.requirements.shacl.checks import SHACLCheck
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.versioning import get_version
 from tests.conftest import SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER
-from tests.ro_crates import InvalidFileDescriptor, ValidROC
+from tests.ro_crates import InvalidFileDescriptor, InvalidFileDescriptorEntity, ValidROC
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -186,6 +186,77 @@ def test_validate_output_file_json_report(cli_runner: CliRunner, tmp_path: Path)
     assert "AttributeError" not in result.output
     assert output_file.exists(), "The JSON report file was not created"
     json.loads(output_file.read_text(encoding="utf-8"))  # must be valid JSON
+
+
+def test_validate_show_skipped_checks(cli_runner: CliRunner):
+    result = cli_runner.invoke(
+        cli,
+        [
+            "validate",
+            str(InvalidFileDescriptorEntity().invalid_conforms_to),
+            "--profile-identifier",
+            "ro-crate-1.1",
+            "--skip-checks",
+            "ro-crate-1.1_5.3,ro-crate-1.1_12.1",
+            "--show-skipped-checks",
+            "--no-paging",
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert "Skipped Checks" in result.output
+    assert "ro-crate-1.1_5.3" in result.output
+    assert "configured" in result.output
+
+
+def test_validate_text_report_file_includes_skipped_checks(cli_runner: CliRunner, tmp_path: Path):
+    output_file = tmp_path / "report.txt"
+    result = cli_runner.invoke(
+        cli,
+        [
+            "validate",
+            str(InvalidFileDescriptorEntity().invalid_conforms_to),
+            "--profile-identifier",
+            "ro-crate-1.1",
+            "--skip-checks",
+            "ro-crate-1.1_5.3,ro-crate-1.1_12.1",
+            "--show-skipped-checks",
+            "--output-file",
+            str(output_file),
+            "--no-paging",
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    report = output_file.read_text(encoding="utf-8")
+    assert "Skipped Checks" in report
+    assert "ro-crate-1.1_12.1" in report
+
+
+def test_validate_json_report_aggregates_skipped_checks(cli_runner: CliRunner, tmp_path: Path):
+    output_file = tmp_path / "report.json"
+    result = cli_runner.invoke(
+        cli,
+        [
+            "validate",
+            str(InvalidFileDescriptorEntity().invalid_conforms_to),
+            "--profile-identifier",
+            "ro-crate-1.1",
+            "--skip-checks",
+            "ro-crate-1.1_5.3,ro-crate-1.1_12.1",
+            "--output-format",
+            "json",
+            "--output-file",
+            str(output_file),
+            "--no-paging",
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    payload = json.loads(output_file.read_text(encoding="utf-8"))
+    assert payload["skipped_checks"] >= 2
+    skipped_ids = {detail["identifier"] for detail in payload["skipped_check_details"]}
+    assert {"ro-crate-1.1_5.3", "ro-crate-1.1_12.1"} <= skipped_ids
 
 
 def test_validate_with_invalid_profiles_path_dir(cli_runner: CliRunner):
