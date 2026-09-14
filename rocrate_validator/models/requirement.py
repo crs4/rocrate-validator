@@ -224,7 +224,15 @@ class Requirement(ABC):
             for _ in self._checks
             if not context.settings.skip_checks or _.identifier not in context.settings.skip_checks
         ]
+        configured_skips = [check for check in self._checks if check not in checks_to_perform]
+        for check in configured_skips:
+            context.result._add_skipped_check(check)
         for check in checks_to_perform:
+            dependency_skip_reason = self.__dependency_skip_reason__(check, context)
+            if dependency_skip_reason:
+                logger.debug("Skipping check '%s' because: %s", check.name, dependency_skip_reason)
+                self.__record_dependency_skip__(check, context, dependency_skip_reason)
+                continue
             try:
                 all_passed, should_break = self.__execute_check__(check, context, all_passed)
                 if should_break:
@@ -244,14 +252,55 @@ class Requirement(ABC):
             # Stop running further checks once the metadata is known to be unusable.
             if context.aborted:
                 break
-        skipped_checks = set(self._checks) - set(checks_to_perform)
-        context.result.skipped_checks.update(skipped_checks)
         logger.debug(
             "Checks for Requirement '%s' completed. Checks passed? %s",
             self.name,
             all_passed,
         )
         return all_passed
+
+    @staticmethod
+    def __dependency_skip_reason__(check, context: ValidationContext) -> str | None:
+        if not check.depends_on:
+            return None
+
+        blocked_dependencies = []
+        for dependency_name in check.depends_on:
+            dependency = check.requirement.profile.get_requirement_check(dependency_name)
+            if dependency is None:
+                raise CheckDependencyError(
+                    f"check {check.name!r} depends on unknown check {dependency_name!r}",
+                    check.requirement.profile.identifier,
+                )
+            dependency_result = context.result.get_check_result(dependency)
+            if dependency_result is not CheckResult.PASSED:
+                result_name = dependency_result.value if dependency_result else "not processed"
+                blocked_dependencies.append(f"{dependency.name} ({result_name})")
+
+        if not blocked_dependencies:
+            return None
+        return "Check dependency did not pass: " + ", ".join(blocked_dependencies)
+
+    @staticmethod
+    def __record_dependency_skip__(check, context: ValidationContext, message: str) -> None:
+        from rocrate_validator.models.events import (  # noqa: PLC0415
+            RequirementCheckValidationEvent,
+        )
+
+        context.result._add_skipped_check(check)
+        inherited_reporting_disabled = (
+            check.requirement.profile.identifier != context.profile_identifier
+            and context.settings.disable_inherited_profiles_issue_reporting
+        )
+        if not inherited_reporting_disabled:
+            context.validator.notify(
+                RequirementCheckValidationEvent(
+                    EventType.REQUIREMENT_CHECK_VALIDATION_END,
+                    check,
+                    validation_result=CheckResult.SKIPPED,
+                    message=message,
+                )
+            )
 
     def __execute_check__(self, check, context, all_passed):
         from rocrate_validator.models.events import (  # noqa: PLC0415
