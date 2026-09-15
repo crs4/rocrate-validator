@@ -209,6 +209,7 @@ class Validator(Publisher):
                     profile_requirements,
                 )
                 terminate = False
+                requirement_index = -1
                 for requirement_index in range(len(profile_requirements)):
                     requirement = profile_requirements[requirement_index]
                     if not requirement.overridden:

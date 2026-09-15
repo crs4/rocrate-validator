@@ -42,10 +42,11 @@ class CiteAsDownloadableChecker(PyFunctionCheck):
         # cite-as can be a plain string literal or an entity reference {"@id": "..."}
         if isinstance(cite_as_raw, str):
             cite_as_url = cite_as_raw
-        elif hasattr(cite_as_raw, "id"):
-            cite_as_url = cite_as_raw.id
         else:
-            return None
+            entity_id = getattr(cite_as_raw, "id", None)
+            if not isinstance(entity_id, str):
+                return None
+            cite_as_url = entity_id
         if not cite_as_url or not cite_as_url.startswith("http"):
             return None
         return cite_as_url

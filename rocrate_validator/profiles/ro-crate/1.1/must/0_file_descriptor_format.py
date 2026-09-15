@@ -29,8 +29,8 @@ from rocrate_validator.utils.http import HttpRequester, OfflineCacheMissError
 # set up logging
 logger = logging.getLogger(__name__)
 
-_EXPECTED_METADATA_ERRORS = (AssertionError, AttributeError, KeyError, TypeError, ValueError)
-_EXPECTED_REMOTE_CONTEXT_ERRORS = (*_EXPECTED_METADATA_ERRORS, OSError, RuntimeError)
+_HANDLED_METADATA_ERRORS = (AssertionError, AttributeError, KeyError, TypeError, ValueError)
+_HANDLED_REMOTE_CONTEXT_ERRORS = (*_HANDLED_METADATA_ERRORS, OSError, RuntimeError)
 
 
 @requirement(name="File Descriptor existence")
@@ -98,7 +98,7 @@ class FileDescriptorJsonFormat(PyFunctionCheck):
         except UnicodeDecodeError:
             context.record_skip(self, "descriptor encoding check reported the failure", "exception")
             return CheckResult.SKIPPED
-        except _EXPECTED_METADATA_ERRORS:
+        except _HANDLED_METADATA_ERRORS:
             context.result.add_issue(
                 f'RO-Crate file descriptor "{context.rel_fd_path}" is not in the correct format', self
             )
@@ -198,7 +198,7 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
             return True
         except OfflineCacheMissError:
             raise
-        except _EXPECTED_REMOTE_CONTEXT_ERRORS:
+        except _HANDLED_REMOTE_CONTEXT_ERRORS:
             if logger.isEnabledFor(logging.DEBUG):
                 logger.exception("Error validating JSON-LD context is a dictionary")
         return False
@@ -249,7 +249,7 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
         except UnicodeDecodeError:
             context.record_skip(self, "descriptor encoding check reported the failure", "exception")
             return CheckResult.SKIPPED
-        except _EXPECTED_METADATA_ERRORS:
+        except _HANDLED_METADATA_ERRORS:
             if logger.isEnabledFor(logging.DEBUG):
                 logger.exception("Error extracting @context from file descriptor")
         return False
@@ -352,7 +352,7 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
         except UnicodeDecodeError:
             context.record_skip(self, "descriptor encoding check reported the failure", "exception")
             return CheckResult.SKIPPED
-        except _EXPECTED_METADATA_ERRORS:
+        except _HANDLED_METADATA_ERRORS:
             if logger.isEnabledFor(logging.DEBUG):
                 logger.exception("Error flattening JSON-LD file descriptor")
         return False
@@ -383,7 +383,7 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
         except UnicodeDecodeError:
             context.record_skip(self, "descriptor encoding check reported the failure", "exception")
             return CheckResult.SKIPPED
-        except _EXPECTED_METADATA_ERRORS:
+        except _HANDLED_METADATA_ERRORS:
             if logger.isEnabledFor(logging.DEBUG):
                 logger.exception("Error validating @id property of file descriptor entities")
         return False
@@ -413,7 +413,7 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
         except UnicodeDecodeError:
             context.record_skip(self, "descriptor encoding check reported the failure", "exception")
             return CheckResult.SKIPPED
-        except _EXPECTED_METADATA_ERRORS:
+        except _HANDLED_METADATA_ERRORS:
             if logger.isEnabledFor(logging.DEBUG):
                 logger.exception("Error validating @type property of file descriptor entities")
         return False
@@ -509,7 +509,7 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
                 logger.debug(f"{context_keys}")
             except OfflineCacheMissError:
                 raise
-            except _EXPECTED_REMOTE_CONTEXT_ERRORS as e:
+            except _HANDLED_REMOTE_CONTEXT_ERRORS as e:
                 if logger.isEnabledFor(logging.DEBUG):
                     logger.exception("Error getting context keys from JSON-LD")
                 context.result.add_issue(str(e), self)
@@ -547,7 +547,7 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
         except UnicodeDecodeError:
             context.record_skip(self, "descriptor encoding check reported the failure", "exception")
             return CheckResult.SKIPPED
-        except _EXPECTED_METADATA_ERRORS as e:
+        except _HANDLED_METADATA_ERRORS as e:
             if logger.isEnabledFor(logging.DEBUG):
                 logger.exception("Unexpected error during file descriptor validation")
             context.result.add_issue(f"Unexpected error: {e}", self)

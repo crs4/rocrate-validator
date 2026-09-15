@@ -161,7 +161,7 @@ def test_not_compacted():
 
 def test_invalid_context_reference():
     """
-    Test that the metadata document is valid when it has an invalid context reference.
+    Test that the metadata document is invalid when it has an invalid context reference.
     """
     do_entity_test(
         __metadata_document_crates__.invalid_context_reference,

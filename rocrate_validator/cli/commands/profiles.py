@@ -173,6 +173,7 @@ def list_profiles(ctx, no_paging: bool = False):  # , profiles_path: Path = DEFA
 @click.pass_context
 def describe_profile(
     ctx,
+    *,
     profile_identifier: str = DEFAULT_PROFILE_IDENTIFIER,
     check_identifier: str | None = None,
     profiles_path: Path = DEFAULT_PROFILES_PATH,
@@ -190,6 +191,7 @@ def describe_profile(
 
     With -v on a single check, the source code of the check is shown.
     """
+
     # Get the console
     console = ctx.obj["console"]
     pager = ctx.obj["pager"]

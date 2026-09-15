@@ -410,6 +410,7 @@ class SHACLValidator:
         self,
         # data to validate
         data_graph: GraphLike | str | bytes,
+        *,
         # validation settings
         abort_on_first: bool | None = True,
         advanced: bool | None = True,

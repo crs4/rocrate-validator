@@ -26,6 +26,8 @@ if TYPE_CHECKING:
 class SkipCategory(str, Enum):
     """Reason category for a skipped requirement check."""
 
+    _description: str
+
     RETURNED = ("returned", "The check returned SKIPPED without another skip reason.")
     CONFIGURED = ("configured", "The check was skipped by validation settings.")
     EXCEPTION = ("exception", "The check was skipped because an exception prevented validation.")

@@ -260,6 +260,7 @@ class ValidationStatistics(Subscriber):
     @staticmethod
     def __collect_requirement_checks__(
         requirement,
+        *,
         severity_validation,
         validation_settings,
         target_profile_identifier,
@@ -340,11 +341,11 @@ class ValidationStatistics(Subscriber):
 
                 requirement_checks_count = cls.__collect_requirement_checks__(
                     requirement,
-                    severity_validation,
-                    validation_settings,
-                    target_profile_identifier,
-                    checks,
-                    checks_by_severity,
+                    severity_validation=severity_validation,
+                    validation_settings=validation_settings,
+                    target_profile_identifier=target_profile_identifier,
+                    checks=checks,
+                    checks_by_severity=checks_by_severity,
                 )
 
                 # count the requirements and checks

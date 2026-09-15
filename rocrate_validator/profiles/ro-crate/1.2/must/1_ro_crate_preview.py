@@ -44,6 +44,8 @@ class ROCrateWebsiteChecker(PyFunctionCheck):
             return True
         try:
             content = context.ro_crate.get_file_content(preview_path, binary_mode=False)
+            if isinstance(content, bytes):
+                content = content.decode("utf-8", errors="strict")
             if "<!doctype html" in content.lower():
                 return True
             context.result.add_issue("ro-crate-preview.html should include an HTML5 doctype", self)

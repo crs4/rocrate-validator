@@ -62,6 +62,7 @@ class SHACLCheck(RequirementCheck):
         self,
         requirement: Requirement,
         shape: Shape,
+        *,
         name: str | None = None,
         root: bool = False,
         hidden: bool | None = None,

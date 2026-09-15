@@ -365,11 +365,11 @@ def validate(
         # interactive selection, or fallback to the base `ro-crate` profile).
         profile_identifiers, autodetection = _resolve_profile_identifiers(
             console,
-            interactive,
-            no_auto_profile,
-            available_profiles,
-            list(profile_identifier),
-            validation_settings,
+            interactive=interactive,
+            no_auto_profile=no_auto_profile,
+            available_profiles=available_profiles,
+            profile_identifiers=list(profile_identifier),
+            validation_settings=validation_settings,
         )
 
         # Validate the RO-Crate against the selected profiles
@@ -512,6 +512,7 @@ def _parse_skip_checks(skip_checks: list[str] | None) -> list[str]:
 
 def _resolve_profile_identifiers(
     console: Console,
+    *,
     interactive: bool,
     no_auto_profile: bool,
     available_profiles: list,
