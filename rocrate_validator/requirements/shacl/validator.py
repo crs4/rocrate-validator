@@ -19,6 +19,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast  # pylint: disable=unused-import
 
 import pyshacl
+from pyshacl.rdfutil.load import load_from_source
 from rdflib import BNode, Graph, Literal, Namespace
 from rdflib.term import Node, URIRef
 
@@ -33,6 +34,7 @@ from rocrate_validator.constants import (
     VALID_INFERENCE_OPTIONS,
     VALID_INFERENCE_OPTIONS_TYPES,
 )
+from rocrate_validator.graph_transformers import prepare_data_graph
 from rocrate_validator.models import (
     Profile,
     RequirementCheck,
@@ -470,6 +472,25 @@ class SHACLValidator:
 
         if isinstance(self._shapes_graph, Graph):
             _inject_default_prefixes(self._shapes_graph)
+
+        # Classify nodes before pySHACL can add ontology or inferred triples.
+        # Keep the source graph untouched: prepare_data_graph creates the
+        # transient graph that pySHACL will validate.
+        if isinstance(data_graph, Graph):
+            data_graph = prepare_data_graph(cast("Graph", data_graph))
+        elif isinstance(data_graph, (str, bytes)) and not kwargs.get("sparql_mode", False):
+            data_graph = prepare_data_graph(
+                cast(
+                    "Graph",
+                    load_from_source(
+                        data_graph,
+                        rdf_format=kwargs.get("data_graph_format"),
+                        multigraph=True,
+                        do_owl_imports=False,
+                        logger=cast("Any", logger),
+                    ),
+                )
+            )
 
         # validate the data graph using pyshacl.validate
         try:
