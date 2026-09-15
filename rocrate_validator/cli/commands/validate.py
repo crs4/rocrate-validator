@@ -438,7 +438,7 @@ def validate(
         # so we use sys.exit instead.
         sys.exit(0 if is_valid else 1)
     except Exception as e:
-        handle_error(e, console)
+        handle_error(e, console, debug=ctx.obj["debug"])
 
 
 def _log_validation_inputs(

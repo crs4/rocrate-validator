@@ -19,9 +19,12 @@ from unittest.mock import patch
 
 from click.testing import CliRunner
 from pytest import fixture
+from rdflib import Graph
 
 from rocrate_validator import services
 from rocrate_validator.cli.main import cli
+from rocrate_validator.errors import BadSyntaxError
+from rocrate_validator.models import ValidationContext
 from rocrate_validator.requirements.python import PyFunctionCheck
 from rocrate_validator.requirements.shacl.checks import SHACLCheck
 from rocrate_validator.utils import log as logging
@@ -61,6 +64,73 @@ def test_validate_subcmd_valid_local_folder_rocrate(cli_runner: CliRunner):
     result = cli_runner.invoke(cli, ["validate", str(ValidROC().wrroc_paper_long_date), "--verbose", "--no-paging"])
     assert result.exit_code == 0
     assert re.search(r"RO-Crate.*is a valid", result.output)
+
+
+def test_validate_subcmd_pyshacl_engine_failure_exits_with_error(cli_runner: CliRunner, monkeypatch):
+    """An internal pySHACL failure must never be reported as valid by the CLI."""
+
+    def fail_validation(*args, **kwargs):
+        raise ImportError("cannot import name 'ConjunctiveLike' from 'pyshacl.consts'")
+
+    monkeypatch.setattr(ValidationContext, "data_graph", property(lambda self: Graph()))
+    monkeypatch.setattr("rocrate_validator.requirements.shacl.validator.pyshacl.validate", fail_validation)
+    result = cli_runner.invoke(
+        cli,
+        ["validate", str(ValidROC().wrroc_paper_long_date), "--no-paging", "-p", "ro-crate"],
+    )
+
+    assert result.exit_code == 2
+    assert "SHACL validation could not be executed" in result.output
+    assert "ConjunctiveLike" in result.output
+    assert "is a valid" not in result.output
+
+
+def test_validate_subcmd_profile_syntax_error_is_concise_without_debug(cli_runner: CliRunner, monkeypatch):
+    """Parser failures must show a concise diagnostic without a traceback by default."""
+
+    def fail_validation(*args, **kwargs):
+        raise BadSyntaxError(
+            "at line 26 of <>:\nBad syntax (expected '.') at ^ in:\nsource dump",
+            "shapes.ttl",
+            line=26,
+            character=5,
+        )
+
+    monkeypatch.setattr("rocrate_validator.cli.commands.validate.services.validate", fail_validation)
+    result = cli_runner.invoke(
+        cli,
+        ["validate", str(ValidROC().wrroc_paper_long_date), "--no-paging", "-p", "ro-crate"],
+    )
+
+    assert result.exit_code == 2
+    assert "The validation profile could not be parsed" in result.output
+    assert "line 26, character 5" in result.output
+    assert "line 26, character 5 -->" in result.output
+    assert "Bad syntax (expected '.')" in result.output
+    assert "Traceback" not in result.output
+
+
+def test_validate_subcmd_profile_syntax_error_renders_traceback_in_debug(cli_runner: CliRunner, monkeypatch):
+    """Debug mode must render parser exception chains without a Rich renderer crash."""
+
+    def fail_validation(*args, **kwargs):
+        try:
+            Graph().parse(data="not valid turtle", format="turtle")
+        except Exception as cause:
+            raise BadSyntaxError(str(cause), "shapes.ttl") from cause
+        raise AssertionError("The RDF parser unexpectedly accepted invalid Turtle")
+
+    monkeypatch.setattr("rocrate_validator.cli.commands.validate.services.validate", fail_validation)
+    result = cli_runner.invoke(
+        cli,
+        ["--debug", "validate", str(ValidROC().wrroc_paper_long_date), "--no-paging", "-p", "ro-crate"],
+    )
+
+    assert result.exit_code == 2
+    assert "The validation profile could not be parsed" in result.output
+    assert "Debug traceback" in result.output
+    assert "Traceback (most recent call last)" in result.output
+    assert "TypeError: str or Text instance required" not in result.output
 
 
 def test_validate_subcmd_valid_remote_rocrate(cli_runner: CliRunner):
