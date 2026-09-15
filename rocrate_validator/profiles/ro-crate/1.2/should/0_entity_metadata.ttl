@@ -34,16 +34,15 @@ ro-crate:ROCrateMetadataEntityRecommendedType a sh:NodeShape ;
                 } }
                 FILTER(?this != ?metadatafile)
                 FILTER (?this != ?root)
-                # Exclude entities with non-IRI identifiers or those from specific namespaces
+                # Exclude entities with non-IRI identifiers.
                 FILTER (isIRI(?this))
-                FILTER(!STRSTARTS(STR(?this), "http://www.w3.org/"))
-                FILTER(!STRSTARTS(STR(?this), "https://w3id.org/ro/crate/"))
-                FILTER(!STRSTARTS(STR(?this), "http://schema.org/"))
-                FILTER(!STRSTARTS(STR(?this), "https://schema.org/"))
-                FILTER(!STRSTARTS(STR(?this), "http://purl.org/"))
-                FILTER(!STRSTARTS(STR(?this), "https://bioschemas.org/"))
-                FILTER(!STRSTARTS(STR(?this), "https://github.com/crs4/rocrate-validator/"))
-                FILTER(!STRSTARTS(STR(?this), "urn:"))
+                # Restrict validation to nodes which the original crate
+                # describes or claims, before ontology and inferred terms are
+                # added to the graph.
+                FILTER EXISTS { ?this validator-transformers:validationCandidate true }
+                # Profile descriptors use prof:Profile rather than a Schema.org
+                # type and have their own dedicated metadata requirements.
+                FILTER NOT EXISTS { ?this a <http://www.w3.org/ns/dx/prof/Profile> }
             }
         """ ;
     ] ;

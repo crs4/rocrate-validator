@@ -56,4 +56,10 @@ ro-crate:sparqlPrefixes sh:declare [
     sh:declare [
         sh:prefix "ro" ;
         sh:namespace "./"^^xsd:anyURI ;
+    ] ;
+    # Private predicates added to the transient validation graph by Python
+    # graph transformers. They are validator bookkeeping, not crate metadata.
+    sh:declare [
+        sh:prefix "validator-transformers" ;
+        sh:namespace "https://github.com/crs4/rocrate-validator/graph-transformers/"^^xsd:anyURI ;
     ] .
