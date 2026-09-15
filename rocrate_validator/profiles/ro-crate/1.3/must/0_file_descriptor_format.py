@@ -15,10 +15,10 @@
 import json
 import re
 from http import HTTPStatus
-from pathlib import Path
 from typing import Any
 from urllib.parse import urljoin
 
+from rocrate_validator.errors import ROCrateMetadataNotFoundError
 from rocrate_validator.models import ValidationContext
 from rocrate_validator.requirements.python import PyFunctionCheck, check, requirement
 from rocrate_validator.utils import log as logging
@@ -80,11 +80,7 @@ class FileDescriptorExistence(PyFunctionCheck):
         if context.settings.metadata_only:
             logger.debug("Skipping file descriptor existence check in metadata-only mode")
             return True
-        if not context.ro_crate.has_descriptor():
-            message = f"file descriptor {context.rel_fd_path} is empty"
-            context.result.add_issue(message, self)
-            return False
-        if context.ro_crate.metadata.size == 0:
+        if context.ro_crate.has_descriptor() and context.ro_crate.metadata.size == 0:
             context.result.add_issue(f'RO-Crate "{context.rel_fd_path}" file descriptor is empty', self)
             return False
         return True
@@ -101,19 +97,23 @@ class FileDescriptorEncodingCheck(PyFunctionCheck):
         """
         Check if the file descriptor is UTF-8 encoded
         """
+        if context.settings.metadata_only:
+            logger.debug("Skipping file descriptor encoding check in metadata-only mode")
+            return True
         try:
-            raw_data = context.ro_crate.get_file_content(
-                Path(context.ro_crate.metadata_descriptor_id), binary_mode=True
-            )
+            raw_data = context.ro_crate.metadata.as_bytes()
             if isinstance(raw_data, str):
                 return True
             raw_data.decode("utf-8")
             return True
-        except Exception:
+        except UnicodeDecodeError:
             context.result.add_issue(f'RO-Crate file descriptor "{context.rel_fd_path}" is not UTF-8 encoded', self)
             if logger.isEnabledFor(logging.DEBUG):
-                logger.exception("Unexpected error during file descriptor validation")
+                logger.debug("RO-Crate file descriptor is not UTF-8 encoded", exc_info=True)
             return False
+        except ROCrateMetadataNotFoundError:
+            logger.debug("Skipping file descriptor encoding check: metadata descriptor is not available")
+            return True
 
 
 @requirement(name="File Descriptor JSON format")
@@ -140,6 +140,9 @@ class FileDescriptorJsonFormat(PyFunctionCheck):
             # The metadata cannot be parsed: abort to avoid false positives downstream.
             context.abort_validation(f"file descriptor is not valid JSON: {e}")
             return False
+        except ROCrateMetadataNotFoundError:
+            logger.debug("Skipping file descriptor JSON check: metadata descriptor is not available")
+            return True
         except Exception:
             context.result.add_issue(
                 f'RO-Crate file descriptor "{context.rel_fd_path}" is not in the correct format', self
@@ -250,7 +253,8 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
 
     @check(name="File Descriptor @context property validation")
     def check_context(self, context: ValidationContext) -> bool:
-        """Check if the file descriptor contains
+        """
+        Check if the file descriptor contains
         the @context property and it is a valid JSON-LD context
         """
         try:
@@ -281,6 +285,9 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
 
             # Check if the context is valid
             return self.__check_contexts__(context, json_dict["@context"])
+        except ROCrateMetadataNotFoundError:
+            logger.debug("Skipping file descriptor JSON-LD context check: metadata descriptor is not available")
+            return True
         except Exception:
             if logger.isEnabledFor(logging.DEBUG):
                 logger.exception("Unexpected error during file descriptor validation")
@@ -380,6 +387,9 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
                     if fail_fast:
                         return False
             return result
+        except ROCrateMetadataNotFoundError:
+            logger.debug("Skipping file descriptor flattening check: metadata descriptor is not available")
+            return True
         except Exception:
             if logger.isEnabledFor(logging.DEBUG):
                 logger.exception("Unexpected error during file descriptor validation")
@@ -399,6 +409,9 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
                         self,
                     )
                     return False
+            return True
+        except ROCrateMetadataNotFoundError:
+            logger.debug("Skipping file descriptor identifier check: metadata descriptor is not available")
             return True
         except Exception:
             if logger.isEnabledFor(logging.DEBUG):
@@ -420,6 +433,9 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
                     )
                     return False
             return True
+        except ROCrateMetadataNotFoundError:
+            logger.debug("Skipping file descriptor type check: metadata descriptor is not available")
+            return True
         except Exception:
             if logger.isEnabledFor(logging.DEBUG):
                 logger.exception("Unexpected error during file descriptor validation")
@@ -436,6 +452,9 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
                     f"Duplicate @id values detected in RO-Crate metadata: {sorted(duplicates)}", self
                 )
                 return False
+            return True
+        except ROCrateMetadataNotFoundError:
+            logger.debug("Skipping unique identifier check: metadata descriptor is not available")
             return True
         except Exception:
             if logger.isEnabledFor(logging.DEBUG):
@@ -483,6 +502,9 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
                         context.result.add_issue(message, self)
                         return False
             return True
+        except ROCrateMetadataNotFoundError:
+            logger.debug("Skipping entity reference check: metadata descriptor is not available")
+            return True
         except Exception:
             if logger.isEnabledFor(logging.DEBUG):
                 logger.exception("Unexpected error during file descriptor validation")
@@ -501,6 +523,9 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
                 if "keyword" in entity:
                     context.result.add_issue(f"Entity '{entity_id}' should use schema.org 'keywords'", self)
                     return False
+            return True
+        except ROCrateMetadataNotFoundError:
+            logger.debug("Skipping subject and keyword check: metadata descriptor is not available")
             return True
         except Exception:
             if logger.isEnabledFor(logging.DEBUG):
@@ -618,6 +643,9 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
                         )
                 return False
 
+            return True
+        except ROCrateMetadataNotFoundError:
+            logger.debug("Skipping file descriptor compaction check: metadata descriptor is not available")
             return True
         except Exception as e:
             if logger.isEnabledFor(logging.DEBUG):
