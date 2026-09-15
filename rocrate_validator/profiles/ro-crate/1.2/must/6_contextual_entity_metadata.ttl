@@ -30,7 +30,7 @@ ro-crate:ContextualEntityDefinition a sh:NodeShape, validator:HiddenShape ;
         CreativeWorkAuthorDefinition) tag referenced-but-undescribed entities
         with rdf:type, so they appear as subjects and are therefore captured.
         Vocabulary terms loaded from ontologies are excluded using provenance
-        captured from the original crate graph before ontology inoculation.""" ;
+        captured from the original crate graph before the ontology mix-in.""" ;
     sh:target [
         a sh:SPARQLTarget ;
         sh:prefixes ro-crate:sparqlPrefixes ;

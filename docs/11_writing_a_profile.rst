@@ -31,6 +31,8 @@ query language. You can learn about SPARQL in the tutorial
 For guidance on SHACL Core targets, SPARQL target performance, inference and
 rule ordering, see :ref:`efficient-shacl-targets`.
 
+For the rare case where validation must preserve information from the original
+graph before an ontology mix-in or inference, see :ref:`graph-transformers`.
 All these tools are best learned through practice and examples, so when building a
 profile, it's encouraged to use the
 `other profiles <https://github.com/crs4/rocrate-validator/tree/develop/rocrate_validator/profiles>`_
