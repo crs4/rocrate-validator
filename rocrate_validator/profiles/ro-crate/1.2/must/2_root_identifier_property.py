@@ -46,7 +46,8 @@ class RootIdentifierPropertyChecker(PyFunctionCheck):
             return True
         except ROCrateMetadataNotFoundError:
             logger.debug("Skipping Root Data Entity identifier check: metadata descriptor is not available")
+            context.record_skip(self, "metadata descriptor is not available", "exception")
             return CheckResult.SKIPPED
-        except Exception as e:
+        except (AttributeError, TypeError, ValueError) as e:
             context.result.add_issue(f"Error checking identifier PropertyValue: {e!s}", self)
             return False

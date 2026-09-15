@@ -33,9 +33,11 @@ class ROCrateWebsiteChecker(PyFunctionCheck):
     def check_preview_html(self, context: ValidationContext) -> CheckResultValue:
         try:
             if context.ro_crate.is_detached():
+                context.record_skip(self, "RO-Crate is detached", "returned")
                 return CheckResult.SKIPPED
         except ROCrateMetadataNotFoundError:
             logger.debug("Skipping RO-Crate Website check: metadata descriptor is not available")
+            context.record_skip(self, "metadata descriptor is not available", "exception")
             return CheckResult.SKIPPED
         preview_path = Path("ro-crate-preview.html")
         if not context.ro_crate.has_file(preview_path):
@@ -46,6 +48,6 @@ class ROCrateWebsiteChecker(PyFunctionCheck):
                 return True
             context.result.add_issue("ro-crate-preview.html should include an HTML5 doctype", self)
             return False
-        except Exception as e:
+        except (OSError, UnicodeDecodeError) as e:
             context.result.add_issue(f"Unable to read ro-crate-preview.html: {e!s}", self)
             return False

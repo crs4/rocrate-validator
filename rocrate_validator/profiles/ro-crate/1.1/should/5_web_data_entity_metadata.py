@@ -47,6 +47,7 @@ class WebDataEntityRecommendedChecker(PyFunctionCheck):
             entities = context.ro_crate.metadata.get_web_data_entities()
         except ROCrateMetadataNotFoundError:
             logger.debug("Skipping web-based Data Entity availability check: metadata descriptor is not available")
+            context.record_skip(self, "metadata descriptor is not available", "exception")
             return CheckResult.SKIPPED
         for entity in entities:
             assert entity.id is not None, "Entity has no @id"
@@ -73,7 +74,7 @@ class WebDataEntityRecommendedChecker(PyFunctionCheck):
                 else:
                     context.result.add_issue(f"Web-based Data Entity {entity.id} is not available", self)
                     result = False
-            except Exception as e:
+            except (OSError, RuntimeError, TypeError, ValueError) as e:
                 context.result.add_issue(f"Web-based Data Entity {entity.id} is not available: {e}", self)
                 result = False
             if not result and context.fail_fast:
@@ -91,6 +92,7 @@ class WebDataEntityRecommendedChecker(PyFunctionCheck):
             entities = context.ro_crate.metadata.get_web_data_entities()
         except ROCrateMetadataNotFoundError:
             logger.debug("Skipping web-based Data Entity content size check: metadata descriptor is not available")
+            context.record_skip(self, "metadata descriptor is not available", "exception")
             return CheckResult.SKIPPED
         for entity in entities:
             assert entity.id is not None, "Entity has no @id"

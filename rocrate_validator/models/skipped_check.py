@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum, unique
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal, TypeAlias
 
 if TYPE_CHECKING:
     from rocrate_validator.models.requirement import RequirementCheck
@@ -28,6 +28,7 @@ class SkipCategory(str, Enum):
 
     RETURNED = ("returned", "The check returned SKIPPED without another skip reason.")
     CONFIGURED = ("configured", "The check was skipped by validation settings.")
+    EXCEPTION = ("exception", "The check was skipped because an exception prevented validation.")
     DEACTIVATED = ("deactivated", "The check is deactivated in the profile.")
     DEPENDENCY = ("dependency", "The check was skipped because a dependency did not pass.")
     NOT_REACHED = ("not_reached", "The check was not reached because validation stopped earlier.")
@@ -45,6 +46,20 @@ class SkipCategory(str, Enum):
         return self._description
 
 
+SkipCategoryInput: TypeAlias = (
+    SkipCategory
+    | Literal[
+        "returned",
+        "configured",
+        "exception",
+        "deactivated",
+        "dependency",
+        "not_reached",
+        "inherited",
+    ]
+)
+
+
 class SkipRequirementCheck(Exception):
     """Signal that a requirement check should be skipped."""
 
@@ -52,7 +67,7 @@ class SkipRequirementCheck(Exception):
         self,
         check: RequirementCheck,
         message: str = "",
-        category: SkipCategory = SkipCategory.RETURNED,
+        category: SkipCategoryInput = SkipCategory.RETURNED,
     ):
         self.check = check
         self.message = message

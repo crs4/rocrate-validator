@@ -68,10 +68,20 @@ def test_skipped_check_detail_is_removed_when_check_passes():
     assert result.skipped_check_details == []
 
 
+def test_record_skip_normalizes_string_category_to_enum():
+    result = _result()
+    check = _check()
+
+    result.record_skip(check, "metadata descriptor is not available", "exception")
+
+    assert result.skipped_check_details[0].category is SkipCategory.EXCEPTION
+
+
 def test_skip_category_has_stable_values_and_descriptions():
     assert {category.value for category in SkipCategory} == {
         "returned",
         "configured",
+        "exception",
         "deactivated",
         "dependency",
         "not_reached",

@@ -32,6 +32,7 @@ class RootDataEntityIdentifierChecker(PyFunctionCheck):
     def check_identifier(self, context: ValidationContext) -> CheckResultValue:
         try:
             if context.ro_crate.is_detached():
+                context.record_skip(self, "RO-Crate is detached", "returned")
                 return CheckResult.SKIPPED
             root_entity = context.ro_crate.metadata.get_root_data_entity()
             if root_entity.id == "./":
@@ -45,7 +46,8 @@ class RootDataEntityIdentifierChecker(PyFunctionCheck):
             return False
         except ROCrateMetadataNotFoundError:
             logger.debug("Skipping Root Data Entity identifier check: metadata descriptor is not available")
+            context.record_skip(self, "metadata descriptor is not available", "exception")
             return CheckResult.SKIPPED
-        except Exception as e:
+        except (AttributeError, TypeError, ValueError) as e:
             context.result.add_issue(f"Error checking Root Data Entity @id: {e!s}", self)
             return False

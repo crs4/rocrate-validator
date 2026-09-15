@@ -57,6 +57,7 @@ class CiteAsDownloadableChecker(PyFunctionCheck):
             or not (context.settings.creation_time or context.settings.enforce_availability)
             or context.settings.metadata_only
         ):
+            context.record_skip(self, "availability check is disabled or not applicable", "configured")
             return CheckResult.SKIPPED
 
         try:
@@ -84,7 +85,8 @@ class CiteAsDownloadableChecker(PyFunctionCheck):
 
         except ROCrateMetadataNotFoundError:
             logger.debug("Skipping Root Data Entity cite-as check: metadata descriptor is not available")
+            context.record_skip(self, "metadata descriptor is not available", "exception")
             return CheckResult.SKIPPED
-        except Exception as e:
+        except (AttributeError, OSError, TypeError, ValueError) as e:
             context.result.add_issue(f"Error checking `cite-as` downloadability: {e!s}", self)
             return False
