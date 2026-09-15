@@ -23,6 +23,7 @@ relaxes that obligation when the URI declares Signposting
 This Python check performs the network-dependent refinement.
 """
 
+from rocrate_validator.errors import ROCrateMetadataNotFoundError
 from rocrate_validator.models import Severity, ValidationContext
 from rocrate_validator.requirements.python import PyFunctionCheck, check, requirement
 from rocrate_validator.utils import log as logging
@@ -81,7 +82,12 @@ class ReferencedROCrateSignpostingCiteAsChecker(PyFunctionCheck):
         except Exception:
             return True
 
-        for entity in context.ro_crate.metadata.get_dataset_entities():
+        try:
+            entities = context.ro_crate.metadata.get_dataset_entities()
+        except ROCrateMetadataNotFoundError:
+            logger.debug("Skipping referenced RO-Crate check: metadata descriptor is not available")
+            return True
+        for entity in entities:
             if not self._needs_sddatepublished_check(entity, root.id):
                 continue
             entity_id = entity.id

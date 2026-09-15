@@ -37,14 +37,20 @@ ro-crate:ContextualEntityDefinition a sh:NodeShape, validator:HiddenShape ;
         a sh:SPARQLTarget ;
         sh:prefixes ro-crate:sparqlPrefixes ;
         sh:select """
-            SELECT DISTINCT ?this
+            SELECT ?this
             WHERE {
                 # Structural criteria: IRI or blank node, subject of some triple.
                 # SHACL rules from earlier shapes (e.g. CreativeWorkAuthorDefinition)
                 # tag even referenced-but-undescribed entities so they become
                 # subjects and are correctly classified as Contextual Entities.
-                ?this ?p ?o .
-                FILTER(isIRI(?this) || isBlank(?this))
+                #
+                # The distinct subjects are materialised by a subquery FIRST so the
+                # exclusion FILTERs below run once per entity instead of once per
+                # triple (~2.5k subjects vs ~40k triples on a large crate).
+                { SELECT DISTINCT ?this WHERE {
+                    ?this ?p ?o .
+                    FILTER(isIRI(?this) || isBlank(?this))
+                } }
 
                 # Structural exclusions — Metadata Descriptor, Root Data Entity,
                 # Data Entities (File/Dataset or ro-crate:DataEntity), Ontology.
