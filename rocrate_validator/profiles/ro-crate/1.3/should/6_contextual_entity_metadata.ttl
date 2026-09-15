@@ -162,16 +162,7 @@ ro-crate:PersonAffiliationRecommendedProperties a sh:NodeShape ;
 ro-crate:LicenseEntityRecommendedProperties a sh:NodeShape ;
     sh:name "License entity: RECOMMENDED properties" ;
     sh:description """License entities SHOULD have `name` and `description`.""" ;
-    sh:target [
-        a sh:SPARQLTarget ;
-        sh:prefixes ro-crate:sparqlPrefixes ;
-        sh:select """
-            SELECT ?this
-            WHERE {
-                ?subject schema:license ?this .
-            }
-        """
-    ] ;
+    sh:targetObjectsOf schema:license ;
     sh:property [
         sh:path schema:name ;
         sh:minCount 1 ;

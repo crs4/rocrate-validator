@@ -44,9 +44,11 @@ ro-crate:FileDataEntity a sh:NodeShape ;
         sh:select """
             SELECT ?this
             WHERE {
+                { SELECT DISTINCT ?root WHERE {
+                    ?metadatafile schema:about ?root .
+                    FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
+                } }
                 ?this a schema:MediaObject .
-                ?metadatafile schema:about ?root .
-                FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
                 FILTER(!STRSTARTS(STR(?this), CONCAT(STR(?root), "#")))
             }
         """
@@ -93,10 +95,12 @@ ro-crate:DirectoryDataEntity a sh:NodeShape ;
         sh:select """
             SELECT ?this
             WHERE {
+                { SELECT DISTINCT ?root WHERE {
+                    ?metadatafile schema:about ?root .
+                    FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
+                } }
                 ?this a schema:Dataset .
-                ?metadatafile schema:about ?root .
                 # Exclude all dataset entities that ends with `./#<something>`
-                FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
                 FILTER(?this != ?root)
                 FILTER(!STRSTARTS(STR(?this), CONCAT(STR(?root), "#")))
             }
@@ -161,9 +165,11 @@ ro-crate:GenericDataEntityRequiredProperties a sh:NodeShape ;
         sh:select """
             SELECT ?this
             WHERE {
+                { SELECT DISTINCT ?root ?metadatafile WHERE {
+                    ?metadatafile schema:about ?root .
+                    FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
+                } }
                 ?root schema:hasPart ?this .
-                ?metadatafile schema:about ?root .
-                FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
                 FILTER(?this != ?root)
                 FILTER(?this != ?metadatafile)
                 FILTER NOT EXISTS {

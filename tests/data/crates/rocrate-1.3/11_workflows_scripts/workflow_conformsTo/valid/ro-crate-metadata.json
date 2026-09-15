@@ -29,11 +29,9 @@
       "conformsTo": {
         "@id": "https://bioschemas.org/profiles/ComputationalWorkflow/1.0-RELEASE"
       },
-      "hasPart": [
-        {
-          "@id": "workflow.ga"
-        }
-      ],
+      "hasPart": {
+        "@id": "workflow.ga"
+      },
       "identifier": {
         "@id": "#uuid"
       }

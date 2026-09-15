@@ -29,8 +29,6 @@ ro-crate:ScriptOrWorkflowImageTarget a sh:SPARQLTarget ;
         WHERE {
             ?sw a schema:SoftwareSourceCode .
             ?sw schema:image ?this .
-            ?metadatafile schema:about ?root .
-            FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
         }
     """ .
 
@@ -43,7 +41,7 @@ ro-crate:ScriptOrWorkflowProgrammingLanguage a sh:NodeShape ;
     sh:description """Scripts and Workflows SHOULD have a `programmingLanguage`
         property referencing a contextual entity of type `ComputerLanguage`
         (RO-Crate 1.3, Workflows and Scripts).""" ;
-    sh:target ro-crate:SoftwareSourceCodeTarget ;
+    sh:targetClass schema:SoftwareSourceCode ;
     sh:property [
         a sh:PropertyShape ;
         sh:name "Script or Workflow: RECOMMENDED `programmingLanguage` property" ;

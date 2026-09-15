@@ -27,10 +27,11 @@ ro-crate:ROCrateMetadataEntityRecommendedType a sh:NodeShape ;
             WHERE {
                 ?this a ?type .
 
-                # Exclude Root and RO-Crate Metadata File entities
-                ?root a schema:Dataset .
-                ?metadatafile schema:about ?root .
-                FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
+                { SELECT DISTINCT ?root ?metadatafile WHERE {
+                    ?root a schema:Dataset .
+                    ?metadatafile schema:about ?root .
+                    FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
+                } }
                 FILTER(?this != ?metadatafile)
                 FILTER (?this != ?root)
                 # Exclude entities with non-IRI identifiers or those from specific namespaces

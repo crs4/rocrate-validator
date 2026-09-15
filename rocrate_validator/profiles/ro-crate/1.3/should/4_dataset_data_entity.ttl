@@ -21,9 +21,11 @@ ro-crate:LocalDatasetTarget a sh:SPARQLTarget ;
     sh:select """
         SELECT ?this
         WHERE {
+            { SELECT DISTINCT ?root WHERE {
+                ?metadatafile schema:about ?root .
+                FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
+            } }
             ?this a schema:Dataset .
-            ?metadatafile schema:about ?root .
-            FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
             FILTER(?this != ?root)
             FILTER(!STRSTARTS(STR(?this), CONCAT(STR(?root), "#")))
             FILTER(!regex(str(?this), "^https?://", "i"))

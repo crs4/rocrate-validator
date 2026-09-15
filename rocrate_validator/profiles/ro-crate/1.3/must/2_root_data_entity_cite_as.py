@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from rocrate_validator.errors import ROCrateMetadataNotFoundError
 from rocrate_validator.models import ValidationContext
 from rocrate_validator.requirements.python import PyFunctionCheck, check, requirement
 from rocrate_validator.utils import log as logging
@@ -81,6 +82,9 @@ class CiteAsDownloadableChecker(PyFunctionCheck):
             )
             return True
 
+        except ROCrateMetadataNotFoundError:
+            logger.debug("Skipping Root Data Entity cite-as check: metadata descriptor is not available")
+            return True
         except Exception as e:
             context.result.add_issue(f"Error checking `cite-as` downloadability: {e!s}", self)
             return False
