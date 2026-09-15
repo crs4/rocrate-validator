@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 import logging
 
-from rocrate_validator import models
+from rocrate_validator import models, services
 from tests.ro_crates_v1_2 import MetadataEntities
 from tests.shared import do_entity_test
 
@@ -22,6 +23,17 @@ logger = logging.getLogger(__name__)
 
 
 __metadata_entities__ = MetadataEntities()
+
+
+def _validate_metadata(rocrate_path, metadata):
+    return services.validate(
+        models.ValidationSettings(
+            rocrate_uri=models.URI(rocrate_path),
+            requirement_severity=models.Severity.RECOMMENDED,
+            profile_identifier="ro-crate-1.2",
+            metadata_dict=metadata,
+        )
+    )
 
 
 def test_valid_recommended_schema_type():
@@ -75,4 +87,44 @@ def test_invalid_recommended_entity_name_warning():
         profile_identifier="ro-crate-1.2",
         expected_triggered_requirements=["RO-Crate Metadata Entity: RECOMMENDED properties"],
         expected_triggered_issues=["Entities SHOULD have a human-readable name"],
+    )
+
+
+def test_orcid_scheme_reference_is_not_validated_as_an_entity():
+    """An identifier scheme referenced through propertyID is only cited."""
+    rocrate_path = __metadata_entities__.valid_recommended_schema_type
+    metadata = json.loads((rocrate_path / "ro-crate-metadata.json").read_text(encoding="utf-8"))
+    root = next(entity for entity in metadata["@graph"] if entity["@id"] == "./")
+    root["identifier"] = [root["identifier"], {"@id": "#orcid-reference"}]
+    metadata["@graph"].append(
+        {
+            "@id": "#orcid-reference",
+            "@type": "PropertyValue",
+            "name": "ORCID identifier scheme",
+            "propertyID": {"@id": "https://orcid.org"},
+            "value": "ORCID",
+        }
+    )
+
+    result = _validate_metadata(rocrate_path, metadata)
+
+    assert result.passed()
+    assert not any(issue.violatingEntity == "https://orcid.org" for issue in result.issues)
+
+
+def test_orcid_person_claimed_as_author_remains_in_validation_scope():
+    """A person under the same ORCID namespace is claimed, not merely cited."""
+    rocrate_path = __metadata_entities__.valid_recommended_schema_type
+    metadata = json.loads((rocrate_path / "ro-crate-metadata.json").read_text(encoding="utf-8"))
+    person_id = "https://orcid.org/0009-0000-5074-6239"
+    root = next(entity for entity in metadata["@graph"] if entity["@id"] == "./")
+    root["author"] = {"@id": person_id}
+    metadata["@graph"].append({"@id": person_id, "@type": "Person"})
+
+    result = _validate_metadata(rocrate_path, metadata)
+
+    assert not result.passed()
+    assert any(
+        issue.violatingEntity == person_id and issue.message == "Entities SHOULD have a human-readable name"
+        for issue in result.get_issues(models.Severity.RECOMMENDED)
     )
