@@ -40,7 +40,7 @@ from rocrate_validator.models.requirement import (
 from rocrate_validator.models.result import ValidationResult
 from rocrate_validator.models.settings import ValidationSettings
 from rocrate_validator.models.severity import Severity
-from rocrate_validator.models.skipped_check import SkipCategory
+from rocrate_validator.models.skipped_check import SkipCategory, SkipCategoryInput
 from rocrate_validator.rocrate import ROCrate
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.http import find_offline_cache_miss
@@ -84,59 +84,47 @@ class Validator(Publisher):
         """
         Detect the profiles to validate against
         """
-        try:
-            # initialize the validation context
-            context = ValidationContext(self, self.validation_settings)
-            candidate_profiles_uris: set[str] = set()
-            try:
-                candidate_profiles_uris.update(context.ro_crate.metadata.get_conforms_to() or [])
-            except Exception as e:
-                logger.debug("Error while getting candidate profiles URIs: %s", e)
-            try:
-                candidate_profiles_uris.update(context.ro_crate.metadata.get_root_data_entity_conforms_to() or [])
-            except Exception as e:
-                logger.debug("Error while getting candidate profiles URIs: %s", e)
+        # initialize the validation context
+        context = ValidationContext(self, self.validation_settings)
+        candidate_profiles_uris: set[str] = set()
+        candidate_profiles_uris.update(context.ro_crate.metadata.get_conforms_to() or [])
+        candidate_profiles_uris.update(context.ro_crate.metadata.get_root_data_entity_conforms_to() or [])
 
-            logger.debug("Candidate profiles: %s", candidate_profiles_uris)
-            if not candidate_profiles_uris:
-                logger.debug("Unable to determine the profile to validate against")
-                return []
-            # load the profiles
-            profiles = []
-            candidate_profiles = []
-            available_profiles = Profile.load_profiles(
-                context.profiles_path,
-                extra_profiles_path=context.extra_profiles_path,
-                publicID=context.publicID,
-                severity=context.requirement_severity,
-            )
-            profiles = [p for p in available_profiles if p.uri in candidate_profiles_uris]
-            # get the candidate profiles
-            for profile in profiles:
-                candidate_profiles.append(profile)
-                inherited_profiles = profile.inherited_profiles
-                for inherited_profile in inherited_profiles:
-                    if inherited_profile in candidate_profiles:
-                        candidate_profiles.remove(inherited_profile)
-            logger.debug(
-                "%d Candidate Profiles found: %s",
-                len(candidate_profiles),
-                candidate_profiles,
-            )
-            # unmatched candidate profiles
-            unmatched_profiles = candidate_profiles_uris.difference({p.uri for p in profiles})
-            logger.debug("Unmatched Candidate Profiles URIs: %s", unmatched_profiles)
-            if len(unmatched_profiles) > 0:
-                logger.warning(
-                    "The conformance to the following profiles could not be verified: %s",
-                    ", ".join(unmatched_profiles),
-                )
-            return candidate_profiles
-
-        except Exception:
-            if logger.isEnabledFor(logging.DEBUG):
-                logger.exception("Error detecting RO-Crate profiles")
+        logger.debug("Candidate profiles: %s", candidate_profiles_uris)
+        if not candidate_profiles_uris:
+            logger.debug("Unable to determine the profile to validate against")
             return []
+        # load the profiles
+        profiles = []
+        candidate_profiles = []
+        available_profiles = Profile.load_profiles(
+            context.profiles_path,
+            extra_profiles_path=context.extra_profiles_path,
+            publicID=context.publicID,
+            severity=context.requirement_severity,
+        )
+        profiles = [p for p in available_profiles if p.uri in candidate_profiles_uris]
+        # get the candidate profiles
+        for profile in profiles:
+            candidate_profiles.append(profile)
+            inherited_profiles = profile.inherited_profiles
+            for inherited_profile in inherited_profiles:
+                if inherited_profile in candidate_profiles:
+                    candidate_profiles.remove(inherited_profile)
+        logger.debug(
+            "%d Candidate Profiles found: %s",
+            len(candidate_profiles),
+            candidate_profiles,
+        )
+        # unmatched candidate profiles
+        unmatched_profiles = candidate_profiles_uris.difference({p.uri for p in profiles})
+        logger.debug("Unmatched Candidate Profiles URIs: %s", unmatched_profiles)
+        if len(unmatched_profiles) > 0:
+            logger.warning(
+                "The conformance to the following profiles could not be verified: %s",
+                ", ".join(unmatched_profiles),
+            )
+        return candidate_profiles
 
     def validate(self) -> ValidationResult:
         """
@@ -385,7 +373,7 @@ class ValidationContext:
         self,
         check: RequirementCheck,
         message: str,
-        category: SkipCategory = SkipCategory.RETURNED,
+        category: SkipCategoryInput = SkipCategory.RETURNED,
     ) -> None:
         """Record a structured reason while a check is returning ``SKIPPED``."""
         self.result.record_skip(check, message, category)

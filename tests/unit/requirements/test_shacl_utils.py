@@ -27,7 +27,8 @@ from rdflib import RDF, BNode, Graph, Literal, Namespace, URIRef
 from rdflib.collection import Collection
 
 from rocrate_validator.constants import SHACL_NS
-from rocrate_validator.requirements.shacl.utils import load_shapes_from_graph
+from rocrate_validator.errors import BadSyntaxError
+from rocrate_validator.requirements.shacl.utils import load_shapes_from_file, load_shapes_from_graph
 
 SH = Namespace(SHACL_NS)
 EX = Namespace("http://example.org/")
@@ -197,3 +198,17 @@ def test_unknown_shape_node_raises():
 
     with pytest.raises(KeyError):
         shapes_list.get_shape_property_graph(EX.UnknownShape, prop_a)
+
+
+def test_load_shapes_from_file_reports_parser_location(tmp_path):
+    """Parser errors preserve the line and character of the invalid Turtle."""
+    shapes_path = tmp_path / "broken.ttl"
+    shapes_path.write_text("@prefix ex: <http://example.org/> .\n    xxxx\n", encoding="utf-8")
+
+    with pytest.raises(BadSyntaxError) as exc_info:
+        load_shapes_from_file(str(shapes_path))
+
+    error = exc_info.value
+    assert error.path == str(shapes_path)
+    assert error.line == 2
+    assert error.character == 5

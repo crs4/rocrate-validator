@@ -15,7 +15,15 @@
 import pytest
 
 from rocrate_validator import services
-from rocrate_validator.models import URI, RequirementLoader, Severity, ValidationContext, ValidationSettings
+from rocrate_validator.errors import ValidationExecutionError
+from rocrate_validator.models import (
+    URI,
+    Requirement,
+    RequirementLoader,
+    Severity,
+    ValidationContext,
+    ValidationSettings,
+)
 from tests.ro_crates import InvalidRootDataEntity
 
 
@@ -138,3 +146,40 @@ def test_lifecycle_hooks_invoked_exactly_once_per_validation_run(lifecycle_spies
             f"{spy.__name__} should receive exactly one initialize+finalize "
             f"pair per validation run (got {events} across {runs} runs)"
         )
+
+
+def test_unexpected_check_error_is_wrapped_and_propagated(monkeypatch):
+    """Unexpected check failures must abort validation with their original cause."""
+
+    class ConcreteRequirement(Requirement):
+        @property
+        def hidden(self) -> bool:
+            return False
+
+        def __init_checks__(self):
+            return []
+
+    requirement = object.__new__(ConcreteRequirement)
+    requirement._name = "Test requirement"
+    requirement._checks = []
+    requirement._path = None
+    check = type("Check", (), {})()
+    check.identifier = "test-check"
+    check.depends_on = []
+    check.requirement = requirement
+    requirement._checks = [check]
+
+    context = type("Context", (), {})()
+    context.settings = type("Settings", (), {"skip_checks": []})()
+    context.aborted = False
+    context.maybe_warn_offline_cache_miss = lambda exc: False
+
+    def fail_check(*args):
+        raise RuntimeError("unexpected check failure")
+
+    monkeypatch.setattr(Requirement, "__execute_check__", fail_check)
+
+    with pytest.raises(ValidationExecutionError, match="test-check") as exc_info:
+        requirement._do_validate_(context)
+
+    assert isinstance(exc_info.value.__cause__, RuntimeError)
