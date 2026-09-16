@@ -20,6 +20,7 @@ from typing import TYPE_CHECKING, Protocol, cast
 
 from rocrate_validator.events import Event, EventType, Subscriber
 from rocrate_validator.models._logging import logger
+from rocrate_validator.models.check_result import CheckResult, normalize_check_result
 from rocrate_validator.models.events import (
     ProfileValidationEvent,
     RequirementCheckValidationEvent,
@@ -192,6 +193,18 @@ class ValidationStatistics(Subscriber):
         return self._stats.get("failed_checks", [])
 
     @property
+    def skipped_checks(self) -> list[RequirementCheck]:
+        """
+        Get the list of skipped checks
+        """
+        return self._stats.get("skipped_checks", [])
+
+    @property
+    def total_skipped_checks(self) -> int:
+        """Get the number of skipped checks."""
+        return len(self.skipped_checks)
+
+    @property
     def total_checks(self) -> int:
         """
         Get the total number of checks
@@ -361,6 +374,7 @@ class ValidationStatistics(Subscriber):
             "checks_by_severity": checks_by_severity,
             "failed_requirements": [],
             "failed_checks": [],
+            "skipped_checks": [],
             "passed_requirements": [],
             "passed_checks": [],
             "started_at": None,
@@ -400,11 +414,15 @@ class ValidationStatistics(Subscriber):
         ):
             if event.validation_result is not None:
                 if event.requirement_check.severity >= requirement_severity:
-                    if event.validation_result:
+                    result = normalize_check_result(event.validation_result)
+                    if result is CheckResult.PASSED:
                         self._stats["passed_checks"].append(event.requirement_check)
-                    else:
+                    elif result is CheckResult.FAILED:
                         self._stats["failed_checks"].append(event.requirement_check)
-                    self._stats["validated_checks"].append(event.requirement_check)
+                    else:
+                        self._stats["skipped_checks"].append(event.requirement_check)
+                    if result is not CheckResult.SKIPPED:
+                        self._stats["validated_checks"].append(event.requirement_check)
                 self.notify_listeners()
             else:
                 logger.debug(
@@ -471,6 +489,7 @@ class ValidationStatistics(Subscriber):
             "total_checks": self.total_checks,
             "total_passed_checks": len(self.passed_checks),
             "total_failed_checks": len(self.failed_checks),
+            "total_skipped_checks": self.total_skipped_checks,
             "total_checks_by_severity": {k.name: len(v) for k, v in self.checks_by_severity.items()},
             # Requirements involved
             "requirements": {
@@ -507,6 +526,13 @@ class ValidationStatistics(Subscriber):
                     "count": len(self.failed_checks),
                     "percentage": (len(self.failed_checks) / self.total_checks * 100) if self.total_checks > 0 else 0.0,
                     "identifiers": sorted([c.identifier for c in self.failed_checks]),
+                },
+                "skipped": {
+                    "count": self.total_skipped_checks,
+                    "percentage": (
+                        len(self.skipped_checks) / self.total_checks * 100 if self.total_checks > 0 else 0.0
+                    ),
+                    "identifiers": sorted([c.identifier for c in self.skipped_checks]),
                 },
                 "identifiers": sorted([c.identifier for c in self.checks]),
                 "by_severity": {k.name: len(v) for k, v in self._stats.get("checks_by_severity", {}).items()},
@@ -561,6 +587,7 @@ class AggregatedValidationStatistics:
             "total_checks": self.total_checks,
             "total_passed_checks": len(self.passed_checks),
             "total_failed_checks": len(self.failed_checks),
+            "total_skipped_checks": self.total_skipped_checks,
             "total_checks_by_severity": {k.name: len(v) for k, v in self.checks_by_severity.items()},
             # Requirements involved
             "requirements": {
@@ -597,6 +624,13 @@ class AggregatedValidationStatistics:
                     "count": len(self.failed_checks),
                     "percentage": (len(self.failed_checks) / self.total_checks * 100) if self.total_checks > 0 else 0.0,
                     "identifiers": [c.identifier for c in self.failed_checks],
+                },
+                "skipped": {
+                    "count": self.total_skipped_checks,
+                    "percentage": (
+                        len(self.skipped_checks) / self.total_checks * 100 if self.total_checks > 0 else 0.0
+                    ),
+                    "identifiers": [c.identifier for c in self.skipped_checks],
                 },
                 "identifiers": [c.identifier for c in self.checks],
             },
@@ -680,6 +714,18 @@ class AggregatedValidationStatistics:
         return self._overall_stats.get("failed_checks", set())
 
     @property
+    def skipped_checks(self) -> set[RequirementCheck]:
+        """
+        Get the set of skipped checks in the aggregated validation
+        """
+        return self._overall_stats.get("skipped_checks", set())
+
+    @property
+    def total_skipped_checks(self) -> int:
+        """Get the number of skipped checks in the aggregated validation."""
+        return len(self.skipped_checks)
+
+    @property
     def started_at(self) -> datetime | None:
         """
         Get the timestamp when the aggregated validation started
@@ -721,6 +767,7 @@ class AggregatedValidationStatistics:
         checks_by_severity: dict[Severity, set[RequirementCheck]] = {}
         failed_requirements: set[Requirement] = set()
         failed_checks: set[RequirementCheck] = set()
+        skipped_checks: set[RequirementCheck] = set()
         passed_requirements: set[Requirement] = set()
         passed_checks: set[RequirementCheck] = set()
         started_at: datetime | None = None
@@ -741,6 +788,7 @@ class AggregatedValidationStatistics:
             # Aggregate failed and passed requirements and checks
             failed_requirements.update(stats.failed_requirements)
             failed_checks.update(stats.failed_checks)
+            skipped_checks.update(stats.skipped_checks)
             passed_requirements.update(stats.passed_requirements)
             passed_checks.update(stats.passed_checks)
 
@@ -763,6 +811,7 @@ class AggregatedValidationStatistics:
             "checks_by_severity": checks_by_severity,
             "failed_requirements": failed_requirements,
             "failed_checks": failed_checks,
+            "skipped_checks": skipped_checks,
             "passed_requirements": passed_requirements,
             "passed_checks": passed_checks,
             "started_at": started_at,
@@ -786,6 +835,7 @@ class AggregatedValidationStatistics:
             "checks_by_severity": sorted_checks_by_severity,
             "failed_requirements": sorted(raw_stats["failed_requirements"], key=lambda r: r.identifier),
             "failed_checks": sorted(raw_stats["failed_checks"], key=lambda c: c.identifier),
+            "skipped_checks": sorted(raw_stats["skipped_checks"], key=lambda c: c.identifier),
             "passed_requirements": sorted(raw_stats["passed_requirements"], key=lambda r: r.identifier),
             "passed_checks": sorted(raw_stats["passed_checks"], key=lambda c: c.identifier),
             "started_at": raw_stats["started_at"],

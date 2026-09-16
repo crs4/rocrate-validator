@@ -15,7 +15,7 @@
 # pylint: disable=invalid-name  # profile filename uses digit prefix (load-order convention)
 
 from rocrate_validator.errors import ROCrateMetadataNotFoundError
-from rocrate_validator.models import ValidationContext
+from rocrate_validator.models import CheckResult, CheckResultValue, ValidationContext
 from rocrate_validator.requirements.python import PyFunctionCheck, check, requirement
 from rocrate_validator.utils import log as logging
 
@@ -30,13 +30,13 @@ class RootDataEntityRelativeURI(PyFunctionCheck):
     """
 
     @check(name="Root Data Entity: RECOMMENDED value")
-    def check_relative_uris(self, context: ValidationContext) -> bool:
+    def check_relative_uris(self, context: ValidationContext) -> CheckResultValue:
         """Check if the Root Data Entity is denoted by the string `./` in the file descriptor JSON-LD"""
         try:
             if context.ro_crate.metadata.get_root_data_entity().id != "./":
                 context.result.add_issue("Root Data Entity URI is not denoted by the string `./`", self)
                 return False
-            return True
+            return CheckResult.SKIPPED
         except ROCrateMetadataNotFoundError:
             logger.debug("Skipping Root Data Entity URI check: metadata descriptor is not available")
             return True

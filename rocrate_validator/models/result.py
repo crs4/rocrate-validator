@@ -23,6 +23,7 @@ from typing import TYPE_CHECKING, Any, cast
 from rocrate_validator import __version__
 from rocrate_validator.constants import JSON_OUTPUT_FORMAT_VERSION
 from rocrate_validator.models._logging import logger
+from rocrate_validator.models.check_result import CheckResult, CheckResultValue, normalize_check_result
 from rocrate_validator.models.requirement import (
     Requirement,
     RequirementCheck,
@@ -197,6 +198,7 @@ class ValidationResult:
         # keep track of the checks that have been executed
         self._executed_checks: set[RequirementCheck] = set()
         self._executed_checks_results: dict[str, bool] = {}
+        self._check_results: dict[str, CheckResult] = {}
         # keep track of the checks that have been skipped
         self._skipped_checks: set[RequirementCheck] = set()
         # initialize the statistics
@@ -239,20 +241,39 @@ class ValidationResult:
         """
         return self._executed_checks
 
-    def _add_executed_check(self, check: RequirementCheck, result: bool):
+    def _record_check_result(self, check: RequirementCheck, result: CheckResultValue) -> CheckResult:
+        """Record a normalized result and keep check collections consistent."""
+        normalized_result = normalize_check_result(result)
+        self._check_results[check.identifier] = normalized_result
+
+        if normalized_result is CheckResult.SKIPPED:
+            self._executed_checks.discard(check)
+            self._skipped_checks.add(check)
+            self._executed_checks_results.pop(check.identifier, None)
+            return normalized_result
+
+        self._executed_checks.add(check)
+        self._skipped_checks.discard(check)
+        self._executed_checks_results[check.identifier] = normalized_result is CheckResult.PASSED
+        return normalized_result
+
+    def _add_executed_check(self, check: RequirementCheck, result: CheckResultValue):
         """
         Internal method to add a check to the executed checks
         """
-        self._executed_checks.add(check)
-        self._executed_checks_results[check.identifier] = result
-        # remove the check from the skipped checks if it was skipped
-        if check in self._skipped_checks:
-            self._skipped_checks.remove(check)
-            logger.debug("Removing check '%s' from skipped checks", check.name)
+        normalized_result = self._record_check_result(check, result)
+        if normalized_result is not CheckResult.SKIPPED:
+            logger.debug("Recorded check '%s' as %s", check.name, normalized_result.value)
+
+    def get_check_result(self, check: RequirementCheck) -> CheckResult | None:
+        """Get the normalized result of a processed check."""
+        return self._check_results.get(check.identifier)
 
     def get_executed_check_result(self, check: RequirementCheck) -> bool | None:
         """
-        Get the result of an executed check
+        Get the legacy boolean result of an executed check.
+
+        Skipped checks and checks that have not been processed return ``None``.
         """
         return self._executed_checks_results.get(check.identifier)
 
@@ -263,11 +284,16 @@ class ValidationResult:
         """
         return self._skipped_checks
 
+    @property
+    def skipped_checks_count(self) -> int:
+        """Get the number of skipped checks."""
+        return len(self._skipped_checks)
+
     def _add_skipped_check(self, check: RequirementCheck):
         """
         Internal method to add a check to the skipped checks
         """
-        self._skipped_checks.add(check)
+        self._record_check_result(check, CheckResult.SKIPPED)
 
     def _remove_skipped_check(self, check: RequirementCheck):
         """
@@ -407,6 +433,7 @@ class ValidationResult:
             "validation_settings": validation_settings,
             "passed": self.passed(cast("Severity", self.context.settings.requirement_severity)),
             "issues": [issue.to_dict() for issue in self.issues],
+            "skipped_checks": self.skipped_checks_count,
         }
         # add validator version to the settings
         result["validation_settings"]["rocrate_validator_version"] = __version__
