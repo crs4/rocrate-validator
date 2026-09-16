@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import hashlib
 import os
 from pathlib import Path
 
@@ -85,6 +86,34 @@ def get_user_cache_dir() -> Path:
     xdg = os.environ.get("XDG_CACHE_HOME")
     base = Path(xdg) if xdg else Path.home() / ".cache"
     return base / constants.USER_CACHE_DIR_NAME
+
+
+def get_user_sessions_dir() -> Path:
+    """
+    Get the directory where auto-managed batch session files are stored.
+
+    Located under the user cache directory (see :func:`get_user_cache_dir`),
+    so it honors the XDG Base Directory Specification.
+
+    :return: The path to the batch sessions directory (not guaranteed to exist)
+    """
+    return get_user_cache_dir() / constants.USER_SESSIONS_DIR_NAME
+
+
+def get_batch_session_path(key_parts: list[str]) -> Path:
+    """
+    Derive the auto-managed batch session file path for a given batch target.
+
+    The file name is a deterministic hash of ``key_parts`` (e.g. the absolute
+    scan root, the glob pattern and the relevant validation
+    settings), so that re-running the same batch command resolves to the same
+    session file and can be resumed automatically.
+
+    :param key_parts: the components that uniquely identify the batch target
+    :return: the session file path under the user sessions directory
+    """
+    digest = hashlib.sha1("|".join(key_parts).encode("utf-8")).hexdigest()
+    return get_user_sessions_dir() / f"{digest}.json"
 
 
 def get_default_http_cache_path() -> Path:

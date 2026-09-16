@@ -19,6 +19,7 @@ from rich.console import ConsoleOptions, RenderResult
 
 from rocrate_validator.models import (
     AggregatedValidationStatistics,
+    BatchValidationResult,
     CustomEncoder,
     ValidationResult,
     ValidationStatistics,
@@ -149,3 +150,27 @@ class ValidationResultsJSONOutputFormatter(OutputFormatter):
 
     def __rich_console__(self, console: Console, options: ConsoleOptions) -> RenderResult:
         yield format_validation_results(self._results, console=console, console_options=options)
+
+
+def format_batch_validation_result(
+    data: BatchValidationResult,
+    console: Console | None = None,  # pylint: disable=unused-argument
+    console_options: ConsoleOptions | None = None,  # pylint: disable=unused-argument
+) -> str:
+    """
+    Format a BatchValidationResult as a JSON string.
+    """
+    json_output = data.to_dict()
+    json_output["meta"] = {
+        "generated_by": "rocrate-validator",
+        "version": get_version(),
+    }
+    return json.dumps(json_output, indent=4, cls=CustomEncoder)
+
+
+class BatchValidationResultJSONOutputFormatter(OutputFormatter):
+    def __init__(self, result: BatchValidationResult):
+        self._result = result
+
+    def __rich_console__(self, console: Console, options: ConsoleOptions) -> RenderResult:
+        yield format_batch_validation_result(self._result, console=console, console_options=options)
