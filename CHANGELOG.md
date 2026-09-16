@@ -5,6 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.11.4] - 2026-09-16
+
+Full changelog: https://github.com/crs4/rocrate-validator/compare/0.11.3...0.11.4
+
+### ✨ Added
+
+- feat(rocrate): add validation for singleton arrays in compacted entity properties ([9d8078c7](https://github.com/crs4/rocrate-validator/commit/9d8078c75e7482c78928d9929784e6d3c6e6f71f), [675cdb27](https://github.com/crs4/rocrate-validator/commit/675cdb2788c57bc4b4216642cb146346730d8a5a), [2aa6bcba](https://github.com/crs4/rocrate-validator/commit/2aa6bcba5886e36ab92e0f5c505af479eea7e414))
+
+### 🔧 Changed
+
+- refactor(metadata): expose raw metadata descriptor bytes for encoding checks ([e18e24ef](https://github.com/crs4/rocrate-validator/commit/e18e24ef224493dbfe6acb73a3e494b3351bcf85))
+- refactor(versioning): use a shared distribution name when resolving the package version ([e57e2ea7](https://github.com/crs4/rocrate-validator/commit/e57e2ea701651f748aa6bf139158ac0bb051493f))
+
+### 🐛 Fixed
+
+- fix(validation): skip metadata-dependent profile checks when descriptors are missing or unreadable instead of reporting misleading errors ([b302b5cd](https://github.com/crs4/rocrate-validator/commit/b302b5cdd1dd25678e5bbc3d1a723f2ce87e7c8a), [2444e97a](https://github.com/crs4/rocrate-validator/commit/2444e97ad3d38ae41c5d3fcd8b11cfa5ee13c9ec))
+- fix(metadata): handle missing metadata descriptors without leaking `FileNotFoundError` ([e1217fda](https://github.com/crs4/rocrate-validator/commit/e1217fda31b7e8c806202350f8c17150735813d5))
+- fix(profile): skip descriptor encoding validation in metadata-only mode and narrow exception handling ([acb715bf](https://github.com/crs4/rocrate-validator/commit/acb715bfc9c5ae3f27f399aae8e429660a311ebe), [9411c86c](https://github.com/crs4/rocrate-validator/commit/9411c86c195b6aad8bdf1b4bd13738ec9995f580))
+- fix(rocrate): normalize singleton-array `mainEntity` values in workflow crates ([568b8c41](https://github.com/crs4/rocrate-validator/commit/568b8c414541de31410c513901573cc617fa2aec))
+- fix(profiles): use the canonical namespace for the RO-Crate 1.2 ontology ([d9e115cb](https://github.com/crs4/rocrate-validator/commit/d9e115cb71ee11bff7422b68ea6b6351b432360c))
+- fix(versioning): resolve the package version when installed outside a Git checkout ([856546a4](https://github.com/crs4/rocrate-validator/commit/856546a49d61771c478b0a232bc12501313a46e0))
+
+### 📚 Documentation
+
+- docs(profiles): document SHACL target selection optimization ([14058e67](https://github.com/crs4/rocrate-validator/commit/14058e67fd96043ed5298c91c6396293e0a1d484))
+
+### ⚡ Performance
+
+- perf(profiles): replace custom SPARQL targets with SHACL Core targets ([bb4d0317](https://github.com/crs4/rocrate-validator/commit/bb4d0317ef28c91470b9da46f5048d5d940f49aa))
+- perf(profiles): reduce duplicate and cross-product work in contextual-entity target queries ([be6aa6ff](https://github.com/crs4/rocrate-validator/commit/be6aa6ffe98cb55869c6e9b57634d08e1cc53f0d), [88ded678](https://github.com/crs4/rocrate-validator/commit/88ded678cd0009df06209d8a48bbc7346ae5fbc6))
+
 ## [0.11.3] - 2026-07-28
 
 Full changelog: https://github.com/crs4/rocrate-validator/compare/0.11.2...0.11.3
