@@ -18,6 +18,7 @@ from typing import Any, cast  # pylint: disable=unused-import
 from rdflib import RDF
 
 from rocrate_validator.constants import VALIDATOR_NS
+from rocrate_validator.errors import ROCrateMetadataNotFoundError
 from rocrate_validator.models import (
     Profile,
     Requirement,
@@ -139,6 +140,12 @@ class SHACLRequirement(Requirement):
         shacl_context._current_validation_profile = target
         try:
             runner.__do_execute_check__(shacl_context)
+        except ROCrateMetadataNotFoundError as e:
+            logger.debug(
+                "Forced SHACL run for zero-shape target profile %s skipped: metadata descriptor is not available (%s)",
+                target.identifier,
+                e,
+            )
         except Exception as e:
             if context.maybe_warn_offline_cache_miss(e):
                 logger.debug(

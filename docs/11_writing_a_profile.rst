@@ -28,6 +28,9 @@ For complex validation, you may also need some knowledge of SPARQL, an RDF
 query language. You can learn about SPARQL in the tutorial
 `Using SPARQL to access Linked Open Data <https://programminghistorian.org/en/lessons/retired/graph-databases-and-SPARQL>`_.
 
+For guidance on SHACL Core targets, SPARQL target performance, inference and
+rule ordering, see :ref:`efficient-shacl-targets`.
+
 All these tools are best learned through practice and examples, so when building a
 profile, it's encouraged to use the
 `other profiles <https://github.com/crs4/rocrate-validator/tree/develop/rocrate_validator/profiles>`_

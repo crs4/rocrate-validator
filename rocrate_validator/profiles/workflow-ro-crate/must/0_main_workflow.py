@@ -14,6 +14,7 @@
 
 # pylint: disable=invalid-name  # profile filename uses digit prefix (load-order convention)
 
+from rocrate_validator.errors import ROCrateMetadataNotFoundError
 from rocrate_validator.models import ValidationContext
 from rocrate_validator.requirements.python import PyFunctionCheck, check, requirement
 from rocrate_validator.utils import log as logging
@@ -38,12 +39,18 @@ class MainWorkflowFileExistence(PyFunctionCheck):
                 context.result.add_issue(f"Main Workflow {main_workflow.id} not found in crate", self)
                 return False
             return True
-        except ValueError:
-            context.result.add_issue(
-                "Unable to check the existence of the main workflow file "
-                "because the metadata file descriptor doesn't contain a `mainEntity`",
-                self,
-            )
+        except ROCrateMetadataNotFoundError:
+            logger.debug("Skipping main workflow check: metadata descriptor is not available")
+            return True
+        except (TypeError, ValueError) as error:
+            if str(error) == "no main workflow in metadata file descriptor":
+                message = (
+                    "Unable to check the existence of the main workflow file "
+                    "because the metadata file descriptor doesn't contain a `mainEntity`"
+                )
+            else:
+                message = f"Unable to check the existence of the main workflow file: {error}"
+            context.result.add_issue(message, self)
             if logger.isEnabledFor(logging.DEBUG):
                 logger.exception("Unable to check main workflow file existence")
         return False

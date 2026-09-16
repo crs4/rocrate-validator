@@ -19,16 +19,7 @@ ro-crate:RootDataEntityHasPartAllDataEntities a sh:NodeShape ;
     sh:name "Root Data Entity: hasPart MUST reference all Data Entities" ;
     sh:description """The Root Data Entity MUST directly or indirectly reference
         all Data Entities in the RO-Crate via hasPart (RO-Crate 1.2).""" ;
-    sh:target [
-        a sh:SPARQLTarget ;
-        sh:prefixes ro-crate:sparqlPrefixes ;
-        sh:select """
-            SELECT ?this
-            WHERE {
-                ?this a ro-crate:RootDataEntity .
-            }
-        """
-    ] ;
+    sh:targetClass ro-crate:RootDataEntity ;
     sh:sparql [
         a sh:SPARQLConstraint ;
         sh:prefixes ro-crate:sparqlPrefixes ;

@@ -14,6 +14,7 @@
 
 from pathlib import Path
 
+from rocrate_validator.errors import ROCrateMetadataNotFoundError
 from rocrate_validator.models import ValidationContext
 from rocrate_validator.requirements.python import PyFunctionCheck, check, requirement
 from rocrate_validator.utils import log as logging
@@ -30,7 +31,11 @@ class ROCrateWebsiteChecker(PyFunctionCheck):
 
     @check(name="RO-Crate Website HTML5 doctype")
     def check_preview_html(self, context: ValidationContext) -> bool:
-        if context.ro_crate.is_detached():
+        try:
+            if context.ro_crate.is_detached():
+                return True
+        except ROCrateMetadataNotFoundError:
+            logger.debug("Skipping RO-Crate Website check: metadata descriptor is not available")
             return True
         preview_path = Path("ro-crate-preview.html")
         if not context.ro_crate.has_file(preview_path):

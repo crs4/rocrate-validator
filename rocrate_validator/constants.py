@@ -17,6 +17,9 @@ import typing
 
 from rdflib import Namespace
 
+# Define the package distribution name
+PACKAGE_NAME = "roc-validator"
+
 # Define SHACL namespace
 SHACL_NS = "http://www.w3.org/ns/shacl#"
 

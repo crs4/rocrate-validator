@@ -14,6 +14,7 @@
 
 # pylint: disable=invalid-name  # profile filename uses digit prefix (load-order convention)
 
+from rocrate_validator.errors import ROCrateMetadataNotFoundError
 from rocrate_validator.models import ValidationContext
 from rocrate_validator.requirements.python import PyFunctionCheck, check, requirement
 from rocrate_validator.utils import log as logging
@@ -41,11 +42,16 @@ class DataEntityRecommendedChecker(PyFunctionCheck):
             return True
         # Perform the check
         result = True
-        for entity in [
-            _
-            for _ in context.ro_crate.metadata.get_data_entities(exclude_web_data_entities=True)
-            if _.has_absolute_path()
-        ]:
+        try:
+            entities = [
+                _
+                for _ in context.ro_crate.metadata.get_data_entities(exclude_web_data_entities=True)
+                if _.has_absolute_path()
+            ]
+        except ROCrateMetadataNotFoundError:
+            logger.debug("Skipping Data Entity availability check: metadata descriptor is not available")
+            return True
+        for entity in entities:
             assert entity.id is not None, "Entity has no @id"
             try:
                 if not entity.is_available():

@@ -46,6 +46,7 @@
 # check provides actionable feedback to authors without penalising
 # valid crates.
 
+from rocrate_validator.errors import ROCrateMetadataNotFoundError
 from rocrate_validator.models import Severity, ValidationContext
 from rocrate_validator.requirements.python import PyFunctionCheck, check, requirement
 from rocrate_validator.utils import log as logging
@@ -100,7 +101,7 @@ class DataEntityLicenseDivergenceChecker(PyFunctionCheck):
     """
 
     @check(name="Data Entity SHOULD NOT redundantly declare the Root license", severity=Severity.RECOMMENDED)
-    def check_license_divergence(self, context: ValidationContext) -> bool:
+    def check_license_divergence(self, context: ValidationContext) -> bool:  # noqa: C901
         root_entity = None
         try:
             root_entity = context.ro_crate.metadata.get_root_data_entity()
@@ -117,7 +118,12 @@ class DataEntityLicenseDivergenceChecker(PyFunctionCheck):
         if not root_license_id:
             return True
 
-        for entity in context.ro_crate.metadata.get_data_entities():
+        try:
+            entities = context.ro_crate.metadata.get_data_entities()
+        except ROCrateMetadataNotFoundError:
+            logger.debug("Skipping Data Entity license check: metadata descriptor is not available")
+            return True
+        for entity in entities:
             if entity.id == root_entity.id:
                 continue
             entity_license_raw = entity.get_property("license")
