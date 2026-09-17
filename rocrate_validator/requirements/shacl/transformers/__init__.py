@@ -45,10 +45,10 @@ def _load_concrete_transformers() -> None:
     with _DISCOVERY_LOCK:
         if _TRANSFORMERS_LOADED:
             return
-        package_prefix = f"{__name__}."
-        for module in pkgutil.walk_packages(__path__, package_prefix):
-            if module.name != f"{__name__}.base":
-                importlib.import_module(module.name)
+        package = importlib.import_module("rocrate_validator.transformers")
+        package_prefix = f"{package.__name__}."
+        for module in pkgutil.walk_packages(package.__path__, package_prefix):
+            importlib.import_module(module.name)
         _TRANSFORMERS_LOADED = True
 
 

@@ -189,7 +189,7 @@ How the pipeline works
 
 ``prepare_data_graph`` creates one transient copy of the parsed RO-Crate graph,
 discovers all modules below
-``rocrate_validator.requirements.shacl.transformers``, and runs
+``rocrate_validator.transformers``, and runs
 their registered transformers sequentially. The cached source graph is never
 passed to a transformer and remains unchanged.
 
@@ -220,8 +220,9 @@ Every transformer must:
 * treat the graph as transient validator state, never as metadata to write back
   to the RO-Crate.
 
-The discovery mechanism covers modules bundled in the
-``rocrate_validator.requirements.shacl.transformers`` package. It is not an
+The discovery mechanism covers modules bundled in the sibling catalog package
+``rocrate_validator.transformers``. The engine remains in
+``rocrate_validator.requirements.shacl.transformers``. This is not an
 entry-point system for arbitrary profile-local or third-party plugins.
 
 Function transformers

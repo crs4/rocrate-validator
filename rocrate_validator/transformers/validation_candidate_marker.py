@@ -18,7 +18,7 @@ import logging
 
 from rdflib import RDF, BNode, Graph, Literal, URIRef
 
-from rocrate_validator.requirements.shacl.transformers.base import graph_transformer
+from rocrate_validator.requirements.shacl.transformers import graph_transformer
 from rocrate_validator.requirements.shacl.transformers.vocabulary import VALIDATION_CANDIDATE_PREDICATE
 
 logger = logging.getLogger(__name__)
