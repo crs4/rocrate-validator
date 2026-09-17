@@ -187,20 +187,60 @@ the transient copy is not inferred from ontology triples.
 How the pipeline works
 ----------------------
 
-``prepare_data_graph`` creates one transient copy of the parsed RO-Crate graph,
-discovers all modules below
-``rocrate_validator.transformers``, and runs
-their registered transformers sequentially. The cached source graph is never
-passed to a transformer and remains unchanged.
+Shapes explicitly declare the transformers they require with
+``validator:requiresGraphTransformer``. If there are no such declarations, the
+validator delegates the original graph to pySHACL without copying or annotating
+it. This keeps ordinary SHACL profiles isolated from the preprocessing
+extension.
 
-The validator skips this preprocessing when pySHACL is called with
-``sparql_mode=True``. Transformer-dependent validation therefore requires the
-normal in-memory or serialized-graph validation mode.
+When at least one transformer is requested, ``prepare_data_graph`` creates one
+transient copy of the parsed RO-Crate graph, discovers the bundled modules below
+``rocrate_validator.transformers``, and runs only the requested
+transformers. The cached source graph is never passed to a transformer and
+remains unchanged. RDFLib datasets are copied as datasets, including their
+default and named graphs.
+
+Transformer-dependent validation rejects ``sparql_mode=True`` because a remote
+endpoint cannot receive transient local annotations. It also rejects
+``inplace=True``: mutating a caller-owned graph would leak private annotations.
+Both options retain their normal pySHACL behaviour when no transformer is
+requested.
 
 Lower ``order`` values run first. Transformers with the same order are sorted
 by their fully qualified Python name, so their order is deterministic but
 should not be used to encode an implicit dependency. Assign distinct orders
 when one transformer consumes triples produced by another.
+
+Package structure
+~~~~~~~~~~~~~~~~~
+
+The engine belongs to the SHACL validation subsystem and is contained in
+``rocrate_validator.requirements.shacl.transformers``:
+
+* ``base.py`` defines the abstract transformer contract;
+* ``registry.py`` owns registration metadata and deterministic ordering;
+* ``discovery.py`` imports bundled transformer modules once, with locking for
+  concurrent first use;
+* ``pipeline.py`` copies data graphs without flattening datasets and executes
+  the requested transformer subset;
+* ``preparation.py`` is the integration facade used by ``SHACLValidator``. It
+  reads shape dependencies, validates incompatible pySHACL options, prepares
+  private data and shapes graphs, and protects closed shapes;
+* ``vocabulary.py`` owns the RDF predicate through which shapes request a
+  transformer.
+
+Concrete implementations live directly in the sibling catalog package
+``rocrate_validator.transformers``. This mirrors the visibility of the bundled
+``profiles`` directory while keeping executable transformer code separate from
+profile resources and from the SHACL engine.
+
+``SHACLValidator`` calls ``prepare_validation_graphs`` and does not implement
+transformer discovery or transformer-specific graph mutation itself. This
+boundary keeps the feature reusable internally without turning it into a
+pySHACL rule language or a third-party plugin API.
+
+Generic SHACL concerns, such as injecting the validator's default SPARQL
+prefixes and wrapping pySHACL failures, remain in ``SHACLValidator``.
 
 Developing transformers
 -----------------------
@@ -215,15 +255,15 @@ Every transformer must:
 
 * accept exactly one ``rdflib.Graph``;
 * return an ``rdflib.Graph`` (returning ``None`` is an error);
+* define a stable, globally unique RDF identifier;
 * be deterministic for the same input graph;
 * avoid network access and process-global mutable state;
 * treat the graph as transient validator state, never as metadata to write back
   to the RO-Crate.
 
-The discovery mechanism covers modules bundled in the sibling catalog package
-``rocrate_validator.transformers``. The engine remains in
-``rocrate_validator.requirements.shacl.transformers``. This is not an
-entry-point system for arbitrary profile-local or third-party plugins.
+The discovery mechanism covers modules bundled in
+``rocrate_validator.transformers``. It is not an entry-point system for
+arbitrary profile-local or third-party plugins.
 
 Function transformers
 ~~~~~~~~~~~~~~~~~~~~~
@@ -233,12 +273,23 @@ expressed as a function:
 
 .. code-block:: python
 
-   from rdflib import Graph
+   from rdflib import Graph, URIRef
 
    from rocrate_validator.requirements.shacl.transformers import graph_transformer
 
+   EXAMPLE_TRANSFORMER = URIRef(
+       "https://github.com/crs4/rocrate-validator/graph-transformers/example"
+   )
+   EXAMPLE_ANNOTATION = URIRef(
+       "https://github.com/crs4/rocrate-validator/graph-transformers/exampleAnnotation"
+   )
 
-   @graph_transformer(order=50)
+
+   @graph_transformer(
+       identifier=EXAMPLE_TRANSFORMER,
+       order=50,
+       annotation_predicates=(EXAMPLE_ANNOTATION,),
+   )
    def add_example_annotations(data_graph: Graph) -> Graph:
        # Add annotations to the transient graph.
        ...
@@ -255,12 +306,15 @@ private helper methods or a clearer class-level contract:
 
 .. code-block:: python
 
-   from rdflib import Graph
+   from rdflib import Graph, URIRef
 
    from rocrate_validator.requirements.shacl.transformers import GraphTransformer
 
 
    class ExampleTransformer(GraphTransformer):
+       identifier = URIRef(
+           "https://github.com/crs4/rocrate-validator/graph-transformers/example"
+       )
        order = 60
 
        def transform(self, data_graph: Graph) -> Graph:
@@ -272,16 +326,49 @@ constructor; a new instance is created for each pipeline execution so state
 does not leak between validations. Abstract intermediate subclasses are not
 registered.
 
+Requesting a transformer from shapes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A registered transformer is not executed merely because its module exists.
+Every shape which relies on it declares the dependency explicitly:
+
+.. code-block:: turtle
+
+   @prefix ex: <https://example.org/> .
+   @prefix sh: <http://www.w3.org/ns/shacl#> .
+   @prefix validator: <https://github.com/crs4/rocrate-validator/> .
+   @prefix validator-transformers:
+       <https://github.com/crs4/rocrate-validator/graph-transformers/> .
+
+   ex:ExampleShape
+       a sh:NodeShape ;
+       validator:requiresGraphTransformer
+           validator-transformers:example ;
+       # normal targets and constraints follow
+       .
+
+Dependencies are collected from the complete merged shapes graph. Repeating a
+declaration is harmless, and inherited or additional profiles participate in
+the same request set. An unknown identifier fails validation instead of being
+silently ignored.
+
 Private marker predicates and prefixes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 A transformer may annotate the transient graph with private predicates. Keep
 these predicates in the validator-owned namespace
 ``https://github.com/crs4/rocrate-validator/graph-transformers/`` and define
-their RDFLib vocabulary terms in
-``requirements/shacl/transformers/vocabulary.py``. These triples are
-implementation details: they must not be serialized into an RO-Crate or
-presented as vocabulary terms owned by the crate.
+their RDFLib vocabulary terms next to the concrete implementation in
+``rocrate_validator.transformers``. These triples are implementation details:
+they must not be serialized into an RO-Crate or presented as vocabulary terms
+owned by the crate.
+
+Declare every produced predicate through the transformer's
+``annotation_predicates`` metadata. Before validation, the orchestrator adds
+those predicates to ``sh:ignoredProperties`` on a transient copy of every
+``sh:closed true`` shape. This preserves closed-shape semantics without
+mutating the source shapes graph. SPARQL constraints which enumerate arbitrary
+predicates should still exclude the validator-owned namespace explicitly.
 
 When a SHACL query consumes a marker, declare the namespace in the profile's
 shared ``sh:prefixes`` block. For example:
@@ -299,9 +386,7 @@ graph:
 
 .. code-block:: sparql
 
-   FILTER EXISTS {
-       ?this validator-transformers:validationCandidate true
-   }
+   ?this validator-transformers:validationCandidate true .
 
 Testing a transformer
 ~~~~~~~~~~~~~~~~~~~~~
@@ -310,7 +395,10 @@ Add unit tests for the transformation itself and integration tests for every
 SHACL target which consumes its output. At minimum, verify that:
 
 * the source graph is unchanged;
+* profiles which do not request the transformer are unchanged;
 * consecutive transformers see their predecessors' output;
 * ordering is explicit when transformers depend on each other;
 * ontology and inference triples do not accidentally enter the intended scope;
+* private predicates do not invalidate closed shapes;
+* RDFLib datasets preserve default and named graph data;
 * representative large graphs remain within the project's performance budget.

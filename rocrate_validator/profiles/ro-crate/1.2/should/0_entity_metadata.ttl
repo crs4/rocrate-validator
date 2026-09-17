@@ -40,8 +40,8 @@ ro-crate:ROCrateMetadataEntityRecommendedType a sh:NodeShape ;
                 FILTER (?this != ?root)
                 # Exclude entities with non-IRI identifiers.
                 FILTER (isIRI(?this))
-                # Profile descriptors use prof:Profile rather than a Schema.org
-                # type and have their own dedicated metadata requirements.
+                # W3C Profile Vocabulary descriptors are not ordinary Schema.org
+                # metadata entities; they have dedicated profile-specific rules.
                 FILTER NOT EXISTS { ?this a <http://www.w3.org/ns/dx/prof/Profile> }
             }
         """ ;
