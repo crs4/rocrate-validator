@@ -106,7 +106,7 @@ def test_default_profile_rejects_a_1_1_context():
     result = validate(settings)
     assert not result.passed()
     failed_check_ids = {issue.check.identifier for issue in result.get_issues()}
-    assert "ro-crate-1.2_2.2" in failed_check_ids, (
+    assert "ro-crate-1.2_4.2" in failed_check_ids, (
         f"Expected the 1.2 context check to fail, got: {sorted(failed_check_ids)}"
     )
 

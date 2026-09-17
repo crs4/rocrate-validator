@@ -111,7 +111,7 @@ def _context_uri_for_profile(profile_identifier: str) -> str:
     Return the JSON-LD context matching the profile under test.
 
     Keeping the context aligned with the profile matters: re-serialising a 1.1
-    context while validating against 1.2 trips the `ro-crate-1.2_2.2` check and
+    context while validating against 1.2 trips the `ro-crate-1.2_4.2` check and
     the test would fail for a reason unrelated to what it is asserting.
     """
     return _PROFILE_CONTEXT_URIS.get(profile_identifier, _DEFAULT_CONTEXT_URI)
