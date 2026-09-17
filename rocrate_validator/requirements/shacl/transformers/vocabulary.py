@@ -14,8 +14,10 @@
 
 from rdflib import Namespace, URIRef
 
-# Private vocabulary for annotations that exist only in the transient graph
-# passed to pySHACL. These predicates describe validator bookkeeping, not
-# RO-Crate metadata, and must never be serialized back into the crate.
-MARKER_NS = Namespace("https://github.com/crs4/rocrate-validator/graph-transformers/")
-VALIDATION_CANDIDATE_PREDICATE: URIRef = URIRef(MARKER_NS.validationCandidate)
+# Shapes request bundled transformers explicitly through this predicate. This
+# keeps private annotations and graph-copying overhead out of unrelated SHACL
+# validations.
+VALIDATOR_NS = Namespace("https://github.com/crs4/rocrate-validator/")
+REQUIRES_GRAPH_TRANSFORMER_PREDICATE: URIRef = URIRef(VALIDATOR_NS.requiresGraphTransformer)
+
+__all__ = ["REQUIRES_GRAPH_TRANSFORMER_PREDICATE"]

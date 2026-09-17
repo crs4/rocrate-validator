@@ -17,35 +17,11 @@ from __future__ import annotations
 import inspect
 from abc import ABC, abstractmethod
 from collections.abc import Callable
-from dataclasses import dataclass
 from typing import ClassVar
 
-from rdflib import Graph
+from rdflib import Graph, URIRef
 
 TransformerFunction = Callable[[Graph], Graph]
-
-
-@dataclass(frozen=True)
-class RegisteredTransformer:
-    """A transformer definition together with its execution metadata."""
-
-    name: str
-    order: int
-    implementation: TransformerFunction | type[GraphTransformer]
-
-
-# Qualified names make registration idempotent when Python imports or reloads
-# a transformer module more than once. A reload replaces the same definition
-# instead of scheduling it twice.
-_TRANSFORMERS: dict[str, RegisteredTransformer] = {}
-
-
-def _register(
-    implementation: TransformerFunction | type[GraphTransformer],
-    order: int,
-) -> None:
-    name = f"{implementation.__module__}.{implementation.__qualname__}"
-    _TRANSFORMERS[name] = RegisteredTransformer(name, order, implementation)
 
 
 class GraphTransformer(ABC):
@@ -56,46 +32,26 @@ class GraphTransformer(ABC):
     Abstract intermediate classes remain unregistered.
     """
 
+    identifier: ClassVar[URIRef | None] = None
     order: ClassVar[int] = 100
+    annotation_predicates: ClassVar[frozenset[URIRef]] = frozenset()
 
     def __init_subclass__(cls, **kwargs: object) -> None:
         super().__init_subclass__(**kwargs)
         if not inspect.isabstract(cls):
-            _register(cls, cls.order)
+            if cls.identifier is None:
+                raise TypeError(f"Graph transformer {cls.__module__}.{cls.__qualname__} has no identifier")
+            # Imported lazily to keep the abstract contract independent from
+            # the registry module which stores concrete implementations.
+            from rocrate_validator.requirements.shacl.transformers.registry import (  # noqa: PLC0415
+                register_transformer,
+            )
+
+            register_transformer(cls, cls.identifier, cls.order, cls.annotation_predicates)
 
     @abstractmethod
     def transform(self, data_graph: Graph) -> Graph:
         """Transform and return the graph passed by the orchestration pipeline."""
 
 
-def graph_transformer(*, order: int = 100) -> Callable[[TransformerFunction], TransformerFunction]:
-    """Register a function as a graph transformer."""
-
-    def decorator(function: TransformerFunction) -> TransformerFunction:
-        _register(function, order)
-        return function
-
-    return decorator
-
-
-def get_registered_transformers() -> tuple[RegisteredTransformer, ...]:
-    """Return registered transformers in deterministic execution order."""
-    # Lower values run first. The qualified name is a deterministic tie-breaker
-    # so execution never depends on filesystem or import iteration order.
-    return tuple(sorted(_TRANSFORMERS.values(), key=lambda item: (item.order, item.name)))
-
-
-def run_registered_transformers(data_graph: Graph) -> Graph:
-    """Run every registered transformer sequentially on the same graph."""
-    transformed_graph = data_graph
-    for registered in get_registered_transformers():
-        # Class transformers are deliberately instantiated without arguments;
-        # persistent state must not leak between separate validation runs.
-        implementation = registered.implementation
-        if isinstance(implementation, type):
-            transformed_graph = implementation().transform(transformed_graph)
-        else:
-            transformed_graph = implementation(transformed_graph)
-        if not isinstance(transformed_graph, Graph):
-            raise TypeError(f"Graph transformer {registered.name} did not return an RDFLib Graph")
-    return transformed_graph
+__all__ = ["GraphTransformer", "TransformerFunction"]

@@ -19,7 +19,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast  # pylint: disable=unused-import
 
 import pyshacl
-from pyshacl.rdfutil.load import load_from_source
 from rdflib import BNode, Graph, Literal, Namespace
 from rdflib.term import Node, URIRef
 
@@ -43,7 +42,10 @@ from rocrate_validator.models import (
 )
 from rocrate_validator.requirements.shacl.errors import SHACLValidationError
 from rocrate_validator.requirements.shacl.models import ShapesRegistry
-from rocrate_validator.requirements.shacl.transformers import prepare_data_graph
+from rocrate_validator.requirements.shacl.transformers.preparation import (
+    GraphTransformerCompatibilityError,
+    prepare_validation_graphs,
+)
 from rocrate_validator.requirements.shacl.utils import make_uris_relative, map_severity
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.rdf import extract_base_from_jsonld
@@ -470,33 +472,23 @@ class SHACLValidator:
 
         assert inference in (None, "rdfs", "owlrl", "both"), "Invalid inference option"
 
-        if isinstance(self._shapes_graph, Graph):
-            _inject_default_prefixes(self._shapes_graph)
-
-        # Classify nodes before pySHACL can add ontology or inferred triples.
-        # Keep the source graph untouched: prepare_data_graph creates the
-        # transient graph that pySHACL will validate.
-        if isinstance(data_graph, Graph):
-            data_graph = prepare_data_graph(cast("Graph", data_graph))
-        elif isinstance(data_graph, (str, bytes)) and not kwargs.get("sparql_mode", False):
-            data_graph = prepare_data_graph(
-                cast(
-                    "Graph",
-                    load_from_source(
-                        data_graph,
-                        rdf_format=kwargs.get("data_graph_format"),
-                        multigraph=True,
-                        do_owl_imports=False,
-                        logger=cast("Any", logger),
-                    ),
-                )
-            )
-
         # validate the data graph using pyshacl.validate
         try:
-            conforms, results_graph, results_text = pyshacl.validate(
+            prepared_graphs = prepare_validation_graphs(
                 data_graph,
-                shacl_graph=self.shapes_graph,
+                self._shapes_graph,
+                data_graph_format=kwargs.get("data_graph_format"),
+                shacl_graph_format=kwargs.get("shacl_graph_format"),
+                do_owl_imports=kwargs.get("do_owl_imports", False),
+                inplace=bool(inplace),
+                sparql_mode=bool(kwargs.get("sparql_mode", False)),
+            )
+            if isinstance(prepared_graphs.shapes_graph, Graph):
+                _inject_default_prefixes(prepared_graphs.shapes_graph)
+
+            conforms, results_graph, results_text = pyshacl.validate(
+                prepared_graphs.data_graph,
+                shacl_graph=prepared_graphs.shapes_graph,
                 ont_graph=self.ont_graph,
                 inference=inference or ("owlrl" if self.ont_graph else None),
                 inplace=inplace,
@@ -510,11 +502,10 @@ class SHACLValidator:
                 debug=False,
                 **kwargs,
             )
+        except GraphTransformerCompatibilityError:
+            raise
         except Exception as e:
-            version = getattr(pyshacl, "__version__", "unknown")
-            raise SHACLValidationError(
-                message=(f"SHACL validation could not be executed by pySHACL {version}: {type(e).__name__}: {e}")
-            ) from e
+            raise _to_shacl_validation_error(e) from e
         # log the validation results
         logger.debug("pyshacl.validate result: Conforms: %r", conforms)
         logger.debug("pyshacl.validate result: Results Graph: %r", results_graph)
@@ -573,6 +564,14 @@ def _inject_default_prefixes(shapes_graph: Graph) -> None:
                 prefix_block = "\n".join(prefix_lines)
         updated_query = f"{prefix_block}\n{query.lstrip()}"
         shapes_graph.set((subject, shacl_ns.select, Literal(updated_query)))
+
+
+def _to_shacl_validation_error(error: Exception) -> SHACLValidationError:
+    """Wrap graph preparation and engine failures in the public error type."""
+    version = getattr(pyshacl, "__version__", "unknown")
+    return SHACLValidationError(
+        message=(f"SHACL validation could not be executed by pySHACL {version}: {type(error).__name__}: {error}")
+    )
 
 
 __all__ = ["SHACLValidationResult", "SHACLValidator", "SHACLViolation"]

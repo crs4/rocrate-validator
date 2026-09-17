@@ -15,8 +15,11 @@
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix schema: <http://schema.org/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix validator: <https://github.com/crs4/rocrate-validator/> .
+@prefix validator-transformers: <https://github.com/crs4/rocrate-validator/graph-transformers/> .
 
 ro-crate:ROCrateMetadataEntityRecommendedType a sh:NodeShape ;
+    validator:requiresGraphTransformer validator-transformers:validationCandidateMarker ;
     sh:name "RO-Crate Metadata Entity: RECOMMENDED properties" ;
     sh:description """Check if the RO-Crate Metadata Entity includes at least one Schema.org type and a human-readable name""" ;
     sh:target [
@@ -25,6 +28,7 @@ ro-crate:ROCrateMetadataEntityRecommendedType a sh:NodeShape ;
         sh:select """
             SELECT ?this
             WHERE {
+                ?this validator-transformers:validationCandidate true .
                 ?this a ?type .
 
                 { SELECT DISTINCT ?root ?metadatafile WHERE {
@@ -36,10 +40,6 @@ ro-crate:ROCrateMetadataEntityRecommendedType a sh:NodeShape ;
                 FILTER (?this != ?root)
                 # Exclude entities with non-IRI identifiers.
                 FILTER (isIRI(?this))
-                # Restrict validation to nodes which the original crate
-                # describes or claims, before ontology and inferred terms are
-                # added to the graph.
-                FILTER EXISTS { ?this validator-transformers:validationCandidate true }
                 # Profile descriptors use prof:Profile rather than a Schema.org
                 # type and have their own dedicated metadata requirements.
                 FILTER NOT EXISTS { ?this a <http://www.w3.org/ns/dx/prof/Profile> }

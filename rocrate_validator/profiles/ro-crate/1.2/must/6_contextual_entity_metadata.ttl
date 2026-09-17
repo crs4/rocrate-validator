@@ -19,36 +19,28 @@
 @prefix schema_org: <http://schema.org/> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix validator: <https://github.com/crs4/rocrate-validator/> .
+@prefix validator-transformers: <https://github.com/crs4/rocrate-validator/graph-transformers/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 ro-crate:ContextualEntityDefinition a sh:NodeShape, validator:HiddenShape ;
+    validator:requiresGraphTransformer validator-transformers:validationCandidateMarker ;
     sh:name "Identify Contextual Entities" ;
     sh:description """Mark entities as Contextual Entities if they are in the RO-Crate
         metadata but are not Data Entities, not the Root Data Entity,
-        and not the Metadata File Descriptor.  The query uses `?this ?p ?o`
-        (subject of any triple) — SHACL rules from earlier shapes (e.g.
-        CreativeWorkAuthorDefinition) tag referenced-but-undescribed entities
-        with rdf:type, so they appear as subjects and are therefore captured.
-        Vocabulary terms loaded from ontologies are excluded using provenance
-        captured from the original crate graph before the ontology mix-in.""" ;
+        and not the Metadata File Descriptor. Validation candidates are
+        classified from asserted source triples before ontology inoculation,
+        inference, or SHACL rules. This includes type-only and claim-only
+        entities while excluding cited vocabulary terms.""" ;
     sh:target [
         a sh:SPARQLTarget ;
         sh:prefixes ro-crate:sparqlPrefixes ;
         sh:select """
             SELECT ?this
             WHERE {
-                # Structural criteria: IRI or blank node, subject of some triple.
-                # SHACL rules from earlier shapes (e.g. CreativeWorkAuthorDefinition)
-                # tag even referenced-but-undescribed entities so they become
-                # subjects and are correctly classified as Contextual Entities.
-                #
-                # The distinct subjects are materialised by a subquery FIRST so the
-                # exclusion FILTERs below run once per entity instead of once per
-                # triple (~2.5k subjects vs ~40k triples on a large crate).
-                { SELECT DISTINCT ?this WHERE {
-                    ?this ?p ?o .
-                    FILTER(isIRI(?this) || isBlank(?this))
-                } }
+                # Candidates were classified from the asserted source graph,
+                # before ontology inoculation, inference, and SHACL rules.
+                ?this validator-transformers:validationCandidate true .
+                FILTER(isIRI(?this) || isBlank(?this))
 
                 # Structural exclusions — Metadata Descriptor, Root Data Entity,
                 # Data Entities (File/Dataset or ro-crate:DataEntity), Ontology.
@@ -59,10 +51,6 @@ ro-crate:ContextualEntityDefinition a sh:NodeShape, validator:HiddenShape ;
                 FILTER NOT EXISTS { ?this a schema:Dataset }
                 FILTER NOT EXISTS { ?this a owl:Ontology }
 
-                # Restrict validation to nodes which the original crate
-                # describes or claims. Claim-only objects remain in scope after
-                # SHACL rules materialise their entity type.
-                FILTER EXISTS { ?this validator-transformers:validationCandidate true }
             }
         """
     ] ;
