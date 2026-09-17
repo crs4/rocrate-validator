@@ -33,7 +33,7 @@
 import contextlib
 
 from rocrate_validator.errors import ROCrateMetadataNotFoundError
-from rocrate_validator.models import Severity, ValidationContext
+from rocrate_validator.models import CheckResult, CheckResultValue, Severity, ValidationContext
 from rocrate_validator.requirements.python import PyFunctionCheck, check, requirement
 from rocrate_validator.utils import log as logging
 
@@ -100,14 +100,14 @@ class MissingFileLocalPathChecker(PyFunctionCheck):
         return True
 
     @check(name="Missing local File SHOULD use localPath", severity=Severity.RECOMMENDED)
-    def check_missing_file_local_path(self, context: ValidationContext) -> bool:
+    def check_missing_file_local_path(self, context: ValidationContext) -> CheckResultValue:
         try:
             is_detached = context.ro_crate.is_detached()
         except ROCrateMetadataNotFoundError:
             logger.debug("Skipping missing local file check: metadata descriptor is not available")
-            return True
+            return CheckResult.SKIPPED
         if is_detached or context.settings.metadata_only:
-            return True
+            return CheckResult.SKIPPED
         root_entity_id = None
         with contextlib.suppress(Exception):
             root_entity_id = context.ro_crate.metadata.get_root_data_entity().id
@@ -116,7 +116,7 @@ class MissingFileLocalPathChecker(PyFunctionCheck):
             entities = context.ro_crate.metadata.get_data_entities(exclude_web_data_entities=True)
         except ROCrateMetadataNotFoundError:
             logger.debug("Skipping missing local file check: metadata descriptor is not available")
-            return True
+            return CheckResult.SKIPPED
         for entity in entities:
             if root_entity_id and entity.id == root_entity_id:
                 continue
