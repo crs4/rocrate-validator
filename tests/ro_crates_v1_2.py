@@ -192,6 +192,14 @@ class MetadataEntities:
     def invalid_recommended_name(self) -> Path:
         return self.METADATA_ENTITIES_CRATES_PATH / "recommended_name" / "invalid"
 
+    @property
+    def valid_preprocessing_candidates(self) -> Path:
+        return self.METADATA_ENTITIES_CRATES_PATH / "preprocessing_candidates" / "valid"
+
+    @property
+    def invalid_preprocessing_candidates(self) -> Path:
+        return self.METADATA_ENTITIES_CRATES_PATH / "preprocessing_candidates" / "invalid"
+
 
 class MetadataDescriptor:
     METADATA_DESCRIPTOR_CRATES_PATH = BASE_PATH / "6_metadata_descriptor"
