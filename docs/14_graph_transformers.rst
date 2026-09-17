@@ -188,7 +188,8 @@ How the pipeline works
 ----------------------
 
 ``prepare_data_graph`` creates one transient copy of the parsed RO-Crate graph,
-discovers all modules below ``rocrate_validator.graph_transformers``, and runs
+discovers all modules below
+``rocrate_validator.requirements.shacl.transformers``, and runs
 their registered transformers sequentially. The cached source graph is never
 passed to a transformer and remains unchanged.
 
@@ -220,8 +221,8 @@ Every transformer must:
   to the RO-Crate.
 
 The discovery mechanism covers modules bundled in the
-``rocrate_validator.graph_transformers`` package. It is not an entry-point
-system for arbitrary profile-local or third-party plugins.
+``rocrate_validator.requirements.shacl.transformers`` package. It is not an
+entry-point system for arbitrary profile-local or third-party plugins.
 
 Function transformers
 ~~~~~~~~~~~~~~~~~~~~~
@@ -233,7 +234,7 @@ expressed as a function:
 
    from rdflib import Graph
 
-   from rocrate_validator.graph_transformers import graph_transformer
+   from rocrate_validator.requirements.shacl.transformers import graph_transformer
 
 
    @graph_transformer(order=50)
@@ -255,7 +256,7 @@ private helper methods or a clearer class-level contract:
 
    from rdflib import Graph
 
-   from rocrate_validator.graph_transformers import GraphTransformer
+   from rocrate_validator.requirements.shacl.transformers import GraphTransformer
 
 
    class ExampleTransformer(GraphTransformer):
@@ -276,8 +277,9 @@ Private marker predicates and prefixes
 A transformer may annotate the transient graph with private predicates. Keep
 these predicates in the validator-owned namespace
 ``https://github.com/crs4/rocrate-validator/graph-transformers/`` and define
-their RDFLib vocabulary terms in ``graph_transformers/vocabulary.py``. These triples
-are implementation details: they must not be serialized into an RO-Crate or
+their RDFLib vocabulary terms in
+``requirements/shacl/transformers/vocabulary.py``. These triples are
+implementation details: they must not be serialized into an RO-Crate or
 presented as vocabulary terms owned by the crate.
 
 When a SHACL query consumes a marker, declare the namespace in the profile's

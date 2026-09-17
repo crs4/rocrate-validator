@@ -18,8 +18,8 @@ import logging
 
 from rdflib import RDF, BNode, Graph, Literal, URIRef
 
-from rocrate_validator.graph_transformers.base import graph_transformer
-from rocrate_validator.graph_transformers.vocabulary import VALIDATION_CANDIDATE_PREDICATE
+from rocrate_validator.requirements.shacl.transformers.base import graph_transformer
+from rocrate_validator.requirements.shacl.transformers.vocabulary import VALIDATION_CANDIDATE_PREDICATE
 
 logger = logging.getLogger(__name__)
 

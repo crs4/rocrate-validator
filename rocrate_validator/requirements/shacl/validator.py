@@ -34,7 +34,6 @@ from rocrate_validator.constants import (
     VALID_INFERENCE_OPTIONS,
     VALID_INFERENCE_OPTIONS_TYPES,
 )
-from rocrate_validator.graph_transformers import prepare_data_graph
 from rocrate_validator.models import (
     Profile,
     RequirementCheck,
@@ -44,6 +43,7 @@ from rocrate_validator.models import (
 )
 from rocrate_validator.requirements.shacl.errors import SHACLValidationError
 from rocrate_validator.requirements.shacl.models import ShapesRegistry
+from rocrate_validator.requirements.shacl.transformers import prepare_data_graph
 from rocrate_validator.requirements.shacl.utils import make_uris_relative, map_severity
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.rdf import extract_base_from_jsonld

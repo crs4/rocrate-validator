@@ -20,12 +20,12 @@ from threading import Lock
 
 from rdflib import Dataset, Graph
 
-from rocrate_validator.graph_transformers.base import (
+from rocrate_validator.requirements.shacl.transformers.base import (
     GraphTransformer,
     graph_transformer,
     run_registered_transformers,
 )
-from rocrate_validator.graph_transformers.vocabulary import VALIDATION_CANDIDATE_PREDICATE
+from rocrate_validator.requirements.shacl.transformers.vocabulary import VALIDATION_CANDIDATE_PREDICATE
 
 _DISCOVERY_LOCK = Lock()
 _TRANSFORMERS_LOADED = False

@@ -17,9 +17,9 @@ from abc import abstractmethod
 import pytest
 from rdflib import Graph, Literal, Namespace
 
-from rocrate_validator.graph_transformers import GraphTransformer, graph_transformer
-from rocrate_validator.graph_transformers import base as transformer_base
-from rocrate_validator.graph_transformers.base import (
+from rocrate_validator.requirements.shacl.transformers import GraphTransformer, graph_transformer
+from rocrate_validator.requirements.shacl.transformers import base as transformer_base
+from rocrate_validator.requirements.shacl.transformers.base import (
     get_registered_transformers,
     run_registered_transformers,
 )

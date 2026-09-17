@@ -16,11 +16,11 @@ import pytest
 from rdflib import RDF, BNode, Graph, Literal, Namespace, URIRef
 from rdflib.namespace import SH
 
-from rocrate_validator.graph_transformers import (
+from rocrate_validator.requirements.shacl import SHACLValidator
+from rocrate_validator.requirements.shacl.transformers import (
     VALIDATION_CANDIDATE_PREDICATE,
     prepare_data_graph,
 )
-from rocrate_validator.requirements.shacl import SHACLValidator
 
 SCHEMA = Namespace("http://schema.org/")
 CSVW = Namespace("http://www.w3.org/ns/csvw#")
