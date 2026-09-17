@@ -32,6 +32,7 @@ from rocrate_validator.models.severity import (
     RequirementLevel,
     Severity,
 )
+from rocrate_validator.models.skipped_check import SkipCategory, SkippedCheckDetail
 
 if TYPE_CHECKING:
     from collections.abc import Collection
@@ -201,6 +202,7 @@ class ValidationResult:
         self._check_results: dict[str, CheckResult] = {}
         # keep track of the checks that have been skipped
         self._skipped_checks: set[RequirementCheck] = set()
+        self._skipped_check_details: dict[str, SkippedCheckDetail] = {}
         # initialize the statistics
         self._statistics = ValidationStatistics(context.settings)
 
@@ -241,19 +243,34 @@ class ValidationResult:
         """
         return self._executed_checks
 
-    def _record_check_result(self, check: RequirementCheck, result: CheckResultValue) -> CheckResult:
+    def _record_check_result(
+        self,
+        check: RequirementCheck,
+        result: CheckResultValue,
+        skip_message: str | None = None,
+        skip_category: SkipCategory = SkipCategory.RETURNED,
+    ) -> CheckResult:
         """Record a normalized result and keep check collections consistent."""
         normalized_result = normalize_check_result(result)
         self._check_results[check.identifier] = normalized_result
 
         if normalized_result is CheckResult.SKIPPED:
+            skip_category = SkipCategory(skip_category)
             self._executed_checks.discard(check)
             self._skipped_checks.add(check)
             self._executed_checks_results.pop(check.identifier, None)
+            current_detail = self._skipped_check_details.get(check.identifier)
+            if current_detail is None or (skip_message and current_detail.category == "returned"):
+                self._skipped_check_details[check.identifier] = SkippedCheckDetail(
+                    check=check,
+                    message=skip_message or "Check returned SKIPPED",
+                    category=skip_category,
+                )
             return normalized_result
 
         self._executed_checks.add(check)
         self._skipped_checks.discard(check)
+        self._skipped_check_details.pop(check.identifier, None)
         self._executed_checks_results[check.identifier] = normalized_result is CheckResult.PASSED
         return normalized_result
 
@@ -289,17 +306,37 @@ class ValidationResult:
         """Get the number of skipped checks."""
         return len(self._skipped_checks)
 
-    def _add_skipped_check(self, check: RequirementCheck):
+    @property
+    def skipped_check_details(self) -> list[SkippedCheckDetail]:
+        """Get the ordered explanations for skipped checks."""
+        return list(self._skipped_check_details.values())
+
+    def record_skip(
+        self,
+        check: RequirementCheck,
+        message: str,
+        category: SkipCategory = SkipCategory.RETURNED,
+    ) -> None:
+        """Record a skip message while preserving the normalized skipped result."""
+        self._record_check_result(check, CheckResult.SKIPPED, message, category)
+
+    def _add_skipped_check(
+        self,
+        check: RequirementCheck,
+        message: str = "Check was skipped",
+        category: SkipCategory = SkipCategory.RETURNED,
+    ):
         """
         Internal method to add a check to the skipped checks
         """
-        self._record_check_result(check, CheckResult.SKIPPED)
+        self._record_check_result(check, CheckResult.SKIPPED, message, category)
 
     def _remove_skipped_check(self, check: RequirementCheck):
         """
         Internal method to remove a check from the skipped checks
         """
         self._skipped_checks.remove(check)
+        self._skipped_check_details.pop(check.identifier, None)
 
     #  --- Issues ---
     @property
@@ -434,6 +471,7 @@ class ValidationResult:
             "passed": self.passed(cast("Severity", self.context.settings.requirement_severity)),
             "issues": [issue.to_dict() for issue in self.issues],
             "skipped_checks": self.skipped_checks_count,
+            "skipped_check_details": [detail.to_dict() for detail in self.skipped_check_details],
         }
         # add validator version to the settings
         result["validation_settings"]["rocrate_validator_version"] = __version__

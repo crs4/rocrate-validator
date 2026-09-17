@@ -25,6 +25,7 @@ from rocrate_validator.constants import (
     PROFILE_FILE_EXTENSIONS,
     PROFILE_SPECIFICATION_FILE,
 )
+from rocrate_validator.errors import CheckDependencyError
 from rocrate_validator.events import EventType
 from rocrate_validator.models._logging import logger
 from rocrate_validator.models.check_result import CheckResult, CheckResultValue, normalize_check_result
@@ -33,6 +34,7 @@ from rocrate_validator.models.severity import (
     RequirementLevel,
     Severity,
 )
+from rocrate_validator.models.skipped_check import SkipCategory, SkipRequirementCheck
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.python_helpers import (
     get_requirement_name_from_file,
@@ -43,15 +45,6 @@ if TYPE_CHECKING:
 
     from rocrate_validator.models.profile import Profile
     from rocrate_validator.models.validation import ValidationContext
-
-
-class SkipRequirementCheck(Exception):
-    def __init__(self, check: RequirementCheck, message: str = ""):
-        self.check = check
-        self.message = message
-
-    def __str__(self):
-        return f"SkipRequirementCheck(check={self.check})"
 
 
 @total_ordering
@@ -186,6 +179,12 @@ class Requirement(ABC):
     def get_checks(self) -> list[RequirementCheck]:
         return self._checks.copy()
 
+    def set_checks_order(self, checks: list[RequirementCheck]) -> None:
+        """Replace the check order and refresh the public check numbers."""
+        self._checks = checks.copy()
+        for i, check in enumerate(self._checks, start=1):
+            check.order_number = i
+
     def get_check(self, name: str) -> RequirementCheck | None:
         for check in self._checks:
             if check.name == name:
@@ -217,14 +216,29 @@ class Requirement(ABC):
             for _ in self._checks
             if not context.settings.skip_checks or _.identifier not in context.settings.skip_checks
         ]
+        configured_skips = [check for check in self._checks if check not in checks_to_perform]
+        for check in configured_skips:
+            context.result._record_check_result(
+                check,
+                CheckResult.SKIPPED,
+                "Check was skipped by validation settings",
+                SkipCategory.CONFIGURED,
+            )
+        processed_checks: set[RequirementCheck] = set()
         for check in checks_to_perform:
+            processed_checks.add(check)
+            dependency_skip_reason = self.__dependency_skip_reason__(check, context)
+            if dependency_skip_reason:
+                logger.debug("Skipping check '%s' because: %s", check.name, dependency_skip_reason)
+                self.__record_dependency_skip__(check, context, dependency_skip_reason)
+                continue
             try:
                 all_passed, should_break = self.__execute_check__(check, context, all_passed)
                 if should_break:
                     break
             except SkipRequirementCheck as e:
                 logger.debug("Skipping check '%s' because: %s", check.name, e)
-                context.result._add_skipped_check(check)
+                self.__record_skipped_check__(check, context, e.message or "Check requested a skip", e.category)
                 continue
             except Exception as e:
                 if context.maybe_warn_offline_cache_miss(e):
@@ -237,14 +251,96 @@ class Requirement(ABC):
             # Stop running further checks once the metadata is known to be unusable.
             if context.aborted:
                 break
-        skipped_checks = set(self._checks) - set(checks_to_perform)
-        context.result.skipped_checks.update(skipped_checks)
+        self.__record_skipped_checks__(
+            configured_skips,
+            context,
+            "Check was skipped by validation settings",
+            SkipCategory.CONFIGURED,
+        )
+        self.__record_skipped_checks__(
+            set(checks_to_perform) - processed_checks,
+            context,
+            "Validation stopped before this check was executed",
+            SkipCategory.NOT_REACHED,
+        )
         logger.debug(
             "Checks for Requirement '%s' completed. Checks passed? %s",
             self.name,
             all_passed,
         )
         return all_passed
+
+    @staticmethod
+    def __record_skipped_check__(
+        check,
+        context,
+        message: str = "Check was skipped",
+        category: SkipCategory = SkipCategory.RETURNED,
+    ) -> None:
+        from rocrate_validator.models.events import (  # noqa: PLC0415
+            RequirementCheckValidationEvent,
+        )
+
+        context.result._record_check_result(check, CheckResult.SKIPPED, message, category)
+        inherited_reporting_disabled = (
+            check.requirement.profile.identifier != context.profile_identifier
+            and context.settings.disable_inherited_profiles_issue_reporting
+        )
+        if not inherited_reporting_disabled:
+            context.validator.notify(
+                RequirementCheckValidationEvent(
+                    EventType.REQUIREMENT_CHECK_VALIDATION_END,
+                    check,
+                    validation_result=CheckResult.SKIPPED,
+                    message=message,
+                )
+            )
+
+    @classmethod
+    def __record_skipped_checks__(
+        cls,
+        checks,
+        context,
+        message: str = "Check was skipped",
+        category: SkipCategory = SkipCategory.RETURNED,
+    ) -> None:
+        for check in sorted(checks):
+            cls.__record_skipped_check__(check, context, message, category)
+
+    @classmethod
+    def record_skipped_checks(cls, requirements: list[Requirement], context: ValidationContext) -> None:
+        """Record checks belonging to requirements that validation will not reach."""
+        message = "Validation stopped before this check was executed"
+        if context.abort_reason:
+            message = f"Validation stopped before this check was executed: {context.abort_reason}"
+        for requirement in requirements:
+            cls.__record_skipped_checks__(requirement.get_checks(), context, message, SkipCategory.NOT_REACHED)
+
+    @staticmethod
+    def __dependency_skip_reason__(check, context: ValidationContext) -> str | None:
+        if not check.depends_on:
+            return None
+
+        blocked_dependencies = []
+        for dependency_name in check.depends_on:
+            dependency = check.requirement.profile.get_requirement_check(dependency_name)
+            if dependency is None:
+                raise CheckDependencyError(
+                    f"check {check.name!r} depends on unknown check {dependency_name!r}",
+                    check.requirement.profile.identifier,
+                )
+            dependency_result = context.result.get_check_result(dependency)
+            if dependency_result is not CheckResult.PASSED:
+                result_name = dependency_result.value if dependency_result else "not processed"
+                blocked_dependencies.append(f"{dependency.name} ({result_name})")
+
+        if not blocked_dependencies:
+            return None
+        return "Check dependency did not pass: " + ", ".join(blocked_dependencies)
+
+    @staticmethod
+    def __record_dependency_skip__(check, context: ValidationContext, message: str) -> None:
+        Requirement.__record_skipped_check__(check, context, message, SkipCategory.DEPENDENCY)
 
     def __execute_check__(self, check, context, all_passed):
         from rocrate_validator.models.events import (  # noqa: PLC0415
@@ -260,7 +356,7 @@ class Requirement(ABC):
             return all_passed, False
         if check.deactivated:
             logger.debug("Skipping check '%s' because deactivated", check.identifier)
-            context.result._add_skipped_check(check)
+            self.__record_skipped_check__(check, context, "Check is deactivated", SkipCategory.DEACTIVATED)
             return all_passed, False
         # Determine whether to skip event notification for inherited profiles
         skip_event_notify = False
@@ -284,7 +380,12 @@ class Requirement(ABC):
         check_result = check.execute_check(context)
         normalized_result = normalize_check_result(check_result)
         logger.debug("Result of check %s: %s", check.identifier, normalized_result.value)
-        context.result._add_executed_check(check, normalized_result)
+        skip_message = None
+        skip_category = SkipCategory.RETURNED
+        if skip_event_notify and normalized_result is CheckResult.SKIPPED:
+            skip_message = "Inherited profile issue reporting is disabled"
+            skip_category = SkipCategory.INHERITED
+        context.result._record_check_result(check, normalized_result, skip_message, skip_category)
         # Notify the end of the check execution if not skip_event_notify is set to True
         if not skip_event_notify:
             context.validator.notify(
@@ -292,6 +393,7 @@ class Requirement(ABC):
                     EventType.REQUIREMENT_CHECK_VALIDATION_END,
                     check,
                     validation_result=normalized_result,
+                    message=skip_message,
                 )
             )
         logger.debug(
@@ -488,12 +590,145 @@ class RequirementLoader:
             ),
             reverse=False,
         )
+        requirements = RequirementLoader.order_by_dependencies(requirements)
         # assign order numbers to requirements
         for i, requirement in enumerate(requirements):
             requirement._order_number = i + 1
         # log and return the requirements
         logger.debug("Profile %s loaded %s requirements: %s", profile.identifier, len(requirements), requirements)
         return requirements
+
+    @staticmethod
+    def _check_index(requirements: list[Requirement]) -> dict[str, list[RequirementCheck]]:
+        checks_by_name: dict[str, list[RequirementCheck]] = {}
+        for requirement in requirements:
+            for check in requirement.get_checks():
+                checks_by_name.setdefault(check.name, []).append(check)
+        return checks_by_name
+
+    @staticmethod
+    def _resolve_dependency(
+        check: RequirementCheck,
+        dependency_name: str,
+        checks_by_name: dict[str, list[RequirementCheck]],
+    ) -> RequirementCheck:
+        candidates = checks_by_name.get(dependency_name, [])
+        profile_name = check.requirement.profile.identifier
+        if not candidates:
+            raise CheckDependencyError(
+                f"check {check.name!r} depends on unknown check {dependency_name!r}",
+                profile_name,
+            )
+        if len(candidates) > 1:
+            raise CheckDependencyError(
+                f"check {check.name!r} depends on ambiguous check {dependency_name!r}",
+                profile_name,
+            )
+        return candidates[0]
+
+    @staticmethod
+    def _topological_order(
+        nodes: list[Any], edges: dict[int, set[int]], profile_name: str, node_type: str
+    ) -> list[Any]:
+        indegree = [0] * len(nodes)
+        for targets in edges.values():
+            for target in targets:
+                indegree[target] += 1
+
+        ready = [index for index, degree in enumerate(indegree) if degree == 0]
+        ordered_indices: list[int] = []
+        while ready:
+            ready.sort()
+            index = ready.pop(0)
+            ordered_indices.append(index)
+            for target in sorted(edges.get(index, ())):
+                indegree[target] -= 1
+                if indegree[target] == 0:
+                    ready.append(target)
+
+        if len(ordered_indices) != len(nodes):
+            cycle_nodes = [nodes[index] for index, degree in enumerate(indegree) if degree > 0]
+            cycle_names = ", ".join(getattr(node, "name", str(node)) for node in cycle_nodes)
+            raise CheckDependencyError(f"dependency cycle detected among {node_type}: {cycle_names}", profile_name)
+
+        return [nodes[index] for index in ordered_indices]
+
+    @classmethod
+    def order_by_dependencies(cls, requirements: list[Requirement]) -> list[Requirement]:
+        """Apply check dependencies while preserving the baseline requirement order."""
+        if not requirements:
+            return []
+
+        checks_by_name = cls._check_index(requirements)
+        requirement_indices = {id(requirement): index for index, requirement in enumerate(requirements)}
+        requirement_edges: dict[int, set[int]] = {}
+
+        for requirement in requirements:
+            checks = requirement.get_checks()
+            check_indices = {id(check): index for index, check in enumerate(checks)}
+            check_edges: dict[int, set[int]] = {}
+            for check in checks:
+                for dependency_name in check.depends_on:
+                    dependency = cls._resolve_dependency(check, dependency_name, checks_by_name)
+                    dependency_requirement_index = requirement_indices[id(dependency.requirement)]
+                    source_requirement_index = requirement_indices[id(requirement)]
+                    if dependency_requirement_index == source_requirement_index:
+                        check_edges.setdefault(check_indices[id(dependency)], set()).add(check_indices[id(check)])
+                    else:
+                        requirement_edges.setdefault(dependency_requirement_index, set()).add(source_requirement_index)
+
+            if check_edges:
+                ordered_checks = cls._topological_order(
+                    checks,
+                    check_edges,
+                    requirement.profile.identifier,
+                    "checks",
+                )
+                requirement.set_checks_order(ordered_checks)
+
+        return cls._topological_order(
+            requirements,
+            requirement_edges,
+            requirements[0].profile.identifier,
+            "requirements",
+        )
+
+    @classmethod
+    def dependency_closure(
+        cls,
+        requirements: list[Requirement],
+        *,
+        include_dependencies: bool = True,
+    ) -> list[Requirement]:
+        """Return selected requirements plus their transitive check dependencies."""
+        selected: list[Requirement] = []
+        selected_ids: set[int] = set()
+        queue = list(requirements)
+
+        while queue:
+            requirement = queue.pop(0)
+            if id(requirement) in selected_ids:
+                continue
+            selected_ids.add(id(requirement))
+            selected.append(requirement)
+
+            profile_requirements = requirement.profile.requirements
+            checks_by_name = cls._check_index(profile_requirements)
+            for check in requirement.get_checks():
+                for dependency_name in check.depends_on:
+                    dependency = cls._resolve_dependency(check, dependency_name, checks_by_name)
+                    dependency_requirement = dependency.requirement
+                    if id(dependency_requirement) in selected_ids:
+                        continue
+                    if not include_dependencies:
+                        raise CheckDependencyError(
+                            f"check {check.name!r} depends on {dependency_name!r}, "
+                            "but its requirement was not selected",
+                            requirement.profile.identifier,
+                        )
+                    queue.append(dependency_requirement)
+
+        return selected
 
 
 @dataclass(frozen=True)
@@ -521,6 +756,7 @@ class RequirementCheck(ABC):
         hidden: bool | None = None,
         *,
         deactivated: bool = False,
+        depends_on: tuple[str, ...] | None = None,
     ):
         self._requirement: Requirement = requirement
         self._order_number = 0
@@ -529,6 +765,7 @@ class RequirementCheck(ABC):
         self._description = description
         self._hidden = hidden
         self._deactivated = deactivated
+        self._depends_on = tuple(depends_on or ())
 
     @property
     def order_number(self) -> int:
@@ -599,6 +836,11 @@ class RequirementCheck(ABC):
         return self._deactivated
 
     @property
+    def depends_on(self) -> tuple[str, ...]:
+        """Names of checks that must run before this check."""
+        return self._depends_on
+
+    @property
     def hidden(self) -> bool:
         if self._hidden is not None:
             return self._hidden
@@ -624,6 +866,7 @@ class RequirementCheck(ABC):
             "name": self.name,
             "description": self.description,
             "severity": self.severity.name,
+            "depends_on": list(self.depends_on),
         }
         if with_requirement:
             result["requirement"] = self.requirement.to_dict(with_profile=with_profile, with_checks=False)

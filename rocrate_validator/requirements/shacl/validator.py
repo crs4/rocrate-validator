@@ -33,7 +33,13 @@ from rocrate_validator.constants import (
     VALID_INFERENCE_OPTIONS,
     VALID_INFERENCE_OPTIONS_TYPES,
 )
-from rocrate_validator.models import Profile, RequirementCheck, Severity, ValidationContext, ValidationResult
+from rocrate_validator.models import (
+    Profile,
+    RequirementCheck,
+    Severity,
+    ValidationContext,
+    ValidationResult,
+)
 from rocrate_validator.requirements.shacl.models import ShapesRegistry
 from rocrate_validator.requirements.shacl.utils import make_uris_relative, map_severity
 from rocrate_validator.utils import log as logging
@@ -69,7 +75,9 @@ class SHACLValidationContextManager:
         logger.debug("Processing profile: %s (id: %s)", self._profile.name, self._profile.identifier)
         if self._profile.identifier != self._context.settings.profile_identifier:
             logger.debug("Skipping validation of profile %s", self._profile.identifier)
-            self.context.result._add_skipped_check(self._check)
+            # This is a temporary control-flow skip. The target profile runs
+            # SHACL once over the merged shapes graph and records the check
+            # outcome afterwards.
             raise SHACLValidationSkip(f"Skipping validation of profile {self._profile.identifier}")
         logger.debug("ValidationContext of profile %s initialized", self._profile.identifier)
         return self._shacl_context

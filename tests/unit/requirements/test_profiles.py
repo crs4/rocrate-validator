@@ -477,6 +477,17 @@ def test_python_check_decorator_sets_deactivated_flag():
     assert enabled.deactivated is False  # pyright: ignore[reportFunctionMemberAccess]
 
 
+def test_python_check_decorator_sets_dependencies():
+    """The @check decorator must preserve declared check dependencies."""
+    from rocrate_validator.requirements.python import check
+
+    @check(name="dependent", depends_on=("base",))
+    def dependent(self, ctx):
+        return True
+
+    assert dependent.depends_on == ("base",)  # pyright: ignore[reportFunctionMemberAccess]
+
+
 def test_shacl_shape_with_deactivated_marks_check_skipped(fake_profiles_path: str):
     """A child profile that overrides an inherited NodeShape by `sh:name` and
     sets `sh:deactivated true` should produce a check whose `deactivated`

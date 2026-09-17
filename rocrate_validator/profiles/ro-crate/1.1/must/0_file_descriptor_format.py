@@ -48,7 +48,7 @@ class FileDescriptorExistence(PyFunctionCheck):
             return False
         return True
 
-    @check(name="File Descriptor size check")
+    @check(name="File Descriptor size check", depends_on=("File Descriptor Existence",))
     def test_size(self, context: ValidationContext) -> CheckResultValue:
         """
         Check if the file descriptor is not empty
@@ -68,7 +68,7 @@ class FileDescriptorJsonFormat(PyFunctionCheck):
     The file descriptor MUST be a valid JSON file
     """
 
-    @check(name="File Descriptor JSON format")
+    @check(name="File Descriptor JSON format", depends_on=("File Descriptor Existence",))
     def check(self, context: ValidationContext) -> CheckResultValue:
         """Check if the file descriptor is in the correct format"""
         try:
@@ -212,7 +212,10 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
         # return if the context is valid
         return is_valid
 
-    @check(name="File Descriptor @context property validation")
+    @check(
+        name="File Descriptor @context property validation",
+        depends_on=("File Descriptor JSON format",),
+    )
     def check_context(self, context: ValidationContext) -> CheckResultValue:
         """
         Check if the file descriptor contains
@@ -236,7 +239,10 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
                 logger.exception("Error extracting @context from file descriptor")
         return False
 
-    @check(name="File Descriptor JSON-LD must be flattened")
+    @check(
+        name="File Descriptor JSON-LD must be flattened",
+        depends_on=("File Descriptor JSON format",),
+    )
     def check_flattened(self, context: ValidationContext) -> CheckResultValue:
         """Check if the file descriptor is flattened"""
         return self._check_flattened_graph(
@@ -332,7 +338,10 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
                 logger.exception("Error flattening JSON-LD file descriptor")
         return False
 
-    @check(name="Validation of the @id property of the file descriptor entities")
+    @check(
+        name="Validation of the @id property of the file descriptor entities",
+        depends_on=("File Descriptor JSON format",),
+    )
     def check_identifiers(self, context: ValidationContext) -> CheckResultValue:
         """Check if the file descriptor entities have the @id property"""
         try:
@@ -355,7 +364,10 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
                 logger.exception("Error validating @id property of file descriptor entities")
         return False
 
-    @check(name="Validation of the @type property of the file descriptor entities")
+    @check(
+        name="Validation of the @type property of the file descriptor entities",
+        depends_on=("File Descriptor JSON format",),
+    )
     def check_types(self, context: ValidationContext) -> CheckResultValue:
         """Check if the file descriptor entities have the @type property"""
         try:
@@ -450,7 +462,10 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
                 logger.debug(f"Key {k} does not have a valid prefix in context keys, adding to unexpected keys")
                 unexpected_keys[k] = unexpected_keys.get(k, 0) + 1
 
-    @check(name="Validation of the compaction format of the file descriptor")
+    @check(
+        name="Validation of the compaction format of the file descriptor",
+        depends_on=("File Descriptor JSON format",),
+    )
     def check_compaction(self, context: ValidationContext) -> CheckResultValue:
         """Check if the file descriptor is in the **compacted** JSON-LD format"""
         try:

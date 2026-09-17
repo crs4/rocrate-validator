@@ -151,6 +151,32 @@ class DuplicateRequirementCheck(ROCValidatorError):
         return f"DuplicateRequirementCheck({self._check_name!r}, {self._profile_name!r})"
 
 
+class CheckDependencyError(ROCValidatorError):
+    """Raised when a check dependency cannot be resolved or ordered."""
+
+    def __init__(self, message: str, profile_name: str | None = None):
+        self._message = message
+        self._profile_name = profile_name
+
+    @property
+    def message(self) -> str:
+        """The dependency configuration error message."""
+        return self._message
+
+    @property
+    def profile_name(self) -> str | None:
+        """The profile containing the invalid dependency."""
+        return self._profile_name
+
+    def __str__(self) -> str:
+        if self._profile_name:
+            return f"Invalid check dependency in profile {self._profile_name!r}: {self._message}"
+        return f"Invalid check dependency: {self._message}"
+
+    def __repr__(self):
+        return f"CheckDependencyError({self._message!r}, {self._profile_name!r})"
+
+
 class InvalidSerializationFormat(ROCValidatorError):
     """Raised when an invalid serialization format is provided."""
 
