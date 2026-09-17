@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-from rocrate_validator.models import ValidationContext
+from rocrate_validator.models import CheckResult, CheckResultValue, ValidationContext
 from rocrate_validator.requirements.python import PyFunctionCheck, check, requirement
 from rocrate_validator.utils import log as logging
 
@@ -29,7 +29,7 @@ class FileDescriptorExistence(PyFunctionCheck):
     """
 
     @check(name="Detached RO-Crate file descriptor RECOMMENDED naming convention")
-    def test_detached_descriptor_filename(self, context: ValidationContext) -> bool:
+    def test_detached_descriptor_filename(self, context: ValidationContext) -> CheckResultValue:
         """
         Check if the file descriptor of a Detached RO-Crate exists and is named according to the convention.
         In a Detached RO-Crate, the file descriptor SHOULD be named `{prefix}-ro-crate-metadata.json`,
@@ -37,7 +37,7 @@ class FileDescriptorExistence(PyFunctionCheck):
         """
         if context.settings.metadata_only:
             logger.debug("Skipping file descriptor existence check in metadata-only mode")
-            return True
+            return CheckResult.SKIPPED
         if not context.ro_crate.has_descriptor():
             message = f'file descriptor "{context.rel_fd_path}" is not present'
             context.result.add_issue(message, self)

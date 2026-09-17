@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from rocrate_validator.errors import ROCrateMetadataNotFoundError
-from rocrate_validator.models import ValidationContext
+from rocrate_validator.models import CheckResult, CheckResultValue, ValidationContext
 from rocrate_validator.requirements.python import PyFunctionCheck, check, requirement
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.signposting import check_downloadable
@@ -51,13 +51,13 @@ class CiteAsDownloadableChecker(PyFunctionCheck):
         return cite_as_url
 
     @check(name="Root Data Entity: `cite-as` MUST reference a downloadable item")
-    def check_cite_as_downloadable(self, context: ValidationContext) -> bool:
+    def check_cite_as_downloadable(self, context: ValidationContext) -> CheckResultValue:
         if (
             context.settings.skip_availability_check
             or not (context.settings.creation_time or context.settings.enforce_availability)
             or context.settings.metadata_only
         ):
-            return True
+            return CheckResult.SKIPPED
 
         try:
             root_entity = context.ro_crate.metadata.get_root_data_entity()
@@ -84,7 +84,7 @@ class CiteAsDownloadableChecker(PyFunctionCheck):
 
         except ROCrateMetadataNotFoundError:
             logger.debug("Skipping Root Data Entity cite-as check: metadata descriptor is not available")
-            return True
+            return CheckResult.SKIPPED
         except Exception as e:
             context.result.add_issue(f"Error checking `cite-as` downloadability: {e!s}", self)
             return False
