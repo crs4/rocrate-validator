@@ -32,6 +32,7 @@ class WorkflowFilesExistence(PyFunctionCheck):
         """Check if the crate contains the workflow diagram."""
         if context.settings.metadata_only:
             logger.debug("Skipping file descriptor existence check in metadata-only mode")
+            context.record_skip(self, "metadata-only mode", "configured")
             return CheckResult.SKIPPED
 
         try:
@@ -47,8 +48,10 @@ class WorkflowFilesExistence(PyFunctionCheck):
             return True
         except ROCrateMetadataNotFoundError:
             logger.debug("Skipping workflow diagram check: metadata descriptor is not available")
+            context.record_skip(self, "metadata descriptor is not available", "exception")
             return CheckResult.SKIPPED
-        except Exception:
+        except (AttributeError, OSError, TypeError, ValueError) as e:
+            context.result.add_issue(f"Unable to check the workflow diagram: {e}", self)
             if logger.isEnabledFor(logging.DEBUG):
                 logger.exception("Unexpected error checking main workflow image existence")
             return False
@@ -71,8 +74,10 @@ class WorkflowFilesExistence(PyFunctionCheck):
             return True
         except ROCrateMetadataNotFoundError:
             logger.debug("Skipping workflow description check: metadata descriptor is not available")
+            context.record_skip(self, "metadata descriptor is not available", "exception")
             return CheckResult.SKIPPED
-        except Exception:
+        except (AttributeError, OSError, TypeError, ValueError) as e:
+            context.result.add_issue(f"Unable to check the workflow description: {e}", self)
             if logger.isEnabledFor(logging.DEBUG):
                 logger.exception("Unexpected error checking workflow description existence")
             return False

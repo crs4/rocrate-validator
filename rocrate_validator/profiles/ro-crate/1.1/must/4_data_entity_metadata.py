@@ -37,6 +37,7 @@ class DataEntityRequiredChecker(PyFunctionCheck):
         # Skip the check in metadata-only mode
         if context.settings.metadata_only:
             logger.debug("Skipping file descriptor existence check in metadata-only mode")
+            context.record_skip(self, "metadata-only mode", "configured")
             return CheckResult.SKIPPED
         # Perform the check
         result = True
@@ -47,6 +48,7 @@ class DataEntityRequiredChecker(PyFunctionCheck):
             entities = context.ro_crate.metadata.get_data_entities(exclude_web_data_entities=True)
         except ROCrateMetadataNotFoundError:
             logger.debug("Skipping Data Entity availability check: metadata descriptor is not available")
+            context.record_skip(self, "metadata descriptor is not available", "exception")
             return CheckResult.SKIPPED
         for entity in entities:
             assert entity.id is not None, "Entity has no @id"
@@ -76,7 +78,7 @@ class DataEntityRequiredChecker(PyFunctionCheck):
                         f"The RO-Crate does not include the Data Entity '{entity.id}' as part of its payload", self
                     )
                     result = False
-            except Exception as e:
+            except (AttributeError, OSError, TypeError, ValueError) as e:
                 context.result.add_issue(
                     f"Unable to check the the presence of the Data Entity '{entity.id}' within the RO-Crate", self
                 )

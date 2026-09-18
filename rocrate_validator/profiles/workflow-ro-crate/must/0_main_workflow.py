@@ -41,6 +41,7 @@ class MainWorkflowFileExistence(PyFunctionCheck):
             return True
         except ROCrateMetadataNotFoundError:
             logger.debug("Skipping main workflow check: metadata descriptor is not available")
+            context.record_skip(self, "metadata descriptor is not available", "exception")
             return CheckResult.SKIPPED
         except (TypeError, ValueError) as error:
             if str(error) == "no main workflow in metadata file descriptor":

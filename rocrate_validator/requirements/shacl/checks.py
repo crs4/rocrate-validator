@@ -62,6 +62,7 @@ class SHACLCheck(RequirementCheck):
         self,
         requirement: Requirement,
         shape: Shape,
+        *,
         name: str | None = None,
         root: bool = False,
         hidden: bool | None = None,
@@ -128,11 +129,7 @@ class SHACLCheck(RequirementCheck):
 
         owning_profile = self.requirement.profile
         for profile in Profile.get_descendants(owning_profile):
-            try:
-                registry = ShapesRegistry.get_instance(profile)
-            except Exception as e:
-                logger.debug("Unable to get shapes registry for profile %s: %s", profile.identifier, e)
-                continue
+            registry = ShapesRegistry.get_instance(profile)
             if registry.is_node_deactivated(shape.node):
                 return True
         return False

@@ -57,6 +57,7 @@ class EntityIdentifierFormatChecker(PyFunctionCheck):
             entities = context.ro_crate.metadata.as_dict().get("@graph", [])
         except ROCrateMetadataNotFoundError:
             logger.debug("Skipping parent traversal check: metadata descriptor is not available")
+            context.record_skip(self, "metadata descriptor is not available", "exception")
             return CheckResult.SKIPPED
         for entity in entities:
             entity_id = entity.get("@id", "")
@@ -85,6 +86,7 @@ class EntityIdentifierFormatChecker(PyFunctionCheck):
             entities = context.ro_crate.metadata.as_dict().get("@graph", [])
         except ROCrateMetadataNotFoundError:
             logger.debug("Skipping entity identifier encoding check: metadata descriptor is not available")
+            context.record_skip(self, "metadata descriptor is not available", "exception")
             return CheckResult.SKIPPED
         for entity in entities:
             entity_id = entity.get("@id", "")
@@ -114,17 +116,18 @@ class EntityIdentifierFormatChecker(PyFunctionCheck):
         result = True
         ro_crate_metadata = context.ro_crate.metadata
         non_contextual_ids = set()
-        with contextlib.suppress(Exception):
+        with contextlib.suppress(ValueError):
             non_contextual_ids.add(ro_crate_metadata.get_file_descriptor_entity().id)
-        with contextlib.suppress(Exception):
+        with contextlib.suppress(ValueError):
             non_contextual_ids.add(ro_crate_metadata.get_root_data_entity().id)
-        with contextlib.suppress(Exception):
+        with contextlib.suppress(ValueError):
             non_contextual_ids.update(e.id for e in ro_crate_metadata.get_data_entities())
 
         try:
             entities = ro_crate_metadata.as_dict().get("@graph", [])
         except ROCrateMetadataNotFoundError:
             logger.debug("Skipping named entity identifier check: metadata descriptor is not available")
+            context.record_skip(self, "metadata descriptor is not available", "exception")
             return CheckResult.SKIPPED
         for entity in entities:
             entity_id = entity.get("@id", "")

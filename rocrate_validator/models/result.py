@@ -32,7 +32,7 @@ from rocrate_validator.models.severity import (
     RequirementLevel,
     Severity,
 )
-from rocrate_validator.models.skipped_check import SkipCategory, SkippedCheckDetail
+from rocrate_validator.models.skipped_check import SkipCategory, SkipCategoryInput, SkippedCheckDetail
 
 if TYPE_CHECKING:
     from collections.abc import Collection
@@ -248,14 +248,14 @@ class ValidationResult:
         check: RequirementCheck,
         result: CheckResultValue,
         skip_message: str | None = None,
-        skip_category: SkipCategory = SkipCategory.RETURNED,
+        skip_category: SkipCategoryInput = SkipCategory.RETURNED,
     ) -> CheckResult:
         """Record a normalized result and keep check collections consistent."""
         normalized_result = normalize_check_result(result)
         self._check_results[check.identifier] = normalized_result
 
         if normalized_result is CheckResult.SKIPPED:
-            skip_category = SkipCategory(skip_category)
+            normalized_skip_category = SkipCategory(skip_category)
             self._executed_checks.discard(check)
             self._skipped_checks.add(check)
             self._executed_checks_results.pop(check.identifier, None)
@@ -264,7 +264,7 @@ class ValidationResult:
                 self._skipped_check_details[check.identifier] = SkippedCheckDetail(
                     check=check,
                     message=skip_message or "Check returned SKIPPED",
-                    category=skip_category,
+                    category=normalized_skip_category,
                 )
             return normalized_result
 
@@ -315,7 +315,7 @@ class ValidationResult:
         self,
         check: RequirementCheck,
         message: str,
-        category: SkipCategory = SkipCategory.RETURNED,
+        category: SkipCategoryInput = SkipCategory.RETURNED,
     ) -> None:
         """Record a skip message while preserving the normalized skipped result."""
         self._record_check_result(check, CheckResult.SKIPPED, message, category)
@@ -324,7 +324,7 @@ class ValidationResult:
         self,
         check: RequirementCheck,
         message: str = "Check was skipped",
-        category: SkipCategory = SkipCategory.RETURNED,
+        category: SkipCategoryInput = SkipCategory.RETURNED,
     ):
         """
         Internal method to add a check to the skipped checks

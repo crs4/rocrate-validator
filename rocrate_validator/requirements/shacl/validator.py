@@ -40,6 +40,7 @@ from rocrate_validator.models import (
     ValidationContext,
     ValidationResult,
 )
+from rocrate_validator.requirements.shacl.errors import SHACLValidationError
 from rocrate_validator.requirements.shacl.models import ShapesRegistry
 from rocrate_validator.requirements.shacl.utils import make_uris_relative, map_severity
 from rocrate_validator.utils import log as logging
@@ -205,12 +206,8 @@ class SHACLValidationContext(ValidationContext):
 
         :return: The @base value if found, None otherwise
         """
-        try:
-            metadata_dict = self.ro_crate.metadata.as_dict()
-            return extract_base_from_jsonld(metadata_dict)
-        except Exception as e:
-            logger.debug("Unable to extract @base from data graph metadata: %s", e)
-            return None
+        metadata_dict = self.ro_crate.metadata.as_dict()
+        return extract_base_from_jsonld(metadata_dict)
 
     def __load_ontology_graph__(
         self, profile_path: Path, ontology_filename: str = DEFAULT_ONTOLOGY_FILE
@@ -413,6 +410,7 @@ class SHACLValidator:
         self,
         # data to validate
         data_graph: GraphLike | str | bytes,
+        *,
         # validation settings
         abort_on_first: bool | None = True,
         advanced: bool | None = True,
@@ -474,22 +472,28 @@ class SHACLValidator:
             _inject_default_prefixes(self._shapes_graph)
 
         # validate the data graph using pyshacl.validate
-        conforms, results_graph, results_text = pyshacl.validate(
-            data_graph,
-            shacl_graph=self.shapes_graph,
-            ont_graph=self.ont_graph,
-            inference=inference or ("owlrl" if self.ont_graph else None),
-            inplace=inplace,
-            abort_on_first=abort_on_first,
-            allow_infos=allow_infos,
-            allow_warnings=allow_warnings,
-            meta_shacl=meta_shacl,
-            iterate_rules=iterate_rules,
-            advanced=advanced,
-            js=False,
-            debug=False,
-            **kwargs,
-        )
+        try:
+            conforms, results_graph, results_text = pyshacl.validate(
+                data_graph,
+                shacl_graph=self.shapes_graph,
+                ont_graph=self.ont_graph,
+                inference=inference or ("owlrl" if self.ont_graph else None),
+                inplace=inplace,
+                abort_on_first=abort_on_first,
+                allow_infos=allow_infos,
+                allow_warnings=allow_warnings,
+                meta_shacl=meta_shacl,
+                iterate_rules=iterate_rules,
+                advanced=advanced,
+                js=False,
+                debug=False,
+                **kwargs,
+            )
+        except Exception as e:
+            version = getattr(pyshacl, "__version__", "unknown")
+            raise SHACLValidationError(
+                message=(f"SHACL validation could not be executed by pySHACL {version}: {type(e).__name__}: {e}")
+            ) from e
         # log the validation results
         logger.debug("pyshacl.validate result: Conforms: %r", conforms)
         logger.debug("pyshacl.validate result: Results Graph: %r", results_graph)

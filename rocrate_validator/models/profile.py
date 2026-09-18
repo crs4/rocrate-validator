@@ -68,6 +68,7 @@ class Profile:
         self,
         profiles_base_path: Path,
         profile_path: Path,
+        *,
         requirements: list[Requirement] | None = None,
         identifier: str | None = None,
         publicID: str | None = None,

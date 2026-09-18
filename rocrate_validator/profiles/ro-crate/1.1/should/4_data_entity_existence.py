@@ -39,6 +39,7 @@ class DataEntityRecommendedChecker(PyFunctionCheck):
         # Skip the check in metadata-only mode
         if context.settings.metadata_only:
             logger.debug("Skipping file descriptor existence check in metadata-only mode")
+            context.record_skip(self, "metadata-only mode", "configured")
             return CheckResult.SKIPPED
         # Perform the check
         result = True
@@ -50,6 +51,7 @@ class DataEntityRecommendedChecker(PyFunctionCheck):
             ]
         except ROCrateMetadataNotFoundError:
             logger.debug("Skipping Data Entity availability check: metadata descriptor is not available")
+            context.record_skip(self, "metadata descriptor is not available", "exception")
             return CheckResult.SKIPPED
         for entity in entities:
             assert entity.id is not None, "Entity has no @id"
@@ -57,7 +59,7 @@ class DataEntityRecommendedChecker(PyFunctionCheck):
                 if not entity.is_available():
                     context.result.add_issue(f"Data Entity {entity.id} is not available", self)
                     result = False
-            except Exception as e:
+            except (AttributeError, OSError, TypeError, ValueError) as e:
                 context.result.add_issue(f"Web-based Data Entity {entity.id} is not available: {e}", self)
                 result = False
             if not result and context.fail_fast:

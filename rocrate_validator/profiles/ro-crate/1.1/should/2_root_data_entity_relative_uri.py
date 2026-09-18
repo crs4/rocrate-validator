@@ -36,10 +36,11 @@ class RootDataEntityRelativeURI(PyFunctionCheck):
             if context.ro_crate.metadata.get_root_data_entity().id != "./":
                 context.result.add_issue("Root Data Entity URI is not denoted by the string `./`", self)
                 return False
-            return CheckResult.SKIPPED
+            return True
         except ROCrateMetadataNotFoundError:
             logger.debug("Skipping Root Data Entity URI check: metadata descriptor is not available")
-            return True
-        except Exception as e:
+            context.record_skip(self, "metadata descriptor is not available", "exception")
+            return CheckResult.SKIPPED
+        except (AttributeError, TypeError, ValueError) as e:
             context.result.add_issue(f"Error checking Root Data Entity URI: {e!s}", self)
             return False
