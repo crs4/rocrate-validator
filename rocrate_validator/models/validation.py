@@ -615,30 +615,28 @@ class ValidationContext:
             allow_requirement_check_override=self.allow_requirement_check_override,
         )
 
-        # Check if the target profile is in the list of profiles
-        profile = Profile.get_by_identifier(self.profile_identifier)
-        if not profile:
-            try:
-                candidate_profiles = Profile.get_by_token(self.profile_identifier)
-                logger.debug("Candidate profiles found by token: %s", profile)
-                if candidate_profiles:
-                    # Find the profile with the highest version number
-                    profile = max(candidate_profiles, key=lambda p: p.version or "")
-                    self.settings.profile_identifier = profile.identifier
-                    logger.debug("Profile with the highest version number: %s", profile)
-            except AttributeError as e:
-                # raised when the profile is not found
-                if logger.isEnabledFor(logging.DEBUG):
-                    logger.exception("Profile not found: %s", self.profile_identifier)
-                raise ProfileNotFound(
-                    self.profile_identifier,
-                    message=f"Profile '{self.profile_identifier}' not found in '{self.profiles_path}'",
-                ) from e
-            if profile is None:
-                raise ProfileNotFound(
-                    self.profile_identifier,
-                    message=f"Profile '{self.profile_identifier}' not found in '{self.profiles_path}'",
-                )
+        # Check if the target profile is in the list of profiles. A bare token
+        # (e.g. `ro-crate`) resolves to the highest available version.
+        try:
+            profile = Profile.resolve_in_list(profiles, self.profile_identifier)
+        except AttributeError as e:
+            # raised when the profile is not found
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.exception("Profile not found: %s", self.profile_identifier)
+            raise ProfileNotFound(
+                self.profile_identifier,
+                message=f"Profile '{self.profile_identifier}' not found in '{self.profiles_path}'",
+            ) from e
+        if profile is None:
+            raise ProfileNotFound(
+                self.profile_identifier,
+                message=f"Profile '{self.profile_identifier}' not found in '{self.profiles_path}'",
+            )
+        # Record the resolved identifier, so that downstream consumers (e.g. the
+        # statistics) agree on which profile was actually used.
+        if profile.identifier != self.profile_identifier:
+            logger.debug("Profile %r resolved to %r", self.profile_identifier, profile.identifier)
+            self.settings.profile_identifier = profile.identifier
 
         # if the inheritance is enabled, return only the target profile
         if not self.inheritance_enabled:
