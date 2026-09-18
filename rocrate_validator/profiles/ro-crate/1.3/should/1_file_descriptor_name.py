@@ -37,6 +37,7 @@ class FileDescriptorExistence(PyFunctionCheck):
         """
         if context.settings.metadata_only:
             logger.debug("Skipping file descriptor existence check in metadata-only mode")
+            context.record_skip(self, "metadata-only mode", "configured")
             return CheckResult.SKIPPED
         if not context.ro_crate.has_descriptor():
             message = f'file descriptor "{context.rel_fd_path}" is not present'

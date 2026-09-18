@@ -105,17 +105,20 @@ class MissingFileLocalPathChecker(PyFunctionCheck):
             is_detached = context.ro_crate.is_detached()
         except ROCrateMetadataNotFoundError:
             logger.debug("Skipping missing local file check: metadata descriptor is not available")
+            context.record_skip(self, "metadata descriptor is not available", "exception")
             return CheckResult.SKIPPED
         if is_detached or context.settings.metadata_only:
+            context.record_skip(self, "RO-Crate is detached or metadata-only mode is active", "configured")
             return CheckResult.SKIPPED
         root_entity_id = None
-        with contextlib.suppress(Exception):
+        with contextlib.suppress(ValueError):
             root_entity_id = context.ro_crate.metadata.get_root_data_entity().id
         result = True
         try:
             entities = context.ro_crate.metadata.get_data_entities(exclude_web_data_entities=True)
         except ROCrateMetadataNotFoundError:
             logger.debug("Skipping missing local file check: metadata descriptor is not available")
+            context.record_skip(self, "metadata descriptor is not available", "exception")
             return CheckResult.SKIPPED
         for entity in entities:
             if root_entity_id and entity.id == root_entity_id:

@@ -35,9 +35,11 @@ class DetachedROCrateRootDataEntityIdentifierChecker(PyFunctionCheck):
         """
         try:
             if not context.ro_crate.is_detached():
+                context.record_skip(self, "RO-Crate is attached", "returned")
                 return CheckResult.SKIPPED
             root_entity = context.ro_crate.metadata.get_root_data_entity()
             if not root_entity.is_remote():
+                context.record_skip(self, "root data entity is not remote", "returned")
                 return CheckResult.SKIPPED
 
             if root_entity.id == "./":
@@ -54,8 +56,9 @@ class DetachedROCrateRootDataEntityIdentifierChecker(PyFunctionCheck):
             return True
         except ROCrateMetadataNotFoundError:
             logger.debug("Skipping Root Data Entity identifier check: metadata descriptor is not available")
+            context.record_skip(self, "metadata descriptor is not available", "exception")
             return CheckResult.SKIPPED
-        except Exception as e:
+        except (AttributeError, TypeError, ValueError) as e:
             context.result.add_issue(f"Error checking Root Data Entity @id: {e!s}", self)
             return False
 
@@ -75,9 +78,11 @@ class RootDataEntityCiteAsIdentifierChecker(PyFunctionCheck):
         """
         try:
             if not context.ro_crate.is_detached():
+                context.record_skip(self, "RO-Crate is attached", "returned")
                 return CheckResult.SKIPPED
             root_entity = context.ro_crate.metadata.get_root_data_entity()
             if not root_entity.is_remote():
+                context.record_skip(self, "root data entity is not remote", "returned")
                 return CheckResult.SKIPPED
 
             # Check if the `cite-as` property is present and references the Root Data Entity
@@ -102,8 +107,9 @@ class RootDataEntityCiteAsIdentifierChecker(PyFunctionCheck):
             return True
         except ROCrateMetadataNotFoundError:
             logger.debug("Skipping Root Data Entity cite-as check: metadata descriptor is not available")
+            context.record_skip(self, "metadata descriptor is not available", "exception")
             return CheckResult.SKIPPED
-        except Exception as e:
+        except (AttributeError, TypeError, ValueError) as e:
             context.result.add_issue(f"Error checking Root Data Entity `cite-as` reference: {e!s}", self)
             return False
 
@@ -149,8 +155,10 @@ class RootDataEntityPersistentIdentifierChecker(PyFunctionCheck):
     @check(name="Root Data Entity: identifier SHOULD resolve to RO-Crate content", severity=Severity.RECOMMENDED)
     def check_identifier_resolvable(self, context: ValidationContext) -> CheckResultValue:  # noqa: PLR0911
         if context.settings.skip_availability_check:
+            context.record_skip(self, "availability checks are disabled", "configured")
             return CheckResult.SKIPPED
         if context.settings.metadata_only:
+            context.record_skip(self, "metadata-only mode", "configured")
             return CheckResult.SKIPPED
         try:
             root_entity = context.ro_crate.metadata.get_root_data_entity()
@@ -178,7 +186,8 @@ class RootDataEntityPersistentIdentifierChecker(PyFunctionCheck):
             return result
         except ROCrateMetadataNotFoundError:
             logger.debug("Skipping Root Data Entity identifier resolution check: metadata descriptor is not available")
+            context.record_skip(self, "metadata descriptor is not available", "exception")
             return CheckResult.SKIPPED
-        except Exception as e:
+        except (AttributeError, OSError, TypeError, ValueError) as e:
             context.result.add_issue(f"Error checking Root Data Entity identifier resolution: {e!s}", self)
             return False

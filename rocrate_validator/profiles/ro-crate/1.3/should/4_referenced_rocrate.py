@@ -74,18 +74,25 @@ class ReferencedROCrateSignpostingCiteAsChecker(PyFunctionCheck):
             or not (context.settings.creation_time or context.settings.enforce_availability)
             or context.settings.metadata_only
         ):
+            context.record_skip(self, "availability check is disabled or not applicable", "configured")
             return CheckResult.SKIPPED
 
         result = True
         try:
             root = context.ro_crate.metadata.get_root_data_entity()
-        except Exception:
+        except ROCrateMetadataNotFoundError:
+            logger.debug("Skipping referenced RO-Crate check: metadata descriptor is not available")
+            context.record_skip(self, "metadata descriptor is not available", "exception")
+            return CheckResult.SKIPPED
+        except ValueError:
+            context.record_skip(self, "root data entity is not available", "exception")
             return CheckResult.SKIPPED
 
         try:
             entities = context.ro_crate.metadata.get_dataset_entities()
         except ROCrateMetadataNotFoundError:
             logger.debug("Skipping referenced RO-Crate check: metadata descriptor is not available")
+            context.record_skip(self, "metadata descriptor is not available", "exception")
             return CheckResult.SKIPPED
         for entity in entities:
             if not self._needs_sddatepublished_check(entity, root.id):
