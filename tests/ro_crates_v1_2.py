@@ -82,6 +82,14 @@ class MetadataDocument:
     def invalid_named_entity_id_format(self) -> Path:
         return self.METADATA_DOCUMENT_CRATES_PATH / "named_entity_id_format" / "invalid"
 
+    @property
+    def valid_schema_org_iri_protocol(self) -> Path:
+        return self.METADATA_DOCUMENT_CRATES_PATH / "schema_org_iri_protocol" / "valid"
+
+    @property
+    def invalid_schema_org_iri_protocol(self) -> Path:
+        return self.METADATA_DOCUMENT_CRATES_PATH / "schema_org_iri_protocol" / "invalid"
+
 
 class MetadataDocumentFormat:
     METADATA_DOCUMENT_FORMAT_CRATES_PATH = MetadataDocument.METADATA_DOCUMENT_CRATES_PATH / "format"
