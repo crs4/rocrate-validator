@@ -40,13 +40,16 @@ class DataEntityRequiredChecker(PyFunctionCheck):
             is_detached = context.ro_crate.is_detached()
         except ROCrateMetadataNotFoundError:
             logger.debug("Skipping Data Entity availability check: metadata descriptor is not available")
+            context.record_skip(self, "metadata descriptor is not available", "exception")
             return CheckResult.SKIPPED
         if is_detached:
             logger.debug("Skipping data entity payload checks for detached RO-Crate")
+            context.record_skip(self, "RO-Crate is detached", "returned")
             return CheckResult.SKIPPED
         # Skip the check in metadata-only mode
         if context.settings.metadata_only:
             logger.debug("Skipping file descriptor existence check in metadata-only mode")
+            context.record_skip(self, "metadata-only mode", "configured")
             return CheckResult.SKIPPED
         # Perform the check
         result = True
@@ -54,6 +57,7 @@ class DataEntityRequiredChecker(PyFunctionCheck):
             entities = context.ro_crate.metadata.get_data_entities(exclude_web_data_entities=True)
         except ROCrateMetadataNotFoundError:
             logger.debug("Skipping Data Entity availability check: metadata descriptor is not available")
+            context.record_skip(self, "metadata descriptor is not available", "exception")
             return CheckResult.SKIPPED
         for entity in entities:
             assert entity.id is not None, "Entity has no @id"
@@ -84,7 +88,7 @@ class DataEntityRequiredChecker(PyFunctionCheck):
                         f"The RO-Crate does not include the Data Entity '{entity.id}' as part of its payload", self
                     )
                     result = False
-            except Exception as e:
+            except (AttributeError, OSError, TypeError, ValueError) as e:
                 context.result.add_issue(
                     f"Unable to check the the presence of the Data Entity '{entity.id}' within the RO-Crate", self
                 )
@@ -109,17 +113,20 @@ class DetachedDataEntityChecker(PyFunctionCheck):
             is_detached = context.ro_crate.is_detached()
         except ROCrateMetadataNotFoundError:
             logger.debug("Skipping detached Data Entity check: metadata descriptor is not available")
+            context.record_skip(self, "metadata descriptor is not available", "exception")
             return CheckResult.SKIPPED
         if not is_detached:
+            context.record_skip(self, "RO-Crate is attached", "returned")
             return CheckResult.SKIPPED
         result = True
         root_entity_id = None
-        with contextlib.suppress(Exception):
+        with contextlib.suppress(ValueError):
             root_entity_id = context.ro_crate.metadata.get_root_data_entity().id
         try:
             entities = context.ro_crate.metadata.get_data_entities()
         except ROCrateMetadataNotFoundError:
             logger.debug("Skipping detached Data Entity check: metadata descriptor is not available")
+            context.record_skip(self, "metadata descriptor is not available", "exception")
             return CheckResult.SKIPPED
         for entity in entities:
             if root_entity_id and entity.id == root_entity_id:
@@ -149,7 +156,7 @@ class DataEntityIdentifierChecker(PyFunctionCheck):
         root_entity_id = None
         root_entity_is_local = False
         root_entity_absolute_path = None
-        with contextlib.suppress(Exception):
+        with contextlib.suppress(ValueError):
             root_data_entity = context.ro_crate.metadata.get_root_data_entity()
             root_entity_id = root_data_entity.id
             root_entity_is_local = (
@@ -160,6 +167,7 @@ class DataEntityIdentifierChecker(PyFunctionCheck):
             entities = context.ro_crate.metadata.get_data_entities()
         except ROCrateMetadataNotFoundError:
             logger.debug("Skipping Data Entity identifier check: metadata descriptor is not available")
+            context.record_skip(self, "metadata descriptor is not available", "exception")
             return CheckResult.SKIPPED
         for entity in entities:
             if root_entity_id and entity.id == root_entity_id:
@@ -202,14 +210,17 @@ class DataEntityIdentifierChecker(PyFunctionCheck):
             is_detached = context.ro_crate.is_detached()
         except ROCrateMetadataNotFoundError:
             logger.debug("Skipping relative Data Entity identifier check: metadata descriptor is not available")
+            context.record_skip(self, "metadata descriptor is not available", "exception")
             return CheckResult.SKIPPED
         if is_detached:
+            context.record_skip(self, "RO-Crate is detached", "returned")
             return CheckResult.SKIPPED
         result = True
         try:
             entities = context.ro_crate.metadata.get_data_entities()
         except ROCrateMetadataNotFoundError:
             logger.debug("Skipping relative Data Entity identifier check: metadata descriptor is not available")
+            context.record_skip(self, "metadata descriptor is not available", "exception")
             return CheckResult.SKIPPED
         for entity in entities:
             if entity.has_local_identifier() or entity.is_remote():
@@ -239,6 +250,7 @@ class DataEntityCitationChecker(PyFunctionCheck):
             entities = context.ro_crate.metadata.get_data_entities()
         except ROCrateMetadataNotFoundError:
             logger.debug("Skipping Data Entity citation check: metadata descriptor is not available")
+            context.record_skip(self, "metadata descriptor is not available", "exception")
             return CheckResult.SKIPPED
         for entity in entities:
             citations = entity.get_property("citation")
@@ -295,12 +307,14 @@ class WebDataEntityRequiredChecker(PyFunctionCheck):
             or not (context.settings.creation_time or context.settings.enforce_availability)
             or context.settings.metadata_only
         ):
+            context.record_skip(self, "availability check is disabled or not requested", "configured")
             return CheckResult.SKIPPED
         result = True
         try:
             entities = context.ro_crate.metadata.get_web_data_entities()
         except ROCrateMetadataNotFoundError:
             logger.debug("Skipping web-based Data Entity availability check: metadata descriptor is not available")
+            context.record_skip(self, "metadata descriptor is not available", "exception")
             return CheckResult.SKIPPED
         for entity in entities:
             assert entity.id is not None, "Entity has no @id"
@@ -313,7 +327,7 @@ class WebDataEntityRequiredChecker(PyFunctionCheck):
                 if not dl.is_downloadable:
                     context.result.add_issue(self._not_downloadable_message(entity.id, dl), self)
                     result = False
-            except Exception as e:
+            except (OSError, RuntimeError, TypeError, ValueError) as e:
                 context.result.add_issue(f"Web-based Data Entity '{entity.id}' availability check failed: {e}", self)
                 result = False
             if not result and context.fail_fast:
