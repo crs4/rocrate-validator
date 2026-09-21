@@ -775,11 +775,11 @@ class ValidROCrate12:
 
     @property
     def detached(self) -> Path:
-        return self.base_path / "detached" / "dataset-ro-crate-metadata.json"
+        return self.base_path / "detached-1.2" / "dataset-ro-crate-metadata.json"
 
     @property
     def detached_prefixed(self) -> Path:
-        return self.base_path / "detached" / "test-ro-crate-metadata.json"
+        return self.base_path / "detached-1.2" / "test-ro-crate-metadata.json"
 
 
 class InvalidROCrate12:

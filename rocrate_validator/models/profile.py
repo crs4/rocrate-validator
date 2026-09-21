@@ -793,7 +793,7 @@ class Profile:
         """
         Resolve the given identifier against the given list of profiles.
 
-        An exact match on the profile identifier (e.g. `ro-crate-1.2`) always wins.
+        An exact match on the profile identifier (e.g. `ro-crate-1.3`) always wins.
         Failing that, the identifier is treated as a bare token (e.g. `ro-crate`) and
         resolves to the **highest available version** of that token.
 

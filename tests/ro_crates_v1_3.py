@@ -109,3 +109,23 @@ class WorkflowsScripts:
     @property
     def invalid_image_about(self) -> Path:
         return self.WORKFLOWS_SCRIPTS_CRATES_PATH / "image_about" / "invalid"
+
+
+class ValidROCrate13:
+    base_path = VALID_CRATES_DATA_PATH
+
+    @property
+    def attached(self) -> Path:
+        return self.base_path / "ro-crate-1.3-attached"
+
+    @property
+    def attached_absolute_root(self) -> Path:
+        return self.base_path / "ro-crate-1.3-absolute-root"
+
+    @property
+    def detached(self) -> Path:
+        return self.base_path / "detached-1.3" / "dataset-ro-crate-metadata.json"
+
+    @property
+    def detached_prefixed(self) -> Path:
+        return self.base_path / "detached-1.3" / "test-ro-crate-metadata.json"
