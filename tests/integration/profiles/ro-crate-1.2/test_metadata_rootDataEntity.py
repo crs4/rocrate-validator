@@ -126,7 +126,7 @@ def test_valid_recommended_citeAs_for_resolvable_id():
         profile_identifier="ro-crate-1.2",
         # The test crate focuses on cite-as, not identifier format;
         # skip the identifier-presence and PropertyValue-approach checks.
-        skip_checks=["ro-crate-1.2_51.1", "ro-crate-1.2_52.1"],
+        skip_checks=["ro-crate-1.2_52.1", "ro-crate-1.2_53.1"],
     )
 
 
@@ -215,7 +215,7 @@ def test_valid_recommended_identifier_resolution(monkeypatch):
         profile_identifier="ro-crate-1.2",
         # The identifier uses a plain URL string rather than a PropertyValue entity;
         # that format check is not the focus of this test (resolution is).
-        skip_checks=["ro-crate-1.2_52.0"],
+        skip_checks=["ro-crate-1.2_53.0"],
     )
 
 
@@ -381,7 +381,7 @@ def test_valid_required_hasPart_all_data_entities():
         models.Severity.REQUIRED,
         True,
         profile_identifier="ro-crate-1.2",
-        skip_checks=["ro-crate-1.2_46.1"],
+        skip_checks=["ro-crate-1.2_47.1"],
     )
 
 
@@ -397,7 +397,7 @@ def test_invalid_required_hasPart_all_data_entities():
         profile_identifier="ro-crate-1.2",
         expected_triggered_requirements=["Root Data Entity: hasPart MUST reference all Data Entities"],
         expected_triggered_issues=["MUST reference all Data Entities via hasPart"],
-        skip_checks=["ro-crate-1.2_46.1"],
+        skip_checks=["ro-crate-1.2_47.1"],
     )
 
 
@@ -464,13 +464,13 @@ def test_valid_recommended_identifier_if_pid():
         skip_checks=[
             "ro-crate-1.2_35.1",
             "ro-crate-1.2_38.1",
-            "ro-crate-1.2_41.1",
-            "ro-crate-1.2_41.2",
-            "ro-crate-1.2_41.3",
             "ro-crate-1.2_42.1",
+            "ro-crate-1.2_42.2",
+            "ro-crate-1.2_42.3",
             "ro-crate-1.2_43.1",
-            "ro-crate-1.2_43.2",
             "ro-crate-1.2_44.1",
+            "ro-crate-1.2_44.2",
+            "ro-crate-1.2_45.1",
             "Root Data Entity: use cite-as for resolvable identifiers",
             "Root Data Entity: persistent identifier resolution",
             "Root Data Entity: identifier SHOULD be present if PID exists",
