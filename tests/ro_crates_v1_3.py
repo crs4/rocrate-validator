@@ -31,6 +31,86 @@ def ro_crates_path() -> Path:
 BASE_PATH = CRATES_DATA_PATH / "rocrate-1.3"
 
 
+class MetadataDocument:
+    METADATA_DOCUMENT_CRATES_PATH = BASE_PATH / "1_metadata_document"
+
+    @property
+    def invalid_context_reference(self) -> Path:
+        return self.METADATA_DOCUMENT_CRATES_PATH / "context_reference" / "invalid"
+
+    @property
+    def valid_context_reference(self) -> Path:
+        return self.METADATA_DOCUMENT_CRATES_PATH / "context_reference" / "valid"
+
+    @property
+    def not_referenced_contextual_entity(self) -> Path:
+        return self.METADATA_DOCUMENT_CRATES_PATH / "referenced_contextual_entities" / "invalid"
+
+    @property
+    def valid_referenced_contextual_entity(self) -> Path:
+        return self.METADATA_DOCUMENT_CRATES_PATH / "referenced_contextual_entities" / "valid"
+
+    @property
+    def described_contextual_entity(self) -> Path:
+        return self.METADATA_DOCUMENT_CRATES_PATH / "described_contextual_entities" / "valid"
+
+    @property
+    def not_described_contextual_entity(self) -> Path:
+        return self.METADATA_DOCUMENT_CRATES_PATH / "described_contextual_entities" / "invalid"
+
+    @property
+    def valid_no_parent_traversal(self) -> Path:
+        return self.METADATA_DOCUMENT_CRATES_PATH / "no_parent_traversal" / "valid"
+
+    @property
+    def invalid_no_parent_traversal(self) -> Path:
+        return self.METADATA_DOCUMENT_CRATES_PATH / "no_parent_traversal" / "invalid"
+
+    @property
+    def valid_utf8_identifiers(self) -> Path:
+        return self.METADATA_DOCUMENT_CRATES_PATH / "utf8_identifiers" / "valid"
+
+    @property
+    def invalid_utf8_identifiers(self) -> Path:
+        return self.METADATA_DOCUMENT_CRATES_PATH / "utf8_identifiers" / "invalid"
+
+    @property
+    def valid_named_entity_id_format(self) -> Path:
+        return self.METADATA_DOCUMENT_CRATES_PATH / "named_entity_id_format" / "valid"
+
+    @property
+    def invalid_named_entity_id_format(self) -> Path:
+        return self.METADATA_DOCUMENT_CRATES_PATH / "named_entity_id_format" / "invalid"
+
+    @property
+    def valid_schema_org_iri_protocol(self) -> Path:
+        return self.METADATA_DOCUMENT_CRATES_PATH / "schema_org_iri_protocol" / "valid"
+
+    @property
+    def invalid_schema_org_iri_protocol(self) -> Path:
+        return self.METADATA_DOCUMENT_CRATES_PATH / "schema_org_iri_protocol" / "invalid"
+
+
+class MetadataDocumentFormat:
+    METADATA_DOCUMENT_FORMAT_CRATES_PATH = MetadataDocument.METADATA_DOCUMENT_CRATES_PATH / "format"
+
+    @property
+    def not_compacted(self) -> Path:
+        return self.METADATA_DOCUMENT_FORMAT_CRATES_PATH / "compacted"
+
+    @property
+    def not_flattened(self) -> Path:
+        return self.METADATA_DOCUMENT_FORMAT_CRATES_PATH / "flattened"
+
+    @property
+    def not_jsonld(self) -> Path:
+        return self.METADATA_DOCUMENT_FORMAT_CRATES_PATH / "jsonld"
+
+    @property
+    def not_utf8(self) -> Path:
+        return self.METADATA_DOCUMENT_FORMAT_CRATES_PATH / "utf8"
+
+
 class WorkflowsScripts:
     WORKFLOWS_SCRIPTS_CRATES_PATH = BASE_PATH / "11_workflows_scripts"
 
