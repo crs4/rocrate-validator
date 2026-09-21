@@ -14,6 +14,7 @@
 
 from __future__ import annotations
 
+import csv
 import sys
 from contextlib import nullcontext
 from pathlib import Path
@@ -27,9 +28,20 @@ from rich.text import Text
 from rocrate_validator import constants, services
 from rocrate_validator.cli.commands.errors import handle_error
 from rocrate_validator.cli.main import cli
-from rocrate_validator.cli.ui.text.validate import ValidationCommandView
+from rocrate_validator.cli.ui.text.validate import (
+    BatchValidationCommandView,
+    ValidationCommandView,
+    format_profile_selection,
+    render_batch_footer,
+    render_batch_header,
+)
 from rocrate_validator.errors import ROCrateInvalidURIError
-from rocrate_validator.models import Severity, ValidationResult, ValidationSettings
+from rocrate_validator.models import (
+    BatchValidationResult,
+    Severity,
+    ValidationResult,
+    ValidationSettings,
+)
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.io_helpers.colors import get_severity_color
 from rocrate_validator.utils.io_helpers.input import get_single_char, multiple_choice
@@ -37,6 +49,7 @@ from rocrate_validator.utils.io_helpers.output.console import Console
 from rocrate_validator.utils.io_helpers.output.json import JSONOutputFormatter
 from rocrate_validator.utils.io_helpers.output.text import TextOutputFormatter
 from rocrate_validator.utils.io_helpers.output.text.layout.report import LiveTextProgressLayout, get_app_header_rule
+from rocrate_validator.utils.io_helpers.output.text.statistics import render_statistics
 from rocrate_validator.utils.paths import get_profiles_path
 from rocrate_validator.utils.uri import validate_rocrate_uri
 
@@ -46,10 +59,74 @@ DEFAULT_PROFILES_PATH = get_profiles_path()
 # set up logging
 logger = logging.getLogger(__name__)
 
+# Organise the (long) list of `validate` options into labelled sections in the
+# `--help` output. Options not listed here are shown under a default group.
+# The key is matched against the command path with fnmatch, so the leading
+# wildcard makes it work regardless of the program name (entry point, `python -m`,
+# or the test runner). Applied via the command's own ``rich_config`` below.
+_VALIDATE_OPTION_GROUPS = {
+    "* validate": [
+        {
+            "name": "Batch validation",
+            "options": [
+                "--batch",
+                "--batch-pattern",
+                "--no-resume",
+                "--stats",
+            ],
+        },
+        {
+            "name": "Profiles",
+            "options": [
+                "--profile-identifier",
+                "--no-auto-profile",
+                "--disable-profile-inheritance",
+                "--profiles-path",
+                "--extra-profiles-path",
+            ],
+        },
+        {
+            "name": "Requirements & checks",
+            "options": [
+                "--requirement-severity",
+                "--requirement-severity-only",
+                "--skip-checks",
+                "--metadata-only",
+                "--fail-fast",
+                "--relative-root-path",
+                "--creation-time",
+                "--enforce-availability",
+                "--skip-availability-check",
+            ],
+        },
+        {
+            "name": "Output",
+            "options": [
+                "--output-format",
+                "--output-file",
+                "--output-line-width",
+                "--verbose",
+                "--no-paging",
+            ],
+        },
+        {
+            "name": "Cache & network",
+            "options": [
+                "--cache-max-age",
+                "--cache-path",
+                "--no-cache",
+                "--offline",
+            ],
+        },
+    ],
+}
 
-def validate_uri(ctx, param, value):
+
+def validate_uri(ctx, param, value):  # pylint: disable=unused-argument
     """
     Validate if the value is a path or a URI
+
+    ``ctx`` is part of the click callback signature but is not used here.
     """
     if value:
         try:
@@ -62,6 +139,12 @@ def validate_uri(ctx, param, value):
 
 
 @cli.command("validate")
+@click.rich_config(
+    help_config=click.RichHelpConfiguration(
+        text_markup="rich",
+        option_groups=_VALIDATE_OPTION_GROUPS,  # type: ignore[arg-type]
+    )
+)
 @click.argument("rocrate-uri", callback=validate_uri, default=".")
 @click.option(
     "-rr",
@@ -201,10 +284,10 @@ def validate_uri(ctx, param, value):
 @click.option(
     "-f",
     "--output-format",
-    type=click.Choice(["json", "text"], case_sensitive=False),
+    type=click.Choice(["text", "csv", "json"], case_sensitive=False),
     default="text",
     show_default=True,
-    help="Output format of the validation report",
+    help="Output format of the validation report ([bold]csv[/bold] is available in batch mode only)",
 )
 @click.option(
     "-o",
@@ -257,7 +340,45 @@ def validate_uri(ctx, param, value):
     default=False,
     show_default=True,
 )
+# Batch mode options
+@click.option(
+    "-b",
+    "--batch",
+    is_flag=True,
+    help="Validate every RO-Crate found under the [bold]RO-CRATE-URI[/bold] directory",
+    default=False,
+    show_default=True,
+)
+@click.option(
+    "--batch-pattern",
+    type=click.STRING,
+    default="*",
+    show_default=True,
+    help="Glob pattern to filter RO-Crates in batch mode",
+)
+@click.option(
+    "--no-resume",
+    is_flag=True,
+    help=(
+        "Ignore any auto-saved batch session and re-validate every RO-Crate "
+        "from scratch (sessions are otherwise resumed automatically)"
+    ),
+    default=False,
+    show_default=True,
+)
+@click.option(
+    "--stats",
+    "--statistics",
+    "stats",
+    is_flag=True,
+    help="Append textual statistics about the batch run (text output only)",
+    default=False,
+    show_default=True,
+)
 @click.pass_context
+# The CLI command surfaces every validation option as a parameter; pylint counts
+# those arguments as locals, so the limit is not meaningful here.
+# pylint: disable-next=too-many-locals
 def validate(
     ctx,
     *,
@@ -286,6 +407,10 @@ def validate(
     cache_path: Path | None = None,
     no_cache: bool = False,
     offline: bool = False,
+    batch: bool = False,
+    batch_pattern: str = "*",
+    no_resume: bool = False,
+    stats: bool = False,
 ):
     """
     [magenta]rocrate-validator:[/magenta] Validate a RO-Crate against a profile
@@ -326,6 +451,14 @@ def validate(
 
     _warn_if_remote_offline(console, rocrate_uri, offline)
 
+    # Batch mode is enabled by -b/--batch and scans the positional RO-CRATE-URI.
+    batch_mode = batch
+    _check_batch_only_options(
+        batch_mode=batch_mode,
+        batch_pattern=batch_pattern,
+        no_resume=no_resume,
+    )
+
     skip_checks_list = _parse_skip_checks(skip_checks)
 
     try:
@@ -358,6 +491,32 @@ def validate(
         if output_format == "text" and output_file is None:
             console.print(get_app_header_rule())
 
+        # Batch mode validates a directory of crates and exits with the aggregated
+        # status. Profiles are resolved *per crate* inside the batch (explicit
+        # selection or per-crate auto-detection), so the single-crate profile
+        # resolution below is intentionally skipped for batch runs.
+        if batch_mode:
+            _run_batch_validation(
+                console,
+                base_settings=validation_settings,
+                profile_identifiers=list(profile_identifier),
+                no_auto_profile=no_auto_profile,
+                cache_max_age=cache_max_age,
+                verbose=verbose,
+                rocrate_uri=rocrate_uri,
+                batch_pattern=batch_pattern,
+                fresh=no_resume,
+                output_format=output_format,
+                output_file=output_file,
+                output_line_width=output_line_width,
+                stats=stats,
+                show_skipped_checks=show_skipped_checks,
+            )
+
+        # CSV is a batch-only report format; reject it for single-crate validation.
+        if output_format == "csv":
+            raise click.UsageError("The 'csv' output format is only available in batch mode (-b/--batch).")
+
         # Get the available profiles
         available_profiles = services.get_profiles(profiles_path, extra_profiles_path=extra_profiles_path)
 
@@ -372,48 +531,21 @@ def validate(
             validation_settings=validation_settings,
         )
 
-        # Validate the RO-Crate against the selected profiles
-        is_valid = True
-        results = {}
-        for profile in profile_identifiers:
-            # Duplicate settings for each profile and set the profile identifier
-            logger.info("\nValidating RO-Crate against profile: [bold cyan]%s[/bold cyan]", profile)
-            profile_settings = validation_settings.copy()
-            profile_settings["profile_identifier"] = profile
-            logger.debug("Profile selected for validation: %s", profile)
-            logger.debug("Profile autodetected: %s", autodetection)
-
-            # Perform the validation and render the result for the chosen output target.
-            if output_format == "text" and not output_file:
-                result = _render_console_result(
-                    profile_settings,
-                    console=console,
-                    pager=pager,
-                    interactive=interactive,
-                    enable_pager=enable_pager,
-                    verbose=verbose,
-                )
-            else:
-                result = _render_file_or_collected_result(
-                    profile,
-                    profile_settings,
-                    console=console,
-                    interactive=interactive,
-                    verbose=verbose,
-                    output_format=output_format,
-                    output_file=output_file,
-                    output_line_width=output_line_width,
-                )
-            results[profile] = result
-
-            # Update the global validation status
-            is_valid = is_valid and result.passed()
-
-            # Interrupt the validation if the fail fast mode is enabled
-            if fail_fast and not is_valid:
-                break
-
-        # Process JSON output format
+        # Single-crate mode: validate against the selected profiles and report.
+        results, is_valid = _run_single_validations(
+            profile_identifiers,
+            validation_settings,
+            autodetection=autodetection,
+            console=console,
+            pager=pager,
+            interactive=interactive,
+            enable_pager=enable_pager,
+            verbose=verbose,
+            fail_fast=fail_fast,
+            output_format=output_format,
+            output_file=output_file,
+            output_line_width=output_line_width,
+        )
         if output_format == "json":
             _emit_json_report(
                 results,
@@ -439,6 +571,367 @@ def validate(
         sys.exit(0 if is_valid else 1)
     except Exception as e:
         handle_error(e, console, debug=ctx.obj["debug"])
+
+
+# Threads the CLI options through to the batch helpers; pylint counts these
+# pass-through arguments as locals, so the limit is not meaningful here.
+# pylint: disable-next=too-many-locals
+def _run_batch_validation(
+    console: Console,
+    *,
+    base_settings: dict,
+    profile_identifiers: list[str],
+    no_auto_profile: bool,
+    cache_max_age: int,
+    verbose: bool,
+    rocrate_uri: str | Path,
+    batch_pattern: str,
+    fresh: bool,
+    output_format: str,
+    output_file: Path | None,
+    output_line_width: int | None,
+    stats: bool = False,
+    show_skipped_checks: bool = False,
+) -> None:
+    """Run batch validation end-to-end and exit with the aggregated status code."""
+    crate_paths = _discover_batch_crates(
+        rocrate_uri=rocrate_uri,
+        batch_pattern=batch_pattern,
+    )
+    if not crate_paths:
+        console.print("[bold yellow]No RO-Crates found for batch validation.[/bold yellow]")
+        sys.exit(0)
+
+    batch_settings = _build_batch_settings(
+        base_settings,
+        profile_identifiers=profile_identifiers,
+        cache_max_age=cache_max_age,
+        verbose=verbose,
+    )
+    # The batch session is auto-managed: its location is derived deterministically
+    # from the scan target and settings, so re-running the same command resumes an
+    # interrupted session automatically (no user-supplied session file).
+    scan_root = Path(rocrate_uri).resolve()
+    session_path = services.resolve_batch_session_path(
+        batch_settings,
+        scan_root,
+        batch_pattern,
+        profile_identifiers=profile_identifiers,
+        no_auto_profile=no_auto_profile,
+    )
+    _print_batch_header(
+        console,
+        count=len(crate_paths),
+        session_path=session_path,
+        input_path=scan_root,
+        profile_identifiers=profile_identifiers,
+        no_auto_profile=no_auto_profile,
+    )
+
+    batch_view = BatchValidationCommandView(console=console)
+    # Run batch validation with a progress bar on stderr (always visible,
+    # even when the report goes to a file).
+    batch_result = batch_view.run_with_progress(
+        batch_validate_fn=services.batch_validate,
+        settings=batch_settings,
+        rocrate_uris=crate_paths,
+        session_path=session_path,
+        fresh=fresh,
+        profile_identifiers=profile_identifiers,
+        no_auto_profile=no_auto_profile,
+        base_path=scan_root,
+    )
+    # Writing a large report to a file can take a moment; show a spinner on
+    # stderr while it happens (skipped when the summary is rendered to the
+    # console, which is itself the visible output).
+    if output_file:
+        status_console = Console(file=sys.stderr, no_color=console.no_color, width=console.width)
+        report_ctx = status_console.status(f"[cyan]Writing report to {output_file}…[/cyan]")
+    else:
+        report_ctx = nullcontext()
+    with report_ctx:
+        _write_batch_report(
+            batch_view,
+            batch_result,
+            output_format=output_format,
+            output_file=output_file,
+            output_line_width=output_line_width,
+            verbose=verbose,
+            stats=stats,
+            show_skipped_checks=show_skipped_checks,
+        )
+    # Statistics are a human-readable view; they are not embedded in machine output.
+    if stats and output_format in ("json", "csv"):
+        Console(file=sys.stderr, no_color=console.no_color, width=console.width).print(
+            f"[yellow]Note:[/yellow] --stats is ignored for '{output_format}' output (text mode only)."
+        )
+    _report_batch_status(
+        console,
+        batch_result,
+        session_path=session_path,
+        output_file=output_file,
+        output_format=output_format,
+    )
+    sys.exit(0 if batch_result.passed() else 1)
+
+
+# Threads the CLI options through to the rendering helpers; pylint counts these
+# pass-through arguments as locals, so the limit is not meaningful here.
+# pylint: disable-next=too-many-locals
+def _run_single_validations(
+    profile_identifiers: list[str],
+    validation_settings: dict,
+    *,
+    autodetection: bool,
+    console: Console,
+    pager,
+    interactive: bool,
+    enable_pager: bool,
+    verbose: bool,
+    fail_fast: bool,
+    output_format: str,
+    output_file: Path | None,
+    output_line_width: int | None,
+) -> tuple[dict, bool]:
+    """Validate the RO-Crate against each selected profile, returning (results, overall-validity)."""
+    is_valid = True
+    results = {}
+    for profile in profile_identifiers:
+        # Duplicate settings for each profile and set the profile identifier
+        logger.info("\nValidating RO-Crate against profile: [bold cyan]%s[/bold cyan]", profile)
+        profile_settings = validation_settings.copy()
+        profile_settings["profile_identifier"] = profile
+        logger.debug("Profile selected for validation: %s", profile)
+        logger.debug("Profile autodetected: %s", autodetection)
+
+        # Perform the validation and render the result for the chosen output target.
+        if output_format == "text" and not output_file:
+            result = _render_console_result(
+                profile_settings,
+                console=console,
+                pager=pager,
+                interactive=interactive,
+                enable_pager=enable_pager,
+                verbose=verbose,
+            )
+        else:
+            result = _render_file_or_collected_result(
+                profile,
+                profile_settings,
+                console=console,
+                interactive=interactive,
+                verbose=verbose,
+                output_format=output_format,
+                output_file=output_file,
+                output_line_width=output_line_width,
+            )
+        results[profile] = result
+
+        # Update the global validation status
+        is_valid = is_valid and result.passed()
+
+        # Interrupt the validation if the fail fast mode is enabled
+        if fail_fast and not is_valid:
+            break
+
+    return results, is_valid
+
+
+def _build_batch_settings(
+    base_settings: dict,
+    *,
+    profile_identifiers: list[str],
+    cache_max_age: int,
+    verbose: bool,
+) -> ValidationSettings:
+    """Derive the shared batch ``ValidationSettings`` from the single-crate settings."""
+    # Batch mode targets a directory of crates, so only the per-crate RO-Crate URI
+    # is dropped (it is set per crate during validation). The creation-time and
+    # availability flags are intentionally kept so they apply uniformly to every
+    # crate, exactly as they would in single-crate validation.
+    batch_settings_dict = {k: v for k, v in base_settings.items() if k != "rocrate_uri"}
+    batch_settings_dict.update(
+        {
+            # Base profile for the shared settings object; the actual profile(s) used
+            # for each crate are resolved per crate by the services layer (explicit
+            # ``--profile-identifier`` list or per-crate auto-detection).
+            "profile_identifier": profile_identifiers[0] if profile_identifiers else "ro-crate",
+            "cache_max_age": cache_max_age,
+            "verbose": verbose,
+        }
+    )
+    return ValidationSettings.parse(batch_settings_dict)
+
+
+def _discover_batch_crates(
+    *,
+    rocrate_uri: str | Path,
+    batch_pattern: str,
+) -> list[str]:
+    """
+    Resolve the list of RO-Crate paths to validate in batch mode by scanning the
+    target directory. Auto-resume of an interrupted session is handled in the
+    services layer by comparing this discovered list against the saved session.
+    """
+    scan_dir = Path(rocrate_uri).resolve()
+    if not scan_dir.is_dir():
+        raise click.BadParameter(f"Batch target must be a directory: {scan_dir}", param_hint="RO-CRATE-URI")
+    return [str(p) for p in services.discover_ro_crates(scan_dir, pattern=batch_pattern)]
+
+
+def _write_batch_report(
+    batch_view: BatchValidationCommandView,
+    batch_result: BatchValidationResult,
+    *,
+    output_format: str,
+    output_file: Path | None,
+    output_line_width: int | None,
+    verbose: bool,
+    stats: bool = False,
+    show_skipped_checks: bool = False,
+) -> None:
+    """
+    Write the batch result as JSON, CSV or a text summary, to a file or the console.
+
+    When ``stats`` is set, the textual statistics are appended after the summary
+    in text mode (console or file); they are a human-readable view and are not
+    emitted for the machine-readable JSON/CSV formats.
+
+    Where the report is saved is reported afterwards by :func:`_report_batch_status`,
+    so this function does not print its own "writing to ..." notes.
+    """
+    if output_format == "json":
+        with output_file.open("w", encoding="utf-8") if output_file else nullcontext(sys.stdout) as f:
+            out = Console(color_system=None, width=output_line_width, file=f)
+            out.register_formatter(JSONOutputFormatter())
+            out.print(batch_result)
+        return
+
+    if output_format == "csv":
+        with output_file.open("w", encoding="utf-8", newline="") if output_file else nullcontext(sys.stdout) as f:
+            _write_batch_csv(batch_result, f)
+        return
+
+    crate_dicts = [entry.to_dict() for entry in batch_result.crates]
+    if output_file:
+        with output_file.open("w", encoding="utf-8") as f:
+            out = Console(color_system=None, width=output_line_width, file=f)
+            out.register_formatter(TextOutputFormatter())
+            BatchValidationCommandView(console=out).show_summary(
+                batch_result,
+                verbose=verbose,
+                show_skipped_checks=show_skipped_checks,
+            )
+            if stats:
+                render_statistics(out, crate_dicts)
+    else:
+        batch_view.show_summary(
+            batch_result,
+            verbose=verbose,
+            show_skipped_checks=show_skipped_checks,
+        )
+        if stats:
+            render_statistics(batch_view.console, crate_dicts)
+
+
+def _write_batch_csv(batch_result: BatchValidationResult, file) -> None:
+    """Write the batch result as CSV (one row per crate) to an open text file."""
+    writer = csv.writer(file)
+    writer.writerow(
+        [
+            "source",
+            "crate",
+            "path",
+            "profiles",
+            "size_bytes",
+            "status",
+            "total_checks",
+            "passed_checks",
+            "failed_checks",
+            "skipped_checks",
+            "issues",
+            "duration",
+            "error",
+        ]
+    )
+    for entry in batch_result.crates:
+        stats = entry.statistics or {}
+        path = Path(entry.path)
+        writer.writerow(
+            [
+                path.parent.name,
+                path.name,
+                entry.path,
+                ";".join(entry.profiles or []),
+                entry.size_bytes if entry.size_bytes is not None else "",
+                "passed" if entry.passed else "failed",
+                stats.get("total_checks", ""),
+                stats.get("total_passed_checks", ""),
+                stats.get("total_failed_checks", ""),
+                entry.skipped_checks,
+                len(entry.issues or []),
+                f"{entry.duration:.3f}" if entry.duration is not None else "",
+                entry.error or "",
+            ]
+        )
+
+
+def _print_batch_header(
+    console: Console,
+    *,
+    count: int,
+    session_path: Path | None,
+    input_path: Path,
+    profile_identifiers: list[str],
+    no_auto_profile: bool,
+) -> None:
+    """
+    Print the batch header on stderr (always): the number of crates found, the
+    session file, the input scanned and the profile selection. Shown before the
+    per-crate list so the relative crate paths printed during validation are
+    easy to interpret.
+    """
+    stderr_console = Console(file=sys.stderr, no_color=console.no_color, width=console.width)
+    profiles, profiles_style = format_profile_selection(profile_identifiers, no_auto_profile)
+    rows: list[tuple[str, str, str]] = []
+    if session_path:
+        rows.append(("Session", str(session_path), "cyan"))
+    rows.append(("Input", str(input_path), "cyan"))
+    rows.append(("Profiles", profiles, profiles_style))
+    render_batch_header(
+        stderr_console,
+        headline=f"[bold]Batch validation[/bold] [dim]·[/dim] [cyan]{count}[/cyan] RO-Crate(s)",
+        rows=rows,
+    )
+
+
+def _report_batch_status(
+    console: Console,
+    batch_result: BatchValidationResult,
+    *,
+    session_path: Path | None,
+    output_file: Path | None,
+    output_format: str,
+) -> None:
+    """
+    Print the final batch verdict on stderr, followed by a spaced block listing
+    where the report was saved (and the session, only when the run did not
+    complete and may need to be resumed).
+
+    Everything is written to stderr so it never pollutes machine-readable output
+    (JSON/CSV) sent to stdout. The input scanned is reported up front by
+    :func:`_print_batch_header`, so it is not repeated here.
+    """
+    stderr_console = Console(file=sys.stderr, no_color=console.no_color, width=console.width)
+
+    rows: list[tuple[str, str, str, str]] = []  # (icon, label, path, path-style)
+    if output_file:
+        rows.append(("📄", f"Report ({output_format})", str(output_file), "bold cyan"))
+    # The session is only useful here if the run did not finish (so it can be
+    # resumed); when completed it is redundant with the header shown at the start.
+    if session_path and not batch_result.session.is_completed():
+        rows.append(("💾", "Session", str(session_path), "cyan"))
+    render_batch_footer(stderr_console, batch_result, rows)
 
 
 def _log_validation_inputs(
@@ -488,6 +981,32 @@ def _warn_if_remote_offline(console: Console, rocrate_uri: str | Path, offline: 
                 (1, 2, 0, 2),
             )
         )
+
+
+def _check_batch_only_options(
+    *,
+    batch_mode: bool,
+    batch_pattern: str,
+    no_resume: bool,
+) -> None:
+    """
+    Reject batch-only options when batch mode is not enabled.
+
+    ``--batch-pattern`` and ``--no-resume`` only make sense in batch mode; using
+    them without ``-b/--batch`` is a usage error rather than a silently ignored
+    no-op.
+    """
+    if batch_mode:
+        return
+    misused = []
+    if batch_pattern != "*":
+        misused.append("--batch-pattern")
+    if no_resume:
+        misused.append("--no-resume")
+    if misused:
+        joined = ", ".join(misused)
+        verb = "is" if len(misused) == 1 else "are"
+        raise click.UsageError(f"{joined} {verb} only valid in batch mode; enable it with -b/--batch.")
 
 
 def _parse_skip_checks(skip_checks: list[str] | None) -> list[str]:

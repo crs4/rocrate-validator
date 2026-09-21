@@ -93,6 +93,30 @@ def get_single_char(
     return __get_single_char_unix__(console, end, message, choices)
 
 
+def single_choice(console: Console, message: str, choices: list[tuple[object, str]]):
+    """
+    Display a single-choice list menu.
+
+    ``choices`` is a list of ``(value, label)`` pairs; the selected ``value`` is
+    returned (or ``None`` if nothing is selected).
+    """
+    question = [
+        {
+            "type": "list",
+            "name": "choice",
+            "message": message,
+            "choices": [Choice(value, label) for value, label in choices],
+        }
+    ]
+    console.print("\n")
+    answer = prompt(
+        question,
+        style={"questionmark": "#ff9d00 bold", "question": "bold", "answer": "magenta", "pointer": "magenta"},
+        style_override=False,
+    )
+    return answer.get("choice")
+
+
 def multiple_choice(console: Console, choices: list[Profile]):
     """
     Display a multiple choice menu
