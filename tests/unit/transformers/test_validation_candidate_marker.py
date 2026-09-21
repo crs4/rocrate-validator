@@ -42,6 +42,7 @@ def _is_validation_candidate(graph: Graph, iri: URIRef) -> bool:
     [
         RDF.type,
         SCHEMA.propertyID,
+        SCHEMA.additionalType,
         CSVW.propertyUrl,
         SCHEMA.inDefinedTermSet,
         SCHEMA.encodingFormat,

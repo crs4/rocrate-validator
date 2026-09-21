@@ -34,6 +34,7 @@ REFERENCE_PREDICATES: frozenset[URIRef] = frozenset(
     {
         RDF.type,
         URIRef("http://schema.org/propertyID"),
+        URIRef("http://schema.org/additionalType"),
         URIRef("http://www.w3.org/ns/csvw#propertyUrl"),
         URIRef("http://schema.org/inDefinedTermSet"),
         URIRef("http://schema.org/encodingFormat"),
