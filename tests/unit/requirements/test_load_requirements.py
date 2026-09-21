@@ -18,11 +18,11 @@ from typing import Any
 
 import pytest
 
-from rocrate_validator.constants import DEFAULT_PROFILE_IDENTIFIER
 from rocrate_validator.errors import CheckDependencyError
 from rocrate_validator.models import LevelCollection, Profile, RequirementLoader, Severity
 from rocrate_validator.requirements.shacl.requirements import SHACLRequirement
 from tests.ro_crates import InvalidFileDescriptorEntity
+from tests.shared import RO_CRATE_1_1_PROFILE_IDENTIFIER
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -111,8 +111,11 @@ def test_order_of_loaded_profile_requirements(profiles_path: str):
     # The number of profiles should be greater than 0
     assert len(profiles) > 0
 
-    # The first profile should be the default profile
-    assert profiles[0].identifier == DEFAULT_PROFILE_IDENTIFIER
+    # The first profile should be the base RO-Crate 1.1 profile: it is the root of
+    # the inheritance graph, and profiles are ordered parents-first. This is a
+    # literal rather than `DEFAULT_PROFILE_IDENTIFIER` because the assertion is
+    # about load *ordering*, not about which profile happens to be the default.
+    assert profiles[0].identifier == RO_CRATE_1_1_PROFILE_IDENTIFIER
 
     # Get the first profile
     profile = profiles[0]

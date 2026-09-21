@@ -13,7 +13,8 @@ against different profiles, including the base RO-Crate profile and various exte
 
 -   Validates RO-Crates against the profiles they declare to conform to.
     Currently, validation for the following profiles is implemented:
-    - [RO-Crate](https://w3id.org/ro/crate/1.1) *(base profile)*
+    - [RO-Crate 1.2](https://w3id.org/ro/crate/1.2) *(base profile, used by default)*
+    - [RO-Crate 1.1](https://w3id.org/ro/crate/1.1) *(base profile)*
     - [Workflow RO-Crate](https://w3id.org/workflowhub/workflow-ro-crate/1.0)
     - [Workflow Testing RO-Crate](https://w3id.org/ro/wftest)
     - [Workflow Run Crate](https://w3id.org/ro/wfrun/workflow)
@@ -134,8 +135,10 @@ settings = services.ValidationSettings(
     # Set the path to the RO-Crate root directory
     rocrate_uri='/path/to/ro-crate',
     # Set the identifier of the RO-Crate profile to use for validation.
-    # If not set, the system will attempt to automatically determine the appropriate validation profile.
-    profile_identifier='ro-crate-1.1',
+    # If not set, the base RO-Crate profile is used, which defaults to `ro-crate-1.2`.
+    # Use `services.detect_profiles(settings)` to determine the profiles a crate declares
+    # conformance to, and pass one of them here to validate against it instead.
+    profile_identifier='ro-crate-1.2',
     # Set the requirement level for the validation
     requirement_severity=models.Severity.REQUIRED,
 )
@@ -158,7 +161,7 @@ The following is a possible output:
 
 ```bash
 RO-Crate is invalid!
-Detected issue of severity REQUIRED with check "ro-crate-1.1:root_entity_exists: The RO-Crate must contain a root entity.
+Detected issue of severity REQUIRED with check "ro-crate-1.2:root_entity_exists: The RO-Crate must contain a root entity.
 ```
 
 ## Running the tests
