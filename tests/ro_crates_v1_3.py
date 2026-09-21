@@ -111,6 +111,118 @@ class WorkflowsScripts:
         return self.WORKFLOWS_SCRIPTS_CRATES_PATH / "image_about" / "invalid"
 
 
+class ContextualEntities:
+    CONTEXTUAL_ENTITIES_CRATES_PATH = BASE_PATH / "10_metadata_contextualEntities"
+
+    # --- License entity: SHOULD be typed as CreativeWork ---
+    @property
+    def valid_license_entity(self) -> Path:
+        return self.CONTEXTUAL_ENTITIES_CRATES_PATH / "license_entity" / "valid"
+
+    @property
+    def invalid_license_entity_no_type(self) -> Path:
+        return self.CONTEXTUAL_ENTITIES_CRATES_PATH / "license_entity" / "invalid_no_type"
+
+    @property
+    def invalid_license_entity_no_url(self) -> Path:
+        return self.CONTEXTUAL_ENTITIES_CRATES_PATH / "license_entity" / "invalid_no_url"
+
+    @property
+    def invalid_license_entity_no_name(self) -> Path:
+        return self.CONTEXTUAL_ENTITIES_CRATES_PATH / "license_entity" / "invalid_no_name"
+
+    @property
+    def invalid_license_entity_no_description(self) -> Path:
+        return self.CONTEXTUAL_ENTITIES_CRATES_PATH / "license_entity" / "invalid_no_description"
+
+    # --- Organization entity: SHOULD have ROR @id and contactPoint ---
+    @property
+    def valid_organization_entity(self) -> Path:
+        return self.CONTEXTUAL_ENTITIES_CRATES_PATH / "organization_entity" / "valid"
+
+    @property
+    def invalid_organization_no_ror_id(self) -> Path:
+        return self.CONTEXTUAL_ENTITIES_CRATES_PATH / "organization_entity" / "invalid_no_ror_id"
+
+    @property
+    def invalid_organization_no_contactpoint(self) -> Path:
+        return self.CONTEXTUAL_ENTITIES_CRATES_PATH / "organization_entity" / "invalid_org_no_contactpoint"
+
+    @property
+    def invalid_organization_contactpoint_no_entity(self) -> Path:
+        return (
+            self.CONTEXTUAL_ENTITIES_CRATES_PATH / "organization_entity" / "invalid_contactpoint_no_contactpoint_entity"
+        )
+
+    @property
+    def invalid_no_author_publisher_contactpoint(self) -> Path:
+        return self.CONTEXTUAL_ENTITIES_CRATES_PATH / "organization_entity" / "invalid_no_author_publisher_contactpoint"
+
+    # --- Person entity: SHOULD have ORCID @id and valid affiliation ---
+    @property
+    def valid_person_entity(self) -> Path:
+        return self.CONTEXTUAL_ENTITIES_CRATES_PATH / "person_entity" / "valid"
+
+    @property
+    def invalid_person_no_orcid(self) -> Path:
+        return self.CONTEXTUAL_ENTITIES_CRATES_PATH / "person_entity" / "invalid_no_orcid"
+
+    @property
+    def invalid_person_affiliation_not_org(self) -> Path:
+        return self.CONTEXTUAL_ENTITIES_CRATES_PATH / "person_entity" / "invalid_affiliation_not_org"
+
+    # --- Any Contextual Entity: SHOULD have absolute URI or '#'-prefixed @id ---
+    @property
+    def valid_contextual_entity_id_format(self) -> Path:
+        return self.CONTEXTUAL_ENTITIES_CRATES_PATH / "contextual_entity_id_format" / "valid"
+
+    @property
+    def invalid_contextual_entity_bare_contactpoint(self) -> Path:
+        return self.CONTEXTUAL_ENTITIES_CRATES_PATH / "contextual_entity_id_format" / "invalid_bare_contactpoint"
+
+    @property
+    def invalid_contextual_entity_bare_propertyvalue(self) -> Path:
+        return self.CONTEXTUAL_ENTITIES_CRATES_PATH / "contextual_entity_id_format" / "invalid_bare_propertyvalue"
+
+    # --- SoftwareApplication / ComputerLanguage: MUST have name, url, version (5.7) ---
+    @property
+    def valid_software_application(self) -> Path:
+        return self.CONTEXTUAL_ENTITIES_CRATES_PATH / "software_application" / "valid"
+
+    @property
+    def invalid_software_application_no_version(self) -> Path:
+        return self.CONTEXTUAL_ENTITIES_CRATES_PATH / "software_application" / "invalid_no_version"
+
+    @property
+    def invalid_software_application_no_name(self) -> Path:
+        return self.CONTEXTUAL_ENTITIES_CRATES_PATH / "software_application" / "invalid_no_name"
+
+    @property
+    def invalid_software_application_no_url(self) -> Path:
+        return self.CONTEXTUAL_ENTITIES_CRATES_PATH / "software_application" / "invalid_no_url"
+
+    @property
+    def valid_computer_language(self) -> Path:
+        return self.CONTEXTUAL_ENTITIES_CRATES_PATH / "software_application" / "valid_computer_language"
+
+    @property
+    def valid_computer_language_with_alternatename(self) -> Path:
+        return self.CONTEXTUAL_ENTITIES_CRATES_PATH / "software_application" / "valid_with_alternatename"
+
+    # --- Encoding Format entity: MAY include `WebPageElement` when @id has a fragment (5.8) ---
+    @property
+    def valid_encoding_format_webpageelement(self) -> Path:
+        return self.CONTEXTUAL_ENTITIES_CRATES_PATH / "encoding_format" / "valid"
+
+    @property
+    def info_encoding_format_no_webpageelement(self) -> Path:
+        return self.CONTEXTUAL_ENTITIES_CRATES_PATH / "encoding_format" / "info_no_webpageelement"
+
+    @property
+    def encoding_format_no_fragment(self) -> Path:
+        return self.CONTEXTUAL_ENTITIES_CRATES_PATH / "encoding_format" / "no_fragment"
+
+
 class ValidROCrate13:
     base_path = VALID_CRATES_DATA_PATH
 
