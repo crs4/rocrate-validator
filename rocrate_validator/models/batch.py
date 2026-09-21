@@ -34,6 +34,8 @@ class BatchCrateEntry:
     duration: float | None = None
     error: str | None = None
     issues: list[Any] | None = None  # serialized CheckIssue dicts
+    skipped_checks: int = 0
+    skipped_check_details: list[dict[str, Any]] | None = None
     statistics: dict[str, Any] | None = None  # ValidationStatistics.to_dict()
     size_bytes: int | None = None  # disk size of the crate at validation time
     profiles: list[str] | None = None  # profile identifier(s) the crate was validated against
@@ -48,13 +50,21 @@ class BatchCrateEntry:
             "duration": self.duration,
             "error": self.error,
             "issues": self.issues or [],
+            "skipped_checks": self.skipped_checks,
+            "skipped_check_details": self.skipped_check_details or [],
             "statistics": self.statistics,
         }
 
     @classmethod
     def from_dict(cls, data: dict) -> BatchCrateEntry:
         field_names = {f.name for f in fields(cls)}
-        return cls(**{k: v for k, v in data.items() if k in field_names})
+        values = {k: v for k, v in data.items() if k in field_names}
+        # Sessions written before skipped-check reporting stored the count only
+        # inside the statistics object. Preserve it when loading those files.
+        if "skipped_checks" not in values:
+            statistics = data.get("statistics") or {}
+            values["skipped_checks"] = statistics.get("total_skipped_checks", 0) or 0
+        return cls(**values)
 
 
 class BatchSession:
@@ -118,8 +128,8 @@ class BatchSession:
 
         A crate may be validated against more than one profile; in that case the
         per-profile outcomes are combined: the crate passes only when it passes
-        every profile, its issues are the union across profiles, and the headline
-        statistics counters are summed.
+        every profile, its issues and skipped-check details are the union across
+        profiles, and the headline statistics counters are summed.
         """
         entry = self._find_entry(crate_path)
         if entry is None:
@@ -136,6 +146,10 @@ class BatchSession:
         entry.profiles = profiles or None
         entry.duration = duration
         entry.issues = issues
+        entry.skipped_checks = sum(r.skipped_checks_count for r in normalized)
+        entry.skipped_check_details = [
+            detail.to_dict() for result in normalized for detail in result.skipped_check_details
+        ]
         entry.statistics = self._aggregate_statistics(normalized)
         entry.size_bytes = self._compute_size_bytes(crate_path)
         self.completed_crates += 1
@@ -149,8 +163,8 @@ class BatchSession:
 
         For a single profile the statistics are returned unchanged. For multiple
         profiles the headline counters (``total_checks``, ``total_passed_checks``,
-        ``total_failed_checks``) are summed so the batch summary, CSV and JSON
-        reports stay consistent.
+        ``total_failed_checks`` and ``total_skipped_checks``) are summed so the
+        batch summary, CSV and JSON reports stay consistent.
         """
         stat_dicts = [r.statistics.to_dict() for r in results if r.statistics]
         if not stat_dicts:
@@ -158,7 +172,7 @@ class BatchSession:
         if len(stat_dicts) == 1:
             return stat_dicts[0]
         aggregated = dict(stat_dicts[0])
-        for key in ("total_checks", "total_passed_checks", "total_failed_checks"):
+        for key in ("total_checks", "total_passed_checks", "total_failed_checks", "total_skipped_checks"):
             aggregated[key] = sum(d.get(key, 0) or 0 for d in stat_dicts)
         return aggregated
 
@@ -305,6 +319,8 @@ class BatchValidationResult:
                 "profiles": entry.profiles or [],
                 "passed": entry.passed,
                 "issues": entry.issues or [],
+                "skipped_checks": entry.skipped_checks,
+                "skipped_check_details": entry.skipped_check_details or [],
                 "statistics": entry.statistics,
             }
             for entry in self.session.crates

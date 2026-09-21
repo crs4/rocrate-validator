@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import csv
 import json
 import re
 import tempfile
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from click.testing import CliRunner
 from pytest import fixture, mark
@@ -627,7 +628,19 @@ def test_batch_crate_entry_serialization():
         passed=True,
         duration=1.23,
         issues=[{"message": "test issue"}],
-        statistics={"total_checks": 10},
+        skipped_checks=1,
+        skipped_check_details=[
+            {
+                "identifier": "ro-crate-1.1_12.1",
+                "profile": "ro-crate-1.1",
+                "requirement": "Data Entity availability",
+                "name": "Data Entity availability",
+                "severity": "REQUIRED",
+                "message": "Check was skipped by validation settings",
+                "category": "configured",
+            }
+        ],
+        statistics={"total_checks": 10, "total_skipped_checks": 1},
     )
     data = entry.to_dict()
     restored = BatchCrateEntry.from_dict(data)
@@ -636,7 +649,58 @@ def test_batch_crate_entry_serialization():
     assert restored.passed == entry.passed
     assert restored.duration == entry.duration
     assert restored.issues == entry.issues
+    assert restored.skipped_checks == 1
+    assert restored.skipped_check_details == entry.skipped_check_details
     assert restored.statistics == entry.statistics
+
+
+def test_batch_crate_entry_loads_legacy_skipped_count_from_statistics():
+    """Sessions saved before the explicit field retain their skipped-check count."""
+    restored = BatchCrateEntry.from_dict(
+        {
+            "path": "/tmp/test-crate",
+            "status": "completed",
+            "statistics": {"total_checks": 10, "total_skipped_checks": 2},
+        }
+    )
+    assert restored.skipped_checks == 2
+    assert restored.skipped_check_details is None
+
+
+def test_batch_aggregate_statistics_sums_skipped_checks():
+    """Multi-profile entries aggregate every headline check outcome."""
+    results = [
+        Mock(
+            statistics=Mock(
+                to_dict=Mock(
+                    return_value={
+                        "total_checks": 10,
+                        "total_passed_checks": 7,
+                        "total_failed_checks": 2,
+                        "total_skipped_checks": 1,
+                    }
+                )
+            )
+        ),
+        Mock(
+            statistics=Mock(
+                to_dict=Mock(
+                    return_value={
+                        "total_checks": 5,
+                        "total_passed_checks": 3,
+                        "total_failed_checks": 0,
+                        "total_skipped_checks": 2,
+                    }
+                )
+            )
+        ),
+    ]
+    aggregated = BatchSession._aggregate_statistics(results)
+    assert aggregated is not None
+    assert aggregated["total_checks"] == 15
+    assert aggregated["total_passed_checks"] == 10
+    assert aggregated["total_failed_checks"] == 2
+    assert aggregated["total_skipped_checks"] == 3
 
 
 def test_batch_session_save_load(tmp_path):
@@ -726,6 +790,34 @@ def test_batch_validate_valid_crates(cli_runner: CliRunner):
     assert "Batch Validation Summary" in result.output
 
 
+def test_batch_validate_show_skipped_checks(cli_runner: CliRunner):
+    """Batch text reports include skipped counts and the optional reason table."""
+    valid_dir = str(ValidROC().wrroc_paper_long_date.parent)
+    result = cli_runner.invoke(
+        cli,
+        [
+            "--no-interactive",
+            "validate",
+            "--batch",
+            valid_dir,
+            "--batch-pattern",
+            "wrroc-paper-long-date",
+            "--profile-identifier",
+            "ro-crate-1.1",
+            "--skip-checks",
+            SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER,
+            "--show-skipped-checks",
+            "--no-resume",
+            "--no-paging",
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    assert "Skipped" in result.output
+    assert "Skipped Checks (1)" in result.output
+    assert SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER in result.output
+    assert "configured" in result.output
+
+
 def test_batch_validate_auto_session(cli_runner: CliRunner):
     """Batch validation auto-manages a session file under the user sessions dir."""
     valid_dir = str(ValidROC().wrroc_paper_long_date.parent)
@@ -772,7 +864,10 @@ def test_batch_validate_json_output(cli_runner: CliRunner, tmp_path):
             "wrroc-paper-long-date",
             "--profile-identifier",
             "ro-crate-1.1",
+            "--skip-checks",
+            SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER,
             "--no-paging",
+            "--no-resume",
             "--output-format",
             "json",
             "--output-file",
@@ -785,6 +880,12 @@ def test_batch_validate_json_output(cli_runner: CliRunner, tmp_path):
     data = json.loads(output_file.read_text(), strict=False)
     assert "meta" in data
     assert "batch_passed" in data
+    crate = data["crates"][0]
+    assert crate["skipped_checks"] == 1
+    assert crate["statistics"]["total_skipped_checks"] == 1
+    assert crate["skipped_check_details"][0]["identifier"] == SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER
+    assert data["results"][0]["skipped_checks"] == 1
+    assert data["results"][0]["skipped_check_details"] == crate["skipped_check_details"]
 
 
 def test_batch_validate_mixed_crates(cli_runner: CliRunner, tmp_path):
@@ -1003,7 +1104,10 @@ def test_batch_validate_csv_output(cli_runner: CliRunner, tmp_path):
             "wrroc-paper-long-date",
             "--profile-identifier",
             "ro-crate-1.1",
+            "--skip-checks",
+            SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER,
             "--no-paging",
+            "--no-resume",
             "--output-format",
             "csv",
             "--output-file",
@@ -1012,16 +1116,31 @@ def test_batch_validate_csv_output(cli_runner: CliRunner, tmp_path):
     )
     assert result.exit_code == 0, result.output
     assert output_file.exists()
-    rows = output_file.read_text().splitlines()
-    assert rows[0].startswith(
-        "source,crate,path,profiles,size_bytes,status,total_checks,passed_checks,issues,duration,error"
-    )
+    with output_file.open(newline="", encoding="utf-8") as csv_file:
+        reader = csv.DictReader(csv_file)
+        rows = list(reader)
+    assert reader.fieldnames == [
+        "source",
+        "crate",
+        "path",
+        "profiles",
+        "size_bytes",
+        "status",
+        "total_checks",
+        "passed_checks",
+        "failed_checks",
+        "skipped_checks",
+        "issues",
+        "duration",
+        "error",
+    ]
     # The profile used is recorded in the CSV row.
-    assert ",ro-crate-1.1," in rows[1]
+    assert rows[0]["profiles"] == "ro-crate-1.1"
     # At least one data row for the validated crate, reported as passed.
-    assert len(rows) >= 2
-    assert "wrroc-paper-long-date" in rows[1]
-    assert ",passed," in rows[1]
+    assert rows
+    assert rows[0]["crate"] == "wrroc-paper-long-date"
+    assert rows[0]["status"] == "passed"
+    assert rows[0]["skipped_checks"] == "1"
 
 
 def test_batch_validate_csv_rejected_in_single_mode(cli_runner: CliRunner):
@@ -1175,12 +1294,21 @@ def _write_fake_session(sessions_dir, session_id, *, status, total, completed, f
                 "passed": True,
                 "profiles": ["ro-crate-1.1"],
                 "issues": [],
-                "statistics": {"total_checks": 1, "total_passed_checks": 1},
+                "skipped_checks": 0,
+                "skipped_check_details": [],
+                "statistics": {
+                    "total_checks": 1,
+                    "total_passed_checks": 1,
+                    "total_failed_checks": 0,
+                    "total_skipped_checks": 0,
+                },
             }
             for p in paths
         ],
     }
-    (sessions_dir / f"{session_id}.json").write_text(json.dumps(data), encoding="utf-8")
+    session_file = sessions_dir / f"{session_id}.json"
+    session_file.write_text(json.dumps(data), encoding="utf-8")
+    return session_file
 
 
 @fixture
@@ -1206,6 +1334,43 @@ def test_sessions_show_not_found(cli_runner: CliRunner, isolated_sessions_dir):
     result = cli_runner.invoke(cli, ["--no-interactive", "sessions", "show", "nope404"])
     assert result.exit_code == 0, result.output
     assert "no session matches" in result.output.lower()
+
+
+def test_sessions_show_recorded_skipped_checks(cli_runner: CliRunner, isolated_sessions_dir):
+    session_file = _write_fake_session(
+        isolated_sessions_dir,
+        "skip01",
+        status="completed",
+        total=1,
+        completed=1,
+        failed=0,
+        paths=["/data/crateA"],
+    )
+    data = json.loads(session_file.read_text())
+    entry = data["crates"][0]
+    entry["skipped_checks"] = 1
+    entry["skipped_check_details"] = [
+        {
+            "identifier": "ro-crate-1.1_12.1",
+            "profile": "ro-crate-1.1",
+            "requirement": "Data Entity availability",
+            "name": "Data Entity availability",
+            "severity": "REQUIRED",
+            "message": "Check was skipped by validation settings",
+            "category": "configured",
+        }
+    ]
+    entry["statistics"]["total_skipped_checks"] = 1
+    session_file.write_text(json.dumps(data), encoding="utf-8")
+
+    result = cli_runner.invoke(
+        cli,
+        ["--no-interactive", "sessions", "show", "skip01", "--show-skipped-checks"],
+    )
+    assert result.exit_code == 0, result.output
+    assert "Skipped Checks (1)" in result.output
+    assert "ro-crate-1.1_12.1" in result.output
+    assert "configured" in result.output
 
 
 def test_validate_stats_text(cli_runner: CliRunner):
@@ -1360,7 +1525,8 @@ def test_sessions_show_stats_output_file_md(cli_runner: CliRunner, isolated_sess
     assert "## Outcome Summary" in content
     assert "| Status | Crates | Share |" in content
     assert "| **TOTAL**" in content
-    assert "## Checks/Passed Combinations" in content
+    assert "## Check Outcome Combinations" in content
+    assert "| Crates | Checks | Passed | Failed | Skipped |" in content
 
 
 def test_sessions_show_stats_output_file_md_with_failures(cli_runner: CliRunner, isolated_sessions_dir, tmp_path):

@@ -104,6 +104,12 @@ def sessions_path(ctx):
     default=None,
     help="Keep ANSI colour codes in the file output (text format only)",
 )
+@click.option(
+    "--show-skipped-checks",
+    is_flag=True,
+    default=False,
+    help="List the recorded skipped checks and their reasons",
+)
 @click.pass_context
 def sessions_show(
     ctx,
@@ -112,6 +118,7 @@ def sessions_show(
     output_file: Path | None = None,
     output_format: str = "text",
     color: bool | None = None,
+    show_skipped_checks: bool = False,
 ):
     """
     Show the recorded output of a stored batch session.
@@ -119,7 +126,8 @@ def sessions_show(
     Pass a session ID (the short ID shown by `sessions list` is enough), or run
     without arguments in interactive mode to pick one from a menu. The session
     header and the summary table are rendered from what was saved, without
-    re-validating anything; add --stats for the textual statistics.
+    re-validating anything; add --stats for the textual statistics or
+    --show-skipped-checks for the recorded skip reasons.
 
     Use --output-file to write the statistics to a file instead of the console.
     Supported formats are ``text`` (plain or ANSI-coloured) and ``md`` (markdown).
@@ -142,6 +150,7 @@ def sessions_show(
             output_file=output_file,
             output_format=output_format,
             color=color,
+            show_skipped_checks=show_skipped_checks,
         )
     except Exception as e:
         handle_error(e, console)
@@ -174,6 +183,9 @@ def _select_session(console, summaries: list[dict], session_id: str | None) -> d
     return next((s for s in summaries if s["id"] == chosen_id), None)
 
 
+# Session rendering keeps the selected output options and the reconstructed
+# session metadata together so all views are generated from the same snapshot.
+# pylint: disable-next=too-many-locals
 def _show_session(
     console,
     session_file: Path,
@@ -182,6 +194,7 @@ def _show_session(
     output_file: Path | None = None,
     output_format: str = "text",
     color: bool | None = None,
+    show_skipped_checks: bool = False,
 ) -> None:
     """Render the header and summary table of a stored session (optionally stats)."""
     session = BatchSession.load(session_file)
@@ -205,7 +218,11 @@ def _show_session(
     # shown live during `validate` is intentionally not reproduced here — the
     # summary table already lists every crate.
     result = BatchValidationResult(session)
-    BatchValidationCommandView(console=console).show_summary(result, verbose=False)
+    BatchValidationCommandView(console=console).show_summary(
+        result,
+        verbose=False,
+        show_skipped_checks=show_skipped_checks,
+    )
 
     crate_dicts = [e.to_dict() for e in entries]
     if stats:

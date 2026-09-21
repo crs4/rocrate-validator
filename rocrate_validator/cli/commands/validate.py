@@ -510,6 +510,7 @@ def validate(
                 output_file=output_file,
                 output_line_width=output_line_width,
                 stats=stats,
+                show_skipped_checks=show_skipped_checks,
             )
 
         # CSV is a batch-only report format; reject it for single-crate validation.
@@ -590,6 +591,7 @@ def _run_batch_validation(
     output_file: Path | None,
     output_line_width: int | None,
     stats: bool = False,
+    show_skipped_checks: bool = False,
 ) -> None:
     """Run batch validation end-to-end and exit with the aggregated status code."""
     crate_paths = _discover_batch_crates(
@@ -656,6 +658,7 @@ def _run_batch_validation(
             output_line_width=output_line_width,
             verbose=verbose,
             stats=stats,
+            show_skipped_checks=show_skipped_checks,
         )
     # Statistics are a human-readable view; they are not embedded in machine output.
     if stats and output_format in ("json", "csv"):
@@ -785,6 +788,7 @@ def _write_batch_report(
     output_line_width: int | None,
     verbose: bool,
     stats: bool = False,
+    show_skipped_checks: bool = False,
 ) -> None:
     """
     Write the batch result as JSON, CSV or a text summary, to a file or the console.
@@ -813,11 +817,19 @@ def _write_batch_report(
         with output_file.open("w", encoding="utf-8") as f:
             out = Console(color_system=None, width=output_line_width, file=f)
             out.register_formatter(TextOutputFormatter())
-            BatchValidationCommandView(console=out).show_summary(batch_result, verbose=verbose)
+            BatchValidationCommandView(console=out).show_summary(
+                batch_result,
+                verbose=verbose,
+                show_skipped_checks=show_skipped_checks,
+            )
             if stats:
                 render_statistics(out, crate_dicts)
     else:
-        batch_view.show_summary(batch_result, verbose=verbose)
+        batch_view.show_summary(
+            batch_result,
+            verbose=verbose,
+            show_skipped_checks=show_skipped_checks,
+        )
         if stats:
             render_statistics(batch_view.console, crate_dicts)
 
@@ -835,6 +847,8 @@ def _write_batch_csv(batch_result: BatchValidationResult, file) -> None:
             "status",
             "total_checks",
             "passed_checks",
+            "failed_checks",
+            "skipped_checks",
             "issues",
             "duration",
             "error",
@@ -853,6 +867,8 @@ def _write_batch_csv(batch_result: BatchValidationResult, file) -> None:
                 "passed" if entry.passed else "failed",
                 stats.get("total_checks", ""),
                 stats.get("total_passed_checks", ""),
+                stats.get("total_failed_checks", ""),
+                entry.skipped_checks,
                 len(entry.issues or []),
                 f"{entry.duration:.3f}" if entry.duration is not None else "",
                 entry.error or "",

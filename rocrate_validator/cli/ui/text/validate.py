@@ -24,6 +24,7 @@ from rich.padding import Padding
 from rich.progress import BarColumn, Progress, TextColumn, TimeElapsedColumn
 from rich.rule import Rule
 from rich.table import Table
+from rich.text import Text
 
 from rocrate_validator.models.severity import Severity
 from rocrate_validator.utils import log as logging
@@ -457,11 +458,17 @@ class BatchValidationCommandView:
             "[green]✓ PASSED[/green]" if entry.passed else "[red]✗ FAILED[/red]",
             str(stats.get("total_checks", 0)),
             str(stats.get("total_passed_checks", 0)),
+            str(entry.skipped_checks),
             str(len(entry.issues or [])),
             f"{duration:.2f}s" if duration else "—",
         )
 
-    def show_summary(self, batch_result: BatchValidationResult, verbose: bool = False):
+    def show_summary(
+        self,
+        batch_result: BatchValidationResult,
+        verbose: bool = False,
+        show_skipped_checks: bool = False,
+    ):
         """
         Show the batch validation summary table and optional per-crate details.
 
@@ -489,6 +496,7 @@ class BatchValidationCommandView:
         table.add_column("Status", min_width=8, max_width=10)
         table.add_column("Checks", justify="right", min_width=6)
         table.add_column("Passed", justify="right", min_width=6)
+        table.add_column("Skipped", justify="right", min_width=7)
         table.add_column("Issues", justify="right", min_width=6)
         table.add_column("Duration", justify="right", min_width=8)
 
@@ -533,6 +541,41 @@ class BatchValidationCommandView:
                 self._show_crate_detail(entry)
                 self.console.print(Padding(Rule(style="dim"), (0, 0)))
 
+        if show_skipped_checks:
+            self._show_skipped_checks(batch_result.crates)
+
+    def _show_skipped_checks(self, entries: list[BatchCrateEntry]) -> None:
+        """Render persisted skipped-check details for every crate in a batch."""
+        details = [(entry, detail) for entry in entries for detail in (entry.skipped_check_details or [])]
+        if not details:
+            return
+
+        table = Table(
+            title=f"Skipped Checks ({len(details)})",
+            title_style="bold yellow",
+            border_style="yellow",
+            header_style="bold yellow",
+            show_lines=False,
+        )
+        table.add_column("RO-Crate", style="cyan", no_wrap=True)
+        table.add_column("Profile", style="cyan", no_wrap=True)
+        table.add_column("Check", no_wrap=True)
+        table.add_column("Category", style="yellow", no_wrap=True)
+        table.add_column("Reason")
+        for entry, detail in details:
+            severity = detail.get("severity") or "REQUIRED"
+            name = detail.get("name") or ""
+            message = detail.get("message") or ""
+            reason = f"{name}: {message}" if name else message
+            table.add_row(
+                Text(Path(entry.path).name, style="cyan"),
+                Text(detail.get("profile") or "—", style="cyan"),
+                Text(detail.get("identifier") or "?", style=get_severity_color(severity)),
+                Text(detail.get("category") or "returned", style="yellow"),
+                Text(reason),
+            )
+        self.console.print(Padding(table, (1, 2)))
+
     def _show_crate_detail(self, entry: BatchCrateEntry):
         """
         Show the detailed outcome of a failed crate in verbose batch mode.
@@ -557,7 +600,8 @@ class BatchValidationCommandView:
                 Padding(
                     f"Checks executed: {stats.get('total_checks', 0)} | "
                     f"Passed: {stats.get('total_passed_checks', 0)} | "
-                    f"Failed: {stats.get('total_failed_checks', 0)}",
+                    f"Failed: {stats.get('total_failed_checks', 0)} | "
+                    f"Skipped: {entry.skipped_checks}",
                     (0, 4),
                 )
             )

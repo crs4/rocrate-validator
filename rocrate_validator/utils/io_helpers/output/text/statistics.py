@@ -96,6 +96,8 @@ def normalise_crate(crate: dict) -> dict:
         "error": crate.get("error"),
         "checks": stats.get("total_checks", 0),
         "passed_checks": stats.get("total_passed_checks", 0),
+        "failed_checks": stats.get("total_failed_checks", 0),
+        "skipped_checks": crate.get("skipped_checks", stats.get("total_skipped_checks", 0)),
         "issues": issues,
         "n_issues": len(issues),
         # Individual REQUIRED issue lines (the legacy "└─ Required" count).
@@ -265,6 +267,35 @@ def _print_summary_table(con: Console, crates: list[dict]) -> None:
     con.print(_spanel("Outcome Summary", "Overall outcome across all analysed crates", table))
 
 
+def _render_check_outcome_combinations(con: Console, crates: list[dict]) -> None:
+    """Render groups of crates sharing the same check outcome counters."""
+    combinations = Counter(
+        (crate["checks"], crate["passed_checks"], crate["failed_checks"], crate["skipped_checks"]) for crate in crates
+    )
+    table = _rtable()
+    table.add_column("Crates", justify="right")
+    table.add_column("Checks", justify="right")
+    table.add_column("Passed", justify="right")
+    table.add_column("Failed", justify="right")
+    table.add_column("Skipped", justify="right")
+    for outcomes, crate_count in combinations.most_common():
+        checks, passed, failed, skipped = outcomes
+        table.add_row(
+            f"[bold {_C_CRATES}]{crate_count}[/]",
+            f"[bold {_C_CHECKS}]{checks}[/]",
+            f"[bold {_C_PASSED}]{passed}[/]",
+            f"[bold {_C_ISSUES}]{failed}[/]",
+            f"[bold {_C_ERROR}]{skipped}[/]",
+        )
+    con.print(
+        _spanel(
+            "Check Outcome Combinations",
+            "Number of crates sharing the same total, passed, failed and skipped check counts",
+            table,
+        )
+    )
+
+
 def _render_overview(con: Console, crates, failed, errored) -> None:
     if failed:
         issues = [c["n_issues"] for c in failed]
@@ -286,20 +317,7 @@ def _render_overview(con: Console, crates, failed, errored) -> None:
             )
         )
 
-    combos = Counter((c["checks"], c["passed_checks"]) for c in crates)
-    t = _rtable()
-    t.add_column("Crates", justify="right")
-    t.add_column("Checks", justify="right")
-    t.add_column("Passed", justify="right")
-    for (chk, ps), v in combos.most_common():
-        t.add_row(f"[bold {_C_CRATES}]{v}[/]", f"[bold {_C_CHECKS}]{chk}[/]", f"[bold {_C_PASSED}]{ps}[/]")
-    con.print(
-        _spanel(
-            "Checks/Passed Combinations",
-            "Number of crates sharing the same total checks and passed checks",
-            t,
-        )
-    )
+    _render_check_outcome_combinations(con, crates)
 
     if errored:
         t = _rtable()
@@ -615,10 +633,13 @@ def _md_write_issues_per_crate(w, failed) -> None:
 
 
 def _md_write_checks_combos(w, crates) -> None:
-    w("## Checks/Passed Combinations\n\n")
-    combos = Counter((c["checks"], c["passed_checks"]) for c in crates)
-    rows = [[str(v), str(chk), str(ps)] for (chk, ps), v in combos.most_common()]
-    w(_md_table(["Crates", "Checks", "Passed"], rows))
+    w("## Check Outcome Combinations\n\n")
+    combos = Counter((c["checks"], c["passed_checks"], c["failed_checks"], c["skipped_checks"]) for c in crates)
+    rows = [
+        [str(crate_count), str(checks), str(passed), str(failed), str(skipped)]
+        for (checks, passed, failed, skipped), crate_count in combos.most_common()
+    ]
+    w(_md_table(["Crates", "Checks", "Passed", "Failed", "Skipped"], rows))
     w("\n")
 
 
