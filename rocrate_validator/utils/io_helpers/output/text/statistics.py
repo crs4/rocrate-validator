@@ -186,6 +186,17 @@ def _bar(value: float, maxv: float, width: int = 18, color: str = "cyan") -> str
     return f"[{color}]{'█' * filled}[/][dim]{'·' * (width - filled)}[/]"
 
 
+def _quartile_bounds(ordered: list[float]) -> tuple[float, float]:
+    """Return the first and third quartiles, or the range bounds for small samples."""
+    if len(ordered) >= _MIN_SAMPLES_FOR_QUARTILES:
+        quartiles = _stats.quantiles(ordered, n=4)
+        return quartiles[0], quartiles[2]
+    return ordered[0], ordered[-1]
+
+
+# The named intermediates mirror the statistical terms rendered below and keep
+# the three output rows readable.
+# pylint: disable-next=too-many-locals
 def _describe_lines(
     values: list[float],
     *,
@@ -206,10 +217,7 @@ def _describe_lines(
     total = sum(values)
     mean_val = _stats.mean(values)
     median_val = _stats.median(values)
-    if n >= _MIN_SAMPLES_FOR_QUARTILES:
-        q1_val, _, q3_val = _stats.quantiles(values, n=4)
-    else:
-        q1_val, q3_val = ordered[0], ordered[-1]
+    q1_val, q3_val = _quartile_bounds(ordered)
     iqr_val = q3_val - q1_val
     std_val = _stats.stdev(values) if n >= _MIN_SAMPLES_FOR_SPREAD else 0.0
     var_val = _stats.variance(values) if n >= _MIN_SAMPLES_FOR_SPREAD else 0.0
@@ -523,10 +531,7 @@ def _md_describe_lines(values: list[float], *, unit: str = "") -> str:
     total = sum(values)
     mean_val = _stats.mean(values)
     median_val = _stats.median(values)
-    if n >= _MIN_SAMPLES_FOR_QUARTILES:
-        q1_val, _, q3_val = _stats.quantiles(values, n=4)
-    else:
-        q1_val, q3_val = ordered[0], ordered[-1]
+    q1_val, q3_val = _quartile_bounds(ordered)
     iqr_val = q3_val - q1_val
     std_val = _stats.stdev(values) if n >= _MIN_SAMPLES_FOR_SPREAD else 0.0
     var_val = _stats.variance(values) if n >= _MIN_SAMPLES_FOR_SPREAD else 0.0

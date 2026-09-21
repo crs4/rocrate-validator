@@ -280,6 +280,9 @@ class BatchValidationCommandView:
     def console(self) -> Console:
         return self._console
 
+    # Progress rendering needs to track the live counters and Rich components
+    # alongside the batch options passed to the service.
+    # pylint: disable-next=too-many-locals
     def run_with_progress(
         self,
         batch_validate_fn: Callable,

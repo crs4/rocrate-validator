@@ -384,6 +384,9 @@ def _resolve_crate_profiles(
     return ["ro-crate"]
 
 
+# The batch orchestration keeps the validation, session and progress state
+# together deliberately; splitting it would obscure the per-crate lifecycle.
+# pylint: disable-next=too-many-locals
 def _validate_one_in_batch(
     settings: ValidationSettings,
     session: BatchSession,
@@ -446,6 +449,7 @@ def _validate_one_in_batch(
 _SESSION_SAVE_INTERVAL_SECONDS = 2.0
 
 
+# pylint: disable-next=too-many-locals
 def batch_validate(
     settings: ValidationSettings,
     rocrate_uris: list[str],
