@@ -139,6 +139,40 @@ class AttachedROCrates:
         return self.ATTACHED_ROCRATES_CRATES_PATH / "relative-root-identifier" / "invalid"
 
 
+class DetachedROCrates:
+    DETACHED_ROCRATES_CRATES_PATH = BASE_PATH / "3_detached_rocrates"
+
+    __remote_sha__ = "8a3efd8b2b6a87f169ec6f69e893b3cf59538479"
+
+    @property
+    def __remote_base_url__(self) -> str:
+        return f"https://bitbucket.org/simleo/ro-crates/raw/{self.__remote_sha__}"
+
+    @property
+    def valid_local_descriptor_filename(self) -> Path:
+        return self.DETACHED_ROCRATES_CRATES_PATH / "naming-convention" / "local-descriptor" / "valid"
+
+    @property
+    def invalid_local_descriptor_filename(self) -> Path:
+        return self.DETACHED_ROCRATES_CRATES_PATH / "naming-convention" / "local-descriptor" / "invalid"
+
+    @property
+    def valid_root_data_entity_identifier_when_online_available(self) -> Path:
+        return self.DETACHED_ROCRATES_CRATES_PATH / "root-data-entity-identifier" / "online-available" / "valid"
+
+    @property
+    def invalid_root_data_entity_identifier_when_online_available(self) -> Path:
+        return f"{self.__remote_base_url__}/online-available/invalid/basic-ro-crate-metadata.json"
+
+    @property
+    def valid_web_data_entity(self) -> Path:
+        return f"{self.__remote_base_url__}/online-available/valid/basic-ro-crate-metadata.json"
+
+    @property
+    def invalid_web_data_entity(self) -> Path:
+        return f"{self.__remote_base_url__}/online-available/invalid/basic-ro-crate-metadata.json"
+
+
 class WorkflowsScripts:
     WORKFLOWS_SCRIPTS_CRATES_PATH = BASE_PATH / "11_workflows_scripts"
 
