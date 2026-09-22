@@ -111,6 +111,34 @@ class MetadataDocumentFormat:
         return self.METADATA_DOCUMENT_FORMAT_CRATES_PATH / "utf8"
 
 
+class AttachedROCrates:
+    ATTACHED_ROCRATES_CRATES_PATH = BASE_PATH / "2_attached_rocrates"
+
+    @property
+    def valid_preview_not_in_hasPart(self) -> Path:
+        return self.ATTACHED_ROCRATES_CRATES_PATH / "attached-preview-not-in-hasPart" / "valid"
+
+    @property
+    def invalid_preview_not_in_hasPart(self) -> Path:
+        return self.ATTACHED_ROCRATES_CRATES_PATH / "attached-preview-not-in-hasPart" / "invalid"
+
+    @property
+    def valid_non_relative_root_entity_id(self) -> Path:
+        return self.ATTACHED_ROCRATES_CRATES_PATH / "non-relative-root-identifier" / "valid"
+
+    @property
+    def invalid_non_relative_root_entity_id(self) -> Path:
+        return self.ATTACHED_ROCRATES_CRATES_PATH / "non-relative-root-identifier" / "invalid"
+
+    @property
+    def valid_relative_root_entity_id(self) -> Path:
+        return self.ATTACHED_ROCRATES_CRATES_PATH / "relative-root-identifier" / "valid"
+
+    @property
+    def invalid_relative_root_entity_id(self) -> Path:
+        return self.ATTACHED_ROCRATES_CRATES_PATH / "relative-root-identifier" / "invalid"
+
+
 class WorkflowsScripts:
     WORKFLOWS_SCRIPTS_CRATES_PATH = BASE_PATH / "11_workflows_scripts"
 
