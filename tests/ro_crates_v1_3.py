@@ -213,6 +213,187 @@ class MetadataDescriptor:
         return self.METADATA_DESCRIPTOR_CRATES_PATH / "recommended_conformsTo" / "recommended_prefix" / "invalid"
 
 
+class RootDataEntity:
+    ROOT_DATA_ENTITY_CRATES_PATH = BASE_PATH / "7_root_data_entity"
+
+    @property
+    def valid_required_datePublished(self) -> Path:
+        return self.ROOT_DATA_ENTITY_CRATES_PATH / "required_datePublished" / "valid"
+
+    @property
+    def invalid_required_datePublished(self) -> Path:
+        return self.ROOT_DATA_ENTITY_CRATES_PATH / "required_datePublished" / "invalid"
+
+    @property
+    def valid_required_downloadable_citeAs(self) -> Path:
+        return self.ROOT_DATA_ENTITY_CRATES_PATH / "required_downloadable_citeas" / "valid"
+
+    @property
+    def invalid_required_downloadable_citeAs(self) -> Path:
+        return self.ROOT_DATA_ENTITY_CRATES_PATH / "required_downloadable_citeas" / "invalid"
+
+    @property
+    def valid_recommended_citeAs_for_resolvable_id(self) -> Path:
+        return self.ROOT_DATA_ENTITY_CRATES_PATH / "recommended_citeas_for_resolvable_id" / "valid"
+
+    @property
+    def invalid_recommended_citeAs_for_resolvable_id(self) -> Path:
+        return self.ROOT_DATA_ENTITY_CRATES_PATH / "recommended_citeas_for_resolvable_id" / "invalid"
+
+    @property
+    def valid_additional_conformsTo_reference(self) -> Path:
+        return self.ROOT_DATA_ENTITY_CRATES_PATH / "additional_conformsTo" / "valid"
+
+    @property
+    def invalid_additional_conformsTo_reference(self) -> Path:
+        return self.ROOT_DATA_ENTITY_CRATES_PATH / "additional_conformsTo" / "invalid"
+
+    @property
+    def missing_root(self) -> Path:
+        return self.ROOT_DATA_ENTITY_CRATES_PATH / "missing_root" / "invalid"
+
+    @property
+    def invalid_root_type(self) -> Path:
+        return self.ROOT_DATA_ENTITY_CRATES_PATH / "invalid_root_type" / "invalid"
+
+    @property
+    def invalid_root_value(self) -> Path:
+        return self.ROOT_DATA_ENTITY_CRATES_PATH / "invalid_root_value" / "invalid"
+
+    @property
+    def recommended_root_value(self) -> Path:
+        return self.ROOT_DATA_ENTITY_CRATES_PATH / "recommended_root_value" / "valid"
+
+    @property
+    def invalid_root_date(self) -> Path:
+        return self.ROOT_DATA_ENTITY_CRATES_PATH / "invalid_root_date" / "invalid"
+
+    @property
+    def invalid_recommended_root_date(self) -> Path:
+        return self.ROOT_DATA_ENTITY_CRATES_PATH / "invalid_recommended_root_date" / "invalid"
+
+    @property
+    def missing_root_name(self) -> Path:
+        return self.ROOT_DATA_ENTITY_CRATES_PATH / "missing_root_name" / "invalid"
+
+    @property
+    def missing_root_description(self) -> Path:
+        return self.ROOT_DATA_ENTITY_CRATES_PATH / "missing_root_description" / "invalid"
+
+    @property
+    def missing_root_license(self) -> Path:
+        return self.ROOT_DATA_ENTITY_CRATES_PATH / "missing_root_license" / "invalid"
+
+    @property
+    def missing_root_license_name(self) -> Path:
+        return self.ROOT_DATA_ENTITY_CRATES_PATH / "missing_root_license_name" / "invalid"
+
+    @property
+    def missing_root_license_description(self) -> Path:
+        return self.ROOT_DATA_ENTITY_CRATES_PATH / "missing_root_license_description" / "invalid"
+
+    @property
+    def valid_referenced_generic_data_entities(self) -> Path:
+        return self.ROOT_DATA_ENTITY_CRATES_PATH / "valid_referenced_generic_data_entities" / "valid"
+
+    @property
+    def valid_recommended_identifier_resolution(self) -> Path:
+        return self.ROOT_DATA_ENTITY_CRATES_PATH / "recommended_identifier_resolution" / "valid"
+
+    @property
+    def invalid_recommended_identifier_resolution(self) -> Path:
+        return self.ROOT_DATA_ENTITY_CRATES_PATH / "recommended_identifier_resolution" / "invalid"
+
+    @property
+    def valid_recommended_publisher(self) -> Path:
+        return self.ROOT_DATA_ENTITY_CRATES_PATH / "recommended_publisher" / "valid"
+
+    @property
+    def invalid_recommended_publisher(self) -> Path:
+        return self.ROOT_DATA_ENTITY_CRATES_PATH / "recommended_publisher" / "invalid"
+
+    @property
+    def valid_recommended_funding(self) -> Path:
+        return self.ROOT_DATA_ENTITY_CRATES_PATH / "recommended_funding" / "valid"
+
+    @property
+    def invalid_recommended_funding_no_funder(self) -> Path:
+        return self.ROOT_DATA_ENTITY_CRATES_PATH / "recommended_funding" / "invalid_no_funder"
+
+    @property
+    def invalid_recommended_funding_non_org_funder(self) -> Path:
+        return self.ROOT_DATA_ENTITY_CRATES_PATH / "recommended_funding" / "invalid_non_org_funder"
+
+    @property
+    def invalid_recommended_funding_no_project_funder(self) -> Path:
+        return self.ROOT_DATA_ENTITY_CRATES_PATH / "recommended_funding" / "invalid_no_project_funder"
+
+    # R1: datePublished day precision (SHOULD)
+    @property
+    def valid_recommended_datePublished_day_precision(self) -> Path:
+        return self.ROOT_DATA_ENTITY_CRATES_PATH / "recommended_datepublished_day_precision" / "valid"
+
+    @property
+    def invalid_recommended_datePublished_day_precision(self) -> Path:
+        return self.ROOT_DATA_ENTITY_CRATES_PATH / "recommended_datepublished_day_precision" / "invalid"
+
+    # R2: hasPart MUST reference all Data Entities
+    @property
+    def valid_required_hasPart_all_data_entities(self) -> Path:
+        return self.ROOT_DATA_ENTITY_CRATES_PATH / "required_haspart_all_data_entities" / "valid"
+
+    @property
+    def invalid_required_hasPart_all_data_entities(self) -> Path:
+        return self.ROOT_DATA_ENTITY_CRATES_PATH / "required_haspart_all_data_entities" / "invalid"
+
+    @property
+    def invalid_hasPart_workflow_not_in_haspart(self) -> Path:
+        return (
+            self.ROOT_DATA_ENTITY_CRATES_PATH / "required_haspart_all_data_entities" / "invalid_workflow_not_in_haspart"
+        )
+
+    @property
+    def invalid_hasPart_web_entity_not_in_haspart(self) -> Path:
+        return (
+            self.ROOT_DATA_ENTITY_CRATES_PATH
+            / "required_haspart_all_data_entities"
+            / "invalid_web_entity_not_in_haspart"
+        )
+
+    @property
+    def invalid_hasPart_dataset_not_in_haspart(self) -> Path:
+        return (
+            self.ROOT_DATA_ENTITY_CRATES_PATH / "required_haspart_all_data_entities" / "invalid_dataset_not_in_haspart"
+        )
+
+    # R3: identifier SHOULD be present if PID exists (SHOULD)
+    @property
+    def valid_recommended_identifier_if_pid(self) -> Path:
+        return self.ROOT_DATA_ENTITY_CRATES_PATH / "recommended_identifier_if_pid" / "valid"
+
+    @property
+    def invalid_recommended_identifier_if_pid(self) -> Path:
+        return self.ROOT_DATA_ENTITY_CRATES_PATH / "recommended_identifier_if_pid" / "invalid"
+
+    # R4: identifier SHOULD use PropertyValue approach (SHOULD)
+    @property
+    def valid_recommended_identifier_propertyvalue(self) -> Path:
+        return self.ROOT_DATA_ENTITY_CRATES_PATH / "recommended_identifier_propertyvalue" / "valid"
+
+    @property
+    def invalid_recommended_identifier_propertyvalue(self) -> Path:
+        return self.ROOT_DATA_ENTITY_CRATES_PATH / "recommended_identifier_propertyvalue" / "invalid"
+
+    # R5: conformsTo SHOULD be present if profiles exist (SHOULD)
+    @property
+    def valid_recommended_conformsto_if_profiles(self) -> Path:
+        return self.ROOT_DATA_ENTITY_CRATES_PATH / "recommended_conformsto_if_profiles" / "valid"
+
+    @property
+    def invalid_recommended_conformsto_if_profiles(self) -> Path:
+        return self.ROOT_DATA_ENTITY_CRATES_PATH / "recommended_conformsto_if_profiles" / "invalid"
+
+
 class WorkflowsScripts:
     WORKFLOWS_SCRIPTS_CRATES_PATH = BASE_PATH / "11_workflows_scripts"
 
