@@ -173,6 +173,26 @@ class DetachedROCrates:
         return f"{self.__remote_base_url__}/online-available/invalid/basic-ro-crate-metadata.json"
 
 
+class MetadataEntities:
+    METADATA_ENTITIES_CRATES_PATH = BASE_PATH / "5_metadata_entities"
+
+    @property
+    def valid_recommended_schema_type(self) -> Path:
+        return self.METADATA_ENTITIES_CRATES_PATH / "recommended_schema_type" / "valid"
+
+    @property
+    def invalid_recommended_schema_type(self) -> Path:
+        return self.METADATA_ENTITIES_CRATES_PATH / "recommended_schema_type" / "invalid"
+
+    @property
+    def valid_recommended_name(self) -> Path:
+        return self.METADATA_ENTITIES_CRATES_PATH / "recommended_name" / "valid"
+
+    @property
+    def invalid_recommended_name(self) -> Path:
+        return self.METADATA_ENTITIES_CRATES_PATH / "recommended_name" / "invalid"
+
+
 class WorkflowsScripts:
     WORKFLOWS_SCRIPTS_CRATES_PATH = BASE_PATH / "11_workflows_scripts"
 
