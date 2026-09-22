@@ -193,6 +193,26 @@ class MetadataEntities:
         return self.METADATA_ENTITIES_CRATES_PATH / "recommended_name" / "invalid"
 
 
+class MetadataDescriptor:
+    METADATA_DESCRIPTOR_CRATES_PATH = BASE_PATH / "6_metadata_descriptor"
+
+    @property
+    def valid_single_value_conformsTo(self) -> Path:
+        return self.METADATA_DESCRIPTOR_CRATES_PATH / "recommended_conformsTo" / "single_value" / "valid"
+
+    @property
+    def invalid_single_value_conformsTo(self) -> Path:
+        return self.METADATA_DESCRIPTOR_CRATES_PATH / "recommended_conformsTo" / "single_value" / "invalid"
+
+    @property
+    def valid_recommended_prefix_conformsTo(self) -> Path:
+        return self.METADATA_DESCRIPTOR_CRATES_PATH / "recommended_conformsTo" / "recommended_prefix" / "valid"
+
+    @property
+    def invalid_recommended_prefix_conformsTo(self) -> Path:
+        return self.METADATA_DESCRIPTOR_CRATES_PATH / "recommended_conformsTo" / "recommended_prefix" / "invalid"
+
+
 class WorkflowsScripts:
     WORKFLOWS_SCRIPTS_CRATES_PATH = BASE_PATH / "11_workflows_scripts"
 
