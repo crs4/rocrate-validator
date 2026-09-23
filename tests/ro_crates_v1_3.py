@@ -774,3 +774,23 @@ class ValidROCrate13:
     @property
     def detached_prefixed(self) -> Path:
         return self.base_path / "detached-1.3" / "test-ro-crate-metadata.json"
+
+
+class InvalidROCrate13:
+    base_path = INVALID_CRATES_DATA_PATH / "ro-crate-1.3"
+
+    @property
+    def invalid_context(self) -> Path:
+        return self.base_path / "invalid-context"
+
+    @property
+    def invalid_date_published(self) -> Path:
+        return self.base_path / "invalid-date-published"
+
+    @property
+    def detached_relative_entity(self) -> Path:
+        return self.base_path / "detached-relative-entity" / "dataset-ro-crate-metadata.json"
+
+    @property
+    def detached_bad_filename(self) -> Path:
+        return self.base_path / "detached-bad-filename" / "ro-crate-metadata.json"
