@@ -712,6 +712,50 @@ class ContextualEntities:
         return self.CONTEXTUAL_ENTITIES_CRATES_PATH / "encoding_format" / "no_fragment"
 
 
+class ReferencedROCrates:
+    REFERENCED_ROCRATES_CRATES_PATH = CRATES_DATA_PATH / "rocrate-1.3" / "9_referenced_rocrate"
+
+    @property
+    def valid(self) -> Path:
+        return self.REFERENCED_ROCRATES_CRATES_PATH / "valid"
+
+    @property
+    def invalid_no_versionless_conformsto(self) -> Path:
+        return self.REFERENCED_ROCRATES_CRATES_PATH / "invalid_no_versionless_conformsto"
+
+    @property
+    def invalid_root_conformsto_versionless(self) -> Path:
+        return self.REFERENCED_ROCRATES_CRATES_PATH / "invalid_root_conformsto_versionless"
+
+    @property
+    def invalid_no_subjectof(self) -> Path:
+        return self.REFERENCED_ROCRATES_CRATES_PATH / "invalid_no_subjectof"
+
+    @property
+    def invalid_md_encoding_format(self) -> Path:
+        return self.REFERENCED_ROCRATES_CRATES_PATH / "invalid_md_encoding_format"
+
+    @property
+    def invalid_md_conformsto(self) -> Path:
+        return self.REFERENCED_ROCRATES_CRATES_PATH / "invalid_md_conformsto"
+
+    @property
+    def invalid_md_about(self) -> Path:
+        return self.REFERENCED_ROCRATES_CRATES_PATH / "invalid_md_about"
+
+    @property
+    def invalid_missing_sddatepublished(self) -> Path:
+        return self.REFERENCED_ROCRATES_CRATES_PATH / "invalid_missing_sddatepublished"
+
+    @property
+    def valid_with_identifier(self) -> Path:
+        return self.REFERENCED_ROCRATES_CRATES_PATH / "valid_with_identifier"
+
+    @property
+    def valid_with_relative_path(self) -> Path:
+        return self.REFERENCED_ROCRATES_CRATES_PATH / "valid_with_relative_path"
+
+
 class ValidROCrate13:
     base_path = VALID_CRATES_DATA_PATH
 
