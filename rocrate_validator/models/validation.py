@@ -50,7 +50,7 @@ from rocrate_validator.models.skipped_check import SkipCategory, SkipCategoryInp
 from rocrate_validator.rocrate import ROCrate
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.http import find_offline_cache_miss
-from rocrate_validator.utils.rdf import extract_base_from_jsonld
+from rocrate_validator.utils.rdf import PREPARED_PROFILE_BASE, extract_base_from_jsonld
 from rocrate_validator.utils.uri import URI
 
 if TYPE_CHECKING:
@@ -60,7 +60,7 @@ if TYPE_CHECKING:
 @dataclass(frozen=True)
 class PreparedValidationPlan:
     """
-    Profile state that can be reused by validation runs with the same base.
+    Profile state reusable by validation runs with compatible RDF bases.
 
     Profiles own their lazily loaded requirements and shape registries, so keeping
     the same profile instances avoids reparsing those artifacts on every run.  The
@@ -102,9 +102,9 @@ class Validator(Publisher):
         super().__init__()
         # initialize the current context
         self.__current_context__: ValidationContext | None = None
-        # Profile artifacts may contain relative IRIs resolved against the crate
-        # public ID, so plans are cached by every setting that affects profile
-        # preparation, including that effective base.
+        # Ordinary profile artifacts are prepared against a stable internal base
+        # and materialized per run. An explicit JSON-LD @base different from the
+        # crate public ID remains base-specific.
         self.__prepared_profile_catalogs: dict[tuple[Any, ...], tuple[Profile, ...]] = {}
         self.__prepared_validation_plans: dict[tuple[Any, ...], PreparedValidationPlan] = {}
         # Publisher state and ``__current_context__`` are instance-local and
@@ -121,7 +121,7 @@ class Validator(Publisher):
         return (
             context.profiles_path.resolve(),
             context.extra_profiles_path.resolve() if context.extra_profiles_path else None,
-            context.publicID,
+            context.prepared_profile_base,
             context.requirement_severity,
             context.allow_requirement_check_override,
         )
@@ -134,7 +134,7 @@ class Validator(Publisher):
                 Profile.load_profiles(
                     context.profiles_path,
                     extra_profiles_path=context.extra_profiles_path,
-                    publicID=context.publicID,
+                    publicID=context.prepared_profile_base,
                     severity=context.requirement_severity,
                     allow_requirement_check_override=context.allow_requirement_check_override,
                 )
@@ -147,8 +147,8 @@ class Validator(Publisher):
         return (
             context.profiles_path.resolve(),
             context.extra_profiles_path.resolve() if context.extra_profiles_path else None,
-            context.publicID,
-            context.effective_ontology_base,
+            context.prepared_profile_base,
+            context.prepared_ontology_base,
             context.profile_identifier,
             context.requirement_severity,
             context.inheritance_enabled,
@@ -172,7 +172,7 @@ class Validator(Publisher):
                     ontology_graph.parse(
                         ontology_path,
                         format="ttl",
-                        publicID=context.effective_ontology_base,
+                        publicID=context.prepared_ontology_base,
                     )
             plan = PreparedValidationPlan(profiles, ontology_graph)
             self.__prepared_validation_plans[key] = plan
@@ -514,6 +514,7 @@ class ValidationContext:
         self._profiles: list[Profile] | None = None
         # reference to the immutable profile preparation selected for this run
         self._prepared_validation_plan: PreparedValidationPlan | None = None
+        self._effective_ontology_base: str | None = None
         # reference to the target profile
         self._target_validation_profile: Profile | None = None
         # reference to the validation result
@@ -607,15 +608,42 @@ class ValidationContext:
     def effective_ontology_base(self) -> str:
         """Base used while parsing profile ontology artifacts for this run."""
 
+        if self._effective_ontology_base is not None:
+            return self._effective_ontology_base
         try:
-            return extract_base_from_jsonld(self.ro_crate.metadata.as_dict()) or self.publicID
+            self._effective_ontology_base = extract_base_from_jsonld(self.ro_crate.metadata.as_dict()) or self.publicID
         except (ROCrateMetadataNotFoundError, json.JSONDecodeError, UnicodeDecodeError) as error:
             # Profile preparation happens before descriptor checks execute. An
             # unreadable descriptor is validation input, not a preparation
             # failure: use the crate public ID and let the owning checks report
             # the precise missing/JSON/encoding issue in the normal pipeline.
             logger.debug("Unable to read metadata @base while preparing profiles: %s", error)
-            return self.publicID
+            self._effective_ontology_base = self.publicID
+        return self._effective_ontology_base
+
+    @property
+    def prepared_profile_base(self) -> str:
+        """Stable RDF base used to prepare reusable SHACL profile artifacts."""
+
+        if self.effective_ontology_base == self.publicID:
+            return PREPARED_PROFILE_BASE
+        return self.publicID
+
+    @property
+    def prepared_ontology_base(self) -> str:
+        """Stable RDF base preserving whether ontology and crate bases differ."""
+
+        if self.effective_ontology_base == self.publicID:
+            return self.prepared_profile_base
+        return self.effective_ontology_base
+
+    @property
+    def prepared_base_mappings(self) -> tuple[tuple[str, str], ...]:
+        """Real-to-canonical base mappings for the per-run SHACL data view."""
+
+        mappings = {self.publicID: self.prepared_profile_base}
+        mappings[self.effective_ontology_base] = self.prepared_ontology_base
+        return tuple(sorted(mappings.items(), key=lambda item: len(item[0]), reverse=True))
 
     @property
     def profiles_path(self) -> Path:

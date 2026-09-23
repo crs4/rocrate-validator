@@ -19,7 +19,7 @@ import time
 from pathlib import Path
 
 import pytest
-from rdflib import Graph, URIRef
+from rdflib import Graph, Namespace, URIRef
 from rdflib.compare import isomorphic
 
 from rocrate_validator.errors import ValidationExecutionError
@@ -80,6 +80,90 @@ def test_warm_run_does_not_reparse_shapes(monkeypatch):
 
     assert cold_calls > 0
     assert calls == cold_calls
+
+
+def test_prepared_profiles_are_reused_across_crate_public_ids(monkeypatch):
+    """Different crate bases share one canonically prepared profile plan."""
+    calls = 0
+    original = Profile.load_profiles
+
+    def counted_load_profiles(cls, *args, **kwargs):
+        nonlocal calls
+        calls += 1
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(Profile, "load_profiles", classmethod(counted_load_profiles))
+    original_uri = URI(ValidROC().wrroc_paper)
+    settings = _settings(ValidROC().wrroc_paper)
+    validator = Validator(settings)
+
+    first_result = validator.validate()
+    second_result = validator.validate(ValidROC().wrroc_paper_long_date)
+
+    assert calls == 1
+    assert settings.rocrate_uri == original_uri
+    assert first_result.rocrate_uri != second_result.rocrate_uri
+    shacl = Namespace("http://www.w3.org/ns/shacl#")
+    first_target = next(
+        ShapesRegistry.get_instance(first_result.context.profiles[-1]).shapes_graph.objects(predicate=shacl.targetNode)
+    )
+    second_target = next(
+        ShapesRegistry.get_instance(second_result.context.profiles[-1]).shapes_graph.objects(predicate=shacl.targetNode)
+    )
+    assert first_result.context.prepared_validation_plan is second_result.context.prepared_validation_plan
+    assert first_target == second_target
+    assert str(first_target).startswith(first_result.context.prepared_profile_base)
+
+
+def test_cross_base_reuse_keeps_each_crates_data_and_public_output_isolated(tmp_path, monkeypatch):
+    profile_loads = 0
+    shape_loads = 0
+    original_profile_load = Profile.load_profiles
+    original_shape_load = ShapesRegistry.load_shapes
+
+    def counted_profile_load(cls, *args, **kwargs):
+        nonlocal profile_loads
+        profile_loads += 1
+        return original_profile_load(*args, **kwargs)
+
+    def counted_shape_load(self, *args, **kwargs):
+        nonlocal shape_loads
+        shape_loads += 1
+        return original_shape_load(self, *args, **kwargs)
+
+    monkeypatch.setattr(Profile, "load_profiles", classmethod(counted_profile_load))
+    monkeypatch.setattr(ShapesRegistry, "load_shapes", counted_shape_load)
+
+    context = {
+        "@vocab": "http://schema.org/",
+        "about": {"@type": "@id"},
+    }
+    valid_metadata = {
+        "@context": context,
+        "@graph": [
+            {"@id": "ro-crate-metadata.json", "@type": "CreativeWork", "about": {"@id": "./"}},
+            {"@id": "./", "@type": "Dataset"},
+        ],
+    }
+    invalid_metadata = copy.deepcopy(valid_metadata)
+    invalid_metadata["@graph"][0].pop("@type")
+    crate_a = tmp_path / "crate-a"
+    crate_b = tmp_path / "crate-b"
+    for crate, metadata in ((crate_a, valid_metadata), (crate_b, invalid_metadata)):
+        crate.mkdir()
+        (crate / "ro-crate-metadata.json").write_text(json.dumps(metadata), encoding="utf-8")
+
+    validator = Validator(_settings(crate_a))
+    valid_result = validator.validate()
+    invalid_result = validator.validate(crate_b)
+
+    assert valid_result.passed()
+    assert not invalid_result.passed()
+    assert valid_result.context.publicID != invalid_result.context.publicID
+    assert valid_result.context.prepared_validation_plan is invalid_result.context.prepared_validation_plan
+    assert profile_loads == 1
+    assert shape_loads > 0
+    assert all(issue.violatingEntity == "./ro-crate-metadata.json" for issue in invalid_result.get_issues())
 
 
 def test_per_call_metadata_does_not_mutate_validator_settings():
@@ -257,7 +341,7 @@ def test_inherited_ontologies_are_prepared_once(monkeypatch):
     for profile in first_plan.profiles:
         ontology_path = profile.path / "ontology.ttl"
         if ontology_path.exists():
-            original_parse(expected, ontology_path, format="ttl", publicID=first_context.effective_ontology_base)
+            original_parse(expected, ontology_path, format="ttl", publicID=first_context.prepared_ontology_base)
 
     assert ontology_parses == 2
     assert first_plan is second_plan

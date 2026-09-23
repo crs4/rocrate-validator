@@ -12,7 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from rdflib import Graph
+from collections.abc import Iterable
+
+from rdflib import Graph, URIRef
+from rdflib.term import Node
 
 from rocrate_validator import constants
 from rocrate_validator.utils import log as logging
@@ -20,6 +23,53 @@ from rocrate_validator.utils.paths import list_graph_paths
 
 # set up logging
 logger = logging.getLogger(__name__)
+
+
+PREPARED_PROFILE_BASE = "https://example.invalid/rocrate-validator/prepared/crate/"
+
+
+def rebase_node(node: Node, base_mappings: Iterable[tuple[str, str]]) -> Node:
+    """
+    Return ``node`` with the first matching URI base replaced.
+
+    Mappings must be ordered from the most specific source base to the least
+    specific one. Blank nodes and literals are unchanged.
+    """
+
+    if isinstance(node, URIRef):
+        value = str(node)
+        for source_base, target_base in base_mappings:
+            if value.startswith(source_base):
+                return URIRef(f"{target_base}{value[len(source_base) :]}")
+        return node
+    return node
+
+
+def rebase_graph(
+    graph: Graph,
+    base_mappings: Iterable[tuple[str, str]],
+    *,
+    preserve_nodes: Iterable[Node] = (),
+) -> Graph:
+    """
+    Copy a graph while replacing selected URI bases.
+
+    ``preserve_nodes`` keeps structural identifiers stable while their constraint
+    values are rebased (for example SHACL shape identifiers versus target nodes).
+    """
+
+    mappings = tuple(base_mappings)
+    preserved = frozenset(preserve_nodes)
+
+    def transform(node: Node) -> Node:
+        return node if node in preserved else rebase_node(node, mappings)
+
+    rebased = Graph()
+    for prefix, namespace in graph.namespaces():
+        rebased.bind(prefix, namespace)
+    for subject, predicate, object_ in graph:
+        rebased.add((transform(subject), transform(predicate), transform(object_)))
+    return rebased
 
 
 def get_full_graph(
