@@ -394,6 +394,132 @@ class RootDataEntity:
         return self.ROOT_DATA_ENTITY_CRATES_PATH / "recommended_conformsto_if_profiles" / "invalid"
 
 
+class DataEntities:
+    DATA_ENTITIES_CRATES_PATH = BASE_PATH / "8_metadata_dataEntities"
+
+    @property
+    def valid_local_entity_reference(self) -> Path:
+        return self.DATA_ENTITIES_CRATES_PATH / "local_entity_reference" / "valid"
+
+    @property
+    def invalid_local_entity_reference(self) -> Path:
+        return self.DATA_ENTITIES_CRATES_PATH / "local_entity_reference" / "invalid"
+
+    @property
+    def valid_detached_rocrate_dataEntities(self) -> Path:
+        return self.DATA_ENTITIES_CRATES_PATH / "detached_rocrate_dataEntities" / "valid"
+
+    @property
+    def invalid_detached_rocrate_dataEntities(self) -> Path:
+        return self.DATA_ENTITIES_CRATES_PATH / "detached_rocrate_dataEntities" / "invalid"
+
+    @property
+    def valid_recommended_properties(self) -> Path:
+        return self.DATA_ENTITIES_CRATES_PATH / "recommended_properties" / "valid"
+
+    @property
+    def invalid_recommended_properties(self) -> Path:
+        return self.DATA_ENTITIES_CRATES_PATH / "recommended_properties" / "invalid"
+
+    @property
+    def valid_recommended_encoding_format(self) -> Path:
+        return self.DATA_ENTITIES_CRATES_PATH / "recommended_encoding_format" / "valid"
+
+    @property
+    def invalid_recommended_encoding_format(self) -> Path:
+        return self.DATA_ENTITIES_CRATES_PATH / "recommended_encoding_format" / "invalid"
+
+    @property
+    def valid_web_entity_downloadable(self) -> Path:
+        return self.DATA_ENTITIES_CRATES_PATH / "web_entity_downloadable" / "valid"
+
+    @property
+    def invalid_web_entity_splash_page(self) -> Path:
+        return self.DATA_ENTITIES_CRATES_PATH / "web_entity_downloadable" / "invalid"
+
+    @property
+    def valid_recommended_content_url(self) -> Path:
+        return self.DATA_ENTITIES_CRATES_PATH / "web_entity_content_url" / "valid"
+
+    @property
+    def invalid_recommended_content_url(self) -> Path:
+        return self.DATA_ENTITIES_CRATES_PATH / "web_entity_content_url" / "invalid"
+
+    @property
+    def valid_recommended_distribution(self) -> Path:
+        return self.DATA_ENTITIES_CRATES_PATH / "web_dataset_distribution" / "valid"
+
+    @property
+    def invalid_recommended_distribution(self) -> Path:
+        return self.DATA_ENTITIES_CRATES_PATH / "web_dataset_distribution" / "invalid"
+
+    @property
+    def valid_web_directory_distribution(self) -> Path:
+        return self.DATA_ENTITIES_CRATES_PATH / "web_directory_distribution" / "valid"
+
+    @property
+    def invalid_web_directory_distribution(self) -> Path:
+        return self.DATA_ENTITIES_CRATES_PATH / "web_directory_distribution" / "invalid"
+
+    @property
+    def valid_missing_file_local_path(self) -> Path:
+        return self.DATA_ENTITIES_CRATES_PATH / "missing_file_local_path" / "valid"
+
+    @property
+    def invalid_missing_file_local_path(self) -> Path:
+        return self.DATA_ENTITIES_CRATES_PATH / "missing_file_local_path" / "invalid"
+
+    @property
+    def valid_data_entity_license_divergence(self) -> Path:
+        return self.DATA_ENTITIES_CRATES_PATH / "data_entity_license" / "valid"
+
+    @property
+    def invalid_data_entity_license_divergence(self) -> Path:
+        return self.DATA_ENTITIES_CRATES_PATH / "data_entity_license" / "invalid"
+
+    @property
+    def valid_recommended_contentSize(self) -> Path:
+        return self.DATA_ENTITIES_CRATES_PATH / "recommended_contentSize" / "valid"
+
+    @property
+    def invalid_recommended_contentSize(self) -> Path:
+        return self.DATA_ENTITIES_CRATES_PATH / "recommended_contentSize" / "invalid"
+
+    @property
+    def valid_recommended_conformsto(self) -> Path:
+        return self.DATA_ENTITIES_CRATES_PATH / "recommended_conformsto" / "valid"
+
+    @property
+    def invalid_recommended_conformsto(self) -> Path:
+        return self.DATA_ENTITIES_CRATES_PATH / "recommended_conformsto" / "invalid"
+
+    @property
+    def valid_recommended_sdDatePublished(self) -> Path:
+        return self.DATA_ENTITIES_CRATES_PATH / "recommended_sdDatePublished" / "valid"
+
+    @property
+    def invalid_recommended_sdDatePublished(self) -> Path:
+        return self.DATA_ENTITIES_CRATES_PATH / "recommended_sdDatePublished" / "invalid"
+
+    # 4.3 Dataset (Directory) Data Entity — trailing slash
+    @property
+    def valid_recommended_dataset_trailing_slash(self) -> Path:
+        return self.DATA_ENTITIES_CRATES_PATH / "dataset_trailing_slash" / "valid"
+
+    @property
+    def invalid_recommended_dataset_trailing_slash(self) -> Path:
+        return self.DATA_ENTITIES_CRATES_PATH / "dataset_trailing_slash" / "invalid"
+
+    # 4.3 Dataset (Directory) Data Entity — hasPart
+    @property
+    def valid_recommended_dataset_has_part(self) -> Path:
+        return self.DATA_ENTITIES_CRATES_PATH / "dataset_has_part" / "valid"
+
+    @property
+    def invalid_recommended_dataset_has_part(self) -> Path:
+        return self.DATA_ENTITIES_CRATES_PATH / "dataset_has_part" / "invalid"
+
+
 class WorkflowsScripts:
     WORKFLOWS_SCRIPTS_CRATES_PATH = BASE_PATH / "11_workflows_scripts"
 
