@@ -69,6 +69,53 @@ representing the metadata and validates it against a given validation profile.
         ...
 
 
+Warm validation with a reusable Validator
+-----------------------------------------
+
+Applications that validate repeatedly against the same profile can keep a
+single :class:`rocrate_validator.models.Validator` instance.  The first call
+prepares the selected profile chain, requirements, SHACL shapes, and ontology;
+later calls reuse that preparation when the profile settings and RDF-base mode
+match. Ordinary crates at different locations therefore share one preparation.
+
+.. code-block:: python
+
+    from rocrate_validator.models import ValidationSettings, Validator
+
+    settings = ValidationSettings(
+        rocrate_uri="/path/to/default-crate",
+        profile_identifier="my-custom-profile",
+        extra_profiles_path="/path/to/custom-profiles",
+    )
+    validator = Validator(settings)
+
+    # Optional: move profile preparation out of the first measured request.
+    validator.prepare()
+
+    default_result = validator.validate()  # existing API remains supported
+    crate_a_result = validator.validate("/path/to/crate-a")
+    crate_b_result = validator.validate("/path/to/crate-b")
+
+The per-call crate argument does not mutate ``settings.rocrate_uri``. Metadata
+dictionaries can be supplied with ``validator.validate(metadata_dict=data)``;
+``rocrate_uri`` and ``metadata_dict`` are mutually exclusive in one call.
+
+Every call creates a fresh data graph, result, statistics updates, and SHACL
+execution context. The same validator serializes overlapping calls because its
+subscriber and current-context state are instance-local; use separate validator
+instances when validations must run concurrently.
+
+For metadata without an explicit JSON-LD ``@base`` distinct from the crate
+public ID, relative IRIs in profile artifacts are compiled against a stable
+internal base. Per-run copies of the SHACL and ontology graphs rebase only those
+relative terms to the current crate, while structural shape identifiers and the
+crate data graph remain unchanged. Metadata whose explicit ``@base`` differs
+from its crate public ID retains a base-specific prepared plan. After editing
+profile files in a long-running process, call
+``validator.clear_prepared_profiles()`` or ``validator.prepare(refresh=True)``
+before the next validation.
+
+
 Formatting Validation Results
 -----------------------------
 
