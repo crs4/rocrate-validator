@@ -14,6 +14,10 @@
 
 from __future__ import annotations
 
+import copy
+import json
+import threading
+from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 from urllib.error import HTTPError
@@ -46,10 +50,26 @@ from rocrate_validator.models.skipped_check import SkipCategory, SkipCategoryInp
 from rocrate_validator.rocrate import ROCrate
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.http import find_offline_cache_miss
+from rocrate_validator.utils.rdf import extract_base_from_jsonld
+from rocrate_validator.utils.uri import URI
 
 if TYPE_CHECKING:
     from rocrate_validator.models.profile_provenance import EffectiveRequirementCheck
-    from rocrate_validator.utils.uri import URI
+
+
+@dataclass(frozen=True)
+class PreparedValidationPlan:
+    """
+    Profile state that can be reused by validation runs with the same base.
+
+    Profiles own their lazily loaded requirements and shape registries, so keeping
+    the same profile instances avoids reparsing those artifacts on every run.  The
+    plan deliberately excludes all crate data, results and SHACL execution state;
+    those remain scoped to :class:`ValidationContext`.
+    """
+
+    profiles: tuple[Profile, ...]
+    ontology_graph: Graph
 
 
 class Validator(Publisher):
@@ -65,9 +85,13 @@ class Validator(Publisher):
             Initializes the Validator with the given settings.
         validation_settings() -> ValidationSettings:
             Returns the validation settings.
-        detect_rocrate_profiles() -> list[Profile]:
+        ``detect_rocrate_profiles(rocrate_uri=None, metadata_dict=None)``:
             Detects the profiles to validate against.
-        validate() -> ValidationResult:
+        ``prepare(rocrate_uri=None, metadata_dict=None, refresh=False)``:
+            Eagerly prepares reusable profile artifacts.
+        clear_prepared_profiles():
+            Invalidates profile preparation owned by this validator.
+        ``validate(rocrate_uri=None, metadata_dict=None)``:
             Validate the RO-Crate against the detected profiles according to the validation settings
         validate_requirements(requirements: list[Requirement]) -> ValidationResult:
             Validates the RO-Crate against the specified subset of the profile requirements.
@@ -78,17 +102,162 @@ class Validator(Publisher):
         super().__init__()
         # initialize the current context
         self.__current_context__: ValidationContext | None = None
+        # Profile artifacts may contain relative IRIs resolved against the crate
+        # public ID, so plans are cached by every setting that affects profile
+        # preparation, including that effective base.
+        self.__prepared_profile_catalogs: dict[tuple[Any, ...], tuple[Profile, ...]] = {}
+        self.__prepared_validation_plans: dict[tuple[Any, ...], PreparedValidationPlan] = {}
+        # Publisher state and ``__current_context__`` are instance-local and
+        # mutable. Serialize calls made on the same Validator instead of
+        # allowing two runs to corrupt each other's event/statistics context.
+        self.__run_lock = threading.Lock()
 
     @property
     def validation_settings(self) -> ValidationSettings:
         return self._validation_settings
 
-    def detect_rocrate_profiles(self) -> list[Profile]:
+    @staticmethod
+    def __prepared_profile_catalog_key__(context: ValidationContext) -> tuple[Any, ...]:
+        return (
+            context.profiles_path.resolve(),
+            context.extra_profiles_path.resolve() if context.extra_profiles_path else None,
+            context.publicID,
+            context.requirement_severity,
+            context.allow_requirement_check_override,
+        )
+
+    def __get_prepared_profile_catalog__(self, context: ValidationContext) -> tuple[Profile, ...]:
+        key = self.__prepared_profile_catalog_key__(context)
+        profiles = self.__prepared_profile_catalogs.get(key)
+        if profiles is None:
+            profiles = tuple(
+                Profile.load_profiles(
+                    context.profiles_path,
+                    extra_profiles_path=context.extra_profiles_path,
+                    publicID=context.publicID,
+                    severity=context.requirement_severity,
+                    allow_requirement_check_override=context.allow_requirement_check_override,
+                )
+            )
+            self.__prepared_profile_catalogs[key] = profiles
+        return profiles
+
+    @staticmethod
+    def __prepared_validation_plan_key__(context: ValidationContext) -> tuple[Any, ...]:
+        return (
+            context.profiles_path.resolve(),
+            context.extra_profiles_path.resolve() if context.extra_profiles_path else None,
+            context.publicID,
+            context.effective_ontology_base,
+            context.profile_identifier,
+            context.requirement_severity,
+            context.inheritance_enabled,
+            context.allow_requirement_check_override,
+            context.disable_check_for_duplicates,
+        )
+
+    def __get_prepared_validation_plan__(self, context: ValidationContext) -> PreparedValidationPlan:
+        key = self.__prepared_validation_plan_key__(context)
+        plan = self.__prepared_validation_plans.get(key)
+        if plan is None:
+            profiles = tuple(context.__load_profiles__())
+            ontology_graph = Graph()
+            for profile in profiles:
+                # Materialize lazy requirements and their per-profile shape
+                # registries once. Contextual graphs passed to pySHACL are still
+                # copied for every validation run.
+                _ = profile.requirements
+                ontology_path = profile.path / "ontology.ttl"
+                if ontology_path.exists():
+                    ontology_graph.parse(
+                        ontology_path,
+                        format="ttl",
+                        publicID=context.effective_ontology_base,
+                    )
+            plan = PreparedValidationPlan(profiles, ontology_graph)
+            self.__prepared_validation_plans[key] = plan
+            # Loading may resolve a bare profile token (for example
+            # ``ro-crate``) to a versioned identifier and update the settings.
+            # Store the canonical key as an alias for subsequent warm runs.
+            self.__prepared_validation_plans[self.__prepared_validation_plan_key__(context)] = plan
+        return plan
+
+    def clear_prepared_profiles(self) -> None:
+        """
+        Discard all profile preparation cached by this validator.
+
+        Call this after changing profile files on disk. Existing validation
+        results remain valid and keep their own per-run contexts.
+        """
+
+        with self.__run_lock:
+            self.__prepared_profile_catalogs.clear()
+            self.__prepared_validation_plans.clear()
+
+    def prepare(
+        self,
+        rocrate_uri: str | Path | URI | None = None,
+        *,
+        metadata_dict: dict | None = None,
+        refresh: bool = False,
+    ) -> None:
+        """
+        Eagerly prepare the selected profile for a later validation run.
+
+        By default an instance prepares profiles lazily during its first
+        :meth:`validate` call. ``refresh=True`` first discards every catalog and
+        plan cached by this validator, which is useful after editing profile
+        files in a long-running process.
+        """
+
+        settings = self.__settings_for_run__(self.validation_settings, rocrate_uri, metadata_dict)
+        with self.__run_lock:
+            if refresh:
+                self.__prepared_profile_catalogs.clear()
+                self.__prepared_validation_plans.clear()
+            context = ValidationContext(self, settings)
+            _ = context.prepared_validation_plan
+
+    @staticmethod
+    def __settings_for_run__(
+        settings: ValidationSettings,
+        rocrate_uri: str | Path | URI | None,
+        metadata_dict: dict | None,
+    ) -> ValidationSettings:
+        if rocrate_uri is not None and metadata_dict is not None:
+            raise ValueError("rocrate_uri and metadata_dict are mutually exclusive")
+        if rocrate_uri is None and metadata_dict is None:
+            # Preserve the established behavior, including writing a resolved
+            # bare profile identifier back to the caller's settings.
+            return settings
+
+        run_settings = copy.copy(settings)
+        if rocrate_uri is not None:
+            run_settings.rocrate_uri = URI(str(rocrate_uri))
+            run_settings.metadata_dict = None
+        else:
+            if not isinstance(metadata_dict, dict):
+                raise TypeError("metadata_dict must be a dictionary")
+            run_settings.metadata_dict = copy.deepcopy(metadata_dict)
+            run_settings.metadata_only = True
+        return run_settings
+
+    def detect_rocrate_profiles(
+        self,
+        rocrate_uri: str | Path | URI | None = None,
+        *,
+        metadata_dict: dict | None = None,
+    ) -> list[Profile]:
         """
         Detect the profiles to validate against
         """
+        settings = self.__settings_for_run__(self.validation_settings, rocrate_uri, metadata_dict)
+        with self.__run_lock:
+            return self.__detect_rocrate_profiles__(settings)
+
+    def __detect_rocrate_profiles__(self, settings: ValidationSettings) -> list[Profile]:
         # initialize the validation context
-        context = ValidationContext(self, self.validation_settings)
+        context = ValidationContext(self, settings)
         candidate_profiles_uris: set[str] = set()
         candidate_profiles_uris.update(context.ro_crate.metadata.get_conforms_to() or [])
         candidate_profiles_uris.update(context.ro_crate.metadata.get_root_data_entity_conforms_to() or [])
@@ -100,12 +269,7 @@ class Validator(Publisher):
         # load the profiles
         profiles = []
         candidate_profiles = []
-        available_profiles = Profile.load_profiles(
-            context.profiles_path,
-            extra_profiles_path=context.extra_profiles_path,
-            publicID=context.publicID,
-            severity=context.requirement_severity,
-        )
+        available_profiles = self.__get_prepared_profile_catalog__(context)
         profiles = [p for p in available_profiles if p.uri in candidate_profiles_uris]
         # get the candidate profiles
         for profile in profiles:
@@ -129,17 +293,25 @@ class Validator(Publisher):
             )
         return candidate_profiles
 
-    def validate(self) -> ValidationResult:
+    def validate(
+        self,
+        rocrate_uri: str | Path | URI | None = None,
+        *,
+        metadata_dict: dict | None = None,
+    ) -> ValidationResult:
         """
         Validate the RO-Crate against the detected profiles according to the validation settings
         """
-        return self.__do_validate__()
+        settings = self.__settings_for_run__(self.validation_settings, rocrate_uri, metadata_dict)
+        return self.__do_validate__(settings=settings)
 
     def validate_requirements(
         self,
         requirements: list[Requirement],
         *,
         include_dependencies: bool = True,
+        rocrate_uri: str | Path | URI | None = None,
+        metadata_dict: dict | None = None,
     ) -> ValidationResult:
         """
         Validates the RO-Crate against the specified subset of the profile requirements.
@@ -153,12 +325,28 @@ class Validator(Publisher):
             requirements,
             include_dependencies=include_dependencies,
         )
-        return self.__do_validate__(resolved_requirements)
+        settings = self.__settings_for_run__(self.validation_settings, rocrate_uri, metadata_dict)
+        return self.__do_validate__(resolved_requirements, settings=settings)
 
-    def __do_validate__(self, requirements: list[Requirement] | None = None) -> ValidationResult:  # noqa: C901, PLR0912, PLR0915
+    def __do_validate__(
+        self,
+        requirements: list[Requirement] | None = None,
+        *,
+        settings: ValidationSettings,
+    ) -> ValidationResult:
+
+        with self.__run_lock:
+            return self.__do_validate_locked__(requirements, settings=settings)
+
+    def __do_validate_locked__(  # noqa: C901, PLR0912, PLR0915  # pylint: disable=too-many-locals,too-many-branches,too-many-statements
+        self,
+        requirements: list[Requirement] | None,
+        *,
+        settings: ValidationSettings,
+    ) -> ValidationResult:
 
         # initialize the validation context
-        context = ValidationContext(self, self.validation_settings)
+        context = ValidationContext(self, settings)
         # register the current context
         self.__current_context__ = context
 
@@ -175,8 +363,11 @@ class Validator(Publisher):
             # profiles that have not yet been visited.
             for p in profiles:
                 _ = p.requirements
+            # Requirement objects belong to one prepared plan. Match by stable
+            # identifier so a caller can reuse a selection when a per-call
+            # crate input selects an equivalent plan for another RDF base.
             selected_requirement_ids = (
-                None if requirements is None else {id(requirement) for requirement in requirements}
+                None if requirements is None else {requirement.identifier for requirement in requirements}
             )
             self.notify(EventType.VALIDATION_START)
             for profile_index, profile in enumerate(profiles):
@@ -198,7 +389,7 @@ class Validator(Publisher):
                     profile_requirements = [
                         requirement
                         for requirement in profile.requirements
-                        if id(requirement) in selected_requirement_ids
+                        if requirement.identifier in selected_requirement_ids
                     ]
                 logger.debug(
                     "Validating profile %s with %s requirements",
@@ -213,7 +404,7 @@ class Validator(Publisher):
                 )
                 terminate = False
                 requirement_index = -1
-                for requirement_index in range(len(profile_requirements)):
+                for requirement_index in range(len(profile_requirements)):  # pylint: disable=consider-using-enumerate
                     requirement = profile_requirements[requirement_index]
                     if not requirement.overridden:
                         self.notify(
@@ -263,7 +454,7 @@ class Validator(Publisher):
                             remaining_requirements = [
                                 requirement
                                 for requirement in remaining_profile.requirements
-                                if id(requirement) in selected_requirement_ids
+                                if requirement.identifier in selected_requirement_ids
                             ]
                         Requirement.record_skipped_checks(remaining_requirements, context)
                     break
@@ -321,6 +512,8 @@ class ValidationContext:
         self._data_graph: Graph | None = None
         # reference to the profiles
         self._profiles: list[Profile] | None = None
+        # reference to the immutable profile preparation selected for this run
+        self._prepared_validation_plan: PreparedValidationPlan | None = None
         # reference to the target profile
         self._target_validation_profile: Profile | None = None
         # reference to the validation result
@@ -409,6 +602,20 @@ class ValidationContext:
         if not path.endswith("/"):
             path = f"{path}/"
         return path
+
+    @property
+    def effective_ontology_base(self) -> str:
+        """Base used while parsing profile ontology artifacts for this run."""
+
+        try:
+            return extract_base_from_jsonld(self.ro_crate.metadata.as_dict()) or self.publicID
+        except (ROCrateMetadataNotFoundError, json.JSONDecodeError, UnicodeDecodeError) as error:
+            # Profile preparation happens before descriptor checks execute. An
+            # unreadable descriptor is validation input, not a preparation
+            # failure: use the crate public ID and let the owning checks report
+            # the precise missing/JSON/encoding issue in the normal pipeline.
+            logger.debug("Unable to read metadata @base while preparing profiles: %s", error)
+            return self.publicID
 
     @property
     def profiles_path(self) -> Path:
@@ -618,13 +825,7 @@ class ValidationContext:
     def __load_profiles__(self) -> list[Profile]:
 
         # load all profiles
-        profiles = Profile.load_profiles(
-            self.profiles_path,
-            extra_profiles_path=self.settings.extra_profiles_path,
-            publicID=self.publicID,
-            severity=self.requirement_severity,
-            allow_requirement_check_override=self.allow_requirement_check_override,
-        )
+        profiles = list(self.validator.__get_prepared_profile_catalog__(self))
 
         # Check if the target profile is in the list of profiles. A bare token
         # (e.g. `ro-crate`) resolves to the highest available version.
@@ -683,8 +884,18 @@ class ValidationContext:
         :rtype: list[Profile]
         """
         if not self._profiles:
-            self._profiles = self.__load_profiles__()
+            self._prepared_validation_plan = self.validator.__get_prepared_validation_plan__(self)
+            self._profiles = list(self._prepared_validation_plan.profiles)
         return self._profiles.copy()
+
+    @property
+    def prepared_validation_plan(self) -> PreparedValidationPlan:
+        """Prepared profile state selected for this validation context."""
+
+        if self._prepared_validation_plan is None:
+            _ = self.profiles
+        assert self._prepared_validation_plan is not None
+        return self._prepared_validation_plan
 
     @property
     def target_validation_profile(self) -> Profile:

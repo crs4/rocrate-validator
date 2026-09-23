@@ -51,15 +51,11 @@ def validate_metadata_as_dict(
     """
     assert metadata_dict is not None, "Metadata dictionary cannot be None"
     assert isinstance(metadata_dict, dict), "Metadata must be a dictionary"
-    # set the RO-Crate metadata dictionary in the settings
-    if isinstance(settings, dict):
-        settings["metadata_dict"] = metadata_dict
-        settings["metadata_only"] = True
-    else:
-        settings.metadata_dict = metadata_dict
-        settings.metadata_only = True
-    # validate the RO-Crate metadata
-    return validate(settings, subscribers)
+    parsed_settings = ValidationSettings.parse(settings)
+    validator = _build_validator(parsed_settings, subscribers)
+    # Use per-run input instead of mutating caller-owned settings. This shares
+    # the same prepared-validator path used for directory-based validation.
+    return validator.validate(metadata_dict=metadata_dict)
 
 
 def validate(settings: dict | ValidationSettings, subscribers: list[Subscriber] | None = None) -> ValidationResult:

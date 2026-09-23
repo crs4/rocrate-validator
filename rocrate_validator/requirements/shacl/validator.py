@@ -27,7 +27,6 @@ if TYPE_CHECKING:
     from pyshacl.pytypes import GraphLike
 
 from rocrate_validator.constants import (
-    DEFAULT_ONTOLOGY_FILE,
     RDF_SERIALIZATION_FORMATS,
     RDF_SERIALIZATION_FORMATS_TYPES,
     SHACL_NS,
@@ -50,7 +49,6 @@ from rocrate_validator.requirements.shacl.transformers.preparation import (
 )
 from rocrate_validator.requirements.shacl.utils import make_uris_relative, map_severity
 from rocrate_validator.utils import log as logging
-from rocrate_validator.utils.rdf import extract_base_from_jsonld
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -112,9 +110,10 @@ class SHACLValidationContext(ValidationContext):
         """Initialize a SHACL context shared by all profiles in ``context``."""
         super().__init__(context.validator, context.settings)
         self._base_context: ValidationContext = context
-        # ontology paths resolved for each profile and optional filename
-        self._ontology_paths: dict[tuple[Path, str], Path] = {}
-
+        # The SHACL adapter is a per-run context, but profile definitions are
+        # immutable preparation state. Reuse the base context's instances so
+        # target lookup and override handling cannot trigger another load.
+        self._profiles = context.profiles
         # reference to the contextual ShapeRegistry instance
         self._shapes_registry: ShapesRegistry = ShapesRegistry()
 
@@ -135,8 +134,10 @@ class SHACLValidationContext(ValidationContext):
         # store the validation result of the current profile (a pass/fail boolean)
         self._validation_result: bool | None = None
 
-        # reference to the contextual ontology graph
+        # pySHACL may mutate supplied graphs while applying inference/rules.
+        # Copy the prepared ontology into this run's working graph.
         self._ontology_graph: Graph = Graph()
+        self._ontology_graph += context.prepared_validation_plan.ontology_graph
 
     def __set_current_validation_profile__(self, profile: Profile) -> bool:
         """
@@ -156,10 +157,6 @@ class SHACLValidationContext(ValidationContext):
             raise SHACLValidationAlreadyProcessed(profile.identifier, self.get_validation_result(profile))
 
         if profile.identifier not in self._loaded_profiles:
-            # augment the ontology graph with the profile ontology
-            ontology_graph = self.__load_ontology_graph__(profile.path)
-            if ontology_graph:
-                self._ontology_graph += ontology_graph
             # augment the shapes registry with the profile shapes
             profile_registry = ShapesRegistry.get_instance(profile)
             profile_shapes = profile_registry.get_shapes()
@@ -231,50 +228,6 @@ class SHACLValidationContext(ValidationContext):
     @property
     def shapes_graph(self) -> Graph:
         return self.shapes_registry.shapes_graph
-
-    def __get_ontology_path__(self, profile_path: Path, ontology_filename: str = DEFAULT_ONTOLOGY_FILE) -> Path:
-        """Return the cached ontology path for a profile and filename pair."""
-        key = (profile_path, ontology_filename)
-        if key not in self._ontology_paths:
-            self._ontology_paths[key] = profile_path / ontology_filename
-        return self._ontology_paths[key]
-
-    def __get_data_graph_base__(self) -> str | None:
-        """
-        Get the @base from the RO-Crate metadata JSON-LD.
-
-        This extracts the @base from the @context of the data graph metadata,
-        which can be used to align the ontology graph's base URI with the data graph.
-
-        :return: The @base value if found, None otherwise
-        """
-        metadata_dict = self.ro_crate.metadata.as_dict()
-        return extract_base_from_jsonld(metadata_dict)
-
-    def __load_ontology_graph__(
-        self, profile_path: Path, ontology_filename: str = DEFAULT_ONTOLOGY_FILE
-    ) -> Graph | None:
-        # load the graph of ontologies
-        ontology_graph: Graph | None = None
-        ontology_path = self.__get_ontology_path__(profile_path, ontology_filename)
-        if ontology_path.exists():
-            logger.debug("Loading ontologies: %s", ontology_path)
-            ontology_graph = Graph()
-
-            # Determine the publicID to use:
-            # 1. First, try to get @base from the data graph metadata
-            # 2. Fall back to the default publicID (RO-Crate URI)
-            data_graph_base = self.__get_data_graph_base__()
-            public_id = data_graph_base or self.publicID
-
-            if data_graph_base:
-                logger.debug("Using @base from data graph metadata: %s", data_graph_base)
-            else:
-                logger.debug("Using default publicID: %s", self.publicID)
-
-            ontology_graph.parse(ontology_path, format="ttl", publicID=public_id)
-            logger.debug("Ontologies loaded: %s", ontology_graph)
-        return ontology_graph
 
     @property
     def ontology_graph(self) -> Graph:
