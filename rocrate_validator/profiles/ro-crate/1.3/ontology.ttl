@@ -20,11 +20,19 @@
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix schema: <http://schema.org/> .
 @prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.3/> .
+@prefix ro-crate-1.2: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.2/> .
 @prefix bioschemas: <https://bioschemas.org/terms/> .
 # @base <./.> .
 
 <urn:absolute:.> rdf:type owl:Ontology ;
                   owl:versionIRI <urn:absolute:1.0> .
+
+# The descriptor discovery rule is inherited from the 1.2 overlay source and
+# assigns its internal marker class.  Both marker IRIs denote the same
+# validator concept, so OWL inference makes the inherited marker available to
+# shapes written against the native 1.3 vocabulary.
+ro-crate:ROCrateMetadataFileDescriptor
+    owl:equivalentClass ro-crate-1.2:ROCrateMetadataFileDescriptor .
 
 # # #################################################################
 # # #    Classes

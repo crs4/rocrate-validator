@@ -16,6 +16,7 @@
 @prefix prof: <http://www.w3.org/ns/dx/prof/> .
 @prefix role: <http://www.w3.org/ns/dx/prof/role/> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix validator: <https://github.com/crs4/rocrate-validator/> .
 
 
 
@@ -32,6 +33,11 @@
 
     # regular metadata, URI of publisher
     dct:publisher <https://www.researchobject.org/> ;
+
+    # Reuse the RO-Crate 1.2 validation rules and override only the rules whose
+    # behavior changes because of the RO-Crate 1.3 JSON-LD context.
+    prof:isProfileOf <https://w3id.org/ro/crate/1.2> ;
+    validator:isRuleOverlayOf <https://w3id.org/ro/crate/1.2> ;
 
     # this profile has a JSON-LD context resource
     prof:hasResource [
