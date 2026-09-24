@@ -31,7 +31,7 @@ from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.versioning import get_version
 from tests.conftest import SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER
 from tests.ro_crates import InvalidFileDescriptor, InvalidFileDescriptorEntity, ValidROC
-from tests.ro_crates_v1_2 import ValidROCrate12
+from tests.ro_crates_v1_3 import ValidROCrate13
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -389,17 +389,17 @@ def test_profiles_check_reports_invalid_profile(cli_runner: CliRunner, fake_prof
     assert "FAIL" in result.output
 
 
-def test_validate_no_auto_profile_falls_back_to_1_2(cli_runner: CliRunner):
+def test_validate_no_auto_profile_falls_back_to_1_3(cli_runner: CliRunner):
     """
     With auto-detection disabled the base `ro-crate` profile is used, and that
-    now resolves to 1.2.
+    now resolves to 1.3.
     """
     result = cli_runner.invoke(
         cli,
-        ["validate", str(ValidROCrate12().attached), "--no-auto-profile", "--no-paging"],
+        ["validate", str(ValidROCrate13().attached), "--no-auto-profile", "--no-paging"],
     )
     assert result.exit_code == 0
-    assert "ro-crate-1.2" in result.output
+    assert "ro-crate-1.3" in result.output
 
 
 def test_validate_auto_profile_still_uses_the_declared_profile(cli_runner: CliRunner):
@@ -412,11 +412,11 @@ def test_validate_auto_profile_still_uses_the_declared_profile(cli_runner: CliRu
     assert "ro-crate-1.1" in result.output
 
 
-def test_profiles_describe_defaults_to_1_2(cli_runner: CliRunner):
+def test_profiles_describe_defaults_to_1_3(cli_runner: CliRunner):
     """`profiles describe` with no argument describes the default profile."""
     result = cli_runner.invoke(cli, ["profiles", "describe", "--no-paging"])
     assert result.exit_code == 0
-    assert "Profile: ro-crate-1.2" in result.output
+    assert "Profile: ro-crate-1.3" in result.output
 
 
 def test_extra_profiles_list(cli_runner: CliRunner, fake_profiles_path: Path):

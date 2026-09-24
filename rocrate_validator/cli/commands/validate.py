@@ -174,7 +174,7 @@ def validate_uri(ctx, param, value):
     help=(
         "[bold yellow]Fully-Qualified-Check-IDs[/bold yellow] is a comma-separated list of checks to skip "
         "(may be specified multiple times). Each check must be specified by its "
-        "Fully Qualified Identifier, e.g., [bold cyan]ro-crate-1.2_12.1[/bold cyan]. The fully qualified "
+        "Fully Qualified Identifier, e.g., [bold cyan]ro-crate-1.3_11.1[/bold cyan]. The fully qualified "
         "check identifier has the format <Profile-ID>_<Requirement_#>.<RequirementCheck_#>, "
         "where <Requirement_#> is the position number of the Requirement in the profile, "
         "and <RequirementCheck_#> is the position number of the RequirementCheck within that Requirement. "
