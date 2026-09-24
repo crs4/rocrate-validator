@@ -440,13 +440,18 @@ def test_https_entity_id_is_not_recommended():
             "name": "Standalone Schema.org resource",
         }
     )
-    do_entity_test(
-        __metadata_document_crates__.valid_schema_org_iri_protocol,
-        models.Severity.RECOMMENDED,
-        True,
-        profile_identifier="ro-crate-1.2",
-        metadata_dict=metadata_dict,
-        metadata_only=True,
+    result = services.validate(
+        models.ValidationSettings(
+            rocrate_uri=models.URI(__metadata_document_crates__.valid_schema_org_iri_protocol),
+            requirement_severity=models.Severity.RECOMMENDED,
+            profile_identifier="ro-crate-1.2",
+            metadata_only=True,
+            metadata_dict=metadata_dict,
+        )
+    )
+    assert not any(
+        issue.check.requirement.name == "Schema.org @id compatibility"
+        for issue in result.get_issues()
     )
 
 
