@@ -9,9 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### ⚠️ Breaking Changes
 
-- **The default validation profile is now `ro-crate-1.2`** (previously `ro-crate-1.1`). Since 1.2
+- **The default validation profile is now `ro-crate-1.3`** (previously `ro-crate-1.1`). Since 1.3
   is self-contained, validation now applies 95 requirements instead of 30; crates declaring the
-  1.1 context fail the `ro-crate-1.2_2.2` check under the default profile.
+  1.1 context fail the `ro-crate-1.3_2.2` check under the default profile.
 - This primarily affects API users when `profile_identifier` is omitted. CLI auto-detection is
   unchanged unless no profile is detected or `--no-auto-profile` is used.
 - To keep the previous behaviour, explicitly select `ro-crate-1.1` with `profile_identifier` or

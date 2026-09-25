@@ -162,7 +162,7 @@ def test_order_of_loaded_profile_requirements(profiles_path: str):
 
 def test_check_dependencies_are_ordered_and_closed(profiles_path: str):
     profiles = Profile.load_profiles(profiles_path=profiles_path, severity=Severity.REQUIRED)
-    profile = next(profile for profile in profiles if profile.identifier == "ro-crate-1.2")
+    profile = next(profile for profile in profiles if profile.identifier == "ro-crate-1.3")
 
     requirements = {requirement.name: requirement for requirement in profile.requirements}
     existence = requirements["File Descriptor existence"]

@@ -38,11 +38,11 @@ SPARQL_PREFIXES = "PREFIX schema: <http://schema.org/>"
 
 # Identifier of the RO-Crate 1.1 profile. It is the profile assumed by the tests
 # that exercise 1.1 semantics on the 1.1 crate corpus, and the default used by
-# `do_entity_test()`; tests that target another profile (e.g. 1.2) pass its
+# `do_entity_test()`; tests that target another profile (e.g. 1.3) pass its
 # identifier explicitly.
 #
 # This is a hard-coded literal on purpose, NOT `DEFAULT_PROFILE_IDENTIFIER`: the
-# validator's default profile changes over time (it is 1.2 today), while the tests
+# validator's default profile changes over time (it is 1.3 today), while the tests
 # that use this constant must keep targeting 1.1 even when the default moves on.
 RO_CRATE_1_1_PROFILE_IDENTIFIER = "ro-crate-1.1"
 
@@ -51,6 +51,7 @@ RO_CRATE_1_1_PROFILE_IDENTIFIER = "ro-crate-1.1"
 _PROFILE_CONTEXT_URIS = {
     "ro-crate-1.1": "https://w3id.org/ro/crate/1.1/context",
     "ro-crate-1.2": "https://w3id.org/ro/crate/1.2/context",
+    "ro-crate-1.3": "https://w3id.org/ro/crate/1.3/context",
 }
 _DEFAULT_CONTEXT_URI = _PROFILE_CONTEXT_URIS[RO_CRATE_1_1_PROFILE_IDENTIFIER]
 
@@ -111,7 +112,7 @@ def _context_uri_for_profile(profile_identifier: str) -> str:
     Return the JSON-LD context matching the profile under test.
 
     Keeping the context aligned with the profile matters: re-serialising a 1.1
-    context while validating against 1.2 trips the `ro-crate-1.2_4.2` check and
+    context while validating against 1.3 trips the `ro-crate-1.3_4.2` check and
     the test would fail for a reason unrelated to what it is asserting.
     """
     return _PROFILE_CONTEXT_URIS.get(profile_identifier, _DEFAULT_CONTEXT_URI)

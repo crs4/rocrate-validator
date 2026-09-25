@@ -23,16 +23,16 @@ from rocrate_validator.constants import DEFAULT_PROFILE_IDENTIFIER
 from rocrate_validator.models import URI, Profile, Severity, ValidationSettings
 from rocrate_validator.services import get_profile, get_profiles, validate
 from tests.ro_crates import ValidROC
-from tests.ro_crates_v1_2 import ValidROCrate12
+from tests.ro_crates_v1_3 import ValidROCrate13
 from tests.shared import RO_CRATE_1_1_PROFILE_IDENTIFIER
 
 logger = logging.getLogger(__name__)
 
-EXPECTED_DEFAULT_PROFILE_IDENTIFIER = "ro-crate-1.2"
+EXPECTED_DEFAULT_PROFILE_IDENTIFIER = "ro-crate-1.3"
 
 
-def test_default_profile_identifier_is_ro_crate_1_2():
-    """The base RO-Crate profile used by default is 1.2."""
+def test_default_profile_identifier_is_ro_crate_1_3():
+    """The base RO-Crate profile used by default is 1.3."""
     assert DEFAULT_PROFILE_IDENTIFIER == EXPECTED_DEFAULT_PROFILE_IDENTIFIER
 
 
@@ -50,7 +50,7 @@ def test_bare_token_resolves_to_highest_version_via_services():
 def test_explicit_identifier_wins_over_token_resolution():
     """An exact identifier is never overridden by the highest-version rule."""
     assert get_profile(RO_CRATE_1_1_PROFILE_IDENTIFIER).identifier == RO_CRATE_1_1_PROFILE_IDENTIFIER
-    assert get_profile("ro-crate-1.2").identifier == "ro-crate-1.2"
+    assert get_profile("ro-crate-1.3").identifier == "ro-crate-1.3"
 
 
 def test_bare_token_resolves_to_highest_version_in_validation_context():
@@ -82,14 +82,14 @@ def test_version_sort_key_orders_versions_numerically():
     assert Profile.version_sort_key(None) < Profile.version_sort_key("0.1")
 
 
-def test_default_profile_validates_a_1_2_crate():
-    """A 1.2 crate validates against the default profile without pinning it."""
+def test_default_profile_validates_a_1_3_crate():
+    """A 1.3 crate validates against the default profile without pinning it."""
     settings = ValidationSettings(
-        rocrate_uri=URI(str(ValidROCrate12().attached)),
+        rocrate_uri=URI(str(ValidROCrate13().attached)),
         requirement_severity=Severity.REQUIRED,
     )
     result = validate(settings)
-    assert result.passed(), "A valid RO-Crate 1.2 should pass under the default profile"
+    assert result.passed(), "A valid RO-Crate 1.3 should pass under the default profile"
 
 
 def test_default_profile_rejects_a_1_1_context():
@@ -97,7 +97,7 @@ def test_default_profile_rejects_a_1_1_context():
     A 1.1-era crate no longer passes under the default profile.
 
     This documents the breaking part of the default switch: the crate declares the
-    1.1 JSON-LD context, which 1.2 requires to be the 1.2 one.
+    1.1 JSON-LD context, which 1.3 requires to be the 1.3 one.
     """
     settings = ValidationSettings(
         rocrate_uri=URI(str(ValidROC().wrroc_paper)),
@@ -106,8 +106,8 @@ def test_default_profile_rejects_a_1_1_context():
     result = validate(settings)
     assert not result.passed()
     failed_check_ids = {issue.check.identifier for issue in result.get_issues()}
-    assert "ro-crate-1.2_4.2" in failed_check_ids, (
-        f"Expected the 1.2 context check to fail, got: {sorted(failed_check_ids)}"
+    assert "ro-crate-1.3_4.2" in failed_check_ids, (
+        f"Expected the 1.3 context check to fail, got: {sorted(failed_check_ids)}"
     )
 
     # ...and it still passes when explicitly pinned to 1.1
