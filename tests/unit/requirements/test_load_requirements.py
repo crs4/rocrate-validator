@@ -160,28 +160,34 @@ def test_order_of_loaded_profile_requirements(profiles_path: str):
     assert requirement_check.severity == Severity.RECOMMENDED, "The severity of the requirement check is incorrect"
 
 
-def test_check_dependencies_are_ordered_and_closed(profiles_path: str):
+def test_check_dependencies_are_ordered_and_closed(profiles_path: str) -> None:
+    """Resolve the 1.3 context check dependencies through its 1.2 overlay source."""
     profiles = Profile.load_profiles(profiles_path=profiles_path, severity=Severity.REQUIRED)
     profile = next(profile for profile in profiles if profile.identifier == "ro-crate-1.3")
+    source_profile = next(profile for profile in profiles if profile.identifier == "ro-crate-1.2")
 
-    requirements = {requirement.name: requirement for requirement in profile.requirements}
-    existence = requirements["File Descriptor existence"]
-    encoding = requirements["File Descriptor UTF-8 encoding"]
-    json_format = requirements["File Descriptor JSON format"]
+    source_requirements = {requirement.name: requirement for requirement in source_profile.requirements}
+    existence = source_requirements["File Descriptor existence"]
+    encoding = source_requirements["File Descriptor UTF-8 encoding"]
+    json_format = source_requirements["File Descriptor JSON format"]
+    context = next(
+        requirement for requirement in profile.requirements if requirement.name == "File Descriptor JSON-LD format"
+    )
 
-    ordered_names = [requirement.name for requirement in profile.requirements]
+    ordered_names = [requirement.name for requirement in source_profile.requirements]
     assert ordered_names.index(existence.name) < ordered_names.index(encoding.name)
     assert ordered_names.index(encoding.name) < ordered_names.index(json_format.name)
 
-    closure = RequirementLoader.dependency_closure([json_format])
+    closure = RequirementLoader.dependency_closure([context])
     assert {requirement.name for requirement in closure} == {
         existence.name,
         encoding.name,
         json_format.name,
+        context.name,
     }
 
     with pytest.raises(CheckDependencyError, match="was not selected"):
-        RequirementLoader.dependency_closure([json_format], include_dependencies=False)
+        RequirementLoader.dependency_closure([context], include_dependencies=False)
 
 
 def test_hidden_requirements(profiles_loading_hidden_requirements: str):
