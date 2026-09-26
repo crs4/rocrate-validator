@@ -361,11 +361,12 @@ def test_profiles_list(cli_runner: CliRunner):
     assert "ro-crate-1.1" in result.output  # Check for a known profile
 
 
-def test_profiles_check(cli_runner: CliRunner):
+def test_profiles_check(cli_runner: CliRunner) -> None:
+    """Resolve the bare RO-Crate token to the latest profile in check reports."""
     result = cli_runner.invoke(cli, ["profiles", "check", "ro-crate", "--no-paging"])
 
     assert result.exit_code == 0
-    assert "Profile checks: ro-crate-1.2" in result.output
+    assert "Profile checks: ro-crate-1.3" in result.output
     assert "unique-requirement-check-identity" in result.output
     assert "rule-overlay-consistency" in result.output
     assert "PASS" in result.output
