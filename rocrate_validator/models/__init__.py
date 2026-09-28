@@ -21,6 +21,13 @@ from rocrate_validator.models.events import (
     ValidationEvent,
 )
 from rocrate_validator.models.profile import Profile
+from rocrate_validator.models.profile_check import (
+    ProfileCheck,
+    ProfileCheckFailure,
+    ProfileCheckResult,
+    ProfileCheckSuite,
+)
+from rocrate_validator.models.profile_provenance import EffectiveRequirementCheck, RequirementCheckRelation
 from rocrate_validator.models.requirement import (
     Requirement,
     RequirementCheck,
@@ -59,11 +66,17 @@ __all__ = [
     "CheckResult",
     "CheckResultValue",
     "CustomEncoder",
+    "EffectiveRequirementCheck",
     "LevelCollection",
     "Profile",
+    "ProfileCheck",
+    "ProfileCheckFailure",
+    "ProfileCheckResult",
+    "ProfileCheckSuite",
     "ProfileValidationEvent",
     "Requirement",
     "RequirementCheck",
+    "RequirementCheckRelation",
     "RequirementCheckValidationEvent",
     "RequirementLevel",
     "RequirementLoader",

@@ -29,7 +29,7 @@ CLI Validation
 .. Include the README section for the CLI validation
 .. include:: ../README.md
     :parser: myst_parser.sphinx_
-    :start-line: 93
+    :start-line: 94
     :end-line: 120
 
 .. seealso::

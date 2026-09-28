@@ -17,12 +17,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - To keep the previous behaviour, explicitly select `ro-crate-1.1` with `profile_identifier` or
   `-p ro-crate-1.1`.
 
+### ✨ Added
+
+- feat(profiles): support rule overlays through `validator:isRuleOverlayOf`, allowing a target profile
+  to reuse checks from a direct parent while retaining source provenance and reporting target-relative
+  effective identities. Overrides defined by the target profile match parent checks by
+  `(name, severity)`.
+- feat(profile-checks): add an extensible profile consistency framework that detects duplicate check
+  identities, invalid overlay relationships, and ambiguous checks inherited from multiple sources.
+- feat(cli): add `profiles check <PROFILE_IDENTIFIER>` and automatic profile validation, with
+  `--no-profile-checks` and the corresponding API setting available as explicit opt-outs.
+- feat(api): expose effective provenance for checks defined by the target profile, inherited checks,
+  and replacement checks in validation events, issues, statistics, and skipped-check results.
+- feat(cli): show source and effective check identities and their provenance relationships in verbose
+  `profiles describe` output.
+
 ### 🔧 Changed
 
 - refactor(profiles): resolve bare profile tokens to the highest available version using numeric
   version ordering.
 - refactor(validation): store the resolved profile identifier in validation settings so downstream
   consumers use the profile that was actually applied.
+- refactor(validation): preserve general-to-specific profile traversal for overlays, execute Python
+  replacements in their source check's slot, and evaluate the collected SHACL shapes once at the
+  target profile.
+- refactor(cli): use consistent styling for profile names, identifiers, check names, and provenance
+  labels across profile commands.
+
+### 🐛 Fixed
+
+- fix(validation): resolve the overlay target from `profile_identifier` and preserve inherited check
+  dependencies and effective skip settings independently of profile loading order.
+- fix(shacl): load each overlay source graph once before validating the merged shapes graph at the
+  target profile.
+- fix(profiles): reject ambiguous effective identities instead of implicitly selecting one inherited
+  check, and disambiguate legacy duplicate check names within existing profiles.
+
+### 📚 Documentation
+
+- docs(profiles): document ordinary inheritance, check overrides, rule overlays, deactivation, and
+  source versus effective identities with concrete SHACL and Python examples.
+- docs(api): document effective check provenance for composed profiles.
+
+### ⚡ Performance
+
+- perf(profiles): cache profile consistency results and effective check provenance within a validation
+  session to avoid repeated resolution work.
 
 
 ## [0.11.4] - 2026-09-16

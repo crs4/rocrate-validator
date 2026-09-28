@@ -419,6 +419,7 @@ class SHACLCheck(RequirementCheck):
             # and the disable_inherited_profiles_reporting is enabled, skip it
             if (
                 requirementCheck.requirement.profile != shacl_context.current_validation_profile
+                and not shacl_context.is_rule_overlay_source(requirementCheck.requirement.profile)
                 and shacl_context.settings.disable_inherited_profiles_issue_reporting
             ):
                 continue
@@ -500,6 +501,7 @@ class SHACLCheck(RequirementCheck):
                 shacl_context.result._add_executed_check(skipped_check, True)
                 if (
                     skipped_check.requirement.profile != shacl_context.target_profile
+                    and not shacl_context.is_rule_overlay_source(skipped_check.requirement.profile)
                     and shacl_context.settings.disable_inherited_profiles_issue_reporting
                 ):
                     continue

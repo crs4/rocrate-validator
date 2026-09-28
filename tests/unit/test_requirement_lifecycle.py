@@ -174,6 +174,12 @@ def test_unexpected_check_error_is_wrapped_and_propagated(monkeypatch):
     context.aborted = False
     context.maybe_warn_offline_cache_miss = lambda exc: False
 
+    def is_check_skipped(_candidate: object) -> bool:
+        """Report that the isolated execution test has no configured skips."""
+        return False
+
+    context.is_check_skipped = is_check_skipped
+
     def fail_check(*args):
         raise RuntimeError("unexpected check failure")
 

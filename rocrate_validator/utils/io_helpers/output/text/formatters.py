@@ -61,7 +61,7 @@ class ValidationResultTextOutputFormatter(OutputFormatter):
                 issue_color = get_severity_color(check.level.severity)
                 yield Padding(
                     f"[bold][{issue_color}][ {check.identifier.center(16)} ][/{issue_color}] "
-                    f"[magenta]{check.name}[/magenta][/bold]:",
+                    f"[hot_pink]{check.name}[/hot_pink][/bold]:",
                     (1, 8, 0, 8),
                 )
                 yield Padding(Markdown(check.description), (0, 0, 0, len(check.identifier) + 13))

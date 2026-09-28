@@ -21,6 +21,7 @@ from urllib.error import HTTPError
 from rdflib import Graph
 
 from rocrate_validator.errors import (
+    CheckDependencyError,
     ProfileNotFound,
     ROCrateMetadataNotFoundError,
 )
@@ -28,6 +29,7 @@ from rocrate_validator.events import Event, EventType, Publisher
 from rocrate_validator.models._logging import logger
 from rocrate_validator.models.events import (
     ProfileValidationEvent,
+    RequirementCheckValidationEvent,
     RequirementValidationEvent,
     ValidationEvent,
 )
@@ -46,6 +48,7 @@ from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.http import find_offline_cache_miss
 
 if TYPE_CHECKING:
+    from rocrate_validator.models.profile_provenance import EffectiveRequirementCheck
     from rocrate_validator.utils.uri import URI
 
 
@@ -295,6 +298,11 @@ class Validator(Publisher):
         result: ValidationResult = self.__current_context__.result
         if isinstance(event, EventType):
             event = Event(event)
+        if isinstance(event, RequirementCheckValidationEvent):
+            event.set_effective_identity(
+                self.__current_context__.effective_check_identifier(event.requirement_check),
+                self.__current_context__.effective_check_profile(event.requirement_check).identifier,
+            )
         result.statistics.update(event, ctx=self.__current_context__)
         return super().notify(event, ctx=self.__current_context__)
 
@@ -321,6 +329,9 @@ class ValidationContext:
         self._properties: dict = {}
         # URLs already reported as missing from the HTTP cache during this run
         self._offline_cache_misses_warned: set[str] = set()
+        # Effective identities are requested by several reporting consumers
+        # for the same check during one validation run.
+        self._effective_check_cache: dict[tuple[int, int], EffectiveRequirementCheck] = {}
         # flag set when the validation must be aborted because the metadata
         # cannot be read (e.g. the file descriptor is not valid JSON)
         self._aborted: bool = False
@@ -642,8 +653,19 @@ class ValidationContext:
         if not self.inheritance_enabled:
             return [profile]
 
-        # Set the profiles to validate against as the target profile and its inherited profiles
+        # Visit profiles from the most general source to the target.  This is
+        # important for both dependency ordering and SHACL composition: source
+        # shapes are collected before the target profile performs the single
+        # validation run over the complete merged shapes graph.  Python checks
+        # that are replaced by an overlay are dispatched at their source slot.
         profiles = [*profile.inherited_profiles, profile]
+
+        # Validate check identities only for profiles participating in this run.
+        # Profile listing and discovery may still inspect intentionally invalid
+        # fixtures without forcing requirement loading.
+        if self.settings.validate_profile_checks:
+            for validation_profile in profiles:
+                validation_profile.validate_profile_checks()
 
         # if the check for duplicates is disabled, return the profiles
         if self.disable_check_for_duplicates:
@@ -685,7 +707,82 @@ class ValidationContext:
         """
         profiles = self.profiles
         assert len(profiles) > 0, "No profiles to validate"
-        return self.profiles[-1]
+        # Overlay validation visits the target before its sources so that
+        # target-specific fail-fast checks run first; resolve by identifier
+        # instead of relying on the order of the profiles list.
+        target = next((profile for profile in profiles if profile.identifier == self.profile_identifier), None)
+        return target or profiles[-1]
+
+    def is_rule_overlay_source(self, profile: Profile) -> bool:
+        """Return whether ``profile`` is composed into the validation target."""
+        target = self.target_profile
+        return profile == target or profile.uri in target.is_rule_overlay_of
+
+    def effective_check_identifier(self, check: RequirementCheck) -> str:
+        """Return a context-local identifier without mutating the source check."""
+        return self.effective_check_provenance(check).identifier
+
+    def effective_check_profile(self, check: RequirementCheck) -> Profile:
+        """Return the reporting profile for a check in this validation."""
+        return self.effective_check_provenance(check).profile
+
+    def effective_check_provenance(self, check: RequirementCheck) -> EffectiveRequirementCheck:
+        """Return and cache the effective identity of ``check`` in this context."""
+        target_profile = self.target_profile
+        cache_key = (id(target_profile), id(check))
+        provenance = self._effective_check_cache.get(cache_key)
+        if provenance is None:
+            provenance = target_profile.effective_requirement_check(check)
+            self._effective_check_cache[cache_key] = provenance
+        return provenance
+
+    def is_check_skipped(self, check: RequirementCheck) -> bool:
+        """
+        Return whether validation settings skip ``check`` under a supported identity.
+
+        A check contributed by an overlay source retains its source identifier
+        while exposing a target-local effective identifier. Accepting either
+        identity lets callers address the check without mutating its provenance.
+        """
+        skipped_identifiers = self.settings.skip_checks
+        if not skipped_identifiers:
+            return False
+        check_identifiers = {check.identifier, self.effective_check_identifier(check)}
+        return bool(check_identifiers.intersection(skipped_identifiers))
+
+    def effective_check_replacement(self, check: RequirementCheck) -> RequirementCheck | None:
+        """
+        Return the target-local check replacing ``check``, if any.
+
+        Replacement is resolved against the effective target profile rather
+        than the source profile's sibling list.  This keeps execution scoped
+        to the profile selected for the current validation and avoids treating
+        unrelated profiles loaded in the same registry as active overrides.
+        """
+        target_profile = self.target_profile
+        if check.requirement.profile == target_profile:
+            return None
+        candidate = target_profile.get_requirement_check(check.name, check.severity)
+        if candidate is not None and check in candidate.overrides:
+            return candidate
+        return None
+
+    def resolve_dependency_check(self, check: RequirementCheck, dependency_name: str) -> RequirementCheck:
+        """
+        Resolve a named dependency in the active overlay composition.
+
+        Resolution uses the target profile's effective check set, which includes
+        inherited checks while excluding definitions shadowed by a more specific
+        replacement. Exactly one effective match is required; an absent or
+        ambiguous dependency is a profile-definition error.
+        """
+        matches = RequirementLoader.effective_check_index(self.target_profile).get(dependency_name, [])
+        if len(matches) != 1:
+            raise CheckDependencyError(
+                f"check {check.name!r} depends on unknown or ambiguous check {dependency_name!r}",
+                check.requirement.profile.identifier,
+            )
+        return matches[0]
 
     def get_profile_by_token(self, token: str) -> list[Profile]:
         """

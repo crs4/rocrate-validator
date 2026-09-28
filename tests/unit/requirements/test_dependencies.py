@@ -15,14 +15,31 @@
 import pytest
 
 from rocrate_validator.errors import CheckDependencyError
-from rocrate_validator.models import CheckResult, RequirementCheck, RequirementLoader
+from rocrate_validator.models import CheckResult, RequirementCheck, RequirementLoader, Severity
 
 
 class _Profile:
-    identifier = "test"
-
-    def __init__(self):
+    def __init__(self, identifier: str = "test", parents: tuple["_Profile", ...] = ()) -> None:
+        """Create a minimal profile with optional inherited parents."""
+        self.identifier = identifier
+        self.parents = list(parents)
         self.requirements = []
+
+    @property
+    def inherited_profiles(self) -> list["_Profile"]:
+        """Return the profiles contributing checks to this test profile."""
+        return self.parents
+
+    def get_requirement_check(self, name: str, severity: Severity | None = None) -> RequirementCheck | None:
+        """Return the unique local check matching ``name`` and ``severity``."""
+        matches = [
+            check
+            for requirement in self.requirements
+            for check in requirement.get_checks()
+            if check.name == name and (severity is None or check.severity == severity)
+        ]
+        assert len(matches) <= 1
+        return matches[0] if matches else None
 
 
 class _Requirement:
@@ -77,6 +94,25 @@ def test_order_by_dependencies_reorders_requirements():
     ]
     assert dependent.depends_on == ("base",)
     assert base.depends_on == ()
+
+
+def test_inherited_dependency_is_resolved_from_effective_profile() -> None:
+    """Resolve a target check dependency supplied by an overlay source."""
+    source = _Profile("source")
+    target = _Profile("target", parents=(source,))
+    source_requirement = _Requirement(source, "Source")
+    target_requirement = _Requirement(target, "Target")
+    dependency = _check(source_requirement, "base")
+    _check(target_requirement, "dependent", ("base",))
+
+    assert RequirementLoader.order_by_dependencies([target_requirement], profile=target) == [target_requirement]
+
+    closure = RequirementLoader.dependency_closure([target_requirement])
+    assert set(closure) == {source_requirement, target_requirement}
+    assert RequirementLoader.effective_check_index(target)["base"] == [dependency]
+
+    with pytest.raises(CheckDependencyError, match="was not selected"):
+        RequirementLoader.dependency_closure([target_requirement], include_dependencies=False)
 
 
 @pytest.mark.parametrize(

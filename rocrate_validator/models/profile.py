@@ -17,7 +17,7 @@ from __future__ import annotations
 import re
 from functools import total_ordering
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any, ClassVar, cast
 
 from rdflib import RDF, RDFS, Graph, Namespace, URIRef
 
@@ -27,6 +27,7 @@ from rocrate_validator.constants import (
     PROF_NS,
     PROFILE_SPECIFICATION_FILE,
     SCHEMA_ORG_NS,
+    VALIDATOR_NS,
 )
 from rocrate_validator.errors import (
     DuplicateRequirementCheck,
@@ -36,6 +37,16 @@ from rocrate_validator.errors import (
     ProfileSpecificationNotFound,
 )
 from rocrate_validator.models._logging import logger
+from rocrate_validator.models.profile_check import (
+    NoRequirementCheckOverrides,
+    ProfileCheckFailure,
+    ProfileCheckResult,
+    ProfileCheckSuite,
+)
+from rocrate_validator.models.profile_provenance import (
+    EffectiveRequirementCheck,
+    RequirementCheckRelation,
+)
 from rocrate_validator.models.severity import Severity
 from rocrate_validator.utils.collections import MapIndex, MultiIndexMap
 
@@ -63,6 +74,7 @@ class Profile:
             MapIndex("token_path", unique=False),
         ],
     )
+    __profile_check_results: ClassVar[dict[tuple[Path, Severity], tuple[ProfileCheckResult, ...]]] = {}
 
     def __init__(
         self,
@@ -292,6 +304,19 @@ class Profile:
         return cast("list[str]", self.__get_specification_property__("isTransitiveProfileOf", PROF_NS, pop_first=False))
 
     @property
+    def is_rule_overlay_of(self) -> list[str]:
+        """
+        Direct parent profiles whose validation rules are overlaid by this profile.
+
+        This implementation relationship is deliberately separate from
+        ``prof:isProfileOf``: ordinary profile inheritance retains its source
+        identity, while overlay rules are reported in the target namespace.
+        Profile consistency checks require every value to resolve to a loaded
+        direct parent and reject ambiguous check identities across sources.
+        """
+        return cast("list[str]", self.__get_specification_property__("isRuleOverlayOf", VALIDATOR_NS, pop_first=False))
+
+    @property
     def parents(self) -> list[Profile]:
         """
         The list of profiles that this profile is a profile of
@@ -399,15 +424,146 @@ class Profile:
                 return requirement
         return None
 
-    def get_requirement_check(self, check_name: str) -> RequirementCheck | None:
+    def get_requirement_checks(
+        self,
+        check_name: str,
+        severity: Severity | None = None,
+    ) -> list[RequirementCheck]:
+        """Return checks matching a name and, when provided, a severity."""
+        return [
+            check
+            for requirement in self.requirements
+            for check in requirement.get_checks()
+            if check.name == check_name and (severity is None or check.severity == severity)
+        ]
+
+    def get_requirement_check(
+        self,
+        check_name: str,
+        severity: Severity | None = None,
+    ) -> RequirementCheck | None:
         """
-        Get the requirement check with the given name
+        Get the check matching a name and optional severity.
+
+        A check identity must be unique within a profile. Ambiguous lookups fail
+        instead of making override behavior depend on requirement load order.
         """
-        for requirement in self.requirements:
-            check = requirement.get_check(check_name)
-            if check:
-                return check
-        return None
+        checks = self.get_requirement_checks(check_name, severity)
+        if len(checks) > 1:
+            identity = f"{check_name} [{severity.name}]" if severity else check_name
+            raise DuplicateRequirementCheck(identity, self.identifier)
+        return checks[0] if checks else None
+
+    @staticmethod
+    def __check_identity__(check: RequirementCheck) -> tuple[str, Severity]:
+        return check.name, check.severity
+
+    def effective_requirement_check(self, check: RequirementCheck) -> EffectiveRequirementCheck:
+        """
+        Return the provenance and reporting identity of ``check`` in this profile.
+
+        A check defined by this profile replaces direct-parent checks with the
+        same name and severity. Checks composed through ``isRuleOverlayOf`` are
+        reported in this profile's namespace; ordinary inherited checks retain
+        their source identity.
+        """
+        source_profile = check.requirement.profile
+        if source_profile == self:
+            replaced_checks = tuple(check.overrides)
+            identity_check = check
+            overlay_replacements = tuple(
+                parent_check
+                for parent_check in replaced_checks
+                if parent_check.requirement.profile.uri in self.is_rule_overlay_of
+            )
+            if len(overlay_replacements) == 1:
+                identity_check = overlay_replacements[0]
+            relative_identifier = identity_check.relative_identifier.split(" ", maxsplit=1)[-1]
+            return EffectiveRequirementCheck(
+                check=check,
+                identifier=f"{self.identifier}_{relative_identifier}",
+                profile=self,
+                relation=(
+                    RequirementCheckRelation.REPLACES if replaced_checks else RequirementCheckRelation.DEFINED_LOCALLY
+                ),
+                replaces=replaced_checks,
+            )
+
+        if source_profile.uri in self.is_rule_overlay_of:
+            relative_identifier = check.relative_identifier.split(" ", maxsplit=1)[-1]
+            return EffectiveRequirementCheck(
+                check=check,
+                identifier=f"{self.identifier}_{relative_identifier}",
+                profile=self,
+                relation=RequirementCheckRelation.INHERITED,
+            )
+
+        return EffectiveRequirementCheck(
+            check=check,
+            identifier=check.identifier,
+            profile=source_profile,
+            relation=RequirementCheckRelation.INHERITED,
+        )
+
+    def get_effective_requirement_checks(self) -> tuple[EffectiveRequirementCheck, ...]:
+        """
+        Return the checks that form this profile, including inherited checks.
+
+        More-specific definitions shadow inherited checks with the same
+        ``(name, severity)`` identity. The returned objects keep source and
+        effective identities separate, so callers do not need a validation
+        context and never have to mutate the source model.
+        """
+        effective_checks: list[EffectiveRequirementCheck] = []
+        seen_identities: dict[tuple[str, Severity], tuple[RequirementCheck, int]] = {}
+        for source_profile in (self, *self.inherited_profiles):
+            for requirement in source_profile.requirements:
+                for check in requirement.get_checks():
+                    identity = self.__check_identity__(check)
+                    previous = seen_identities.get(identity)
+                    if previous is not None:
+                        previous_check, previous_index = previous
+                        previous_profile = previous_check.requirement.profile
+                        # A transitive ancestor is shadowed by the nearer
+                        # profile already selected. Unrelated parents form an
+                        # ambiguous effective identity and must not be hidden.
+                        if source_profile in previous_profile.inherited_profiles:
+                            continue
+                        if previous_profile in source_profile.inherited_profiles:
+                            effective_checks[previous_index] = self.effective_requirement_check(check)
+                            seen_identities[identity] = (check, previous_index)
+                        else:
+                            profiles = {previous_profile.identifier, source_profile.identifier}
+                            raise DuplicateRequirementCheck(
+                                f"{check.name} [{check.severity.name}] from {', '.join(sorted(profiles))}",
+                                self.identifier,
+                            )
+                    else:
+                        seen_identities[identity] = (check, len(effective_checks))
+                        effective_checks.append(self.effective_requirement_check(check))
+        return tuple(effective_checks)
+
+    def validate_checks(self) -> tuple[ProfileCheckResult, ...]:
+        """Run and cache the registered consistency checks for this profile."""
+        cache_key = (self.path.resolve(), self.severity)
+        if cache_key not in self.__profile_check_results:
+            self.__profile_check_results[cache_key] = ProfileCheckSuite().run(self)
+        return self.__profile_check_results[cache_key]
+
+    def validate_profile_checks(self) -> None:
+        """Run all profile checks and raise when one of them fails."""
+        for result in self.validate_checks():
+            if result.passed:
+                continue
+            if result.check_id == "unique-requirement-check-identity":
+                name = result.details["name"]
+                severity = result.details["severity"]
+                raise DuplicateRequirementCheck(f"{name} [{severity}]", self.identifier)
+            raise ProfileCheckFailure(result)
+
+    def validate_requirement_check_identities(self) -> None:
+        """Backward-compatible alias for the profile check suite."""
+        self.validate_profile_checks()
 
     @classmethod
     def __get_nested_profiles__(cls, source: str) -> list[str]:
@@ -655,19 +811,12 @@ class Profile:
 
         # Check for overridden checks
         if not allow_requirement_check_override:
-            # Navigate the profiles to check for overridden checks.
-            # If the override is not enabled in the settings raise an error.
-            profiles_checks = set()
-            # Search for duplicated checks in the profiles
+            override_check_suite = ProfileCheckSuite(checks=(NoRequirementCheckOverrides,))
             for profile in profiles:
-                profile_checks = [_ for r in profile.get_requirements() for _ in r.get_checks()]
-                for check in profile_checks:
-                    # If the check is already present in the list of checks,
-                    # raise an error if the override is not enabled.
-                    if check in profiles_checks:
-                        raise DuplicateRequirementCheck(check.name, profile.identifier)
-                    # Add the check to the list of checks
-                    profiles_checks.add(check)
+                result = override_check_suite.run(profile)[0]
+                if not result.passed:
+                    identity = f"{result.details['name']} [{result.details['severity']}]"
+                    raise DuplicateRequirementCheck(identity, profile.identifier)
 
         #  order profiles according to the number of profiles they depend on:
         # i.e, first the profiles that do not depend on any other profile

@@ -15,7 +15,6 @@
 # pylint: disable=cyclic-import  # lazy imports break the cycle at runtime (see PLC0415 noqa markers in requirements)
 from __future__ import annotations
 
-from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast  # pylint: disable=unused-import
 
 import pyshacl
@@ -23,6 +22,8 @@ from rdflib import BNode, Graph, Literal, Namespace
 from rdflib.term import Node, URIRef
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from pyshacl.pytypes import GraphLike
 
 from rocrate_validator.constants import (
@@ -106,16 +107,22 @@ class SHACLValidationContextManager:
 
 class SHACLValidationContext(ValidationContext):
     def __init__(self, context: ValidationContext):
+        """Initialize a SHACL context shared by all profiles in ``context``."""
         super().__init__(context.validator, context.settings)
         self._base_context: ValidationContext = context
-        # reference to the ontology path
-        self._ontology_path: Path | None = None
+        # ontology paths resolved for each profile and optional filename
+        self._ontology_paths: dict[tuple[Path, str], Path] = {}
 
         # reference to the contextual ShapeRegistry instance
         self._shapes_registry: ShapesRegistry = ShapesRegistry()
 
         # processed profiles
         self._processed_profiles: dict[str, bool] = {}
+
+        # profiles whose ontology and shapes have already been merged. A
+        # profile may expose several SHACL checks, but its graphs must be
+        # loaded only once before the combined validation is executed.
+        self._loaded_profiles: set[str] = set()
 
         # reference to the current validation profile
         self._current_validation_profile: Profile | None = None
@@ -127,7 +134,23 @@ class SHACLValidationContext(ValidationContext):
         self._ontology_graph: Graph = Graph()
 
     def __set_current_validation_profile__(self, profile: Profile) -> bool:
-        if profile.identifier not in self._processed_profiles:
+        """
+        Select ``profile`` and load its graphs once into the shared context.
+
+        Loading and processing are separate states: source-profile checks may
+        enter this context repeatedly while their execution is deferred to the
+        target profile. Ontology and shape graphs are therefore merged only on
+        the first visit, whereas selecting an already processed profile raises
+        :class:`SHACLValidationAlreadyProcessed`.
+
+        :return: ``True`` when the profile is ready to be processed
+        :raises SHACLValidationAlreadyProcessed: If validation already ran for
+            ``profile``
+        """
+        if profile.identifier in self._processed_profiles:
+            raise SHACLValidationAlreadyProcessed(profile.identifier, self.get_validation_result(profile))
+
+        if profile.identifier not in self._loaded_profiles:
             # augment the ontology graph with the profile ontology
             ontology_graph = self.__load_ontology_graph__(profile.path)
             if ontology_graph:
@@ -138,24 +161,32 @@ class SHACLValidationContext(ValidationContext):
             profile_shapes_graph = profile_registry.shapes_graph
             logger.debug("Loaded shapes: %s", profile_shapes)
 
-            # enable overriding of checks
-            if self.settings.allow_requirement_check_override:
+            # Filter shapes that must not participate in the combined SHACL run.
+            if self.settings.skip_checks or self.settings.allow_requirement_check_override:
                 from rocrate_validator.requirements.shacl.requirements import SHACLRequirement  # noqa: PLC0415
 
                 for requirement in [_ for _ in profile.requirements if isinstance(_, SHACLRequirement)]:
                     for check in requirement.get_checks():
-                        if check.overridden and check.requirement.profile != self.target_profile:
+                        if self.base_context.is_check_skipped(check):
                             profile_shapes_graph -= cast("Any", check).shape.graph
-                            profile_shapes.pop(cast("Any", check).shape.key)
+                            profile_shapes.pop(cast("Any", check).shape.key, None)
+                            continue
+                        if (
+                            self.settings.allow_requirement_check_override
+                            and check.overridden
+                            and check.requirement.profile != self.target_profile
+                        ):
+                            profile_shapes_graph -= cast("Any", check).shape.graph
+                            profile_shapes.pop(cast("Any", check).shape.key, None)
 
             # add the shapes to the registry
             self._shapes_registry.extend(profile_shapes, profile_shapes_graph)
-            # set the current validation profile
-            self._current_validation_profile = profile
-            # return True if the profile should be processed
-            return True
-        # return False if the profile has already been processed
-        return False
+            self._loaded_profiles.add(profile.identifier)
+
+        # Select the profile on every entry: repeated source-profile checks are
+        # deferred individually even though their graphs are already loaded.
+        self._current_validation_profile = profile
+        return True
 
     def __unset_current_validation_profile__(self) -> None:
         self._current_validation_profile = None
@@ -197,9 +228,11 @@ class SHACLValidationContext(ValidationContext):
         return self.shapes_registry.shapes_graph
 
     def __get_ontology_path__(self, profile_path: Path, ontology_filename: str = DEFAULT_ONTOLOGY_FILE) -> Path:
-        if not self._ontology_path:
-            self._ontology_path = Path(f"{profile_path}/{ontology_filename}")
-        return self._ontology_path
+        """Return the cached ontology path for a profile and filename pair."""
+        key = (profile_path, ontology_filename)
+        if key not in self._ontology_paths:
+            self._ontology_paths[key] = profile_path / ontology_filename
+        return self._ontology_paths[key]
 
     def __get_data_graph_base__(self) -> str | None:
         """

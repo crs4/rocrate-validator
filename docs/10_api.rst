@@ -75,7 +75,7 @@ The validator's core is built on the main set of classes shown in the following 
 
 RO-Crate
 -----------------------------------------
-.. autoclass:: rocrate_validator.models.ROCrate
+.. autoclass:: rocrate_validator.rocrate.ROCrate
     :members:
 
 Profiles, Requirements, and Checks
@@ -115,6 +115,55 @@ Validation
 
 .. autoclass:: rocrate_validator.models.CheckIssue
     :members:
+
+.. _api-composed-profile-identities:
+
+Composed profile check identities
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When a validation target uses ``prof:isProfileOf`` without an overlay, an
+inherited check keeps the identifier and profile of the source that defines it.
+When the target also declares ``validator:isRuleOverlayOf``, the API exposes two
+identities for checks reused from the overlaid source:
+
+* the **source identity** identifies the physical implementation and remains
+  unchanged; and
+* the **effective identity** is the profile and identifier used to report the
+  check in the current validation.
+
+For example, if an inherited check from
+``example-profile-1.2`` has source identifier
+``example-profile-1.2_<suffix>``, an overlay targeting
+``example-profile-1.3`` reports it as:
+
+.. code-block:: json
+
+   {
+       "identifier": "example-profile-1.3_<suffix>",
+       "profile": "example-profile-1.3",
+       "source_identifier": "example-profile-1.2_<suffix>",
+       "source_profile": "example-profile-1.2"
+   }
+
+The ``CheckIssue`` properties ``identifier`` and ``profile_identifier`` return
+the effective identity. ``source_profile_identifier`` returns the profile that
+physically defines the check. The same distinction is present in
+``CheckIssue.to_dict()`` / ``to_json()`` through the ``identifier``,
+``profile``, ``source_identifier`` and ``source_profile`` keys.
+
+For a check implementation redefined locally by 1.3, ``source_identifier``
+remains the physical identifier assigned to the 1.3 check, while the effective
+identifier may reuse the relative suffix of the replaced 1.2 check. This keeps
+the logical check stable without mutating either ``RequirementCheck`` object.
+
+``RequirementCheck.identifier`` always refers to the source identity. Code
+that needs the context-local overlay identity should use
+``ValidationContext.effective_check_identifier(check)`` and
+``ValidationContext.effective_check_profile(check)``.
+
+``RequirementCheckValidationEvent`` exposes the same distinction through
+``effective_identifier`` / ``effective_profile_identifier`` and
+``source_identifier`` / ``source_profile_identifier``.
 
 .. autoclass:: rocrate_validator.events.Event
     :members:

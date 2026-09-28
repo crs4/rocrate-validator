@@ -14,12 +14,13 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum, unique
 from typing import TYPE_CHECKING, Literal, TypeAlias
 
 if TYPE_CHECKING:
     from rocrate_validator.models.requirement import RequirementCheck
+    from rocrate_validator.models.validation import ValidationContext
 
 
 @unique
@@ -86,17 +87,26 @@ class SkippedCheckDetail:
     check: RequirementCheck
     message: str
     category: SkipCategory = SkipCategory.RETURNED
+    context: ValidationContext | None = field(default=None, compare=False, repr=False)
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "category", SkipCategory(self.category))
 
     def to_dict(self) -> dict[str, str]:
-        return {
-            "identifier": self.check.identifier,
-            "profile": self.check.requirement.profile.identifier,
+        source_identifier = self.check.identifier
+        source_profile = self.check.requirement.profile.identifier
+        identifier = self.context.effective_check_identifier(self.check) if self.context else source_identifier
+        profile = self.context.effective_check_profile(self.check).identifier if self.context else source_profile
+        result = {
+            "identifier": identifier,
+            "profile": profile,
             "requirement": self.check.requirement.name,
             "name": self.check.name,
             "severity": self.check.severity.name,
             "message": self.message,
             "category": self.category.value,
         }
+        if identifier != source_identifier or profile != source_profile:
+            result["source_identifier"] = source_identifier
+            result["source_profile"] = source_profile
+        return result

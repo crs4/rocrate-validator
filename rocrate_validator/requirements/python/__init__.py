@@ -98,6 +98,7 @@ class PyFunctionCheck(RequirementCheck):
     def execute_check(self, context: ValidationContext) -> CheckResultValue:
         if (
             self.requirement.profile.identifier != context.profile_identifier
+            and not context.is_rule_overlay_source(self.requirement.profile)
             and context.settings.disable_inherited_profiles_issue_reporting
         ):
             logger.debug(
@@ -260,7 +261,6 @@ def check(
     :type deactivated: bool
     :param depends_on: names of checks that must run before this check.
     :type depends_on: Optional[Tuple[str, ...]]
-
     :return: the decorated function
     :rtype: Callable
     """

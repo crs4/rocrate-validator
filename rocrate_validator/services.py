@@ -207,11 +207,11 @@ def get_profiles(
     :param allow_requirement_check_override: a flag to enable or disable
         the requirement check override (default: ``True``).
         If ``True``, the requirement check of a profile ``A`` can be overridden
-        by the requirement check of a profile extension ``B`` (i.e., when ``B extends A``)
-        if they share the same name.
+        by the requirement check of a direct profile extension ``B`` (i.e., when
+        ``B prof:isProfileOf A``) if they share the same name and severity.
         If ``False``, a profile extension ``B`` can only
-        add new requirements to the profile ``A`` (i.e., checks with name not present in ``A``)
-        and an error is raised if a check with the same name is found in both profiles.
+        add new requirements to the profile ``A`` (i.e., checks whose name and severity
+        pair is not present in ``A``), and an error is raised if an override is found.
     :type allow_requirement_check_override: bool
 
     :return: the list of profiles
@@ -251,11 +251,11 @@ def get_profile(
     :param allow_requirement_check_override: a flag to enable or disable
         the requirement check override (default: ``True``).
         If ``True``, the requirement check of a profile ``A`` can be overridden
-        by the requirement check of a profile extension ``B`` (i.e., when ``B extends A``)
-        if they share the same name.
+        by the requirement check of a direct profile extension ``B`` (i.e., when
+        ``B prof:isProfileOf A``) if they share the same name and severity.
         If ``False``, a profile extension ``B`` can only
-        add new requirements to the profile ``A`` (i.e., checks with name not present in ``A``)
-        and an error is raised if a check with the same name is found in both profiles.
+        add new requirements to the profile ``A`` (i.e., checks whose name and severity
+        pair is not present in ``A``), and an error is raised if an override is found.
     :type allow_requirement_check_override: bool
 
     :return: the profile

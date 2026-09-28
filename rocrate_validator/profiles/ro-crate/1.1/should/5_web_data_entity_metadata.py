@@ -81,7 +81,7 @@ class WebDataEntityRecommendedChecker(PyFunctionCheck):
                 return result
         return result
 
-    @check(name="Web-based Data Entity: `contentSize` property")
+    @check(name="Web-based Data Entity: `contentSize` matches downloadable content")
     def check_content_size(self, context: ValidationContext) -> CheckResultValue:
         """
         Check if the Web-based Data Entity has a `contentSize` property

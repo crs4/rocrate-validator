@@ -114,6 +114,17 @@ class _Context:
         self.fail_fast = fail_fast
         self.aborted = False
 
+    @staticmethod
+    def resolve_dependency_check(check: RequirementCheck, dependency_name: str) -> RequirementCheck:
+        """Resolve dependencies using the minimal profile API exercised here."""
+        dependency = check.requirement.profile.get_requirement_check(dependency_name)
+        assert dependency is not None
+        return dependency
+
+    def is_check_skipped(self, check: RequirementCheck) -> bool:
+        """Return whether the test settings explicitly skip ``check``."""
+        return check.identifier in self.settings.skip_checks
+
 
 def _check(requirement, name, result, depends_on=(), deactivated=False):
     check = _Check(requirement, name, result, depends_on=depends_on)

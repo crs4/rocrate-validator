@@ -361,6 +361,34 @@ def test_profiles_list(cli_runner: CliRunner):
     assert "ro-crate-1.1" in result.output  # Check for a known profile
 
 
+def test_profiles_check(cli_runner: CliRunner):
+    result = cli_runner.invoke(cli, ["profiles", "check", "ro-crate", "--no-paging"])
+
+    assert result.exit_code == 0
+    assert "Profile checks: ro-crate-1.2" in result.output
+    assert "unique-requirement-check-identity" in result.output
+    assert "rule-overlay-consistency" in result.output
+    assert "PASS" in result.output
+
+
+def test_profiles_check_reports_invalid_profile(cli_runner: CliRunner, fake_profiles_path: Path):
+    result = cli_runner.invoke(
+        cli,
+        [
+            "profiles",
+            "--extra-profiles-path",
+            str(fake_profiles_path),
+            "check",
+            "invalid-duplicated-shapes",
+            "--no-paging",
+        ],
+    )
+
+    assert result.exit_code == 1
+    assert "unique-requirement-check-identity" in result.output
+    assert "FAIL" in result.output
+
+
 def test_validate_no_auto_profile_falls_back_to_1_2(cli_runner: CliRunner):
     """
     With auto-detection disabled the base `ro-crate` profile is used, and that
@@ -446,6 +474,8 @@ def test_profiles_describe_verbose(cli_runner: CliRunner):
     result = cli_runner.invoke(cli, ["profiles", "describe", _DESCRIBE_TEST_PROFILE, "-v", "--no-paging"])
     assert result.exit_code == 0
     assert check.identifier in result.output
+    assert "Effective ID" in result.output
+    assert "Source ID" in result.output
 
 
 def test_describe_check_relative_id(cli_runner: CliRunner):
@@ -470,7 +500,7 @@ def test_describe_check_unknown(cli_runner: CliRunner):
     """An out-of-range check id produces a usage error with a hint."""
     result = cli_runner.invoke(cli, ["profiles", "describe", _DESCRIBE_TEST_PROFILE, "99.99", "--no-paging"])
     assert result.exit_code == 2
-    assert "No requirement #99" in result.output
+    assert "No effective check '99.99'" in result.output
 
 
 def test_describe_check_bad_format(cli_runner: CliRunner):
@@ -486,7 +516,51 @@ def test_describe_check_profile_mismatch(cli_runner: CliRunner):
         cli, ["profiles", "describe", _DESCRIBE_TEST_PROFILE, "some-other-profile_1.1", "--no-paging"]
     )
     assert result.exit_code == 2
-    assert "does not belong to profile" in result.output
+    assert "is not part of effective profile" in result.output
+
+
+def test_describe_overlay_profile_distinguishes_inherited_and_replaced_checks(cli_runner: CliRunner):
+    result = cli_runner.invoke(
+        cli,
+        [
+            "profiles",
+            "--profiles-path",
+            "tests/data/profiles/effective_checks",
+            "describe",
+            "effective-b",
+            "-v",
+            "--no-paging",
+        ],
+        env={"COLUMNS": "160"},
+    )
+
+    assert result.exit_code == 0, result.output
+    assert "Replaces effective-a_1.2" in result.output
+    assert "Inherited from effective-a" in result.output
+    assert "effective-b_1.1" in result.output
+    assert "effective-a_1.1" in result.output
+
+
+def test_describe_inherited_overlay_check_shows_provenance(cli_runner: CliRunner):
+    result = cli_runner.invoke(
+        cli,
+        [
+            "profiles",
+            "--profiles-path",
+            "tests/data/profiles/effective_checks",
+            "describe",
+            "effective-b",
+            "1.1",
+            "--no-paging",
+        ],
+        env={"COLUMNS": "160"},
+    )
+
+    assert result.exit_code == 0, result.output
+    assert "Relation: Inherited from effective-a" in result.output
+    assert "Effective ID: effective-b_1.1" in result.output
+    assert "Source ID: effective-a_1.1" in result.output
+    assert "Source profile: effective-a" in result.output
 
 
 def test_describe_check_verbose_python(cli_runner: CliRunner):

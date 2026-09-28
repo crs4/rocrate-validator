@@ -232,6 +232,14 @@ class ValidationStatistics(Subscriber):
         """
         return self._stats.get("validated_checks", [])
 
+    def effective_check_identifier(self, check: RequirementCheck) -> str:
+        """Return the identifier used to report a check in this validation."""
+        return self._context.effective_check_identifier(check) if self._context else check.identifier
+
+    def effective_check_profile(self, check: RequirementCheck) -> Profile:
+        """Return the profile used to report a check in this validation."""
+        return self._context.effective_check_profile(check) if self._context else check.requirement.profile
+
     @property
     def started_at(self) -> datetime | None:
         """
@@ -312,8 +320,12 @@ class ValidationStatistics(Subscriber):
         profiles = [profile]
 
         # add inherited profiles if enabled
-        if not validation_settings.disable_inherited_profiles_issue_reporting:
-            profiles.extend(profile.inherited_profiles)
+        profiles.extend(
+            inherited
+            for inherited in profile.inherited_profiles
+            if not validation_settings.disable_inherited_profiles_issue_reporting
+            or inherited.uri in profile.is_rule_overlay_of
+        )
         logger.debug("Inherited profiles: %r", profile.inherited_profiles)
 
         # Initialize the counters
@@ -428,12 +440,12 @@ class ValidationStatistics(Subscriber):
             else:
                 logger.debug(
                     "Requirement check validation result is None: %s",
-                    event.requirement_check.identifier,
+                    event.effective_identifier,
                 )
         else:
             logger.debug(
                 "Skipping requirement check validation: %s",
-                event.requirement_check.identifier,
+                event.effective_identifier,
             )
 
     def __handle_requirement_validation_end__(self, event: Event, _ctx: ValidationContext | None) -> None:

@@ -56,12 +56,31 @@ class CheckIssue:
         violatingProperty: str | None = None,
         violatingEntity: str | None = None,
         value: str | None = None,
+        context: ValidationContext | None = None,
     ):
         self._message = message
         self._check: RequirementCheck = check
         self._violatingProperty = violatingProperty
         self._violatingEntity = violatingEntity
         self._propertyValue = value
+        self._context = context
+
+    @property
+    def identifier(self) -> str:
+        """Check identifier as exposed by the active validation target."""
+        return self._context.effective_check_identifier(self.check) if self._context else self.check.identifier
+
+    @property
+    def profile_identifier(self) -> str:
+        """Effective profile identifier used for reporting."""
+        if self._context:
+            return self._context.effective_check_profile(self.check).identifier
+        return self.check.requirement.profile.identifier
+
+    @property
+    def source_profile_identifier(self) -> str:
+        """Profile that physically declares the check implementation."""
+        return self.check.requirement.profile.identifier
 
     @property
     def message(self) -> str | None:
@@ -135,7 +154,7 @@ class CheckIssue:
         return f"CheckIssue(severity={self.severity}, check={self.check}, message={self.message})"
 
     def __str__(self) -> str:
-        return f'Issue of severity {self.severity.name} with check "{self.check.identifier}": {self.message}'
+        return f'Issue of severity {self.severity.name} with check "{self.identifier}": {self.message}'
 
     def to_dict(
         self,
@@ -152,6 +171,10 @@ class CheckIssue:
         }
         if with_check:
             result["check"] = self.check.to_dict(with_requirement=with_requirement, with_profile=with_profile)
+            result["check"]["source_identifier"] = self.check.identifier
+            result["check"]["identifier"] = self.identifier
+            result["check"]["source_profile"] = self.source_profile_identifier
+            result["check"]["profile"] = self.profile_identifier
         return result
 
     def to_json(
@@ -204,7 +227,7 @@ class ValidationResult:
         self._skipped_checks: set[RequirementCheck] = set()
         self._skipped_check_details: dict[str, SkippedCheckDetail] = {}
         # initialize the statistics
-        self._statistics = ValidationStatistics(context.settings)
+        self._statistics = ValidationStatistics(context.settings, context=context)
 
     @property
     def context(self) -> ValidationContext:
@@ -265,6 +288,7 @@ class ValidationResult:
                     check=check,
                     message=skip_message or "Check returned SKIPPED",
                     category=normalized_skip_category,
+                    context=getattr(self, "_context", None),
                 )
             return normalized_result
 
@@ -399,6 +423,7 @@ class ValidationResult:
             violatingProperty=violatingProperty,
             violatingEntity=violatingEntity,
             value=violatingPropertyValue,
+            context=self.context,
         )
         bisect.insort(self._issues, c)
         return c

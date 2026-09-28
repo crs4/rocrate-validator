@@ -141,6 +141,13 @@ def validate_uri(ctx, param, value):
     show_default=True,
 )
 @click.option(
+    "--no-profile-checks",
+    is_flag=True,
+    help="Skip consistency checks on validation profiles",
+    default=False,
+    show_default=True,
+)
+@click.option(
     "-l",
     "--requirement-severity",
     type=click.Choice([s.name for s in Severity], case_sensitive=False),
@@ -270,6 +277,7 @@ def validate(
     skip_availability_check: bool = False,
     no_auto_profile: bool = False,
     disable_profile_inheritance: bool = False,
+    no_profile_checks: bool = False,
     requirement_severity: str = Severity.REQUIRED.name,
     requirement_severity_only: bool = False,
     skip_checks: list[str] | None = None,
@@ -352,6 +360,7 @@ def validate(
             "creation_time": creation_time,
             "enforce_availability": enforce_availability,
             "skip_availability_check": skip_availability_check,
+            "validate_profile_checks": not no_profile_checks,
         }
 
         # Print the application header
@@ -377,7 +386,7 @@ def validate(
         results = {}
         for profile in profile_identifiers:
             # Duplicate settings for each profile and set the profile identifier
-            logger.info("\nValidating RO-Crate against profile: [bold cyan]%s[/bold cyan]", profile)
+            logger.info("\nValidating RO-Crate against profile: [bold magenta]%s[/bold magenta]", profile)
             profile_settings = validation_settings.copy()
             profile_settings["profile_identifier"] = profile
             logger.debug("Profile selected for validation: %s", profile)
@@ -674,7 +683,7 @@ def _emit_json_report(
             console.print(
                 f"\n{' ' * 2}✅ [bold]Validation [green]PASSED![/green]. "
                 f"\n{' ' * 5}RO-Crate is valid according to the profile(s): "
-                f"[cyan]{', '.join(profile_identifiers)}[/cyan][/bold]"
+                f"[magenta]{', '.join(profile_identifiers)}[/magenta][/bold]"
             )
         else:
             console.print(f"\n{' ' * 2}❌ [bold]Validation [red]FAILED![/red][/bold]")
@@ -719,8 +728,8 @@ def _print_skipped_checks(results: dict[str, ValidationResult], console: Console
     table.add_column("Reason")
     for detail in details:
         table.add_row(
-            Text(detail.check.requirement.profile.identifier, style="cyan"),
-            Text(detail.check.identifier, style=get_severity_color(detail.check.severity)),
+            Text(detail.to_dict()["profile"], style="cyan"),
+            Text(detail.to_dict()["identifier"], style=get_severity_color(detail.check.severity)),
             Text(detail.category.value, style="yellow"),
             Text(f"{detail.check.name}: {detail.message}"),
         )
