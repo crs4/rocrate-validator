@@ -6,5 +6,5 @@
     a prof:Profile ;
     rdfs:label "Effective checks overlay profile" ;
     prof:isProfileOf <https://w3id.org/rocrate-validator/tests/effective-checks/a> ;
-    validator:ruleOverlayOf <https://w3id.org/rocrate-validator/tests/effective-checks/a> ;
+    validator:isRuleOverlayOf <https://w3id.org/rocrate-validator/tests/effective-checks/a> ;
     prof:hasToken "effective-b" .

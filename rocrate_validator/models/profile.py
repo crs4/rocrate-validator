@@ -304,7 +304,7 @@ class Profile:
         return cast("list[str]", self.__get_specification_property__("isTransitiveProfileOf", PROF_NS, pop_first=False))
 
     @property
-    def rule_overlay_of(self) -> list[str]:
+    def is_rule_overlay_of(self) -> list[str]:
         """
         Direct parent profiles whose validation rules are overlaid by this profile.
 
@@ -314,7 +314,7 @@ class Profile:
         Profile consistency checks require every value to resolve to a loaded
         direct parent and reject ambiguous check identities across sources.
         """
-        return cast("list[str]", self.__get_specification_property__("ruleOverlayOf", VALIDATOR_NS, pop_first=False))
+        return cast("list[str]", self.__get_specification_property__("isRuleOverlayOf", VALIDATOR_NS, pop_first=False))
 
     @property
     def parents(self) -> list[Profile]:
@@ -463,7 +463,7 @@ class Profile:
         Return the provenance and reporting identity of ``check`` in this profile.
 
         A check defined by this profile replaces direct-parent checks with the
-        same name and severity. Checks composed through ``ruleOverlayOf`` are
+        same name and severity. Checks composed through ``isRuleOverlayOf`` are
         reported in this profile's namespace; ordinary inherited checks retain
         their source identity.
         """
@@ -474,7 +474,7 @@ class Profile:
             overlay_replacements = tuple(
                 parent_check
                 for parent_check in replaced_checks
-                if parent_check.requirement.profile.uri in self.rule_overlay_of
+                if parent_check.requirement.profile.uri in self.is_rule_overlay_of
             )
             if len(overlay_replacements) == 1:
                 identity_check = overlay_replacements[0]
@@ -489,7 +489,7 @@ class Profile:
                 replaces=replaced_checks,
             )
 
-        if source_profile.uri in self.rule_overlay_of:
+        if source_profile.uri in self.is_rule_overlay_of:
             relative_identifier = check.relative_identifier.split(" ", maxsplit=1)[-1]
             return EffectiveRequirementCheck(
                 check=check,

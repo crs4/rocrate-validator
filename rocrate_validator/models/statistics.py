@@ -324,7 +324,7 @@ class ValidationStatistics(Subscriber):
             inherited
             for inherited in profile.inherited_profiles
             if not validation_settings.disable_inherited_profiles_issue_reporting
-            or inherited.uri in profile.rule_overlay_of
+            or inherited.uri in profile.is_rule_overlay_of
         )
         logger.debug("Inherited profiles: %r", profile.inherited_profiles)
 

@@ -34,7 +34,7 @@
 
     # # This profile is an extension of the RO-Crate Metadata Specification 1.1 profile <https://w3id.org/ro/crate/1.1>
     prof:isProfileOf <https://w3id.org/a> ;
-    validator:ruleOverlayOf <https://w3id.org/a> ;
+    validator:isRuleOverlayOf <https://w3id.org/a> ;
 
     # # Explicitly state that this profile is a transitive profile of the RO-Crate Metadata Specification 1.1 profile
     prof:isTransitiveProfileOf <https://w3id.org/a> ;

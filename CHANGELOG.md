@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### ✨ Added
 
-- feat(profiles): support rule overlays through `validator:ruleOverlayOf`, allowing a target profile
+- feat(profiles): support rule overlays through `validator:isRuleOverlayOf`, allowing a target profile
   to reuse checks from a direct parent while retaining source provenance and reporting target-relative
   effective identities. Overrides defined by the target profile match parent checks by
   `(name, severity)`.

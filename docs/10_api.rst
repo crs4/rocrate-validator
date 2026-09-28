@@ -123,7 +123,7 @@ Composed profile check identities
 
 When a validation target uses ``prof:isProfileOf`` without an overlay, an
 inherited check keeps the identifier and profile of the source that defines it.
-When the target also declares ``validator:ruleOverlayOf``, the API exposes two
+When the target also declares ``validator:isRuleOverlayOf``, the API exposes two
 identities for checks reused from the overlaid source:
 
 * the **source identity** identifies the physical implementation and remains

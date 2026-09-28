@@ -419,16 +419,16 @@ def test_rule_overlay_sources_are_consistent(check_overriding_profiles_path: str
 def test_rule_overlay_source_must_be_a_direct_parent(check_overriding_profiles_path: str, monkeypatch):
     profiles = Profile.load_profiles(check_overriding_profiles_path, severity=Severity.OPTIONAL)
     overlay = next(item for item in profiles if item.identifier == "d")
-    original_rule_overlay_of = cast("Any", Profile.rule_overlay_of).fget
-    assert original_rule_overlay_of is not None
+    original_is_rule_overlay_of = cast("Any", Profile.is_rule_overlay_of).fget
+    assert original_is_rule_overlay_of is not None
     monkeypatch.setattr(
         Profile,
-        "rule_overlay_of",
+        "is_rule_overlay_of",
         property(
             lambda profile: (
                 ["https://w3id.org/a"]
                 if profile.identifier == overlay.identifier
-                else original_rule_overlay_of(profile)
+                else original_is_rule_overlay_of(profile)
             )
         ),
     )
@@ -446,16 +446,16 @@ def test_multiple_rule_overlay_sources_require_distinct_check_identities(
 ):
     profiles = Profile.load_profiles(check_overriding_profiles_path, severity=Severity.OPTIONAL)
     overlay = next(item for item in profiles if item.identifier == "y")
-    original_rule_overlay_of = cast("Any", Profile.rule_overlay_of).fget
-    assert original_rule_overlay_of is not None
+    original_is_rule_overlay_of = cast("Any", Profile.is_rule_overlay_of).fget
+    assert original_is_rule_overlay_of is not None
     monkeypatch.setattr(
         Profile,
-        "rule_overlay_of",
+        "is_rule_overlay_of",
         property(
             lambda profile: (
                 ["https://w3id.org/e", "https://w3id.org/f"]
                 if profile.identifier == overlay.identifier
-                else original_rule_overlay_of(profile)
+                else original_is_rule_overlay_of(profile)
             )
         ),
     )

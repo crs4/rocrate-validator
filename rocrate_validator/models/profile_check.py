@@ -93,7 +93,7 @@ class RuleOverlayConsistency(ProfileCheck):
     description = "Rule overlay sources must be loaded direct parents with distinct check identities"
 
     def run(self, profile: Profile) -> ProfileCheckResult:
-        sources = profile.rule_overlay_of
+        sources = profile.is_rule_overlay_of
         if not sources:
             return ProfileCheckResult(
                 check_id=self.identifier,

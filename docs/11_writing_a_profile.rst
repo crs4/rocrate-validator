@@ -228,7 +228,7 @@ The examples below use ``example-profile-1.2`` as source profile ``A`` and
           implementation from ``A``.
       * - 3
         - Rule overlay
-        - ``B prof:isProfileOf A`` plus ``B validator:ruleOverlayOf A``
+        - ``B prof:isProfileOf A`` plus ``B validator:isRuleOverlayOf A``
         - Presents rules reused from ``A`` with effective profile and
           identifiers based on ``B``, while retaining their source provenance.
       * - 4
@@ -321,11 +321,11 @@ overlay source:
        a prof:Profile ;
        prof:hasToken "example-profile-1.3" ;
        prof:isProfileOf <https://w3id.org/example/profile/1.2> ;
-       validator:ruleOverlayOf <https://w3id.org/example/profile/1.2> .
+       validator:isRuleOverlayOf <https://w3id.org/example/profile/1.2> .
 
 .. note::
 
-   ``validator:ruleOverlayOf`` is an RO-Crate Validator extension, not a
+   ``validator:isRuleOverlayOf`` is an RO-Crate Validator extension, not a
    property defined by the W3C Profiles Vocabulary.
 
 

@@ -716,7 +716,7 @@ class ValidationContext:
     def is_rule_overlay_source(self, profile: Profile) -> bool:
         """Return whether ``profile`` is composed into the validation target."""
         target = self.target_profile
-        return profile == target or profile.uri in target.rule_overlay_of
+        return profile == target or profile.uri in target.is_rule_overlay_of
 
     def effective_check_identifier(self, check: RequirementCheck) -> str:
         """Return a context-local identifier without mutating the source check."""
