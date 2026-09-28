@@ -23,9 +23,9 @@
 process-run-crate:ProcRCActionRecommended a sh:NodeShape ;
     sh:name "Process Run Crate Action SHOULD" ;
     sh:description "Recommended properties of the Process Run Crate Action" ;
-    sh:targetClass schema:CreateAction ,
-                   schema:ActivateAction ,
-                   schema:UpdateAction ;
+    sh:targetClass ro-crate:ProcessCreateAction ,
+                   ro-crate:ProcessActivateAction ,
+                   ro-crate:ProcessUpdateAction ;
     sh:property [
         a sh:PropertyShape ;
         sh:name "Action SHOULD be referenced via mentions from root" ;
@@ -115,8 +115,8 @@ process-run-crate:ProcRCActionRecommended a sh:NodeShape ;
 process-run-crate:ProcRCCreateUpdateActionRecommended a sh:NodeShape ;
     sh:name "Process Run Crate CreateAction UpdateAction SHOULD" ;
     sh:description "Recommended properties of the Process Run Crate CreateAction or UpdateAction" ;
-    sh:targetClass schema:CreateAction ,
-                   schema:UpdateAction ;
+    sh:targetClass ro-crate:ProcessCreateAction ,
+                   ro-crate:ProcessUpdateAction ;
     sh:property [
         a sh:PropertyShape ;
         sh:name "Action result" ;
@@ -135,11 +135,12 @@ process-run-crate:ProcRCActionError a sh:NodeShape ;
         a sh:SPARQLTarget ;
         sh:prefixes ro-crate:sparqlPrefixes ;
         sh:select """
+            PREFIX ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/>
             SELECT ?this
             WHERE {
-                { ?this a schema:CreateAction } UNION
-                { ?this a schema:ActivateAction } UNION
-                { ?this a schema:UpdateAction } .
+                { ?this a ro-crate:ProcessCreateAction } UNION
+                { ?this a ro-crate:ProcessActivateAction } UNION
+                { ?this a ro-crate:ProcessUpdateAction } .
                 { FILTER NOT EXISTS { ?this schema:actionStatus ?status } } UNION
                 { ?this schema:actionStatus ?status .
                   FILTER(?status != "http://schema.org/FailedActionStatus") }
@@ -156,9 +157,9 @@ process-run-crate:ProcRCActionError a sh:NodeShape ;
 process-run-crate:ProcRCActionObjectResultType a sh:NodeShape ;
     sh:name "Process Run Crate Action object and result types" ;
     sh:description "object and result SHOULD point to entities of type MediaObject, Dataset, Collection, CreativeWork or PropertyValue" ;
-    sh:targetClass schema:CreateAction ,
-                   schema:ActivateAction ,
-                   schema:UpdateAction ;
+    sh:targetClass ro-crate:ProcessCreateAction ,
+                   ro-crate:ProcessActivateAction ,
+                   ro-crate:ProcessUpdateAction ;
     sh:property [
         a sh:PropertyShape ;
         sh:path [
