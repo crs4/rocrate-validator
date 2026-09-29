@@ -293,6 +293,12 @@ class Requirement(ABC):
             RequirementCheckValidationEvent,
         )
 
+        # Overlay replacements and batched SHACL checks may already have an
+        # outcome before traversal reaches their own requirement. Aborting
+        # must not overwrite that outcome or emit a misleading skipped event.
+        if category is SkipCategory.NOT_REACHED and context.result.get_check_result(check) is not None:
+            return
+
         context.result._record_check_result(check, CheckResult.SKIPPED, message, category)
         inherited_reporting_disabled = (
             check.requirement.profile.identifier != context.profile_identifier

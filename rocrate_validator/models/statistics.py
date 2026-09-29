@@ -416,6 +416,29 @@ class ValidationStatistics(Subscriber):
     def __handle_requirement_check_validation_start__(self, _event: Event, _ctx: ValidationContext | None) -> None:
         logger.debug("Requirement check validation start")
 
+    def __record_check_status__(self, check: RequirementCheck, result: CheckResult) -> None:
+        """
+        Keep one final status for each requirement check.
+
+        A check can emit more than one result while validating a crate (for
+        example, a dependency may be skipped before a later execution).  The
+        statistics describe the final validation state, not the history of
+        intermediate events.
+        """
+        for status in ("passed_checks", "failed_checks", "skipped_checks", "validated_checks"):
+            self._stats[status] = [
+                candidate for candidate in self._stats[status] if candidate.identifier != check.identifier
+            ]
+
+        if result is CheckResult.PASSED:
+            self._stats["passed_checks"].append(check)
+            self._stats["validated_checks"].append(check)
+        elif result is CheckResult.FAILED:
+            self._stats["failed_checks"].append(check)
+            self._stats["validated_checks"].append(check)
+        else:
+            self._stats["skipped_checks"].append(check)
+
     def __handle_requirement_check_validation_end__(self, event: Event, ctx: ValidationContext | None) -> None:
         assert isinstance(event, RequirementCheckValidationEvent)
         assert ctx is not None
@@ -428,14 +451,7 @@ class ValidationStatistics(Subscriber):
             if event.validation_result is not None:
                 if event.requirement_check.severity >= requirement_severity:
                     result = normalize_check_result(event.validation_result)
-                    if result is CheckResult.PASSED:
-                        self._stats["passed_checks"].append(event.requirement_check)
-                    elif result is CheckResult.FAILED:
-                        self._stats["failed_checks"].append(event.requirement_check)
-                    else:
-                        self._stats["skipped_checks"].append(event.requirement_check)
-                    if result is not CheckResult.SKIPPED:
-                        self._stats["validated_checks"].append(event.requirement_check)
+                    self.__record_check_status__(event.requirement_check, result)
                 self.notify_listeners()
             else:
                 logger.debug(
