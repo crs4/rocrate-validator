@@ -12,11 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from pathlib import Path
+
 import pytest
 
 from rocrate_validator import models, services
 from rocrate_validator.models import URI, LevelCollection, RequirementLevel, Severity, ValidationSettings
-from tests.ro_crates import InvalidRootDataEntity, WROCInvalidReadme
+from rocrate_validator.requirements.python import PyFunctionCheck
+from tests.ro_crates import InvalidRootDataEntity, ValidROC, WROCInvalidReadme
 
 
 def test_severity_ordering():
@@ -93,6 +96,55 @@ def test_sortability_checks(validation_settings: ValidationSettings):
     one, two = next(i_checks), next(i_checks)
     assert one >= two
     assert one.requirement >= two.requirement
+
+
+def test_validation_statistics_count_final_check_statuses(validation_settings: ValidationSettings):
+    """Repeated intermediate skip events must not inflate final check counts."""
+    validation_settings.rocrate_uri = URI(str(ValidROC().wrroc_paper))
+    validation_settings.profile_identifier = "ro-crate-1.2"
+    validation_settings.requirement_severity = Severity.REQUIRED
+    validation_settings.abort_on_first = True
+
+    result = services.validate(validation_settings)
+    statistics = result.statistics
+
+    assert statistics.total_skipped_checks == result.skipped_checks_count
+    assert len({check.identifier for check in statistics.skipped_checks}) == statistics.total_skipped_checks
+    assert set(statistics.skipped_checks) == result.skipped_checks
+    assert set(statistics.skipped_checks).isdisjoint(statistics.validated_checks)
+    assert len(statistics.validated_checks) + statistics.total_skipped_checks == statistics.total_checks
+
+
+def test_validation_statistics_preserve_failed_overlay_check_on_abort(
+    validation_settings: ValidationSettings, monkeypatch: pytest.MonkeyPatch
+):
+    """Fail-fast must preserve a replacement that failed in its source-profile slot."""
+    validation_settings.rocrate_uri = URI(str(ValidROC().wrroc_paper))
+    validation_settings.profiles_path = Path(__file__).parent / "data" / "profiles" / "effective_checks"
+    validation_settings.profile_identifier = "effective-b"
+    validation_settings.requirement_severity = Severity.REQUIRED
+    validation_settings.abort_on_first = True
+    execute_check = PyFunctionCheck.execute_check
+
+    def fail_overlay_check(check, context):
+        if check.requirement.profile.identifier == "effective-b" and check.name == "Shared check":
+            context.result.add_issue("Overlay replacement failed", check)
+            return False
+        return execute_check(check, context)
+
+    monkeypatch.setattr(PyFunctionCheck, "execute_check", fail_overlay_check)
+
+    result = services.validate(validation_settings)
+    statistics = result.statistics
+
+    assert not result.passed()
+    assert len(result.failed_checks) == 1
+    failed_check = next(iter(result.failed_checks))
+    assert statistics.failed_checks == [failed_check]
+    assert result.get_check_result(failed_check) is models.CheckResult.FAILED
+    assert failed_check in statistics.validated_checks
+    assert failed_check in result.executed_checks
+    assert statistics.total_skipped_checks == result.skipped_checks_count == 0
 
 
 def test_sortability_issues(validation_settings: ValidationSettings):
