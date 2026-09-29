@@ -321,19 +321,22 @@ class ValidationResult:
     @property
     def skipped_checks(self) -> set[RequirementCheck]:
         """
-        The checks that have been skipped
+        The reportable checks that have been skipped.
+
+        Internal outcomes remain available through ``get_check_result`` even
+        for hidden, overridden or otherwise out-of-scope checks.
         """
-        return self._skipped_checks
+        return {check for check in self._skipped_checks if check in self.statistics.checks}
 
     @property
     def skipped_checks_count(self) -> int:
         """Get the number of skipped checks."""
-        return len(self._skipped_checks)
+        return len(self.skipped_checks)
 
     @property
     def skipped_check_details(self) -> list[SkippedCheckDetail]:
         """Get the ordered explanations for skipped checks."""
-        return list(self._skipped_check_details.values())
+        return [detail for detail in self._skipped_check_details.values() if detail.check in self.statistics.checks]
 
     def record_skip(
         self,
