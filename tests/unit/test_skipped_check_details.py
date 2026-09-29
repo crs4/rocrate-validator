@@ -17,13 +17,14 @@ from types import SimpleNamespace
 from rocrate_validator.models import CheckResult, SkipCategory, ValidationResult
 
 
-def _result():
+def _result(check):
     result = object.__new__(ValidationResult)
     result._check_results = {}
     result._executed_checks = set()
     result._executed_checks_results = {}
     result._skipped_checks = set()
     result._skipped_check_details = {}
+    result._statistics = SimpleNamespace(checks={check})
     return result
 
 
@@ -41,8 +42,8 @@ def _check():
 
 
 def test_skipped_check_detail_preserves_reason_and_category():
-    result = _result()
     check = _check()
+    result = _result(check)
 
     result._record_check_result(check, CheckResult.SKIPPED, "base failed", SkipCategory.DEPENDENCY)
 
@@ -59,8 +60,8 @@ def test_skipped_check_detail_preserves_reason_and_category():
 
 
 def test_skipped_check_detail_is_removed_when_check_passes():
-    result = _result()
     check = _check()
+    result = _result(check)
 
     result.record_skip(check, "base skipped", SkipCategory.DEPENDENCY)
     result._record_check_result(check, CheckResult.PASSED)
@@ -69,8 +70,8 @@ def test_skipped_check_detail_is_removed_when_check_passes():
 
 
 def test_record_skip_normalizes_string_category_to_enum():
-    result = _result()
     check = _check()
+    result = _result(check)
 
     result.record_skip(check, "metadata descriptor is not available", "exception")
 
