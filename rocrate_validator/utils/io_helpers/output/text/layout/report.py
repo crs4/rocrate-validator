@@ -328,6 +328,8 @@ class _ReportLayoutSubscriber(EventDispatcher):
         self._layout.update_stats(ctx.result.statistics)
 
     def _on_validation_end(self, event: ValidationEvent, ctx: ValidationContext | None) -> None:
+        assert ctx is not None, "Validation context must be provided"
+        self._layout.update_stats(ctx.result.statistics)
         self._layout.show_overall_result(event.validation_result)
 
 

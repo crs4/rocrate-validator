@@ -28,7 +28,7 @@ from rocrate_validator.models import (
     RequirementCheckValidationEvent,
     RequirementLevel,
     Severity,
-    SkipRequirementCheck,
+    SkipCategory,
     SourceSnippet,
     ValidationContext,
 )
@@ -38,7 +38,6 @@ from rocrate_validator.requirements.shacl.validator import (
     SHACLValidationAlreadyProcessed,
     SHACLValidationContext,
     SHACLValidationContextManager,
-    SHACLValidationSkip,
     SHACLValidator,
     SHACLViolation,
 )
@@ -243,7 +242,7 @@ class SHACLCheck(RequirementCheck):
                     self.identifier,
                 )
                 result = self.__do_execute_check__(ctx)
-                ctx.current_validation_result = self.identifier not in result
+                ctx.current_validation_result = self not in result
                 logger.debug(
                     "SHACL Validation of requirement check %s (profile: %s) finished with result %s",
                     self.requirement.profile.identifier,
@@ -260,15 +259,6 @@ class SHACLCheck(RequirementCheck):
             # The check belongs to a profile which has already been processed
             # so we can skip the validation and return the specific result for the check
             return self.identifier not in [i.check.identifier for i in context.result.get_issues()]
-        except SHACLValidationSkip as e:
-            logger.debug(
-                "SHACL Validation of profile %s requirement %s skipped",
-                self.requirement.profile.identifier,
-                self.identifier,
-            )
-            # The validation is postponed to the more specific profiles
-            # so the check is not considered as failed.
-            raise SkipRequirementCheck(self, str(e)) from e
         except ROCrateMetadataNotFoundError as e:
             logger.debug(
                 "Unable to perform metadata validation due to missing metadata file: %s",
@@ -340,10 +330,8 @@ class SHACLCheck(RequirementCheck):
         failed_requirements_checks, failed_requirements_checks_violations = self.__collect_failed_checks__(
             shacl_context, shacl_result, shapes_registry, shapes_graph
         )
-        failed_requirement_checks_notified = self.__process_failed_checks__(
-            shacl_context, failed_requirements_checks, failed_requirements_checks_violations
-        )
-        self.__notify_skipped_checks__(shacl_context, failed_requirement_checks_notified)
+        self.__process_failed_checks__(shacl_context, failed_requirements_checks, failed_requirements_checks_violations)
+        self.__notify_deferred_checks__(shacl_context, failed_requirements_checks)
 
         logger.debug("Remaining skipped checks: %r", len(shacl_context.result.skipped_checks))
         for skipped_check in shacl_context.result.skipped_checks:
@@ -429,24 +417,17 @@ class SHACLCheck(RequirementCheck):
                 failed_requirements_checks_violations[requirementCheck.identifier],
             )
 
-            # If the fail fast mode is disabled, notify all the validation issues
-            # related to profiles other than the current one.
-            # They are issues which have not been notified yet because skipped during
-            # the validation of their corresponding profile because SHACL checks are executed
-            # all together and not profile by profile
+            # Notify every batched outcome, including target-local checks:
+            # traversal will reuse their recorded results without executing them.
             if requirementCheck.identifier not in failed_requirement_checks_notified:
                 shacl_context.result._add_executed_check(requirementCheck, False)
-                if requirementCheck.requirement.profile != shacl_context.current_validation_profile:
-                    failed_requirement_checks_notified.append(requirementCheck.identifier)
-                    shacl_context.validator.notify(
-                        RequirementCheckValidationEvent(
-                            EventType.REQUIREMENT_CHECK_VALIDATION_END, requirementCheck, validation_result=False
-                        )
+                failed_requirement_checks_notified.append(requirementCheck.identifier)
+                shacl_context.validator.notify(
+                    RequirementCheckValidationEvent(
+                        EventType.REQUIREMENT_CHECK_VALIDATION_END, requirementCheck, validation_result=False
                     )
-                    logger.debug(
-                        "Added failed check to the context: %s",
-                        requirementCheck.identifier,
-                    )
+                )
+                logger.debug("Added failed check to the context: %s", requirementCheck.identifier)
 
             # if the fail fast mode is enabled, stop the validation after the first failed check
             if shacl_context.fail_fast:
@@ -490,32 +471,34 @@ class SHACLCheck(RequirementCheck):
             if shacl_context.fail_fast:
                 break
 
-    def __notify_skipped_checks__(self, shacl_context, failed_requirement_checks_notified):
-        for skipped_check in list(shacl_context.result.skipped_checks):
-            logger.debug("Processing skipped check: %s", skipped_check.identifier)
-            if not isinstance(skipped_check, SHACLCheck):
-                logger.debug("Skipped check is not a SHACLCheck: %s", skipped_check.identifier)
+    def __notify_deferred_checks__(self, shacl_context, failed_checks):
+        """Complete pending checks without changing genuine skip outcomes."""
+        for check in sorted(shacl_context.deferred_checks):
+            if shacl_context.result.get_check_result(check) is not None:
                 continue
-            if skipped_check.identifier not in failed_requirement_checks_notified:
-                failed_requirement_checks_notified.append(skipped_check.identifier)
-                shacl_context.result._add_executed_check(skipped_check, True)
-                if (
-                    skipped_check.requirement.profile != shacl_context.target_profile
-                    and not shacl_context.is_rule_overlay_source(skipped_check.requirement.profile)
-                    and shacl_context.settings.disable_inherited_profiles_issue_reporting
-                ):
-                    continue
-                shacl_context.validator.notify(
-                    RequirementCheckValidationEvent(
-                        EventType.REQUIREMENT_CHECK_VALIDATION_END,
-                        skipped_check,
-                        validation_result=True,
-                    )
+            if shacl_context.fail_fast and failed_checks:
+                Requirement.__record_skipped_check__(
+                    check,
+                    shacl_context.base_context,
+                    "SHACL validation stopped before this check's outcome was determined",
+                    SkipCategory.NOT_REACHED,
                 )
-                logger.debug(
-                    "Added skipped check to the context: %s",
-                    skipped_check.identifier,
+                continue
+            shacl_context.result._add_executed_check(check, True)
+            if (
+                check.requirement.profile != shacl_context.target_profile
+                and not shacl_context.is_rule_overlay_source(check.requirement.profile)
+                and shacl_context.settings.disable_inherited_profiles_issue_reporting
+            ):
+                continue
+            shacl_context.validator.notify(
+                RequirementCheckValidationEvent(
+                    EventType.REQUIREMENT_CHECK_VALIDATION_END,
+                    check,
+                    validation_result=True,
                 )
+            )
+        shacl_context.deferred_checks.clear()
 
     @classmethod
     def get_instance(cls, shape: Shape) -> Optional["SHACLCheck"]:
