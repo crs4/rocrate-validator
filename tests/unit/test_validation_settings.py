@@ -84,6 +84,11 @@ def test_validation_settings_disable_inherited_profiles_issue_reporting():
     settings = ValidationSettings()  # type: ignore[call-arg]
     assert settings.disable_inherited_profiles_issue_reporting is False
 
+
+def test_validation_settings_profile_checks():
+    settings = ValidationSettings(validate_profile_checks=False)  # type: ignore[call-arg]
+    assert settings.validate_profile_checks is False
+
     settings = ValidationSettings(disable_inherited_profiles_issue_reporting=True)  # type: ignore[call-arg]
     assert settings.disable_inherited_profiles_issue_reporting is True
 

@@ -19,6 +19,7 @@ from typing import TYPE_CHECKING
 from rocrate_validator.events import Event, EventType
 
 if TYPE_CHECKING:
+    from rocrate_validator.models.check_result import CheckResultValue
     from rocrate_validator.models.profile import Profile
     from rocrate_validator.models.requirement import Requirement, RequirementCheck
     from rocrate_validator.models.result import ValidationResult
@@ -122,7 +123,7 @@ class RequirementCheckValidationEvent(Event):
         self,
         event_type: EventType,
         requirement_check: RequirementCheck,
-        validation_result: bool | None = None,
+        validation_result: CheckResultValue = None,
         message: str | None = None,
     ):
         assert event_type in (
@@ -132,14 +133,41 @@ class RequirementCheckValidationEvent(Event):
         super().__init__(event_type, message)
         self._requirement_check = requirement_check
         self._validation_result = validation_result
+        self._effective_identifier = requirement_check.identifier
+        self._effective_profile_identifier = requirement_check.requirement.profile.identifier
 
     @property
     def requirement_check(self) -> RequirementCheck:
         return self._requirement_check
 
     @property
-    def validation_result(self) -> bool | None:
+    def validation_result(self) -> CheckResultValue:
         return self._validation_result
+
+    @property
+    def effective_identifier(self) -> str:
+        """Identifier exposed for the active validation target."""
+        return self._effective_identifier
+
+    @property
+    def effective_profile_identifier(self) -> str:
+        """Profile exposed for the active validation target."""
+        return self._effective_profile_identifier
+
+    @property
+    def source_identifier(self) -> str:
+        """Identifier of the physically declared check."""
+        return self.requirement_check.identifier
+
+    @property
+    def source_profile_identifier(self) -> str:
+        """Profile that physically declares the check."""
+        return self.requirement_check.requirement.profile.identifier
+
+    def set_effective_identity(self, identifier: str, profile_identifier: str) -> None:
+        """Attach context-local reporting identity before dispatch."""
+        self._effective_identifier = identifier
+        self._effective_profile_identifier = profile_identifier
 
     def __str__(self) -> str:
         return f"RequirementCheckValidationEvent({self.event_type}, {self.requirement_check})"

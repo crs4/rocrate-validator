@@ -13,17 +13,40 @@
 # limitations under the License.
 
 import logging
+from dataclasses import replace
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import pytest
-from rdflib import Literal, Namespace
+from rdflib import Graph, Literal, Namespace
 
 from rocrate_validator.constants import DEFAULT_PROFILE_IDENTIFIER, SHACL_NS
 from rocrate_validator.errors import DuplicateRequirementCheck, InvalidProfilePath, ProfileSpecificationError
-from rocrate_validator.models import URI, Profile, ValidationContext, ValidationSettings, Validator
+from rocrate_validator.events import EventType
+from rocrate_validator.models import (
+    URI,
+    CheckResult,
+    Profile,
+    RequirementCheckRelation,
+    Severity,
+    SkippedCheckDetail,
+    ValidationContext,
+    ValidationSettings,
+    Validator,
+)
+from rocrate_validator.models.events import RequirementCheckValidationEvent
+from rocrate_validator.models.profile_check import (
+    NoRequirementCheckOverrides,
+    ProfileCheckSuite,
+    RuleOverlayConsistency,
+)
 from rocrate_validator.requirements.shacl.checks import SHACLCheck
+from rocrate_validator.requirements.shacl.errors import SHACLValidationError
 from rocrate_validator.requirements.shacl.models import ShapesRegistry
+from rocrate_validator.requirements.shacl.validator import (
+    SHACLValidationAlreadyProcessed,
+    SHACLValidationContext,
+)
 from tests.ro_crates import InvalidFileDescriptorEntity, ValidROC
 
 # set up logging
@@ -71,8 +94,28 @@ def test_load_invalid_profile_from_validation_context(fake_profiles_path: str):
 
     # Check if the InvalidProfilePath exception is raised
     with pytest.raises(InvalidProfilePath):
-        profiles = context.profiles
-        logger.debug("The profiles: %r", profiles)
+        # Load the profiles
+        _ = context.profiles
+
+
+def test_profile_detection_error_is_not_silenced(monkeypatch):
+    """Unexpected metadata errors must not become an empty profile selection."""
+
+    class BrokenMetadata:
+        def get_conforms_to(self):
+            raise RuntimeError("metadata profile detection failed")
+
+    class BrokenROCrate:
+        metadata = BrokenMetadata()
+
+    settings = ValidationSettings(
+        rocrate_uri=URI(ValidROC().wrroc_paper),
+        profile_identifier=DEFAULT_PROFILE_IDENTIFIER,
+    )
+    monkeypatch.setattr(ValidationContext, "ro_crate", property(lambda self: BrokenROCrate()))
+
+    with pytest.raises(RuntimeError, match="profile detection failed"):
+        Validator(settings).detect_rocrate_profiles()
 
 
 def test_load_valid_profile_without_inheritance_from_validation_context(fake_profiles_path: str):
@@ -241,8 +284,7 @@ def test_load_invalid_profile_no_override_enabled(fake_profiles_path: str):
 
     with pytest.raises(DuplicateRequirementCheck):
         # Load the profiles
-        profiles = context.profiles
-        logger.debug("The profiles: %r", profiles)
+        _ = context.profiles
 
 
 def test_load_invalid_profile_with_override_on_same_profile(fake_profiles_path: str):
@@ -264,8 +306,20 @@ def test_load_invalid_profile_with_override_on_same_profile(fake_profiles_path: 
 
     with pytest.raises(DuplicateRequirementCheck):
         # Load the profiles
-        profiles = context.profiles
-        logger.debug("The profiles: %r", profiles)
+        _ = context.profiles
+
+
+def test_validation_rejects_duplicate_check_identity_with_overrides_enabled(fake_profiles_path: str):
+    settings = ValidationSettings(
+        profiles_path=Path(fake_profiles_path),
+        profile_identifier="invalid-duplicated-shapes",
+        rocrate_uri=URI(ValidROC().wrroc_paper),
+        enable_profile_inheritance=True,
+        allow_requirement_check_override=True,
+    )
+
+    with pytest.raises(DuplicateRequirementCheck, match="Check Metadata File Descriptor entity existence"):
+        _ = ValidationContext(Validator(settings), settings).profiles
 
 
 def test_load_valid_profile_with_override_on_inherited_profile(fake_profiles_path: str):
@@ -297,7 +351,393 @@ def test_load_valid_profile_with_override_on_inherited_profile(fake_profiles_pat
     assert len(requirements_checks) == 3, "The number of requirements should be 2"
 
 
-def test_zero_shape_target_profile_triggers_pyshacl_run(fake_profiles_path: str):
+def test_check_name_and_severity_are_unique_within_each_profile():
+    profiles = Profile.load_profiles(
+        profiles_path=Path("rocrate_validator/profiles"),
+        severity=Severity.OPTIONAL,
+    )
+    for profile in profiles:
+        checks = [check for requirement in profile.requirements for check in requirement.get_checks()]
+        identities = {(check.name, check.severity) for check in checks}
+        assert len(identities) == len(checks), profile.identifier
+
+
+def test_profile_checks_return_structured_cached_results():
+    profile = next(
+        item
+        for item in Profile.load_profiles(Path("rocrate_validator/profiles"), severity=Severity.OPTIONAL)
+        if item.identifier == "ro-crate-1.2"
+    )
+
+    first = profile.validate_checks()
+    second = profile.validate_checks()
+
+    assert first is second
+    assert {result.check_id for result in first} == {
+        "unique-requirement-check-identity",
+        "rule-overlay-consistency",
+    }
+    assert all(result.passed for result in first)
+
+
+def test_disabling_check_override_rejects_parent_match(check_overriding_profiles_path: str):
+    with pytest.raises(DuplicateRequirementCheck, match=r"\[REQUIRED\]"):
+        Profile.load_profiles(
+            check_overriding_profiles_path,
+            severity=Severity.OPTIONAL,
+            allow_requirement_check_override=False,
+        )
+
+
+def test_requirement_check_override_policy_is_not_a_default_profile_check():
+    assert NoRequirementCheckOverrides not in ProfileCheckSuite.DEFAULT_CHECKS
+
+
+def test_requirement_check_override_policy_returns_structured_failure(check_overriding_profiles_path: str):
+    profiles = Profile.load_profiles(check_overriding_profiles_path, severity=Severity.OPTIONAL)
+    overriding_profile = next(item for item in profiles if item.identifier == "b")
+
+    result = NoRequirementCheckOverrides().run(overriding_profile)
+
+    assert not result.passed
+    assert result.check_id == "no-requirement-check-overrides"
+    assert result.details == {
+        "name": "Check S",
+        "severity": "REQUIRED",
+        "sources": "a",
+    }
+
+
+def test_rule_overlay_sources_are_consistent(check_overriding_profiles_path: str):
+    profiles = Profile.load_profiles(check_overriding_profiles_path, severity=Severity.OPTIONAL)
+    overlay = next(item for item in profiles if item.identifier == "b")
+
+    result = RuleOverlayConsistency().run(overlay)
+
+    assert result.passed
+
+
+def test_rule_overlay_source_must_be_a_direct_parent(check_overriding_profiles_path: str, monkeypatch):
+    profiles = Profile.load_profiles(check_overriding_profiles_path, severity=Severity.OPTIONAL)
+    overlay = next(item for item in profiles if item.identifier == "d")
+    original_is_rule_overlay_of = cast("Any", Profile.is_rule_overlay_of).fget
+    assert original_is_rule_overlay_of is not None
+    monkeypatch.setattr(
+        Profile,
+        "is_rule_overlay_of",
+        property(
+            lambda profile: (
+                ["https://w3id.org/a"]
+                if profile.identifier == overlay.identifier
+                else original_is_rule_overlay_of(profile)
+            )
+        ),
+    )
+
+    result = RuleOverlayConsistency().run(overlay)
+
+    assert not result.passed
+    assert result.message == "Rule overlay source is not a direct parent"
+    assert result.details == {"source": "https://w3id.org/a"}
+
+
+def test_multiple_rule_overlay_sources_require_distinct_check_identities(
+    check_overriding_profiles_path: str,
+    monkeypatch,
+):
+    profiles = Profile.load_profiles(check_overriding_profiles_path, severity=Severity.OPTIONAL)
+    overlay = next(item for item in profiles if item.identifier == "y")
+    original_is_rule_overlay_of = cast("Any", Profile.is_rule_overlay_of).fget
+    assert original_is_rule_overlay_of is not None
+    monkeypatch.setattr(
+        Profile,
+        "is_rule_overlay_of",
+        property(
+            lambda profile: (
+                ["https://w3id.org/e", "https://w3id.org/f"]
+                if profile.identifier == overlay.identifier
+                else original_is_rule_overlay_of(profile)
+            )
+        ),
+    )
+
+    result = RuleOverlayConsistency().run(overlay)
+
+    assert not result.passed
+    assert result.message == "Rule overlay sources contain an ambiguous check identity"
+    assert result.details["name"] == "Check S"
+    assert result.details["severity"] == "REQUIRED"
+
+
+def test_check_name_and_severity_match_parent_override(check_overriding_profiles_path: str):
+    profiles = Profile.load_profiles(check_overriding_profiles_path, severity=Severity.OPTIONAL)
+    parent = next(item for item in profiles if item.identifier == "a")
+    child = next(item for item in profiles if item.identifier == "b")
+
+    parent_check = parent.get_requirement_check("Check the name of the entity", Severity.REQUIRED)
+    child_check = child.get_requirement_check("Check the name of the entity", Severity.REQUIRED)
+
+    assert parent_check is not None
+    assert child_check is not None
+    assert child_check.overrides == [parent_check]
+    assert child_check in parent_check.overridden_by
+
+    settings = ValidationSettings(
+        profiles_path=Path(check_overriding_profiles_path),
+        profile_identifier="b",
+        rocrate_uri=URI(ValidROC().wrroc_paper),
+    )
+    context = ValidationContext(Validator(settings), settings)
+    original_order = child_check.order_number
+    child_check.order_number = 99
+    try:
+        assert (
+            context.effective_check_identifier(child_check) == f"b_{parent_check.relative_identifier.split(' ', 1)[-1]}"
+        )
+    finally:
+        child_check.order_number = original_order
+
+
+def test_effective_checks_expose_overlay_provenance():
+    profiles = Profile.load_profiles("tests/data/profiles/effective_checks", severity=Severity.OPTIONAL)
+    profile = next(item for item in profiles if item.identifier == "effective-b")
+
+    effective_checks = profile.get_effective_requirement_checks()
+    by_name = {item.check.name: item for item in effective_checks}
+
+    assert len(effective_checks) == 2
+    replacement = by_name["Shared check"]
+    assert replacement.relation == RequirementCheckRelation.REPLACES
+    assert replacement.identifier == "effective-b_1.2"
+    assert replacement.source_identifier == "effective-b_1.1"
+    assert [check.identifier for check in replacement.replaces] == ["effective-a_1.2"]
+
+    inherited = by_name["Inherited check"]
+    assert inherited.relation == RequirementCheckRelation.INHERITED
+    assert inherited.profile == profile
+    assert inherited.identifier == "effective-b_1.1"
+    assert inherited.source_identifier == "effective-a_1.1"
+    assert inherited.source_profile.identifier == "effective-a"
+    assert inherited.replaces == ()
+    assert inherited.to_dict() == {
+        "identifier": "effective-b_1.1",
+        "profile": "effective-b",
+        "source_identifier": "effective-a_1.1",
+        "source_profile": "effective-a",
+        "relation": "inherited",
+        "replaces": [],
+    }
+
+
+def test_effective_checks_retain_ordinary_inherited_identity():
+    profiles = Profile.load_profiles(Path("rocrate_validator/profiles"), severity=Severity.OPTIONAL)
+    profile = next(item for item in profiles if item.identifier == "process-run-crate-0.5")
+    inherited = next(
+        item
+        for item in profile.get_effective_requirement_checks()
+        if item.relation == RequirementCheckRelation.INHERITED
+    )
+
+    assert inherited.profile == inherited.source_profile
+    assert inherited.identifier == inherited.source_identifier
+    assert inherited.source_profile != profile
+
+
+def test_same_name_with_different_severity_does_not_override():
+    profiles = Profile.load_profiles(
+        profiles_path=Path("rocrate_validator/profiles"),
+        severity=Severity.OPTIONAL,
+        allow_requirement_check_override=True,
+    )
+    workflow_run = next(item for item in profiles if item.identifier == "workflow-run-crate-0.5")
+    process_run = next(item for item in profiles if item.identifier == "process-run-crate-0.5")
+
+    required = workflow_run.get_requirement_check("Root Data Entity conformsTo", Severity.REQUIRED)
+    recommended = workflow_run.get_requirement_check("Root Data Entity conformsTo", Severity.RECOMMENDED)
+    parent = process_run.get_requirement_check("Root Data Entity conformsTo", Severity.REQUIRED)
+
+    assert required is not None
+    assert recommended is not None
+    assert parent is not None
+    assert required.overrides == [parent]
+    assert recommended.overrides == []
+
+
+def test_rule_overlay_effective_identity_is_context_local(check_overriding_profiles_path: str):
+    settings = ValidationSettings(
+        profiles_path=Path(check_overriding_profiles_path),
+        profile_identifier="b",
+        rocrate_uri=URI(ValidROC().wrroc_paper),
+    )
+    context = ValidationContext(Validator(settings), settings)
+    parent = next(item for item in context.profiles if item.identifier == "a")
+    inherited_check = parent.get_requirement_check("Check the name of the entity", Severity.REQUIRED)
+
+    assert inherited_check is not None
+    source_identifier = inherited_check.identifier
+    assert context.is_rule_overlay_source(parent)
+    assert context.effective_check_profile(inherited_check).identifier == "b"
+    assert context.effective_check_identifier(inherited_check).startswith("b_")
+    assert inherited_check.identifier == source_identifier
+    assert inherited_check.requirement.profile.identifier == "a"
+
+    issue = context.result.add_issue("test issue", inherited_check)
+    serialized_check = issue.to_dict()["check"]
+    assert serialized_check["identifier"].startswith("b_")
+    assert serialized_check["profile"] == "b"
+    assert serialized_check["source_identifier"] == source_identifier
+    assert serialized_check["source_profile"] == "a"
+
+    # Keep internal outcomes for dependency resolution, but do not count a
+    # replaced source check among the reportable skips of the overlay.
+    context.result._record_check_result(inherited_check, CheckResult.SKIPPED, "test skip")
+    assert context.result.get_check_result(inherited_check) is CheckResult.SKIPPED
+    assert context.result.skipped_checks_count == 0
+    assert context.result.skipped_check_details == []
+    serialized_skip = SkippedCheckDetail(inherited_check, "test skip", context=context).to_dict()
+    assert serialized_skip["identifier"].startswith("b_")
+    assert serialized_skip["profile"] == "b"
+    assert serialized_skip["source_identifier"] == source_identifier
+    assert serialized_skip["source_profile"] == "a"
+    assert context.result.statistics.effective_check_identifier(inherited_check).startswith("b_")
+    assert context.result.statistics.effective_check_profile(inherited_check).identifier == "b"
+
+    event = RequirementCheckValidationEvent(EventType.REQUIREMENT_CHECK_VALIDATION_END, inherited_check)
+    event.set_effective_identity(
+        context.effective_check_identifier(inherited_check),
+        context.effective_check_profile(inherited_check).identifier,
+    )
+    assert event.effective_identifier.startswith("b_")
+    assert event.effective_profile_identifier == "b"
+    assert event.source_identifier == source_identifier
+    assert event.source_profile_identifier == "a"
+
+    suppressed_settings = replace(settings, disable_inherited_profiles_issue_reporting=True)
+    suppressed_context = ValidationContext(Validator(suppressed_settings), suppressed_settings)
+    assert suppressed_context.result.statistics.total_checks == context.result.statistics.total_checks
+
+
+def test_rule_overlay_keeps_source_before_target(check_overriding_profiles_path: str):
+    """Verify that overlay composition retains general-to-specific traversal."""
+    settings = ValidationSettings(
+        profiles_path=Path(check_overriding_profiles_path),
+        profile_identifier="b",
+        rocrate_uri=URI(ValidROC().wrroc_paper),
+        enable_profile_inheritance=True,
+        allow_requirement_check_override=True,
+    )
+
+    context = ValidationContext(Validator(settings), settings)
+
+    assert [profile.identifier for profile in context.profiles] == ["a", "b"]
+
+
+def test_rule_overlay_check_can_be_skipped_by_source_or_effective_identifier(
+    check_overriding_profiles_path: str,
+) -> None:
+    """Accept either check identity when configuring an overlay skip."""
+    settings = ValidationSettings(
+        profiles_path=Path(check_overriding_profiles_path),
+        profile_identifier="b",
+        rocrate_uri=URI(ValidROC().wrroc_paper),
+    )
+    context = ValidationContext(Validator(settings), settings)
+    source_profile = next(profile for profile in context.profiles if profile.identifier == "a")
+    source_check = source_profile.get_requirement_check("Check the name of the entity", Severity.REQUIRED)
+
+    assert source_check is not None
+    supported_identifiers = (
+        source_check.identifier,
+        context.effective_check_identifier(source_check),
+    )
+
+    for identifier in supported_identifiers:
+        skip_settings = replace(settings, skip_checks=[identifier])
+        skip_context = ValidationContext(Validator(skip_settings), skip_settings)
+        skip_source = next(profile for profile in skip_context.profiles if profile.identifier == "a")
+        skip_check = skip_source.get_requirement_check("Check the name of the entity", Severity.REQUIRED)
+
+        assert skip_check is not None
+        assert skip_context.is_check_skipped(skip_check)
+
+
+def test_shacl_overlay_profiles_are_loaded_once_before_processing(
+    check_overriding_profiles_path: str,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Load every overlay profile graph once while allowing deferred re-entry."""
+    settings = ValidationSettings(
+        profiles_path=Path(check_overriding_profiles_path),
+        profile_identifier="b",
+        rocrate_uri=URI(ValidROC().wrroc_paper),
+        enable_profile_inheritance=True,
+        allow_requirement_check_override=True,
+    )
+    context = ValidationContext(Validator(settings), settings)
+    source = next(profile for profile in context.profiles if profile.identifier == "a")
+    target = next(profile for profile in context.profiles if profile.identifier == "b")
+    shacl_context = SHACLValidationContext.get_instance(context)
+    loaded_paths: list[Path] = []
+
+    def load_ontology(profile_path: Path) -> Graph:
+        """Record ontology loads without parsing external graph content."""
+        loaded_paths.append(profile_path)
+        return Graph()
+
+    monkeypatch.setattr(shacl_context, "__load_ontology_graph__", load_ontology)
+
+    assert shacl_context.__set_current_validation_profile__(source)
+    assert shacl_context.__set_current_validation_profile__(source)
+    assert shacl_context.__set_current_validation_profile__(target)
+    assert loaded_paths == [source.path, target.path]
+    assert shacl_context.__get_ontology_path__(source.path) == source.path / "ontology.ttl"
+    assert shacl_context.__get_ontology_path__(target.path) == target.path / "ontology.ttl"
+
+    shacl_context.current_validation_result = True
+    with pytest.raises(SHACLValidationAlreadyProcessed):
+        shacl_context.__set_current_validation_profile__(target)
+
+
+def test_normally_inherited_check_keeps_source_identity(check_overriding_profiles_path: str):
+    settings = ValidationSettings(
+        profiles_path=Path(check_overriding_profiles_path),
+        profile_identifier="c",
+        rocrate_uri=URI(ValidROC().wrroc_paper),
+    )
+    context = ValidationContext(Validator(settings), settings)
+    parent = next(item for item in context.profiles if item.identifier == "a")
+    inherited_check = parent.get_requirement_check("Check the name of the entity", Severity.REQUIRED)
+
+    assert inherited_check is not None
+    assert not context.is_rule_overlay_source(parent)
+    assert context.effective_check_profile(inherited_check).identifier == "a"
+    assert context.effective_check_identifier(inherited_check) == inherited_check.identifier
+
+
+def test_overlay_identity_is_isolated_between_consecutive_contexts(check_overriding_profiles_path: str):
+    base_settings = ValidationSettings(
+        profiles_path=Path(check_overriding_profiles_path),
+        profile_identifier="b",
+        rocrate_uri=URI(ValidROC().wrroc_paper),
+    )
+    overlay_context = ValidationContext(Validator(base_settings), base_settings)
+    overlay_parent = next(item for item in overlay_context.profiles if item.identifier == "a")
+    overlay_check = overlay_parent.get_requirement_check("Check the name of the entity", Severity.REQUIRED)
+    assert overlay_check is not None
+    assert overlay_context.effective_check_profile(overlay_check).identifier == "b"
+
+    inherited_settings = replace(base_settings, profile_identifier="c")
+    inherited_context = ValidationContext(Validator(inherited_settings), inherited_settings)
+    inherited_parent = next(item for item in inherited_context.profiles if item.identifier == "a")
+    inherited_check = inherited_parent.get_requirement_check("Check the name of the entity", Severity.REQUIRED)
+    assert inherited_check is not None
+    assert inherited_context.effective_check_profile(inherited_check).identifier == "a"
+    assert inherited_context.effective_check_identifier(inherited_check) == inherited_check.identifier
+
+    assert overlay_context.effective_check_profile(overlay_check).identifier == "b"
+
+
+def test_zero_shape_target_profile_triggers_pyshacl_run(monkeypatch, fake_profiles_path: str):
     """Regression test for the 0-shape profile bug:
     when the target profile has no SHACL checks of its own,
     Validator must still drive a single pyshacl run
@@ -305,6 +745,7 @@ def test_zero_shape_target_profile_triggers_pyshacl_run(fake_profiles_path: str)
     Without the fix in `Validator.__ensure_target_shacl_run__`,
     no SHACLCheck would be recorded as executed for the wrapper target."""
 
+    monkeypatch.setattr(ValidationContext, "data_graph", property(lambda self: Graph()))
     settings = ValidationSettings(
         profiles_path=Path(fake_profiles_path),
         profile_identifier="c-wrapper",
@@ -321,6 +762,52 @@ def test_zero_shape_target_profile_triggers_pyshacl_run(fake_profiles_path: str)
         "c-wrapper target. None recorded — the zero-shape pyshacl run was "
         "skipped."
     )
+
+
+def test_pyshacl_engine_failure_is_not_silenced(monkeypatch, fake_profiles_path: str):
+    """A pySHACL crash must abort validation instead of producing a clean result."""
+
+    def fail_validation(*args, **kwargs):
+        raise ImportError("cannot import name 'ConjunctiveLike' from 'pyshacl.consts'")
+
+    monkeypatch.setattr(ValidationContext, "data_graph", property(lambda self: Graph()))
+    monkeypatch.setattr("rocrate_validator.requirements.shacl.validator.pyshacl.validate", fail_validation)
+    settings = ValidationSettings(
+        profiles_path=Path(fake_profiles_path),
+        profile_identifier="c-deactivated",
+        rocrate_uri=URI(ValidROC().wrroc_paper),
+        enable_profile_inheritance=True,
+        allow_requirement_check_override=True,
+        disable_check_for_duplicates=True,
+    )
+
+    with pytest.raises(SHACLValidationError, match="ConjunctiveLike") as exc_info:
+        Validator(settings).validate()
+
+    assert isinstance(exc_info.value.__cause__, ImportError)
+
+
+def test_pyshacl_engine_failure_in_zero_shape_finalizer_is_not_silenced(monkeypatch, fake_profiles_path: str):
+    """The forced SHACL run for an inheritance-only target must also fail closed."""
+
+    def fail_validation(*args, **kwargs):
+        raise ImportError("cannot import name 'ConjunctiveLike' from 'pyshacl.consts'")
+
+    monkeypatch.setattr(ValidationContext, "data_graph", property(lambda self: Graph()))
+    monkeypatch.setattr("rocrate_validator.requirements.shacl.validator.pyshacl.validate", fail_validation)
+    settings = ValidationSettings(
+        profiles_path=Path(fake_profiles_path),
+        profile_identifier="c-wrapper",
+        rocrate_uri=URI(ValidROC().wrroc_paper),
+        enable_profile_inheritance=True,
+        allow_requirement_check_override=True,
+        disable_check_for_duplicates=True,
+    )
+
+    with pytest.raises(SHACLValidationError, match="ConjunctiveLike") as exc_info:
+        Validator(settings).validate()
+
+    assert isinstance(exc_info.value.__cause__, ImportError)
 
 
 def test_profile_parents(check_overriding_profiles_path: str):
@@ -477,6 +964,17 @@ def test_python_check_decorator_sets_deactivated_flag():
     assert enabled.deactivated is False  # pyright: ignore[reportFunctionMemberAccess]
 
 
+def test_python_check_decorator_sets_dependencies():
+    """The @check decorator must preserve declared check dependencies."""
+    from rocrate_validator.requirements.python import check
+
+    @check(name="dependent", depends_on=("base",))
+    def dependent(self, ctx):
+        return True
+
+    assert dependent.depends_on == ("base",)  # pyright: ignore[reportFunctionMemberAccess]
+
+
 def test_shacl_shape_with_deactivated_marks_check_skipped(fake_profiles_path: str):
     """A child profile that overrides an inherited NodeShape by `sh:name` and
     sets `sh:deactivated true` should produce a check whose `deactivated`
@@ -588,7 +1086,8 @@ def test_shacl_check_deactivation_scoped_to_descendants(fake_profiles_path: str)
 
     # Trigger lazy loading.
     for p in all_profiles:
-        _ = p.requirements
+        if p.token != "invalid-duplicated-shapes":
+            _ = p.requirements
     _ = context.profiles  # warm context too
 
     parent_shape_check = next(c for c in parent_c.requirements[0].get_checks() if isinstance(c, SHACLCheck))

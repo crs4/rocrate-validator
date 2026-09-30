@@ -1,0 +1,24 @@
+/* Keep the composition summary within the documentation content column. */
+.rst-content .profile-composition-table {
+  width: 100%;
+}
+
+.rst-content .profile-composition-table .wy-table-responsive {
+  overflow-x: visible;
+}
+
+.rst-content .profile-composition-table table.profile-composition-mechanisms {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.rst-content .profile-composition-table th,
+.rst-content .profile-composition-table td {
+  overflow-wrap: break-word;
+  white-space: normal;
+}
+
+.rst-content .profile-composition-table th:first-child,
+.rst-content .profile-composition-table td:first-child {
+  text-align: center;
+}

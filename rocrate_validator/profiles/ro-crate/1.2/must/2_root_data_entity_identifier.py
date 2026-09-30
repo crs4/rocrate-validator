@@ -15,7 +15,7 @@
 import re
 
 from rocrate_validator.errors import ROCrateMetadataNotFoundError
-from rocrate_validator.models import ValidationContext
+from rocrate_validator.models import CheckResult, CheckResultValue, ValidationContext
 from rocrate_validator.requirements.python import PyFunctionCheck, check, requirement
 from rocrate_validator.utils import log as logging
 
@@ -29,10 +29,11 @@ class RootDataEntityIdentifierChecker(PyFunctionCheck):
     """
 
     @check(name="Root Data Entity: REQUIRED value")
-    def check_identifier(self, context: ValidationContext) -> bool:
+    def check_identifier(self, context: ValidationContext) -> CheckResultValue:
         try:
             if context.ro_crate.is_detached():
-                return True
+                context.record_skip(self, "RO-Crate is detached", "returned")
+                return CheckResult.SKIPPED
             root_entity = context.ro_crate.metadata.get_root_data_entity()
             if root_entity.id == "./":
                 return True
@@ -45,7 +46,8 @@ class RootDataEntityIdentifierChecker(PyFunctionCheck):
             return False
         except ROCrateMetadataNotFoundError:
             logger.debug("Skipping Root Data Entity identifier check: metadata descriptor is not available")
-            return True
-        except Exception as e:
+            context.record_skip(self, "metadata descriptor is not available", "exception")
+            return CheckResult.SKIPPED
+        except (AttributeError, TypeError, ValueError) as e:
             context.result.add_issue(f"Error checking Root Data Entity @id: {e!s}", self)
             return False

@@ -21,7 +21,7 @@
 @prefix validator: <https://github.com/crs4/rocrate-validator/> .
 
 ro-crate:DataEntityRequiredProperties a sh:NodeShape ;
-    sh:name "Data Entity: REQUIRED properties" ;
+    sh:name "Data Entity: REQUIRED @id format" ;
     sh:description """A Data Entity MUST be a `URI Path` relative to the ROCrate root,
         or an absolute URI""" ;
     sh:targetClass ro-crate:DataEntity ;
@@ -135,7 +135,7 @@ ro-crate:DirectoryDataEntity a sh:NodeShape ;
     ] .
 
 ro-crate:DataEntityRequiredPropertiesShape a sh:NodeShape ;
-    sh:name "Data Entity: REQUIRED properties" ;
+    sh:name "Data Entity: REQUIRED Root linkage" ;
     sh:description """A `DataEntity`The file descriptor MUST be a valid JSON-LD file MUST be linked, either directly or indirectly, from the Root Data Entity""" ;
     sh:targetClass ro-crate:DataEntity ;
     sh:property

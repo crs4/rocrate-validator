@@ -36,7 +36,7 @@ def test_missing_data_entity_reference():
         paths.missing_hasPart_data_entity_reference,
         models.Severity.REQUIRED,
         False,
-        ["Data Entity: REQUIRED properties"],
+        ["Data Entity: REQUIRED Root linkage"],
         ["sort-and-change-case.ga", "foo/xxx"],
     )
 

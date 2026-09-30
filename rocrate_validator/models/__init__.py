@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from rocrate_validator.models._logging import logger
+from rocrate_validator.models.check_result import CheckResult, CheckResultValue, normalize_check_result
 from rocrate_validator.models.events import (
     ProfileValidationEvent,
     RequirementCheckValidationEvent,
@@ -20,18 +21,20 @@ from rocrate_validator.models.events import (
     ValidationEvent,
 )
 from rocrate_validator.models.profile import Profile
+from rocrate_validator.models.profile_check import (
+    ProfileCheck,
+    ProfileCheckFailure,
+    ProfileCheckResult,
+    ProfileCheckSuite,
+)
+from rocrate_validator.models.profile_provenance import EffectiveRequirementCheck, RequirementCheckRelation
 from rocrate_validator.models.requirement import (
     Requirement,
     RequirementCheck,
     RequirementLoader,
-    SkipRequirementCheck,
     SourceSnippet,
 )
-from rocrate_validator.models.result import (
-    CheckIssue,
-    CustomEncoder,
-    ValidationResult,
-)
+from rocrate_validator.models.result import CheckIssue, CustomEncoder, ValidationResult
 from rocrate_validator.models.settings import (
     DEFAULT_PROFILES_PATH,
     BaseTypes,
@@ -42,6 +45,7 @@ from rocrate_validator.models.severity import (
     RequirementLevel,
     Severity,
 )
+from rocrate_validator.models.skipped_check import SkipCategory, SkippedCheckDetail, SkipRequirementCheck
 from rocrate_validator.models.statistics import (
     AggregatedValidationStatistics,
     ValidationStatistics,
@@ -59,18 +63,28 @@ __all__ = [
     "AggregatedValidationStatistics",
     "BaseTypes",
     "CheckIssue",
+    "CheckResult",
+    "CheckResultValue",
     "CustomEncoder",
+    "EffectiveRequirementCheck",
     "LevelCollection",
     "Profile",
+    "ProfileCheck",
+    "ProfileCheckFailure",
+    "ProfileCheckResult",
+    "ProfileCheckSuite",
     "ProfileValidationEvent",
     "Requirement",
     "RequirementCheck",
+    "RequirementCheckRelation",
     "RequirementCheckValidationEvent",
     "RequirementLevel",
     "RequirementLoader",
     "RequirementValidationEvent",
     "Severity",
+    "SkipCategory",
     "SkipRequirementCheck",
+    "SkippedCheckDetail",
     "SourceSnippet",
     "ValidationContext",
     "ValidationEvent",
@@ -80,4 +94,5 @@ __all__ = [
     "ValidationStatisticsListener",
     "Validator",
     "logger",
+    "normalize_check_result",
 ]

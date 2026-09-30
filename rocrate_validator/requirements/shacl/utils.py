@@ -295,7 +295,22 @@ def load_shapes_from_file(file_path: str, publicID: str | None = None) -> Shapes
         # Extract the shapes from the graph
         return load_shapes_from_graph(g)
     except Exception as e:
-        raise BadSyntaxError(str(e), file_path) from e
+        line = getattr(e, "lines", None)
+        line = line + 1 if isinstance(line, int) else None
+        character = _get_syntax_error_character(e)
+        raise BadSyntaxError(str(e), file_path, line=line, character=character) from e
+
+
+def _get_syntax_error_character(error: Exception) -> int | None:
+    """Return the one-based character offset from an RDFLib parser error."""
+    index = getattr(error, "_i", None)
+    source = getattr(error, "_str", None)
+    if not isinstance(index, int) or not isinstance(source, bytes):
+        return None
+
+    source_text = source.decode("utf-8", errors="replace")
+    line_start = source_text.rfind("\n", 0, index) + 1
+    return index - line_start + 1
 
 
 def load_shapes_from_graph(g: Graph) -> ShapesList:

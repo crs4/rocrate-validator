@@ -82,6 +82,8 @@ class ValidationSettings:
     # Requirement check settings
     #: Flag to allow requirement check override
     allow_requirement_check_override: bool = True
+    #: Flag to validate profile consistency checks before validation
+    validate_profile_checks: bool = True
     #: Flag to disable the check for duplicates
     disable_check_for_duplicates: bool = False
     #: Checks to skip

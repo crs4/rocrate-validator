@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from rocrate_validator.errors import ROCrateMetadataNotFoundError
-from rocrate_validator.models import ValidationContext
+from rocrate_validator.models import CheckResult, CheckResultValue, ValidationContext
 from rocrate_validator.requirements.python import PyFunctionCheck, check, requirement
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.signposting import check_downloadable
@@ -42,22 +42,24 @@ class CiteAsDownloadableChecker(PyFunctionCheck):
         # cite-as can be a plain string literal or an entity reference {"@id": "..."}
         if isinstance(cite_as_raw, str):
             cite_as_url = cite_as_raw
-        elif hasattr(cite_as_raw, "id"):
-            cite_as_url = cite_as_raw.id
         else:
-            return None
+            entity_id = getattr(cite_as_raw, "id", None)
+            if not isinstance(entity_id, str):
+                return None
+            cite_as_url = entity_id
         if not cite_as_url or not cite_as_url.startswith("http"):
             return None
         return cite_as_url
 
     @check(name="Root Data Entity: `cite-as` MUST reference a downloadable item")
-    def check_cite_as_downloadable(self, context: ValidationContext) -> bool:
+    def check_cite_as_downloadable(self, context: ValidationContext) -> CheckResultValue:
         if (
             context.settings.skip_availability_check
             or not (context.settings.creation_time or context.settings.enforce_availability)
             or context.settings.metadata_only
         ):
-            return True
+            context.record_skip(self, "availability check is disabled or not applicable", "configured")
+            return CheckResult.SKIPPED
 
         try:
             root_entity = context.ro_crate.metadata.get_root_data_entity()
@@ -84,7 +86,8 @@ class CiteAsDownloadableChecker(PyFunctionCheck):
 
         except ROCrateMetadataNotFoundError:
             logger.debug("Skipping Root Data Entity cite-as check: metadata descriptor is not available")
-            return True
-        except Exception as e:
+            context.record_skip(self, "metadata descriptor is not available", "exception")
+            return CheckResult.SKIPPED
+        except (AttributeError, OSError, TypeError, ValueError) as e:
             context.result.add_issue(f"Error checking `cite-as` downloadability: {e!s}", self)
             return False

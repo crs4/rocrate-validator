@@ -24,7 +24,7 @@ This Python check performs the network-dependent refinement.
 """
 
 from rocrate_validator.errors import ROCrateMetadataNotFoundError
-from rocrate_validator.models import Severity, ValidationContext
+from rocrate_validator.models import CheckResult, CheckResultValue, Severity, ValidationContext
 from rocrate_validator.requirements.python import PyFunctionCheck, check, requirement
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.signposting import has_signposting_cite_as
@@ -62,7 +62,7 @@ class ReferencedROCrateSignpostingCiteAsChecker(PyFunctionCheck):
         name="Referenced RO-Crate: `sdDatePublished` SHOULD be present when Signposting cite-as is not declared",
         severity=Severity.RECOMMENDED,
     )
-    def check_sddatepublished_signposting(self, context: ValidationContext) -> bool:
+    def check_sddatepublished_signposting(self, context: ValidationContext) -> CheckResultValue:
         """
         For each referenced RO-Crate data entity whose @id is an absolute URI
         with no declared `identifier` and no `sdDatePublished`, verify whether
@@ -74,19 +74,26 @@ class ReferencedROCrateSignpostingCiteAsChecker(PyFunctionCheck):
             or not (context.settings.creation_time or context.settings.enforce_availability)
             or context.settings.metadata_only
         ):
-            return True
+            context.record_skip(self, "availability check is disabled or not applicable", "configured")
+            return CheckResult.SKIPPED
 
         result = True
         try:
             root = context.ro_crate.metadata.get_root_data_entity()
-        except Exception:
-            return True
+        except ROCrateMetadataNotFoundError:
+            logger.debug("Skipping referenced RO-Crate check: metadata descriptor is not available")
+            context.record_skip(self, "metadata descriptor is not available", "exception")
+            return CheckResult.SKIPPED
+        except ValueError:
+            context.record_skip(self, "root data entity is not available", "exception")
+            return CheckResult.SKIPPED
 
         try:
             entities = context.ro_crate.metadata.get_dataset_entities()
         except ROCrateMetadataNotFoundError:
             logger.debug("Skipping referenced RO-Crate check: metadata descriptor is not available")
-            return True
+            context.record_skip(self, "metadata descriptor is not available", "exception")
+            return CheckResult.SKIPPED
         for entity in entities:
             if not self._needs_sddatepublished_check(entity, root.id):
                 continue

@@ -21,13 +21,16 @@ from urllib.parse import urljoin
 
 from rocrate_validator.constants import HTTP_STATUS_OK
 from rocrate_validator.errors import ROCrateMetadataNotFoundError
-from rocrate_validator.models import ValidationContext
+from rocrate_validator.models import CheckResult, CheckResultValue, ValidationContext
 from rocrate_validator.requirements.python import PyFunctionCheck, check, requirement
 from rocrate_validator.utils import log as logging
-from rocrate_validator.utils.http import HttpRequester
+from rocrate_validator.utils.http import HttpRequester, OfflineCacheMissError
 
 # set up logging
 logger = logging.getLogger(__name__)
+
+_HANDLED_METADATA_ERRORS = (AssertionError, AttributeError, KeyError, TypeError, ValueError)
+_HANDLED_REMOTE_CONTEXT_ERRORS = (*_HANDLED_METADATA_ERRORS, OSError, RuntimeError)
 
 
 @requirement(name="File Descriptor existence")
@@ -35,27 +38,29 @@ class FileDescriptorExistence(PyFunctionCheck):
     """The file descriptor MUST be present in the RO-Crate and MUST not be empty."""
 
     @check(name="File Descriptor Existence")
-    def test_existence(self, context: ValidationContext) -> bool:
+    def test_existence(self, context: ValidationContext) -> CheckResultValue:
         """
         Check if the file descriptor is present in the RO-Crate
         """
         if context.settings.metadata_only:
             logger.debug("Skipping file descriptor existence check in metadata-only mode")
-            return True
+            context.record_skip(self, "metadata-only mode", "configured")
+            return CheckResult.SKIPPED
         if not context.ro_crate.has_descriptor():
             message = f'file descriptor "{context.rel_fd_path}" is not present'
             context.result.add_issue(message, self)
             return False
         return True
 
-    @check(name="File Descriptor size check")
-    def test_size(self, context: ValidationContext) -> bool:
+    @check(name="File Descriptor size check", depends_on=("File Descriptor Existence",))
+    def test_size(self, context: ValidationContext) -> CheckResultValue:
         """
         Check if the file descriptor is not empty
         """
         if context.settings.metadata_only:
             logger.debug("Skipping file descriptor existence check in metadata-only mode")
-            return True
+            context.record_skip(self, "metadata-only mode", "configured")
+            return CheckResult.SKIPPED
         if context.ro_crate.has_descriptor() and context.ro_crate.metadata.size == 0:
             context.result.add_issue(f'RO-Crate "{context.rel_fd_path}" file descriptor is empty', self)
             return False
@@ -68,8 +73,8 @@ class FileDescriptorJsonFormat(PyFunctionCheck):
     The file descriptor MUST be a valid JSON file
     """
 
-    @check(name="File Descriptor JSON format")
-    def check(self, context: ValidationContext) -> bool:
+    @check(name="File Descriptor JSON format", depends_on=("File Descriptor Existence",))
+    def check(self, context: ValidationContext) -> CheckResultValue:
         """Check if the file descriptor is in the correct format"""
         try:
             logger.debug("Checking validity of JSON file at %s", context.ro_crate.metadata)
@@ -88,8 +93,12 @@ class FileDescriptorJsonFormat(PyFunctionCheck):
             return False
         except ROCrateMetadataNotFoundError:
             logger.debug("Skipping file descriptor JSON check: metadata descriptor is not available")
-            return True
-        except Exception:
+            context.record_skip(self, "metadata descriptor is not available", "exception")
+            return CheckResult.SKIPPED
+        except UnicodeDecodeError:
+            context.record_skip(self, "descriptor encoding check reported the failure", "exception")
+            return CheckResult.SKIPPED
+        except _HANDLED_METADATA_ERRORS:
             context.result.add_issue(
                 f'RO-Crate file descriptor "{context.rel_fd_path}" is not in the correct format', self
             )
@@ -187,7 +196,9 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
                 a valid JSON-LD context: it is not a dictionary"
             )
             return True
-        except Exception:
+        except OfflineCacheMissError:
+            raise
+        except _HANDLED_REMOTE_CONTEXT_ERRORS:
             if logger.isEnabledFor(logging.DEBUG):
                 logger.exception("Error validating JSON-LD context is a dictionary")
         return False
@@ -212,8 +223,11 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
         # return if the context is valid
         return is_valid
 
-    @check(name="File Descriptor @context property validation")
-    def check_context(self, context: ValidationContext) -> bool:
+    @check(
+        name="File Descriptor @context property validation",
+        depends_on=("File Descriptor JSON format",),
+    )
+    def check_context(self, context: ValidationContext) -> CheckResultValue:
         """
         Check if the file descriptor contains
         the @context property and it is a valid JSON-LD context
@@ -230,14 +244,21 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
             return self.__check_contexts__(context, json_dict["@context"])
         except ROCrateMetadataNotFoundError:
             logger.debug("Skipping file descriptor JSON-LD context check: metadata descriptor is not available")
-            return True
-        except Exception:
+            context.record_skip(self, "metadata descriptor is not available", "exception")
+            return CheckResult.SKIPPED
+        except UnicodeDecodeError:
+            context.record_skip(self, "descriptor encoding check reported the failure", "exception")
+            return CheckResult.SKIPPED
+        except _HANDLED_METADATA_ERRORS:
             if logger.isEnabledFor(logging.DEBUG):
                 logger.exception("Error extracting @context from file descriptor")
         return False
 
-    @check(name="File Descriptor JSON-LD must be flattened")
-    def check_flattened(self, context: ValidationContext) -> bool:
+    @check(
+        name="File Descriptor JSON-LD must be flattened",
+        depends_on=("File Descriptor JSON format",),
+    )
+    def check_flattened(self, context: ValidationContext) -> CheckResultValue:
         """Check if the file descriptor is flattened"""
         return self._check_flattened_graph(
             context,
@@ -326,14 +347,21 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
             return result
         except ROCrateMetadataNotFoundError:
             logger.debug("Skipping file descriptor flattening check: metadata descriptor is not available")
-            return True
-        except Exception:
+            context.record_skip(self, "metadata descriptor is not available", "exception")
+            return CheckResult.SKIPPED
+        except UnicodeDecodeError:
+            context.record_skip(self, "descriptor encoding check reported the failure", "exception")
+            return CheckResult.SKIPPED
+        except _HANDLED_METADATA_ERRORS:
             if logger.isEnabledFor(logging.DEBUG):
                 logger.exception("Error flattening JSON-LD file descriptor")
         return False
 
-    @check(name="Validation of the @id property of the file descriptor entities")
-    def check_identifiers(self, context: ValidationContext) -> bool:
+    @check(
+        name="Validation of the @id property of the file descriptor entities",
+        depends_on=("File Descriptor JSON format",),
+    )
+    def check_identifiers(self, context: ValidationContext) -> CheckResultValue:
         """Check if the file descriptor entities have the @id property"""
         try:
             json_dict = context.ro_crate.metadata.as_dict()
@@ -345,18 +373,26 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
                         "file descriptor does not contain the @id attribute",
                         self,
                     )
+                    context.abort_validation("file descriptor entity does not contain the @id attribute")
                     return False
             return True
         except ROCrateMetadataNotFoundError:
             logger.debug("Skipping file descriptor identifier check: metadata descriptor is not available")
-            return True
-        except Exception:
+            context.record_skip(self, "metadata descriptor is not available", "exception")
+            return CheckResult.SKIPPED
+        except UnicodeDecodeError:
+            context.record_skip(self, "descriptor encoding check reported the failure", "exception")
+            return CheckResult.SKIPPED
+        except _HANDLED_METADATA_ERRORS:
             if logger.isEnabledFor(logging.DEBUG):
                 logger.exception("Error validating @id property of file descriptor entities")
         return False
 
-    @check(name="Validation of the @type property of the file descriptor entities")
-    def check_types(self, context: ValidationContext) -> bool:
+    @check(
+        name="Validation of the @type property of the file descriptor entities",
+        depends_on=("File Descriptor JSON format",),
+    )
+    def check_types(self, context: ValidationContext) -> CheckResultValue:
         """Check if the file descriptor entities have the @type property"""
         try:
             json_dict = context.ro_crate.metadata.as_dict()
@@ -372,8 +408,12 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
             return True
         except ROCrateMetadataNotFoundError:
             logger.debug("Skipping file descriptor type check: metadata descriptor is not available")
-            return True
-        except Exception:
+            context.record_skip(self, "metadata descriptor is not available", "exception")
+            return CheckResult.SKIPPED
+        except UnicodeDecodeError:
+            context.record_skip(self, "descriptor encoding check reported the failure", "exception")
+            return CheckResult.SKIPPED
+        except _HANDLED_METADATA_ERRORS:
             if logger.isEnabledFor(logging.DEBUG):
                 logger.exception("Error validating @type property of file descriptor entities")
         return False
@@ -450,8 +490,11 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
                 logger.debug(f"Key {k} does not have a valid prefix in context keys, adding to unexpected keys")
                 unexpected_keys[k] = unexpected_keys.get(k, 0) + 1
 
-    @check(name="Validation of the compaction format of the file descriptor")
-    def check_compaction(self, context: ValidationContext) -> bool:
+    @check(
+        name="Validation of the compaction format of the file descriptor",
+        depends_on=("File Descriptor JSON format",),
+    )
+    def check_compaction(self, context: ValidationContext) -> CheckResultValue:  # noqa: C901
         """Check if the file descriptor is in the **compacted** JSON-LD format"""
         try:
             logger.debug("Checking compaction format of JSON-LD file at %s", context.ro_crate.metadata)
@@ -464,7 +507,9 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
             try:
                 context_keys = self.__get_context_keys__(jsonld_context)
                 logger.debug(f"{context_keys}")
-            except Exception as e:
+            except OfflineCacheMissError:
+                raise
+            except _HANDLED_REMOTE_CONTEXT_ERRORS as e:
                 if logger.isEnabledFor(logging.DEBUG):
                     logger.exception("Error getting context keys from JSON-LD")
                 context.result.add_issue(str(e), self)
@@ -497,8 +542,12 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
             return True
         except ROCrateMetadataNotFoundError:
             logger.debug("Skipping file descriptor compaction check: metadata descriptor is not available")
-            return True
-        except Exception as e:
+            context.record_skip(self, "metadata descriptor is not available", "exception")
+            return CheckResult.SKIPPED
+        except UnicodeDecodeError:
+            context.record_skip(self, "descriptor encoding check reported the failure", "exception")
+            return CheckResult.SKIPPED
+        except _HANDLED_METADATA_ERRORS as e:
             if logger.isEnabledFor(logging.DEBUG):
                 logger.exception("Unexpected error during file descriptor validation")
             context.result.add_issue(f"Unexpected error: {e}", self)

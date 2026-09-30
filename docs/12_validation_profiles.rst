@@ -45,10 +45,18 @@ Behavior
 ^^^^^^^^
 
 * Profiles provided via ``--extra-profiles-path`` are **loaded in addition to** the system’s predefined profiles.
-* If an additional profile has the **same name** as a predefined profile, the additional profile **overrides** the predefined one.
+* If an additional profile has the **same profile URI** as a predefined
+  profile, the additional profile **overrides** the predefined one.
 
 This mechanism allows you to:
 
 * **Add new custom validation profiles** to implement project-specific checks.
 * **Modify existing profiles** without altering the system’s predefined configuration files.
 * **Maintain a clear separation** between standard validation logic and project-specific customizations.
+
+.. note::
+
+   This is whole-profile replacement: a locally loaded profile takes the place
+   of a predefined profile with the same URI. It is different from a
+   :ref:`profile rule overlay <profile-rule-overlays>`, which composes a target
+   profile from an inherited source profile and only redefines selected checks.

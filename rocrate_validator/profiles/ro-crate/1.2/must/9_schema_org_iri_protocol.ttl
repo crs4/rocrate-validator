@@ -1,0 +1,45 @@
+# Copyright (c) 2024-2026 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.2/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+
+ro-crate:SchemaOrgTypeProtocol a sh:NodeShape ;
+    sh:name "Schema.org @type protocol" ;
+    sh:description "Schema.org @type values MUST use the http://schema.org/ namespace defined by the RO-Crate context." ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT DISTINCT ?this
+            WHERE {
+                ?this a ?schemaType .
+            }
+        """
+    ] ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT $this ?schemaType ?term ?httpType
+            WHERE {
+                $this a ?schemaType .
+                FILTER(STRSTARTS(STR(?schemaType), "https://schema.org/"))
+                BIND(SUBSTR(STR(?schemaType), STRLEN("https://schema.org/") + 1) AS ?term)
+                BIND(IRI(CONCAT("http://schema.org/", ?term)) AS ?httpType)
+            }
+        """ ;
+        sh:message "Entity {?this} declares the @type '{?schemaType}', which is not a term of the RO-Crate @context: the context maps Schema.org terms to 'http://schema.org/', so the entity MUST be typed '{?term}' (i.e. '{?httpType}')" ;
+        sh:severity sh:Violation
+    ] .

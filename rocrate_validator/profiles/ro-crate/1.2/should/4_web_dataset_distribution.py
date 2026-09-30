@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from rocrate_validator.errors import ROCrateMetadataNotFoundError
-from rocrate_validator.models import Severity, ValidationContext
+from rocrate_validator.models import CheckResult, CheckResultValue, Severity, ValidationContext
 from rocrate_validator.requirements.python import PyFunctionCheck, check, requirement
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.signposting import check_downloadable
@@ -72,7 +72,7 @@ class DatasetDistributionChecker(PyFunctionCheck):
                     msg += f": {dl.reason}"
                 context.result.add_issue(msg, self)
                 return False
-        except Exception as e:
+        except (OSError, RuntimeError, TypeError, ValueError) as e:
             context.result.add_issue(
                 f"Error checking downloadability of distribution '{url}' for Dataset '{entity_id}': {e}", self
             )
@@ -80,15 +80,17 @@ class DatasetDistributionChecker(PyFunctionCheck):
         return True
 
     @check(name="Dataset: distribution SHOULD be downloadable", severity=Severity.RECOMMENDED)
-    def check_distribution_downloadable(self, context: ValidationContext) -> bool:
+    def check_distribution_downloadable(self, context: ValidationContext) -> CheckResultValue:
         if context.settings.skip_availability_check or context.settings.metadata_only:
-            return True
+            context.record_skip(self, "availability checks are disabled or metadata-only mode is active", "configured")
+            return CheckResult.SKIPPED
         result = True
         try:
             entities = context.ro_crate.metadata.get_dataset_entities()
         except ROCrateMetadataNotFoundError:
             logger.debug("Skipping Dataset distribution check: metadata descriptor is not available")
-            return True
+            context.record_skip(self, "metadata descriptor is not available", "exception")
+            return CheckResult.SKIPPED
         for entity in entities:
             distribution_raw = entity.get_property("distribution")
             if not distribution_raw:

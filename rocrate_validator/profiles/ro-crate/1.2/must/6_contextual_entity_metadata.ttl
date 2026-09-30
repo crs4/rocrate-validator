@@ -19,38 +19,28 @@
 @prefix schema_org: <http://schema.org/> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix validator: <https://github.com/crs4/rocrate-validator/> .
+@prefix validator-transformers: <https://github.com/crs4/rocrate-validator/graph-transformers/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 ro-crate:ContextualEntityDefinition a sh:NodeShape, validator:HiddenShape ;
+    validator:requiresGraphTransformer validator-transformers:validationCandidateMarker ;
     sh:name "Identify Contextual Entities" ;
     sh:description """Mark entities as Contextual Entities if they are in the RO-Crate
         metadata but are not Data Entities, not the Root Data Entity,
-        and not the Metadata File Descriptor.  The query uses `?this ?p ?o`
-        (subject of any triple) — SHACL rules from earlier shapes (e.g.
-        CreativeWorkAuthorDefinition) tag referenced-but-undescribed entities
-        with rdf:type, so they appear as subjects and are therefore captured.
-        Vocabulary namespaces loaded from ontologies (RDF/RDFS/OWL/XSD,
-        schema.org, bioschemas, w3id.org/ro, …) are excluded at the query
-        level; domain-specific legacy filters that wrongly excluded legitimate
-        crate identifiers (iana, urn, foaf, …) have been removed.""" ;
+        and not the Metadata File Descriptor. Validation candidates are
+        classified from asserted source triples before ontology inoculation,
+        inference, or SHACL rules. This includes type-only and claim-only
+        entities while excluding cited vocabulary terms.""" ;
     sh:target [
         a sh:SPARQLTarget ;
         sh:prefixes ro-crate:sparqlPrefixes ;
         sh:select """
             SELECT ?this
             WHERE {
-                # Structural criteria: IRI or blank node, subject of some triple.
-                # SHACL rules from earlier shapes (e.g. CreativeWorkAuthorDefinition)
-                # tag even referenced-but-undescribed entities so they become
-                # subjects and are correctly classified as Contextual Entities.
-                #
-                # The distinct subjects are materialised by a subquery FIRST so the
-                # exclusion FILTERs below run once per entity instead of once per
-                # triple (~2.5k subjects vs ~40k triples on a large crate).
-                { SELECT DISTINCT ?this WHERE {
-                    ?this ?p ?o .
-                    FILTER(isIRI(?this) || isBlank(?this))
-                } }
+                # Candidates were classified from the asserted source graph,
+                # before ontology inoculation, inference, and SHACL rules.
+                ?this validator-transformers:validationCandidate true .
+                FILTER(isIRI(?this) || isBlank(?this))
 
                 # Structural exclusions — Metadata Descriptor, Root Data Entity,
                 # Data Entities (File/Dataset or ro-crate:DataEntity), Ontology.
@@ -61,33 +51,6 @@ ro-crate:ContextualEntityDefinition a sh:NodeShape, validator:HiddenShape ;
                 FILTER NOT EXISTS { ?this a schema:Dataset }
                 FILTER NOT EXISTS { ?this a owl:Ontology }
 
-                # Vocabulary / profile namespace exclusions.  Required because
-                # the RO-Crate 1.2 profile loads ontology.ttl into the same data
-                # graph as the metadata file; terms from those vocabularies
-                # appear as subjects with rdf:type + rdfs:label and would
-                # otherwise be misclassified.
-                FILTER(!STRSTARTS(STR(?this), "http://www.w3.org/"))
-                FILTER(!STRSTARTS(STR(?this), "https://www.w3.org/"))
-                FILTER(!STRSTARTS(STR(?this), "http://schema.org/"))
-                FILTER(!STRSTARTS(STR(?this), "https://schema.org/"))
-                FILTER(!STRSTARTS(STR(?this), "http://purl.org/"))
-                FILTER(!STRSTARTS(STR(?this), "https://bioschemas.org/"))
-                FILTER(!STRSTARTS(STR(?this), "http://www.opengis.net/"))
-                FILTER(!STRSTARTS(STR(?this), "https://w3id.org/"))
-                FILTER(!STRSTARTS(STR(?this), "https://github.com/crs4/rocrate-validator/"))
-                FILTER(!STRSTARTS(STR(?this), "https://codemeta.github.io/"))
-                FILTER(!STRSTARTS(STR(?this), "http://pcdm.org/"))
-                FILTER(!STRSTARTS(STR(?this), "http://xmlns.com/foaf/"))
-                FILTER(!STRSTARTS(STR(?this), "http://creativecommons.org/ns"))
-                FILTER(!STRSTARTS(STR(?this), "http://www.iana.org/"))
-                FILTER(!STRSTARTS(STR(?this), "https://www.iana.org/"))
-                FILTER(!STRSTARTS(STR(?this), "https://nationaalarchief.nl/archieven/archief/"))
-                FILTER(!STRSTARTS(STR(?this), "https://www.nationalarchives.gov.uk"))
-
-                # Narrow urn: exclusion — only the internal ontology versionIRI.
-                # Unlike the legacy blanket `urn:` filter, this keeps legitimate
-                # `urn:uuid:*` contextual entities (e.g. DigitalDocument) in play.
-                FILTER(!STRSTARTS(STR(?this), "urn:absolute:"))
             }
         """
     ] ;

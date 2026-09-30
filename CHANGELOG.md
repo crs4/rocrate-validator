@@ -5,6 +5,127 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## [0.12.0] - 2026-09-30
+
+Full changelog: https://github.com/kikkomep/rocrate-validator/compare/0.11.4...0.12.0
+
+### ⚠️ Breaking Changes
+
+- **The default validation profile is now `ro-crate-1.3`** (previously `ro-crate-1.1`). Since 1.3
+  is self-contained, validation now applies 95 requirements instead of 30; crates declaring the
+  1.1 context fail the `ro-crate-1.3_2.2` check under the default profile. This primarily affects API
+  users when `profile_identifier` is omitted. CLI auto-detection is unchanged unless no profile is
+  detected or `--no-auto-profile` is used. To keep the previous behaviour, explicitly select
+  `ro-crate-1.1` with `profile_identifier` or `-p ro-crate-1.1`
+  ([b6199c60](https://github.com/kikkomep/rocrate-validator/commit/b6199c608df4b1d20e987a4946d06005b04fe795)).
+
+### ✨ Added
+
+- feat(profiles): support rule overlays through `validator:isRuleOverlayOf`, allowing a target profile
+  to reuse checks from a direct parent while retaining source provenance and reporting target-relative
+  effective identities. Overrides defined by the target profile match parent checks by
+  `(name, severity)` ([e92e826b](https://github.com/kikkomep/rocrate-validator/commit/e92e826bd2b2e49b36775f5150c81f50089439fb)).
+- feat(profile-checks): add an extensible profile consistency framework that detects duplicate check
+  identities, invalid overlay relationships, and ambiguous checks inherited from multiple sources
+  ([59a66303](https://github.com/kikkomep/rocrate-validator/commit/59a6630320b4303b0ef6c22020371dafb1b01891),
+  [99748956](https://github.com/kikkomep/rocrate-validator/commit/997489564c1065df9fc71f36844271bfffe5d4a2)).
+- feat(cli): add `profiles check <PROFILE_IDENTIFIER>` and automatic profile validation, with
+  `--no-profile-checks` and the corresponding API setting available as explicit opt-outs
+  ([a4eb3fd2](https://github.com/kikkomep/rocrate-validator/commit/a4eb3fd2868b91a511bb993b73910ad0b36225de),
+  [f430b2b9](https://github.com/kikkomep/rocrate-validator/commit/f430b2b95604be431956e4cdc5f08229a853722a)).
+- feat(api): expose effective provenance for checks defined by the target profile, inherited checks,
+  and replacement checks in validation events, issues, statistics, and skipped-check results
+  ([a7fabdb4](https://github.com/kikkomep/rocrate-validator/commit/a7fabdb47b2d974894039fb80b4730b65a9d4292)).
+- feat(cli): show source and effective check identities and their provenance relationships in verbose
+  `profiles describe` output ([b4108c16](https://github.com/kikkomep/rocrate-validator/commit/b4108c160a0eb51a34e0d91e7b16d91520e477fc)).
+- feat(profiles): provide comprehensive RO-Crate 1.3 validation coverage for metadata descriptors,
+  entities, workflows, and detached or referenced crates
+  ([5a98e4e0](https://github.com/kikkomep/rocrate-validator/commit/5a98e4e02ce60bd5e61e3be943ceea8bba166e25),
+  [e2bc9846](https://github.com/kikkomep/rocrate-validator/commit/e2bc984662408160535c25a803300c905c58216e),
+  [41cd9fc3](https://github.com/kikkomep/rocrate-validator/commit/41cd9fc3be279ad8c15effd6d891f4770cf2dafb),
+  [bc2f76e4](https://github.com/kikkomep/rocrate-validator/commit/bc2f76e46d1e047a5c36a09e417d59146143b17a)).
+- feat(validation): support tri-state check outcomes and declared dependencies between checks, and
+  propagate dependency outcomes through validation
+  ([80495af4](https://github.com/kikkomep/rocrate-validator/commit/80495af484f6a60c2f7fa6fae389c52b8c9dfa3a),
+  [77c4741b](https://github.com/kikkomep/rocrate-validator/commit/77c4741bf8e1cdb28627906ed7bd8c2611708e7f),
+  [7a5a1749](https://github.com/kikkomep/rocrate-validator/commit/7a5a17497426e5cd86eb219ca5ca2c5df2fe53ec)).
+- feat(cli): report structured skipped-check reasons in validation results and aggregate them in JSON
+  output ([c3044802](https://github.com/kikkomep/rocrate-validator/commit/c30448029d979b6af44d0ccf67831e8076e2eaf4),
+  [035e5485](https://github.com/kikkomep/rocrate-validator/commit/035e5485c7f439c927bd1709ad6f5b83b04b87ca),
+  [892460ec](https://github.com/kikkomep/rocrate-validator/commit/892460ece97b738a6c9d1c4ee093983cc5d69df2),
+  [70c47ab5](https://github.com/kikkomep/rocrate-validator/commit/70c47ab5a0b4c93ed326e57ad0d06a24121d4c8c)).
+- feat(graph): add an extensible graph-transformer pipeline for preparing validation graphs and
+  selecting candidate entities from SHACL shapes
+  ([80531e0a](https://github.com/kikkomep/rocrate-validator/commit/80531e0add141bd6a439eef73a298138faceeebd),
+  [74aca87e](https://github.com/kikkomep/rocrate-validator/commit/74aca87ed604be2dd1f4c0c3df225f645c35ed9b),
+  [3a8d0cf0](https://github.com/kikkomep/rocrate-validator/commit/3a8d0cf054e21ed2cef2863dca62496988aa12b5),
+  [822c26be](https://github.com/kikkomep/rocrate-validator/commit/822c26be8073baf015ed5e09e8759b9aaea128e6)).
+- feat(profiles): validate Schema.org IRI protocols with SHACL
+  ([7f6e8032](https://github.com/kikkomep/rocrate-validator/commit/7f6e8032a8cc2354dfb3a49f35eba81c091c0828)).
+- feat(validation): propagate check execution errors and render them safely in the CLI
+  ([f2e7f36a](https://github.com/kikkomep/rocrate-validator/commit/f2e7f36a9a4fa2b7d77341e3e075bfbd8199aada),
+  [48bf2968](https://github.com/kikkomep/rocrate-validator/commit/48bf296844d3868e52c161d300c7d7c11a4ea01f)).
+
+### 🔧 Changed
+
+- refactor(validation): resolve bare profile tokens to the highest available version using numeric
+  ordering and store the resolved identifier so downstream consumers use the applied profile
+  ([7b782975](https://github.com/kikkomep/rocrate-validator/commit/7b7829750bac3a6b28293310d6f5de4b71c2ae0b)).
+- refactor(cli): use consistent styling for profile names, identifiers, check names, and provenance
+  labels across profile commands ([40e7fe4e](https://github.com/kikkomep/rocrate-validator/commit/40e7fe4e07cdef914f99e41434158cf271c98ad3),
+  [2316a430](https://github.com/kikkomep/rocrate-validator/commit/2316a430f9c4393597af794754c20bdb0c27b086)).
+- refactor(shacl): separate graph-transformer implementations from the SHACL validation core
+  ([21590fe8](https://github.com/kikkomep/rocrate-validator/commit/21590fe88be1511195c8d3b9051a4244a5f33bed),
+  [a46eb34f](https://github.com/kikkomep/rocrate-validator/commit/a46eb34ff08c562fbc5d3a4109cf6809eea1338e)).
+- refactor(profile): declare RO-Crate 1.3 as a rule overlay over RO-Crate 1.2 and rename the overlay
+  property to `isRuleOverlayOf`
+  ([9dd09229](https://github.com/kikkomep/rocrate-validator/commit/9dd09229f1e4e1e385dbc95e5cf7d3322f393cc2),
+  [82df8dca](https://github.com/kikkomep/rocrate-validator/commit/82df8dcae7b280774f4d83bdba71336a0d19b5dc)).
+
+### 🐛 Fixed
+
+- fix(validation): preserve general-to-specific overlay traversal and source check execution order;
+  resolve the overlay target from `profile_identifier` and preserve inherited dependencies and skip
+  settings independently of profile loading order
+  ([a73f90da](https://github.com/kikkomep/rocrate-validator/commit/a73f90da12b10eca5681497d20cc9432f145245f),
+  [dbea5738](https://github.com/kikkomep/rocrate-validator/commit/dbea5738c6adfd56eca8ee1ed2595d0a78c75bba),
+  [996b52aa](https://github.com/kikkomep/rocrate-validator/commit/996b52aa561acb6c00f0c24c911f57bd409919b3),
+  [709e7564](https://github.com/kikkomep/rocrate-validator/commit/709e75641dfc2ed8115154d7ff15f0578d5d252a)).
+- fix(shacl): load each overlay source graph once and evaluate the merged shapes graph at the target
+  profile ([22455d3b](https://github.com/kikkomep/rocrate-validator/commit/22455d3be43fc6425ddb76161d8d67d7ed53b660)).
+- fix(profiles): reject ambiguous effective identities instead of implicitly selecting one inherited
+  check, and disambiguate legacy duplicate check names within existing profiles
+  ([f00ea8c1](https://github.com/kikkomep/rocrate-validator/commit/f00ea8c11f73cd62f180814e52b11f72fac1ea7a),
+  [16709a69](https://github.com/kikkomep/rocrate-validator/commit/16709a69d6ac06ad22dc8e7a7e392b8afd875821)).
+- fix(graph): treat `schema:additionalType` as a reference predicate
+  ([ce4856c9](https://github.com/kikkomep/rocrate-validator/commit/ce4856c93bf869370bc07530a120c87a2a91c6a5)).
+- fix(validation): correct skipped-check counts, align check statistics with validation outcomes, and
+  keep batched SHACL results synchronized with live progress
+  ([0416446b](https://github.com/kikkomep/rocrate-validator/commit/0416446bade7776120f112ee58d64fdffd1b79e5),
+  [39f3f640](https://github.com/kikkomep/rocrate-validator/commit/39f3f6409973975ab7710cc1b83c6d8c6727b0c2),
+  [d4ab2cb8](https://github.com/kikkomep/rocrate-validator/commit/d4ab2cb84e45cbe5a57b642aa878ba0e943724d1)).
+
+### 📚 Documentation
+
+- docs(profiles): document ordinary inheritance, check overrides, rule overlays, deactivation, and
+  source versus effective identities with concrete SHACL and Python examples
+  ([3dd0b793](https://github.com/kikkomep/rocrate-validator/commit/3dd0b793296a699312d621c14c23f75e7f5a768f)).
+- docs(api): document effective check provenance for composed profiles
+  ([12485e89](https://github.com/kikkomep/rocrate-validator/commit/12485e8984873e35672c0be805ba7a8d8252215d)).
+- docs(graph): document the graph-transformer extension points and SHACL implementation catalog
+  ([782f74c4](https://github.com/kikkomep/rocrate-validator/commit/782f74c4d9e90919412ffc41fa50d6b86b5505bc),
+  [fc455598](https://github.com/kikkomep/rocrate-validator/commit/fc455598486d4288ce39f81abb82ea6da0813ed7)).
+
+### ⚡ Performance
+
+- perf(validation): cache profile consistency results and effective check provenance within a
+  validation session to avoid repeated resolution work
+  ([c0b65cad](https://github.com/kikkomep/rocrate-validator/commit/c0b65cad72434db97e3cf56405b57a65e1462e80),
+  [8df06f12](https://github.com/kikkomep/rocrate-validator/commit/8df06f12df83a2c3e62fce1b96fc879c5587ecfe)).
+
+
 ## [0.11.4] - 2026-09-16
 
 Full changelog: https://github.com/crs4/rocrate-validator/compare/0.11.3...0.11.4

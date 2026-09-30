@@ -17,7 +17,6 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from rich.align import Align
 from rich.markdown import Markdown
 from rich.padding import Padding
 from rich.panel import Panel
@@ -28,7 +27,14 @@ from rocrate_validator import services
 from rocrate_validator.cli.commands.errors import handle_error
 from rocrate_validator.cli.main import cli, click
 from rocrate_validator.constants import DEFAULT_PROFILE_IDENTIFIER
-from rocrate_validator.models import LevelCollection, Profile, RequirementCheck, RequirementLevel, Severity
+from rocrate_validator.models import (
+    EffectiveRequirementCheck,
+    LevelCollection,
+    Profile,
+    RequirementCheckRelation,
+    RequirementLevel,
+    Severity,
+)
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.io_helpers.colors import get_severity_color
 from rocrate_validator.utils.io_helpers.output.text.layout.report import get_app_header_rule
@@ -156,6 +162,62 @@ def list_profiles(ctx, no_paging: bool = False):  # , profiles_path: Path = DEFA
         handle_error(e, console)
 
 
+@profiles.command("check")
+@click.argument("profile-identifier", type=click.STRING, default=DEFAULT_PROFILE_IDENTIFIER, required=True)
+@click.option(
+    "--no-paging", is_flag=True, help="Disable paging", default=False, show_default=True, hidden=sys.platform == "win32"
+)
+@click.pass_context
+def check_profile(ctx, profile_identifier: str = DEFAULT_PROFILE_IDENTIFIER, no_paging: bool = False):
+    """Check the consistency of a profile and its inherited profiles."""
+    console = ctx.obj["console"]
+    pager = ctx.obj["pager"]
+    interactive = ctx.obj["interactive"]
+    enable_pager = not no_paging and interactive and sys.platform != "win32"
+    failed = False
+
+    try:
+        profile = services.get_profile(
+            profile_identifier,
+            profiles_path=ctx.obj["profiles_path"],
+            extra_profiles_path=ctx.obj["extra_profiles_path"],
+        )
+        profiles = [*profile.inherited_profiles, profile]
+        results = [
+            (checked_profile, result) for checked_profile in profiles for result in checked_profile.validate_checks()
+        ]
+
+        table = Table(
+            title=f"   Profile checks: {profile.identifier}",
+            title_style="italic bold cyan",
+            title_justify="left",
+            header_style="bold cyan",
+            border_style="bright_black",
+        )
+        table.add_column("Profile", style="magenta bold")
+        table.add_column("Check", style="cyan")
+        table.add_column("Status", justify="center")
+        table.add_column("Message")
+        table.add_column("Details")
+
+        for checked_profile, result in results:
+            status = "[green]PASS[/green]" if result.passed else "[red]FAIL[/red]"
+            failed |= not result.passed
+            details = ", ".join(f"{key}={value}" for key, value in result.details.items())
+            table.add_row(checked_profile.identifier, result.check_id, status, result.message, details)
+
+        with console.pager(pager=pager, styles=not console.no_color) if enable_pager else console:
+            console.print(get_app_header_rule())
+            console.print(Padding(table, (0, 1)))
+
+    except SystemExit:
+        raise
+    except Exception as e:
+        handle_error(e, console)
+    if failed:
+        raise click.exceptions.Exit(1)
+
+
 @profiles.command("describe")
 @click.option(
     "-v",
@@ -173,6 +235,7 @@ def list_profiles(ctx, no_paging: bool = False):  # , profiles_path: Path = DEFA
 @click.pass_context
 def describe_profile(
     ctx,
+    *,
     profile_identifier: str = DEFAULT_PROFILE_IDENTIFIER,
     check_identifier: str | None = None,
     profiles_path: Path = DEFAULT_PROFILES_PATH,
@@ -186,10 +249,11 @@ def describe_profile(
     \b
     The check identifier accepts either form:
       * relative:   <requirement#>.<check#>          (e.g. "1.2")
-      * full:       <profile>_<requirement#>.<check#> (e.g. "ro-crate-1.1_1.2")
+      * full:       <profile>_<requirement#>.<check#> (e.g. "ro-crate-1.3_1.2")
 
     With -v on a single check, the source code of the check is shown.
     """
+
     # Get the console
     console = ctx.obj["console"]
     pager = ctx.obj["pager"]
@@ -210,14 +274,14 @@ def describe_profile(
 
         # Single-check view
         if check_identifier:
-            check = __resolve_check__(profile, check_identifier)
+            effective_check = __resolve_check__(profile, check_identifier)
             with console.pager(pager=pager, styles=not console.no_color) if enable_pager else console:
                 console.print(get_app_header_rule())
-                __describe_check__(console, profile, check, verbose=verbose)
+                __describe_check__(console, profile, effective_check, verbose=verbose)
             return
 
         # Set the subheader title
-        subheader_title = f"[bold][cyan]Profile:[/cyan] [magenta italic]{profile.identifier}[/magenta italic][/bold]"
+        subheader_title = f"[bold][cyan]Profile:[/cyan] [italic magenta]{profile.identifier}[/italic magenta][/bold]"
 
         # Set the subheader content
         subheader_content = f"[bold cyan]Version:[/bold cyan] [italic green]{profile.version}[/italic green]\n"
@@ -328,7 +392,7 @@ def __compacted_describe_profile__(profile):
 
     # Define columns
     table.add_column("#", style="cyan bold", justify="right")
-    table.add_column("Name", style="magenta bold", justify="left")
+    table.add_column("Name", style="hot_pink bold", justify="left")
     table.add_column("Description", style="white italic")
     table.add_column("# REQUIRED", style=__requirement_level_style__(LevelCollection.REQUIRED), justify="center")
     table.add_column("# RECOMMENDED", style=__requirement_level_style__(LevelCollection.RECOMMENDED), justify="center")
@@ -346,24 +410,25 @@ def __verbose_describe_profile__(profile):
     table_rows = []
     levels_list = set()
     count_checks = 0
-    for requirement in profile.requirements:
-        # skip hidden requirements
-        if requirement.hidden:
+    for effective_check in profile.get_effective_requirement_checks():
+        check = effective_check.check
+        if check.requirement.hidden:
             continue
-        # add the requirement to the list
-        for check in requirement.get_checks():
-            color = get_severity_color(check.severity)
-            level_info = f"[{color}]{check.severity.name}[/{color}]"
-            levels_list.add(level_info)
-            override = __format_overrides__(check.overrides, label="overrides") if check.overrides else None
-
-            description_table = Table(show_header=False, show_footer=False, show_lines=False, show_edge=False)
-            if override:
-                description_table.add_row(Align(Padding(override, (0, 0, 1, 0)), align="right"))
-            description_table.add_row(Markdown(check.description.strip()))
-
-            table_rows.append((check.identifier, check.name, description_table, level_info))
-            count_checks += 1
+        color = get_severity_color(check.severity)
+        level_info = f"[{color}]{check.severity.name}[/{color}]"
+        levels_list.add(level_info)
+        relation = __format_check_relation__(effective_check)
+        table_rows.append(
+            (
+                effective_check.identifier,
+                check.name,
+                relation,
+                effective_check.source_identifier,
+                Markdown(check.description.strip()),
+                level_info,
+            )
+        )
+        count_checks += 1
 
     table = Table(
         show_header=True,
@@ -374,12 +439,18 @@ def __verbose_describe_profile__(profile):
         show_footer=False,
         show_lines=True,
         caption_style="italic bold",
-        caption=f"[cyan](*)[/cyan] number of checks by severity level: {', '.join(levels_list)}",
+        caption=(
+            f"[cyan](*)[/cyan] number of checks by severity level: {', '.join(levels_list)}\n"
+            "[cyan](†)[/cyan] Effective ID is the identity exposed by this profile; "
+            "Source ID identifies the check implementation"
+        ),
     )
 
     # Define columns
-    table.add_column("Identifier", style="cyan bold", justify="right")
-    table.add_column("Name", style="magenta bold", justify="left")
+    table.add_column("Effective ID (†)", style="cyan bold", justify="right")
+    table.add_column("Name", style="hot_pink bold", justify="left")
+    table.add_column("Relation", justify="left")
+    table.add_column("Source ID (†)", style="magenta italic", justify="right")
     table.add_column("Description", style="white italic")
     table.add_column("Severity (*)", style="bold", justify="center")
 
@@ -392,94 +463,86 @@ def __verbose_describe_profile__(profile):
 _CHECK_ID_RE = re.compile(r"^(?P<req>\d+)\.(?P<check>\d+)$")
 
 
-def __resolve_check__(profile: Profile, check_identifier: str) -> RequirementCheck:
+def __resolve_check__(profile: Profile, check_identifier: str) -> EffectiveRequirementCheck:
     """
-    Resolve a check identifier to a RequirementCheck instance.
+    Resolve a check identifier to its effective profile view.
     Accepts either the relative form ``<req#>.<check#>`` or the full form
     ``<profile>_<req#>.<check#>``.
     """
     raw = check_identifier.strip()
-    relative = raw
-    prefix = f"{profile.identifier}_"
+    effective_checks = tuple(
+        item for item in profile.get_effective_requirement_checks() if not item.check.requirement.hidden
+    )
     if "_" in raw:
-        if not raw.startswith(prefix):
+        match = next((item for item in effective_checks if item.identifier == raw), None)
+        if match is None:
             raise click.BadParameter(
-                f"Check identifier '{raw}' does not belong to profile '{profile.identifier}'.",
+                f"Check identifier '{raw}' is not part of effective profile '{profile.identifier}'.",
                 param_hint="CHECK_IDENTIFIER",
             )
-        relative = raw[len(prefix) :]
+        return match
 
-    match = _CHECK_ID_RE.match(relative)
-    if not match:
+    if not _CHECK_ID_RE.match(raw):
         raise click.BadParameter(
             f"Invalid check identifier '{check_identifier}'. "
             f"Expected '<requirement#>.<check#>' (e.g. '1.2') or "
             f"'<profile>_<requirement#>.<check#>' (e.g. '{profile.identifier}_1.2').",
             param_hint="CHECK_IDENTIFIER",
         )
-    req_number = int(match.group("req"))
-    check_number = int(match.group("check"))
-
-    requirement = next(
-        (r for r in profile.requirements if not r.hidden and r.order_number == req_number),
-        None,
-    )
-    if requirement is None:
+    matches = [item for item in effective_checks if item.identifier.rsplit("_", maxsplit=1)[-1] == raw]
+    if not matches:
         raise click.BadParameter(
-            f"No requirement #{req_number} in profile '{profile.identifier}'. "
-            f"Run `rocrate-validator profiles describe {profile.identifier}` to list requirements.",
+            f"No effective check '{raw}' in profile '{profile.identifier}'. "
+            f"Run `rocrate-validator profiles describe {profile.identifier} -v` to list checks.",
             param_hint="CHECK_IDENTIFIER",
         )
-    check = next(
-        (c for c in requirement.get_checks() if c.order_number == check_number),
-        None,
-    )
-    if check is None:
+    if len(matches) > 1:
         raise click.BadParameter(
-            f"No check #{check_number} in requirement #{req_number} of profile "
-            f"'{profile.identifier}'. Run `rocrate-validator profiles describe "
-            f"{profile.identifier} -v` to list checks.",
+            f"Relative check identifier '{raw}' is ambiguous in effective profile '{profile.identifier}'. "
+            "Use one of the full effective identifiers shown by the verbose profile description.",
             param_hint="CHECK_IDENTIFIER",
         )
-    return check
+    return matches[0]
 
 
-def __format_overrides__(checks: list, label: str) -> str:
-    """
-    Format an "overrides" / "overridden by" Rich-styled string for a list of checks.
-    """
-    parts = []
-    for co in checks:
-        severity_color = get_severity_color(co.severity)
-        parts.append(
-            f"[bold][magenta]{co.requirement.profile.identifier}[/magenta] "
-            f"[{severity_color}]{co.relative_identifier}[/{severity_color}][/bold]"
+def __format_check_relation__(effective_check: EffectiveRequirementCheck) -> str:
+    """Format the provenance relation of an effective check."""
+    if effective_check.relation == RequirementCheckRelation.DEFINED_LOCALLY:
+        return "[bold yellow]Defined locally[/bold yellow]"
+    if effective_check.relation == RequirementCheckRelation.INHERITED:
+        return (
+            f"[bold cyan]Inherited[/bold cyan] from "
+            f"[italic magenta]{effective_check.source_profile.identifier}[/italic magenta]"
         )
-    return f"[bold red]{label}:[/bold red] " + ", ".join(parts)
+    replaced = ", ".join(check.identifier for check in effective_check.replaces)
+    return f"[bold orange1]Replaces[/bold orange1] [italic magenta]{replaced}[/italic magenta]"
 
 
-def __describe_check__(console, profile: Profile, check: RequirementCheck, verbose: bool = False) -> None:
+def __describe_check__(
+    console, profile: Profile, effective_check: EffectiveRequirementCheck, verbose: bool = False
+) -> None:
     """
     Render a single requirement check.
     """
+    check = effective_check.check
     severity_color = get_severity_color(check.severity)
     requirement = check.requirement
 
     header = (
         f"[bold cyan]Profile:[/bold cyan] "
         f"[italic magenta]{profile.identifier}[/italic magenta]\n"
-        f"[bold cyan]Identifier:[/bold cyan] "
-        f"[italic green]{check.identifier}[/italic green]\n"
-        f"[bold cyan]Name:[/bold cyan] [italic]{check.name}[/italic]\n"
+        f"[bold cyan]Effective ID:[/bold cyan] "
+        f"[italic green]{effective_check.identifier}[/italic green]\n"
+        f"[bold cyan]Name:[/bold cyan] [italic hot_pink]{check.name}[/italic hot_pink]\n"
         f"[bold cyan]Severity:[/bold cyan] "
         f"[bold {severity_color}]{check.severity.name}[/bold {severity_color}]\n"
         f"[bold cyan]Requirement:[/bold cyan] "
-        f"[italic]#{requirement.order_number} — {requirement.name}[/italic]"
+        f"[italic hot_pink]#{requirement.order_number} — {requirement.name}[/italic hot_pink]"
     )
     if requirement.path:
         header += f"\n[bold cyan]Source file:[/bold cyan] [italic green]{shorten_path(requirement.path)}[/italic green]"
 
-    title = f"[bold][cyan]Check:[/cyan] [magenta italic]{check.identifier}[/magenta italic][/bold]"
+    title = f"[bold][cyan]Check:[/cyan] [magenta italic]{effective_check.identifier}[/magenta italic][/bold]"
     console.print(
         Padding(
             Panel(header, title=title, padding=(1, 1, 1, 1), title_align="left", border_style="cyan"),
@@ -496,34 +559,25 @@ def __describe_check__(console, profile: Profile, check: RequirementCheck, verbo
     )
     console.print(Padding(description_panel, (1, 1, 0, 1)))
 
-    if check.overrides:
-        overrides_text = __format_overrides__(check.overrides, label="overrides")
-        console.print(
-            Padding(
-                Panel(
-                    overrides_text,
-                    title="[bold cyan]Overrides[/bold cyan]",
-                    title_align="left",
-                    border_style="bright_black",
-                    padding=(1, 1, 1, 1),
-                ),
-                (1, 1, 0, 1),
-            )
+    provenance = (
+        f"[bold cyan]Relation:[/bold cyan] {__format_check_relation__(effective_check)}\n"
+        f"[bold cyan]Effective ID:[/bold cyan] [italic cyan]{effective_check.identifier}[/italic cyan]\n"
+        f"[bold cyan]Source ID:[/bold cyan] [italic magenta]{effective_check.source_identifier}[/italic magenta]\n"
+        f"[bold cyan]Source profile:[/bold cyan] "
+        f"[italic magenta]{effective_check.source_profile.identifier}[/italic magenta]"
+    )
+    console.print(
+        Padding(
+            Panel(
+                provenance,
+                title="[bold cyan]Provenance[/bold cyan]",
+                title_align="left",
+                border_style="bright_black",
+                padding=(1, 1, 1, 1),
+            ),
+            (1, 1, 0, 1),
         )
-    if check.overridden_by:
-        overridden_text = __format_overrides__(check.overridden_by, label="overridden by")
-        console.print(
-            Padding(
-                Panel(
-                    overridden_text,
-                    title="[bold cyan]Overridden by[/bold cyan]",
-                    title_align="left",
-                    border_style="bright_black",
-                    padding=(1, 1, 1, 1),
-                ),
-                (1, 1, 0, 1),
-            )
-        )
+    )
 
     if verbose:
         snippet = check.get_source_snippet()

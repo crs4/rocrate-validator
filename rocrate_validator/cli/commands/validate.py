@@ -21,6 +21,8 @@ from pathlib import Path
 import rich_click as click
 from rich.padding import Padding
 from rich.rule import Rule
+from rich.table import Table
+from rich.text import Text
 
 from rocrate_validator import constants, services
 from rocrate_validator.cli.commands.errors import handle_error
@@ -29,6 +31,7 @@ from rocrate_validator.cli.ui.text.validate import ValidationCommandView
 from rocrate_validator.errors import ROCrateInvalidURIError
 from rocrate_validator.models import Severity, ValidationResult, ValidationSettings
 from rocrate_validator.utils import log as logging
+from rocrate_validator.utils.io_helpers.colors import get_severity_color
 from rocrate_validator.utils.io_helpers.input import get_single_char, multiple_choice
 from rocrate_validator.utils.io_helpers.output.console import Console
 from rocrate_validator.utils.io_helpers.output.json import JSONOutputFormatter
@@ -138,6 +141,13 @@ def validate_uri(ctx, param, value):
     show_default=True,
 )
 @click.option(
+    "--no-profile-checks",
+    is_flag=True,
+    help="Skip consistency checks on validation profiles",
+    default=False,
+    show_default=True,
+)
+@click.option(
     "-l",
     "--requirement-severity",
     type=click.Choice([s.name for s in Severity], case_sensitive=False),
@@ -164,13 +174,20 @@ def validate_uri(ctx, param, value):
     help=(
         "[bold yellow]Fully-Qualified-Check-IDs[/bold yellow] is a comma-separated list of checks to skip "
         "(may be specified multiple times). Each check must be specified by its "
-        "Fully Qualified Identifier, e.g., [bold cyan]ro-crate-1.1_12.1[/bold cyan]. The fully qualified "
+        "Fully Qualified Identifier, e.g., [bold cyan]ro-crate-1.3_11.1[/bold cyan]. The fully qualified "
         "check identifier has the format <Profile-ID>_<Requirement_#>.<RequirementCheck_#>, "
         "where <Requirement_#> is the position number of the Requirement in the profile, "
         "and <RequirementCheck_#> is the position number of the RequirementCheck within that Requirement. "
         "You can find the Fully-Qualified-Check IDs using: "
         "[bold orange1]rocrate-validator profiles describe <Profile-ID> -v[/bold orange1]"
     ),
+)
+@click.option(
+    "--show-skipped-checks",
+    is_flag=True,
+    help="List skipped checks and their reasons at the end of the validation",
+    default=False,
+    show_default=True,
 )
 @click.option(
     "-v",
@@ -250,6 +267,7 @@ def validate_uri(ctx, param, value):
 @click.pass_context
 def validate(
     ctx,
+    *,
     profiles_path: Path = DEFAULT_PROFILES_PATH,
     extra_profiles_path: Path | None = None,
     profile_identifier: tuple[str, ...] = (),
@@ -259,9 +277,11 @@ def validate(
     skip_availability_check: bool = False,
     no_auto_profile: bool = False,
     disable_profile_inheritance: bool = False,
+    no_profile_checks: bool = False,
     requirement_severity: str = Severity.REQUIRED.name,
     requirement_severity_only: bool = False,
     skip_checks: list[str] | None = None,
+    show_skipped_checks: bool = False,
     rocrate_uri: str | Path = ".",
     relative_root_path: Path | None = None,
     fail_fast: bool = False,
@@ -340,6 +360,7 @@ def validate(
             "creation_time": creation_time,
             "enforce_availability": enforce_availability,
             "skip_availability_check": skip_availability_check,
+            "validate_profile_checks": not no_profile_checks,
         }
 
         # Print the application header
@@ -353,11 +374,11 @@ def validate(
         # interactive selection, or fallback to the base `ro-crate` profile).
         profile_identifiers, autodetection = _resolve_profile_identifiers(
             console,
-            interactive,
-            no_auto_profile,
-            available_profiles,
-            list(profile_identifier),
-            validation_settings,
+            interactive=interactive,
+            no_auto_profile=no_auto_profile,
+            available_profiles=available_profiles,
+            profile_identifiers=list(profile_identifier),
+            validation_settings=validation_settings,
         )
 
         # Validate the RO-Crate against the selected profiles
@@ -365,7 +386,7 @@ def validate(
         results = {}
         for profile in profile_identifiers:
             # Duplicate settings for each profile and set the profile identifier
-            logger.info("\nValidating RO-Crate against profile: [bold cyan]%s[/bold cyan]", profile)
+            logger.info("\nValidating RO-Crate against profile: [bold magenta]%s[/bold magenta]", profile)
             profile_settings = validation_settings.copy()
             profile_settings["profile_identifier"] = profile
             logger.debug("Profile selected for validation: %s", profile)
@@ -412,13 +433,21 @@ def validate(
                 output_file=output_file,
                 output_line_width=output_line_width,
             )
+        _emit_skipped_checks_report(
+            results,
+            show_skipped_checks=show_skipped_checks,
+            output_format=output_format,
+            output_file=output_file,
+            output_line_width=output_line_width,
+            console=console,
+        )
 
         # Exit with appropriate status code.
         # using ctx.exit seems to raise an Exception that gets caught below,
         # so we use sys.exit instead.
         sys.exit(0 if is_valid else 1)
     except Exception as e:
-        handle_error(e, console)
+        handle_error(e, console, debug=ctx.obj["debug"])
 
 
 def _log_validation_inputs(
@@ -492,6 +521,7 @@ def _parse_skip_checks(skip_checks: list[str] | None) -> list[str]:
 
 def _resolve_profile_identifiers(
     console: Console,
+    *,
     interactive: bool,
     no_auto_profile: bool,
     available_profiles: list,
@@ -653,7 +683,7 @@ def _emit_json_report(
             console.print(
                 f"\n{' ' * 2}✅ [bold]Validation [green]PASSED![/green]. "
                 f"\n{' ' * 5}RO-Crate is valid according to the profile(s): "
-                f"[cyan]{', '.join(profile_identifiers)}[/cyan][/bold]"
+                f"[magenta]{', '.join(profile_identifiers)}[/magenta][/bold]"
             )
         else:
             console.print(f"\n{' ' * 2}❌ [bold]Validation [red]FAILED![/red][/bold]")
@@ -677,3 +707,50 @@ def _emit_json_report(
 
     if interactive and output_file:
         console.print("[bold]DONE![/bold]", end="\n\n")
+
+
+def _print_skipped_checks(results: dict[str, ValidationResult], console: Console) -> None:
+    """Render the collected skipped-check details using the validation palette."""
+    details = [detail for result in results.values() for detail in result.skipped_check_details]
+    if not details:
+        return
+
+    table = Table(
+        title=f"Skipped Checks ({len(details)})",
+        title_style="bold yellow",
+        border_style="yellow",
+        header_style="bold yellow",
+        show_lines=False,
+    )
+    table.add_column("Profile", style="cyan", no_wrap=True)
+    table.add_column("Check", no_wrap=True)
+    table.add_column("Category", style="yellow", no_wrap=True)
+    table.add_column("Reason")
+    for detail in details:
+        table.add_row(
+            Text(detail.to_dict()["profile"], style="cyan"),
+            Text(detail.to_dict()["identifier"], style=get_severity_color(detail.check.severity)),
+            Text(detail.category.value, style="yellow"),
+            Text(f"{detail.check.name}: {detail.message}"),
+        )
+    console.print(Padding(table, (1, 2)))
+
+
+def _emit_skipped_checks_report(
+    results: dict[str, ValidationResult],
+    *,
+    show_skipped_checks: bool,
+    output_format: str,
+    output_file: Path | None,
+    output_line_width: int | None,
+    console: Console,
+) -> None:
+    """Write the optional skipped-check report without affecting JSON output."""
+    if not show_skipped_checks or output_format == "json":
+        return
+    if output_file:
+        with output_file.open("a", encoding="utf-8") as output:
+            output_console = Console(color_system=None, width=output_line_width, file=output)
+            _print_skipped_checks(results, output_console)
+    else:
+        _print_skipped_checks(results, console)

@@ -75,6 +75,7 @@ class ValidationReportLayout(Layout):
         self.requirement_checks_container_layout: Layout | None = None
         self.passed_checks: Layout | None = None
         self.failed_checks: Layout | None = None
+        self.skipped_checks: Layout | None = None
         self.report_details_container: Layout | None = None
         self.overall_result: Layout | None = None
         self.requirement_checks_by_severity_container_layout: Any = None
@@ -131,9 +132,10 @@ class ValidationReportLayout(Layout):
         )
         self.passed_checks = Layout(name="PASSED")
         self.failed_checks = Layout(name="FAILED")
+        self.skipped_checks = Layout(name="SKIPPED")
         # Create the layout of the requirement checks section
         validated_checks_container = Layout(name="Requirement Checks Validated")
-        validated_checks_container.split_row(self.passed_checks, self.failed_checks)
+        validated_checks_container.split_row(self.passed_checks, self.failed_checks, self.skipped_checks)
 
         # Create the layout of the requirement checks section
         self.requirement_checks_by_severity_container_layout = Layout(name="Requirement Checks Validation", size=5)
@@ -207,7 +209,9 @@ class ValidationReportLayout(Layout):
 
     def update_stats(self, profile_stats: ValidationStatistics | None = None):
         assert profile_stats, "Profile stats must be provided"
-        assert self.passed_checks is not None and self.failed_checks is not None, "Layout not initialized"
+        assert self.passed_checks is not None and self.failed_checks is not None and self.skipped_checks is not None, (
+            "Layout not initialized"
+        )
         self.requirement_checks_by_severity_container_layout["required"].update(
             Panel(
                 Align(
@@ -265,6 +269,16 @@ class ValidationReportLayout(Layout):
             )
         )
 
+        self.skipped_checks.update(
+            Panel(
+                Align(str(len(profile_stats.skipped_checks)), align="center"),
+                padding=(1, 1),
+                title="SKIPPED Checks",
+                title_align="center",
+                border_style="yellow",
+            )
+        )
+
     def show_overall_result(self, result: ValidationResult | None):
         assert result, "Validation result must be provided"
         assert self.overall_result is not None, "Layout not initialized"
@@ -314,6 +328,8 @@ class _ReportLayoutSubscriber(EventDispatcher):
         self._layout.update_stats(ctx.result.statistics)
 
     def _on_validation_end(self, event: ValidationEvent, ctx: ValidationContext | None) -> None:
+        assert ctx is not None, "Validation context must be provided"
+        self._layout.update_stats(ctx.result.statistics)
         self._layout.show_overall_result(event.validation_result)
 
 

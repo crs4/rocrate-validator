@@ -21,6 +21,7 @@ from urllib.error import HTTPError
 from rdflib import Graph
 
 from rocrate_validator.errors import (
+    CheckDependencyError,
     ProfileNotFound,
     ROCrateMetadataNotFoundError,
 )
@@ -28,22 +29,26 @@ from rocrate_validator.events import Event, EventType, Publisher
 from rocrate_validator.models._logging import logger
 from rocrate_validator.models.events import (
     ProfileValidationEvent,
+    RequirementCheckValidationEvent,
     RequirementValidationEvent,
     ValidationEvent,
 )
 from rocrate_validator.models.profile import Profile
 from rocrate_validator.models.requirement import (
     Requirement,
+    RequirementCheck,
     RequirementLoader,
 )
 from rocrate_validator.models.result import ValidationResult
 from rocrate_validator.models.settings import ValidationSettings
 from rocrate_validator.models.severity import Severity
+from rocrate_validator.models.skipped_check import SkipCategory, SkipCategoryInput
 from rocrate_validator.rocrate import ROCrate
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.http import find_offline_cache_miss
 
 if TYPE_CHECKING:
+    from rocrate_validator.models.profile_provenance import EffectiveRequirementCheck
     from rocrate_validator.utils.uri import URI
 
 
@@ -82,59 +87,47 @@ class Validator(Publisher):
         """
         Detect the profiles to validate against
         """
-        try:
-            # initialize the validation context
-            context = ValidationContext(self, self.validation_settings)
-            candidate_profiles_uris: set[str] = set()
-            try:
-                candidate_profiles_uris.update(context.ro_crate.metadata.get_conforms_to() or [])
-            except Exception as e:
-                logger.debug("Error while getting candidate profiles URIs: %s", e)
-            try:
-                candidate_profiles_uris.update(context.ro_crate.metadata.get_root_data_entity_conforms_to() or [])
-            except Exception as e:
-                logger.debug("Error while getting candidate profiles URIs: %s", e)
+        # initialize the validation context
+        context = ValidationContext(self, self.validation_settings)
+        candidate_profiles_uris: set[str] = set()
+        candidate_profiles_uris.update(context.ro_crate.metadata.get_conforms_to() or [])
+        candidate_profiles_uris.update(context.ro_crate.metadata.get_root_data_entity_conforms_to() or [])
 
-            logger.debug("Candidate profiles: %s", candidate_profiles_uris)
-            if not candidate_profiles_uris:
-                logger.debug("Unable to determine the profile to validate against")
-                return []
-            # load the profiles
-            profiles = []
-            candidate_profiles = []
-            available_profiles = Profile.load_profiles(
-                context.profiles_path,
-                extra_profiles_path=context.extra_profiles_path,
-                publicID=context.publicID,
-                severity=context.requirement_severity,
-            )
-            profiles = [p for p in available_profiles if p.uri in candidate_profiles_uris]
-            # get the candidate profiles
-            for profile in profiles:
-                candidate_profiles.append(profile)
-                inherited_profiles = profile.inherited_profiles
-                for inherited_profile in inherited_profiles:
-                    if inherited_profile in candidate_profiles:
-                        candidate_profiles.remove(inherited_profile)
-            logger.debug(
-                "%d Candidate Profiles found: %s",
-                len(candidate_profiles),
-                candidate_profiles,
-            )
-            # unmatched candidate profiles
-            unmatched_profiles = candidate_profiles_uris.difference({p.uri for p in profiles})
-            logger.debug("Unmatched Candidate Profiles URIs: %s", unmatched_profiles)
-            if len(unmatched_profiles) > 0:
-                logger.warning(
-                    "The conformance to the following profiles could not be verified: %s",
-                    ", ".join(unmatched_profiles),
-                )
-            return candidate_profiles
-
-        except Exception:
-            if logger.isEnabledFor(logging.DEBUG):
-                logger.exception("Error detecting RO-Crate profiles")
+        logger.debug("Candidate profiles: %s", candidate_profiles_uris)
+        if not candidate_profiles_uris:
+            logger.debug("Unable to determine the profile to validate against")
             return []
+        # load the profiles
+        profiles = []
+        candidate_profiles = []
+        available_profiles = Profile.load_profiles(
+            context.profiles_path,
+            extra_profiles_path=context.extra_profiles_path,
+            publicID=context.publicID,
+            severity=context.requirement_severity,
+        )
+        profiles = [p for p in available_profiles if p.uri in candidate_profiles_uris]
+        # get the candidate profiles
+        for profile in profiles:
+            candidate_profiles.append(profile)
+            inherited_profiles = profile.inherited_profiles
+            for inherited_profile in inherited_profiles:
+                if inherited_profile in candidate_profiles:
+                    candidate_profiles.remove(inherited_profile)
+        logger.debug(
+            "%d Candidate Profiles found: %s",
+            len(candidate_profiles),
+            candidate_profiles,
+        )
+        # unmatched candidate profiles
+        unmatched_profiles = candidate_profiles_uris.difference({p.uri for p in profiles})
+        logger.debug("Unmatched Candidate Profiles URIs: %s", unmatched_profiles)
+        if len(unmatched_profiles) > 0:
+            logger.warning(
+                "The conformance to the following profiles could not be verified: %s",
+                ", ".join(unmatched_profiles),
+            )
+        return candidate_profiles
 
     def validate(self) -> ValidationResult:
         """
@@ -142,15 +135,27 @@ class Validator(Publisher):
         """
         return self.__do_validate__()
 
-    def validate_requirements(self, requirements: list[Requirement]) -> ValidationResult:
+    def validate_requirements(
+        self,
+        requirements: list[Requirement],
+        *,
+        include_dependencies: bool = True,
+    ) -> ValidationResult:
         """
-        Validates the RO-Crate against the specified subset of the profile requirements
+        Validates the RO-Crate against the specified subset of the profile requirements.
+
+        By default, requirements containing transitive check dependencies are added to
+        the selected subset. Set ``include_dependencies`` to ``False`` to require the
+        caller to provide the complete dependency closure explicitly.
         """
         assert all(isinstance(requirement, Requirement) for requirement in requirements), "Invalid requirement type"
-        # perform the requirements validation
-        return self.__do_validate__(requirements)
+        resolved_requirements = RequirementLoader.dependency_closure(
+            requirements,
+            include_dependencies=include_dependencies,
+        )
+        return self.__do_validate__(resolved_requirements)
 
-    def __do_validate__(self, requirements: list[Requirement] | None = None) -> ValidationResult:
+    def __do_validate__(self, requirements: list[Requirement] | None = None) -> ValidationResult:  # noqa: C901, PLR0912, PLR0915
 
         # initialize the validation context
         context = ValidationContext(self, self.validation_settings)
@@ -170,8 +175,11 @@ class Validator(Publisher):
             # profiles that have not yet been visited.
             for p in profiles:
                 _ = p.requirements
+            selected_requirement_ids = (
+                None if requirements is None else {id(requirement) for requirement in requirements}
+            )
             self.notify(EventType.VALIDATION_START)
-            for profile in profiles:
+            for profile_index, profile in enumerate(profiles):
                 logger.debug(
                     "Validating profile %s (id: %s)",
                     profile.name,
@@ -181,23 +189,32 @@ class Validator(Publisher):
                 context._target_validation_profile = profile
                 self.notify(ProfileValidationEvent(EventType.PROFILE_VALIDATION_START, profile=profile))
                 # perform the requirements validation
-                requirements = profile.get_requirements(
-                    context.requirement_severity,
-                    exact_match=context.requirement_severity_only,
-                )
+                if selected_requirement_ids is None:
+                    profile_requirements = profile.get_requirements(
+                        context.requirement_severity,
+                        exact_match=context.requirement_severity_only,
+                    )
+                else:
+                    profile_requirements = [
+                        requirement
+                        for requirement in profile.requirements
+                        if id(requirement) in selected_requirement_ids
+                    ]
                 logger.debug(
                     "Validating profile %s with %s requirements",
                     profile.identifier,
-                    len(requirements),
+                    len(profile_requirements),
                 )
                 logger.debug(
                     "For profile %s, validating these %s requirements: %s",
                     profile.identifier,
-                    len(requirements),
-                    requirements,
+                    len(profile_requirements),
+                    profile_requirements,
                 )
                 terminate = False
-                for requirement in requirements:
+                requirement_index = -1
+                for requirement_index in range(len(profile_requirements)):
+                    requirement = profile_requirements[requirement_index]
                     if not requirement.overridden:
                         self.notify(
                             RequirementValidationEvent(
@@ -235,6 +252,20 @@ class Validator(Publisher):
                         break
                 self.notify(ProfileValidationEvent(EventType.PROFILE_VALIDATION_END, profile=profile))
                 if terminate:
+                    Requirement.record_skipped_checks(profile_requirements[requirement_index + 1 :], context)
+                    for remaining_profile in profiles[profile_index + 1 :]:
+                        if selected_requirement_ids is None:
+                            remaining_requirements = remaining_profile.get_requirements(
+                                context.requirement_severity,
+                                exact_match=context.requirement_severity_only,
+                            )
+                        else:
+                            remaining_requirements = [
+                                requirement
+                                for requirement in remaining_profile.requirements
+                                if id(requirement) in selected_requirement_ids
+                            ]
+                        Requirement.record_skipped_checks(remaining_requirements, context)
                     break
 
             # finalize the requirement types
@@ -267,6 +298,11 @@ class Validator(Publisher):
         result: ValidationResult = self.__current_context__.result
         if isinstance(event, EventType):
             event = Event(event)
+        if isinstance(event, RequirementCheckValidationEvent):
+            event.set_effective_identity(
+                self.__current_context__.effective_check_identifier(event.requirement_check),
+                self.__current_context__.effective_check_profile(event.requirement_check).identifier,
+            )
         result.statistics.update(event, ctx=self.__current_context__)
         return super().notify(event, ctx=self.__current_context__)
 
@@ -293,6 +329,9 @@ class ValidationContext:
         self._properties: dict = {}
         # URLs already reported as missing from the HTTP cache during this run
         self._offline_cache_misses_warned: set[str] = set()
+        # Effective identities are requested by several reporting consumers
+        # for the same check during one validation run.
+        self._effective_check_cache: dict[tuple[int, int], EffectiveRequirementCheck] = {}
         # flag set when the validation must be aborted because the metadata
         # cannot be read (e.g. the file descriptor is not valid JSON)
         self._aborted: bool = False
@@ -341,6 +380,15 @@ class ValidationContext:
         if self._result is None:
             self._result = ValidationResult(self)
         return self._result
+
+    def record_skip(
+        self,
+        check: RequirementCheck,
+        message: str,
+        category: SkipCategoryInput = SkipCategory.RETURNED,
+    ) -> None:
+        """Record a structured reason while a check is returning ``SKIPPED``."""
+        self.result.record_skip(check, message, category)
 
     @property
     def settings(self) -> ValidationSettings:
@@ -578,37 +626,46 @@ class ValidationContext:
             allow_requirement_check_override=self.allow_requirement_check_override,
         )
 
-        # Check if the target profile is in the list of profiles
-        profile = Profile.get_by_identifier(self.profile_identifier)
-        if not profile:
-            try:
-                candidate_profiles = Profile.get_by_token(self.profile_identifier)
-                logger.debug("Candidate profiles found by token: %s", profile)
-                if candidate_profiles:
-                    # Find the profile with the highest version number
-                    profile = max(candidate_profiles, key=lambda p: p.version or "")
-                    self.settings.profile_identifier = profile.identifier
-                    logger.debug("Profile with the highest version number: %s", profile)
-            except AttributeError as e:
-                # raised when the profile is not found
-                if logger.isEnabledFor(logging.DEBUG):
-                    logger.exception("Profile not found: %s", self.profile_identifier)
-                raise ProfileNotFound(
-                    self.profile_identifier,
-                    message=f"Profile '{self.profile_identifier}' not found in '{self.profiles_path}'",
-                ) from e
-            if profile is None:
-                raise ProfileNotFound(
-                    self.profile_identifier,
-                    message=f"Profile '{self.profile_identifier}' not found in '{self.profiles_path}'",
-                )
+        # Check if the target profile is in the list of profiles. A bare token
+        # (e.g. `ro-crate`) resolves to the highest available version.
+        try:
+            profile = Profile.resolve_in_list(profiles, self.profile_identifier)
+        except AttributeError as e:
+            # raised when the profile is not found
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.exception("Profile not found: %s", self.profile_identifier)
+            raise ProfileNotFound(
+                self.profile_identifier,
+                message=f"Profile '{self.profile_identifier}' not found in '{self.profiles_path}'",
+            ) from e
+        if profile is None:
+            raise ProfileNotFound(
+                self.profile_identifier,
+                message=f"Profile '{self.profile_identifier}' not found in '{self.profiles_path}'",
+            )
+        # Record the resolved identifier, so that downstream consumers (e.g. the
+        # statistics) agree on which profile was actually used.
+        if profile.identifier != self.profile_identifier:
+            logger.debug("Profile %r resolved to %r", self.profile_identifier, profile.identifier)
+            self.settings.profile_identifier = profile.identifier
 
         # if the inheritance is enabled, return only the target profile
         if not self.inheritance_enabled:
             return [profile]
 
-        # Set the profiles to validate against as the target profile and its inherited profiles
+        # Visit profiles from the most general source to the target.  This is
+        # important for both dependency ordering and SHACL composition: source
+        # shapes are collected before the target profile performs the single
+        # validation run over the complete merged shapes graph.  Python checks
+        # that are replaced by an overlay are dispatched at their source slot.
         profiles = [*profile.inherited_profiles, profile]
+
+        # Validate check identities only for profiles participating in this run.
+        # Profile listing and discovery may still inspect intentionally invalid
+        # fixtures without forcing requirement loading.
+        if self.settings.validate_profile_checks:
+            for validation_profile in profiles:
+                validation_profile.validate_profile_checks()
 
         # if the check for duplicates is disabled, return the profiles
         if self.disable_check_for_duplicates:
@@ -650,7 +707,82 @@ class ValidationContext:
         """
         profiles = self.profiles
         assert len(profiles) > 0, "No profiles to validate"
-        return self.profiles[-1]
+        # Overlay validation visits the target before its sources so that
+        # target-specific fail-fast checks run first; resolve by identifier
+        # instead of relying on the order of the profiles list.
+        target = next((profile for profile in profiles if profile.identifier == self.profile_identifier), None)
+        return target or profiles[-1]
+
+    def is_rule_overlay_source(self, profile: Profile) -> bool:
+        """Return whether ``profile`` is composed into the validation target."""
+        target = self.target_profile
+        return profile == target or profile.uri in target.is_rule_overlay_of
+
+    def effective_check_identifier(self, check: RequirementCheck) -> str:
+        """Return a context-local identifier without mutating the source check."""
+        return self.effective_check_provenance(check).identifier
+
+    def effective_check_profile(self, check: RequirementCheck) -> Profile:
+        """Return the reporting profile for a check in this validation."""
+        return self.effective_check_provenance(check).profile
+
+    def effective_check_provenance(self, check: RequirementCheck) -> EffectiveRequirementCheck:
+        """Return and cache the effective identity of ``check`` in this context."""
+        target_profile = self.target_profile
+        cache_key = (id(target_profile), id(check))
+        provenance = self._effective_check_cache.get(cache_key)
+        if provenance is None:
+            provenance = target_profile.effective_requirement_check(check)
+            self._effective_check_cache[cache_key] = provenance
+        return provenance
+
+    def is_check_skipped(self, check: RequirementCheck) -> bool:
+        """
+        Return whether validation settings skip ``check`` under a supported identity.
+
+        A check contributed by an overlay source retains its source identifier
+        while exposing a target-local effective identifier. Accepting either
+        identity lets callers address the check without mutating its provenance.
+        """
+        skipped_identifiers = self.settings.skip_checks
+        if not skipped_identifiers:
+            return False
+        check_identifiers = {check.identifier, self.effective_check_identifier(check)}
+        return bool(check_identifiers.intersection(skipped_identifiers))
+
+    def effective_check_replacement(self, check: RequirementCheck) -> RequirementCheck | None:
+        """
+        Return the target-local check replacing ``check``, if any.
+
+        Replacement is resolved against the effective target profile rather
+        than the source profile's sibling list.  This keeps execution scoped
+        to the profile selected for the current validation and avoids treating
+        unrelated profiles loaded in the same registry as active overrides.
+        """
+        target_profile = self.target_profile
+        if check.requirement.profile == target_profile:
+            return None
+        candidate = target_profile.get_requirement_check(check.name, check.severity)
+        if candidate is not None and check in candidate.overrides:
+            return candidate
+        return None
+
+    def resolve_dependency_check(self, check: RequirementCheck, dependency_name: str) -> RequirementCheck:
+        """
+        Resolve a named dependency in the active overlay composition.
+
+        Resolution uses the target profile's effective check set, which includes
+        inherited checks while excluding definitions shadowed by a more specific
+        replacement. Exactly one effective match is required; an absent or
+        ambiguous dependency is a profile-definition error.
+        """
+        matches = RequirementLoader.effective_check_index(self.target_profile).get(dependency_name, [])
+        if len(matches) != 1:
+            raise CheckDependencyError(
+                f"check {check.name!r} depends on unknown or ambiguous check {dependency_name!r}",
+                check.requirement.profile.identifier,
+            )
+        return matches[0]
 
     def get_profile_by_token(self, token: str) -> list[Profile]:
         """

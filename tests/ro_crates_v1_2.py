@@ -82,6 +82,14 @@ class MetadataDocument:
     def invalid_named_entity_id_format(self) -> Path:
         return self.METADATA_DOCUMENT_CRATES_PATH / "named_entity_id_format" / "invalid"
 
+    @property
+    def valid_schema_org_iri_protocol(self) -> Path:
+        return self.METADATA_DOCUMENT_CRATES_PATH / "schema_org_iri_protocol" / "valid"
+
+    @property
+    def invalid_schema_org_iri_protocol(self) -> Path:
+        return self.METADATA_DOCUMENT_CRATES_PATH / "schema_org_iri_protocol" / "invalid"
+
 
 class MetadataDocumentFormat:
     METADATA_DOCUMENT_FORMAT_CRATES_PATH = MetadataDocument.METADATA_DOCUMENT_CRATES_PATH / "format"
@@ -183,6 +191,14 @@ class MetadataEntities:
     @property
     def invalid_recommended_name(self) -> Path:
         return self.METADATA_ENTITIES_CRATES_PATH / "recommended_name" / "invalid"
+
+    @property
+    def valid_preprocessing_candidates(self) -> Path:
+        return self.METADATA_ENTITIES_CRATES_PATH / "preprocessing_candidates" / "valid"
+
+    @property
+    def invalid_preprocessing_candidates(self) -> Path:
+        return self.METADATA_ENTITIES_CRATES_PATH / "preprocessing_candidates" / "invalid"
 
 
 class MetadataDescriptor:
@@ -767,11 +783,11 @@ class ValidROCrate12:
 
     @property
     def detached(self) -> Path:
-        return self.base_path / "detached" / "dataset-ro-crate-metadata.json"
+        return self.base_path / "detached-1.2" / "dataset-ro-crate-metadata.json"
 
     @property
     def detached_prefixed(self) -> Path:
-        return self.base_path / "detached" / "test-ro-crate-metadata.json"
+        return self.base_path / "detached-1.2" / "test-ro-crate-metadata.json"
 
 
 class InvalidROCrate12:

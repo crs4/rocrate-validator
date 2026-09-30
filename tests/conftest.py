@@ -39,8 +39,11 @@ TEST_DATA_PATH = str(Path(CURRENT_PATH) / "data")
 # profiles paths
 PROFILES_PATH = str(Path(f"{CURRENT_PATH}/../rocrate_validator/profiles").resolve())
 
-# Dynamically update the SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER
-rocrate_profile = services.get_profile("ro-crate")
+# Dynamically update the SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER.
+# Pinned to `ro-crate-1.1` on purpose: the suites using this identifier validate
+# against 1.1 or against profiles that inherit from it, so the check id has to
+# come from 1.1 regardless of which profile is the default.
+rocrate_profile = services.get_profile("ro-crate-1.1")
 if not rocrate_profile:
     raise RuntimeError("Unable to load the RO-Crate profile")
 check_local_data_entity_existence = rocrate_profile.get_requirement_check("Data Entity: REQUIRED resource availability")

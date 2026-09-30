@@ -22,6 +22,7 @@ from rocrate_validator.rocrate import ROCrateMetadata
 from rocrate_validator.services import detect_profiles, get_profiles, validate
 from rocrate_validator.utils import log as logging
 from tests.ro_crates import InvalidFileDescriptorEntity, InvalidMultiProfileROC, ValidROC
+from tests.shared import RO_CRATE_1_1_PROFILE_IDENTIFIER
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -107,7 +108,14 @@ def test_disable_inherited_profiles_issue_reporting():
     logger.debug("Validating a local RO-Crate: %s", crate_path)
 
     # First, validate with inherited profiles issue reporting enabled
-    settings = ValidationSettings(rocrate_uri=URI(crate_path), disable_inherited_profiles_issue_reporting=False)
+    # Pinned to the profile the crate declares: the assertions below are about
+    # issues being attributed to the main profile rather than to the inherited
+    # ones, so validating against anything else would make them vacuous.
+    settings = ValidationSettings(
+        rocrate_uri=URI(crate_path),
+        profile_identifier="workflow-testing-ro-crate-0.1",
+        disable_inherited_profiles_issue_reporting=False,
+    )
     result = validate(settings)
     total_issues_with_inheritance = len(result.get_issues())
     logger.debug("Total issues with inherited profiles issue reporting enabled: %d", total_issues_with_inheritance)
@@ -135,7 +143,7 @@ def test_skip_pycheck_on_workflow_ro_crate():
     # Set the rocrate_uri to the workflow testing RO-Crate
     crate_path = InvalidFileDescriptorEntity().invalid_conforms_to
     logger.debug("Validating a local RO-Crate: %s", crate_path)
-    settings = ValidationSettings(rocrate_uri=URI(crate_path))
+    settings = ValidationSettings(rocrate_uri=URI(crate_path), profile_identifier=RO_CRATE_1_1_PROFILE_IDENTIFIER)
     result = validate(settings)
     assert not result.passed(), (
         "The RO-Crate is expected to be invalid because of an incorrect conformsTo field and missing resources"
@@ -186,7 +194,11 @@ def test_valid_crate_folder_with_metadata_only():
         shutil.copy(metadata_src, metadata_dst)
 
         # Define shared settings object
-        settings = ValidationSettings(rocrate_uri=URI(Path(tmpdirname)), metadata_only=True)
+        settings = ValidationSettings(
+            rocrate_uri=URI(Path(tmpdirname)),
+            profile_identifier=RO_CRATE_1_1_PROFILE_IDENTIFIER,
+            metadata_only=True,
+        )
 
         profiles = detect_profiles(settings)
 
@@ -211,7 +223,8 @@ def test_valid_crate_metadata_dict_with_metadata_only():
 
     # Define shared settings object
     settings = ValidationSettings(  # type: ignore[call-arg]  # rocrate_uri not needed in metadata-dict mode
-        metadata_dict=metadata_dict
+        metadata_dict=metadata_dict,
+        profile_identifier=RO_CRATE_1_1_PROFILE_IDENTIFIER,
     )
 
     profiles = detect_profiles(settings)

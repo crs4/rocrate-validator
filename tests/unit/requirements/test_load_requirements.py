@@ -16,10 +16,13 @@ import logging
 from pathlib import Path
 from typing import Any
 
-from rocrate_validator.constants import DEFAULT_PROFILE_IDENTIFIER
-from rocrate_validator.models import LevelCollection, Profile, Severity
+import pytest
+
+from rocrate_validator.errors import CheckDependencyError
+from rocrate_validator.models import LevelCollection, Profile, RequirementLoader, Severity
 from rocrate_validator.requirements.shacl.requirements import SHACLRequirement
 from tests.ro_crates import InvalidFileDescriptorEntity
+from tests.shared import RO_CRATE_1_1_PROFILE_IDENTIFIER
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -108,8 +111,11 @@ def test_order_of_loaded_profile_requirements(profiles_path: str):
     # The number of profiles should be greater than 0
     assert len(profiles) > 0
 
-    # The first profile should be the default profile
-    assert profiles[0].identifier == DEFAULT_PROFILE_IDENTIFIER
+    # The first profile should be the base RO-Crate 1.1 profile: it is the root of
+    # the inheritance graph, and profiles are ordered parents-first. This is a
+    # literal rather than `DEFAULT_PROFILE_IDENTIFIER` because the assertion is
+    # about load *ordering*, not about which profile happens to be the default.
+    assert profiles[0].identifier == RO_CRATE_1_1_PROFILE_IDENTIFIER
 
     # Get the first profile
     profile = profiles[0]
@@ -126,17 +132,7 @@ def test_order_of_loaded_profile_requirements(profiles_path: str):
             requirement.path,
         )
 
-    # Sort requirements by their order
-    requirements = sorted(
-        requirements,
-        key=lambda x: (
-            -(x.severity_from_path.value if x.severity_from_path else 0),
-            x.path.name if x.path else "",
-            x.name,
-        ),
-    )
-
-    # Check the order of the requirements
+    # Requirements are loaded in stable dependency-aware order.
     for i, requirement in enumerate(requirements):
         if i < len(requirements) - 1:
             assert requirement < requirements[i + 1]
@@ -162,6 +158,36 @@ def test_order_of_loaded_profile_requirements(profiles_path: str):
         == "Check if the Root Data Entity is denoted by the string `./` in the file descriptor JSON-LD"
     ), "The description of the requirement check is incorrect"
     assert requirement_check.severity == Severity.RECOMMENDED, "The severity of the requirement check is incorrect"
+
+
+def test_check_dependencies_are_ordered_and_closed(profiles_path: str) -> None:
+    """Resolve the 1.3 context check dependencies through its 1.2 overlay source."""
+    profiles = Profile.load_profiles(profiles_path=profiles_path, severity=Severity.REQUIRED)
+    profile = next(profile for profile in profiles if profile.identifier == "ro-crate-1.3")
+    source_profile = next(profile for profile in profiles if profile.identifier == "ro-crate-1.2")
+
+    source_requirements = {requirement.name: requirement for requirement in source_profile.requirements}
+    existence = source_requirements["File Descriptor existence"]
+    encoding = source_requirements["File Descriptor UTF-8 encoding"]
+    json_format = source_requirements["File Descriptor JSON format"]
+    context = next(
+        requirement for requirement in profile.requirements if requirement.name == "File Descriptor JSON-LD format"
+    )
+
+    ordered_names = [requirement.name for requirement in source_profile.requirements]
+    assert ordered_names.index(existence.name) < ordered_names.index(encoding.name)
+    assert ordered_names.index(encoding.name) < ordered_names.index(json_format.name)
+
+    closure = RequirementLoader.dependency_closure([context])
+    assert {requirement.name for requirement in closure} == {
+        existence.name,
+        encoding.name,
+        json_format.name,
+        context.name,
+    }
+
+    with pytest.raises(CheckDependencyError, match="was not selected"):
+        RequirementLoader.dependency_closure([context], include_dependencies=False)
 
 
 def test_hidden_requirements(profiles_loading_hidden_requirements: str):
