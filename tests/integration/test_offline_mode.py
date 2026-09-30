@@ -306,6 +306,7 @@ def test_cli_cache_reset_yes_clears_entries(cli_runner, tmp_path, network_interc
     [
         ("ro-crate-1.1", "https://w3id.org/ro/crate/1.1/context"),
         ("ro-crate-1.2", "https://w3id.org/ro/crate/1.2/context"),
+        ("ro-crate-1.3", "https://w3id.org/ro/crate/1.3/context"),
     ],
 )
 def test_cli_cache_warm_populates_profile_urls(

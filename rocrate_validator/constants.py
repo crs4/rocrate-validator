@@ -42,7 +42,7 @@ PROFILE_SPECIFICATION_FILE = "profile.ttl"
 ROCRATE_METADATA_FILE = "ro-crate-metadata.json"
 
 # Define the default profiles name
-DEFAULT_PROFILE_IDENTIFIER = "ro-crate-1.2"
+DEFAULT_PROFILE_IDENTIFIER = "ro-crate-1.3"
 
 # Define the default profiles path
 DEFAULT_PROFILES_PATH = "profiles"

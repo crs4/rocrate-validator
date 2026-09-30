@@ -55,6 +55,14 @@ def _collect_profile_namespaces(graph: Graph) -> set[str]:
     return {namespace for namespace in declared_namespaces if any(term.startswith(namespace) for term in terms)}
 
 
+def _profile_vocabulary_namespace(graph: Graph) -> str:
+    """Return the namespace explicitly bound as the artifact's own vocabulary."""
+    try:
+        return str(next(namespace for prefix, namespace in graph.namespaces() if prefix == "ro-crate"))
+    except StopIteration as exc:
+        raise AssertionError("The graph must bind its profile vocabulary to the `ro-crate` prefix") from exc
+
+
 def _parse_profile_artifacts(profile_path: Path, *, exclude: set[Path] | None = None) -> Graph:
     graph = Graph()
     excluded_paths = exclude or set()
@@ -65,30 +73,29 @@ def _parse_profile_artifacts(profile_path: Path, *, exclude: set[Path] | None = 
 
 
 @pytest.mark.parametrize("profile_path", _profile_paths_with("ontology.ttl"), ids=_profile_id)
-def test_profile_ontology_uses_the_namespace_of_its_shapes(profile_path: Path):
+def test_profile_ontology_uses_the_namespace_of_its_shapes(profile_path: Path) -> None:
     """
-    Every profile vocabulary namespace declared by an ontology must also occur
-    in that profile's SHACL artifacts.
+    The ontology's own profile vocabulary must also occur in its SHACL artifacts.
 
     This is the general invariant behind issue 193: if the ontology and shapes
     use different namespaces, a derived profile can target an ontology class
-    that the base shapes never emit or target.
+    that the base shapes never emit or target. External profile namespaces used
+    only by bridge axioms do not become part of the local vocabulary.
     """
     ontology_path = profile_path / "ontology.ttl"
     ontology = _parse_graph(ontology_path)
     artifacts = _parse_profile_artifacts(profile_path, exclude={ontology_path})
 
-    ontology_namespaces = _collect_profile_namespaces(ontology)
+    ontology_namespace = _profile_vocabulary_namespace(ontology)
     artifact_namespaces = _collect_profile_namespaces(artifacts)
 
-    assert ontology_namespaces, f"{ontology_path} must use at least one profile namespace"
-    assert ontology_namespaces <= artifact_namespaces, (
-        f"{ontology_path} uses namespaces not used by the profile's shapes: {ontology_namespaces - artifact_namespaces}"
+    assert ontology_namespace in artifact_namespaces, (
+        f"{ontology_path} uses the profile vocabulary {ontology_namespace}, but the profile's shapes do not"
     )
 
 
 @pytest.mark.parametrize("profile_path", _profile_paths_with("ontology.ttl", "prefixes.ttl"), ids=_profile_id)
-def test_sparql_prefixes_use_the_profile_ontology_namespace(profile_path: Path):
+def test_sparql_prefixes_use_the_profile_ontology_namespace(profile_path: Path) -> None:
     """
     The SPARQL prefix registry must use the ontology's vocabulary namespace.
 
@@ -98,13 +105,26 @@ def test_sparql_prefixes_use_the_profile_ontology_namespace(profile_path: Path):
     ontology = _parse_graph(profile_path / "ontology.ttl")
     prefixes = _parse_graph(profile_path / "prefixes.ttl")
 
-    ontology_namespaces = _collect_profile_namespaces(ontology)
+    ontology_namespace = _profile_vocabulary_namespace(ontology)
     prefix_namespaces = _collect_profile_namespaces(prefixes)
 
-    assert prefix_namespaces == ontology_namespaces, (
-        f"{profile_path} prefixes must use the ontology namespaces: "
-        f"expected {ontology_namespaces}, got {prefix_namespaces}"
+    assert prefix_namespaces == {ontology_namespace}, (
+        f"{profile_path} prefixes must use the ontology's own namespace: "
+        f"expected {ontology_namespace}, got {prefix_namespaces}"
     )
+
+
+def test_ro_crate_1_3_maps_the_inherited_descriptor_marker() -> None:
+    """The native 1.3 target class must match the marker emitted by inherited 1.2 discovery."""
+    ontology = _parse_graph(PROFILES_PATH / "ro-crate/1.3/ontology.ttl")
+    ro_crate_1_2 = Namespace("https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.2/")
+    ro_crate_1_3 = Namespace("https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.3/")
+
+    assert (
+        ro_crate_1_3.ROCrateMetadataFileDescriptor,
+        OWL.equivalentClass,
+        ro_crate_1_2.ROCrateMetadataFileDescriptor,
+    ) in ontology
 
 
 @pytest.mark.parametrize(

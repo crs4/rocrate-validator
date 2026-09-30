@@ -15,7 +15,7 @@
 import logging
 
 from rocrate_validator import models
-from tests.ro_crates import InvalidROCrate12, ValidROCrate12
+from tests.ro_crates_v1_2 import InvalidROCrate12, ValidROCrate12
 from tests.shared import do_entity_test
 
 logger = logging.getLogger(__name__)
