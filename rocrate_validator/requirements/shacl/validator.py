@@ -41,6 +41,7 @@ from rocrate_validator.models import (
     ValidationContext,
     ValidationResult,
 )
+from rocrate_validator.models.check_result import DeferredRequirementCheck
 from rocrate_validator.requirements.shacl.errors import SHACLValidationError
 from rocrate_validator.requirements.shacl.models import ShapesRegistry
 from rocrate_validator.requirements.shacl.transformers.preparation import (
@@ -55,8 +56,8 @@ from rocrate_validator.utils.rdf import extract_base_from_jsonld
 logger = logging.getLogger(__name__)
 
 
-class SHACLValidationSkip(Exception):
-    pass
+class SHACLValidationSkip(DeferredRequirementCheck):
+    """Defer a source-profile check until the merged SHACL validation runs."""
 
 
 class SHACLValidationAlreadyProcessed(Exception):
@@ -80,11 +81,12 @@ class SHACLValidationContextManager:
             )
         logger.debug("Processing profile: %s (id: %s)", self._profile.name, self._profile.identifier)
         if self._profile.identifier != self._context.settings.profile_identifier:
-            logger.debug("Skipping validation of profile %s", self._profile.identifier)
+            logger.debug("Deferring validation of profile %s", self._profile.identifier)
             # This is a temporary control-flow skip. The target profile runs
             # SHACL once over the merged shapes graph and records the check
             # outcome afterwards.
-            raise SHACLValidationSkip(f"Skipping validation of profile {self._profile.identifier}")
+            self._shacl_context.deferred_checks.add(self._check)
+            raise SHACLValidationSkip(f"Deferring validation of profile {self._profile.identifier}")
         logger.debug("ValidationContext of profile %s initialized", self._profile.identifier)
         return self._shacl_context
 
@@ -123,6 +125,9 @@ class SHACLValidationContext(ValidationContext):
         # profile may expose several SHACL checks, but its graphs must be
         # loaded only once before the combined validation is executed.
         self._loaded_profiles: set[str] = set()
+
+        # Checks awaiting the combined run have no result yet; they are not skips.
+        self.deferred_checks: set[RequirementCheck] = set()
 
         # reference to the current validation profile
         self._current_validation_profile: Profile | None = None

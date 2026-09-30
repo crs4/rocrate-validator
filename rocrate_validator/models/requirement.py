@@ -28,7 +28,12 @@ from rocrate_validator.constants import (
 from rocrate_validator.errors import CheckDependencyError, ROCrateMetadataNotFoundError, ValidationExecutionError
 from rocrate_validator.events import EventType
 from rocrate_validator.models._logging import logger
-from rocrate_validator.models.check_result import CheckResult, CheckResultValue, normalize_check_result
+from rocrate_validator.models.check_result import (
+    CheckResult,
+    CheckResultValue,
+    DeferredRequirementCheck,
+    normalize_check_result,
+)
 from rocrate_validator.models.severity import (
     LevelCollection,
     RequirementLevel,
@@ -231,6 +236,9 @@ class Requirement(ABC):
                 all_passed, should_break = self.__execute_check__(check, context, all_passed)
                 if should_break:
                     break
+            except DeferredRequirementCheck:
+                logger.debug("Check '%s' is pending batched validation", check.name)
+                continue
             except SkipRequirementCheck as e:
                 logger.debug("Skipping check '%s' because: %s", check.name, e)
                 self.__record_skipped_check__(check, context, e.message or "Check requested a skip", e.category)
@@ -431,8 +439,10 @@ class Requirement(ABC):
         # An overlay replacement may already have run in the source profile's
         # slot.  Keep the target pass a no-op instead of executing the same
         # Python check twice.
-        if context.result.get_check_result(check) is not None:
-            return all_passed, False
+        recorded_result = context.result.get_check_result(check)
+        if recorded_result is not None:
+            failed = recorded_result is CheckResult.FAILED
+            return all_passed and not failed, failed and context.fail_fast
 
         execution_check = self.__resolve_execution_check__(check, context)
         if execution_check is None:
@@ -487,8 +497,10 @@ class Requirement(ABC):
             normalized_result,
         )
         new_all_passed = all_passed and normalized_result is not CheckResult.FAILED
-        should_break = normalized_result is CheckResult.FAILED and context.fail_fast
-        return new_all_passed, should_break
+        # A batched backend can also report failures for checks other than the
+        # one driving this execution.
+        should_break = context.fail_fast and (normalized_result is CheckResult.FAILED or context.result.has_issues())
+        return new_all_passed and not should_break, should_break
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Requirement):

@@ -270,7 +270,6 @@ class ValidationStatistics(Subscriber):
         requirement,
         *,
         severity_validation,
-        validation_settings,
         target_profile_identifier,
         checks,
         checks_by_severity,
@@ -290,8 +289,7 @@ class ValidationStatistics(Subscriber):
             requirement_checks = [
                 _
                 for _ in requirement.get_checks_by_level(LevelCollection.get(severity.name))
-                if (not validation_settings.skip_checks or _.identifier not in validation_settings.skip_checks)
-                and (not _.overridden or _.requirement.profile.identifier == target_profile_identifier)
+                if not _.overridden or _.requirement.profile.identifier == target_profile_identifier
             ]
             num_checks = len(requirement_checks)
             requirement_checks_count += num_checks
@@ -323,8 +321,11 @@ class ValidationStatistics(Subscriber):
         profiles.extend(
             inherited
             for inherited in profile.inherited_profiles
-            if not validation_settings.disable_inherited_profiles_issue_reporting
-            or inherited.uri in profile.is_rule_overlay_of
+            if validation_settings.enable_profile_inheritance
+            and (
+                not validation_settings.disable_inherited_profiles_issue_reporting
+                or inherited.uri in profile.is_rule_overlay_of
+            )
         )
         logger.debug("Inherited profiles: %r", profile.inherited_profiles)
 
@@ -343,8 +344,10 @@ class ValidationStatistics(Subscriber):
 
         # Process the requirements and checks
         processed_requirements = []
-        for profile in profiles:
-            for requirement in profile.requirements:
+        for validation_profile in profiles:
+            for requirement in validation_profile.get_requirements(
+                cast("Severity", severity_validation), exact_match=validation_settings.requirement_severity_only
+            ):
                 if requirement in processed_requirements:
                     continue
                 processed_requirements.append(requirement)
@@ -354,7 +357,6 @@ class ValidationStatistics(Subscriber):
                 requirement_checks_count = cls.__collect_requirement_checks__(
                     requirement,
                     severity_validation=severity_validation,
-                    validation_settings=validation_settings,
                     target_profile_identifier=target_profile_identifier,
                     checks=checks,
                     checks_by_severity=checks_by_severity,
@@ -442,16 +444,10 @@ class ValidationStatistics(Subscriber):
     def __handle_requirement_check_validation_end__(self, event: Event, ctx: ValidationContext | None) -> None:
         assert isinstance(event, RequirementCheckValidationEvent)
         assert ctx is not None
-        target_profile = ctx.target_validation_profile
-        requirement_severity = self._settings.requirement_severity
-        if not event.requirement_check.requirement.hidden and (
-            not event.requirement_check.overridden
-            or target_profile.identifier == event.requirement_check.requirement.profile.identifier
-        ):
+        if event.requirement_check in self.checks:
             if event.validation_result is not None:
-                if event.requirement_check.severity >= requirement_severity:
-                    result = normalize_check_result(event.validation_result)
-                    self.__record_check_status__(event.requirement_check, result)
+                result = normalize_check_result(event.validation_result)
+                self.__record_check_status__(event.requirement_check, result)
                 self.notify_listeners()
             else:
                 logger.debug(
@@ -466,7 +462,11 @@ class ValidationStatistics(Subscriber):
 
     def __handle_requirement_validation_end__(self, event: Event, _ctx: ValidationContext | None) -> None:
         assert isinstance(event, RequirementValidationEvent)
-        if not event.requirement.hidden:
+        if event.requirement in self.requirements:
+            for status in ("passed_requirements", "failed_requirements", "validated_requirements"):
+                self._stats[status] = [
+                    requirement for requirement in self._stats[status] if requirement != event.requirement
+                ]
             if event.validation_result:
                 self._stats["passed_requirements"].append(event.requirement)
             else:
@@ -476,7 +476,8 @@ class ValidationStatistics(Subscriber):
 
     def __handle_profile_validation_end__(self, event: Event, _ctx: ValidationContext | None) -> None:
         assert isinstance(event, ProfileValidationEvent)
-        self._stats["validated_profiles"].append(event.profile)
+        if event.profile in self.profiles and event.profile not in self.validated_profiles:
+            self._stats["validated_profiles"].append(event.profile)
         logger.debug("Profile validation ended: %s", event.profile.identifier)
 
     def __handle_validation_end__(self, event: Event, _ctx: ValidationContext | None) -> None:

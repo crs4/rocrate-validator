@@ -29,6 +29,7 @@ from rocrate_validator.models import (
     Profile,
     RequirementCheckRelation,
     Severity,
+    SkippedCheckDetail,
     ValidationContext,
     ValidationSettings,
     Validator,
@@ -587,8 +588,13 @@ def test_rule_overlay_effective_identity_is_context_local(check_overriding_profi
     assert serialized_check["source_identifier"] == source_identifier
     assert serialized_check["source_profile"] == "a"
 
+    # Keep internal outcomes for dependency resolution, but do not count a
+    # replaced source check among the reportable skips of the overlay.
     context.result._record_check_result(inherited_check, CheckResult.SKIPPED, "test skip")
-    serialized_skip = context.result.skipped_check_details[0].to_dict()
+    assert context.result.get_check_result(inherited_check) is CheckResult.SKIPPED
+    assert context.result.skipped_checks_count == 0
+    assert context.result.skipped_check_details == []
+    serialized_skip = SkippedCheckDetail(inherited_check, "test skip", context=context).to_dict()
     assert serialized_skip["identifier"].startswith("b_")
     assert serialized_skip["profile"] == "b"
     assert serialized_skip["source_identifier"] == source_identifier

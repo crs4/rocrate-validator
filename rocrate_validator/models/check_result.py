@@ -28,6 +28,10 @@ class CheckResult(str, Enum):
 CheckResultValue = bool | CheckResult | None
 
 
+class DeferredRequirementCheck(Exception):
+    """Leave a check pending until its validation backend records an outcome."""
+
+
 def normalize_check_result(value: CheckResultValue) -> CheckResult:
     """Convert legacy boolean and ``None`` outcomes to a check result."""
     if isinstance(value, CheckResult):

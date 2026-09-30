@@ -25,6 +25,7 @@ from rocrate_validator.models import (
     RequirementCheck,
     RequirementLevel,
     RequirementLoader,
+    SkipCategory,
     ValidationContext,
 )
 from rocrate_validator.requirements.shacl.checks import SHACLCheck
@@ -102,22 +103,29 @@ class SHACLRequirement(Requirement):
 
         logger.debug("Starting %s requirement finalization for context %s", cls.__name__, context)
 
+        from rocrate_validator.requirements.shacl.validator import SHACLValidationContext  # noqa: PLC0415
+
+        shacl_context = SHACLValidationContext.get_instance(context)
         # If the validation was aborted (e.g. the metadata is not valid JSON), the data
         # graph cannot be parsed: skip the forced SHACL run to avoid false positives.
-        if context.aborted:
+        if context.aborted or (context.fail_fast and context.result.has_issues()):
+            cls.__record_skipped_checks__(
+                shacl_context.deferred_checks,
+                context,
+                "Validation stopped before the deferred SHACL checks were executed",
+                SkipCategory.NOT_REACHED,
+            )
+            shacl_context.deferred_checks.clear()
             logger.debug("Skipping forced SHACL run: validation aborted (%s)", context.abort_reason)
             return
 
         # extract profiles and target profile from context
         profiles = context.profiles
 
-        from rocrate_validator.requirements.shacl.validator import SHACLValidationContext  # noqa: PLC0415
-
         target = next((p for p in profiles if p.identifier == context.settings.profile_identifier), None)
         if target is None:
             return
 
-        shacl_context = SHACLValidationContext.get_instance(context)
         # If pyshacl already ran for the target during the main loop there is
         # nothing to do.
         if shacl_context.get_validation_result(target) is not None:
@@ -167,6 +175,13 @@ class SHACLRequirement(Requirement):
                 ) from e
         finally:
             shacl_context.__unset_current_validation_profile__()
+            cls.__record_skipped_checks__(
+                shacl_context.deferred_checks,
+                context,
+                "Deferred SHACL validation could not be completed",
+                SkipCategory.EXCEPTION,
+            )
+            shacl_context.deferred_checks.clear()
 
         # do finalization logic here (empty for now)
         logger.debug("Completed %s requirement finalization for context %s", cls.__name__, context)
