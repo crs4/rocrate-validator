@@ -14,14 +14,11 @@
 
 name: 🧪 CI Pipeline 1 -- Testing
 
-# Controls when the action will run. Triggers the workflow on push or pull request
-# events but only for the master branch
+# Runs on pushes and pull requests, and can be called by the release workflow.
 on:
     push:
         branches:
             - "**"
-        tags:
-            - "*.*.*"
         paths:
             - "**"
             - "!docs/**"
@@ -31,6 +28,7 @@ on:
             - "**"
             - "!docs/**"
             - "!examples/**"
+    workflow_call:
 
 env:
     TERM: xterm
@@ -46,9 +44,9 @@ jobs:
         steps:
             # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
             - name: ⬇️ Checkout code
-              uses: actions/checkout@v6
+              uses: actions/checkout@v7
             - name: 🐍 Set up Python v${{ env.PYTHON_VERSION }}
-              uses: actions/setup-python@v6
+              uses: actions/setup-python@v7
               with:
                   python-version: ${{ env.PYTHON_VERSION }}
             - name: 🔽 Install ruff (version from pyproject.toml)
@@ -74,7 +72,7 @@ jobs:
                 # Emit a compact rule-count summary and fail the job if needed.
                 ruff check rocrate_validator tests --statistics
             - name: ⌛ Spell check code and profiles (covers Python and SHACL)
-              uses: crate-ci/typos@v1.47.0
+              uses: crate-ci/typos@v1.50.3
 
     # Runs the tests
     test:
@@ -83,9 +81,9 @@ jobs:
         needs: [lint]
         steps:
             - name: ⬇️ Checkout
-              uses: actions/checkout@v6
+              uses: actions/checkout@v7
             - name: 🐍 Set up Python v${{ env.PYTHON_VERSION }}
-              uses: actions/setup-python@v6
+              uses: actions/setup-python@v7
               with:
                   python-version: ${{ env.PYTHON_VERSION }}
             - name: 🔄 Upgrade pip
