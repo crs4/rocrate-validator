@@ -72,7 +72,7 @@ jobs:
                 # Emit a compact rule-count summary and fail the job if needed.
                 ruff check rocrate_validator tests --statistics
             - name: ⌛ Spell check code and profiles (covers Python and SHACL)
-              uses: crate-ci/typos@v1.47.0
+              uses: crate-ci/typos@v1.50.3
 
     # Runs the tests
     test:
