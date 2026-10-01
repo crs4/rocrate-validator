@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.1] - 2026-10-01
+
+Full changelog: https://github.com/kikkomep/rocrate-validator/compare/0.12.0...0.12.1
+
+### 🔧 Changed
+
+- chore(deps): group weekly dependency updates ([088d7f43](https://github.com/kikkomep/rocrate-validator/commit/088d7f4310e245d989bc25058d088558fa7d3d16))
+- test(validation): cover metadata descriptor targeting across core versions ([a09b795a](https://github.com/kikkomep/rocrate-validator/commit/a09b795a0f9945397fd0d1583edd27d1e6629ae9))
+- ci(deps): configure weekly Dependabot updates for GitHub Actions ([039f8f13](https://github.com/kikkomep/rocrate-validator/commit/039f8f136d7062122314c44fbb1644cab00e73fb))
+- ci(release): update Sigstore action to v3.5.0 ([42896acd](https://github.com/kikkomep/rocrate-validator/commit/42896acda7075c5b5ed776a95a91a1210653e68f))
+- ci(typos): align CI and pre-commit on v1.50.3 ([d531e457](https://github.com/kikkomep/rocrate-validator/commit/d531e4576e7a0a33742ed2f30ddbbbfb6c480f56))
+- ci(actions): update setup-python to v7 ([0b33ccf6](https://github.com/kikkomep/rocrate-validator/commit/0b33ccf643d4a1df9e6b17068a334d437581b08e))
+- ci(actions): update checkout to v7 ([e0ccc19d](https://github.com/kikkomep/rocrate-validator/commit/e0ccc19df2c153fa186546c49fe5e649c41b26c9))
+- ci: replace release check polling with native workflow dependency ([54560d6a](https://github.com/kikkomep/rocrate-validator/commit/54560d6ad6460497ea611f9d0f2b4c6ec290be1e))
+- test(validation): verify effective overlay IDs in text reports ([c51cf5de](https://github.com/kikkomep/rocrate-validator/commit/c51cf5de4362f4d4da92b4e40a070aa7a17e683b))
+- test(validation): cover profile Root Data Entity hasPart cases ([865f39c7](https://github.com/kikkomep/rocrate-validator/commit/865f39c729f44d09456ab605fa44702680395d26))
+
+### 🐛 Fixed
+
+- fix(profiles): identify metadata descriptors by filename suffix ([06f5520e](https://github.com/kikkomep/rocrate-validator/commit/06f5520ec4866afaf2eb6bae59a1ddb52781b132))
+- fix: correct two check descriptions ([e150f0dc](https://github.com/kikkomep/rocrate-validator/commit/e150f0dcadf6e43b0e6362ed547d2c0bda1aaad9))
+- fix(validation): show overlay check IDs in text reports ([def3ded1](https://github.com/kikkomep/rocrate-validator/commit/def3ded1189e4861afea4af8f868fd64e7f714c3))
+- fix(validation): report missing hasPart Data Entities accurately ([6c065b84](https://github.com/kikkomep/rocrate-validator/commit/6c065b84709f9ec663675ac1c3f168c47cf798f7))
+
 ## [0.12.0] - 2026-09-30
 
 Full changelog: https://github.com/kikkomep/rocrate-validator/compare/0.11.4...0.12.0

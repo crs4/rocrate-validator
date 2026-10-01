@@ -46,7 +46,10 @@ ro-crate:FileDataEntity a sh:NodeShape ;
             WHERE {
                 { SELECT DISTINCT ?root WHERE {
                     ?metadatafile schema:about ?root .
-                    FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
+                    FILTER(
+                        STRENDS(str(?metadatafile), "ro-crate-metadata.json") ||
+                        STRENDS(str(?metadatafile), "ro-crate-metadata.jsonld")
+                    )
                 } }
                 ?this a schema:MediaObject .
                 FILTER(!STRSTARTS(STR(?this), CONCAT(STR(?root), "#")))
@@ -97,7 +100,10 @@ ro-crate:DirectoryDataEntity a sh:NodeShape ;
             WHERE {
                 { SELECT DISTINCT ?root WHERE {
                     ?metadatafile schema:about ?root .
-                    FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
+                    FILTER(
+                        STRENDS(str(?metadatafile), "ro-crate-metadata.json") ||
+                        STRENDS(str(?metadatafile), "ro-crate-metadata.jsonld")
+                    )
                 } }
                 ?this a schema:Dataset .
                 # Exclude all dataset entities that ends with `./#<something>`
@@ -143,7 +149,7 @@ ro-crate:DirectoryDataEntity a sh:NodeShape ;
 
 ro-crate:DataEntityRequiredPropertiesShape a sh:NodeShape ;
     sh:name "Data Entity: REQUIRED Root linkage" ;
-    sh:description """A `DataEntity`The file descriptor MUST be a valid JSON-LD file MUST be linked, either directly or indirectly, from the Root Data Entity""" ;
+    sh:description """A `DataEntity` MUST be linked, either directly or indirectly, from the Root Data Entity""" ;
     sh:targetClass ro-crate:DataEntity ;
     sh:property
         [
@@ -167,7 +173,10 @@ ro-crate:GenericDataEntityRequiredProperties a sh:NodeShape ;
             WHERE {
                 { SELECT DISTINCT ?root ?metadatafile WHERE {
                     ?metadatafile schema:about ?root .
-                    FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
+                    FILTER(
+                        STRENDS(str(?metadatafile), "ro-crate-metadata.json") ||
+                        STRENDS(str(?metadatafile), "ro-crate-metadata.jsonld")
+                    )
                 } }
                 ?root schema:hasPart ?this .
                 FILTER(?this != ?root)
