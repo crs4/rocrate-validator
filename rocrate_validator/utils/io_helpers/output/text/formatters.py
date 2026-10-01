@@ -45,26 +45,38 @@ class ValidationResultTextOutputFormatter(OutputFormatter):
         # Print validation details
         # Print the list of failed requirements
         yield Padding("\n[bold]The following requirements have not been met: [/bold]", (0, 2))
+        context = result.context
         for requirement in sorted(result.failed_requirements, key=lambda x: x.identifier):
-            yield Align(f"\n[profile: [magenta bold]{requirement.profile.name}[/magenta bold]]", align="right")
+            failed_checks = sorted(
+                result.get_failed_checks_by_requirement(requirement),
+                key=context.effective_check_identifier,
+            )
+            if not failed_checks:
+                continue
+
+            effective_profile = context.effective_check_profile(failed_checks[0])
+            effective_requirement_identifier = context.effective_check_identifier(failed_checks[0]).rsplit(".", 1)[0]
+
+            yield Align(f"\n[profile: [magenta bold]{effective_profile.name}[/magenta bold]]", align="right")
 
             yield Padding(
-                f"[bold][cyan][u][ {requirement.identifier} ]: {Markdown(requirement.name).markup}[/u][/cyan][/bold]",
+                f"[bold][cyan][u][ {effective_requirement_identifier} ]: "
+                f"{Markdown(requirement.name).markup}[/u][/cyan][/bold]",
                 (0, 5),
             )
             yield Padding(Markdown(requirement.description), (1, 6))
             yield Padding("[white bold u]  Failed checks  [/white bold u]\n", (0, 8))
 
-            for check in sorted(
-                result.get_failed_checks_by_requirement(requirement), key=lambda x: (-x.severity.value, x)
-            ):
+            failed_checks.sort(key=lambda check: (-check.severity.value, check))
+            for check in failed_checks:
                 issue_color = get_severity_color(check.level.severity)
+                effective_check_identifier = context.effective_check_identifier(check)
                 yield Padding(
-                    f"[bold][{issue_color}][ {check.identifier.center(16)} ][/{issue_color}] "
+                    f"[bold][{issue_color}][ {effective_check_identifier.center(16)} ][/{issue_color}] "
                     f"[hot_pink]{check.name}[/hot_pink][/bold]:",
                     (1, 8, 0, 8),
                 )
-                yield Padding(Markdown(check.description), (0, 0, 0, len(check.identifier) + 13))
+                yield Padding(Markdown(check.description), (0, 0, 0, len(effective_check_identifier) + 13))
                 yield Padding("[u] Detected issues [/u]", (0, 8))
                 for issue in sorted(result.get_issues_by_check(check), key=lambda x: (-x.severity.value, x)):
                     path = ""
