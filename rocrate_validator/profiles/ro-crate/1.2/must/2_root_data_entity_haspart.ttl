@@ -24,13 +24,13 @@ ro-crate:RootDataEntityHasPartAllDataEntities a sh:NodeShape ;
         a sh:SPARQLConstraint ;
         sh:prefixes ro-crate:sparqlPrefixes ;
         sh:select """
-            SELECT $this ?unreferenced
+            SELECT $this ?value
             WHERE {
                 $this a ro-crate:RootDataEntity .
-                ?unreferenced a ro-crate:DataEntity .
-                FILTER(?unreferenced != $this)
+                ?value a ro-crate:DataEntity .
+                FILTER(?value != $this)
                 FILTER NOT EXISTS {
-                    $this schema:hasPart+ ?unreferenced
+                    $this schema:hasPart+ ?value
                 }
             }
         """ ;

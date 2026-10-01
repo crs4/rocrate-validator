@@ -343,6 +343,14 @@ class RootDataEntity:
         return self.ROOT_DATA_ENTITY_CRATES_PATH / "required_haspart_all_data_entities" / "valid"
 
     @property
+    def profile_root_contextual_datasets(self) -> Path:
+        return (
+            self.ROOT_DATA_ENTITY_CRATES_PATH
+            / "required_haspart_all_data_entities"
+            / "profile_root_contextual_datasets"
+        )
+
+    @property
     def invalid_required_hasPart_all_data_entities(self) -> Path:
         return self.ROOT_DATA_ENTITY_CRATES_PATH / "required_haspart_all_data_entities" / "invalid"
 
