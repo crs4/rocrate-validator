@@ -13,8 +13,13 @@
 # limitations under the License.
 
 import logging
+from pathlib import Path
+
+from rdflib import Graph, Literal, Namespace, URIRef
+from rdflib.namespace import RDF
 
 from rocrate_validator import models, services
+from rocrate_validator.requirements.shacl.validator import SHACLValidator
 from rocrate_validator.utils.http import HttpRequester
 from tests.ro_crates_v1_3 import RootDataEntity
 from tests.shared import do_entity_test
@@ -23,6 +28,42 @@ logger = logging.getLogger(__name__)
 
 
 __metadata_root_data_entity_crates__ = RootDataEntity()
+
+
+def test_root_data_entity_type_target_ignores_preview_about_literal():
+    """Core 1.1/1.2 root selection ignores preview about values and supports descriptor suffixes."""
+    schema = Namespace("http://schema.org/")
+    root = URIRef("https://example.org/crate/ro-crate-metadata.json/")
+    preview = URIRef(f"{root}ro-crate-preview.html")
+    descriptor_cases = (
+        ("1.1", "ro-crate-metadata.json"),
+        ("1.1", "ro-crate-metadata.jsonld"),
+        ("1.2", "ro-crate-metadata.json"),
+        ("1.2", "test-ro-crate-metadata.json"),
+        ("1.2", "ro-crate-metadata.jsonld"),
+    )
+
+    for profile_version, descriptor_name in descriptor_cases:
+        profile_path = (
+            Path(__file__).resolve().parents[4] / "rocrate_validator/profiles/ro-crate" / profile_version
+        )
+        shapes = Graph()
+        shapes.parse(profile_path / "prefixes.ttl", format="turtle")
+        shapes.parse(profile_path / "must/2_root_data_entity_metadata.ttl", format="turtle")
+
+        data = Graph()
+        data.add((URIRef(f"{root}{descriptor_name}"), schema.about, root))
+        data.add((preview, schema.about, Literal("./")))
+        data.add((root, RDF.type, schema.Dataset))
+        data.add((root, RDF.type, URIRef("http://www.w3.org/ns/dx/prof/Profile")))
+        data.add((root, schema.name, Literal("Workflow RO-Crate profile")))
+        data.add((root, schema.description, Literal("A profile crate.")))
+        data.add((root, schema.datePublished, Literal("2024-01-01")))
+        data.add((root, schema.license, URIRef("https://creativecommons.org/licenses/by/4.0/")))
+
+        result = SHACLValidator(shapes_graph=shapes).validate(data_graph=data)
+
+        assert result.conforms, f"Core profile {profile_version}, descriptor {descriptor_name}"
 
 
 def test_valid_required_datePublished():
