@@ -166,7 +166,10 @@ ro-crate:WebDirectoryDistributionRecommended a sh:NodeShape ;
             WHERE {
                 { SELECT DISTINCT ?root WHERE {
                     ?metadatafile schema:about ?root .
-                    FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
+                    FILTER(
+                        STRENDS(str(?metadatafile), "ro-crate-metadata.json") ||
+                        STRENDS(str(?metadatafile), "ro-crate-metadata.jsonld")
+                    )
                 } }
                 ?this a schema:Dataset .
                 FILTER(?this != ?root)

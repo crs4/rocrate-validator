@@ -32,7 +32,10 @@ ro-crate:RootDataEntityType
             SELECT ?this
             WHERE {
                 ?metadatafile schema:about ?this .
-                FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
+                FILTER(
+                    STRENDS(str(?metadatafile), "ro-crate-metadata.json") ||
+                    STRENDS(str(?metadatafile), "ro-crate-metadata.jsonld")
+                )
             }
         """
     ] ;
@@ -73,7 +76,10 @@ ro-crate:FindRootDataEntity a sh:NodeShape, validator:HiddenShape;
             WHERE {
                 ?this a schema:Dataset .
                 ?metadatafile schema:about ?this .
-                FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
+                FILTER(
+                    STRENDS(str(?metadatafile), "ro-crate-metadata.json") ||
+                    STRENDS(str(?metadatafile), "ro-crate-metadata.jsonld")
+                )
             }
         """
     ] ;

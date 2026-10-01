@@ -45,7 +45,10 @@ workflow-ro-crate:FindMainWorkflow a sh:NodeShape, validator:HiddenShape ;
                 ?root schema:mainEntity ?this .
                 ?root a schema:Dataset .
                 ?metadatafile schema:about ?root .
-                FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
+                FILTER(
+                    STRENDS(str(?metadatafile), "ro-crate-metadata.json") ||
+                    STRENDS(str(?metadatafile), "ro-crate-metadata.jsonld")
+                )
             }
         """
     ] ;
