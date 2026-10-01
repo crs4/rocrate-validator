@@ -15,12 +15,14 @@
 from pathlib import Path
 
 import pytest
+from rich.console import Console
 
 from rocrate_validator import services
 from rocrate_validator.events import EventType, Subscriber
 from rocrate_validator.models import CheckResult, SkipCategory, ValidationContext, ValidationSettings, Validator
 from rocrate_validator.requirements.shacl.checks import SHACLCheck
 from rocrate_validator.requirements.shacl.validator import SHACLValidator
+from rocrate_validator.utils.io_helpers.output.text.formatters import ValidationResultTextOutputFormatter
 from rocrate_validator.utils.io_helpers.output.text.layout.progress import ProgressMonitor
 
 
@@ -161,6 +163,24 @@ def test_batched_target_failures_are_counted(statistics_settings):
     assert all(result.get_check_result(check) is CheckResult.FAILED for check in result.statistics.failed_checks)
     statistics = result.statistics
     assert len(statistics.validated_checks) + statistics.total_skipped_checks == statistics.total_checks
+
+
+def test_text_report_uses_effective_overlay_check_identity(statistics_settings):
+    """Text reports identify inherited checks in the active overlay profile."""
+    del statistics_settings.metadata_dict["@graph"][0]["name"]
+    result = services.validate(statistics_settings)
+    issue = result.get_issues()[0]
+    effective_identifier = result.context.effective_check_identifier(issue.check)
+
+    console = Console(record=True, color_system=None, width=120)
+    console.print(ValidationResultTextOutputFormatter(result))
+    report = console.export_text()
+
+    assert issue.source_profile_identifier == "base"
+    assert issue.profile_identifier == "overlay"
+    assert issue.identifier == effective_identifier
+    assert effective_identifier in report
+    assert issue.check.identifier not in report
 
 
 @pytest.mark.parametrize("abort", [False, True])
