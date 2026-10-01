@@ -46,7 +46,7 @@ jobs:
             - name: ⬇️ Checkout code
               uses: actions/checkout@v7
             - name: 🐍 Set up Python v${{ env.PYTHON_VERSION }}
-              uses: actions/setup-python@v6
+              uses: actions/setup-python@v7
               with:
                   python-version: ${{ env.PYTHON_VERSION }}
             - name: 🔽 Install ruff (version from pyproject.toml)
@@ -83,7 +83,7 @@ jobs:
             - name: ⬇️ Checkout
               uses: actions/checkout@v7
             - name: 🐍 Set up Python v${{ env.PYTHON_VERSION }}
-              uses: actions/setup-python@v6
+              uses: actions/setup-python@v7
               with:
                   python-version: ${{ env.PYTHON_VERSION }}
             - name: 🔄 Upgrade pip
