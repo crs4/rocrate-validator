@@ -14,7 +14,7 @@
 
 import logging
 
-from rocrate_validator import models
+from rocrate_validator import models, services
 from rocrate_validator.utils.http import HttpRequester
 from tests.ro_crates_v1_3 import RootDataEntity
 from tests.shared import do_entity_test
@@ -385,6 +385,28 @@ def test_valid_required_hasPart_all_data_entities():
     )
 
 
+def test_profile_root_contextual_datasets_are_reported_when_missing_from_hasPart():
+    """Dataset references remain Data Entities even when they are contextual to a Profile."""
+    result = services.validate(
+        models.ValidationSettings(
+            rocrate_uri=models.URI(__metadata_root_data_entity_crates__.profile_root_contextual_datasets),
+            requirement_severity=models.Severity.REQUIRED,
+            profile_identifier="ro-crate-1.3",
+        )
+    )
+
+    has_part_issues = [
+        issue
+        for issue in result.get_issues(models.Severity.REQUIRED)
+        if issue.check.name == "Root Data Entity: hasPart MUST reference all Data Entities"
+    ]
+
+    assert {str(issue.violatingPropertyValue) for issue in has_part_issues} == {
+        "https://w3id.org/ro/crate/1.2",
+        "https://example.org/referenced-dataset",
+    }
+
+
 def test_invalid_required_hasPart_all_data_entities():
     """
     Root Data Entity that does NOT reference all Data Entities via hasPart
@@ -399,6 +421,26 @@ def test_invalid_required_hasPart_all_data_entities():
         expected_triggered_issues=["MUST reference all Data Entities via hasPart"],
         skip_checks=["ro-crate-1.3_47.1"],
     )
+
+
+def test_invalid_required_hasPart_reports_unreferenced_data_entity():
+    """The hasPart check reports the missing Data Entity, not the root itself."""
+    result = services.validate(
+        models.ValidationSettings(
+            rocrate_uri=models.URI(__metadata_root_data_entity_crates__.invalid_required_hasPart_all_data_entities),
+            requirement_severity=models.Severity.REQUIRED,
+            profile_identifier="ro-crate-1.3",
+        )
+    )
+
+    has_part_issues = [
+        issue
+        for issue in result.get_issues(models.Severity.REQUIRED)
+        if issue.check.name == "Root Data Entity: hasPart MUST reference all Data Entities"
+    ]
+
+    assert len(has_part_issues) == 1
+    assert str(has_part_issues[0].violatingPropertyValue).endswith("/file2.txt")
 
 
 def test_invalid_hasPart_workflow_not_in_haspart():
