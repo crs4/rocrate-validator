@@ -44,7 +44,7 @@ jobs:
         steps:
             # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
             - name: ⬇️ Checkout code
-              uses: actions/checkout@v6
+              uses: actions/checkout@v7
             - name: 🐍 Set up Python v${{ env.PYTHON_VERSION }}
               uses: actions/setup-python@v6
               with:
@@ -81,7 +81,7 @@ jobs:
         needs: [lint]
         steps:
             - name: ⬇️ Checkout
-              uses: actions/checkout@v6
+              uses: actions/checkout@v7
             - name: 🐍 Set up Python v${{ env.PYTHON_VERSION }}
               uses: actions/setup-python@v6
               with:
