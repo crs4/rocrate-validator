@@ -14,14 +14,11 @@
 
 name: 🧪 CI Pipeline 1 -- Testing
 
-# Controls when the action will run. Triggers the workflow on push or pull request
-# events but only for the master branch
+# Runs on pushes and pull requests, and can be called by the release workflow.
 on:
     push:
         branches:
             - "**"
-        tags:
-            - "*.*.*"
         paths:
             - "**"
             - "!docs/**"
@@ -31,6 +28,7 @@ on:
             - "**"
             - "!docs/**"
             - "!examples/**"
+    workflow_call:
 
 env:
     TERM: xterm

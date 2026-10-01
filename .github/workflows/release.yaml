@@ -36,35 +36,19 @@ env:
     VENV_PATH: .venv
 
 jobs:
-    # Wait for the testing pipeline to finish
-    wait-for-testing:
-        name: 🕒 Wait for Testing Pipeline
-        runs-on: ubuntu-latest
+    # Run the test workflow as a prerequisite for release builds.
+    test:
+        name: 🧪 Run tests
+        uses: ./.github/workflows/testing.yaml
         if: ${{ github.repository == 'crs4/rocrate-validator' }}
-        steps:
-            - name: Wait for testing pipeline to succeed
-              uses: fountainhead/action-wait-for-check@v1.2.0
-              id: wait-for-testing
-              with:
-                token: ${{ secrets.GITHUB_TOKEN }}
-                checkName: ⌛ Run tests
-                ref: ${{ github.sha }}
-
-            - name: Do something with a passing build
-              if: steps.wait-for-testing.outputs.conclusion == 'success'
-              run: echo "Testing pipeline passed" && exit 0
-
-            - name: Do something with a failing build
-              if: steps.wait-for-testing.outputs.conclusion == 'failure'
-              run: echo "Testing pipeline failed" && exit 1
     # Check and Build Distribution
     build:
         name: 🏗 Check and Build Distribution
         runs-on: ubuntu-latest
-        needs: wait-for-testing
+        needs: test
         if: ${{ github.repository == 'crs4/rocrate-validator' }}
         steps:
-            # Access the tag from the first workflow's outputs
+            # Checkout the commit associated with the release tag.
             - name: ⬇️ Checkout code
               uses: actions/checkout@v6
             - name: 🐍 Set up Python
