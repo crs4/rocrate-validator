@@ -23,9 +23,9 @@
 process-run-crate:ProcRCActionOptional a sh:NodeShape ;
     sh:name "Process Run Crate Action MAY" ;
     sh:description "Recommended properties of the Process Run Crate Action" ;
-    sh:targetClass schema:CreateAction ,
-                   schema:ActivateAction ,
-                   schema:UpdateAction ;
+    sh:targetClass ro-crate:ProcessCreateAction ,
+                   ro-crate:ProcessActivateAction ,
+                   ro-crate:ProcessUpdateAction ;
     sh:property [
         a sh:PropertyShape ;
         sh:name "Action startTime" ;
@@ -75,11 +75,12 @@ process-run-crate:ProcRCActionErrorMay a sh:NodeShape ;
         a sh:SPARQLTarget ;
         sh:prefixes ro-crate:sparqlPrefixes ;
         sh:select """
+            PREFIX ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/>
             SELECT ?this
             WHERE {
-                { ?this a schema:CreateAction } UNION
-                { ?this a schema:ActivateAction } UNION
-                { ?this a schema:UpdateAction } .
+                { ?this a ro-crate:ProcessCreateAction } UNION
+                { ?this a ro-crate:ProcessActivateAction } UNION
+                { ?this a ro-crate:ProcessUpdateAction } .
                 ?this schema:actionStatus ?status .
                 FILTER(?status = "http://schema.org/FailedActionStatus") .
             }

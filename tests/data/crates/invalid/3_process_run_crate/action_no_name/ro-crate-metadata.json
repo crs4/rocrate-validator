@@ -13,6 +13,9 @@
         },
         {
             "@id": "./",
+            "mainEntity": {
+                "@id": "https://www.imagemagick.org/"
+            },
             "@type": "Dataset",
             "conformsTo": {
                 "@id": "https://w3id.org/ro/wfrun/process/0.5"

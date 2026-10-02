@@ -1,0 +1,106 @@
+# Copyright (c) 2025 eScience Lab, The University of Manchester
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix validator: <https://github.com/crs4/rocrate-validator/> .
+
+
+ro-crate:FindProcessCreateAction a sh:NodeShape, validator:HiddenShape;
+    sh:order 1 ; # load this check after ro-crate:FindRootDataEntity; pySHACL sorts rules by sh:order before execution
+    sh:name "Identify the CreateAction Entity that corresponds to the ProcessCreateAction" ;
+    sh:description """The ProcessCreateAction is the CreateAction entity that refers to Workflow run.
+    This is identified by checking that the CreateAction entity has an `instrument` property
+    that references the same entity as the `mainEntity` property of the Root Data Entity.""" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            PREFIX ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/>
+            SELECT ?this
+            WHERE {
+                ?this a schema:CreateAction ;
+                      schema:instrument ?instrument .
+                ?root a ro-crate:RootDataEntity ;
+                      schema:mainEntity ?instrument .
+            }
+        """
+    ] ;
+
+    sh:rule [
+        a sh:TripleRule ;
+        sh:subject sh:this ;
+        sh:predicate rdf:type ;
+        sh:object ro-crate:ProcessCreateAction ;
+    ] .
+
+    
+ro-crate:FindProcessActivateAction a sh:NodeShape, validator:HiddenShape;
+    sh:order 1 ; # load this check after ro-crate:FindRootDataEntity; pySHACL sorts rules by sh:order before execution
+    sh:name "Identify the ActivateAction Entity that corresponds to the ProcessActivateAction" ;
+    sh:description """The ProcessActivateAction is the ActivateAction entity that refers to Workflow run.
+    This is identified by checking that the ActivateAction entity has an `instrument` property
+    that references the same entity as the `mainEntity` property of the Root Data Entity.""" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            PREFIX ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/>
+            SELECT ?this
+            WHERE {
+                ?this a schema:ActivateAction ;
+                      schema:instrument ?instrument .
+                ?root a ro-crate:RootDataEntity ;
+                      schema:mainEntity ?instrument .
+            }
+        """
+    ] ;
+
+    sh:rule [
+        a sh:TripleRule ;
+        sh:subject sh:this ;
+        sh:predicate rdf:type ;
+        sh:object ro-crate:ProcessActivateAction ;
+    ] .
+
+
+ro-crate:FindProcessUpdateAction a sh:NodeShape, validator:HiddenShape;
+    sh:order 1 ; # load this check after ro-crate:FindRootDataEntity; pySHACL sorts rules by sh:order before execution
+    sh:name "Identify the UpdateAction Entity that corresponds to the ProcessUpdateAction" ;
+    sh:description """The ProcessUpdateAction is the UpdateAction entity that refers to Workflow run.
+    This is identified by checking that the UpdateAction entity has an `instrument` property
+    that references the same entity as the `mainEntity` property of the Root Data Entity.""" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            PREFIX ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/>
+            SELECT ?this
+            WHERE {
+                ?this a schema:UpdateAction ;
+                      schema:instrument ?instrument .
+                ?root a ro-crate:RootDataEntity ;
+                      schema:mainEntity ?instrument .
+            }
+        """
+    ] ;
+
+    sh:rule [
+        a sh:TripleRule ;
+        sh:subject sh:this ;
+        sh:predicate rdf:type ;
+        sh:object ro-crate:ProcessUpdateAction ;
+    ] .

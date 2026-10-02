@@ -37,6 +37,19 @@ def _profile_paths_with(*relative_paths: str) -> list[Path]:
     ]
 
 
+def _profiles_with_root_identification() -> list[Path]:
+    """Select profiles that define a root rule, excluding those that inherit it."""
+    root_artifact = "must/2_root_data_entity_metadata.ttl"
+    return [
+        profile_path
+        for profile_path in _profile_paths_with("ontology.ttl", root_artifact)
+        if any(
+            isinstance(node, URIRef) and str(node).endswith("/RootDataEntity")
+            for node in _parse_graph(profile_path / root_artifact).objects(None, SH.object)
+        )
+    ]
+
+
 def _profile_id(profile_path: Path) -> str:
     return str(profile_path.relative_to(PROFILES_PATH))
 
@@ -129,7 +142,7 @@ def test_ro_crate_1_3_maps_the_inherited_descriptor_marker() -> None:
 
 @pytest.mark.parametrize(
     "profile_path",
-    _profile_paths_with("ontology.ttl", "must/2_root_data_entity_metadata.ttl"),
+    _profiles_with_root_identification(),
     ids=_profile_id,
 )
 def test_root_data_entity_iri_matches_between_ontology_and_shacl(profile_path: Path):
@@ -156,7 +169,7 @@ def test_root_data_entity_iri_matches_between_ontology_and_shacl(profile_path: P
 
 @pytest.mark.parametrize(
     "profile_path",
-    _profile_paths_with("ontology.ttl", "must/2_root_data_entity_metadata.ttl"),
+    _profiles_with_root_identification(),
     ids=_profile_id,
 )
 def test_external_shape_receives_focus_node_not_vacuous_conformance(profile_path: Path):

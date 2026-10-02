@@ -16,6 +16,9 @@
         },
         {
             "@id": "./",
+            "mainEntity": {
+                "@id": "https://www.imagemagick.org/"
+            },
             "@type": "Dataset",
             "conformsTo": [
                 {
