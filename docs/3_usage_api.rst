@@ -27,8 +27,8 @@ Programmatic Validation
 
 .. include:: ../README.md
     :parser: myst_parser.sphinx_
-    :start-line: 122
-    :end-line: 162
+    :start-after: ## Programmatic Validation
+    :end-before: ## Running the tests
 
 .. seealso::
 

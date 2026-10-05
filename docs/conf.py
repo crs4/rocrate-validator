@@ -73,10 +73,9 @@ extensions = [
     "sphinx_copybutton",
 ]
 
-# Only auto-generate section labels for the top two heading levels: deeper
-# subsections (e.g. the repeated "SHACL checks" / "Python checks" headings)
-# would otherwise produce duplicate-label warnings within the same document.
-autosectionlabel_maxdepth = 2
+# Leave autosectionlabel_maxdepth unset: nested sections imported from Markdown
+# via the include directive's parser option retain a temporary document, which
+# breaks Sphinx's section-depth calculation.
 
 # Warnings raised while embedding the Markdown README into the Sphinx pages.
 # The README is the canonical GitHub document: its slices intentionally start
