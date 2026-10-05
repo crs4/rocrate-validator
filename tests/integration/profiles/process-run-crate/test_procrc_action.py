@@ -12,8 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 import logging
 
+import pytest
+
+from rocrate_validator import models, services
 from rocrate_validator.models import Severity
 from tests.ro_crates import InvalidProcRC
 from tests.shared import do_entity_test
@@ -22,18 +26,46 @@ from tests.shared import do_entity_test
 logger = logging.getLogger(__name__)
 
 
-def test_procrc_action_no_instrument():
-    """
-    Test a Process Run Crate where the action does not have an instrument.
-    """
-    do_entity_test(
-        InvalidProcRC().action_no_instrument,
-        Severity.REQUIRED,
-        False,
-        ["Process Run Crate Action"],
-        ["The Action MUST have an instrument property that references the executed tool"],
-        profile_identifier="process-run-crate",
+@pytest.mark.parametrize("action_type", ["CreateAction", "ActivateAction", "UpdateAction"])
+@pytest.mark.parametrize("selection", ["matching", "no_main_entity", "different_instrument"])
+def test_procrc_action_main_entity_scope(action_type, selection):
+    """Only actions executing the root mainEntity receive process-action checks."""
+    crate = InvalidProcRC().action_no_name
+    metadata = json.loads((crate / "ro-crate-metadata.json").read_text(encoding="utf-8"))
+    root = next(entity for entity in metadata["@graph"] if entity["@id"] == "./")
+    action = next(entity for entity in metadata["@graph"] if entity["@id"] == "#SepiaConversion_1")
+    action["@type"] = action_type
+    metadata["@graph"].append(
+        {
+            "@id": "#unrelated-action",
+            "@type": action_type,
+            "instrument": {"@id": "https://example.org/other-tool"},
+        }
     )
+    if selection == "no_main_entity":
+        root.pop("mainEntity")
+    elif selection == "different_instrument":
+        action["instrument"] = {"@id": "https://example.org/other-tool"}
+
+    result = services.validate(
+        models.ValidationSettings(
+            rocrate_uri=crate,
+            metadata_dict=metadata,
+            profile_identifier="process-run-crate",
+            requirement_severity=Severity.RECOMMENDED,
+            abort_on_first=False,
+        )
+    )
+    action_issues = [
+        issue
+        for issue in result.get_issues()
+        if issue.check.requirement.name.startswith(("Process Run Crate Action", "Process Run Crate CreateAction"))
+    ]
+    assert all(issue.violatingEntity.endswith("#SepiaConversion_1") for issue in action_issues)
+    if selection == "matching":
+        assert any(issue.message == "The Action SHOULD have a name" for issue in action_issues)
+    else:
+        assert not action_issues
 
 
 def test_procrc_action_instrument_bad_type():

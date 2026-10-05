@@ -27,14 +27,15 @@ process-run-crate:ProcRCCollectionRecommended a sh:NodeShape ;
         a sh:SPARQLTarget ;
         sh:prefixes ro-crate:sparqlPrefixes ;
         sh:select """
+            PREFIX ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/>
             SELECT ?this
             WHERE {
                 ?this a schema:Collection .
                 { ?action schema:object ?this } UNION
                 { ?action schema:result ?this } .
-                { ?action a schema:CreateAction } UNION
-                { ?action a schema:ActivateAction } UNION
-                { ?action a schema:UpdateAction } .
+                { ?action a ro-crate:ProcessCreateAction } UNION
+                { ?action a ro-crate:ProcessActivateAction } UNION
+                { ?action a ro-crate:ProcessUpdateAction } .
             }
         """
     ] ;

@@ -22,9 +22,9 @@
 process-run-crate:ProcRCActionRequired a sh:NodeShape ;
     sh:name "Process Run Crate Action" ;
     sh:description "Properties of the Process Run Crate Action" ;
-    sh:targetClass schema:CreateAction ,
-                   schema:ActivateAction ,
-                   schema:UpdateAction ;
+    sh:targetClass ro-crate:ProcessCreateAction ,
+                   ro-crate:ProcessActivateAction ,
+                   ro-crate:ProcessUpdateAction ;
     sh:property [
         a sh:PropertyShape ;
         sh:name "Action instrument" ;
