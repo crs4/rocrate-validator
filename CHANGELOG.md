@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.2] - 2026-10-05
+
+Full changelog: https://github.com/kikkomep/rocrate-validator/compare/0.12.1...0.12.2
+
+### 🐛 Fixed
+
+- fix(profiles): handle absolute file URI Data Entity identifiers ([afb7b0d2](https://github.com/kikkomep/rocrate-validator/commit/afb7b0d2b5e245f81f5f36f6d1ade43b0f2c53cb))
+- fix(profiles): accept declared compact IRIs in JSON-LD properties ([050dd18a](https://github.com/kikkomep/rocrate-validator/commit/050dd18a2e3185d490ea95ee2d68cbb0470903a8))
+
+### 🔧 Changed
+
+- test(profiles): cover absolute file URI Data Entities ([9f12712b](https://github.com/kikkomep/rocrate-validator/commit/9f12712b3543afd61f9b8b559f32d37527669ae4))
+- test(jsonld): cover compact IRI prefixes across RO-Crate profiles ([cdb6e04e](https://github.com/kikkomep/rocrate-validator/commit/cdb6e04edcfba8a8eb29b36a443ce3e631f008d4))
+
 ## [0.12.1] - 2026-10-01
 
 Full changelog: https://github.com/kikkomep/rocrate-validator/compare/0.12.0...0.12.1
