@@ -28,5 +28,5 @@ Installation
 
 .. include:: ../README.md
     :parser: myst_parser.sphinx_
-    :start-line: 34
-    :end-line: 92
+    :start-after: ## Installation
+    :end-before: ## CLI-based Validation

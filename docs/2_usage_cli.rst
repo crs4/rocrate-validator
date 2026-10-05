@@ -14,6 +14,8 @@
     limitations under the License.
 
 
+.. _cli-based-validation:
+
 CLI Validation
 ==============
 
@@ -29,8 +31,8 @@ CLI Validation
 .. Include the README section for the CLI validation
 .. include:: ../README.md
     :parser: myst_parser.sphinx_
-    :start-line: 94
-    :end-line: 120
+    :start-after: ## CLI-based Validation
+    :end-before: ## Programmatic Validation
 
 .. seealso::
 

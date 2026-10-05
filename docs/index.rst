@@ -21,8 +21,8 @@ Welcome to rocrate-validator's documentation!
 
 .. include:: ../README.md
       :parser: myst_parser.sphinx_
-      :start-line: 2
-      :end-line: 32
+      :start-after: # rocrate-validator
+      :end-before: ## Installation
 
 
 .. include:: 0_toc.rst
