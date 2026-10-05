@@ -25,6 +25,7 @@ from rocrate_validator.models import CheckResult, CheckResultValue, ValidationCo
 from rocrate_validator.requirements.python import PyFunctionCheck, check, requirement
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.http import HttpRequester, OfflineCacheMissError
+from rocrate_validator.utils.jsonld import find_unexpected_compaction_keys, resolve_compaction_context
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -447,49 +448,6 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
             raise TypeError("The context is not a dictionary")
         return set(jsonLD_ctx.keys())
 
-    # Reserved JSON-LD keywords that are always allowed as entity keys.
-    __RESERVED_JSONLD_KEYS__ = frozenset({"@id", "@type", "@context", "@value", "@language"})
-
-    def __check_entity_keys__(
-        self, entity: Any, context_keys: set, unexpected_keys: dict[str, int] | None = None
-    ) -> dict[str, int]:
-        """Check if the entity is in the correct format"""
-        # Ensure unexpected_keys is initialized
-        if unexpected_keys is None:
-            unexpected_keys = {}
-
-        # If the entity is a dictionary, classify each key and recurse into values
-        if isinstance(entity, dict):
-            for k, v in entity.items():
-                self.__record_unexpected_key__(k, context_keys, unexpected_keys)
-                # If the value is a dictionary or a list, check its keys recursively
-                if isinstance(v, (dict, list)):
-                    self.__check_entity_keys__(v, context_keys, unexpected_keys)
-
-        # If the entity is a list, check each element
-        elif isinstance(entity, list):
-            for elem in entity:
-                self.__check_entity_keys__(elem, context_keys, unexpected_keys)
-
-        return unexpected_keys
-
-    def __record_unexpected_key__(self, k: str, context_keys: set, unexpected_keys: dict[str, int]) -> None:
-        """Record ``k`` as unexpected unless it is reserved or a valid compact IRI prefix"""
-        # If the key is a reserved JSON-LD keyword, skip it
-        if k in self.__RESERVED_JSONLD_KEYS__:
-            logger.debug(f"Key {k} is a reserved JSON-LD keyword, skipping")
-            return
-
-        # A key not in the context can still be valid in compacted format if it is
-        # a compact IRI whose prefix is in the context.
-        if k not in context_keys:
-            logger.debug(f"Key {k} not in context keys")
-            prefix = k.split(":", 1)[0] if ":" in k else None
-            logger.debug(f"Checking prefix {prefix} of key {k}")
-            if prefix is None or prefix not in context_keys:
-                logger.debug(f"Key {k} does not have a valid prefix in context keys, adding to unexpected keys")
-                unexpected_keys[k] = unexpected_keys.get(k, 0) + 1
-
     @check(
         name="Validation of the compaction format of the file descriptor",
         depends_on=("File Descriptor JSON format",),
@@ -505,8 +463,8 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
             logger.debug(f"Context: {jsonld_context}")
 
             try:
-                context_keys = self.__get_context_keys__(jsonld_context)
-                logger.debug(f"{context_keys}")
+                context_definitions = resolve_compaction_context(jsonld_context, self.__get_remote_context__)
+                logger.debug(f"{context_definitions}")
             except OfflineCacheMissError:
                 raise
             except _HANDLED_REMOTE_CONTEXT_ERRORS as e:
@@ -515,7 +473,7 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
                 context.result.add_issue(str(e), self)
                 return False
 
-            unexpected_keys = self.__check_entity_keys__(json_dict.get("@graph"), context_keys)
+            unexpected_keys = find_unexpected_compaction_keys(json_dict.get("@graph"), context_definitions)
             logger.debug(f"Unexpected keys: {unexpected_keys}")
             if len(unexpected_keys) > 0:
                 for k, v in unexpected_keys.items():
@@ -525,8 +483,8 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
                     # Check if k is a term or a URI
                     if k.startswith("http"):
                         context.result.add_issue(
-                            f'The {v} occurrence{suffix} of the "{k}" URI cannot be used as a key{suffix} "'
-                            "because the compacted format requires simple terms as keys "
+                            f'The {v} occurrence{suffix} of the "{k}" URI cannot be used as a key{suffix} '
+                            "because it is not mapped by the document context to a term or compact IRI "
                             "(see https://www.w3.org/TR/json-ld-api/#compaction for more details).",
                             self,
                         )
@@ -534,7 +492,7 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
                         context.result.add_issue(
                             f'The {v} occurrence{suffix} of the JSON-LD key "{k}" '
                             f"{'is' if v == 1 else 'are'} not allowed in the compacted format "
-                            "because it is not present in the @context of the document",
+                            "because it is not defined as a term or compact IRI by the @context of the document",
                             self,
                         )
                 return False

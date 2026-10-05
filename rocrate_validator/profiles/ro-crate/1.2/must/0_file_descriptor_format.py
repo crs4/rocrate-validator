@@ -23,6 +23,7 @@ from rocrate_validator.models import CheckResult, CheckResultValue, ValidationCo
 from rocrate_validator.requirements.python import PyFunctionCheck, check, requirement
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.http import HttpRequester, OfflineCacheMissError
+from rocrate_validator.utils.jsonld import find_unexpected_compaction_keys, resolve_compaction_context
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -631,38 +632,6 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
             raise TypeError("The context is not a dictionary")
         return set(jsonLD_ctx.keys())
 
-    def __check_entity_keys__(
-        self, entity: object, context_keys: set, unexpected_keys: dict[str, int] | None = None
-    ) -> dict[str, int]:
-        """Check if the entity is in the correct format"""
-
-        def add_unexpected_key(k: str, u_keys: dict) -> None:
-            """Add a key to the unexpected keys dictionary"""
-            u_keys[k] = u_keys.get(k, 0) + 1
-
-        # Keys that should be skipped
-        SKIP_KEYS = {"@id", "@type", "@context", "@value", "@language"}
-
-        # Ensure unexpected_keys is initialized
-        if unexpected_keys is None:
-            unexpected_keys = {}
-
-        # If the entity is a dictionary, check each key
-        if isinstance(entity, dict):
-            for k, v in entity.items():
-                if k not in context_keys and k not in SKIP_KEYS:
-                    logger.debug(f"Key {k} not in context keys")
-                    add_unexpected_key(k, unexpected_keys)
-                if isinstance(v, (dict, list)):
-                    self.__check_entity_keys__(v, context_keys, unexpected_keys)
-
-        # If the entity is a list, check each element
-        elif isinstance(entity, list):
-            for elem in entity:
-                self.__check_entity_keys__(elem, context_keys, unexpected_keys)
-
-        return unexpected_keys
-
     @check(
         name="Validation of the compaction format of the file descriptor",
         depends_on=("File Descriptor JSON format",),
@@ -678,8 +647,8 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
             logger.debug(f"Context: {jsonld_context}")
 
             try:
-                context_keys = self.__get_context_keys__(jsonld_context)
-                logger.debug(f"{context_keys}")
+                context_definitions = resolve_compaction_context(jsonld_context, self.__get_remote_context__)
+                logger.debug(f"{context_definitions}")
             except OfflineCacheMissError:
                 raise
             except _HANDLED_REMOTE_CONTEXT_ERRORS as e:
@@ -688,7 +657,7 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
                 context.result.add_issue(str(e), self)
                 return False
 
-            unexpected_keys = self.__check_entity_keys__(json_dict.get("@graph", []), context_keys)
+            unexpected_keys = find_unexpected_compaction_keys(json_dict.get("@graph", []), context_definitions)
             logger.debug(f"Unexpected keys: {unexpected_keys}")
             if len(unexpected_keys) > 0:
                 for k, v in unexpected_keys.items():
@@ -698,8 +667,8 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
                     # Check if k is a term or a URI
                     if k.startswith("http"):
                         context.result.add_issue(
-                            f'The The {v} occurrence{suffix} of the "{k}" URI cannot be used as a key{suffix} "'
-                            "because the compacted format requires simple terms as keys "
+                            f'The {v} occurrence{suffix} of the "{k}" URI cannot be used as a key{suffix} '
+                            "because it is not mapped by the document context to a term or compact IRI "
                             "(see https://www.w3.org/TR/json-ld-api/#compaction for more details).",
                             self,
                         )
@@ -707,7 +676,7 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
                         context.result.add_issue(
                             f'The {v} occurrence{suffix} of the JSON-LD key "{k}" '
                             f"{'is' if v == 1 else 'are'} not allowed in the compacted format "
-                            "because it is not present in the @context of the document",
+                            "because it is not defined as a term or compact IRI by the @context of the document",
                             self,
                         )
                 return False
