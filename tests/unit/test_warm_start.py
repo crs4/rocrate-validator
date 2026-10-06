@@ -14,6 +14,7 @@
 
 import copy
 import json
+import shutil
 import threading
 import time
 from pathlib import Path
@@ -164,6 +165,46 @@ def test_cross_base_reuse_keeps_each_crates_data_and_public_output_isolated(tmp_
     assert profile_loads == 1
     assert shape_loads > 0
     assert all(issue.violatingEntity == "./ro-crate-metadata.json" for issue in invalid_result.get_issues())
+
+
+def test_parent_relative_shape_target_is_rebased_for_validation(tmp_path):
+    """A parsed ``../`` target must follow each crate base after preparation."""
+    profiles_path = tmp_path / "profiles"
+    shutil.copytree(Path("tests/data/profiles/fake"), profiles_path)
+    shape_path = profiles_path / "c" / "shape_c.ttl"
+    shape_path.write_text(
+        """
+        @prefix sh: <http://www.w3.org/ns/shacl#> .
+        @prefix schema: <http://schema.org/> .
+
+        <../ShapeC> a sh:NodeShape ;
+            sh:targetNode <../target> ;
+            sh:property [ sh:path schema:name ; sh:minCount 1 ; sh:message "target must have a name" ] .
+        """,
+        encoding="utf-8",
+    )
+    crate = tmp_path / "crate"
+    crate.mkdir()
+    metadata = {
+        "@context": {"@vocab": "http://schema.org/", "about": {"@type": "@id"}},
+        "@graph": [
+            {"@id": "ro-crate-metadata.json", "@type": "CreativeWork", "about": {"@id": "./"}},
+            {"@id": "./", "@type": "Dataset"},
+            {"@id": "../target", "@type": "Dataset"},
+        ],
+    }
+    (crate / "ro-crate-metadata.json").write_text(json.dumps(metadata), encoding="utf-8")
+    settings = ValidationSettings(
+        rocrate_uri=URI(crate),
+        profiles_path=profiles_path,
+        profile_identifier="c",
+        offline=True,
+    )
+
+    result = Validator(settings).validate()
+
+    assert not result.passed()
+    assert any(issue.message == "target must have a name" for issue in result.get_issues())
 
 
 def test_per_call_metadata_does_not_mutate_validator_settings():

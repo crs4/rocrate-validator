@@ -13,6 +13,8 @@
 # limitations under the License.
 
 from collections.abc import Iterable
+from posixpath import relpath
+from urllib.parse import urljoin, urlsplit, urlunsplit
 
 from rdflib import Graph, URIRef
 from rdflib.term import Node
@@ -41,6 +43,22 @@ def rebase_node(node: Node, base_mappings: Iterable[tuple[str, str]]) -> Node:
         for source_base, target_base in base_mappings:
             if value.startswith(source_base):
                 return URIRef(f"{target_base}{value[len(source_base) :]}")
+
+        # Parsing resolves parent-relative references (for example
+        # ``../target``) against their source base, so the resulting URI no
+        # longer starts with that base. Preserve the reference's relative path
+        # when moving it to the prepared base. Restrict this fallback to the
+        # same URI authority; unrelated hosts are never affected.
+        value_parts = urlsplit(value)
+        for source_base, target_base in base_mappings:
+            source_parts = urlsplit(source_base)
+            if (value_parts.scheme, value_parts.netloc) != (source_parts.scheme, source_parts.netloc):
+                continue
+            relative_path = relpath(value_parts.path, source_parts.path)
+            rebased = urlsplit(urljoin(target_base, relative_path))
+            return URIRef(
+                urlunsplit((rebased.scheme, rebased.netloc, rebased.path, value_parts.query, value_parts.fragment))
+            )
         return node
     return node
 
