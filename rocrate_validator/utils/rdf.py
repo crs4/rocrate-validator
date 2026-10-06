@@ -68,6 +68,7 @@ def rebase_graph(
     base_mappings: Iterable[tuple[str, str]],
     *,
     preserve_nodes: Iterable[Node] = (),
+    rebase_objects_for: Iterable[Node] = (),
 ) -> Graph:
     """
     Copy a graph while replacing selected URI bases.
@@ -78,15 +79,22 @@ def rebase_graph(
 
     mappings = tuple(base_mappings)
     preserved = frozenset(preserve_nodes)
+    rebased_object_predicates = frozenset(rebase_objects_for)
 
-    def transform(node: Node) -> Node:
-        return node if node in preserved else rebase_node(node, mappings)
+    def transform(node: Node, *, force_rebase: bool = False) -> Node:
+        return node if node in preserved and not force_rebase else rebase_node(node, mappings)
 
     rebased = Graph()
     for prefix, namespace in graph.namespaces():
         rebased.bind(prefix, namespace)
     for subject, predicate, object_ in graph:
-        rebased.add((transform(subject), transform(predicate), transform(object_)))
+        rebased.add(
+            (
+                transform(subject),
+                transform(predicate),
+                transform(object_, force_rebase=predicate in rebased_object_predicates),
+            )
+        )
     return rebased
 
 

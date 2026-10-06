@@ -174,10 +174,15 @@ class SHACLValidationContext(ValidationContext):
                 for subject, predicate, object_ in profile_shapes_graph
                 if str(predicate).startswith(SHACL_NS) or (predicate == RDF.type and str(object_).startswith(SHACL_NS))
             }
+            shacl_ns = Namespace(SHACL_NS)
             profile_shapes_graph = rebase_graph(
                 profile_shapes_graph,
                 self._run_base_mappings,
                 preserve_nodes=structural_nodes,
+                # A URI can identify both a shape and an RDF class. Keep its
+                # shape identifier stable in structural positions, while
+                # rebasing it when it supplies SHACL class semantics.
+                rebase_objects_for=(shacl_ns.targetClass, shacl_ns["class"]),
             )
             logger.debug("Loaded shapes: %s", profile_shapes)
 

@@ -207,6 +207,54 @@ def test_parent_relative_shape_target_is_rebased_for_validation(tmp_path):
     assert any(issue.message == "target must have a name" for issue in result.get_issues())
 
 
+def test_structural_shape_identifier_is_rebased_as_target_class(tmp_path):
+    """A shape URI that is also a class must rebase in ``sh:targetClass``."""
+    profiles_path = tmp_path / "profiles"
+    shutil.copytree(Path("tests/data/profiles/fake"), profiles_path)
+    shape_path = profiles_path / "c" / "shape_c.ttl"
+    shape_path.write_text(
+        """
+        @prefix rel: <./> .
+        @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+        @prefix schema: <http://schema.org/> .
+        @prefix sh: <http://www.w3.org/ns/shacl#> .
+
+        rel:Dataset a sh:NodeShape, rdfs:Class ;
+            sh:targetClass rel:Dataset ;
+            sh:property [ sh:path schema:name ; sh:minCount 1 ;
+                          sh:message "class-target check must run" ] .
+        """,
+        encoding="utf-8",
+    )
+    crate = tmp_path / "crate"
+    crate.mkdir()
+    target_class = f"{crate.as_uri()}/Dataset"
+    metadata = {
+        "@context": {
+            "@vocab": "http://schema.org/",
+            "about": {"@type": "@id"},
+            "TargetDataset": {"@id": target_class},
+        },
+        "@graph": [
+            {"@id": "ro-crate-metadata.json", "@type": "CreativeWork", "about": {"@id": "./"}},
+            {"@id": "./", "@type": "Dataset"},
+            {"@id": "./item", "@type": "TargetDataset"},
+        ],
+    }
+    (crate / "ro-crate-metadata.json").write_text(json.dumps(metadata), encoding="utf-8")
+    settings = ValidationSettings(
+        rocrate_uri=URI(crate),
+        profiles_path=profiles_path,
+        profile_identifier="c",
+        offline=True,
+    )
+
+    result = Validator(settings).validate()
+
+    assert not result.passed()
+    assert any(issue.message == "class-target check must run" for issue in result.get_issues())
+
+
 def test_per_call_metadata_does_not_mutate_validator_settings():
     crate = ValidROC().wrroc_paper
     with (crate / "ro-crate-metadata.json").open(encoding="utf-8") as stream:
