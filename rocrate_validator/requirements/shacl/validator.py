@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING, Any, cast  # pylint: disable=unused-import
 
 import pyshacl
 from rdflib import BNode, Graph, Literal, Namespace
-from rdflib.namespace import RDF
+from rdflib.namespace import OWL, RDF, RDFS
 from rdflib.term import Node, URIRef
 
 if TYPE_CHECKING:
@@ -50,7 +50,7 @@ from rocrate_validator.requirements.shacl.transformers.preparation import (
 )
 from rocrate_validator.requirements.shacl.utils import make_uris_relative, map_severity
 from rocrate_validator.utils import log as logging
-from rocrate_validator.utils.rdf import rebase_graph
+from rocrate_validator.utils.rdf import rebase_graph, rebase_node
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -250,7 +250,27 @@ class SHACLValidationContext(ValidationContext):
 
     @property
     def shapes_graph(self) -> Graph:
-        return self.shapes_registry.shapes_graph
+        graph = self.shapes_registry.shapes_graph
+        # Resolve implicit targets after profiles have been merged: the class
+        # declaration and its metaclass definition may belong to different profiles.
+        # Include owl:Class, which pySHACL treats as a subclass of rdfs:Class.
+        class_types: set[Node] = {RDFS.Class, OWL.Class}
+        class_types.update(graph.subjects(RDFS.subClassOf, RDFS.Class))
+        shacl = Namespace(SHACL_NS)
+        for shape in self.shapes_registry.get_shapes().values():
+            node = shape.node
+            target_class = rebase_node(node, self._run_base_mappings)
+            if target_class == node:
+                continue
+            for class_type in set(graph.objects(node, RDF.type)) & class_types:
+                # Retain the canonical shape identity for check/report lookup,
+                # but express its implicit class target using the real crate URI.
+                # Moving the class declaration also prevents pySHACL from adding
+                # an unintended second target at the canonical preparation URI.
+                graph.remove((node, RDF.type, class_type))
+                graph.add((target_class, RDF.type, class_type))
+                graph.add((node, shacl.targetClass, target_class))
+        return graph
 
     @property
     def ontology_graph(self) -> Graph:

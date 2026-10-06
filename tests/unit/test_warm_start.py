@@ -207,8 +207,13 @@ def test_parent_relative_shape_target_is_rebased_for_validation(tmp_path):
     assert any(issue.message == "target must have a name" for issue in result.get_issues())
 
 
-def test_structural_shape_identifier_is_rebased_as_target_class(tmp_path):
-    """A shape URI that is also a class must rebase in ``sh:targetClass``."""
+@pytest.mark.parametrize("explicit_target", [False, True], ids=["implicit", "explicit"])
+@pytest.mark.parametrize("class_type", ["rdfs:Class", "owl:Class", "rel:MetaClass"])
+@pytest.mark.parametrize("canonical_instance", [False, True], ids=["real-only", "canonical-decoy"])
+def test_structural_shape_identifier_is_rebased_as_target_class(
+    tmp_path, explicit_target, class_type, canonical_instance
+):
+    """Class targets must follow the crate without selecting canonical-base instances."""
     profiles_path = tmp_path / "profiles"
     shutil.copytree(Path("tests/data/profiles/fake"), profiles_path)
     shape_path = profiles_path / "c" / "shape_c.ttl"
@@ -216,43 +221,71 @@ def test_structural_shape_identifier_is_rebased_as_target_class(tmp_path):
         """
         @prefix rel: <./> .
         @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+        @prefix owl: <http://www.w3.org/2002/07/owl#> .
         @prefix schema: <http://schema.org/> .
         @prefix sh: <http://www.w3.org/ns/shacl#> .
 
-        rel:Dataset a sh:NodeShape, rdfs:Class ;
-            sh:targetClass rel:Dataset ;
+        rel:Dataset a sh:NodeShape, CLASS_TYPE ;
+            TARGET
             sh:property [ sh:path schema:name ; sh:minCount 1 ;
                           sh:message "class-target check must run" ] .
-        """,
+        """.replace("CLASS_TYPE", class_type).replace(
+            "TARGET", "sh:targetClass rel:Dataset ;" if explicit_target else ""
+        ),
         encoding="utf-8",
     )
-    crate = tmp_path / "crate"
-    crate.mkdir()
-    target_class = f"{crate.as_uri()}/Dataset"
-    metadata = {
-        "@context": {
-            "@vocab": "http://schema.org/",
-            "about": {"@type": "@id"},
-            "TargetDataset": {"@id": target_class},
-        },
-        "@graph": [
-            {"@id": "ro-crate-metadata.json", "@type": "CreativeWork", "about": {"@id": "./"}},
-            {"@id": "./", "@type": "Dataset"},
-            {"@id": "./item", "@type": "TargetDataset"},
-        ],
-    }
-    (crate / "ro-crate-metadata.json").write_text(json.dumps(metadata), encoding="utf-8")
-    settings = ValidationSettings(
-        rocrate_uri=URI(crate),
-        profiles_path=profiles_path,
-        profile_identifier="c",
-        offline=True,
+    inherited_shape = profiles_path / "a" / "shape_a.ttl"
+    inherited_shape.write_text(
+        inherited_shape.read_text(encoding="utf-8") + "\n<MetaClass> <http://www.w3.org/2000/01/rdf-schema#subClassOf> "
+        "<http://www.w3.org/2000/01/rdf-schema#Class> .\n",
+        encoding="utf-8",
     )
-
-    result = Validator(settings).validate()
-
-    assert not result.passed()
-    assert any(issue.message == "class-target check must run" for issue in result.get_issues())
+    first_plan = None
+    for crate_name in ("crate-a", "crate-b"):
+        crate = tmp_path / crate_name
+        crate.mkdir()
+        metadata = {
+            "@context": {"@vocab": "http://schema.org/", "about": {"@type": "@id"}},
+            "@graph": [
+                {"@id": "ro-crate-metadata.json", "@type": "CreativeWork", "about": {"@id": "./"}},
+                {"@id": "./", "@type": "Dataset"},
+                {"@id": "./item", "@type": f"{crate.as_uri()}/Dataset", "name": "Present"},
+            ],
+        }
+        if canonical_instance:
+            # This unrelated instance must not become an extra implicit target.
+            metadata["@graph"].append(
+                {
+                    "@id": "./unrelated",
+                    "@type": "https://example.invalid/rocrate-validator/prepared/crate/Dataset",
+                }
+            )
+        (crate / "ro-crate-metadata.json").write_text(json.dumps(metadata), encoding="utf-8")
+        if first_plan is None:
+            validator = Validator(
+                ValidationSettings(
+                    rocrate_uri=URI(crate),
+                    profiles_path=profiles_path,
+                    profile_identifier="c",
+                    offline=True,
+                )
+            )
+        for valid in (True, False):
+            if not valid:
+                metadata["@graph"][2].pop("name")
+            (crate / "ro-crate-metadata.json").write_text(json.dumps(metadata), encoding="utf-8")
+            result = validator.validate(crate)
+            assert result.passed() is valid
+            if not valid:
+                assert [issue.message for issue in result.get_issues()] == ["class-target check must run"]
+                assert result.get_issues()[0].violatingEntity == "./item"
+            plan = result.context.prepared_validation_plan
+            registry = ShapesRegistry.get_instance(result.context.profiles[-1])
+            if first_plan is None:
+                first_plan = plan
+                prepared_shapes = registry.shapes_graph
+            assert plan is first_plan
+            assert isomorphic(prepared_shapes, registry.shapes_graph)
 
 
 def test_per_call_metadata_does_not_mutate_validator_settings():
