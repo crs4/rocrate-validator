@@ -18,6 +18,7 @@ import shutil
 import threading
 import time
 from pathlib import Path
+from urllib.parse import urljoin
 
 import pytest
 from rdflib import Graph, Namespace, URIRef
@@ -25,6 +26,7 @@ from rdflib.compare import isomorphic
 
 from rocrate_validator.errors import ValidationExecutionError
 from rocrate_validator.models import URI, Profile, Requirement, ValidationContext, ValidationSettings, Validator
+from rocrate_validator.models import validation as validation_module
 from rocrate_validator.requirements.shacl.checks import SHACLCheck
 from rocrate_validator.requirements.shacl.models import ShapesRegistry
 from rocrate_validator.requirements.shacl.validator import SHACLValidationContext
@@ -114,6 +116,53 @@ def test_prepared_profiles_are_reused_across_crate_public_ids(monkeypatch):
     assert first_result.context.prepared_validation_plan is second_result.context.prepared_validation_plan
     assert first_target == second_target
     assert str(first_target).startswith(first_result.context.prepared_profile_base)
+
+
+def test_ontology_rebasing_only_changes_lexically_relative_iris(tmp_path):
+    profiles_path = tmp_path / "profiles"
+    shutil.copytree(Path("tests/data/profiles/fake"), profiles_path)
+    (profiles_path / "c" / "ontology.ttl").write_text(
+        """
+        PREFIX rel: <../>
+        PREFIX ex: <http://example.org/>
+
+        rel:RelativeSubject ex:link rel:RelativeObject .
+        <https://example.invalid/rocrate-validator/prepared/crate/AbsoluteSubject>
+            ex:link <https://example.invalid/rocrate-validator/prepared/crate/AbsoluteObject> .
+        <https://example.invalid/external/AbsoluteSubject>
+            ex:link <https://example.invalid/external/AbsoluteObject> .
+        """,
+        encoding="utf-8",
+    )
+    validator = Validator(
+        ValidationSettings(
+            rocrate_uri=URI(ValidROC().wrroc_paper),
+            profiles_path=profiles_path,
+            profile_identifier="c",
+            offline=True,
+        )
+    )
+
+    result = validator.validate()
+    shacl_context = SHACLValidationContext.get_instance(result.context)
+    ontology_graph = shacl_context.ontology_graph
+    ex = Namespace("http://example.org/")
+
+    assert (
+        URIRef(urljoin(result.context.publicID, "../RelativeSubject")),
+        ex.link,
+        URIRef(urljoin(result.context.publicID, "../RelativeObject")),
+    ) in ontology_graph
+    assert (
+        URIRef("https://example.invalid/rocrate-validator/prepared/crate/AbsoluteSubject"),
+        ex.link,
+        URIRef("https://example.invalid/rocrate-validator/prepared/crate/AbsoluteObject"),
+    ) in ontology_graph
+    assert (
+        URIRef("https://example.invalid/external/AbsoluteSubject"),
+        ex.link,
+        URIRef("https://example.invalid/external/AbsoluteObject"),
+    ) in ontology_graph
 
 
 def test_cross_base_reuse_keeps_each_crates_data_and_public_output_isolated(tmp_path, monkeypatch):
@@ -481,15 +530,16 @@ def test_prepare_can_eagerly_warm_and_refresh_profiles(monkeypatch):
 
 def test_inherited_ontologies_are_prepared_once(monkeypatch):
     ontology_parses = 0
-    original_parse = Graph.parse
+    original_parse = validation_module.parse_turtle_with_relative_iris
+    graph_parse = Graph.parse
 
-    def counted_parse(self, source=None, *args, **kwargs):
+    def counted_parse(source, *args, **kwargs):
         nonlocal ontology_parses
         if source is not None and str(source).endswith("ontology.ttl"):
             ontology_parses += 1
-        return original_parse(self, source, *args, **kwargs)
+        return original_parse(source, *args, **kwargs)
 
-    monkeypatch.setattr(Graph, "parse", counted_parse)
+    monkeypatch.setattr(validation_module, "parse_turtle_with_relative_iris", counted_parse)
     settings = ValidationSettings(
         rocrate_uri=URI(ValidROC().wrroc_paper),
         profile_identifier="isa-ro-crate",
@@ -506,7 +556,7 @@ def test_inherited_ontologies_are_prepared_once(monkeypatch):
     for profile in first_plan.profiles:
         ontology_path = profile.path / "ontology.ttl"
         if ontology_path.exists():
-            original_parse(expected, ontology_path, format="ttl", publicID=first_context.prepared_ontology_base)
+            graph_parse(expected, ontology_path, format="ttl", publicID=first_context.prepared_ontology_base)
 
     assert ontology_parses == 2
     assert first_plan is second_plan

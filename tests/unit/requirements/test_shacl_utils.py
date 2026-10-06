@@ -29,6 +29,7 @@ from rdflib.collection import Collection
 from rocrate_validator.constants import SHACL_NS
 from rocrate_validator.errors import BadSyntaxError
 from rocrate_validator.requirements.shacl.utils import load_shapes_from_file, load_shapes_from_graph
+from rocrate_validator.utils.rdf import rebase_graph
 
 SH = Namespace(SHACL_NS)
 EX = Namespace("http://example.org/")
@@ -64,6 +65,51 @@ def _build_two_property_shape() -> tuple[Graph, URIRef, BNode, BNode]:
     g.add((prop_b, SH.minCount, Literal(0)))
 
     return g, node_shape, prop_a, prop_b
+
+
+@pytest.mark.parametrize("directive", ["@prefix", "PREFIX"])
+def test_turtle_rebasing_only_changes_lexically_relative_iris(tmp_path, directive):
+    source_base = "https://example.invalid/rocrate-validator/prepared/crate/"
+    target_base = "file:///tmp/crate/"
+    absolute_target = URIRef("https://example.invalid/rocrate-validator/prepared/crate/AbsoluteClass")
+    external_target = URIRef("https://example.invalid/external/AbsoluteClass")
+    shapes_path = tmp_path / "relative-and-absolute.ttl"
+    relative_prefix = "@prefix rel: <../> ." if directive == "@prefix" else "PREFIX rel: <../>"
+    shapes_path.write_text(
+        f"""
+        @prefix sh: <http://www.w3.org/ns/shacl#> .
+        {relative_prefix}
+        PREFIX abs: <https://example.invalid/rocrate-validator/prepared/crate/>
+
+        rel:Shape a sh:NodeShape ; sh:targetNode rel:target .
+        abs:AbsoluteShape a sh:NodeShape ; sh:targetNode abs:AbsoluteClass .
+        <https://example.invalid/external/AbsoluteShape>
+            a sh:NodeShape ; sh:targetNode <https://example.invalid/external/AbsoluteClass> .
+        """,
+        encoding="utf-8",
+    )
+
+    shapes = load_shapes_from_file(str(shapes_path), source_base)
+    rebased = rebase_graph(
+        shapes.shapes_graph,
+        ((source_base, target_base),),
+        rebase_nodes=shapes.relative_iris,
+    )
+
+    assert any(object_ == URIRef("file:///tmp/target") for _, _, object_ in rebased)
+    assert any(object_ == absolute_target for _, _, object_ in rebased)
+    assert any(object_ == external_target for _, _, object_ in rebased)
+
+
+def test_turtle_loader_accepts_utf8_bom(tmp_path):
+    shapes_path = tmp_path / "bom.ttl"
+    shapes_path.write_bytes(
+        b"\xef\xbb\xbf@prefix sh: <http://www.w3.org/ns/shacl#> . <https://example.org/Shape> a sh:NodeShape ."
+    )
+
+    shapes = load_shapes_from_file(str(shapes_path))
+
+    assert URIRef("https://example.org/Shape") in shapes.node_shapes
 
 
 def test_returns_link_triple_to_target_property():

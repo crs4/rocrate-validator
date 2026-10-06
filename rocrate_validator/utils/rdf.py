@@ -12,11 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import re
 from collections.abc import Iterable
+from pathlib import Path
 from posixpath import commonpath, relpath
 from urllib.parse import urljoin, urlsplit, urlunsplit
 
 from rdflib import Graph, URIRef
+from rdflib.parser import create_input_source
+from rdflib.plugins.parsers.notation3 import RDFSink, SinkParser
 from rdflib.term import Node
 
 from rocrate_validator import constants
@@ -28,6 +32,95 @@ logger = logging.getLogger(__name__)
 
 
 PREPARED_PROFILE_BASE = "https://example.invalid/rocrate-validator/prepared/crate/"
+_PREFIX_DECLARATION = re.compile(r"@?prefix\b\s+([^:\s]*):\s*<([^>]*)>", re.IGNORECASE)
+
+
+def _prefix_declaration(argstr: str, index: int) -> tuple[str, str] | None:
+    directive_index = argstr[index:].lstrip() if index >= 0 else ""
+    match = _PREFIX_DECLARATION.match(directive_index)
+    if match is None:
+        return None
+    prefix, namespace = match.group(1), match.group(2)
+    assert prefix is not None and namespace is not None
+    return prefix, namespace
+
+
+def _is_relative_iri(reference: str) -> bool:
+    parts = urlsplit(reference)
+    return not parts.scheme and not parts.netloc
+
+
+class _TurtleProvenanceParser(SinkParser):
+    """RDFLib Turtle parser that records URI terms originating in relative syntax."""
+
+    def __init__(self, store: RDFSink, base_uri: str):
+        super().__init__(store, baseURI=base_uri, turtle=True)
+        self.relative_iris: set[Node] = set()
+        self.relative_prefixes: set[str] = set()
+
+    def _record_prefix_declaration(self, declaration: tuple[str, str] | None, parsed_at: int) -> None:
+        if parsed_at < 0 or declaration is None:
+            return
+        prefix, namespace = declaration
+        if _is_relative_iri(namespace):
+            self.relative_prefixes.add(prefix)
+        else:
+            self.relative_prefixes.discard(prefix)
+
+    def directive(self, argstr: str, index: int) -> int:
+        declaration = _prefix_declaration(argstr, index)
+        parsed_at = super().directive(argstr, index)
+        self._record_prefix_declaration(declaration, parsed_at)
+        return parsed_at
+
+    def sparqlDirective(self, argstr: str, index: int) -> int:
+        declaration = _prefix_declaration(argstr, index)
+        parsed_at = super().sparqlDirective(argstr, index)
+        self._record_prefix_declaration(declaration, parsed_at)
+        return parsed_at
+
+    def uri_ref2(self, argstr: str, index: int, result: list) -> int:
+        qname: list = []
+        self.qname(argstr, index, qname)
+        relative_qname = bool(qname and qname[0][0] in self.relative_prefixes)
+        start = self.skipSpace(argstr, index)
+        relative_ref = start >= 0 and argstr[start] == "<"
+        if relative_ref:
+            end = argstr.find(">", start + 1)
+            if end >= 0:
+                relative_ref = _is_relative_iri(argstr[start + 1 : end])
+
+        previous_length = len(result)
+        parsed_at = super().uri_ref2(argstr, index, result)
+        if parsed_at >= 0 and len(result) > previous_length and (relative_ref or relative_qname):
+            value = result[-1]
+            if isinstance(value, Node):
+                self.relative_iris.add(value)
+        return parsed_at
+
+
+def parse_turtle_with_relative_iris(file_path: str | Path, public_id: str | None = None) -> tuple[Graph, set[Node]]:
+    """Parse a Turtle file and retain URI terms written as relative references."""
+
+    source = create_input_source(source=file_path, publicID=public_id)
+    graph = Graph()
+    try:
+        base_uri = graph.absolutize(source.getPublicId() or source.getSystemId() or "")
+        parser = _TurtleProvenanceParser(RDFSink(graph), base_uri)
+        stream = source.getCharacterStream() or source.getByteStream()
+        source_text = stream.read()
+        if isinstance(source_text, bytes):
+            source_text = source_text.decode("utf-8")
+        source_text = source_text.removeprefix("\ufeff")
+
+        from io import StringIO  # noqa: PLC0415
+
+        parser.loadStream(StringIO(source_text))
+        for prefix, namespace in parser._bindings.items():
+            graph.bind(prefix, namespace)
+        return graph, parser.relative_iris
+    finally:
+        source.close()
 
 
 def rebase_node(node: Node, base_mappings: Iterable[tuple[str, str]]) -> Node:
@@ -89,6 +182,7 @@ def rebase_graph(
     *,
     preserve_nodes: Iterable[Node] = (),
     rebase_objects_for: Iterable[Node] = (),
+    rebase_nodes: Iterable[Node] | None = None,
 ) -> Graph:
     """
     Copy a graph while replacing selected URI bases.
@@ -100,8 +194,11 @@ def rebase_graph(
     mappings = tuple(base_mappings)
     preserved = frozenset(preserve_nodes)
     rebased_object_predicates = frozenset(rebase_objects_for)
+    relative_nodes = None if rebase_nodes is None else frozenset(rebase_nodes)
 
     def transform(node: Node, *, force_rebase: bool = False) -> Node:
+        if relative_nodes is not None and node not in relative_nodes:
+            return node
         return node if node in preserved and not force_rebase else rebase_node(node, mappings)
 
     rebased = Graph()

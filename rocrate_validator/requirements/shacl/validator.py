@@ -145,6 +145,7 @@ class SHACLValidationContext(ValidationContext):
         self._ontology_graph = rebase_graph(
             context.prepared_validation_plan.ontology_graph,
             self._run_base_mappings,
+            rebase_nodes=context.prepared_validation_plan.ontology_relative_iris,
         )
 
     def __set_current_validation_profile__(self, profile: Profile) -> bool:
@@ -179,6 +180,7 @@ class SHACLValidationContext(ValidationContext):
                 profile_shapes_graph,
                 self._run_base_mappings,
                 preserve_nodes=structural_nodes,
+                rebase_nodes=profile_registry.relative_iris,
                 # A URI can identify both a shape and an RDF class. Keep its
                 # shape identifier stable in structural positions, while
                 # rebasing it when it supplies SHACL class semantics.

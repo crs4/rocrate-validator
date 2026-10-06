@@ -50,10 +50,12 @@ from rocrate_validator.models.skipped_check import SkipCategory, SkipCategoryInp
 from rocrate_validator.rocrate import ROCrate
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.http import find_offline_cache_miss
-from rocrate_validator.utils.rdf import PREPARED_PROFILE_BASE, extract_base_from_jsonld
+from rocrate_validator.utils.rdf import PREPARED_PROFILE_BASE, extract_base_from_jsonld, parse_turtle_with_relative_iris
 from rocrate_validator.utils.uri import URI
 
 if TYPE_CHECKING:
+    from rdflib.term import Node
+
     from rocrate_validator.models.profile_provenance import EffectiveRequirementCheck
 
 
@@ -70,6 +72,7 @@ class PreparedValidationPlan:
 
     profiles: tuple[Profile, ...]
     ontology_graph: Graph
+    ontology_relative_iris: frozenset[Node]
     resolved_profile_identifier: str
 
 
@@ -164,6 +167,7 @@ class Validator(Publisher):
             profiles = tuple(context.__load_profiles__())
             resolved_profile_identifier = context.profile_identifier
             ontology_graph = Graph()
+            ontology_relative_iris: set[Node] = set()
             for profile in profiles:
                 # Materialize lazy requirements and their per-profile shape
                 # registries once. Contextual graphs passed to pySHACL are still
@@ -171,12 +175,18 @@ class Validator(Publisher):
                 _ = profile.requirements
                 ontology_path = profile.path / "ontology.ttl"
                 if ontology_path.exists():
-                    ontology_graph.parse(
+                    profile_ontology_graph, relative_iris = parse_turtle_with_relative_iris(
                         ontology_path,
-                        format="ttl",
-                        publicID=context.prepared_ontology_base,
+                        context.prepared_ontology_base,
                     )
-            plan = PreparedValidationPlan(profiles, ontology_graph, resolved_profile_identifier)
+                    ontology_graph += profile_ontology_graph
+                    ontology_relative_iris.update(relative_iris)
+            plan = PreparedValidationPlan(
+                profiles,
+                ontology_graph,
+                frozenset(ontology_relative_iris),
+                resolved_profile_identifier,
+            )
             self.__prepared_validation_plans[key] = plan
             # Loading may resolve a bare profile token (for example
             # ``ro-crate``) to a versioned identifier and update the settings.

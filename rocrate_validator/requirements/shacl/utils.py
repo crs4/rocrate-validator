@@ -27,6 +27,7 @@ from rocrate_validator.constants import SHACL_NS
 from rocrate_validator.errors import BadSyntaxError
 from rocrate_validator.models import Severity
 from rocrate_validator.utils import log as logging
+from rocrate_validator.utils.rdf import parse_turtle_with_relative_iris
 
 if TYPE_CHECKING:
     from rocrate_validator.requirements.shacl.models import Shape
@@ -171,11 +172,18 @@ class ShapesList:
         property_shapes: list[Node],
         shapes_graphs: dict[Node, Graph],
         shapes_graph: Graph,
+        relative_iris: set[Node] | None = None,
     ):
         self._node_shapes = node_shapes
         self._property_shapes = property_shapes
         self._shapes_graph = shapes_graph
         self._shapes_graphs = shapes_graphs
+        self._relative_iris = set() if relative_iris is None else relative_iris
+
+    @property
+    def relative_iris(self) -> set[Node]:
+        """Return IRIs whose Turtle spelling was relative before RDFLib resolved it."""
+        return self._relative_iris.copy()
 
     @property
     def node_shapes(self) -> list[Node]:
@@ -290,10 +298,9 @@ def load_shapes_from_file(file_path: str, publicID: str | None = None) -> Shapes
         # Check the file path is not None
         assert file_path is not None, "The file path cannot be None"
         # Load the graph from the file
-        g = Graph()
-        g.parse(file_path, format="turtle", publicID=publicID)
+        g, relative_iris = parse_turtle_with_relative_iris(file_path, publicID)
         # Extract the shapes from the graph
-        return load_shapes_from_graph(g)
+        return load_shapes_from_graph(g, relative_iris=relative_iris)
     except Exception as e:
         line = getattr(e, "lines", None)
         line = line + 1 if isinstance(line, int) else None
@@ -313,7 +320,7 @@ def _get_syntax_error_character(error: Exception) -> int | None:
     return index - line_start + 1
 
 
-def load_shapes_from_graph(g: Graph) -> ShapesList:
+def load_shapes_from_graph(g: Graph, relative_iris: set[Node] | None = None) -> ShapesList:
     # define the SHACL namespace
     SHACL = Namespace(SHACL_NS)
     # find all NodeShapes
@@ -335,7 +342,7 @@ def load_shapes_from_graph(g: Graph) -> ShapesList:
             subgraph.add((s, p, o))
         subgraphs[shape] = subgraph
 
-    return ShapesList(node_shapes, property_shapes, subgraphs, g)
+    return ShapesList(node_shapes, property_shapes, subgraphs, g, relative_iris)
 
 
 def resolve_parent_shape(shapes_graph: Graph, source_shape_node: Node, shapes_registry) -> Shape | None:

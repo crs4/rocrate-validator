@@ -301,6 +301,7 @@ class ShapesRegistry:
     def __init__(self):
         self._shapes: dict[str, Shape] = {}
         self._shapes_graph: Graph = Graph()
+        self._relative_iris: set[Node] = set()
 
     def add_shape(self, shape: Shape):
         assert isinstance(shape, Shape), "Invalid shape"
@@ -338,6 +339,11 @@ class ShapesRegistry:
         g += self._shapes_graph
         return g
 
+    @property
+    def relative_iris(self) -> set[Node]:
+        """IRIs in loaded Turtle shapes that were written as relative references."""
+        return self._relative_iris.copy()
+
     def is_node_deactivated(self, node: Node) -> bool:
         """Return True if the underlying shapes graph asserts
         `<node> sh:deactivated true`. Avoids the copy made by `shapes_graph`
@@ -355,6 +361,7 @@ class ShapesRegistry:
         logger.debug(f"Loading shapes from: {shapes_path}")
         # load shapes (nodes and properties) from the shapes graph
         shapes_list: ShapesList = ShapesList.load_from_file(str(shapes_path), publicID)
+        self._relative_iris.update(shapes_list.relative_iris)
         logger.debug(f"Shapes List: {shapes_list}")
 
         # append the partial shapes graph to the global shapes graph
@@ -429,6 +436,7 @@ class ShapesRegistry:
     def clear(self):
         self._shapes.clear()
         self._shapes_graph = Graph()
+        self._relative_iris.clear()
 
     @classmethod
     def get_instance(cls, ctx: object):
