@@ -110,8 +110,10 @@ public ID, relative IRIs in profile artifacts are compiled against a stable
 internal base. Per-run copies of the SHACL and ontology graphs rebase only those
 relative terms to the current crate, while structural shape identifiers and the
 crate data graph remain unchanged. Metadata whose explicit ``@base`` differs
-from its crate public ID retains a base-specific prepared plan. After editing
-profile files in a long-running process, call
+from its crate public ID causes the validator to keep a separate prepared plan
+for that base combination, limiting plan reuse across crate IDs. Validation
+behavior is unchanged. After editing profile files in a long-running process,
+call
 ``validator.clear_prepared_profiles()`` or ``validator.prepare(refresh=True)``
 before the next validation.
 

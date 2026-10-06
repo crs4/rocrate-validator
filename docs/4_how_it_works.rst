@@ -59,9 +59,12 @@ and preserves structural shape identifiers. The crate data graph itself is
 never rewritten. This permits different crate locations to share preparation
 without leaking their public IDs into one another.
 
-An explicit JSON-LD ``@base`` different from the crate public ID retains a
-base-specific prepared plan. This conservative boundary preserves the two RDF
-spaces used by existing profiles rather than collapsing them during rebasing.
+If the metadata declares an explicit JSON-LD ``@base`` that differs from the
+crate public ID, relative identifiers in the metadata resolve against that
+``@base`` rather than the crate root. Since profile artifacts may contain terms
+from both bases, the validator keeps a separate prepared plan for this base
+combination instead of rebasing it for reuse across crate IDs. Validation
+behavior is unchanged; only cross-crate plan reuse is more limited.
 
 
 Validation profile selection
