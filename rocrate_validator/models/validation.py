@@ -70,6 +70,7 @@ class PreparedValidationPlan:
 
     profiles: tuple[Profile, ...]
     ontology_graph: Graph
+    resolved_profile_identifier: str
 
 
 class Validator(Publisher):
@@ -161,6 +162,7 @@ class Validator(Publisher):
         plan = self.__prepared_validation_plans.get(key)
         if plan is None:
             profiles = tuple(context.__load_profiles__())
+            resolved_profile_identifier = context.profile_identifier
             ontology_graph = Graph()
             for profile in profiles:
                 # Materialize lazy requirements and their per-profile shape
@@ -174,12 +176,16 @@ class Validator(Publisher):
                         format="ttl",
                         publicID=context.prepared_ontology_base,
                     )
-            plan = PreparedValidationPlan(profiles, ontology_graph)
+            plan = PreparedValidationPlan(profiles, ontology_graph, resolved_profile_identifier)
             self.__prepared_validation_plans[key] = plan
             # Loading may resolve a bare profile token (for example
             # ``ro-crate``) to a versioned identifier and update the settings.
             # Store the canonical key as an alias for subsequent warm runs.
             self.__prepared_validation_plans[self.__prepared_validation_plan_key__(context)] = plan
+        # A per-call input uses a copy of the validator settings. On a cache hit
+        # that copy still contains a bare token, so restore the resolved target
+        # profile identifier before SHACL dispatch compares it with each profile.
+        context.settings.profile_identifier = plan.resolved_profile_identifier
         return plan
 
     def clear_prepared_profiles(self) -> None:

@@ -207,6 +207,40 @@ def test_distinct_explicit_metadata_bases_keep_separate_plans():
     assert first.context.prepared_validation_plan is not second.context.prepared_validation_plan
 
 
+def test_cached_plan_resolves_bare_profile_token_for_each_per_call_validation(tmp_path):
+    """A cache hit must not defer every SHACL check for a per-call bare token."""
+    crate = tmp_path / "crate"
+    crate.mkdir()
+    metadata = {
+        "@context": {"@vocab": "http://schema.org/", "about": {"@type": "@id"}},
+        "@graph": [
+            # The selected versioned profile requires this descriptor to have
+            # an RDF type. Leave it out so each call must report a violation.
+            {"@id": "ro-crate-metadata.json", "about": {"@id": "./"}},
+            {"@id": "./", "@type": "Dataset"},
+        ],
+    }
+    (crate / "ro-crate-metadata.json").write_text(json.dumps(metadata), encoding="utf-8")
+    settings = ValidationSettings(
+        rocrate_uri=URI(crate),
+        profiles_path=Path("tests/data/profiles/fake_versioned_profiles"),
+        profile_identifier="c",
+        offline=True,
+    )
+    validator = Validator(settings)
+
+    first_result = validator.validate(crate)
+    second_result = validator.validate(crate)
+
+    assert not first_result.passed()
+    assert not second_result.passed()
+    assert len(first_result.executed_checks) > 0
+    assert len(second_result.executed_checks) == len(first_result.executed_checks)
+    assert [issue.message for issue in second_result.get_issues()] == [
+        issue.message for issue in first_result.get_issues()
+    ]
+
+
 def test_metadata_service_does_not_mutate_caller_settings():
     crate = ValidROC().wrroc_paper
     with (crate / "ro-crate-metadata.json").open(encoding="utf-8") as stream:
