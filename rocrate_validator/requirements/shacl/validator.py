@@ -126,6 +126,7 @@ class SHACLValidationContext(ValidationContext):
         # profile may expose several SHACL checks, but its graphs must be
         # loaded only once before the combined validation is executed.
         self._loaded_profiles: set[str] = set()
+        self._relative_shape_iris: set[Node] = set()
 
         # Checks awaiting the combined run have no result yet; they are not skips.
         self.deferred_checks: set[RequirementCheck] = set()
@@ -168,6 +169,7 @@ class SHACLValidationContext(ValidationContext):
         if profile.identifier not in self._loaded_profiles:
             # augment the shapes registry with the profile shapes
             profile_registry = ShapesRegistry.get_instance(profile)
+            self._relative_shape_iris.update(profile_registry.relative_iris)
             profile_shapes = profile_registry.get_shapes()
             profile_shapes_graph = profile_registry.shapes_graph
             structural_nodes = {
@@ -261,6 +263,8 @@ class SHACLValidationContext(ValidationContext):
         shacl = Namespace(SHACL_NS)
         for shape in self.shapes_registry.get_shapes().values():
             node = shape.node
+            if node not in self._relative_shape_iris:
+                continue
             target_class = rebase_node(node, self._run_base_mappings)
             if target_class == node:
                 continue

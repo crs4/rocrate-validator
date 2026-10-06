@@ -346,6 +346,55 @@ def test_structural_shape_identifier_is_rebased_as_target_class(
             assert isomorphic(prepared_shapes, registry.shapes_graph)
 
 
+def test_absolute_canonical_class_target_is_not_rebased(tmp_path):
+    """An absolute class IRI on the preparation authority must retain its identity."""
+    profiles_path = tmp_path / "profiles"
+    shutil.copytree(Path("tests/data/profiles/fake"), profiles_path)
+    absolute_class = "https://example.invalid/rocrate-validator/prepared/crate/Dataset"
+    shape_path = profiles_path / "c" / "shape_c.ttl"
+    shape_path.write_text(
+        f"""
+        @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+        @prefix schema: <http://schema.org/> .
+        @prefix sh: <http://www.w3.org/ns/shacl#> .
+
+        <{absolute_class}> a sh:NodeShape, rdfs:Class ;
+            sh:property [ sh:path schema:name ; sh:minCount 1 ;
+                          sh:message "absolute-class check must run" ] .
+        """,
+        encoding="utf-8",
+    )
+    crate = tmp_path / "crate"
+    crate.mkdir()
+    metadata = {
+        "@context": {"@vocab": "http://schema.org/", "about": {"@type": "@id"}},
+        "@graph": [
+            {"@id": "ro-crate-metadata.json", "@type": "CreativeWork", "about": {"@id": "./"}},
+            {"@id": "./", "@type": "Dataset"},
+            {"@id": "./item", "@type": absolute_class, "name": "Present"},
+        ],
+    }
+    (crate / "ro-crate-metadata.json").write_text(json.dumps(metadata), encoding="utf-8")
+    validator = Validator(
+        ValidationSettings(
+            rocrate_uri=URI(crate),
+            profiles_path=profiles_path,
+            profile_identifier="c",
+            offline=True,
+        )
+    )
+
+    valid_result = validator.validate()
+    assert valid_result.passed()
+    metadata["@graph"][2].pop("name")
+    (crate / "ro-crate-metadata.json").write_text(json.dumps(metadata), encoding="utf-8")
+    invalid_result = validator.validate()
+
+    assert not invalid_result.passed()
+    assert any(issue.message == "absolute-class check must run" for issue in invalid_result.get_issues())
+    assert invalid_result.get_issues()[0].violatingEntity == "./item"
+
+
 def test_per_call_metadata_does_not_mutate_validator_settings():
     crate = ValidROC().wrroc_paper
     with (crate / "ro-crate-metadata.json").open(encoding="utf-8") as stream:
