@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from collections.abc import Iterable
-from posixpath import relpath
+from posixpath import commonpath, relpath
 from urllib.parse import urljoin, urlsplit, urlunsplit
 
 from rdflib import Graph, URIRef
@@ -54,7 +54,27 @@ def rebase_node(node: Node, base_mappings: Iterable[tuple[str, str]]) -> Node:
             source_parts = urlsplit(source_base)
             if (value_parts.scheme, value_parts.netloc) != (source_parts.scheme, source_parts.netloc):
                 continue
+
+            # A root-relative identifier is anchored at the URI authority, not
+            # at the crate directory. Preserve its absolute path while mapping
+            # the URI scheme/authority to the current crate's URI space.
+            if value_parts.path.startswith("/") and commonpath((source_parts.path, value_parts.path)) == "/":
+                target_parts = urlsplit(target_base)
+                return URIRef(
+                    urlunsplit(
+                        (
+                            target_parts.scheme,
+                            target_parts.netloc,
+                            value_parts.path,
+                            value_parts.query,
+                            value_parts.fragment,
+                        )
+                    )
+                )
+
             relative_path = relpath(value_parts.path, source_parts.path)
+            if value_parts.path.endswith("/") and not relative_path.endswith("/"):
+                relative_path += "/"
             rebased = urlsplit(urljoin(target_base, relative_path))
             return URIRef(
                 urlunsplit((rebased.scheme, rebased.netloc, rebased.path, value_parts.query, value_parts.fragment))

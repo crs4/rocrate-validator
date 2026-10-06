@@ -12,14 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from urllib.parse import urljoin
+
 from rdflib import Graph, Namespace, URIRef
 from rdflib.namespace import RDF
 
-from rocrate_validator.utils.rdf import rebase_graph
+from rocrate_validator.utils.rdf import PREPARED_PROFILE_BASE, rebase_graph, rebase_node
 
 
 def test_rebase_graph_maps_parent_relative_references_after_rdf_parsing():
-    source_base = "https://example.org/crate/"
+    source_base = "https://example.org/a/b/crate/"
     prepared_base = "https://example.invalid/rocrate-validator/prepared/crate/"
     graph = Graph().parse(
         data="""
@@ -65,3 +67,29 @@ def test_rebase_graph_rebases_structural_node_when_used_as_target_class():
 
     assert (class_shape, RDF.type, sh.NodeShape) in rebased
     assert (class_shape, sh.targetClass, URIRef("file:///tmp/crate/Dataset")) in rebased
+
+
+def test_rebase_node_preserves_parent_relative_trailing_slash():
+    target_base = "file:///data/team/project/crate/"
+    source_uri = URIRef(urljoin(PREPARED_PROFILE_BASE, "../Dataset/"))
+
+    rebased = rebase_node(source_uri, ((PREPARED_PROFILE_BASE, target_base),))
+
+    assert rebased == URIRef("file:///data/team/project/Dataset/")
+
+
+def test_rebase_node_preserves_root_relative_path():
+    target_base = "file:///data/team/project/crate/"
+    source_uri = URIRef("https://example.invalid/Dataset")
+
+    rebased = rebase_node(source_uri, ((PREPARED_PROFILE_BASE, target_base),))
+
+    assert rebased == URIRef("file:///Dataset")
+
+
+def test_rebase_node_leaves_absolute_iri_on_another_authority_unchanged():
+    absolute_iri = URIRef("https://schema.org/Dataset")
+
+    rebased = rebase_node(absolute_iri, ((PREPARED_PROFILE_BASE, "file:///data/crate/"),))
+
+    assert rebased == absolute_iri

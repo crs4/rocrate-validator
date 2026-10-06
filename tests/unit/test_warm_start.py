@@ -200,11 +200,20 @@ def test_parent_relative_shape_target_is_rebased_for_validation(tmp_path):
         profile_identifier="c",
         offline=True,
     )
+    validator = Validator(settings)
 
-    result = Validator(settings).validate()
+    for valid in (True, False):
+        if valid:
+            metadata["@graph"][2]["name"] = "Present"
+        else:
+            metadata["@graph"][2].pop("name")
+        (crate / "ro-crate-metadata.json").write_text(json.dumps(metadata), encoding="utf-8")
+        result = validator.validate()
 
-    assert not result.passed()
-    assert any(issue.message == "target must have a name" for issue in result.get_issues())
+        assert result.passed() is valid
+        if not valid:
+            assert any(issue.message == "target must have a name" for issue in result.get_issues())
+            assert result.get_issues()[0].violatingEntity == (crate.parent / "target").as_uri()
 
 
 @pytest.mark.parametrize("explicit_target", [False, True], ids=["implicit", "explicit"])
