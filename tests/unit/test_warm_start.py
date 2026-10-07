@@ -127,8 +127,8 @@ def test_ontology_rebasing_only_changes_lexically_relative_iris(tmp_path):
         PREFIX ex: <http://example.org/>
 
         rel:RelativeSubject ex:link rel:RelativeObject .
-        <https://example.invalid/rocrate-validator/prepared/crate/AbsoluteSubject>
-            ex:link <https://example.invalid/rocrate-validator/prepared/crate/AbsoluteObject> .
+        <https://github.com/crs4/rocrate-validator/prepared/crate/AbsoluteSubject>
+            ex:link <https://github.com/crs4/rocrate-validator/prepared/crate/AbsoluteObject> .
         <https://example.invalid/external/AbsoluteSubject>
             ex:link <https://example.invalid/external/AbsoluteObject> .
         """,
@@ -154,9 +154,9 @@ def test_ontology_rebasing_only_changes_lexically_relative_iris(tmp_path):
         URIRef(urljoin(result.context.publicID, "../RelativeObject")),
     ) in ontology_graph
     assert (
-        URIRef("https://example.invalid/rocrate-validator/prepared/crate/AbsoluteSubject"),
+        URIRef("https://github.com/crs4/rocrate-validator/prepared/crate/AbsoluteSubject"),
         ex.link,
-        URIRef("https://example.invalid/rocrate-validator/prepared/crate/AbsoluteObject"),
+        URIRef("https://github.com/crs4/rocrate-validator/prepared/crate/AbsoluteObject"),
     ) in ontology_graph
     assert (
         URIRef("https://example.invalid/external/AbsoluteSubject"),
@@ -315,7 +315,7 @@ def test_structural_shape_identifier_is_rebased_as_target_class(
             metadata["@graph"].append(
                 {
                     "@id": "./unrelated",
-                    "@type": "https://example.invalid/rocrate-validator/prepared/crate/Dataset",
+                    "@type": "https://github.com/crs4/rocrate-validator/prepared/crate/Dataset",
                 }
             )
         (crate / "ro-crate-metadata.json").write_text(json.dumps(metadata), encoding="utf-8")
@@ -350,7 +350,7 @@ def test_absolute_canonical_class_target_is_not_rebased(tmp_path):
     """An absolute class IRI on the preparation authority must retain its identity."""
     profiles_path = tmp_path / "profiles"
     shutil.copytree(Path("tests/data/profiles/fake"), profiles_path)
-    absolute_class = "https://example.invalid/rocrate-validator/prepared/crate/Dataset"
+    absolute_class = "https://github.com/crs4/rocrate-validator/prepared/crate/Dataset"
     shape_path = profiles_path / "c" / "shape_c.ttl"
     shape_path.write_text(
         f"""

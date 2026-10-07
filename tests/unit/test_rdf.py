@@ -22,7 +22,7 @@ from rocrate_validator.utils.rdf import PREPARED_PROFILE_BASE, rebase_graph, reb
 
 def test_rebase_graph_maps_parent_relative_references_after_rdf_parsing():
     source_base = "https://example.org/a/b/crate/"
-    prepared_base = "https://example.invalid/rocrate-validator/prepared/crate/"
+    prepared_base = PREPARED_PROFILE_BASE
     graph = Graph().parse(
         data="""
             @prefix ex: <../> .
@@ -38,19 +38,19 @@ def test_rebase_graph_maps_parent_relative_references_after_rdf_parsing():
     rebased = rebase_graph(graph, ((source_base, prepared_base),))
 
     assert (
-        URIRef("https://example.invalid/rocrate-validator/prepared/target"),
+        URIRef("https://github.com/crs4/rocrate-validator/prepared/target"),
         URIRef("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
-        URIRef("https://example.invalid/rocrate-validator/prepared/Entity"),
+        URIRef("https://github.com/crs4/rocrate-validator/prepared/Entity"),
     ) in rebased
     assert (
         URIRef("https://outside.example/entity"),
         URIRef("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
-        URIRef("https://example.invalid/rocrate-validator/prepared/Entity"),
+        URIRef("https://github.com/crs4/rocrate-validator/prepared/Entity"),
     ) in rebased
 
 
 def test_rebase_graph_rebases_structural_node_when_used_as_target_class():
-    prepared_base = "https://example.invalid/rocrate-validator/prepared/crate/"
+    prepared_base = PREPARED_PROFILE_BASE
     crate_base = "file:///tmp/crate/"
     sh = Namespace("http://www.w3.org/ns/shacl#")
     class_shape = URIRef(f"{prepared_base}Dataset")
@@ -80,7 +80,7 @@ def test_rebase_node_preserves_parent_relative_trailing_slash():
 
 def test_rebase_node_preserves_root_relative_path():
     target_base = "file:///data/team/project/crate/"
-    source_uri = URIRef("https://example.invalid/Dataset")
+    source_uri = URIRef("https://github.com/Dataset")
 
     rebased = rebase_node(source_uri, ((PREPARED_PROFILE_BASE, target_base),))
 

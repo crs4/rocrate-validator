@@ -34,6 +34,7 @@ from rocrate_validator.models.check_result import (
     DeferredRequirementCheck,
     normalize_check_result,
 )
+from rocrate_validator.models.events import RequirementCheckValidationEvent
 from rocrate_validator.models.severity import (
     LevelCollection,
     RequirementLevel,
@@ -297,10 +298,6 @@ class Requirement(ABC):
         message: str = "Check was skipped",
         category: SkipCategory = SkipCategory.RETURNED,
     ) -> None:
-        from rocrate_validator.models.events import (  # noqa: PLC0415
-            RequirementCheckValidationEvent,
-        )
-
         # Overlay replacements and batched SHACL checks may already have an
         # outcome before traversal reaches their own requirement. Aborting
         # must not overwrite that outcome or emit a misleading skipped event.
@@ -432,10 +429,6 @@ class Requirement(ABC):
         profile is visited.  The returned tuple contains the accumulated pass
         state and whether fail-fast processing must stop after this check.
         """
-        from rocrate_validator.models.events import (  # noqa: PLC0415
-            RequirementCheckValidationEvent,
-        )
-
         # An overlay replacement may already have run in the source profile's
         # slot.  Keep the target pass a no-op instead of executing the same
         # Python check twice.

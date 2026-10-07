@@ -13,9 +13,11 @@
 # limitations under the License.
 
 import re
-from collections.abc import Iterable
+from collections.abc import Iterable, MutableSequence
+from io import StringIO
 from pathlib import Path
 from posixpath import commonpath, relpath
+from typing import Any
 from urllib.parse import urljoin, urlsplit, urlunsplit
 
 from rdflib import Graph, URIRef
@@ -31,7 +33,7 @@ from rocrate_validator.utils.paths import list_graph_paths
 logger = logging.getLogger(__name__)
 
 
-PREPARED_PROFILE_BASE = "https://example.invalid/rocrate-validator/prepared/crate/"
+PREPARED_PROFILE_BASE = "https://github.com/crs4/rocrate-validator/prepared/crate/"
 _PREFIX_DECLARATION = re.compile(r"@?prefix\b\s+([^:\s]*):\s*<([^>]*)>", re.IGNORECASE)
 
 
@@ -67,33 +69,33 @@ class _TurtleProvenanceParser(SinkParser):
         else:
             self.relative_prefixes.discard(prefix)
 
-    def directive(self, argstr: str, index: int) -> int:
-        declaration = _prefix_declaration(argstr, index)
-        parsed_at = super().directive(argstr, index)
+    def directive(self, argstr: str, i: int) -> int:
+        declaration = _prefix_declaration(argstr, i)
+        parsed_at = super().directive(argstr, i)
         self._record_prefix_declaration(declaration, parsed_at)
         return parsed_at
 
-    def sparqlDirective(self, argstr: str, index: int) -> int:
-        declaration = _prefix_declaration(argstr, index)
-        parsed_at = super().sparqlDirective(argstr, index)
+    def sparqlDirective(self, argstr: str, i: int) -> int:
+        declaration = _prefix_declaration(argstr, i)
+        parsed_at = super().sparqlDirective(argstr, i)
         self._record_prefix_declaration(declaration, parsed_at)
         return parsed_at
 
-    def uri_ref2(self, argstr: str, index: int, result: list) -> int:
+    def uri_ref2(self, argstr: str, i: int, res: MutableSequence[Any]) -> int:
         qname: list = []
-        self.qname(argstr, index, qname)
+        self.qname(argstr, i, qname)
         relative_qname = bool(qname and qname[0][0] in self.relative_prefixes)
-        start = self.skipSpace(argstr, index)
+        start = self.skipSpace(argstr, i)
         relative_ref = start >= 0 and argstr[start] == "<"
         if relative_ref:
             end = argstr.find(">", start + 1)
             if end >= 0:
                 relative_ref = _is_relative_iri(argstr[start + 1 : end])
 
-        previous_length = len(result)
-        parsed_at = super().uri_ref2(argstr, index, result)
-        if parsed_at >= 0 and len(result) > previous_length and (relative_ref or relative_qname):
-            value = result[-1]
+        previous_length = len(res)
+        parsed_at = super().uri_ref2(argstr, i, res)
+        if parsed_at >= 0 and len(res) > previous_length and (relative_ref or relative_qname):
+            value = res[-1]
             if isinstance(value, Node):
                 self.relative_iris.add(value)
         return parsed_at
@@ -108,12 +110,12 @@ def parse_turtle_with_relative_iris(file_path: str | Path, public_id: str | None
         base_uri = graph.absolutize(source.getPublicId() or source.getSystemId() or "")
         parser = _TurtleProvenanceParser(RDFSink(graph), base_uri)
         stream = source.getCharacterStream() or source.getByteStream()
+        if stream is None:
+            raise ValueError("Input source does not provide a readable stream")
         source_text = stream.read()
         if isinstance(source_text, bytes):
             source_text = source_text.decode("utf-8")
         source_text = source_text.removeprefix("\ufeff")
-
-        from io import StringIO  # noqa: PLC0415
 
         parser.loadStream(StringIO(source_text))
         for prefix, namespace in parser._bindings.items():

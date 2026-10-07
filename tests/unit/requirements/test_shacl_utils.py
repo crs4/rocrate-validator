@@ -69,9 +69,9 @@ def _build_two_property_shape() -> tuple[Graph, URIRef, BNode, BNode]:
 
 @pytest.mark.parametrize("directive", ["@prefix", "PREFIX"])
 def test_turtle_rebasing_only_changes_lexically_relative_iris(tmp_path, directive):
-    source_base = "https://example.invalid/rocrate-validator/prepared/crate/"
+    source_base = "https://github.com/crs4/rocrate-validator/prepared/crate/"
     target_base = "file:///tmp/crate/"
-    absolute_target = URIRef("https://example.invalid/rocrate-validator/prepared/crate/AbsoluteClass")
+    absolute_target = URIRef("https://github.com/crs4/rocrate-validator/prepared/crate/AbsoluteClass")
     external_target = URIRef("https://example.invalid/external/AbsoluteClass")
     shapes_path = tmp_path / "relative-and-absolute.ttl"
     relative_prefix = "@prefix rel: <../> ." if directive == "@prefix" else "PREFIX rel: <../>"
@@ -79,7 +79,7 @@ def test_turtle_rebasing_only_changes_lexically_relative_iris(tmp_path, directiv
         f"""
         @prefix sh: <http://www.w3.org/ns/shacl#> .
         {relative_prefix}
-        PREFIX abs: <https://example.invalid/rocrate-validator/prepared/crate/>
+        PREFIX abs: <https://github.com/crs4/rocrate-validator/prepared/crate/>
 
         rel:Shape a sh:NodeShape ; sh:targetNode rel:target .
         abs:AbsoluteShape a sh:NodeShape ; sh:targetNode abs:AbsoluteClass .
