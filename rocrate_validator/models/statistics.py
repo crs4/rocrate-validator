@@ -68,7 +68,7 @@ class ValidationStatistics(Subscriber):
             settings = ValidationSettings.parse(settings)
         self._settings = settings
         self._context = context
-        self._stats = self.__initialise__(settings) if not skip_initialization else {}
+        self._stats = self.__initialise__(settings, context=context) if not skip_initialization else {}
         self._result: ValidationResult | None = None
         self._listeners: list[ValidationStatisticsListener] = []
 
@@ -300,18 +300,29 @@ class ValidationStatistics(Subscriber):
         return requirement_checks_count
 
     @classmethod
-    def __initialise__(cls, validation_settings: ValidationSettings):
+    def __initialise__(
+        cls,
+        validation_settings: ValidationSettings,
+        context: ValidationContext | None = None,
+    ):  # pylint: disable=too-many-locals
         """
         Compute the statistics of the profile
         """
         # extract the validation settings
         severity_validation = validation_settings.requirement_severity
-        profiles: list[Profile] = Profile.load_profiles(
-            validation_settings.profiles_path,
-            extra_profiles_path=validation_settings.extra_profiles_path,
-            severity=cast("Severity", severity_validation),
-            allow_requirement_check_override=validation_settings.allow_requirement_check_override,
-        )
+        profiles: list[Profile]
+        if context is not None:
+            # Reuse the exact profile instances selected by the validation
+            # context. They already carry the lazily prepared requirements and
+            # shape registries used by the run.
+            profiles = context.profiles
+        else:
+            profiles = Profile.load_profiles(
+                validation_settings.profiles_path,
+                extra_profiles_path=validation_settings.extra_profiles_path,
+                severity=cast("Severity", severity_validation),
+                allow_requirement_check_override=validation_settings.allow_requirement_check_override,
+            )
         profile: Profile = cast("Profile", Profile.find_in_list(profiles, validation_settings.profile_identifier))
         target_profile_identifier = profile.identifier
         # initialize the profiles list

@@ -36,6 +36,37 @@ Validation profiles can be related by inheritance -- i.e., where one validation
 profile extends another one. For instance, Workflow Testing RO-Crate extends Workflow RO-Crate.
 
 
+Validation lifecycle and prepared profiles
+------------------------------------------
+
+An instance of :class:`rocrate_validator.models.Validator` keeps the profile
+preparation state used by its validation runs.  This state contains the resolved
+profile chain and the profile objects which lazily own requirements and SHACL
+shape registries.  Repeated calls on the same validator can therefore reuse
+parsed profile artifacts instead of loading them again.
+
+Crate-specific state is never part of the prepared profile state.  Every run
+still creates a new validation context, data graph, result, and SHACL execution
+context, so inference, SHACL rules, violations, and skipped checks cannot leak
+from one run into another.  Validation statistics use the same prepared profile
+instances as their owning validation context rather than loading a second copy.
+
+Profile artifacts can contain relative IRIs. For the ordinary case where the
+effective JSON-LD base is the crate public ID, profiles are prepared once using
+a stable internal base. Each SHACL run copies the much smaller prepared shapes
+and ontology graphs, rebases their relative data terms to the current crate,
+and preserves structural shape identifiers. The crate data graph itself is
+never rewritten. This permits different crate locations to share preparation
+without leaking their public IDs into one another.
+
+If the metadata declares an explicit JSON-LD ``@base`` that differs from the
+crate public ID, relative identifiers in the metadata resolve against that
+``@base`` rather than the crate root. Since profile artifacts may contain terms
+from both bases, the validator keeps a separate prepared plan for this base
+combination instead of rebasing it for reuse across crate IDs. Validation
+behavior is unchanged; only cross-crate plan reuse is more limited.
+
+
 Validation profile selection
 ----------------------------
 

@@ -104,6 +104,9 @@ Severity
 
 Validation
 -----------------------------------------
+.. autoclass:: rocrate_validator.models.Validator
+    :members:
+
 .. autoclass:: rocrate_validator.models.ValidationSettings
     :members:
 
