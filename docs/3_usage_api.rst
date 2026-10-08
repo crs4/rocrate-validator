@@ -39,6 +39,8 @@ Programmatic Validation
     * To select or write validation profiles, see
       :doc:`Validation profiles <12_validation_profiles>` and
       :doc:`Writing a profile <11_writing_a_profile>`.
+    * For package modes, scope, and accepted input combinations, see
+      :ref:`package_modes`.
 
 
 Metadata-only Validation
@@ -48,6 +50,10 @@ In addition to full validation, which checks both metadata and data files,
 the library also supports metadata-only validation. This is useful when you
 want to ensure that the metadata conforms to the expected schema without
 checking the actual data files.
+
+You can check only metadata using either Attached or Detached rules. See
+:ref:`package_modes` for the meaning of these modes, their defaults, and examples
+using a metadata file or URL.
 
 To perform metadata-only validation, you can use the `validate_metadata_as_dict`
 from the `rocrate_validator.services` module. This function takes a dictionary
