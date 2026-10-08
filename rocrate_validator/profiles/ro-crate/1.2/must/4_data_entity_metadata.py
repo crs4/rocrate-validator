@@ -191,19 +191,6 @@ class DataEntityIdentifierChecker(PyFunctionCheck):
         for entity in entities:
             if root_entity_id and entity.id == root_entity_id:
                 continue
-            if (
-                context.ro_crate.is_detached()
-                and not entity.has_local_identifier()
-                and not is_external_reference(entity.id)
-            ):
-                context.result.add_issue(
-                    f"Data Entity '{entity.id}' has a local identifier but the Root Data Entity "
-                    "does not have a local identifier",
-                    self,
-                )
-                result = False
-                if context.fail_fast:
-                    return False
             if entity.has_local_identifier():
                 continue
             path_error = _data_entity_path_error(entity.id)
