@@ -119,7 +119,7 @@ class ROCrate(ABC):
 
     @property
     def package_type(self) -> PackageType:
-        """Resolved RO-Crate package type, based on the input source."""
+        """Package context selected explicitly or assumed from the input source."""
         return getattr(self, "_package_type", PackageType.ATTACHED)
 
     @property
@@ -382,13 +382,19 @@ class ROCrate(ABC):
 
     @staticmethod
     def new_instance(  # noqa: C901  # pylint: disable=too-many-locals
-        uri: str | Path | URI, relative_root_path: Path | None = None, packaging_mode: str = "auto"
+        uri: str | Path | URI,
+        relative_root_path: Path | None = None,
+        packaging_mode: str = "auto",
+        metadata_only: bool = False,
     ) -> ROCrate:
         """
         Create a new instance of the RO-Crate based on the URI.
 
         :param uri: the URI of the RO-Crate
         :type uri: Union[str, Path, URI]
+
+        :param packaging_mode: Explicit package context or an input-based default.
+        :param metadata_only: Allow Attached document input without a payload backend.
 
         :return: a new instance of the RO-Crate
         :rtype: ROCrate
@@ -415,7 +421,12 @@ class ROCrate(ABC):
         # Reject incompatible source/mode combinations before network access.
         if not isinstance(uri, URI):
             uri = URI(uri)
-        if mode == "attached" and uri.is_remote_resource() and Path(uri.get_path()).suffix.lower() != ".zip":
+        if (
+            mode == "attached"
+            and not metadata_only
+            and uri.is_remote_resource()
+            and Path(uri.get_path()).suffix.lower() != ".zip"
+        ):
             raise ValueError("Attached mode for a remote standalone document requires a package adapter")
         if mode == "detached" and (uri.is_local_directory() or Path(uri.get_path()).suffix.lower() == ".zip"):
             raise ValueError("Detached mode requires a standalone metadata document, not a directory or ZIP")
@@ -446,12 +457,13 @@ class ROCrate(ABC):
                 crate._package_type = PackageType.ATTACHED
                 crate._packaging_mode_explicit = mode != "auto"
                 return crate
-            if mode == "attached":
+            if mode == "attached" and not metadata_only:
                 if uri.as_path().name != ROCrateMetadata.METADATA_FILE_DESCRIPTOR:
                     raise ValueError("Attached mode requires a canonical ro-crate-metadata.json or a package directory")
                 return ROCrate.new_instance(uri.as_path().parent, packaging_mode="attached")
             crate = ROCrateLocalMetadataFile(uri, relative_root_path=relative_root_path)
-            crate._package_type = PackageType.DETACHED
+            crate._package_type = PackageType.ATTACHED if mode == "attached" else PackageType.DETACHED
+            crate._packaging_mode_explicit = mode != "auto"
             return crate
         # check if the URI is a remote zip file
         if uri.is_remote_resource():
@@ -466,10 +478,9 @@ class ROCrate(ABC):
                 crate._package_type = PackageType.ATTACHED
                 crate._packaging_mode_explicit = mode != "auto"
                 return crate
-            if mode == "attached":
-                raise ValueError("Attached mode for a remote standalone document requires a package adapter")
             crate = ROCrateRemoteMetadataFile(uri, relative_root_path=relative_root_path)
-            crate._package_type = PackageType.DETACHED
+            crate._package_type = PackageType.ATTACHED if mode == "attached" else PackageType.DETACHED
+            crate._packaging_mode_explicit = mode != "auto"
             return crate
         # if the URI is not supported, raise an error
         raise ROCrateInvalidURIError(uri=uri, message="Unsupported RO-Crate URI")

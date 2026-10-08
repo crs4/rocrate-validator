@@ -172,6 +172,7 @@ def __initialise_validator__(  # noqa: C901, PLR0911  # pylint: disable=too-many
 
     if (
         settings.packaging_mode == "attached"
+        and not settings.metadata_only
         and rocrate_path.is_remote_resource()
         and (Path(rocrate_path.get_path()).suffix.lower() != ".zip")
     ):

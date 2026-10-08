@@ -559,6 +559,7 @@ class ValidationContext:
                 rocrate_uri,
                 relative_root_path=settings.rocrate_relative_root_path,
                 packaging_mode=settings.packaging_mode,
+                metadata_only=settings.metadata_only,
             )
         assert isinstance(self._rocrate, ROCrate), "Invalid RO-Crate instance"
 
