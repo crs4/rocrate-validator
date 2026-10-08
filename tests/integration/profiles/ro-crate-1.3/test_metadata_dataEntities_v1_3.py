@@ -74,8 +74,8 @@ def test_invalid_detached_rocrate_dataEntities():
         models.Severity.REQUIRED,
         False,
         profile_identifier="ro-crate-1.3",
-        expected_triggered_requirements=["Data Entity: identifier requirements"],
-        expected_triggered_issues=["has a local identifier but the Root Data Entity does not have a local identifier"],
+        expected_triggered_requirements=["Detached RO-Crate: data entities MUST be web-based"],
+        expected_triggered_issues=["MUST have an absolute URL as @id"],
     )
 
 
