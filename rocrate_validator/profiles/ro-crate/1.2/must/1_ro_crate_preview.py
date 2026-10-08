@@ -32,8 +32,8 @@ class ROCrateWebsiteChecker(PyFunctionCheck):
     @check(name="RO-Crate Website HTML5 doctype")
     def check_preview_html(self, context: ValidationContext) -> CheckResultValue:
         try:
-            if context.ro_crate.is_detached():
-                context.record_skip(self, "RO-Crate is detached", "returned")
+            if not context.ro_crate.is_attached():
+                context.record_skip(self, "attached package context is unavailable", "returned")
                 return CheckResult.SKIPPED
         except ROCrateMetadataNotFoundError:
             logger.debug("Skipping RO-Crate Website check: metadata descriptor is not available")

@@ -15,6 +15,7 @@
 import json
 import re
 from http import HTTPStatus
+from pathlib import Path
 from typing import Any
 from urllib.parse import urljoin
 
@@ -71,8 +72,14 @@ class FileDescriptorExistence(PyFunctionCheck):
             logger.debug("Skipping file descriptor existence check in metadata-only mode")
             context.record_skip(self, "metadata-only mode", "configured")
             return CheckResult.SKIPPED
-        if not context.ro_crate.has_descriptor():
-            message = f'file descriptor "{context.rel_fd_path}" is not present'
+        if context.ro_crate.is_attached():
+            descriptor = context.ro_crate.attached_descriptor_id
+            exists = context.ro_crate.has_file(Path(descriptor))
+        else:
+            descriptor = str(context.rel_fd_path)
+            exists = context.ro_crate.has_descriptor()
+        if not exists:
+            message = f'file descriptor "{descriptor}" is not present'
             context.result.add_issue(message, self)
             return False
         return True
