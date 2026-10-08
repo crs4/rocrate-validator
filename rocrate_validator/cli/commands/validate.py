@@ -78,6 +78,13 @@ def validate_uri(ctx, param, value):
     default=False,
     show_default=True,
 )
+@click.option(
+    "--packaging-mode",
+    type=click.Choice(["auto", "attached", "detached"], case_sensitive=False),
+    default="auto",
+    show_default=True,
+    help="Packaging context inferred from the input, or explicitly attached/detached",
+)
 @click.option("-ff", "--fail-fast", is_flag=True, help="Fail fast validation mode", default=False, show_default=True)
 @click.option(
     "--creation-time",
@@ -272,6 +279,7 @@ def validate(
     extra_profiles_path: Path | None = None,
     profile_identifier: tuple[str, ...] = (),
     metadata_only: bool = False,
+    packaging_mode: str = "auto",
     creation_time: bool = False,
     enforce_availability: bool = False,
     skip_availability_check: bool = False,
@@ -350,6 +358,7 @@ def validate(
             "abort_on_first": fail_fast,
             "skip_checks": skip_checks_list,
             "metadata_only": metadata_only,
+            "packaging_mode": packaging_mode,
             "cache_max_age": cache_max_age if not no_cache else -1,
             "cache_path": cache_path,
             "offline": offline,
