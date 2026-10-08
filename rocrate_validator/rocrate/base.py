@@ -28,6 +28,7 @@ from rocrate_validator.utils.uri import URI, validate_rocrate_uri
 
 from .entity import ROCrateEntity
 from .metadata import ROCrateMetadata
+from .package_type import PackageType, parse_packaging_mode
 
 if TYPE_CHECKING:
     from rdflib import Graph
@@ -40,6 +41,12 @@ class ROCrate(ABC):
     """
     Base class for representing and interacting with a Research Object Crate (RO-Crate).
     """
+
+    # Set by the factory after selecting a concrete input adapter. They are
+    # declared here for static analysis; getattr-based defaults below preserve
+    # the behavior of directly constructed subclasses.
+    _package_type: PackageType
+    _packaging_mode_explicit: bool
 
     def __new__(cls, uri: str | Path | URI, relative_root_path: Path | None = None):
         """
@@ -110,20 +117,30 @@ class ROCrate(ABC):
             self._metadata = ROCrateMetadata(self)
         return self._metadata
 
+    @property
+    def package_type(self) -> PackageType:
+        """Resolved RO-Crate package type, based on the input source."""
+        return getattr(self, "_package_type", PackageType.ATTACHED)
+
+    @property
+    def packaging_mode_explicit(self) -> bool:
+        return getattr(self, "_packaging_mode_explicit", False)
+
     def is_detached(self) -> bool:
-        root = self.metadata.get_root_data_entity()
-        if root and root.has_type("Dataset") and root.id == "./":
-            return False
-        if root and root.id_as_uri.is_remote_resource():
-            # An absolute root @id doesn't necessarily mean detached;
-            # check if there are any local (non-web) data entities
-            local_data_entities = self.metadata.get_data_entities(exclude_web_data_entities=True)
-            return all(entity.id == root.id for entity in local_data_entities)
-        return False
+        return self.package_type is PackageType.DETACHED
+
+    def is_attached(self) -> bool:
+        return self.package_type is PackageType.ATTACHED
 
     @property
     def metadata_descriptor_id(self) -> str:
         return ROCrateMetadata.METADATA_FILE_DESCRIPTOR
+
+    @property
+    def attached_descriptor_id(self) -> str:
+        """Canonical descriptor at the selected Attached package root."""
+        root = self.relative_root_path or Path()
+        return str(root / ROCrateMetadata.METADATA_FILE_DESCRIPTOR)
 
     @property
     @abstractmethod
@@ -343,7 +360,7 @@ class ROCrate(ABC):
         return int(content_length)
 
     @staticmethod
-    def from_metadata_dict(metadata_dict: dict) -> ROCrate:
+    def from_metadata_dict(metadata_dict: dict, packaging_mode: str = "auto") -> ROCrate:
         """
         Create a new instance of the RO-Crate based on the metadata dictionary.
 
@@ -352,16 +369,21 @@ class ROCrate(ABC):
 
         :raises ROCrateInvalidURIError: if the URI is invalid
         """
-        # create a new instance based on the URI (the ROCrate factory __new__
-        # dispatches to a concrete subclass, so this is not truly abstract)
-        ro_crate = ROCrate(URI("./"), relative_root_path=None)  # type: ignore[abstract]
+        from .plain import ROCrateInMemory  # noqa: PLC0415
+
+        mode = parse_packaging_mode(packaging_mode)
+        ro_crate = ROCrateInMemory("urn:rocrate-validator:in-memory/")
+        ro_crate._package_type = PackageType.UNSPECIFIED if mode == "auto" else PackageType(mode)
+        ro_crate._packaging_mode_explicit = mode != "auto"
 
         # override the metadata with the provided dictionary
         ro_crate._metadata = ROCrateMetadata(ro_crate, metadata_dict=metadata_dict)
         return ro_crate
 
     @staticmethod
-    def new_instance(uri: str | Path | URI, relative_root_path: Path | None = None) -> ROCrate:
+    def new_instance(  # noqa: C901  # pylint: disable=too-many-locals
+        uri: str | Path | URI, relative_root_path: Path | None = None, packaging_mode: str = "auto"
+    ) -> ROCrate:
         """
         Create a new instance of the RO-Crate based on the URI.
 
@@ -373,6 +395,7 @@ class ROCrate(ABC):
 
         :raises ROCrateInvalidURIError: if the URI is invalid
         """
+        mode = parse_packaging_mode(packaging_mode)
         # Lazy imports break a cycle: bagit/plain inherit from this class,
         # but the factory needs runtime references to dispatch to them.
         from .bagit import (  # noqa: PLC0415
@@ -389,40 +412,64 @@ class ROCrate(ABC):
             ROCrateRemoteZip,
         )
 
-        # check if the URI is valid
-        validate_rocrate_uri(uri, silent=False)
-        # create a new instance based on the URI
+        # Reject incompatible source/mode combinations before network access.
         if not isinstance(uri, URI):
             uri = URI(uri)
-        # check if the URI is a BagIt-wrapped crate
-        is_bagit_crate = BagitROCrate.is_bagit_wrapping_crate(uri)
+        if mode == "attached" and uri.is_remote_resource() and Path(uri.get_path()).suffix.lower() != ".zip":
+            raise ValueError("Attached mode for a remote standalone document requires a package adapter")
+        if mode == "detached" and (uri.is_local_directory() or Path(uri.get_path()).suffix.lower() == ".zip"):
+            raise ValueError("Detached mode requires a standalone metadata document, not a directory or ZIP")
+        # check if the URI is valid
+        validate_rocrate_uri(uri, silent=False)
 
         # check if the URI is a local directory
         if uri.is_local_directory():
-            return (
+            is_bagit_crate = BagitROCrate.is_bagit_wrapping_crate(uri)
+            crate: ROCrate = (
                 ROCrateBagitLocalFolder(uri, relative_root_path=relative_root_path)
                 if is_bagit_crate
                 else ROCrateLocalFolder(uri, relative_root_path=relative_root_path)
             )
+            crate._package_type = PackageType.ATTACHED
+            crate._packaging_mode_explicit = mode != "auto"
+            return crate
         # check if the URI is a local zip file
         if uri.is_local_file():
             suffix = uri.as_path().suffix.lower()
             if suffix == ".zip":
-                return (
+                is_bagit_crate = BagitROCrate.is_bagit_wrapping_crate(uri)
+                crate = (
                     ROCrateBagitLocalZip(uri, relative_root_path=relative_root_path)
                     if is_bagit_crate
                     else ROCrateLocalZip(uri, relative_root_path=relative_root_path)
                 )
-            return ROCrateLocalMetadataFile(uri, relative_root_path=relative_root_path)
+                crate._package_type = PackageType.ATTACHED
+                crate._packaging_mode_explicit = mode != "auto"
+                return crate
+            if mode == "attached":
+                if uri.as_path().name != ROCrateMetadata.METADATA_FILE_DESCRIPTOR:
+                    raise ValueError("Attached mode requires a canonical ro-crate-metadata.json or a package directory")
+                return ROCrate.new_instance(uri.as_path().parent, packaging_mode="attached")
+            crate = ROCrateLocalMetadataFile(uri, relative_root_path=relative_root_path)
+            crate._package_type = PackageType.DETACHED
+            return crate
         # check if the URI is a remote zip file
         if uri.is_remote_resource():
             path_suffix = Path(uri.get_path()).suffix.lower()
             if path_suffix == ".zip":
-                return (
+                is_bagit_crate = BagitROCrate.is_bagit_wrapping_crate(uri)
+                crate = (
                     ROCrateBagitRemoteZip(uri, relative_root_path=relative_root_path)
                     if is_bagit_crate
                     else ROCrateRemoteZip(uri, relative_root_path=relative_root_path)
                 )
-            return ROCrateRemoteMetadataFile(uri, relative_root_path=relative_root_path)
+                crate._package_type = PackageType.ATTACHED
+                crate._packaging_mode_explicit = mode != "auto"
+                return crate
+            if mode == "attached":
+                raise ValueError("Attached mode for a remote standalone document requires a package adapter")
+            crate = ROCrateRemoteMetadataFile(uri, relative_root_path=relative_root_path)
+            crate._package_type = PackageType.DETACHED
+            return crate
         # if the URI is not supported, raise an error
         raise ROCrateInvalidURIError(uri=uri, message="Unsupported RO-Crate URI")
