@@ -62,6 +62,8 @@ def format_validation_results(
     # Extract settings from the first result if available
     settings = results[0].validation_settings
     json_output["validation_settings"] = settings.to_dict()
+    json_output["validation_settings"]["package_type"] = results[0].context.ro_crate.package_type.value
+    json_output["validation_settings"]["packaging_mode_explicit"] = results[0].context.ro_crate.packaging_mode_explicit
 
     # Determine verbosity from settings
     verbose = settings.verbose if settings else False

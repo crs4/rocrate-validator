@@ -32,7 +32,12 @@ from rocrate_validator.models.severity import (
     RequirementLevel,
     Severity,
 )
-from rocrate_validator.models.skipped_check import SkipCategory, SkipCategoryInput, SkippedCheckDetail
+from rocrate_validator.models.skipped_check import (
+    SkipCategory,
+    SkipCategoryInput,
+    SkippedCheckDetail,
+    normalize_skip_category,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Collection
@@ -56,6 +61,7 @@ class CheckIssue:
         violatingProperty: str | None = None,
         violatingEntity: str | None = None,
         value: str | None = None,
+        *,
         context: ValidationContext | None = None,
     ):
         self._message = message
@@ -278,7 +284,7 @@ class ValidationResult:
         self._check_results[check.identifier] = normalized_result
 
         if normalized_result is CheckResult.SKIPPED:
-            normalized_skip_category = SkipCategory(skip_category)
+            normalized_skip_category = normalize_skip_category(skip_category)
             self._executed_checks.discard(check)
             self._skipped_checks.add(check)
             self._executed_checks_results.pop(check.identifier, None)
@@ -489,10 +495,14 @@ class ValidationResult:
             "enable_profile_inheritance",
             "requirement_severity",
             "abort_on_first",
+            "metadata_only",
+            "packaging_mode",
         ]
         validation_settings = {
             key: value for key, value in self.validation_settings.to_dict().items() if key in allowed_properties
         }
+        validation_settings["package_type"] = self.context.ro_crate.package_type.value
+        validation_settings["packaging_mode_explicit"] = self.context.ro_crate.packaging_mode_explicit
         result: dict[str, Any] = {
             "meta": {"version": JSON_OUTPUT_FORMAT_VERSION},
             "validation_settings": validation_settings,
