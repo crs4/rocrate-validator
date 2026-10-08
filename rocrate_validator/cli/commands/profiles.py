@@ -17,6 +17,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from click.exceptions import Exit
 from rich.markdown import Markdown
 from rich.padding import Padding
 from rich.panel import Panel
@@ -215,7 +216,7 @@ def check_profile(ctx, profile_identifier: str = DEFAULT_PROFILE_IDENTIFIER, no_
     except Exception as e:
         handle_error(e, console)
     if failed:
-        raise click.exceptions.Exit(1)
+        raise Exit(1)
 
 
 @profiles.command("describe")

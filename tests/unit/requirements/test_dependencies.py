@@ -93,7 +93,7 @@ def test_order_by_dependencies_reorders_requirements():
         dependent_requirement,
     ]
     assert dependent.depends_on == ("base",)
-    assert base.depends_on == ()
+    assert not base.depends_on
 
 
 def test_inherited_dependency_is_resolved_from_effective_profile() -> None:
