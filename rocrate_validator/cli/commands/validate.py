@@ -83,7 +83,7 @@ def validate_uri(ctx, param, value):
     type=click.Choice(["auto", "attached", "detached"], case_sensitive=False),
     default="auto",
     show_default=True,
-    help="Packaging context inferred from the input, or explicitly attached/detached",
+    help="Packaging context assumed from the input, or explicitly attached/detached",
 )
 @click.option("-ff", "--fail-fast", is_flag=True, help="Fail fast validation mode", default=False, show_default=True)
 @click.option(
