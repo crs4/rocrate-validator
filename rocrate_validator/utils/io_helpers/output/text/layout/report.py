@@ -207,9 +207,10 @@ class ValidationReportLayout(Layout):
             settings.packaging_mode if settings.packaging_mode != "auto" else "resolving..."
         )
         validation_scope = "Metadata Only" if settings.metadata_only else "Full Package"
+        crate_source = settings.package_root or getattr(settings, "_source_rocrate_uri", None) or settings.rocrate_uri
         return Align(
             f"\n[bold cyan]RO-Crate:[/bold cyan] "
-            f"[bold]{getattr(settings, '_source_rocrate_uri', settings.rocrate_uri) or 'in-memory metadata'}[/bold]"
+            f"[bold]{crate_source or 'in-memory metadata'}[/bold]"
             f"\n[bold cyan]RO-Crate Package Type:[/bold cyan] [bold yellow]{package_type.title()}[/bold yellow]"
             "\n[bold cyan]Target Profile:[/bold cyan][bold magenta] "
             f"{settings.profile_identifier}[/bold magenta] "
