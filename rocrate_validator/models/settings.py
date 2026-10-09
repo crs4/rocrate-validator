@@ -170,7 +170,9 @@ class ValidationSettings:
         Convert the ValidationSettings to a dictionary
         """
         result = asdict(self)
-        source_uri = getattr(self, "_source_rocrate_uri", self.rocrate_uri)
+        source_uri = getattr(self, "_source_rocrate_uri", None)
+        if source_uri is None:
+            source_uri = self.rocrate_uri
         result["rocrate_uri"] = str(source_uri) if source_uri is not None else None
         result.pop("metadata_dict", None)  # exclude metadata_dict from the dict representation
         # Remove disable_crate_download from the dict representation
