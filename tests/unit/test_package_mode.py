@@ -260,14 +260,46 @@ def test_reports_show_package_type_after_target_profile(mode: str, expected: str
     assert "validation scope:" not in text_report
 
 
-def test_interactive_report_shows_full_package_scope(tmp_path: Path):
-    settings = ValidationSettings(rocrate_uri=tmp_path, metadata_only=False, offline=True)
+@pytest.mark.parametrize("metadata_only", [True, False])
+def test_interactive_report_shows_package_root_for_dictionary_input(tmp_path: Path, metadata_only: bool):
+    settings = ValidationSettings(
+        rocrate_uri=None,
+        metadata_dict=_minimal_metadata(),
+        package_root=tmp_path,
+        packaging_mode="attached",
+        metadata_only=metadata_only,
+        offline=True,
+    )
+    console = Console(record=True, width=300)
+    layout = ValidationReportLayout(console, settings)
+    _ = layout.layout
+    assert layout.base_info_layout is not None
+    console.print(layout.base_info_layout.renderable)
+    report = console.export_text()
+    assert f"RO-Crate: {tmp_path}" in report
+    assert "in-memory metadata" not in report
+
+
+def test_interactive_report_shows_in_memory_source_for_dictionary_only():
+    settings = ValidationSettings(rocrate_uri=None, metadata_dict=_minimal_metadata(), metadata_only=True, offline=True)
     console = Console(record=True, width=120)
     layout = ValidationReportLayout(console, settings)
     _ = layout.layout
     assert layout.base_info_layout is not None
     console.print(layout.base_info_layout.renderable)
-    assert "Validation Scope: Full Package" in console.export_text()
+    assert "RO-Crate: in-memory metadata" in console.export_text()
+
+
+def test_interactive_report_shows_full_package_scope(tmp_path: Path):
+    settings = ValidationSettings(rocrate_uri=tmp_path, metadata_only=False, offline=True)
+    console = Console(record=True, width=300)
+    layout = ValidationReportLayout(console, settings)
+    _ = layout.layout
+    assert layout.base_info_layout is not None
+    console.print(layout.base_info_layout.renderable)
+    report = console.export_text()
+    assert "Validation Scope: Full Package" in report
+    assert f"RO-Crate: {tmp_path}" in report
 
 
 def test_attached_directory_missing_payload_stays_attached(tmp_path: Path):
