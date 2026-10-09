@@ -31,6 +31,7 @@
     11_writing_a_profile
     13_optimizing_shacl_target_selection
     14_graph_transformers
+    15_building_documentation
     10_api
     genindex
 
