@@ -1,24 +1,248 @@
+/* Teal palette with darker text accents for contrast in light mode. */
+html.light[data-accent-color="teal"] {
+  --accent-2: #f2f9f9;
+  --accent-3: #e5f3f3;
+  --accent-4: #d3ebec;
+  --accent-8: #39989f;
+  --accent-9: #175a5f;
+  --accent-10: #094b4b;
+  --accent-11: #175a5f;
+  --accent-12: #003333;
+  --accent-a2: rgba(57, 152, 159, 0.06);
+  --accent-a3: rgba(57, 152, 159, 0.13);
+  --accent-a4: rgba(57, 152, 159, 0.2);
+  --accent-a9: #175a5f;
+  --accent-a11: #175a5f;
+  --accent-contrast: #fff;
+  --color-surface-accent: #c2e5e6;
+  --sy-c-heading: #133233;
+  --sy-c-bold: #094b4b;
+  --sy-c-link: #175a5f;
+  --sy-c-link-hover: #094b4b;
+  --sy-c-foot-background: #edf6f6;
+  --yue-c-link-1: #175a5f;
+  --yue-c-link-2: #094b4b;
+}
+
+html.dark[data-accent-color="teal"] {
+  --accent-2: #0d292c;
+  --accent-3: #12383c;
+  --accent-4: #164247;
+  --accent-8: #39989f;
+  --accent-9: #81d8d5;
+  --accent-10: #a3e4e2;
+  --accent-11: #81d8d5;
+  --accent-12: #d5f3f2;
+  --accent-a2: rgba(129, 216, 213, 0.06);
+  --accent-a3: rgba(129, 216, 213, 0.13);
+  --accent-a4: rgba(129, 216, 213, 0.2);
+  --accent-a9: #81d8d5;
+  --accent-a11: #81d8d5;
+  --accent-contrast: #003333;
+  --color-surface-accent: #164247;
+  --sy-c-background: #071f23;
+  --sy-c-background-dropback: rgba(7, 31, 35, 0.96);
+  --sy-c-surface: #123035;
+  --sy-c-text: #e0efef;
+  --sy-c-light: #a8c2c4;
+  --sy-c-heading: #c2e5e6;
+  --sy-c-bold: #edfafa;
+  --sy-c-border: #285052;
+  --sy-c-divider: #234549;
+  --sy-c-link: #81d8d5;
+  --sy-c-link-hover: #a3e4e2;
+  --sy-c-foot-background: #003333;
+  --yue-c-link-1: #81d8d5;
+  --yue-c-link-2: #a3e4e2;
+}
+
+/* Callouts use teal for information, orange/yellow for warnings and attention,
+ * brown for important details, and red for errors. Override each semantic type:
+ * the theme's callout backgrounds otherwise remain too light in dark mode.
+ */
+.admonition,
+.admonition:is(.note, .tip, .hint, .seealso) {
+  --color-1: var(--accent-2);
+  --color-2: var(--accent-3);
+  --color-3: var(--accent-9);
+  --color-4: var(--accent-11);
+  color: var(--sy-c-text);
+  --yue-c-link-1: var(--color-4);
+  --yue-c-link-2: var(--color-4);
+  --yue-c-link-border: var(--color-3);
+  --yue-c-code-text: var(--color-4);
+  --yue-c-code-background: var(--color-2);
+}
+
+/* Keep the icon badges above the title strip, which extends into their area. */
+.admonition::before {
+  z-index: 2;
+}
+
+.admonition::after {
+  z-index: 3;
+}
+
+.admonition > .admonition-title {
+  z-index: 1;
+  color: var(--color-4);
+  background-color: var(--color-2);
+}
+
+.admonition:is(.warning, .caution, .admonition-todo) {
+  --color-1: #fff7ed;
+  --color-2: #ffedd5;
+  --color-3: #b45309;
+  --color-4: #7c2d12;
+}
+
+.admonition.attention {
+  --color-1: #fffbeb;
+  --color-2: #fef3c7;
+  --color-3: #a16207;
+  --color-4: #713f12;
+}
+
+.admonition.important {
+  --color-1: #faf4ef;
+  --color-2: #efdfcf;
+  --color-3: #8b5e3c;
+  --color-4: #65432a;
+}
+
+.admonition:is(.danger, .error) {
+  --color-1: #fff1f2;
+  --color-2: #ffe4e6;
+  --color-3: #be123c;
+  --color-4: #881337;
+}
+
+html.dark .admonition,
+html.dark .admonition:is(.note, .tip, .hint, .seealso) {
+  --color-1: #123035;
+  --color-2: #164247;
+  --color-3: #39989f;
+  --color-4: #81d8d5;
+  color: #e0efef;
+}
+
+html.dark .admonition:is(.warning, .caution, .admonition-todo) {
+  --color-1: #382817;
+  --color-2: #51371d;
+  --color-3: #fb923c;
+  --color-4: #fed7aa;
+  color: #e0efef;
+}
+
+html.dark .admonition.attention {
+  --color-1: #332c14;
+  --color-2: #49401c;
+  --color-3: #fbbf24;
+  --color-4: #fde68a;
+  color: #e0efef;
+}
+
+html.dark .admonition.important {
+  --color-1: #30251f;
+  --color-2: #47352a;
+  --color-3: #c89b72;
+  --color-4: #eed0b5;
+  color: #e0efef;
+}
+
+html.dark .admonition:is(.danger, .error) {
+  --color-1: #381e28;
+  --color-2: #512635;
+  --color-3: #fb7185;
+  --color-4: #fecdd3;
+  color: #e0efef;
+}
+
+html.dark .admonition::after {
+  background-color: #071f23;
+}
+
+html.dark .admonition > .admonition-title {
+  color: var(--color-4);
+  background-color: var(--color-2);
+}
+
+/* Deep petrol header in both colour modes. Local variables also
+ * keep the search field, navigation icons, and mobile menu readable.
+ */
+.sy-head {
+  color: #f5f5f5;
+  --sy-c-text: #f5f5f5;
+  --sy-c-light: #c2e5e6;
+  --sy-c-bold: #fff;
+  --sy-c-background: #003333;
+  --sy-c-background-dropback: rgba(0, 51, 51, 0.97);
+  --sy-c-surface: #0b4b4b;
+  --sy-c-border: #39989f;
+  --sy-c-divider: #21605f;
+  --sy-c-link: #81d8d5;
+  --sy-c-link-hover: #c2e5e6;
+}
+
+.sy-head .searchbox input::placeholder {
+  color: #c2e5e6;
+  opacity: 1;
+}
+
+.sy-head .searchbox kbd {
+  color: #c2e5e6;
+  background-color: #0b4b4b;
+  border-color: #39989f;
+}
+
 /* Keep the composition summary within the documentation content column. */
-.rst-content .profile-composition-table {
+.profile-composition-table {
   width: 100%;
 }
 
-.rst-content .profile-composition-table .wy-table-responsive {
-  overflow-x: visible;
-}
-
-.rst-content .profile-composition-table table.profile-composition-mechanisms {
+.profile-composition-table table.profile-composition-mechanisms {
   table-layout: fixed;
   width: 100%;
 }
 
-.rst-content .profile-composition-table th,
-.rst-content .profile-composition-table td {
+.profile-composition-table th,
+.profile-composition-table td {
   overflow-wrap: break-word;
   white-space: normal;
 }
 
-.rst-content .profile-composition-table th:first-child,
-.rst-content .profile-composition-table td:first-child {
+.profile-composition-table th:first-child,
+.profile-composition-table td:first-child {
   text-align: center;
+}
+
+/* Fit package-mode tables to the content column, including long API names. */
+table.docutils.package-mode-table {
+  table-layout: fixed;
+  width: 100%;
+  min-width: 0;
+}
+
+table.docutils.package-mode-table th,
+table.docutils.package-mode-table td,
+table.docutils.package-mode-table caption {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+table.docutils.package-mode-table code {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+table.docutils.package-mode-table th,
+table.docutils.package-mode-table td {
+  vertical-align: top;
+}
+
+@media (max-width: 600px) {
+  table.docutils.package-mode-table th,
+  table.docutils.package-mode-table td {
+    padding: 0.4rem;
+  }
 }
