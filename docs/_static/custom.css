@@ -1,24 +1,453 @@
+/* Teal palette with darker text accents for contrast in light mode. */
+:root {
+  --font-mono: "JetBrainsMono Nerd Font", "JetBrains Mono", "Fira Code",
+    "Cascadia Code", "SFMono-Regular", Menlo, Monaco, Consolas,
+    "Liberation Mono", monospace;
+}
+
+code,
+kbd,
+pre,
+samp,
+.sy-head-brand strong,
+.product-name {
+  font-family: var(--font-mono);
+}
+
+html.light[data-accent-color="teal"] {
+  --toc-emphasis: #4b5358;
+  --accent-2: #f2f9f9;
+  --accent-3: #e5f3f3;
+  --accent-4: #d3ebec;
+  --accent-8: #39989f;
+  --accent-9: #175a5f;
+  --accent-10: #094b4b;
+  --accent-11: #175a5f;
+  --accent-12: #003333;
+  --accent-a2: rgba(57, 152, 159, 0.06);
+  --accent-a3: rgba(57, 152, 159, 0.13);
+  --accent-a4: rgba(57, 152, 159, 0.2);
+  --accent-a9: #175a5f;
+  --accent-a11: #175a5f;
+  --accent-contrast: #fff;
+  --color-surface-accent: #c2e5e6;
+  --sy-c-heading: #133233;
+  --sy-c-bold: #094b4b;
+  --sy-c-link: #175a5f;
+  --sy-c-link-hover: #094b4b;
+  --sy-c-foot-background: #edf6f6;
+  --yue-c-link-1: #175a5f;
+  --yue-c-link-2: #094b4b;
+}
+
+html.dark[data-accent-color="teal"] {
+  --toc-emphasis: #c2cbce;
+  --accent-2: #0d292c;
+  --accent-3: #12383c;
+  --accent-4: #164247;
+  --accent-8: #39989f;
+  --accent-9: #81d8d5;
+  --accent-10: #a3e4e2;
+  --accent-11: #81d8d5;
+  --accent-12: #d5f3f2;
+  --accent-a2: rgba(129, 216, 213, 0.06);
+  --accent-a3: rgba(129, 216, 213, 0.13);
+  --accent-a4: rgba(129, 216, 213, 0.2);
+  --accent-a9: #81d8d5;
+  --accent-a11: #81d8d5;
+  --accent-contrast: #003333;
+  --color-surface-accent: #164247;
+  --sy-c-background: #071f23;
+  --sy-c-background-dropback: rgba(7, 31, 35, 0.96);
+  --sy-c-surface: #123035;
+  --sy-c-text: #e0efef;
+  --sy-c-light: #a8c2c4;
+  --sy-c-heading: #c2e5e6;
+  --sy-c-bold: #edfafa;
+  --sy-c-border: #285052;
+  --sy-c-divider: #234549;
+  --sy-c-link: #81d8d5;
+  --sy-c-link-hover: #a3e4e2;
+  --sy-c-foot-background: #003333;
+  --yue-c-link-1: #81d8d5;
+  --yue-c-link-2: #a3e4e2;
+}
+
+/* The README's status callout has a light fallback for GitHub; adapt it to
+ * the documentation theme's dark palette when dark mode is selected.
+ */
+html.dark .project-status-note {
+  background-color: #123035 !important;
+  border-left-color: #39989f !important;
+  color: #e0efef !important;
+}
+
+/* Callouts use teal for information, orange/yellow for warnings and attention,
+ * brown for important details, and red for errors. Override each semantic type:
+ * the theme's callout backgrounds otherwise remain too light in dark mode.
+ */
+.admonition,
+.admonition:is(.note, .tip, .hint, .seealso) {
+  --color-1: var(--accent-2);
+  --color-2: var(--accent-3);
+  --color-3: var(--accent-9);
+  --color-4: var(--accent-11);
+  color: var(--sy-c-text);
+  --yue-c-link-1: var(--color-4);
+  --yue-c-link-2: var(--color-4);
+  --yue-c-link-border: var(--color-3);
+  --yue-c-code-text: var(--color-4);
+  --yue-c-code-background: var(--color-2);
+}
+
+/* Keep the icon badges above the title strip, which extends into their area. */
+.admonition::before {
+  z-index: 2;
+}
+
+.admonition::after {
+  z-index: 3;
+}
+
+.admonition > .admonition-title {
+  z-index: 1;
+  color: var(--color-4);
+  background-color: var(--color-2);
+}
+
+.admonition:is(.warning, .caution, .admonition-todo) {
+  --color-1: #fff7ed;
+  --color-2: #ffedd5;
+  --color-3: #b45309;
+  --color-4: #7c2d12;
+}
+
+.admonition.attention {
+  --color-1: #fffbeb;
+  --color-2: #fef3c7;
+  --color-3: #a16207;
+  --color-4: #713f12;
+}
+
+.admonition.important {
+  --color-1: #faf4ef;
+  --color-2: #efdfcf;
+  --color-3: #8b5e3c;
+  --color-4: #65432a;
+}
+
+.admonition:is(.danger, .error) {
+  --color-1: #fff1f2;
+  --color-2: #ffe4e6;
+  --color-3: #be123c;
+  --color-4: #881337;
+}
+
+html.dark .admonition,
+html.dark .admonition:is(.note, .tip, .hint, .seealso) {
+  --color-1: #123035;
+  --color-2: #164247;
+  --color-3: #39989f;
+  --color-4: #81d8d5;
+  color: #e0efef;
+}
+
+html.dark .admonition:is(.warning, .caution, .admonition-todo) {
+  --color-1: #382817;
+  --color-2: #51371d;
+  --color-3: #fb923c;
+  --color-4: #fed7aa;
+  color: #e0efef;
+}
+
+html.dark .admonition.attention {
+  --color-1: #332c14;
+  --color-2: #49401c;
+  --color-3: #fbbf24;
+  --color-4: #fde68a;
+  color: #e0efef;
+}
+
+html.dark .admonition.important {
+  --color-1: #30251f;
+  --color-2: #47352a;
+  --color-3: #c89b72;
+  --color-4: #eed0b5;
+  color: #e0efef;
+}
+
+html.dark .admonition:is(.danger, .error) {
+  --color-1: #381e28;
+  --color-2: #512635;
+  --color-3: #fb7185;
+  --color-4: #fecdd3;
+  color: #e0efef;
+}
+
+html.dark .admonition::after {
+  background-color: #071f23;
+}
+
+html.dark .admonition > .admonition-title {
+  color: var(--color-4);
+  background-color: var(--color-2);
+}
+
+/* Deep petrol header in both colour modes. Local variables also
+ * keep the search field, navigation icons, and mobile menu readable.
+ */
+.sy-head {
+  color: #f5f5f5;
+  --sy-c-text: #f5f5f5;
+  --sy-c-light: #c2e5e6;
+  --sy-c-bold: #fff;
+  --sy-c-background: #003333;
+  --sy-c-background-dropback: rgba(0, 51, 51, 0.97);
+  --sy-c-surface: #0b4b4b;
+  --sy-c-border: #39989f;
+  --sy-c-divider: #21605f;
+  --sy-c-link: #81d8d5;
+  --sy-c-link-hover: #c2e5e6;
+}
+
+.sy-head .searchbox input::placeholder {
+  color: #c2e5e6;
+  opacity: 1;
+}
+
+.sy-head .searchbox kbd {
+  color: #c2e5e6;
+  background-color: #0b4b4b;
+  border-color: #39989f;
+}
+
+/* Use the logo's blue sparingly to distinguish the quick links in the header. */
+.sy-head-links .nav-link-icon {
+  color: #37a5da;
+  margin-right: 0.4rem;
+}
+
+.sy-head-links a:focus-visible,
+.sy-head-links button:focus-visible {
+  outline: 2px solid #37a5da;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Use visible, theme-colored bullets and progressive indentation in the TOCs. */
+.yue .toctree-wrapper > ul {
+  padding-left: 1.25rem;
+}
+
+.yue .toctree-wrapper > ul > li::marker {
+  color: var(--accent-9);
+  font-size: 1.05em;
+}
+
+.yue .toctree-wrapper > p.caption {
+  color: var(--toc-emphasis);
+  font-weight: 700;
+}
+
+.yue .toctree-wrapper > ul > li > a {
+  color: var(--toc-emphasis);
+  font-weight: 600;
+}
+
+.yue .toctree-wrapper ul ul:not(:empty) {
+  list-style-type: circle;
+  margin-left: 0.3rem;
+  padding-left: 1rem;
+  border-left: 1px solid var(--sy-c-divider);
+}
+
+.yue .toctree-wrapper ul ul a {
+  font-weight: 400;
+  font-style: italic;
+}
+
+.globaltoc > ul {
+  padding-left: 1.25rem;
+  list-style-type: disc;
+}
+
+.globaltoc li.toctree-l1 > a {
+  display: block;
+  padding: 0.18rem 0.4rem;
+  border-radius: 4px;
+  color: var(--toc-emphasis);
+  font-weight: 600;
+}
+
+.globaltoc li.toctree-l2 > a,
+.globaltoc li.toctree-l3 > a {
+  font-weight: 400;
+  font-style: italic;
+}
+
+.globaltoc > ul > li::marker {
+  color: var(--accent-9);
+}
+
+.globaltoc > ul > li.current > a {
+  font-weight: 700;
+}
+
+.globaltoc li.current > a.current {
+  border-left: 3px solid var(--accent-9);
+  background-color: var(--accent-a2);
+  color: var(--toc-emphasis);
+}
+
+/* Hide toggles for empty toctree placeholders; keep useful expand controls. */
+.globaltoc li:has(> ul.simple) > button {
+  display: none;
+}
+
+.globaltoc ul ul {
+  padding-left: 1rem;
+  list-style-type: circle;
+}
+
+.globaltoc ul ul ul {
+  list-style-type: square;
+}
+
+.localtoc ul {
+  margin-left: 0.15rem;
+  padding-left: 0.9rem;
+  border-left: 1px solid var(--sy-c-divider);
+  list-style: none;
+}
+
+.localtoc > ul {
+  margin-left: 0;
+}
+
+.localtoc li {
+  position: relative;
+  padding-left: 0.55rem;
+}
+
+.localtoc > ul > li > a {
+  color: var(--toc-emphasis);
+  font-weight: 600;
+}
+
+.localtoc ul ul > li > a {
+  font-size: 0.96em;
+  font-weight: 400;
+  font-style: italic;
+}
+
+.localtoc ul ul ul > li > a {
+  font-size: 0.92em;
+  font-style: normal;
+}
+
+.localtoc ul ul ul ul > li > a {
+  font-size: 0.88em;
+  color: var(--sy-c-light);
+}
+
+.localtoc li::before {
+  position: absolute;
+  top: 0.5em;
+  left: -1rem;
+  font-family: system-ui, sans-serif;
+  font-size: 0.55rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--accent-8);
+  content: "●";
+}
+
+.localtoc ul ul {
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+  padding-left: 0.75rem;
+}
+
+.localtoc ul ul li::before {
+  top: 0.5em;
+  left: -0.82rem;
+  font-size: 0.48rem;
+  color: var(--sy-c-light);
+  content: "○";
+}
+
+.localtoc ul ul ul li::before {
+  font-size: 0.42rem;
+  font-weight: 700;
+  color: var(--accent-8);
+  content: "▪";
+}
+
+.localtoc ul ul ul ul li::before {
+  font-size: 0.45rem;
+  font-weight: 400;
+  color: var(--sy-c-light);
+  content: "–";
+}
+
+.localtoc li.active > a {
+  color: var(--toc-emphasis);
+  font-weight: 700;
+  font-style: normal;
+}
+
+.localtoc li.active::before {
+  color: var(--accent-9);
+}
+
 /* Keep the composition summary within the documentation content column. */
-.rst-content .profile-composition-table {
+.profile-composition-table {
   width: 100%;
 }
 
-.rst-content .profile-composition-table .wy-table-responsive {
-  overflow-x: visible;
-}
-
-.rst-content .profile-composition-table table.profile-composition-mechanisms {
+.profile-composition-table table.profile-composition-mechanisms {
   table-layout: fixed;
   width: 100%;
 }
 
-.rst-content .profile-composition-table th,
-.rst-content .profile-composition-table td {
+.profile-composition-table th,
+.profile-composition-table td {
   overflow-wrap: break-word;
   white-space: normal;
 }
 
-.rst-content .profile-composition-table th:first-child,
-.rst-content .profile-composition-table td:first-child {
+.profile-composition-table th:first-child,
+.profile-composition-table td:first-child {
   text-align: center;
+}
+
+/* Fit package-mode tables to the content column, including long API names. */
+table.docutils.package-mode-table {
+  table-layout: fixed;
+  width: 100%;
+  min-width: 0;
+}
+
+table.docutils.package-mode-table th,
+table.docutils.package-mode-table td,
+table.docutils.package-mode-table caption {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+table.docutils.package-mode-table code {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+table.docutils.package-mode-table th,
+table.docutils.package-mode-table td {
+  vertical-align: top;
+}
+
+@media (max-width: 600px) {
+  table.docutils.package-mode-table th,
+  table.docutils.package-mode-table td {
+    padding: 0.4rem;
+  }
 }

@@ -13,9 +13,11 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
-=============================================
-Welcome to rocrate-validator's documentation!
-=============================================
+.. role:: product-name
+
+=============================================================
+Welcome to :product-name:`rocrate-validator`'s documentation!
+=============================================================
 
 .. _index:
 

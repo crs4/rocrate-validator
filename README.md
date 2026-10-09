@@ -27,8 +27,8 @@ against different profiles, including the base RO-Crate profile and various exte
 -   Supports [CLI-based validation](#cli-based-validation) as well as [programmatic validation](#programmatic-validation) (so it can easily be used by Python code).
 -   Extensible framework: new RO-Crate profiles can be added, implementing profile requirements as SHACL shapes and/or Python code.
 
-<div style="background: #F0F8FF; border-left: 4px solid #007ACC; text-indent: -43px; padding: 20px 60px; border-radius: 8px; margin-bottom: 40px; height: auto; font-weight: lighter;">
-<b>Note:</b> <span class="disabled font-light">this software is still work in progress. Feel free to try it out,
+<div class="project-status-note" style="background: #F0F8FF; border-left: 4px solid #007ACC; color: #003333; text-indent: -43px; padding: 20px 60px; border-radius: 8px; margin-bottom: 40px; height: auto; font-weight: lighter;">
+<b>Note:</b> this software is still work in progress. Feel free to try it out,
 report positive and negative feedback. We also welcome contributions, but we suggest you send us a note (e.g., by opening an Issue) before starting to develop any code. The implementation of validation code for additional RO-Crate profiles would be particularly welcome.
 </div>
 
