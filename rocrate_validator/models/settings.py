@@ -96,6 +96,8 @@ class ValidationSettings:
     packaging_mode: str = "auto"
     #: RO-Crate metadata as dictionary
     metadata_dict: dict | None = None
+    #: Local package directory used as the payload source for dictionary metadata
+    package_root: Path | None = None
     #: Verbose output
     verbose: bool = False
     #: Cache max age in seconds (negative values mean "never expire")
@@ -115,6 +117,8 @@ class ValidationSettings:
 
     def __post_init__(self):
         self.packaging_mode = parse_packaging_mode(self.packaging_mode)
+        if self.package_root is not None and not isinstance(self.package_root, Path):
+            self.package_root = Path(self.package_root)
         # if requirement_severity is a str, convert to Severity
         if isinstance(self.requirement_severity, str):
             self.requirement_severity = Severity[self.requirement_severity]

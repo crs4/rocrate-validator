@@ -497,12 +497,18 @@ class ValidationResult:
             "abort_on_first",
             "metadata_only",
             "packaging_mode",
+            "package_root",
         ]
         validation_settings = {
             key: value for key, value in self.validation_settings.to_dict().items() if key in allowed_properties
         }
         validation_settings["package_type"] = self.context.ro_crate.package_type.value
         validation_settings["packaging_mode_explicit"] = self.context.ro_crate.packaging_mode_explicit
+        validation_settings["metadata_source"] = (
+            "dictionary" if self.validation_settings.metadata_dict is not None else "package descriptor"
+        )
+        if self.validation_settings.package_root is not None:
+            validation_settings["package_root"] = str(self.validation_settings.package_root)
         result: dict[str, Any] = {
             "meta": {"version": JSON_OUTPUT_FORMAT_VERSION},
             "validation_settings": validation_settings,
