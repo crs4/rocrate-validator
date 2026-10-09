@@ -78,6 +78,34 @@ representing the metadata and validates it against a given validation profile.
         # process the validation result as needed
         ...
 
+To check an edited metadata dictionary against payload files in an Attached
+crate directory, pass ``package_root`` to ``services.validate()``:
+
+.. code-block:: python
+
+    from pathlib import Path
+    from rocrate_validator import services
+    from rocrate_validator.models.settings import ValidationSettings
+
+    settings = ValidationSettings(
+        rocrate_uri=None,
+        metadata_dict=rocrate_metadata,
+        package_root=Path("./my-crate"),
+        profile_identifier="ro-crate-1.3",
+        packaging_mode="attached",
+        metadata_only=False,
+    )
+    result = services.validate(settings)
+
+The dictionary supplies the metadata being validated, replacing the physical
+metadata descriptor. The directory supplies only the payload files:
+``ro-crate-metadata.json`` is not required on disk and is ignored if present.
+The report records
+``metadata_source="dictionary"`` and the selected ``package_root``.
+
+For a runnable notebook comparing package modes, validation scopes, and report
+output with dictionary input, see :ref:`validation_examples`.
+
 
 Warm validation with a reusable Validator
 -----------------------------------------

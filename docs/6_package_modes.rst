@@ -29,7 +29,13 @@ data files, use ``--packaging-mode attached --metadata-only``.
 
 In this guide, a **metadata document** means JSON/JSON-LD supplied as a local
 file or through a URL. A **dictionary input** means metadata already loaded
-into a Python dictionary and supplied through the API.
+into a Python dictionary and supplied through the API. For a dictionary input,
+``package_root`` optionally names the local package directory that provides its
+payload files.
+
+To try these options with your own metadata dictionary, see the
+:ref:`example notebook <validation_examples>`. It compares all three modes
+and demonstrates both validation scopes with a local package directory.
 
 Modes and automatic assumptions
 -------------------------------
@@ -53,8 +59,9 @@ The CLI option ``--packaging-mode`` and API setting
      - Behaviour
    * - ``auto`` (default)
      - * **Use when** → the input-based assumptions below suit your case.
-       * **Effect** → select Attached or Detached rules from the input format;
-         leave the type *Unspecified* for a Python dictionary.
+       * **Effect** → select rules from the input context; a dictionary without
+         ``package_root`` is *Unspecified*, while a dictionary with it is
+         *Attached*.
    * - ``attached``
      - * **Use when** → you are validating an Attached crate, including a copy
          of its metadata supplied without the data files.
@@ -69,12 +76,16 @@ With ``auto``, the validator makes these assumptions:
 
 * **Directory or ZIP** → *Attached*.
 * **Metadata document**, supplied as a local file or URL → *Detached*.
-* **Python dictionary** → *Unspecified*. Common metadata checks run, while
-  checks requiring Attached or Detached rules are recorded as skipped.
+* **Python dictionary without a package directory** → *Unspecified*. Common
+  metadata checks run, while checks requiring Attached or Detached rules are
+  recorded as skipped.
+* **Python dictionary with ``package_root``** → *Attached*. The dictionary
+  supplies the metadata graph and the local directory supplies the payload.
 
 Here, *Unspecified* means that no package type was selected. It is a reported
-value, not a fourth option for ``--packaging-mode``. Select ``attached`` or
-``detached`` explicitly to enable the corresponding checks for dictionary input.
+value, not a fourth option for ``--packaging-mode``. For a dictionary without
+``package_root``, select ``attached`` or ``detached`` explicitly to enable those
+mode-specific checks.
 
 .. note::
 
@@ -146,14 +157,26 @@ This table applies to CLI invocations without ``--metadata-only`` and calls to
      - Detached
      - Rejected: supply a package directory/ZIP or use metadata-only validation
      - Detached
-   * - In-memory ``metadata_dict`` (API)
+   * - ``metadata_dict`` without ``package_root`` (API)
      - Unspecified; only metadata is checked
-     - Rejected: set ``metadata_only=True`` or supply a package directory/ZIP
+     - Rejected for full validation; set ``metadata_only=True``
      - Detached; only metadata is checked
+   * - ``metadata_dict`` with local ``package_root`` (API)
+     - Attached
+     - Attached
+     - Rejected: a package directory cannot be Detached
 
-A dictionary supplies metadata, not the package's data files. For ``auto`` and
-``detached`` dictionary inputs, the API automatically sets ``metadata_only=True``.
-For ``attached`` dictionary input, you must set it explicitly.
+Without ``package_root``, a dictionary has no payload backend, so ``auto`` and
+``detached`` inputs are automatically limited to metadata-only validation. For
+full Attached validation, set ``package_root`` to a local directory containing
+the payload files. The dictionary replaces the metadata descriptor: a physical
+``ro-crate-metadata.json`` is not required and, if present, is not read.
+Metadata checks use the supplied dictionary, including in metadata-only mode.
+The report identifies the dictionary as the metadata source and includes the
+package root.
+
+When ``metadata_only=True``, ``package_root`` still selects Attached rules, but
+checks that read payload files are skipped.
 
 For full Attached validation, supply the package directory or supported archive.
 You can also select the local ``ro-crate-metadata.json`` file with
@@ -195,10 +218,14 @@ accepted combination checks metadata without checking its data files.
      - Detached
      - Attached; data files need not be accessible
      - Detached
-   * - In-memory ``metadata_dict`` (API)
+   * - ``metadata_dict`` without ``package_root`` (API)
      - Unspecified
      - Attached
      - Detached
+   * - ``metadata_dict`` with local ``package_root`` (API)
+     - Attached
+     - Attached
+     - Rejected: a package directory cannot be Detached
 
 The name of the input file can differ from the metadata document's identifier
 inside the JSON. Allowing any input filename does not relax the rules for that
@@ -241,8 +268,30 @@ Select Attached rules when submitting metadata from an Attached crate:
        "metadata_only": True,
    })
 
-For dictionary input, ``validate_metadata_as_dict()`` enables metadata-only
-validation for you. Select the intended mode in its settings:
+For dictionary-only input, ``validate_metadata_as_dict()`` enables
+metadata-only validation for you. To validate a modified dictionary against a
+local Attached package's payload, use ``services.validate()`` with
+``metadata_dict``, ``package_root``, and ``metadata_only=False``:
+
+.. code-block:: python
+
+   from pathlib import Path
+   from rocrate_validator import services
+   from rocrate_validator.models.settings import ValidationSettings
+
+   settings = ValidationSettings(
+       rocrate_uri=None,
+       metadata_dict=metadata,
+       package_root=Path("./my-crate"),
+       profile_identifier="ro-crate-1.3",
+       packaging_mode="attached",
+       metadata_only=False,
+   )
+   result = services.validate(settings)
+
+The directory supplies payload files; ``metadata_dict`` supplies the metadata
+being validated. No metadata descriptor is required on disk. If the directory
+contains one, it is ignored for this validation.
 
 .. code-block:: python
 
@@ -257,9 +306,9 @@ validation for you. Select the intended mode in its settings:
        "packaging_mode": "attached",
    })
 
-Omitting ``packaging_mode`` in this dictionary example leaves the mode
-unspecified. By contrast, calling ``services.validate()`` directly with Attached
-``metadata_dict`` input requires ``metadata_only=True`` explicitly.
+Omitting ``packaging_mode`` for a dictionary without ``package_root`` leaves
+the mode unspecified. Calling ``services.validate()`` with Attached dictionary
+input and no ``package_root`` requires ``metadata_only=True`` explicitly.
 
 Reading the reports
 -------------------
@@ -287,7 +336,12 @@ JSON results include these fields under ``validation_settings``:
      - ``true`` if you selected ``attached`` or ``detached``; ``false`` for ``auto``.
    * - ``metadata_only``
      - ``true`` if only metadata is checked, including when the API enables this
-       automatically for dictionary input.
+       automatically for dictionary-only input.
+   * - ``metadata_source``
+     - ``dictionary`` when checks use the supplied metadata dictionary; otherwise
+       ``package descriptor``.
+   * - ``package_root``
+     - Local package directory used to access payload files for dictionary input.
 
 The result's ``skipped_check_details`` explains why checks were skipped. Read
 those details alongside the issues and validation scope to understand the limits

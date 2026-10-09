@@ -30,6 +30,7 @@
     12_validation_profiles
     5_offline_mode
     10_api
+    examples/index
 
 .. toctree::
     :maxdepth: 5
