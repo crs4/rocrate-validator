@@ -551,7 +551,12 @@ class ValidationContext:
 
         # initialize the ROCrate object
         if settings.metadata_dict is not None:
-            self._rocrate = ROCrate.from_metadata_dict(settings.metadata_dict, packaging_mode=settings.packaging_mode)
+            self._rocrate = ROCrate.from_metadata_dict(
+                settings.metadata_dict,
+                packaging_mode=settings.packaging_mode,
+                package_root=settings.package_root,
+                metadata_only=settings.metadata_only,
+            )
         else:
             rocrate_uri = settings.rocrate_uri
             assert rocrate_uri is not None, "RO-Crate URI is required when metadata_dict is not provided"

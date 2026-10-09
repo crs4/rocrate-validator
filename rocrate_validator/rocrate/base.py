@@ -360,23 +360,37 @@ class ROCrate(ABC):
         return int(content_length)
 
     @staticmethod
-    def from_metadata_dict(metadata_dict: dict, packaging_mode: str = "auto") -> ROCrate:
+    def from_metadata_dict(
+        metadata_dict: dict,
+        packaging_mode: str = "auto",
+        package_root: str | Path | URI | None = None,
+        metadata_only: bool = True,
+    ) -> ROCrate:
         """
-        Create a new instance of the RO-Crate based on the metadata dictionary.
+        Create a crate from a metadata dictionary and an optional local package directory.
 
         :param metadata_dict: the metadata dictionary
-        :type metadata_dict: dict
-
-        :raises ROCrateInvalidURIError: if the URI is invalid
+        :param packaging_mode: Explicit package context or an input-based default.
+        :param package_root: Local package directory that provides payload files.
+        :param metadata_only: Whether to skip checks that require package files.
         """
         from .plain import ROCrateInMemory  # noqa: PLC0415
 
         mode = parse_packaging_mode(packaging_mode)
-        ro_crate = ROCrateInMemory("urn:rocrate-validator:in-memory/")
-        ro_crate._package_type = PackageType.UNSPECIFIED if mode == "auto" else PackageType(mode)
-        ro_crate._packaging_mode_explicit = mode != "auto"
+        if package_root is not None:
+            if mode == "detached":
+                raise ValueError("A package_root cannot be used with detached packaging_mode")
+            ro_crate = ROCrate.new_instance(
+                package_root,
+                packaging_mode=mode,
+                metadata_only=metadata_only,
+            )
+        else:
+            ro_crate = ROCrateInMemory("urn:rocrate-validator:in-memory/")
+            ro_crate._package_type = PackageType.UNSPECIFIED if mode == "auto" else PackageType(mode)
+            ro_crate._packaging_mode_explicit = mode != "auto"
 
-        # override the metadata with the provided dictionary
+        # Use the supplied graph while retaining the package's payload backend.
         ro_crate._metadata = ROCrateMetadata(ro_crate, metadata_dict=metadata_dict)
         return ro_crate
 

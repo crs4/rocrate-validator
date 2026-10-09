@@ -148,6 +148,24 @@ def _download_remote_rocrate(
         return _extract_and_validate(settings, subscribers, download_path)
 
 
+def _initialise_dict_metadata_validator(
+    settings: ValidationSettings, subscribers: list[Subscriber] | None
+) -> Validator:
+    """Build a validator for dictionary metadata, optionally using a package directory."""
+    if settings.package_root is not None:
+        if settings.packaging_mode == "detached":
+            raise ValueError("package_root cannot be combined with detached packaging_mode")
+        if not settings.package_root.is_dir():
+            raise ValueError(f"package_root is not a local directory: {settings.package_root}")
+    else:
+        if settings.packaging_mode == "attached" and not settings.metadata_only:
+            raise ValueError("Attached in-memory metadata requires metadata_only=True or package_root")
+        # A standalone dictionary has no payload backend, even when called
+        # through validate() rather than validate_metadata_as_dict().
+        settings.metadata_only = True
+    return _build_validator(settings, subscribers)
+
+
 def __initialise_validator__(  # noqa: C901, PLR0911  # pylint: disable=too-many-return-statements
     settings: dict | ValidationSettings, subscribers: list[Subscriber] | None = None
 ) -> Validator:
@@ -157,13 +175,11 @@ def __initialise_validator__(  # noqa: C901, PLR0911  # pylint: disable=too-many
     # if settings is a dict, convert to ValidationSettings
     settings = ValidationSettings.parse(settings)
 
+    if settings.package_root is not None and settings.metadata_dict is None:
+        raise ValueError("package_root requires metadata_dict")
+
     if settings.metadata_dict is not None:
-        if settings.packaging_mode == "attached" and not settings.metadata_only:
-            raise ValueError("Attached in-memory metadata requires metadata_only=True or a package directory/ZIP")
-        # A dictionary has no payload backend, even when called through the
-        # general validate() entry point rather than validate_metadata_as_dict().
-        settings.metadata_only = True
-        return _build_validator(settings, subscribers)
+        return _initialise_dict_metadata_validator(settings, subscribers)
 
     # parse the rocrate path
     assert settings.rocrate_uri is not None, "RO-Crate URI is required"
