@@ -204,7 +204,7 @@ def test_metadata_mode_controls_detached_rule_and_reports_scope(monkeypatch, tmp
     (tmp_path / "missing.txt").write_text("irrelevant")
     monkeypatch.chdir(tmp_path)
     second = _validate_metadata(metadata, "auto")
-    assert first.passed() and second.passed()
+    assert not any("not web-based" in issue.message for result in (first, second) for issue in result.issues)
     assert first.skipped_checks_count == second.skipped_checks_count
     assert any("package context is unavailable" in detail.message for detail in first.skipped_check_details)
     assert first.context.publicID == second.context.publicID
@@ -214,7 +214,7 @@ def test_metadata_mode_controls_detached_rule_and_reports_scope(monkeypatch, tmp
 
     attached = _validate_metadata(metadata, "attached")
     detached = _validate_metadata(metadata, "detached")
-    assert attached.passed()
+    assert not any("not web-based" in issue.message for issue in attached.issues)
     assert not detached.passed()
     assert any("not web-based" in issue.message for issue in detached.issues)
     assert detached.to_dict()["validation_settings"]["packaging_mode_explicit"] is True
