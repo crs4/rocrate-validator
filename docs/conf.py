@@ -137,6 +137,15 @@ branch = os.popen("git rev-parse --abbrev-ref HEAD").read().strip()
 # -- Options for HTML output -------------------------------------------------
 html_theme_options = {
     "accent_color": "teal",
+    "nav_links": [
+        {"title": "CLI", "url": "2_usage_cli", "icon": "lucide:terminal"},
+        {"title": "API", "url": "3_usage_api", "icon": "lucide:braces"},
+        {
+            "title": "Profiles",
+            "url": "12_validation_profiles",
+            "icon": "lucide:boxes",
+        },
+    ],
     "nav_socials": [
         {"name": "GitHub", "url": github_url, "icon": "simple-icons:github"},
     ],

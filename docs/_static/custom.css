@@ -1,5 +1,21 @@
 /* Teal palette with darker text accents for contrast in light mode. */
+:root {
+  --font-mono: "JetBrainsMono Nerd Font", "JetBrains Mono", "Fira Code",
+    "Cascadia Code", "SFMono-Regular", Menlo, Monaco, Consolas,
+    "Liberation Mono", monospace;
+}
+
+code,
+kbd,
+pre,
+samp,
+.sy-head-brand strong,
+.product-name {
+  font-family: var(--font-mono);
+}
+
 html.light[data-accent-color="teal"] {
+  --toc-emphasis: #4b5358;
   --accent-2: #f2f9f9;
   --accent-3: #e5f3f3;
   --accent-4: #d3ebec;
@@ -25,6 +41,7 @@ html.light[data-accent-color="teal"] {
 }
 
 html.dark[data-accent-color="teal"] {
+  --toc-emphasis: #c2cbce;
   --accent-2: #0d292c;
   --accent-3: #12383c;
   --accent-4: #164247;
@@ -202,6 +219,185 @@ html.dark .admonition > .admonition-title {
   color: #c2e5e6;
   background-color: #0b4b4b;
   border-color: #39989f;
+}
+
+/* Use the logo's blue sparingly to distinguish the quick links in the header. */
+.sy-head-links .nav-link-icon {
+  color: #37a5da;
+  margin-right: 0.4rem;
+}
+
+.sy-head-links a:focus-visible,
+.sy-head-links button:focus-visible {
+  outline: 2px solid #37a5da;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Use visible, theme-colored bullets and progressive indentation in the TOCs. */
+.yue .toctree-wrapper > ul {
+  padding-left: 1.25rem;
+}
+
+.yue .toctree-wrapper > ul > li::marker {
+  color: var(--accent-9);
+  font-size: 1.05em;
+}
+
+.yue .toctree-wrapper > p.caption {
+  color: var(--toc-emphasis);
+  font-weight: 700;
+}
+
+.yue .toctree-wrapper > ul > li > a {
+  color: var(--toc-emphasis);
+  font-weight: 600;
+}
+
+.yue .toctree-wrapper ul ul:not(:empty) {
+  list-style-type: circle;
+  margin-left: 0.3rem;
+  padding-left: 1rem;
+  border-left: 1px solid var(--sy-c-divider);
+}
+
+.yue .toctree-wrapper ul ul a {
+  font-weight: 400;
+  font-style: italic;
+}
+
+.globaltoc > ul {
+  padding-left: 1.25rem;
+  list-style-type: disc;
+}
+
+.globaltoc li.toctree-l1 > a {
+  display: block;
+  padding: 0.18rem 0.4rem;
+  border-radius: 4px;
+  color: var(--toc-emphasis);
+  font-weight: 600;
+}
+
+.globaltoc li.toctree-l2 > a,
+.globaltoc li.toctree-l3 > a {
+  font-weight: 400;
+  font-style: italic;
+}
+
+.globaltoc > ul > li::marker {
+  color: var(--accent-9);
+}
+
+.globaltoc > ul > li.current > a {
+  font-weight: 700;
+}
+
+.globaltoc li.current > a.current {
+  border-left: 3px solid var(--accent-9);
+  background-color: var(--accent-a2);
+  color: var(--toc-emphasis);
+}
+
+/* Hide toggles for empty toctree placeholders; keep useful expand controls. */
+.globaltoc li:has(> ul.simple) > button {
+  display: none;
+}
+
+.globaltoc ul ul {
+  padding-left: 1rem;
+  list-style-type: circle;
+}
+
+.globaltoc ul ul ul {
+  list-style-type: square;
+}
+
+.localtoc ul {
+  margin-left: 0.15rem;
+  padding-left: 0.9rem;
+  border-left: 1px solid var(--sy-c-divider);
+  list-style: none;
+}
+
+.localtoc > ul {
+  margin-left: 0;
+}
+
+.localtoc li {
+  position: relative;
+  padding-left: 0.55rem;
+}
+
+.localtoc > ul > li > a {
+  color: var(--toc-emphasis);
+  font-weight: 600;
+}
+
+.localtoc ul ul > li > a {
+  font-size: 0.96em;
+  font-weight: 400;
+  font-style: italic;
+}
+
+.localtoc ul ul ul > li > a {
+  font-size: 0.92em;
+  font-style: normal;
+}
+
+.localtoc ul ul ul ul > li > a {
+  font-size: 0.88em;
+  color: var(--sy-c-light);
+}
+
+.localtoc li::before {
+  position: absolute;
+  top: 0.5em;
+  left: -1rem;
+  font-family: system-ui, sans-serif;
+  font-size: 0.55rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--accent-8);
+  content: "●";
+}
+
+.localtoc ul ul {
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+  padding-left: 0.75rem;
+}
+
+.localtoc ul ul li::before {
+  top: 0.5em;
+  left: -0.82rem;
+  font-size: 0.48rem;
+  color: var(--sy-c-light);
+  content: "○";
+}
+
+.localtoc ul ul ul li::before {
+  font-size: 0.42rem;
+  font-weight: 700;
+  color: var(--accent-8);
+  content: "▪";
+}
+
+.localtoc ul ul ul ul li::before {
+  font-size: 0.45rem;
+  font-weight: 400;
+  color: var(--sy-c-light);
+  content: "–";
+}
+
+.localtoc li.active > a {
+  color: var(--toc-emphasis);
+  font-weight: 700;
+  font-style: normal;
+}
+
+.localtoc li.active::before {
+  color: var(--accent-9);
 }
 
 /* Keep the composition summary within the documentation content column. */
