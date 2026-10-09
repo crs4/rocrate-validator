@@ -56,6 +56,15 @@ html.dark[data-accent-color="teal"] {
   --yue-c-link-2: #a3e4e2;
 }
 
+/* The README's status callout has a light fallback for GitHub; adapt it to
+ * the documentation theme's dark palette when dark mode is selected.
+ */
+html.dark .project-status-note {
+  background-color: #123035 !important;
+  border-left-color: #39989f !important;
+  color: #e0efef !important;
+}
+
 /* Callouts use teal for information, orange/yellow for warnings and attention,
  * brown for important details, and red for errors. Override each semantic type:
  * the theme's callout backgrounds otherwise remain too light in dark mode.
