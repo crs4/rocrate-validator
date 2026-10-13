@@ -38,6 +38,7 @@ from rocrate_validator.models.events import (
     ValidationEvent,
 )
 from rocrate_validator.models.profile import Profile
+from rocrate_validator.models.profile_detection import detect_rocrate_profiles
 from rocrate_validator.models.requirement import (
     Requirement,
     RequirementCheck,
@@ -57,7 +58,7 @@ if TYPE_CHECKING:
     import tempfile
 
     from rdflib.term import Node
-
+    from rocrate_validator.models.profile_detection import ProfileDetectionResult
     from rocrate_validator.models.profile_provenance import EffectiveRequirementCheck
 
 
@@ -270,47 +271,22 @@ class Validator(Publisher):
         """
         Detect the profiles to validate against
         """
+        return self.detect_rocrate_profiles_detailed(rocrate_uri, metadata_dict=metadata_dict).profiles
+
+    def detect_rocrate_profiles_detailed(
+        self,
+        rocrate_uri: str | Path | URI | None = None,
+        *,
+        metadata_dict: dict | None = None,
+    ) -> ProfileDetectionResult:
+        """Detect profiles and describe unusable or unresolved profile hints."""
         settings = self.__settings_for_run__(self.validation_settings, rocrate_uri, metadata_dict)
         with self.__run_lock:
-            return self.__detect_rocrate_profiles__(settings)
-
-    def __detect_rocrate_profiles__(self, settings: ValidationSettings) -> list[Profile]:
-        # initialize the validation context
-        context = ValidationContext(self, settings)
-        candidate_profiles_uris: set[str] = set()
-        candidate_profiles_uris.update(context.ro_crate.metadata.get_conforms_to() or [])
-        candidate_profiles_uris.update(context.ro_crate.metadata.get_root_data_entity_conforms_to() or [])
-
-        logger.debug("Candidate profiles: %s", candidate_profiles_uris)
-        if not candidate_profiles_uris:
-            logger.debug("Unable to determine the profile to validate against")
-            return []
-        # load the profiles
-        profiles = []
-        candidate_profiles = []
-        available_profiles = self.__get_prepared_profile_catalog__(context)
-        profiles = [p for p in available_profiles if p.uri in candidate_profiles_uris]
-        # get the candidate profiles
-        for profile in profiles:
-            candidate_profiles.append(profile)
-            inherited_profiles = profile.inherited_profiles
-            for inherited_profile in inherited_profiles:
-                if inherited_profile in candidate_profiles:
-                    candidate_profiles.remove(inherited_profile)
-        logger.debug(
-            "%d Candidate Profiles found: %s",
-            len(candidate_profiles),
-            candidate_profiles,
-        )
-        # unmatched candidate profiles
-        unmatched_profiles = candidate_profiles_uris.difference({p.uri for p in profiles})
-        logger.debug("Unmatched Candidate Profiles URIs: %s", unmatched_profiles)
-        if len(unmatched_profiles) > 0:
-            logger.warning(
-                "The conformance to the following profiles could not be verified: %s",
-                ", ".join(unmatched_profiles),
+            context = ValidationContext(self, settings)
+            return detect_rocrate_profiles(
+                context,
+                profile_loader=lambda: self.__get_prepared_profile_catalog__(context),
             )
-        return candidate_profiles
 
     def validate(
         self,
