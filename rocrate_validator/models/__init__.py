@@ -34,7 +34,7 @@ from rocrate_validator.models.requirement import (
     RequirementLoader,
     SourceSnippet,
 )
-from rocrate_validator.models.result import CheckIssue, CustomEncoder, ValidationResult
+from rocrate_validator.models.result import CheckIssue, CustomEncoder, ValidationDiagnostic, ValidationResult
 from rocrate_validator.models.settings import (
     DEFAULT_PROFILES_PATH,
     BaseTypes,
@@ -87,6 +87,7 @@ __all__ = [
     "SkippedCheckDetail",
     "SourceSnippet",
     "ValidationContext",
+    "ValidationDiagnostic",
     "ValidationEvent",
     "ValidationResult",
     "ValidationSettings",
