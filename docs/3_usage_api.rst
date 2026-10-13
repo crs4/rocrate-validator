@@ -42,6 +42,48 @@ Programmatic Validation
     * For package modes, scope, and accepted input combinations, see
       :ref:`package_modes`.
 
+Profile Detection
+-----------------
+
+``detect_profiles`` keeps returning the profiles found from valid JSON-LD
+references. To inspect why another value was not used, call
+``detect_profiles_detailed``. It returns a ``ProfileDetectionResult`` with
+``profiles``, ``diagnostics``, and an optional ``suggested_profile``.
+
+A suggestion is returned only when profile detection found no usable profile
+reference, every detection diagnostic concerns a string-valued ``conformsTo``,
+all those values are identical, and exactly one available profile has that URI.
+Other malformed hints, unknown valid URIs, or multiple possible profiles do
+not produce a suggestion. The suggestion does not change the crate metadata
+and must be selected explicitly by the calling application.
+
+Each diagnostic has a stable ``code`` as well as the affected property,
+metadata location, original value, and explanation. Codes distinguish an
+invalid reference (``INVALID_REFERENCE``), a malformed ``conformsTo`` value
+(``INVALID_CONFORMS_TO``), a URI that does not identify an available profile
+(``PROFILE_NOT_FOUND``), and missing profile hints (``NO_PROFILE_HINT``).
+
+.. code-block:: python
+
+    from rocrate_validator.services import detect_profiles_detailed, validate
+
+    settings = {"rocrate_uri": "/path/to/crate"}
+    detection = detect_profiles_detailed(settings)
+    for diagnostic in detection.diagnostics:
+        print(diagnostic.code, diagnostic.message)
+
+    if detection.suggested_profile is not None:
+        # The application decides whether to accept the suggestion.
+        settings["profile_identifier"] = detection.suggested_profile.identifier
+        result = validate(settings)
+
+Programmatic detection does not prompt or silently select a suggestion. If the
+application does not set ``profile_identifier``, ``validate`` uses the profile
+configured in ``ValidationSettings`` (or its default). Selecting a suggested
+profile does not repair invalid metadata: ``conformsTo`` must still be
+corrected to a JSON-LD reference, such as
+``{"@id": "https://w3id.org/ro/crate/1.2"}``.
+
 
 Metadata-only Validation
 ------------------------

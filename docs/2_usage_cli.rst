@@ -45,3 +45,20 @@ CLI Validation
       profile, see :doc:`Writing a profile <11_writing_a_profile>`.
     * For choosing Attached/Detached rules, checking only metadata, and
       supported inputs, see :ref:`package_modes`.
+
+Profile detection when ``conformsTo`` is a string
+-------------------------------------------------
+
+Profile detection expects JSON-LD references, for example
+``"conformsTo": {"@id": "https://w3id.org/ro/crate/1.2"}``. If a
+``conformsTo`` value is instead a string and it uniquely matches an available
+profile, interactive validation explains the malformed value and asks whether
+to use that profile. Confirming selects the profile for validation; declining
+returns to the profile selection prompt. The metadata is not changed, so the
+validation report can still include an error for the malformed value.
+
+In non-interactive mode, the suggestion is not accepted automatically. When
+there is no usable profile reference, validation falls back to the base
+``ro-crate`` profile. Specify ``--profile-identifier`` to choose a profile
+explicitly, or correct ``conformsTo`` in the metadata descriptor or Root Data
+Entity. Use ``--no-auto-profile`` to disable profile detection.
