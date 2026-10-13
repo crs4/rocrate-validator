@@ -148,9 +148,10 @@ def _get_profile_hints(metadata) -> tuple[list[tuple[str, ROCrateEntity]], list[
     diagnostics: list[tuple[str, str, Any]] = []
     try:
         descriptor = metadata.get_file_descriptor_entity()
-    except Exception:
+    except ValueError:
         # Without a descriptor there is no reliable source for either the
-        # descriptor's conformsTo or the Root Data Entity's hints.
+        # descriptor's conformsTo or the Root Data Entity's hints. Other
+        # exceptions indicate unexpected failures and must reach the caller.
         return hints, diagnostics
 
     root_data_entity = descriptor.get_property("about")
