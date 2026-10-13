@@ -19,6 +19,7 @@ from contextlib import nullcontext
 from pathlib import Path
 
 import rich_click as click
+from rich.markup import escape
 from rich.padding import Padding
 from rich.rule import Rule
 from rich.table import Table
@@ -519,7 +520,7 @@ def _parse_skip_checks(skip_checks: list[str] | None) -> list[str]:
     return skip_checks_list
 
 
-def _resolve_profile_identifiers(
+def _resolve_profile_identifiers(  # noqa: C901, PLR0912
     console: Console,
     *,
     interactive: bool,
@@ -539,33 +540,54 @@ def _resolve_profile_identifiers(
     if not profile_identifiers:
         # Auto-detect the profile to use for validation (if not disabled)
         candidate_profiles = None
+        detection_result = None
         if not no_auto_profile:
-            candidate_profiles = services.detect_profiles(settings=validation_settings)
+            detection_result = services.detect_profiles_detailed(settings=validation_settings)
+            candidate_profiles = detection_result.profiles
             logger.debug("Candidate profiles: %s", candidate_profiles)
         else:
             logger.info("Auto-detection of the profiles to use for validation is disabled")
+
+        suggested_profile = detection_result.suggested_profile if detection_result else None
+
+        reason = None
+        if detection_result and detection_result.diagnostics:
+            diagnostic = detection_result.diagnostics[0]
+            reason = (
+                f"`{diagnostic.property}` at {diagnostic.location} has value {escape(repr(diagnostic.value))}. "
+                f"{diagnostic.message}"
+            )
 
         # Prompt the user when interactive and no single profile could be auto-detected
         if interactive and (
             not candidate_profiles or len(candidate_profiles) == 0 or len(candidate_profiles) == len(available_profiles)
         ):
-            console.print(
-                Padding(
-                    Rule(
-                        "[bold yellow]WARNING: [/bold yellow]"
-                        "[bold]Unable to automatically detect the profile to use for validation[/bold]\n",
-                        align="center",
-                        style="bold yellow",
-                    ),
-                    (2, 2, 0, 2),
+            suggestion_confirmed = suggested_profile and _confirm_suggested_profile(console, suggested_profile, reason)
+            if suggestion_confirmed:
+                profile_identifiers = [suggested_profile.identifier]
+                autodetection = True
+            if not suggestion_confirmed:
+                console.print(
+                    Padding(
+                        Rule(
+                            "[bold yellow]WARNING: [/bold yellow]"
+                            "[bold]Unable to automatically detect the profile to use for validation[/bold]"
+                            + (f"\n{reason}" if reason else "")
+                            + "\n",
+                            align="center",
+                            style="bold yellow",
+                        ),
+                        (2, 2, 0, 2),
+                    )
                 )
-            )
-            selected_options = multiple_choice(console, available_profiles)
-            if selected_options is None or isinstance(selected_options, bool):
-                selected_options = []
-            profile_identifiers = [available_profiles[int(o)].identifier for o in selected_options]
-            logger.debug("Profile selected: %s", selected_options)
-            console.print(Padding(Rule(style="bold yellow"), (1, 2)))
+            if not profile_identifiers:
+                selected_options = multiple_choice(console, available_profiles)
+                if selected_options is None or isinstance(selected_options, bool):
+                    selected_options = []
+                profile_identifiers = [available_profiles[int(o)].identifier for o in selected_options]
+                logger.debug("Profile selected: %s", selected_options)
+            if not suggestion_confirmed:
+                console.print(Padding(Rule(style="bold yellow"), (1, 2)))
         elif candidate_profiles and len(candidate_profiles) < len(available_profiles):
             logger.debug("Profile identifier autodetected: %s", candidate_profiles[0].identifier)
             autodetection = True
@@ -578,10 +600,28 @@ def _resolve_profile_identifiers(
             console.print("[bold]Auto-detection of the profiles to use for validation is disabled[/bold]")
         else:
             console.print("[bold]Unable to automatically detect the profile to use for validation[/bold]")
+            if reason:
+                console.print(f"{' ' * 11}{reason}")
         console.print(f"{' ' * 11}[bold]The base `ro-crate` profile will be used for validation[/bold]")
         profile_identifiers = ["ro-crate"]
 
     return profile_identifiers, autodetection
+
+
+def _confirm_suggested_profile(console: Console, profile, reason: str | None) -> bool:
+    """Explain the malformed conformsTo value and ask before using its profile candidate."""
+    console.print(
+        f"[bold yellow]Unable to automatically detect the profile to use for validation:[/bold yellow] {reason}"
+    )
+    confirmation = get_single_char(
+        console,
+        choices=["y", "n"],
+        message=(
+            "[bold]Use the suggested profile "
+            f"[magenta]{profile.identifier}[/magenta]? ([magenta]y/n[/magenta]): [/bold]"
+        ),
+    )
+    return confirmation == "y"
 
 
 def _render_console_result(
