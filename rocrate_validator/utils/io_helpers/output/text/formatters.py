@@ -19,6 +19,8 @@ from typing import TYPE_CHECKING
 from rich.align import Align
 from rich.markdown import Markdown
 from rich.padding import Padding
+from rich.table import Table
+from rich.text import Text
 
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.io_helpers.colors import get_severity_color
@@ -95,6 +97,49 @@ class ValidationResultTextOutputFormatter(OutputFormatter):
                         yield Padding("\n", (0, 0))
             yield Padding("\n", (0, 0))
 
+        yield from self._render_diagnostics(result)
+
+    @staticmethod
+    def _render_diagnostics(result: ValidationResult) -> RenderResult:
+        diagnostics = result.diagnostics
+        if not diagnostics:
+            return
+        finding_count = len(diagnostics)
+        finding_label = "finding" if finding_count == 1 else "findings"
+        check_count = len({diagnostic.identifier for diagnostic in diagnostics})
+        caption = Text(f"{finding_count} {finding_label}: ")
+        if finding_count == 1:
+            caption.append("this finding is advisory and does not affect conformance.", style="dim italic")
+        else:
+            caption.append("findings are advisory and do not affect conformance.", style="dim italic")
+        table = Table(
+            title=f"Diagnostic Checks ({check_count})",
+            title_style="bold orange1",
+            border_style="orange1",
+            header_style="bold orange1",
+            show_lines=False,
+            caption=caption,
+            caption_justify="center",
+        )
+        table.add_column("Profile", style="cyan", no_wrap=True)
+        table.add_column("Check", no_wrap=True)
+        table.add_column("Entity", style="cyan", overflow="fold")
+        table.add_column("Property", style="yellow", overflow="fold")
+        table.add_column("Value", style="green", overflow="fold")
+        table.add_column("Finding", overflow="fold")
+
+        for diagnostic in diagnostics:
+            table.add_row(
+                Text(result.context.effective_check_profile(diagnostic.check).identifier, style="cyan"),
+                Text(diagnostic.identifier, style=get_severity_color(diagnostic.check.severity)),
+                diagnostic.violating_entity or "—",
+                diagnostic.violating_property or "—",
+                f'"{diagnostic.value}"' if diagnostic.value is not None else "—",
+                Text(diagnostic.message),
+            )
+
+        yield Padding(table, (1, 2))
+
 
 class ValidationStatisticsTextOutputFormatter(OutputFormatter):
     def __init__(self, validation_statistics: ValidationStatistics):
@@ -110,3 +155,13 @@ class ValidationStatisticsTextOutputFormatter(OutputFormatter):
         if layout.layout is not None:
             yield layout.layout
         yield Padding("\n", (0, 0))
+
+
+class ValidationDiagnosticsTextOutputFormatter(OutputFormatter):
+    """Render advisory diagnostics independently from conformance details."""
+
+    def __init__(self, validation_result: ValidationResult):
+        self._validation_result = validation_result
+
+    def __rich_console__(self, console: Console, options: ConsoleOptions) -> RenderResult:
+        yield from ValidationResultTextOutputFormatter._render_diagnostics(self._validation_result)
