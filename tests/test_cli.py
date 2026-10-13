@@ -14,6 +14,7 @@
 
 import json
 import re
+from io import StringIO
 from pathlib import Path
 from unittest.mock import patch
 
@@ -22,12 +23,14 @@ from pytest import fixture
 from rdflib import Graph
 
 from rocrate_validator import services
+from rocrate_validator.cli.commands.validate import _resolve_profile_identifiers
 from rocrate_validator.cli.main import cli
 from rocrate_validator.errors import BadSyntaxError
-from rocrate_validator.models import ValidationContext
+from rocrate_validator.models import ProfileDetectionDiagnostic, ProfileDetectionResult, ValidationContext
 from rocrate_validator.requirements.python import PyFunctionCheck
 from rocrate_validator.requirements.shacl.checks import SHACLCheck
 from rocrate_validator.utils import log as logging
+from rocrate_validator.utils.io_helpers.output.console import Console
 from rocrate_validator.utils.versioning import get_version
 from tests.conftest import SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER
 from tests.ro_crates import InvalidFileDescriptor, InvalidFileDescriptorEntity, ValidROC
@@ -68,6 +71,35 @@ def test_validate_packaging_mode_option(cli_runner: CliRunner, tmp_path: Path):
     )
     assert incompatible.exit_code != 0
     assert "standalone metadata document" in incompatible.output
+
+def test_profile_detection_cli_escapes_metadata_values_in_warning(monkeypatch):
+    """Malformed metadata values containing Rich markup are rendered as plain text."""
+    detection = ProfileDetectionResult(
+        profiles=[],
+        diagnostics=[
+            ProfileDetectionDiagnostic(
+                code="INVALID_CONFORMS_TO",
+                property="conformsTo",
+                location="RO-Crate Metadata Descriptor",
+                value="[/]",
+                message="Expected a JSON-LD reference object containing `@id`.",
+            )
+        ],
+    )
+    output = StringIO()
+    monkeypatch.setattr(services, "detect_profiles_detailed", lambda **kwargs: detection)
+
+    profile_identifiers, _ = _resolve_profile_identifiers(
+        Console(file=output, width=200),
+        interactive=False,
+        no_auto_profile=False,
+        available_profiles=[],
+        profile_identifiers=[],
+        validation_settings={},
+    )
+
+    assert profile_identifiers == ["ro-crate"]
+    assert "[/]" in output.getvalue()
 
 
 def test_validate_subcmd_invalid_rocrate1(cli_runner: CliRunner):
