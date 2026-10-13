@@ -16,10 +16,17 @@ import json
 import shutil
 import tempfile
 from pathlib import Path
+from types import SimpleNamespace
 
 from rocrate_validator.models import URI, ValidationSettings
 from rocrate_validator.rocrate import ROCrateMetadata
-from rocrate_validator.services import detect_profiles, get_profiles, validate
+from rocrate_validator.services import (
+    detect_profiles,
+    detect_profiles_detailed,
+    get_profiles,
+    validate,
+    validate_metadata_as_dict,
+)
 from rocrate_validator.utils import log as logging
 from tests.ro_crates import InvalidFileDescriptorEntity, InvalidMultiProfileROC, ValidROC
 from tests.shared import RO_CRATE_1_1_PROFILE_IDENTIFIER
@@ -29,6 +36,59 @@ logger = logging.getLogger(__name__)
 
 
 metadata_file_descriptor = Path(ROCrateMetadata.METADATA_FILE_DESCRIPTOR)
+
+
+def _profile_detection_settings(about, conforms_to=None):
+    descriptor = {"@id": "ro-crate-metadata.json", "@type": "CreativeWork", "about": about}
+    if conforms_to is not None:
+        descriptor["conformsTo"] = conforms_to
+    return ValidationSettings(
+        rocrate_uri=URI("/tmp/conforms-profile-detection"),
+        metadata_only=True,
+        metadata_dict={
+            "@context": {},
+            "@graph": [descriptor, {"@id": "./", "@type": "Dataset"}],
+        },
+    )
+
+
+def test_detailed_profile_detection_reports_missing_and_unknown_hints(monkeypatch):
+    """Detailed detection distinguishes absent hints from unmatched profile references."""
+    monkeypatch.setattr("rocrate_validator.models.profile.Profile.load_profiles", lambda *args, **kwargs: [])
+
+    missing = detect_profiles_detailed(_profile_detection_settings({"@id": "./"}))
+    unknown = detect_profiles_detailed(
+        _profile_detection_settings({"@id": "./"}, {"@id": "https://example.org/unknown-profile"})
+    )
+
+    assert [diagnostic.code for diagnostic in missing.diagnostics] == ["NO_PROFILE_HINT"]
+    assert [diagnostic.code for diagnostic in unknown.diagnostics] == ["PROFILE_NOT_FOUND"]
+    assert unknown.diagnostics[0].value == "https://example.org/unknown-profile"
+
+
+def test_detailed_profile_detection_handles_invalid_about_without_raising(monkeypatch):
+    """A malformed about value is returned as a structured diagnostic."""
+    monkeypatch.setattr("rocrate_validator.models.profile.Profile.load_profiles", lambda *args, **kwargs: [])
+
+    result = detect_profiles_detailed(_profile_detection_settings("./"))
+
+    assert {diagnostic.code for diagnostic in result.diagnostics} == {"INVALID_REFERENCE", "NO_PROFILE_HINT"}
+
+
+def test_detailed_profile_detection_suggests_only_matching_string_hint(monkeypatch):
+    """A sole string hint matching one profile yields a separate suggestion."""
+    profile = SimpleNamespace(
+        uri="https://w3id.org/ro/crate/1.2",
+        identifier="ro-crate-1.2",
+        inherited_profiles=[],
+    )
+    monkeypatch.setattr("rocrate_validator.models.profile.Profile.load_profiles", lambda *args, **kwargs: [profile])
+
+    result = detect_profiles_detailed(_profile_detection_settings({"@id": "./"}, "https://w3id.org/ro/crate/1.2"))
+
+    assert result.profiles == []
+    assert result.suggested_profile is profile
+    assert result.diagnostics[0].code == "INVALID_CONFORMS_TO"
 
 
 def test_default_profiles_list():
@@ -234,8 +294,6 @@ def test_valid_crate_metadata_dict_with_metadata_only():
     assert len(profiles) == 1, "Expected a single profile"
     # Check the detected profile
     assert profiles[0].identifier == "ro-crate-1.1", "Expected the 'ro-crate' profile"
-
-    from rocrate_validator.services import validate_metadata_as_dict
 
     result = validate_metadata_as_dict(metadata_dict, settings)
     assert result.passed(), "RO-Crate should be valid in metadata-only mode"
