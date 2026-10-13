@@ -632,7 +632,7 @@ def _render_console_result(
     result = services.validate(validation_settings)
     console.register_formatter(TextOutputFormatter())
     console.print(result.statistics)
-    if result.diagnostics:
+    if result.diagnostics and (result.passed() or not verbose):
         console.print(ValidationDiagnosticsTextOutputFormatter(result))
     if not result.passed() and verbose:
         out = Console(no_color=console.no_color, width=console.width, height=console.height)
@@ -676,7 +676,7 @@ def _render_file_or_collected_result(
             out = Console(color_system=None, width=output_line_width, height=31, file=f)
             out.register_formatter(TextOutputFormatter())
             out.print(result.statistics)  # Output the statistics first
-            if result.diagnostics:
+            if result.diagnostics and (result.passed() or not verbose):
                 out.print(ValidationDiagnosticsTextOutputFormatter(result))
             if not result.passed() and verbose:
                 out.print(result)
