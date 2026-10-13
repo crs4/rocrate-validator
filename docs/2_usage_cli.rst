@@ -34,6 +34,24 @@ CLI Validation
     :start-after: ## CLI-based Validation
     :end-before: ## Programmatic Validation
 
+
+Diagnostic Checks
+-----------------
+
+Diagnostic checks are advisory checks that can report suspicious metadata
+patterns without affecting whether an RO-Crate conforms to its profile. They
+are disabled by default. To run all checks classified as diagnostic, pass
+``--include-diagnostic-checks`` to ``validate``:
+
+.. code-block:: console
+
+    rocrate-validator validate <path_to_rocrate> --include-diagnostic-checks
+
+To omit one diagnostic check while running the others, combine this option with
+``--skip-checks`` and the check's fully qualified identifier. The validation
+report lists diagnostic checks and their findings separately from conformance
+issues.
+
 .. seealso::
 
     To validate without network access and manage the HTTP cache from the

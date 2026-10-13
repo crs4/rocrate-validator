@@ -184,6 +184,40 @@ result contains an actionable diagnostic.  When it is skipped, prefer
 ``context.record_skip(...)`` when a reason and category should be exposed to
 API and CLI consumers.
 
+Diagnostic Python checks
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Use the ``diagnostic=True`` argument to ``@check`` for advisory checks that
+report suspicious patterns without deciding whether a crate conforms to its
+profile. Diagnostic checks are disabled by default and can be enabled by users
+with ``--include-diagnostic-checks`` or the
+``ValidationSettings.include_diagnostic_checks`` setting. A diagnostic check
+must record each finding with ``context.result.add_diagnostic(...)``; do not
+use ``add_issue(...)`` for an advisory finding, because issues contribute to
+the conformance result.
+
+For example:
+
+.. code-block:: python
+
+   @check(name="Possible missing entity link", diagnostic=True)
+   def check_entity_link(self, context: ValidationContext) -> bool:
+       entity = ...  # inspect the entity using the validation context
+       if suspicious_link(entity):
+           context.result.add_diagnostic(
+               self,
+               "This value may refer to an entity that is not declared in the crate.",
+               violating_entity=entity.get("@id"),
+               violating_property="relatedLink",
+           )
+       return True
+
+The return value still follows the regular Python check contract, but a
+diagnostic check's failed status does not fail conformance. Findings are
+available from ``ValidationResult.diagnostics`` and are presented separately
+from conformance issues. For the user-facing options and result fields, see
+:ref:`cli-based-validation` and :ref:`programmatic-validation`.
+
 .. _profile-composition:
 
 Composing validation profiles

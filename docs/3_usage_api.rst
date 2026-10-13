@@ -30,6 +30,30 @@ Programmatic Validation
     :start-after: ## Programmatic Validation
     :end-before: ## Running the tests
 
+
+Diagnostic Checks
+-----------------
+
+Diagnostic checks are advisory and do not affect the conformance result. They
+are disabled by default; set ``include_diagnostic_checks`` on
+``ValidationSettings`` to run them:
+
+.. code-block:: python
+
+    from rocrate_validator import models, services
+
+    settings = services.ValidationSettings(
+        rocrate_uri="path/to/rocrate",
+        profile_identifier="ro-crate-1.3",
+        requirement_severity=models.Severity.REQUIRED,
+        include_diagnostic_checks=True,
+    )
+    result = services.validate(settings)
+
+The resulting ``ValidationResult`` exposes these reports separately through
+``result.diagnostics``. Diagnostic checks are also listed separately in
+``result.statistics``.
+
 .. seealso::
 
     To resolve resources from a local cache or run validation without network
