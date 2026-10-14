@@ -158,6 +158,27 @@ else:
         print(f"Detected issue of severity {issue.severity.name} with check \"{issue.check.identifier}\": {issue.message}")
 ```
 
+For repeated validation against the same profile, reuse a `Validator`. Profile
+artifacts are prepared on the first call (or explicitly with `prepare()`) while
+crate data and results remain isolated per call:
+
+```python
+validator = models.Validator(settings)
+validator.prepare()  # optional eager warm-up
+
+result_a = validator.validate("/path/to/ro-crate-a")
+result_b = validator.validate("/path/to/ro-crate-b")
+
+# Invalidate preparation after changing profile files on disk.
+validator.clear_prepared_profiles()
+```
+
+For ordinary crates, profile artifacts containing relative IRIs are prepared
+once against an internal base and materialized for each crate public ID. A
+metadata document whose explicit JSON-LD `@base` differs from its crate public
+ID keeps a separate prepared plan. Calls on the same `Validator` are serialized;
+use one instance per concurrent worker.
+
 The following is a possible output:
 
 ```bash
