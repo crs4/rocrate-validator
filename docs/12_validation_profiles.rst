@@ -60,3 +60,12 @@ This mechanism allows you to:
    of a predefined profile with the same URI. It is different from a
    :ref:`profile rule overlay <profile-rule-overlays>`, which composes a target
    profile from an inherited source profile and only redefines selected checks.
+
+.. seealso::
+
+   * To create a new profile or implement its checks, see
+     :doc:`Writing a profile <11_writing_a_profile>`.
+   * To load additional profiles from the command line or Python, see the
+     :doc:`CLI guide <2_usage_cli>` and the :doc:`Python API guide <3_usage_api>`.
+   * For profile-related services and models, see the
+     :doc:`API reference <10_api>`.

@@ -20,19 +20,24 @@
     1_installation
     2_usage_cli
     3_usage_api
-    4_how_it_works
-    5_offline_mode
 
 .. toctree::
     :maxdepth: 5
-    :caption: Resources
+    :caption: Using the Validator
 
+    4_how_it_works
     12_validation_profiles
+    5_offline_mode
+    10_api
+
+.. toctree::
+    :maxdepth: 5
+    :caption: Profile Development
+
     11_writing_a_profile
     13_optimizing_shacl_target_selection
     14_graph_transformers
-    10_api
-    genindex
+    15_building_documentation
 
 .. toctree::
     :maxdepth: 1

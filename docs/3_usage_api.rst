@@ -32,9 +32,13 @@ Programmatic Validation
 
 .. seealso::
 
-    To resolve resources from a local cache or run validation without network
-    access (the ``offline`` / ``no_cache`` settings of ``ValidationSettings``),
-    see :ref:`offline_mode`.
+    * To configure the HTTP cache or run validation without network access,
+      see :ref:`offline_mode`.
+    * For command-line validation, see the :doc:`CLI guide <2_usage_cli>`.
+    * For the complete package API, see the :doc:`API reference <10_api>`.
+    * To select or write validation profiles, see
+      :doc:`Validation profiles <12_validation_profiles>` and
+      :doc:`Writing a profile <11_writing_a_profile>`.
 
 
 Metadata-only Validation

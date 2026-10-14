@@ -15,14 +15,6 @@
 
 .. _api:
 
-.. toctree::
-    :maxdepth: 5
-    :caption: Getting Started
-
-.. toctree::
-    :maxdepth: 5
-    :caption: Resources
-
 ###################################################
 API documentation
 ###################################################
@@ -32,6 +24,7 @@ This section documents the ``rocrate_validator`` package's API. The
 for using them to validate RO-Crate metadata, and for interpreting the results. Below,
 you will find descriptions and usage examples for the core services, models,
 and other components provided by the package.
+See the :ref:`Index <genindex>` for an alphabetical list of API entries.
 
 The Python API is structured in three main parts.
 
