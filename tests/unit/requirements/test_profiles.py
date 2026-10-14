@@ -975,6 +975,22 @@ def test_python_check_decorator_sets_dependencies():
     assert dependent.depends_on == ("base",)  # pyright: ignore[reportFunctionMemberAccess]
 
 
+def test_python_check_decorator_sets_diagnostic_flag():
+    """The @check decorator must expose the diagnostic classification."""
+    from rocrate_validator.requirements.python import check
+
+    @check(name="advisory", diagnostic=True)
+    def advisory(self, ctx):
+        return True
+
+    @check(name="conformance")
+    def conformance(self, ctx):
+        return True
+
+    assert advisory.diagnostic is True  # pyright: ignore[reportFunctionMemberAccess]
+    assert conformance.diagnostic is False  # pyright: ignore[reportFunctionMemberAccess]
+
+
 def test_shacl_shape_with_deactivated_marks_check_skipped(fake_profiles_path: str):
     """A child profile that overrides an inherited NodeShape by `sh:name` and
     sets `sh:deactivated true` should produce a check whose `deactivated`

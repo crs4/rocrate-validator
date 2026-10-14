@@ -194,6 +194,43 @@ class CheckIssue:
         )
 
 
+class ValidationDiagnostic:
+    """A non-blocking diagnostic produced by an optional heuristic check."""
+
+    def __init__(
+        self,
+        check: RequirementCheck,
+        message: str,
+        context: ValidationContext,
+        *,
+        violating_entity: str | None = None,
+        violating_property: str | None = None,
+        value: str | None = None,
+    ):
+        self.check = check
+        self.message = message
+        self.identifier = context.effective_check_identifier(check)
+        self.violating_entity = violating_entity
+        self.violating_property = violating_property
+        self.value = value
+
+    def to_dict(self) -> dict[str, str | None]:
+        return {
+            "check": self.identifier,
+            "message": self.message,
+            "violatingEntity": self.violating_entity,
+            "violatingProperty": self.violating_property,
+            "violatingPropertyValue": self.value,
+        }
+
+    def __repr__(self) -> str:
+        return f"ValidationDiagnostic(check={self.identifier!r}, message={self.message!r})"
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, ValidationDiagnostic) and self.to_dict() == other.to_dict()
+
+    __hash__ = None  # type: ignore[assignment]
+
 class ValidationResult:
     """
     Represents the result of a validation.
@@ -219,6 +256,7 @@ class ValidationResult:
         self._validation_settings: ValidationSettings = context.settings
         # keep track of the issues found during the validation
         self._issues: list[CheckIssue] = []
+        self._diagnostics: list[ValidationDiagnostic] = []
         # keep track of the checks that have been executed
         self._executed_checks: set[RequirementCheck] = set()
         self._executed_checks_results: dict[str, bool] = {}
@@ -373,6 +411,30 @@ class ValidationResult:
         """
         return self._issues.copy()
 
+    @property
+    def diagnostics(self) -> list[ValidationDiagnostic]:
+        """Non-blocking heuristic findings, separate from conformance issues."""
+        return self._diagnostics.copy()
+
+    def add_diagnostic(
+        self,
+        check: RequirementCheck,
+        message: str,
+        violating_entity: str | None = None,
+        violating_property: str | None = None,
+        value: str | None = None,
+    ) -> ValidationDiagnostic:
+        diagnostic = ValidationDiagnostic(
+            check,
+            message,
+            self.context,
+            violating_entity=violating_entity,
+            violating_property=violating_property,
+            value=value,
+        )
+        self._diagnostics.append(diagnostic)
+        return diagnostic
+
     def get_issues(self, min_severity: Severity | None = None) -> list[CheckIssue]:
         """
         Get the issues found during the validation with a severity greater than or equal to `min_severity`
@@ -416,10 +478,12 @@ class ValidationResult:
         Parameters:
             message(str): The message of the issue
             check(RequirementCheck): The check that generated the issue
-            violatingEntity(Optional[str]): The entity that caused the issue (if any)
-            violatingProperty(Optional[str]): The property that caused the issue (if any)
-            violatingPropertyValue(Optional[str]): The value of the violatingProperty (if any)
+        violatingEntity(Optional[str]): The entity that caused the issue (if any)
+        violatingProperty(Optional[str]): The property that caused the issue (if any)
+        violatingPropertyValue(Optional[str]): The value of the violatingProperty (if any)
         """
+        if check.diagnostic:
+            raise ValueError(f"Diagnostic check '{check.name}' cannot add a conformance issue")
         c = CheckIssue(
             check,
             message,
@@ -474,9 +538,9 @@ class ValidationResult:
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, ValidationResult):
             raise TypeError(f"Cannot compare ValidationResult with {type(other)}")
-        return self._issues == other._issues
+        return self._issues == other._issues and self._diagnostics == other._diagnostics
 
-    # Equality is based on the mutable list of issues, so instances are
+    # Equality is based on mutable issue and diagnostic lists, so instances are
     # intentionally unhashable (a content-based hash would be unstable).
     __hash__ = None  # type: ignore[assignment]
 
@@ -498,6 +562,7 @@ class ValidationResult:
             "validation_settings": validation_settings,
             "passed": self.passed(cast("Severity", self.context.settings.requirement_severity)),
             "issues": [issue.to_dict() for issue in self.issues],
+            "diagnostics": [diagnostic.to_dict() for diagnostic in self.diagnostics],
             "skipped_checks": self.skipped_checks_count,
             "skipped_check_details": [detail.to_dict() for detail in self.skipped_check_details],
         }

@@ -520,7 +520,10 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
         """
         if isinstance(value, str):
             if key not in _LITERAL_KEYS and value in identifiers:
-                return f"Entity '{entity_id}' references '{value}' as a string; use {{\"@id\": \"{value}\"}}"
+                return (
+                    "The string value matches a declared entity @id; verify whether this property "
+                    "should use an @id reference"
+                )
             return None
         if isinstance(value, list):
             children: Any = value
@@ -537,8 +540,9 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
         return None
 
     @check(
-        name="Validation of entity references",
+        name="Heuristic diagnostics for suspicious entity references",
         depends_on=("File Descriptor JSON format",),
+        diagnostic=True,
     )
     def check_entity_references(self, context: ValidationContext) -> CheckResultValue:
         try:
@@ -553,8 +557,13 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
                         continue
                     message = self._find_reference_issue(value, entity_id, identifiers, key)
                     if message:
-                        context.result.add_issue(message, self)
-                        return False
+                        context.result.add_diagnostic(
+                            self,
+                            message,
+                            violating_entity=entity_id,
+                            violating_property=key,
+                            value=value if isinstance(value, str) else None,
+                        )
             return True
         except ROCrateMetadataNotFoundError:
             logger.debug("Skipping entity reference check: metadata descriptor is not available")
@@ -563,10 +572,11 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
         except UnicodeDecodeError:
             context.record_skip(self, "descriptor encoding check reported the failure", "exception")
             return CheckResult.SKIPPED
-        except _HANDLED_METADATA_ERRORS:
+        except _HANDLED_METADATA_ERRORS as error:
             if logger.isEnabledFor(logging.DEBUG):
-                logger.exception("Unexpected error during file descriptor validation")
-        return False
+                logger.exception("Unable to inspect metadata for heuristic diagnostics")
+            context.record_skip(self, f"unable to inspect metadata for heuristic diagnostics: {error}", "exception")
+            return CheckResult.SKIPPED
 
     @check(
         name="Validation of subject and keyword properties",

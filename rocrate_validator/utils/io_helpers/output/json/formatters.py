@@ -73,6 +73,7 @@ def format_validation_results(
     json_output["passed"] = True
     json_output["skipped_checks"] = 0
     json_output["skipped_check_details"] = []
+    json_output["diagnostics"] = []
 
     # Initialize the profile results dictionary
     results_key = "validation_results_by_profile"
@@ -98,6 +99,7 @@ def format_validation_results(
         if "issues" not in json_output:
             json_output["issues"] = []
         json_output["issues"].extend(result_dict.get("issues", []))
+        json_output["diagnostics"].extend(result_dict.get("diagnostics", []))
 
     # Add overall statistics
     stats_dict = _compute_overall_statistics(results, verbose=verbose)

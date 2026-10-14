@@ -218,6 +218,31 @@ def test_validate_skip_checks_option(cli_runner: CliRunner):
         )
 
 
+def test_validate_include_diagnostic_checks_option(cli_runner: CliRunner):
+    called_args: list = []
+
+    def mock_validate(*args, **kwargs):
+        called_args.extend(args)
+
+    with patch("rocrate_validator.cli.commands.validate.services.validate") as mock_validate_rocrate:
+        mock_validate_rocrate.return_value = None
+        mock_validate_rocrate.side_effect = mock_validate
+        result = cli_runner.invoke(
+            cli,
+            [
+                "--no-interactive",
+                "validate",
+                str(ValidROC().sort_and_change_archive),
+                "--include-diagnostic-checks",
+                "--no-paging",
+            ],
+        )
+
+    assert result.exit_code == 2
+    settings = called_args[0]
+    assert settings["include_diagnostic_checks"] is True
+
+
 def test_validate_output_file_text_report(cli_runner: CliRunner, tmp_path: Path):
     output_file = tmp_path / "report.txt"
     result = cli_runner.invoke(

@@ -19,7 +19,14 @@ from rich.console import Console
 
 from rocrate_validator import services
 from rocrate_validator.events import EventType, Subscriber
-from rocrate_validator.models import CheckResult, SkipCategory, ValidationContext, ValidationSettings, Validator
+from rocrate_validator.models import (
+    CheckResult,
+    SkipCategory,
+    ValidationContext,
+    ValidationSettings,
+    ValidationStatistics,
+    Validator,
+)
 from rocrate_validator.requirements.shacl.checks import SHACLCheck
 from rocrate_validator.requirements.shacl.validator import SHACLValidator
 from rocrate_validator.utils.io_helpers.output.text.formatters import ValidationResultTextOutputFormatter
@@ -105,6 +112,24 @@ class _ProgressTrace(ProgressMonitor):
     def update(self, event, ctx=None):
         super().update(event, ctx)
         self.snapshots.append([(task.completed, task.total) for task in self.progress.tasks])
+
+
+def test_fully_overridden_requirements_are_not_counted(tmp_path: Path):
+    settings = ValidationSettings(
+        rocrate_uri=tmp_path,
+        profile_identifier="ro-crate-1.2",
+    )
+    statistics = ValidationStatistics(settings)
+    overridden_requirements = [
+        requirement
+        for profile in statistics.profiles
+        for requirement in profile.get_requirements(settings.requirement_severity)
+        if requirement.overridden
+    ]
+
+    assert overridden_requirements
+    assert all(not requirement.overridden for requirement in statistics.requirements)
+    assert statistics.total_requirements == len(statistics.requirements)
 
 
 @pytest.mark.parametrize("profile", ["overlay", "wrapper"])

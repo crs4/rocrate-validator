@@ -36,6 +36,7 @@ from rocrate_validator.utils.io_helpers.input import get_single_char, multiple_c
 from rocrate_validator.utils.io_helpers.output.console import Console
 from rocrate_validator.utils.io_helpers.output.json import JSONOutputFormatter
 from rocrate_validator.utils.io_helpers.output.text import TextOutputFormatter
+from rocrate_validator.utils.io_helpers.output.text.formatters import ValidationDiagnosticsTextOutputFormatter
 from rocrate_validator.utils.io_helpers.output.text.layout.report import LiveTextProgressLayout, get_app_header_rule
 from rocrate_validator.utils.paths import get_profiles_path
 from rocrate_validator.utils.uri import validate_rocrate_uri
@@ -97,6 +98,13 @@ def validate_uri(ctx, param, value):
     "--skip-availability-check",
     is_flag=True,
     help="Skip availability checks for web-based data entities",
+    default=False,
+    show_default=True,
+)
+@click.option(
+    "--include-diagnostic-checks",
+    is_flag=True,
+    help="Run all checks marked as diagnostic; findings do not affect conformance",
     default=False,
     show_default=True,
 )
@@ -275,6 +283,7 @@ def validate(
     creation_time: bool = False,
     enforce_availability: bool = False,
     skip_availability_check: bool = False,
+    include_diagnostic_checks: bool = False,
     no_auto_profile: bool = False,
     disable_profile_inheritance: bool = False,
     no_profile_checks: bool = False,
@@ -360,6 +369,7 @@ def validate(
             "creation_time": creation_time,
             "enforce_availability": enforce_availability,
             "skip_availability_check": skip_availability_check,
+            "include_diagnostic_checks": include_diagnostic_checks,
             "validate_profile_checks": not no_profile_checks,
         }
 
@@ -613,11 +623,17 @@ def _render_console_result(
                 )
             if verbose_choice == "y" or verbose:
                 command_view.display_validation_result(result)
+            elif result.diagnostics:
+                console.print(ValidationDiagnosticsTextOutputFormatter(result))
+        elif result.diagnostics:
+            console.print(ValidationDiagnosticsTextOutputFormatter(result))
         return result
 
     result = services.validate(validation_settings)
     console.register_formatter(TextOutputFormatter())
     console.print(result.statistics)
+    if result.diagnostics and (result.passed() or not verbose):
+        console.print(ValidationDiagnosticsTextOutputFormatter(result))
     if not result.passed() and verbose:
         out = Console(no_color=console.no_color, width=console.width, height=console.height)
         out.register_formatter(TextOutputFormatter())
@@ -660,6 +676,8 @@ def _render_file_or_collected_result(
             out = Console(color_system=None, width=output_line_width, height=31, file=f)
             out.register_formatter(TextOutputFormatter())
             out.print(result.statistics)  # Output the statistics first
+            if result.diagnostics and (result.passed() or not verbose):
+                out.print(ValidationDiagnosticsTextOutputFormatter(result))
             if not result.passed() and verbose:
                 out.print(result)
         if interactive:
