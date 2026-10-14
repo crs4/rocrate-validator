@@ -3,13 +3,15 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Callable, Sequence
+from typing import TYPE_CHECKING, Any
 
 from rocrate_validator.models._logging import logger
 from rocrate_validator.models.profile import Profile
 from rocrate_validator.rocrate.entity import ROCrateEntity
 
 if TYPE_CHECKING:
+    from collections.abc import Callable, Sequence
+
     from rocrate_validator.models.validation import ValidationContext
 
 

@@ -56,6 +56,7 @@ from rocrate_validator.utils.uri import URI
 
 if TYPE_CHECKING:
     from rdflib.term import Node
+
     from rocrate_validator.models.profile_detection import ProfileDetectionResult
     from rocrate_validator.models.profile_provenance import EffectiveRequirementCheck
 
