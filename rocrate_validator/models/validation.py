@@ -58,6 +58,7 @@ if TYPE_CHECKING:
     import tempfile
 
     from rdflib.term import Node
+
     from rocrate_validator.models.profile_detection import ProfileDetectionResult
     from rocrate_validator.models.profile_provenance import EffectiveRequirementCheck
 
