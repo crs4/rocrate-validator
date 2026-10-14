@@ -72,7 +72,8 @@ Validation profile selection
 
 * **Automatic Profile Matching** (default):
   By default, `rocrate-validator` will attempt to select the correct validation
-  profiles for the input RO-Crate based on the `conformsTo` property of the Root Data Entity.
+  profiles for the input RO-Crate using valid `conformsTo` references in the
+  metadata descriptor and Root Data Entity.
 
     - If a precise match is found for the `conformsTo` property, that profile is selected
       for validation.
@@ -80,12 +81,21 @@ Validation profile selection
     - If no precise match is found:
 
       - in **Interactive Mode:** (available only through the CLI) the system
-        will prompt the user to select a profile from the list of
-        profiles to which the RO-Crate conforms;
+        explains why detection failed and prompts the user to select a profile.
+        If the only issue is a string-valued `conformsTo` that uniquely
+        identifies an available profile, that profile is offered first and is
+        used only after the user confirms;
 
       - in **Non-Interactive Mode:** the system will validate against all profiles
         to which the RO-Crate conforms, and for which validation rules are available.
-        In all cases, input RO-Crates are validated against the base `ro-crate` profile.
+        If no usable profile reference is found, it falls back to the base
+        `ro-crate` profile; a suggestion from a malformed string is never
+        selected automatically. In all cases, input RO-Crates are validated
+        against the base `ro-crate` profile.
+
+    Selecting a profile only chooses which rules to run. It does not repair
+    metadata: a string-valued `conformsTo` remains malformed and can still
+    produce a validation issue.
 
 * **Profile Versions**:
     - It may happen that the RO-Crate profile version to which the input
