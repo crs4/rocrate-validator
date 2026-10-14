@@ -43,3 +43,5 @@ CLI Validation
     * To select additional validation profiles, see
       :doc:`Validation profiles <12_validation_profiles>`; to create a new
       profile, see :doc:`Writing a profile <11_writing_a_profile>`.
+    * For choosing Attached/Detached rules, checking only metadata, and
+      supported inputs, see :ref:`package_modes`.

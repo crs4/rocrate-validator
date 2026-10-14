@@ -120,6 +120,9 @@ where `<path_to_rocrate>` is the path to the RO-Crate you want to validate.
 
 Type `rocrate-validator --help` for more information.
 
+For package modes, validation scope, and supported input combinations, see the
+[package modes guide](https://rocrate-validator.readthedocs.io/en/latest/6_package_modes.html).
+
 ## Programmatic Validation
 
 You can also integrate the package programmatically in your Python code.

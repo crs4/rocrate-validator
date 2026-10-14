@@ -101,14 +101,8 @@ class MissingFileLocalPathChecker(PyFunctionCheck):
 
     @check(name="Missing local File SHOULD use localPath", severity=Severity.RECOMMENDED)
     def check_missing_file_local_path(self, context: ValidationContext) -> CheckResultValue:
-        try:
-            is_detached = context.ro_crate.is_detached()
-        except ROCrateMetadataNotFoundError:
-            logger.debug("Skipping missing local file check: metadata descriptor is not available")
-            context.record_skip(self, "metadata descriptor is not available", "exception")
-            return CheckResult.SKIPPED
-        if is_detached or context.settings.metadata_only:
-            context.record_skip(self, "RO-Crate is detached or metadata-only mode is active", "configured")
+        if not context.ro_crate.is_attached() or context.settings.metadata_only:
+            context.record_skip(self, "attached payload context is unavailable", "configured")
             return CheckResult.SKIPPED
         root_entity_id = None
         with contextlib.suppress(ValueError):

@@ -54,6 +54,8 @@ from rocrate_validator.utils.rdf import PREPARED_PROFILE_BASE, extract_base_from
 from rocrate_validator.utils.uri import URI
 
 if TYPE_CHECKING:
+    import tempfile
+
     from rdflib.term import Node
 
     from rocrate_validator.models.profile_provenance import EffectiveRequirementCheck
@@ -103,6 +105,7 @@ class Validator(Publisher):
 
     def __init__(self, settings: dict | ValidationSettings):
         self._validation_settings = ValidationSettings.parse(settings)
+        self._extracted_crate_directory: tempfile.TemporaryDirectory | None = None
         super().__init__()
         # initialize the current context
         self.__current_context__: ValidationContext | None = None
@@ -350,7 +353,6 @@ class Validator(Publisher):
         *,
         settings: ValidationSettings,
     ) -> ValidationResult:
-
         with self.__run_lock:
             return self.__do_validate_locked__(requirements, settings=settings)
 
@@ -548,14 +550,21 @@ class ValidationContext:
         self._abort_reason: str | None = None
 
         # initialize the ROCrate object
-        if settings.metadata_dict:
-            self._rocrate = ROCrate.from_metadata_dict(settings.metadata_dict)
+        if settings.metadata_dict is not None:
+            self._rocrate = ROCrate.from_metadata_dict(
+                settings.metadata_dict,
+                packaging_mode=settings.packaging_mode,
+                package_root=settings.package_root,
+                metadata_only=settings.metadata_only,
+            )
         else:
             rocrate_uri = settings.rocrate_uri
             assert rocrate_uri is not None, "RO-Crate URI is required when metadata_dict is not provided"
             self._rocrate = ROCrate.new_instance(
                 rocrate_uri,
                 relative_root_path=settings.rocrate_relative_root_path,
+                packaging_mode=settings.packaging_mode,
+                metadata_only=settings.metadata_only,
             )
         assert isinstance(self._rocrate, ROCrate), "Invalid RO-Crate instance"
 
@@ -615,6 +624,8 @@ class ValidationContext:
         """
         The root URI of the RO-Crate
         """
+        if getattr(self.ro_crate, "is_in_memory", False):
+            return "https://example.invalid/rocrate-validator/in-memory/"
         path = str(self.ro_crate.uri.base_uri)
         if not path.endswith("/"):
             path = f"{path}/"
@@ -722,7 +733,7 @@ class ValidationContext:
         """
         rocrate_uri = self.settings.rocrate_uri
         if rocrate_uri is None:
-            raise ValueError("RO-Crate URI is not set")
+            return self.ro_crate.uri
         return rocrate_uri
 
     @property

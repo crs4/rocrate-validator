@@ -35,7 +35,7 @@ class DetachedROCrateRootDataEntityIdentifierChecker(PyFunctionCheck):
         """
         try:
             if not context.ro_crate.is_detached():
-                context.record_skip(self, "RO-Crate is attached", "returned")
+                context.record_skip(self, "detached package context is unavailable", "returned")
                 return CheckResult.SKIPPED
             root_entity = context.ro_crate.metadata.get_root_data_entity()
             if not root_entity.is_remote():
@@ -78,7 +78,7 @@ class RootDataEntityCiteAsIdentifierChecker(PyFunctionCheck):
         """
         try:
             if not context.ro_crate.is_detached():
-                context.record_skip(self, "RO-Crate is attached", "returned")
+                context.record_skip(self, "detached package context is unavailable", "returned")
                 return CheckResult.SKIPPED
             root_entity = context.ro_crate.metadata.get_root_data_entity()
             if not root_entity.is_remote():

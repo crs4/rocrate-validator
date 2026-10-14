@@ -72,7 +72,7 @@ def test_utf8_check_is_skipped_for_metadata_dict(monkeypatch, tmp_path):
         metadata_dict=metadata_dict,
         metadata_only=True,
     )
-    assert descriptor_reads == []
+    assert not descriptor_reads
 
 
 def test_missing_descriptor_does_not_emit_unexpected_warnings(monkeypatch, tmp_path):
@@ -449,10 +449,7 @@ def test_https_entity_id_is_not_recommended():
             metadata_dict=metadata_dict,
         )
     )
-    assert not any(
-        issue.check.requirement.name == "Schema.org @id compatibility"
-        for issue in result.get_issues()
-    )
+    assert not any(issue.check.requirement.name == "Schema.org @id compatibility" for issue in result.get_issues())
 
 
 def test_https_nested_schema_org_id_is_recommended_for_compatibility():

@@ -62,10 +62,9 @@ def test_identifier_path_syntax(tmp_path, version, entity_id, issue, detached):
 
 
 def _validate(crate, version, entity_id, valid, detached=False, expected_issue=None):
-    source = Path(
-        f"tests/data/crates/rocrate-{version}/8_metadata_dataEntities/local_entity_reference/valid/ro-crate-metadata.json"
-    )
-    metadata = json.loads(source.read_text())
+    relative_path = "8_metadata_dataEntities/local_entity_reference/valid/ro-crate-metadata.json"
+    source = Path(f"tests/data/crates/rocrate-{version}") / relative_path
+    metadata = json.loads(source.read_text(encoding="utf-8"))
     graph = metadata["@graph"]
     root = next(e for e in graph if e["@id"] == "./")
     files = [e for e in graph if e.get("@type") == "File"]

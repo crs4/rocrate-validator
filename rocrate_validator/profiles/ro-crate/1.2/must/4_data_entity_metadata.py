@@ -71,15 +71,9 @@ class DataEntityRequiredChecker(PyFunctionCheck):
         """
         Check the presence of the Data Entity in the RO-Crate
         """
-        try:
-            is_detached = context.ro_crate.is_detached()
-        except ROCrateMetadataNotFoundError:
-            logger.debug("Skipping Data Entity availability check: metadata descriptor is not available")
-            context.record_skip(self, "metadata descriptor is not available", "exception")
-            return CheckResult.SKIPPED
-        if is_detached:
-            logger.debug("Skipping data entity payload checks for detached RO-Crate")
-            context.record_skip(self, "RO-Crate is detached", "returned")
+        if not context.ro_crate.is_attached():
+            logger.debug("Skipping data entity payload checks without an attached package context")
+            context.record_skip(self, "attached package context is unavailable", "returned")
             return CheckResult.SKIPPED
         # Skip the check in metadata-only mode
         if context.settings.metadata_only:
@@ -144,14 +138,8 @@ class DetachedDataEntityChecker(PyFunctionCheck):
 
     @check(name="Detached RO-Crate: data entities MUST be web-based")
     def check_detached_entities(self, context: ValidationContext) -> CheckResultValue:
-        try:
-            is_detached = context.ro_crate.is_detached()
-        except ROCrateMetadataNotFoundError:
-            logger.debug("Skipping detached Data Entity check: metadata descriptor is not available")
-            context.record_skip(self, "metadata descriptor is not available", "exception")
-            return CheckResult.SKIPPED
-        if not is_detached:
-            context.record_skip(self, "RO-Crate is attached", "returned")
+        if not context.ro_crate.is_detached():
+            context.record_skip(self, "detached package context is unavailable", "returned")
             return CheckResult.SKIPPED
         result = True
         root_entity_id = None
@@ -165,6 +153,9 @@ class DetachedDataEntityChecker(PyFunctionCheck):
             return CheckResult.SKIPPED
         for entity in entities:
             if root_entity_id and entity.id == root_entity_id:
+                continue
+            if entity.id.startswith("#"):
+                # Contextual entities do not identify Detached package payloads.
                 continue
             if not is_external_reference(entity.id):
                 context.result.add_issue(
@@ -189,13 +180,8 @@ class DataEntityIdentifierChecker(PyFunctionCheck):
     def check_identifiers(self, context: ValidationContext) -> CheckResultValue:
         result = True
         root_entity_id = None
-        root_entity_is_local = False
         with contextlib.suppress(ValueError):
-            root_data_entity = context.ro_crate.metadata.get_root_data_entity()
-            root_entity_id = root_data_entity.id
-            root_entity_is_local = (
-                root_data_entity.id_as_uri.is_local_resource() if root_data_entity.id_as_uri else False
-            )
+            root_entity_id = context.ro_crate.metadata.get_root_data_entity().id
         try:
             entities = context.ro_crate.metadata.get_data_entities()
         except ROCrateMetadataNotFoundError:
@@ -205,15 +191,6 @@ class DataEntityIdentifierChecker(PyFunctionCheck):
         for entity in entities:
             if root_entity_id and entity.id == root_entity_id:
                 continue
-            if not root_entity_is_local and not is_external_reference(entity.id):
-                context.result.add_issue(
-                    f"Data Entity '{entity.id}' has a local identifier but the Root Data Entity "
-                    "does not have a local identifier",
-                    self,
-                )
-                result = False
-                if context.fail_fast:
-                    return False
             if entity.has_local_identifier():
                 continue
             path_error = _data_entity_path_error(entity.id)
@@ -226,14 +203,8 @@ class DataEntityIdentifierChecker(PyFunctionCheck):
 
     @check(name="Data Entity: relative @id for payload files")
     def check_relative_paths(self, context: ValidationContext) -> CheckResultValue:
-        try:
-            is_detached = context.ro_crate.is_detached()
-        except ROCrateMetadataNotFoundError:
-            logger.debug("Skipping relative Data Entity identifier check: metadata descriptor is not available")
-            context.record_skip(self, "metadata descriptor is not available", "exception")
-            return CheckResult.SKIPPED
-        if is_detached:
-            context.record_skip(self, "RO-Crate is detached", "returned")
+        if not context.ro_crate.is_attached():
+            context.record_skip(self, "attached package context is unavailable", "returned")
             return CheckResult.SKIPPED
         result = True
         try:

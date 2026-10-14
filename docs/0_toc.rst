@@ -26,9 +26,11 @@
     :caption: Using the Validator
 
     4_how_it_works
+    6_package_modes
     12_validation_profiles
     5_offline_mode
     10_api
+    examples/index
 
 .. toctree::
     :maxdepth: 5

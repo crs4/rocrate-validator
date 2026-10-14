@@ -136,6 +136,26 @@ For example, this shape requires every ``schema:Dataset`` to have a ``name``:
 Python checks
 ^^^^^^^^^^^^^
 
+Package mode selects Attached or Detached validation rules. Validation scope
+selects whether to check metadata and data files, or metadata only. See
+:ref:`package_modes` for definitions, defaults, and supported input combinations.
+
+For a check that applies only to one package mode, use
+``context.ro_crate.is_attached()`` or ``context.ro_crate.is_detached()``. Both
+return ``False`` when the mode is unspecified, as with dictionary input in
+automatic mode. Record a skip if your check requires a mode that was not selected.
+Do not choose the mode yourself from Root identifiers, the presence of data
+files, or the resources described in the metadata.
+
+With ``metadata_only=True``, keep metadata checks active and skip checks that
+need access to the data files (the payload). Attached rules can apply to metadata
+supplied as a file, URL, or dictionary even when those data files are unavailable.
+Detached identifier rules also remain active in metadata-only validation.
+
+The dedicated Detached Data Entity check enforces its identifier restriction.
+General identifier checks should check syntax without reporting the same
+restriction again.
+
 Python checks are declared with the ``@check`` decorator in a requirement
 module. The decorator's ``name`` and severity identify the check in the same
 way as ``sh:name`` and severity identify a SHACL check. The function receives

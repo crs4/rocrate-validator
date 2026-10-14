@@ -794,6 +794,7 @@ class AggregatedValidationStatistics:
         raw_stats = self.__aggregate_raw_stats__(self._statistics_list)
         return self.__build_sorted_stats_dict__(raw_stats)
 
+    # pylint: disable=too-many-locals
     @classmethod
     def __aggregate_raw_stats__(
         cls,

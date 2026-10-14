@@ -15,6 +15,7 @@
 import json
 import re
 from http import HTTPStatus
+from pathlib import Path
 from typing import Any
 from urllib.parse import urljoin
 
@@ -67,12 +68,21 @@ class FileDescriptorExistence(PyFunctionCheck):
         """
         Check if the file descriptor is present in the RO-Crate
         """
+        # Dictionary input supplies the descriptor independently of payload storage.
+        if context.settings.metadata_dict is not None:
+            return True
         if context.settings.metadata_only:
             logger.debug("Skipping file descriptor existence check in metadata-only mode")
             context.record_skip(self, "metadata-only mode", "configured")
             return CheckResult.SKIPPED
-        if not context.ro_crate.has_descriptor():
-            message = f'file descriptor "{context.rel_fd_path}" is not present'
+        if context.ro_crate.is_attached():
+            descriptor = context.ro_crate.attached_descriptor_id
+            exists = context.ro_crate.has_file(Path(descriptor))
+        else:
+            descriptor = str(context.rel_fd_path)
+            exists = context.ro_crate.has_descriptor()
+        if not exists:
+            message = f'file descriptor "{descriptor}" is not present'
             context.result.add_issue(message, self)
             return False
         return True
@@ -82,11 +92,13 @@ class FileDescriptorExistence(PyFunctionCheck):
         """
         Check if the file descriptor is not empty
         """
-        if context.settings.metadata_only:
+        if context.settings.metadata_only and context.settings.metadata_dict is None:
             logger.debug("Skipping file descriptor existence check in metadata-only mode")
             context.record_skip(self, "metadata-only mode", "configured")
             return CheckResult.SKIPPED
-        if context.ro_crate.has_descriptor() and context.ro_crate.metadata.size == 0:
+        if (
+            context.settings.metadata_dict is not None or context.ro_crate.has_descriptor()
+        ) and context.ro_crate.metadata.size == 0:
             context.result.add_issue(f'RO-Crate "{context.rel_fd_path}" file descriptor is empty', self)
             return False
         return True
@@ -103,7 +115,7 @@ class FileDescriptorEncodingCheck(PyFunctionCheck):
         """
         Check if the file descriptor is UTF-8 encoded
         """
-        if context.settings.metadata_only:
+        if context.settings.metadata_only and context.settings.metadata_dict is None:
             logger.debug("Skipping file descriptor encoding check in metadata-only mode")
             context.record_skip(self, "metadata-only mode", "configured")
             return CheckResult.SKIPPED
