@@ -17,7 +17,6 @@ from tests.conftest import SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER
 from tests.ro_crates import ValidROC
 from tests.shared import do_entity_test
 
-
 EXPECTED_ISSUE = "At least one CreateAction MUST reference the root data entity's mainEntity as its instrument."
 
 
