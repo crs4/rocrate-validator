@@ -31,8 +31,12 @@ workflow-run-crate:CreateActionWithMainEntityAsInstrumentRequired a sh:NodeShape
             [ sh:inversePath schema:instrument ]
         ) ;
         sh:qualifiedValueShape [
-            sh:class schema:CreateAction ;
+            sh:or (
+                [ sh:class schema:CreateAction ]
+                [ sh:class schema:ActivateAction ]
+                [ sh:class schema:UpdateAction ]
+            ) ;
         ] ;
         sh:qualifiedMinCount 1 ;
-        sh:message "At least one CreateAction MUST reference the root data entity's mainEntity as its instrument." ;
+        sh:message "At least one CreateAction, ActivateAction or UpdateAction MUST reference the root data entity's mainEntity as its instrument." ;
     ] .
