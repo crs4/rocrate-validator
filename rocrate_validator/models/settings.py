@@ -23,6 +23,7 @@ from rocrate_validator.constants import (
 )
 from rocrate_validator.models._logging import logger
 from rocrate_validator.models.severity import Severity
+from rocrate_validator.rocrate.package_type import parse_packaging_mode
 from rocrate_validator.utils.cache_warmup import auto_warm_up_for_settings
 from rocrate_validator.utils.document_loader import install_document_loader
 from rocrate_validator.utils.http import HttpRequester
@@ -47,7 +48,8 @@ class ValidationSettings:
     """
 
     #: The URI of the RO-Crate
-    rocrate_uri: URI  # pyright: ignore[reportRedeclaration]
+    rocrate_uri: URI | None  # pyright: ignore[reportRedeclaration]
+    _source_rocrate_uri: URI | None = None
     #: The relative root path of the RO-Crate
     rocrate_relative_root_path: Path | None = None
     # Profile settings
@@ -90,8 +92,12 @@ class ValidationSettings:
     skip_checks: list[str] | None = None
     #: Flag to validate only the metadata of the RO-Crate
     metadata_only: bool = False
+    #: Packaging context: auto, attached, or detached
+    packaging_mode: str = "auto"
     #: RO-Crate metadata as dictionary
     metadata_dict: dict | None = None
+    #: Local package directory used as the payload source for dictionary metadata
+    package_root: Path | None = None
     #: Verbose output
     verbose: bool = False
     #: Cache max age in seconds (negative values mean "never expire")
@@ -110,6 +116,9 @@ class ValidationSettings:
     skip_availability_check: bool = False
 
     def __post_init__(self):
+        self.packaging_mode = parse_packaging_mode(self.packaging_mode)
+        if self.package_root is not None and not isinstance(self.package_root, Path):
+            self.package_root = Path(self.package_root)
         # if requirement_severity is a str, convert to Severity
         if isinstance(self.requirement_severity, str):
             self.requirement_severity = Severity[self.requirement_severity]
@@ -165,7 +174,10 @@ class ValidationSettings:
         Convert the ValidationSettings to a dictionary
         """
         result = asdict(self)
-        result["rocrate_uri"] = str(self.rocrate_uri)
+        source_uri = getattr(self, "_source_rocrate_uri", None)
+        if source_uri is None:
+            source_uri = self.rocrate_uri
+        result["rocrate_uri"] = str(source_uri) if source_uri is not None else None
         result.pop("metadata_dict", None)  # exclude metadata_dict from the dict representation
         # Remove disable_crate_download from the dict representation
         result.pop("disable_remote_crate_download", None)
@@ -184,16 +196,19 @@ class ValidationSettings:
         return self._rocrate_uri
 
     @rocrate_uri.setter
-    def rocrate_uri(self, value: str | Path | URI):
+    def rocrate_uri(self, value: str | Path | URI | None):
         """
         Set the RO-Crate URI.
 
         :param value: The RO-Crate URI.
         :type value: Union[str, Path, URI]
         """
+        if value is None or isinstance(value, property):
+            self._rocrate_uri = None
+            return
         if not value:
             raise ValueError("Invalid RO-Crate URI")
-        self._rocrate_uri: URI = URI(str(value))
+        self._rocrate_uri = URI(str(value))
 
     @classmethod
     def parse(cls, settings: dict | ValidationSettings) -> ValidationSettings:

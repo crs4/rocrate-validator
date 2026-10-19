@@ -111,7 +111,7 @@ def _is_source_checkout(package_root: Path) -> bool:
         return False
 
     git_root = run_git_command(["git", "rev-parse", "--show-toplevel"], cwd=package_root)
-    return bool(git_root) and Path(git_root).resolve() == package_root.resolve()
+    return bool(git_root) and Path(git_root or "").resolve() == package_root.resolve()
 
 
 def get_version() -> str:

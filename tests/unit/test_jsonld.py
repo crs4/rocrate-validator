@@ -46,4 +46,4 @@ def test_find_singleton_property_arrays_preserves_jsonld_semantics():
 
 
 def test_find_singleton_property_arrays_ignores_invalid_graph_shape():
-    assert find_singleton_property_arrays({"@context": [], "@graph": {}}) == []
+    assert not find_singleton_property_arrays({"@context": [], "@graph": {}})

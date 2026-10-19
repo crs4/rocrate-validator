@@ -28,7 +28,14 @@ import os
 import sys
 from pathlib import Path
 
+from pypandoc import get_pandoc_path
+
 from rocrate_validator import __version__
+
+# nbconvert invokes Pandoc by name when rendering notebook Markdown.
+# Make the executable bundled with the docs dependencies available on PATH.
+pandoc_bin_dir = str(Path(get_pandoc_path()).resolve().parent)
+os.environ["PATH"] = os.pathsep.join((os.environ.get("PATH", ""), pandoc_bin_dir))
 
 # update PYTHONPATH
 sys.path.insert(0, str(Path.cwd()))

@@ -101,6 +101,7 @@ pytest-xdist = "^3.6.1"
 [tool.poetry.group.docs.dependencies]
 sphinx = "^8.1.3"
 nbsphinx = "^0.9.5"
+pypandoc-binary = "^1.17"
 sphinx-toolbox = "^3.8.1"
 myst-parser = "^4.0.0"
 shibuya = "==2026.7.12"
@@ -202,6 +203,10 @@ disable = [
     # the underscore signals "internal API" within the package, not a hard
     # privacy boundary. Per-callsite suppressions would be noisy.
     "protected-access",                # W0212
+    # The crate readers and text report layout depend on each other's shared
+    # model helpers; Pylint reports this intentional package-level cycle at
+    # graph-build time, before file-level suppressions are considered.
+    "cyclic-import",                    # R0401
 ]
 
 # Mypy configuration.
@@ -212,6 +217,14 @@ disable = [
 [tool.mypy]
 python_version = "3.10"        # lowest supported version (see dependencies.python)
 files = ["rocrate_validator"]  # the package; tests are not type-checked (yet)
+exclude = [
+    # Versioned profiles are loaded from directories rather than imported as
+    # Python packages, so repeated script basenames map to duplicate modules.
+    "rocrate_validator/profiles/ro-crate/1.2/must/0_file_descriptor_format.py",
+    "rocrate_validator/profiles/ro-crate/1.2/must/4_data_entity_metadata.py",
+    "rocrate_validator/profiles/ro-crate/1.2/should/2_root_data_entity_identifier.py",
+    "rocrate_validator/profiles/ro-crate/1.2/should/4_data_entity_metadata.py",
+]
 
 # Surface configuration/annotation drift without being noisy.
 warn_unused_configs = true

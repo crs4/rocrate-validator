@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# The output renderer depends on the crate entity model, whose concrete readers
+# import shared report helpers; this existing package-level cycle is intentional.
+# pylint: disable=cyclic-import
+
 from __future__ import annotations
 
 import threading
@@ -38,7 +42,6 @@ from rocrate_validator.models import (
 )
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.io_helpers.colors import get_severity_color
-from rocrate_validator.utils.uri import URI
 from rocrate_validator.utils.versioning import get_version
 
 from .dispatcher import EventDispatcher
@@ -47,7 +50,7 @@ from .progress import ProgressMonitor
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from rocrate_validator.events import Subscriber
+    from rocrate_validator.events import Event, Subscriber
     from rocrate_validator.utils.io_helpers.output.console import Console
 
 # set up logging
@@ -72,6 +75,8 @@ class ValidationReportLayout(Layout):
         self._validation_checks_progress: Layout | None = None
         self._progress_monitor: ProgressMonitor | None = None
         self._subscriber: EventDispatcher = _ReportLayoutSubscriber(self)
+        self.base_info_layout: Layout | None = None
+        self._resolved_package_type: str | None = None
         self.requirement_checks_container_layout: Layout | None = None
         self.passed_checks: Layout | None = None
         self.failed_checks: Layout | None = None
@@ -107,28 +112,17 @@ class ValidationReportLayout(Layout):
             return update_callable()
 
     def _init_layout(self):
-
-        # Get the validation settings
-        settings = self.validation_settings
-
         # Set the console height
-        self.console.height = 31
+        self.console.height = 33
 
         # Create the layout of the base info of the validation report
-        severity_color = get_severity_color(settings.requirement_severity)
-        base_info_layout = Layout(
-            Align(
-                f"\n[bold cyan]RO-Crate:[/bold cyan] [bold]{URI(str(settings.rocrate_uri)).uri}[/bold]"
-                "\n[bold cyan]Target Profile:[/bold cyan][bold magenta] "
-                f"{settings.profile_identifier}[/bold magenta] "
-                f"{'[italic](autodetected)[/italic]' if self.profile_autodetected else ''}"
-                f"\n[bold cyan]Validation Severity:[/bold cyan] "
-                f"[bold {severity_color}]{settings.requirement_severity}[/bold {severity_color}]",
-                style="white",
-                align="left",
-            ),
+        result = self.result or (self.statistics.validation_result if self.statistics else None)
+        if result:
+            self._resolved_package_type = result.context.ro_crate.package_type.value
+        self.base_info_layout = Layout(
+            self._base_info(),
             name="Base Info",
-            size=5,
+            size=7,
         )
         self.passed_checks = Layout(name="PASSED")
         self.failed_checks = Layout(name="FAILED")
@@ -164,7 +158,7 @@ class ValidationReportLayout(Layout):
         # Create the layout of the report container
         report_container_layout = Layout(name="Report Container Layout")
         report_container_layout.split_column(
-            base_info_layout,
+            self.base_info_layout,
             Layout(
                 Panel(
                     requirement_checks_container_layout,
@@ -202,10 +196,37 @@ class ValidationReportLayout(Layout):
         self.update_stats(self.statistics or ValidationStatistics(self.validation_settings))
 
         # Extract the result if available
-        result = self.result or (self.statistics.validation_result) if self.statistics else None
         # Show the overall result if available
         if result:
             self.show_overall_result(result)
+
+    def _base_info(self) -> Align:
+        settings = self.validation_settings
+        severity_color = get_severity_color(settings.requirement_severity)
+        package_type = self._resolved_package_type or (
+            settings.packaging_mode if settings.packaging_mode != "auto" else "resolving..."
+        )
+        validation_scope = "Metadata Only" if settings.metadata_only else "Full Package"
+        crate_source = settings.package_root or getattr(settings, "_source_rocrate_uri", None) or settings.rocrate_uri
+        return Align(
+            f"\n[bold cyan]RO-Crate:[/bold cyan] "
+            f"[bold]{crate_source or 'in-memory metadata'}[/bold]"
+            f"\n[bold cyan]RO-Crate Package Type:[/bold cyan] [bold yellow]{package_type.title()}[/bold yellow]"
+            "\n[bold cyan]Target Profile:[/bold cyan][bold magenta] "
+            f"{settings.profile_identifier}[/bold magenta] "
+            f"{'[italic](autodetected)[/italic]' if self.profile_autodetected else ''}"
+            f"\n[bold cyan]Validation Severity:[/bold cyan] "
+            f"[bold {severity_color}]{settings.requirement_severity}[/bold {severity_color}]"
+            f"\n[bold cyan]Validation Scope:[/bold cyan] [bold orange1]{validation_scope}[/bold orange1]",
+            style="white",
+            align="left",
+        )
+
+    def set_package_type(self, package_type: str) -> None:
+        """Show the resolved package type as soon as the validation context exists."""
+        self._resolved_package_type = package_type
+        if self.base_info_layout is not None:
+            self.base_info_layout.update(self._base_info())
 
     def update_stats(self, profile_stats: ValidationStatistics | None = None):
         assert profile_stats, "Profile stats must be provided"
@@ -283,6 +304,7 @@ class ValidationReportLayout(Layout):
         assert result, "Validation result must be provided"
         assert self.overall_result is not None, "Layout not initialized"
         self.result = result
+        self.set_package_type(result.context.ro_crate.package_type.value)
         if result.passed():
             icon = "[OK]" if not self.console.interactive else "✅"
             self.overall_result.update(
@@ -315,6 +337,10 @@ class _ReportLayoutSubscriber(EventDispatcher):
     def __init__(self, layout: ValidationReportLayout):
         super().__init__("ValidationReportLayout")
         self._layout = layout
+
+    def _on_validation_start(self, event: Event, ctx: ValidationContext | None) -> None:
+        assert ctx is not None, "Validation context must be provided"
+        self._layout.set_package_type(ctx.ro_crate.package_type.value)
 
     def _on_requirement_check_validation_end(
         self, event: RequirementCheckValidationEvent, ctx: ValidationContext | None

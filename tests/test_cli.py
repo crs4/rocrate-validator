@@ -52,6 +52,24 @@ def test_version(cli_runner: CliRunner):
     assert get_version() in result.output
 
 
+def test_validate_packaging_mode_option(cli_runner: CliRunner, tmp_path: Path):
+    help_result = cli_runner.invoke(cli, ["validate", "--help"])
+    assert help_result.exit_code == 0
+    assert "--packaging-mode" in help_result.output
+
+    invalid_choice = cli_runner.invoke(cli, ["validate", "--packaging-mode", "unknown"])
+    assert invalid_choice.exit_code != 0
+    assert "auto" in invalid_choice.output
+
+    (tmp_path / "ro-crate-metadata.json").write_text("{}")
+    incompatible = cli_runner.invoke(
+        cli,
+        ["validate", str(tmp_path), "--packaging-mode", "detached", "--no-auto-profile", "--no-paging"],
+    )
+    assert incompatible.exit_code != 0
+    assert "standalone metadata document" in incompatible.output
+
+
 def test_validate_subcmd_invalid_rocrate1(cli_runner: CliRunner):
     result = cli_runner.invoke(
         cli,

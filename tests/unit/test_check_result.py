@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, cast
+from typing import Any, cast  # pylint: disable=unused-import
 
 import pytest
 
@@ -46,7 +46,8 @@ def test_check_decorator_accepts_tri_state_return_annotations(result_type):
     check_function.__annotations__["return"] = result_type
     decorated = check()(check_function)
 
-    assert decorated.check
+    check_attribute = "check"
+    assert getattr(decorated, check_attribute)
 
 
 def test_check_decorator_rejects_invalid_return_annotation():

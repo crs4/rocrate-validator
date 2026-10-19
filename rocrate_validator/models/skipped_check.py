@@ -63,6 +63,21 @@ SkipCategoryInput: TypeAlias = (
 )
 
 
+def normalize_skip_category(value: SkipCategoryInput) -> SkipCategory:
+    """Convert a public skip-category value to its enum member."""
+    if isinstance(value, SkipCategory):
+        return value
+    return {
+        "returned": SkipCategory.RETURNED,
+        "configured": SkipCategory.CONFIGURED,
+        "exception": SkipCategory.EXCEPTION,
+        "deactivated": SkipCategory.DEACTIVATED,
+        "dependency": SkipCategory.DEPENDENCY,
+        "not_reached": SkipCategory.NOT_REACHED,
+        "inherited": SkipCategory.INHERITED,
+    }[value]
+
+
 class SkipRequirementCheck(Exception):
     """Signal that a requirement check should be skipped."""
 
@@ -74,7 +89,7 @@ class SkipRequirementCheck(Exception):
     ):
         self.check = check
         self.message = message
-        self.category = SkipCategory(category)
+        self.category = normalize_skip_category(category)
 
     def __str__(self) -> str:
         return f"SkipRequirementCheck(check={self.check})"
@@ -90,7 +105,7 @@ class SkippedCheckDetail:
     context: ValidationContext | None = field(default=None, compare=False, repr=False)
 
     def __post_init__(self) -> None:
-        object.__setattr__(self, "category", SkipCategory(self.category))
+        object.__setattr__(self, "category", normalize_skip_category(self.category))
 
     def to_dict(self) -> dict[str, str]:
         source_identifier = self.check.identifier
