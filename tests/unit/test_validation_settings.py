@@ -70,7 +70,7 @@ def test_validation_settings_to_dict():
     assert settings_dict["profiles_path"] == "/path/to/profiles"
     assert settings_dict["requirement_severity"] == Severity.RECOMMENDED
     assert settings_dict["enable_profile_inheritance"] is False
-    assert settings_dict["include_diagnostic_checks"] is False
+    assert settings_dict["extra_checks"] is False
 
 
 def test_validation_settings_enable_profile_inheritance():

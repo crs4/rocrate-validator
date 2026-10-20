@@ -744,7 +744,7 @@ class ValidationContext:
         while exposing a target-local effective identifier. Accepting either
         identity lets callers address the check without mutating its provenance.
         """
-        if check.diagnostic and not self.settings.include_diagnostic_checks:
+        if check.extra_check and not self.settings.extra_checks:
             return True
         skipped_identifiers = self.settings.skip_checks
         if not skipped_identifiers:
@@ -754,8 +754,8 @@ class ValidationContext:
 
     def check_skip_reason(self, check: RequirementCheck) -> str:
         """Describe why validation settings exclude a check."""
-        if check.diagnostic and not self.settings.include_diagnostic_checks:
-            return "diagnostic checks are disabled; use --include-diagnostic-checks to enable them"
+        if check.extra_check and not self.settings.extra_checks:
+            return "extra_check checks are disabled; use --extra-checks to enable them"
         return "Check was skipped by validation settings"
 
     def effective_check_replacement(self, check: RequirementCheck) -> RequirementCheck | None:

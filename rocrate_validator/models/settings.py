@@ -88,8 +88,8 @@ class ValidationSettings:
     disable_check_for_duplicates: bool = False
     #: Checks to skip
     skip_checks: list[str] | None = None
-    #: Run checks classified as diagnostic, without affecting conformance
-    include_diagnostic_checks: bool = False
+    #: Run checks classified as extra_check, without affecting conformance
+    extra_checks: bool = False
     #: Flag to validate only the metadata of the RO-Crate
     metadata_only: bool = False
     #: RO-Crate metadata as dictionary

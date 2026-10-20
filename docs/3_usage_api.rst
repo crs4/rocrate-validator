@@ -31,11 +31,11 @@ Programmatic Validation
     :end-before: ## Running the tests
 
 
-Diagnostic Checks
+`ExtracCheck`s
 -----------------
 
-Diagnostic checks are advisory and do not affect the conformance result. They
-are disabled by default; set ``include_diagnostic_checks`` on
+`ExtracCheck` checks are advisory and do not affect the conformance result. They
+are disabled by default; set ``extra_checks`` on
 ``ValidationSettings`` to run them:
 
 .. code-block:: python
@@ -46,12 +46,12 @@ are disabled by default; set ``include_diagnostic_checks`` on
         rocrate_uri="path/to/rocrate",
         profile_identifier="ro-crate-1.3",
         requirement_severity=models.Severity.REQUIRED,
-        include_diagnostic_checks=True,
+        extra_checks=True,
     )
     result = services.validate(settings)
 
 The resulting ``ValidationResult`` exposes these reports separately through
-``result.diagnostics``. Diagnostic checks are also listed separately in
+``result.extra_checks``. `ExtracCheck` checks are also listed separately in
 ``result.statistics``.
 
 .. seealso::

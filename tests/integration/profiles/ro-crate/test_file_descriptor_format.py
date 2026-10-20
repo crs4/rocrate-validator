@@ -62,7 +62,7 @@ def _crate_with_suspicious_string_reference(tmp_path: Path, version: str) -> Pat
 
 
 @pytest.mark.parametrize("version", ["1.2", "1.3"])
-def test_diagnostic_checks_are_opt_in_and_non_blocking(tmp_path: Path, version: str):
+def test_extra_check_checks_are_opt_in_and_non_blocking(tmp_path: Path, version: str):
     crate = _crate_with_suspicious_string_reference(tmp_path, version)
     settings = models.ValidationSettings(
         rocrate_uri=models.URI(crate),
@@ -72,42 +72,42 @@ def test_diagnostic_checks_are_opt_in_and_non_blocking(tmp_path: Path, version: 
 
     default_result = services.validate(settings)
     assert default_result.passed()
-    assert default_result.diagnostics == []
+    assert default_result.extra_checks == []
     heuristic_check = next(
         check
-        for check in default_result.statistics.diagnostic_checks
+        for check in default_result.statistics.extra_check_checks
         if "suspicious entity references" in check.name.lower()
     )
     assert heuristic_check.severity == models.Severity.REQUIRED
-    assert heuristic_check.diagnostic
+    assert heuristic_check.extra_check
     assert heuristic_check not in default_result.statistics.checks
     conformance_check_count = default_result.statistics.total_checks
     assert default_result.get_check_result(heuristic_check) is models.CheckResult.SKIPPED
 
-    settings.include_diagnostic_checks = True
-    diagnostic_result = services.validate(settings)
-    assert diagnostic_result.passed()
-    assert diagnostic_result.statistics.total_checks == conformance_check_count
-    assert diagnostic_result.statistics.executed_diagnostic_checks == [heuristic_check]
-    assert len(diagnostic_result.diagnostics) >= 2, (
-        diagnostic_result.validation_settings.include_diagnostic_checks,
+    settings.extra_checks = True
+    extra_check_result = services.validate(settings)
+    assert extra_check_result.passed()
+    assert extra_check_result.statistics.total_checks == conformance_check_count
+    assert extra_check_result.statistics.executed_extra_check_checks == [heuristic_check]
+    assert len(extra_check_result.extra_checks) >= 2, (
+        extra_check_result.validation_settings.extra_checks,
         [
-            (check.name, diagnostic_result.get_check_result(check))
-            for check in diagnostic_result.statistics.checks
+            (check.name, extra_check_result.get_check_result(check))
+            for check in extra_check_result.statistics.checks
             if "suspicious entity references" in check.name.lower()
         ],
-        [detail.message for detail in diagnostic_result.skipped_check_details],
+        [detail.message for detail in extra_check_result.skipped_check_details],
     )
-    assert {diagnostic.violating_property for diagnostic in diagnostic_result.diagnostics} >= {
+    assert {extra_check.violating_property for extra_check in extra_check_result.extra_checks} >= {
         "license",
         "customReference",
     }
-    assert diagnostic_result.to_dict()["diagnostics"]
+    assert extra_check_result.to_dict()["extra_checks"]
 
     console = Console(record=True, color_system=None, width=120)
-    console.print(ValidationResultTextOutputFormatter(diagnostic_result))
+    console.print(ValidationResultTextOutputFormatter(extra_check_result))
     text_report = console.export_text()
-    assert "Diagnostic Checks (1)" in text_report
+    assert "ExtraCheck Checks (1)" in text_report
     assert "customReference" in text_report
 
     cli_result = CliRunner().invoke(
@@ -118,7 +118,7 @@ def test_diagnostic_checks_are_opt_in_and_non_blocking(tmp_path: Path, version: 
             str(crate),
             "--profile-identifier",
             f"ro-crate-{version}",
-            "--include-diagnostic-checks",
+            "--extra-checks",
             "--output-format",
             "json",
             "--no-paging",
@@ -127,7 +127,7 @@ def test_diagnostic_checks_are_opt_in_and_non_blocking(tmp_path: Path, version: 
     assert cli_result.exit_code == 0, cli_result.output
     cli_report = json.loads(cli_result.output)
     assert cli_report["passed"]
-    assert cli_report["diagnostics"]
+    assert cli_report["extra_checks"]
 
     text_cli_result = CliRunner().invoke(
         cli,
@@ -137,12 +137,12 @@ def test_diagnostic_checks_are_opt_in_and_non_blocking(tmp_path: Path, version: 
             str(crate),
             "--profile-identifier",
             f"ro-crate-{version}",
-            "--include-diagnostic-checks",
+            "--extra-checks",
             "--no-paging",
         ],
     )
     assert text_cli_result.exit_code == 0, text_cli_result.output
-    assert "Diagnostic Checks (1)" in text_cli_result.output
+    assert "ExtraCheck Checks (1)" in text_cli_result.output
     assert "customReference" in text_cli_result.output
 
     skipped_result = CliRunner().invoke(
@@ -153,7 +153,7 @@ def test_diagnostic_checks_are_opt_in_and_non_blocking(tmp_path: Path, version: 
             str(crate),
             "--profile-identifier",
             f"ro-crate-{version}",
-            "--include-diagnostic-checks",
+            "--extra-checks",
             "--skip-checks",
             heuristic_check.identifier,
             "--output-format",
@@ -163,7 +163,7 @@ def test_diagnostic_checks_are_opt_in_and_non_blocking(tmp_path: Path, version: 
     )
     assert skipped_result.exit_code == 0, skipped_result.output
     skipped_report = json.loads(skipped_result.output)
-    assert skipped_report["diagnostics"] == []
+    assert skipped_report["extra_checks"] == []
 
 
 @pytest.mark.parametrize("version", ["1.2", "1.3"])
@@ -183,7 +183,7 @@ def test_required_about_reference_violation_is_detected_without_heuristic(tmp_pa
         )
     )
     assert not result.passed()
-    assert result.diagnostics == []
+    assert result.extra_checks == []
 
 
 def test_missing_file_descriptor():

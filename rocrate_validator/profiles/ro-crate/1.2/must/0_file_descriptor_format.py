@@ -540,9 +540,9 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
         return None
 
     @check(
-        name="Heuristic diagnostics for suspicious entity references",
+        name="Heuristic extra_checks for suspicious entity references",
         depends_on=("File Descriptor JSON format",),
-        diagnostic=True,
+        extra_check=True,
     )
     def check_entity_references(self, context: ValidationContext) -> CheckResultValue:
         try:
@@ -557,7 +557,7 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
                         continue
                     message = self._find_reference_issue(value, entity_id, identifiers, key)
                     if message:
-                        context.result.add_diagnostic(
+                        context.result.add_extra_check(
                             self,
                             message,
                             violating_entity=entity_id,
@@ -574,8 +574,8 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
             return CheckResult.SKIPPED
         except _HANDLED_METADATA_ERRORS as error:
             if logger.isEnabledFor(logging.DEBUG):
-                logger.exception("Unable to inspect metadata for heuristic diagnostics")
-            context.record_skip(self, f"unable to inspect metadata for heuristic diagnostics: {error}", "exception")
+                logger.exception("Unable to inspect metadata for heuristic extra_checks")
+            context.record_skip(self, f"unable to inspect metadata for heuristic extra_checks: {error}", "exception")
             return CheckResult.SKIPPED
 
     @check(

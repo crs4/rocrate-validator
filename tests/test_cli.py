@@ -87,7 +87,7 @@ def test_validate_subcmd_pyshacl_engine_failure_exits_with_error(cli_runner: Cli
 
 
 def test_validate_subcmd_profile_syntax_error_is_concise_without_debug(cli_runner: CliRunner, monkeypatch):
-    """Parser failures must show a concise diagnostic without a traceback by default."""
+    """Parser failures must show a concise extra_check without a traceback by default."""
 
     def fail_validation(*args, **kwargs):
         raise BadSyntaxError(
@@ -218,7 +218,7 @@ def test_validate_skip_checks_option(cli_runner: CliRunner):
         )
 
 
-def test_validate_include_diagnostic_checks_option(cli_runner: CliRunner):
+def test_validate_extra_checks_option(cli_runner: CliRunner):
     called_args: list = []
 
     def mock_validate(*args, **kwargs):
@@ -233,14 +233,14 @@ def test_validate_include_diagnostic_checks_option(cli_runner: CliRunner):
                 "--no-interactive",
                 "validate",
                 str(ValidROC().sort_and_change_archive),
-                "--include-diagnostic-checks",
+                "--extra-checks",
                 "--no-paging",
             ],
         )
 
     assert result.exit_code == 2
     settings = called_args[0]
-    assert settings["include_diagnostic_checks"] is True
+    assert settings["extra_checks"] is True
 
 
 def test_validate_output_file_text_report(cli_runner: CliRunner, tmp_path: Path):

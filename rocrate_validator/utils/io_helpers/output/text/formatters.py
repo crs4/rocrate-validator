@@ -97,23 +97,23 @@ class ValidationResultTextOutputFormatter(OutputFormatter):
                         yield Padding("\n", (0, 0))
             yield Padding("\n", (0, 0))
 
-        yield from self._render_diagnostics(result)
+        yield from self._render_extra_checks(result)
 
     @staticmethod
-    def _render_diagnostics(result: ValidationResult) -> RenderResult:
-        diagnostics = result.diagnostics
-        if not diagnostics:
+    def _render_extra_checks(result: ValidationResult) -> RenderResult:
+        extra_checks = result.extra_checks
+        if not extra_checks:
             return
-        finding_count = len(diagnostics)
+        finding_count = len(extra_checks)
         finding_label = "finding" if finding_count == 1 else "findings"
-        check_count = len({diagnostic.identifier for diagnostic in diagnostics})
+        check_count = len({extra_check.identifier for extra_check in extra_checks})
         caption = Text(f"{finding_count} {finding_label}: ")
         if finding_count == 1:
             caption.append("this finding is advisory and does not affect conformance.", style="dim italic")
         else:
             caption.append("findings are advisory and do not affect conformance.", style="dim italic")
         table = Table(
-            title=f"Diagnostic Checks ({check_count})",
+            title=f"ExtraCheck Checks ({check_count})",
             title_style="bold orange1",
             border_style="orange1",
             header_style="bold orange1",
@@ -128,14 +128,14 @@ class ValidationResultTextOutputFormatter(OutputFormatter):
         table.add_column("Value", style="green", overflow="fold")
         table.add_column("Finding", overflow="fold")
 
-        for diagnostic in diagnostics:
+        for extra_check in extra_checks:
             table.add_row(
-                Text(result.context.effective_check_profile(diagnostic.check).identifier, style="cyan"),
-                Text(diagnostic.identifier, style=get_severity_color(diagnostic.check.severity)),
-                diagnostic.violating_entity or "—",
-                diagnostic.violating_property or "—",
-                f'"{diagnostic.value}"' if diagnostic.value is not None else "—",
-                Text(diagnostic.message),
+                Text(result.context.effective_check_profile(extra_check.check).identifier, style="cyan"),
+                Text(extra_check.identifier, style=get_severity_color(extra_check.check.severity)),
+                extra_check.violating_entity or "—",
+                extra_check.violating_property or "—",
+                f'"{extra_check.value}"' if extra_check.value is not None else "—",
+                Text(extra_check.message),
             )
 
         yield Padding(table, (1, 2))
@@ -157,11 +157,11 @@ class ValidationStatisticsTextOutputFormatter(OutputFormatter):
         yield Padding("\n", (0, 0))
 
 
-class ValidationDiagnosticsTextOutputFormatter(OutputFormatter):
-    """Render advisory diagnostics independently from conformance details."""
+class ValidationExtraChecksTextOutputFormatter(OutputFormatter):
+    """Render advisory extra_checks independently from conformance details."""
 
     def __init__(self, validation_result: ValidationResult):
         self._validation_result = validation_result
 
     def __rich_console__(self, console: Console, options: ConsoleOptions) -> RenderResult:
-        yield from ValidationResultTextOutputFormatter._render_diagnostics(self._validation_result)
+        yield from ValidationResultTextOutputFormatter._render_extra_checks(self._validation_result)

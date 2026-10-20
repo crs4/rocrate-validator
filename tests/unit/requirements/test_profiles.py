@@ -975,11 +975,11 @@ def test_python_check_decorator_sets_dependencies():
     assert dependent.depends_on == ("base",)  # pyright: ignore[reportFunctionMemberAccess]
 
 
-def test_python_check_decorator_sets_diagnostic_flag():
-    """The @check decorator must expose the diagnostic classification."""
+def test_python_check_decorator_sets_extra_check_flag():
+    """The @check decorator must expose the extra_check classification."""
     from rocrate_validator.requirements.python import check
 
-    @check(name="advisory", diagnostic=True)
+    @check(name="advisory", extra_check=True)
     def advisory(self, ctx):
         return True
 
@@ -987,8 +987,8 @@ def test_python_check_decorator_sets_diagnostic_flag():
     def conformance(self, ctx):
         return True
 
-    assert advisory.diagnostic is True  # pyright: ignore[reportFunctionMemberAccess]
-    assert conformance.diagnostic is False  # pyright: ignore[reportFunctionMemberAccess]
+    assert advisory.extra_check is True  # pyright: ignore[reportFunctionMemberAccess]
+    assert conformance.extra_check is False  # pyright: ignore[reportFunctionMemberAccess]
 
 
 def test_shacl_shape_with_deactivated_marks_check_skipped(fake_profiles_path: str):

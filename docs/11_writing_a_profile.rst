@@ -167,7 +167,7 @@ kind of identity as the SHACL example above:
                return None
 
            if not root_entity.get_property("name"):
-               # A failed check normally records the diagnostic and returns
+               # A failed check normally records the extra_check and returns
                # False.  The check framework associates the issue with self.
                context.result.add_issue("The root data entity has no name", self)
                return False
@@ -180,19 +180,19 @@ three equivalent forms: ``True``/``False`` are normalized to passed/failed,
 ``CheckResult.SKIPPED`` (or the other ``CheckResult`` members) expresses an
 explicit status, and ``None`` is normalized to skipped.  When a check fails,
 call ``context.result.add_issue(...)`` before returning ``False`` so that the
-result contains an actionable diagnostic.  When it is skipped, prefer
+result contains an actionable extra_check.  When it is skipped, prefer
 ``context.record_skip(...)`` when a reason and category should be exposed to
 API and CLI consumers.
 
-Diagnostic Python checks
+`ExtracCheck` Python checks
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-Use the ``diagnostic=True`` argument to ``@check`` for advisory checks that
+Use the ``extra_check=True`` argument to ``@check`` for advisory checks that
 report suspicious patterns without deciding whether a crate conforms to its
-profile. Diagnostic checks are disabled by default and can be enabled by users
-with ``--include-diagnostic-checks`` or the
-``ValidationSettings.include_diagnostic_checks`` setting. A diagnostic check
-must record each finding with ``context.result.add_diagnostic(...)``; do not
+profile. `ExtracCheck` checks are disabled by default and can be enabled by users
+with ``--extra-checks`` or the
+``ValidationSettings.extra_checks`` setting. A extra_check check
+must record each finding with ``context.result.add_extra_check(...)``; do not
 use ``add_issue(...)`` for an advisory finding, because issues contribute to
 the conformance result.
 
@@ -200,11 +200,11 @@ For example:
 
 .. code-block:: python
 
-   @check(name="Possible missing entity link", diagnostic=True)
+   @check(name="Possible missing entity link", extra_check=True)
    def check_entity_link(self, context: ValidationContext) -> bool:
        entity = ...  # inspect the entity using the validation context
        if suspicious_link(entity):
-           context.result.add_diagnostic(
+           context.result.add_extra_check(
                self,
                "This value may refer to an entity that is not declared in the crate.",
                violating_entity=entity.get("@id"),
@@ -213,8 +213,8 @@ For example:
        return True
 
 The return value still follows the regular Python check contract, but a
-diagnostic check's failed status does not fail conformance. Findings are
-available from ``ValidationResult.diagnostics`` and are presented separately
+extra_check check's failed status does not fail conformance. Findings are
+available from ``ValidationResult.extra_checks`` and are presented separately
 from conformance issues. For the user-facing options and result fields, see
 :ref:`cli-based-validation` and :ref:`programmatic-validation`.
 
