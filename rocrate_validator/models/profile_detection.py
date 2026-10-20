@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
@@ -17,7 +18,7 @@ if TYPE_CHECKING:
 
 @dataclass(frozen=True)
 class ProfileDetectionDiagnostic:
-    """Explain a metadata value that could not be used for profile detection."""
+    """Explain a malformed, missing, or unrecognized profile-detection value."""
 
     code: str
     property: str | None
@@ -41,9 +42,7 @@ def detect_rocrate_profiles(
 ) -> ProfileDetectionResult:
     """Detect profiles from an existing context and describe unresolved metadata hints."""
 
-    # Keep both the parsed references and malformed raw values: references can
-    # select profiles, while malformed values are needed for diagnostics and
-    # may allow a cautious suggestion when a URI was written as a string.
+    # Keep string URIs as suggestion hints, not valid profile references.
     hints, malformed_values = _get_profile_hints(context.ro_crate.metadata)
     candidate_profile_uris = {value.id for _, value in hints if isinstance(value.id, str) and value.id}
     diagnostics = [
@@ -53,7 +52,11 @@ def detect_rocrate_profiles(
             location=location,
             value=value,
             message=(
-                "Expected a JSON-LD reference object containing `@id`; "
+                "Expected a JSON-LD entity reference containing `@id`, not a string. "
+                f'Use {{"@id": {json.dumps(value)}}} instead. '
+                "The metadata has not been changed."
+                if prop == "conformsTo" and isinstance(value, str)
+                else "Expected a JSON-LD reference object containing `@id`; "
                 'for example, {"@id": "https://example.org/profile"}.'
             ),
         )
@@ -61,7 +64,7 @@ def detect_rocrate_profiles(
     ]
     for diagnostic in diagnostics:
         logger.warning(
-            "Cannot use %s `%s` value %r for profile detection: %s",
+            "Non-conforming %s `%s` value %r: %s",
             diagnostic.location,
             diagnostic.property,
             diagnostic.value,
@@ -88,15 +91,12 @@ def detect_rocrate_profiles(
         )
         logger.debug("Unable to determine the profile to validate against")
 
-    # A string conformsTo is the one malformed form for which we can try to
-    # identify the intended profile. Other malformed values cannot match a
-    # profile, so avoid loading the profile catalog just to return diagnostics.
+    # Load the catalog only for valid references or potential string suggestions.
     if not candidate_profile_uris and not has_string_profile_hint:
-        logger.debug("No usable profile URI or string suggestion candidate found")
+        logger.debug("No usable profile URI found")
         return ProfileDetectionResult([], diagnostics)
 
-    # Load profiles if valid URIs need matching or a string value might support
-    # a suggestion. The latter is never treated as a detected profile here.
+    # Only valid entity references participate in automatic profile selection.
     if profile_loader is None:
         available_profiles = Profile.load_profiles(
             context.profiles_path,
@@ -126,6 +126,9 @@ def detect_rocrate_profiles(
         )
         for profile_uri in unmatched_profile_uris:
             locations = [location for location, value in hints if value.id == profile_uri]
+            locations.extend(
+                location for prop, location, value in malformed_values if prop == "conformsTo" and value == profile_uri
+            )
             diagnostics.append(
                 ProfileDetectionDiagnostic(
                     code="PROFILE_NOT_FOUND",
@@ -136,8 +139,6 @@ def detect_rocrate_profiles(
                 )
             )
 
-    # Suggestions are deliberately separate from detected profiles: callers
-    # must decide whether to accept one, and validation still checks metadata.
     suggested_profile = _suggest_profile(candidate_profiles, candidate_profile_uris, diagnostics, available_profiles)
     result = ProfileDetectionResult(candidate_profiles, diagnostics, suggested_profile)
     logger.debug("Detailed profile detection result: %s", result)
@@ -150,6 +151,10 @@ def _get_profile_hints(metadata) -> tuple[list[tuple[str, ROCrateEntity]], list[
     diagnostics: list[tuple[str, str, Any]] = []
     try:
         descriptor = metadata.get_file_descriptor_entity()
+    except json.JSONDecodeError:
+        # JSONDecodeError is also a ValueError, but invalid JSON must not be
+        # misreported as a missing descriptor or missing conformsTo hint.
+        raise
     except ValueError:
         # Without a descriptor there is no reliable source for either the
         # descriptor's conformsTo or the Root Data Entity's hints. Other
@@ -183,7 +188,7 @@ def _suggest_profile(
     candidates: list[Profile],
     candidate_profile_uris: set[str],
     diagnostics: list[ProfileDetectionDiagnostic],
-    available_profiles: list[Profile],
+    available_profiles: Sequence[Profile],
 ) -> Profile | None:
     """Return one profile only when malformed string form is the sole detection issue."""
     string_diagnostics = [diagnostic for diagnostic in diagnostics if diagnostic.code == "INVALID_CONFORMS_TO"]

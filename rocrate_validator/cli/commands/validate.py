@@ -546,6 +546,7 @@ def _resolve_profile_identifiers(  # noqa: C901, PLR0912
     Returns the identifiers and whether they were auto-detected.
     """
     autodetection = False
+    reason = None
     if not profile_identifiers:
         # Auto-detect the profile to use for validation (if not disabled)
         candidate_profiles = None
@@ -557,47 +558,71 @@ def _resolve_profile_identifiers(  # noqa: C901, PLR0912
         else:
             logger.info("Auto-detection of the profiles to use for validation is disabled")
 
-        suggested_profile = detection_result.suggested_profile if detection_result else None
-
-        reason = None
         if detection_result and detection_result.diagnostics:
             diagnostic = detection_result.diagnostics[0]
             reason = (
-                f"`{diagnostic.property}` at {diagnostic.location} has value {escape(repr(diagnostic.value))}. "
-                f"{diagnostic.message}"
+                f"`{escape(diagnostic.property or '')}` at {escape(diagnostic.location or '')} "
+                f"has value {escape(repr(diagnostic.value))}. {escape(diagnostic.message)}"
+            )
+            for diagnostic in detection_result.diagnostics:
+                if diagnostic.code not in ("INVALID_CONFORMS_TO", "INVALID_REFERENCE"):
+                    continue
+                console.print(
+                    "\n  [bold yellow]WARNING: Non-conforming metadata[/bold yellow]\n"
+                    f"    `{escape(diagnostic.property or '')}` at {escape(diagnostic.location or '')} "
+                    f"has value {escape(repr(diagnostic.value))}.\n"
+                    f"    {escape(diagnostic.message)}"
+                )
+            if candidate_profiles:
+                console.print(
+                    "    Profiles automatically selected for validation: "
+                    + escape(", ".join(profile.identifier for profile in candidate_profiles))
+                )
+
+        suggested_profile = detection_result.suggested_profile if detection_result else None
+        if interactive and not candidate_profiles and suggested_profile:
+            console.print(
+                "    The string URI matches the available profile "
+                f"[magenta]{escape(suggested_profile.identifier)}[/magenta]. "
+                "Using it will not correct the metadata."
+            )
+            confirmation = get_single_char(
+                console,
+                choices=["y", "n"],
+                message=("[bold]Use this profile for validation? ([magenta]y/n[/magenta]): [/bold]"),
+            )
+            if confirmation == "y":
+                return [suggested_profile.identifier], True
+        elif not interactive and suggested_profile:
+            console.print(
+                "    The string URI matches profile "
+                f"{escape(suggested_profile.identifier)}, but using it requires confirmation. "
+                "Use --profile-identifier to select it explicitly in non-interactive mode."
             )
 
-        # Prompt the user when interactive and no single profile could be auto-detected
-        if interactive and (
-            not candidate_profiles or len(candidate_profiles) == 0 or len(candidate_profiles) == len(available_profiles)
-        ):
-            suggestion_confirmed = suggested_profile and _confirm_suggested_profile(console, suggested_profile, reason)
-            if suggestion_confirmed:
-                profile_identifiers = [suggested_profile.identifier]
-                autodetection = True
-            if not suggestion_confirmed:
-                console.print(
-                    Padding(
-                        Rule(
-                            "[bold yellow]WARNING: [/bold yellow]"
-                            "[bold]Unable to automatically detect the profile to use for validation[/bold]"
-                            + (f"\n{reason}" if reason else "")
-                            + "\n",
-                            align="center",
-                            style="bold yellow",
-                        ),
-                        (2, 2, 0, 2),
-                    )
+        # Prompt the user only when no profile could be auto-detected or confirmed.
+        if interactive and not candidate_profiles:
+            console.print(
+                Padding(
+                    Rule(
+                        "[bold yellow]WARNING: [/bold yellow]"
+                        "[bold]Unable to automatically detect the profile to use for validation[/bold]"
+                        + (f"\n{reason}" if reason else "")
+                        + "\n",
+                        align="center",
+                        style="bold yellow",
+                    ),
+                    (2, 2, 0, 2),
                 )
+            )
             if not profile_identifiers:
                 selected_options = multiple_choice(console, available_profiles)
                 if selected_options is None or isinstance(selected_options, bool):
                     selected_options = []
                 profile_identifiers = [available_profiles[int(o)].identifier for o in selected_options]
                 logger.debug("Profile selected: %s", selected_options)
-            if not suggestion_confirmed:
-                console.print(Padding(Rule(style="bold yellow"), (1, 2)))
-        elif candidate_profiles and len(candidate_profiles) < len(available_profiles):
+            console.print(Padding(Rule(style="bold yellow"), (1, 2)))
+        elif candidate_profiles:
             logger.debug("Profile identifier autodetected: %s", candidate_profiles[0].identifier)
             autodetection = True
             profile_identifiers = [_.identifier for _ in candidate_profiles]
@@ -615,22 +640,6 @@ def _resolve_profile_identifiers(  # noqa: C901, PLR0912
         profile_identifiers = ["ro-crate"]
 
     return profile_identifiers, autodetection
-
-
-def _confirm_suggested_profile(console: Console, profile, reason: str | None) -> bool:
-    """Explain the malformed conformsTo value and ask before using its profile candidate."""
-    console.print(
-        f"[bold yellow]Unable to automatically detect the profile to use for validation:[/bold yellow] {reason}"
-    )
-    confirmation = get_single_char(
-        console,
-        choices=["y", "n"],
-        message=(
-            "[bold]Use the suggested profile "
-            f"[magenta]{profile.identifier}[/magenta]? ([magenta]y/n[/magenta]): [/bold]"
-        ),
-    )
-    return confirmation == "y"
 
 
 def _render_console_result(
