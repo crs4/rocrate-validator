@@ -481,12 +481,12 @@ class ValidationStatistics(Subscriber):
             if event.validation_result is not None:
                 for key in ("executed_extra_check_checks", "skipped_extra_check_checks"):
                     self._stats[key] = [
-                        check
-                        for check in self._stats[key]
-                        if check.identifier != event.requirement_check.identifier
+                        check for check in self._stats[key] if check.identifier != event.requirement_check.identifier
                     ]
                 result = normalize_check_result(event.validation_result)
-                status = "skipped_extra_check_checks" if result is CheckResult.SKIPPED else "executed_extra_check_checks"
+                status = (
+                    "skipped_extra_check_checks" if result is CheckResult.SKIPPED else "executed_extra_check_checks"
+                )
                 self._stats[status].append(event.requirement_check)
                 self.notify_listeners()
             return

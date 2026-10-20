@@ -35,10 +35,10 @@ CLI Validation
     :end-before: ## Programmatic Validation
 
 
-`ExtracCheck` Checks
+``ExtraCheck`` Checks
 -----------------
 
-`ExtracCheck` checks are advisory checks that can report suspicious metadata
+``ExtraCheck`` checks are advisory checks that can report suspicious metadata
 patterns without affecting whether an RO-Crate conforms to its profile. They
 are disabled by default. To run all checks classified as extra_check, pass
 ``--extra-checks`` to ``validate``:

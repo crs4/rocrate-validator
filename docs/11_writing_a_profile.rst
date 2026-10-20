@@ -184,12 +184,12 @@ result contains an actionable extra_check.  When it is skipped, prefer
 ``context.record_skip(...)`` when a reason and category should be exposed to
 API and CLI consumers.
 
-`ExtracCheck` Python checks
+``ExtraCheck`` Python checks
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 Use the ``extra_check=True`` argument to ``@check`` for advisory checks that
 report suspicious patterns without deciding whether a crate conforms to its
-profile. `ExtracCheck` checks are disabled by default and can be enabled by users
+profile. ``ExtraCheck`` checks are disabled by default and can be enabled by users
 with ``--extra-checks`` or the
 ``ValidationSettings.extra_checks`` setting. A extra_check check
 must record each finding with ``context.result.add_extra_check(...)``; do not

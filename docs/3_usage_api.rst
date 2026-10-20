@@ -31,10 +31,10 @@ Programmatic Validation
     :end-before: ## Running the tests
 
 
-`ExtracCheck`s
+``ExtraCheck``s
 -----------------
 
-`ExtracCheck` checks are advisory and do not affect the conformance result. They
+``ExtraCheck`` checks are advisory and do not affect the conformance result. They
 are disabled by default; set ``extra_checks`` on
 ``ValidationSettings`` to run them:
 
@@ -51,7 +51,7 @@ are disabled by default; set ``extra_checks`` on
     result = services.validate(settings)
 
 The resulting ``ValidationResult`` exposes these reports separately through
-``result.extra_checks``. `ExtracCheck` checks are also listed separately in
+``result.extra_checks``. ``ExtraCheck`` checks are also listed separately in
 ``result.statistics``.
 
 .. seealso::

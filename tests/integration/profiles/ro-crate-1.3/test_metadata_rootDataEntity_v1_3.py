@@ -44,9 +44,7 @@ def test_root_data_entity_type_target_ignores_preview_about_literal():
     )
 
     for profile_version, descriptor_name in descriptor_cases:
-        profile_path = (
-            Path(__file__).resolve().parents[4] / "rocrate_validator/profiles/ro-crate" / profile_version
-        )
+        profile_path = Path(__file__).resolve().parents[4] / "rocrate_validator/profiles/ro-crate" / profile_version
         shapes = Graph()
         shapes.parse(profile_path / "prefixes.ttl", format="turtle")
         shapes.parse(profile_path / "must/2_root_data_entity_metadata.ttl", format="turtle")

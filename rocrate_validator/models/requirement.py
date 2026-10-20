@@ -500,8 +500,10 @@ class Requirement(ABC):
         new_all_passed = all_passed and (check.extra_check or normalized_result is not CheckResult.FAILED)
         # A batched backend can also report failures for checks other than the
         # one driving this execution.
-        should_break = not check.extra_check and context.fail_fast and (
-            normalized_result is CheckResult.FAILED or context.result.has_issues()
+        should_break = (
+            not check.extra_check
+            and context.fail_fast
+            and (normalized_result is CheckResult.FAILED or context.result.has_issues())
         )
         return new_all_passed and not should_break, should_break
 

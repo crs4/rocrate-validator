@@ -231,6 +231,7 @@ class ValidationExtraCheck:
 
     __hash__ = None  # type: ignore[assignment]
 
+
 class ValidationResult:
     """
     Represents the result of a validation.
