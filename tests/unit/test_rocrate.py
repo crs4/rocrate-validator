@@ -644,7 +644,7 @@ def test_conforms_to_profile_detection_warns_and_skips_string_values(entity_id, 
 
 
 def test_automatic_profile_detection_reports_string_conforms_to(monkeypatch):
-    """Automatic detection reports why a literal conformsTo value was not used."""
+    """Automatic detection warns about a literal URI without selecting it."""
     warnings = []
     monkeypatch.setattr(
         profile_detection_module.logger,

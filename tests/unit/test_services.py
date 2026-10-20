@@ -18,6 +18,8 @@ import tempfile
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
+
 from rocrate_validator.models import URI, ValidationSettings
 from rocrate_validator.rocrate import ROCrateMetadata
 from rocrate_validator.services import (
@@ -75,8 +77,10 @@ def test_detailed_profile_detection_handles_invalid_about_without_raising(monkey
     assert {diagnostic.code for diagnostic in result.diagnostics} == {"INVALID_REFERENCE", "NO_PROFILE_HINT"}
 
 
-def test_detailed_profile_detection_suggests_only_matching_string_hint(monkeypatch):
-    """A sole string hint matching one profile yields a separate suggestion."""
+@pytest.mark.parametrize("location", ["descriptor", "root"])
+@pytest.mark.parametrize("as_list", [False, True])
+def test_detailed_profile_detection_suggests_matching_string_hint(monkeypatch, location, as_list):
+    """String URIs suggest profiles without selecting them or repairing metadata."""
     profile = SimpleNamespace(
         uri="https://w3id.org/ro/crate/1.2",
         identifier="ro-crate-1.2",
@@ -84,11 +88,43 @@ def test_detailed_profile_detection_suggests_only_matching_string_hint(monkeypat
     )
     monkeypatch.setattr("rocrate_validator.models.profile.Profile.load_profiles", lambda *args, **kwargs: [profile])
 
-    result = detect_profiles_detailed(_profile_detection_settings({"@id": "./"}, "https://w3id.org/ro/crate/1.2"))
+    value = [profile.uri] if as_list else profile.uri
+    settings = _profile_detection_settings({"@id": "./"})
+    assert settings.metadata_dict is not None
+    entity = settings.metadata_dict["@graph"][0 if location == "descriptor" else 1]
+    entity["conformsTo"] = value
+    result = detect_profiles_detailed(settings)
 
     assert result.profiles == []
+    assert detect_profiles(settings) == []
     assert result.suggested_profile is profile
     assert result.diagnostics[0].code == "INVALID_CONFORMS_TO"
+    assert "not a string" in result.diagnostics[0].message
+    assert f'{{"@id": "{profile.uri}"}}' in result.diagnostics[0].message
+    assert entity["conformsTo"] == value
+
+
+def test_profile_detection_does_not_select_strings_alongside_valid_references(monkeypatch):
+    """Valid references take precedence over malformed string hints."""
+    base = SimpleNamespace(uri="https://example.org/base", identifier="base", inherited_profiles=[])
+    specific = SimpleNamespace(uri="https://example.org/specific", identifier="specific", inherited_profiles=[base])
+    monkeypatch.setattr(
+        "rocrate_validator.models.profile.Profile.load_profiles", lambda *args, **kwargs: [base, specific]
+    )
+    settings = _profile_detection_settings(
+        {"@id": "./"},
+        [{"@id": base.uri}, specific.uri, "https://example.org/unknown"],
+    )
+
+    result = detect_profiles_detailed(settings)
+
+    assert result.profiles == [base]
+    assert result.suggested_profile is None
+    assert [diagnostic.code for diagnostic in result.diagnostics] == [
+        "INVALID_CONFORMS_TO",
+        "INVALID_CONFORMS_TO",
+    ]
+    assert result.diagnostics[-1].location == "RO-Crate Metadata Descriptor"
 
 
 def test_default_profiles_list():
