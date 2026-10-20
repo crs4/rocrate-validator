@@ -45,17 +45,35 @@ Programmatic Validation
 Profile Detection
 -----------------
 
-``detect_profiles`` keeps returning the profiles found from valid JSON-LD
-references. To inspect why another value was not used, call
-``detect_profiles_detailed``. It returns a ``ProfileDetectionResult`` with
-``profiles``, ``diagnostics``, and an optional ``suggested_profile``.
+``detect_profiles`` returns the available validation profiles identified by
+``conformsTo`` values written as JSON-LD entity references, such as
+``{"@id": "https://w3id.org/ro/crate/1.2"}``. A URI written as a plain string
+does not select a profile through this function.
 
-A suggestion is returned only when profile detection found no usable profile
-reference, every detection diagnostic concerns a string-valued ``conformsTo``,
-all those values are identical, and exactly one available profile has that URI.
-Other malformed hints, unknown valid URIs, or multiple possible profiles do
-not produce a suggestion. The suggestion does not change the crate metadata
-and must be selected explicitly by the calling application.
+Use ``detect_profiles_detailed`` to also find out why profile detection could
+not use a metadata value, or which profile a string value may have intended.
+It returns a ``ProfileDetectionResult`` with three fields:
+
+* ``profiles``: the same profiles returned by ``detect_profiles``.
+* ``diagnostics``: explanations of missing, malformed, or unrecognized values.
+  For a string-valued ``conformsTo``, an ``INVALID_CONFORMS_TO`` diagnostic shows
+  the required ``{"@id": "..."}`` form.
+* ``suggested_profile``: the profile the crate appears to request when
+  ``conformsTo`` contains a URI as a string instead of an ``{"@id": "..."}``
+  object. The application can choose to validate against this profile despite
+  the incorrect metadata format. This field is ``None`` unless all of the
+  following conditions hold:
+
+  * No ``conformsTo`` value is already a valid entity reference.
+  * Every problem reported in ``diagnostics`` is a ``conformsTo`` value written
+    as a string; there are no other profile-detection problems.
+  * All those strings contain the same URI.
+  * Exactly one available validation profile has that URI.
+
+For example, ``"conformsTo": "https://w3id.org/ro/crate/1.2"`` can produce
+``suggested_profile`` identifying ``ro-crate-1.2``, but that profile is not added
+to ``profiles``. The calling application decides whether to use the suggestion
+for validation. Neither function changes the metadata or corrects its errors.
 
 Each diagnostic has a stable ``code`` as well as the affected property,
 metadata location, original value, and explanation. Codes distinguish an
@@ -77,7 +95,7 @@ invalid reference (``INVALID_REFERENCE``), a malformed ``conformsTo`` value
         settings["profile_identifier"] = detection.suggested_profile.identifier
         result = validate(settings)
 
-Programmatic detection does not prompt or silently select a suggestion. If the
+Programmatic detection does not prompt. If the
 application does not set ``profile_identifier``, ``validate`` uses the profile
 configured in ``ValidationSettings`` (or its default). Selecting a suggested
 profile does not repair invalid metadata: ``conformsTo`` must still be

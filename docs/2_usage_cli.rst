@@ -51,14 +51,32 @@ Profile detection when ``conformsTo`` is a string
 
 Profile detection expects JSON-LD references, for example
 ``"conformsTo": {"@id": "https://w3id.org/ro/crate/1.2"}``. If a
-``conformsTo`` value is instead a string and it uniquely matches an available
-profile, interactive validation explains the malformed value and asks whether
-to use that profile. Confirming selects the profile for validation; declining
-returns to the profile selection prompt. The metadata is not changed, so the
-validation report can still include an error for the malformed value.
+``conformsTo`` value is instead a string, interactive validation can suggest
+the matching profile and ask for confirmation before using it. For example,
+``"conformsTo": "https://w3id.org/ro/crate/1.2"`` can suggest the
+``ro-crate-1.2`` profile even though the value should be an ``{"@id": "..."}``
+object. The suggestion is offered only if:
 
-In non-interactive mode, the suggestion is not accepted automatically. When
-there is no usable profile reference, validation falls back to the base
+* No ``conformsTo`` value is already a valid entity reference.
+* The only problem found during profile detection is that ``conformsTo`` is
+  written as a string.
+* That URI identifies exactly one available validation profile.
+
+Declining returns to manual profile selection. A warning identifies the affected
+metadata entity and shows the correct ``{"@id": "..."}`` form. The metadata is
+not changed, so the validation report can still include an error for the
+malformed value.
+
+In non-interactive mode, string suggestions are not accepted automatically.
+When no usable profile reference is found, validation falls back to the base
 ``ro-crate`` profile. Specify ``--profile-identifier`` to choose a profile
 explicitly, or correct ``conformsTo`` in the metadata descriptor or Root Data
 Entity. Use ``--no-auto-profile`` to disable profile detection.
+
+Invalid JSON syntax
+-------------------
+
+Profile auto-detection requires syntactically valid JSON. If the metadata
+descriptor contains invalid JSON, auto-detection stops and the CLI reports
+the parser's reason, line and column, and the affected source line with a
+pointer to the error. Correct the JSON syntax and run validation again.
