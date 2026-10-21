@@ -30,6 +30,30 @@ Programmatic Validation
     :start-after: ## Programmatic Validation
     :end-before: ## Running the tests
 
+
+``ExtraCheck``s
+-----------------
+
+``ExtraCheck`` checks are advisory and do not affect the conformance result. They
+are disabled by default; set ``extra_checks`` on
+``ValidationSettings`` to run them:
+
+.. code-block:: python
+
+    from rocrate_validator import models, services
+
+    settings = services.ValidationSettings(
+        rocrate_uri="path/to/rocrate",
+        profile_identifier="ro-crate-1.3",
+        requirement_severity=models.Severity.REQUIRED,
+        extra_checks=True,
+    )
+    result = services.validate(settings)
+
+The resulting ``ValidationResult`` exposes these reports separately through
+``result.extra_checks``. ``ExtraCheck`` checks are also listed separately in
+``result.statistics``.
+
 .. seealso::
 
     * To configure the HTTP cache or run validation without network access,

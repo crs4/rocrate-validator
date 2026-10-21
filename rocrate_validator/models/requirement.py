@@ -223,10 +223,11 @@ class Requirement(ABC):
         checks_to_perform = [check for check in self._checks if not context.is_check_skipped(check)]
         configured_skips = [check for check in self._checks if check not in checks_to_perform]
         for check in configured_skips:
+            message = context.check_skip_reason(check)
             context.result._record_check_result(
                 check,
                 CheckResult.SKIPPED,
-                "Check was skipped by validation settings",
+                message,
                 SkipCategory.CONFIGURED,
             )
         processed_checks: set[RequirementCheck] = set()
@@ -438,7 +439,7 @@ class Requirement(ABC):
         # Python check twice.
         recorded_result = context.result.get_check_result(check)
         if recorded_result is not None:
-            failed = recorded_result is CheckResult.FAILED
+            failed = recorded_result is CheckResult.FAILED and not check.extra_check
             return all_passed and not failed, failed and context.fail_fast
 
         execution_check = self.__resolve_execution_check__(check, context)
@@ -493,10 +494,14 @@ class Requirement(ABC):
             check.identifier,
             normalized_result,
         )
-        new_all_passed = all_passed and normalized_result is not CheckResult.FAILED
+        new_all_passed = all_passed and (check.extra_check or normalized_result is not CheckResult.FAILED)
         # A batched backend can also report failures for checks other than the
         # one driving this execution.
-        should_break = context.fail_fast and (normalized_result is CheckResult.FAILED or context.result.has_issues())
+        should_break = (
+            not check.extra_check
+            and context.fail_fast
+            and (normalized_result is CheckResult.FAILED or context.result.has_issues())
+        )
         return new_all_passed and not should_break, should_break
 
     def __eq__(self, other: object) -> bool:
@@ -899,6 +904,7 @@ class RequirementCheck(ABC):
         *,
         deactivated: bool = False,
         depends_on: tuple[str, ...] | None = None,
+        extra_check: bool = False,
     ):
         self._requirement: Requirement = requirement
         self._order_number = 0
@@ -908,6 +914,7 @@ class RequirementCheck(ABC):
         self._hidden = hidden
         self._deactivated = deactivated
         self._depends_on = tuple(depends_on or ())
+        self._extra_check = extra_check
 
     @property
     def order_number(self) -> int:
@@ -950,6 +957,11 @@ class RequirementCheck(ABC):
     @property
     def severity(self) -> Severity:
         return self.level.severity
+
+    @property
+    def extra_check(self) -> bool:
+        """Whether this check reports advisory extra_checks instead of conformance issues."""
+        return self._extra_check
 
     @property
     def overridden_by(self) -> list[RequirementCheck]:
@@ -1008,6 +1020,7 @@ class RequirementCheck(ABC):
             "name": self.name,
             "description": self.description,
             "severity": self.severity.name,
+            "extra_check": self.extra_check,
             "depends_on": list(self.depends_on),
         }
         if with_requirement:

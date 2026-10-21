@@ -12,9 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 import logging
+import shutil
+from pathlib import Path
+
+import pytest
+from click.testing import CliRunner
 
 from rocrate_validator import models, services
+from rocrate_validator.cli.main import cli
+from rocrate_validator.utils.io_helpers.output.console import Console
+from rocrate_validator.utils.io_helpers.output.text.formatters import ValidationResultTextOutputFormatter
 from tests.conftest import SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER
 from tests.ro_crates import InvalidFileDescriptor, ValidROC
 from tests.shared import do_entity_test
@@ -24,6 +33,157 @@ logger = logging.getLogger(__name__)
 
 # Global set up the paths
 paths = InvalidFileDescriptor()
+
+
+def _crate_with_suspicious_string_reference(tmp_path: Path, version: str) -> Path:
+    source = (
+        Path(__file__).resolve().parents[3]
+        / "data"
+        / "crates"
+        / f"rocrate-{version}"
+        / "7_root_data_entity"
+        / "recommended_reference_type_for_licence"
+        / "valid"
+    )
+    crate = tmp_path / f"rocrate-{version}"
+    shutil.copytree(source, crate)
+    metadata_path = crate / "ro-crate-metadata.json"
+    metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    license_id = "https://creativecommons.org/licenses/by/4.0/"
+    root = next(entity for entity in metadata["@graph"] if entity.get("@id") == "./")
+    root["license"] = license_id
+    root["customReference"] = license_id
+    metadata["@context"] = [
+        metadata["@context"],
+        {"customReference": "https://example.org/vocabulary/customReference"},
+    ]
+    metadata_path.write_text(json.dumps(metadata, indent=2), encoding="utf-8")
+    return crate
+
+
+@pytest.mark.parametrize("version", ["1.2", "1.3"])
+def test_extra_check_checks_are_opt_in_and_non_blocking(tmp_path: Path, version: str):
+    crate = _crate_with_suspicious_string_reference(tmp_path, version)
+    settings = models.ValidationSettings(
+        rocrate_uri=models.URI(crate),
+        profile_identifier=f"ro-crate-{version}",
+        requirement_severity=models.Severity.REQUIRED,
+    )
+
+    default_result = services.validate(settings)
+    assert default_result.passed()
+    assert default_result.extra_checks == []
+    heuristic_check = next(
+        check
+        for check in default_result.statistics.extra_check_checks
+        if "suspicious entity references" in check.name.lower()
+    )
+    assert heuristic_check.severity == models.Severity.REQUIRED
+    assert heuristic_check.extra_check
+    assert heuristic_check not in default_result.statistics.checks
+    conformance_check_count = default_result.statistics.total_checks
+    assert default_result.get_check_result(heuristic_check) is models.CheckResult.SKIPPED
+
+    settings.extra_checks = True
+    extra_check_result = services.validate(settings)
+    assert extra_check_result.passed()
+    assert extra_check_result.statistics.total_checks == conformance_check_count
+    assert extra_check_result.statistics.executed_extra_check_checks == [heuristic_check]
+    assert len(extra_check_result.extra_checks) >= 2, (
+        extra_check_result.validation_settings.extra_checks,
+        [
+            (check.name, extra_check_result.get_check_result(check))
+            for check in extra_check_result.statistics.checks
+            if "suspicious entity references" in check.name.lower()
+        ],
+        [detail.message for detail in extra_check_result.skipped_check_details],
+    )
+    assert {extra_check.violating_property for extra_check in extra_check_result.extra_checks} >= {
+        "license",
+        "customReference",
+    }
+    assert extra_check_result.to_dict()["extra_checks"]
+
+    console = Console(record=True, color_system=None, width=120)
+    console.print(ValidationResultTextOutputFormatter(extra_check_result))
+    text_report = console.export_text()
+    assert "ExtraCheck Checks (1)" in text_report
+    assert "customReference" in text_report
+
+    cli_result = CliRunner().invoke(
+        cli,
+        [
+            "--no-interactive",
+            "validate",
+            str(crate),
+            "--profile-identifier",
+            f"ro-crate-{version}",
+            "--extra-checks",
+            "--output-format",
+            "json",
+            "--no-paging",
+        ],
+    )
+    assert cli_result.exit_code == 0, cli_result.output
+    cli_report = json.loads(cli_result.output)
+    assert cli_report["passed"]
+    assert cli_report["extra_checks"]
+
+    text_cli_result = CliRunner().invoke(
+        cli,
+        [
+            "--no-interactive",
+            "validate",
+            str(crate),
+            "--profile-identifier",
+            f"ro-crate-{version}",
+            "--extra-checks",
+            "--no-paging",
+        ],
+    )
+    assert text_cli_result.exit_code == 0, text_cli_result.output
+    assert "ExtraCheck Checks (1)" in text_cli_result.output
+    assert "customReference" in text_cli_result.output
+
+    skipped_result = CliRunner().invoke(
+        cli,
+        [
+            "--no-interactive",
+            "validate",
+            str(crate),
+            "--profile-identifier",
+            f"ro-crate-{version}",
+            "--extra-checks",
+            "--skip-checks",
+            heuristic_check.identifier,
+            "--output-format",
+            "json",
+            "--no-paging",
+        ],
+    )
+    assert skipped_result.exit_code == 0, skipped_result.output
+    skipped_report = json.loads(skipped_result.output)
+    assert skipped_report["extra_checks"] == []
+
+
+@pytest.mark.parametrize("version", ["1.2", "1.3"])
+def test_required_about_reference_violation_is_detected_without_heuristic(tmp_path: Path, version: str):
+    crate = _crate_with_suspicious_string_reference(tmp_path, version)
+    metadata_path = crate / "ro-crate-metadata.json"
+    metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    descriptor = next(entity for entity in metadata["@graph"] if entity.get("@id") == "ro-crate-metadata.json")
+    descriptor["about"] = {"@id": "./missing"}
+    metadata_path.write_text(json.dumps(metadata, indent=2), encoding="utf-8")
+
+    result = services.validate(
+        models.ValidationSettings(
+            rocrate_uri=models.URI(crate),
+            profile_identifier=f"ro-crate-{version}",
+            requirement_severity=models.Severity.REQUIRED,
+        )
+    )
+    assert not result.passed()
+    assert result.extra_checks == []
 
 
 def test_missing_file_descriptor():

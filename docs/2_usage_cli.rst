@@ -34,6 +34,24 @@ CLI Validation
     :start-after: ## CLI-based Validation
     :end-before: ## Programmatic Validation
 
+
+``ExtraCheck`` Checks
+-----------------
+
+``ExtraCheck`` checks are advisory checks that can report suspicious metadata
+patterns without affecting whether an RO-Crate conforms to its profile. They
+are disabled by default. To run all checks classified as extra_check, pass
+``--extra-checks`` to ``validate``:
+
+.. code-block:: console
+
+    rocrate-validator validate <path_to_rocrate> --extra-checks
+
+To omit one extra_check check while running the others, combine this option with
+``--skip-checks`` and the check's fully qualified identifier. The validation
+report lists extra_check checks and their findings separately from conformance
+issues.
+
 .. seealso::
 
     * To validate without network access and manage the HTTP cache from the

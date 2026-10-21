@@ -105,7 +105,7 @@ def test_validate_subcmd_pyshacl_engine_failure_exits_with_error(cli_runner: Cli
 
 
 def test_validate_subcmd_profile_syntax_error_is_concise_without_debug(cli_runner: CliRunner, monkeypatch):
-    """Parser failures must show a concise diagnostic without a traceback by default."""
+    """Parser failures must show a concise extra_check without a traceback by default."""
 
     def fail_validation(*args, **kwargs):
         raise BadSyntaxError(
@@ -234,6 +234,31 @@ def test_validate_skip_checks_option(cli_runner: CliRunner):
         assert list(skip_checks_1 + skip_checks_2) == settings["skip_checks"], (
             f"Expected skip_checks to be {list(skip_checks_1 + skip_checks_2)}, but got {settings['skip_checks']}"
         )
+
+
+def test_validate_extra_checks_option(cli_runner: CliRunner):
+    called_args: list = []
+
+    def mock_validate(*args, **kwargs):
+        called_args.extend(args)
+
+    with patch("rocrate_validator.cli.commands.validate.services.validate") as mock_validate_rocrate:
+        mock_validate_rocrate.return_value = None
+        mock_validate_rocrate.side_effect = mock_validate
+        result = cli_runner.invoke(
+            cli,
+            [
+                "--no-interactive",
+                "validate",
+                str(ValidROC().sort_and_change_archive),
+                "--extra-checks",
+                "--no-paging",
+            ],
+        )
+
+    assert result.exit_code == 2
+    settings = called_args[0]
+    assert settings["extra_checks"] is True
 
 
 def test_validate_output_file_text_report(cli_runner: CliRunner, tmp_path: Path):

@@ -55,6 +55,7 @@ class PyFunctionCheck(RequirementCheck):
         level: RequirementLevel | None = LevelCollection.REQUIRED,
         deactivated: bool = False,
         depends_on: tuple[str, ...] | None = None,
+        extra_check: bool = False,
     ):
         """
         check_function: a function that accepts an instance of PyFunctionCheck and a ValidationContext.
@@ -66,6 +67,7 @@ class PyFunctionCheck(RequirementCheck):
             level=level,
             deactivated=deactivated,
             depends_on=tuple(getattr(check_function, "depends_on", depends_on or ())),
+            extra_check=extra_check,
         )
 
         sig = inspect.signature(check_function)
@@ -181,6 +183,7 @@ class PyRequirement(Requirement):
                     severity = self.severity_from_path or Severity.REQUIRED
                 logger.debug("Severity log: %r", severity)
                 deactivated = bool(getattr(member, "deactivated", False))
+                extra_check = bool(getattr(member, "extra_check", False))
                 # pylint: disable-next=redefined-outer-name  # local 'check' mirrors the decorator name
                 check = self.requirement_check_class(
                     self,
@@ -189,6 +192,7 @@ class PyRequirement(Requirement):
                     description=check_description,
                     level=LevelCollection.get(severity.name) if severity else None,
                     deactivated=deactivated,
+                    extra_check=extra_check,
                 )
                 self._checks.append(check)
                 logger.debug("Added check: %s %r", check_name, check)
@@ -235,6 +239,7 @@ def check(
     severity: Severity | None = None,
     deactivated: bool = False,
     depends_on: tuple[str, ...] | None = None,
+    extra_check: bool = False,
 ):
     """
     A decorator to mark a function as a check.
@@ -261,6 +266,8 @@ def check(
     :type deactivated: bool
     :param depends_on: names of checks that must run before this check.
     :type depends_on: Optional[Tuple[str, ...]]
+    :param extra_check: mark this as an advisory check that does not determine conformance.
+    :type extra_check: bool
     :return: the decorated function
     :rtype: Callable
     """
@@ -296,6 +303,7 @@ def check(
         func.severity = severity
         func.deactivated = deactivated
         func.depends_on = depends_on or ()
+        func.extra_check = extra_check
         return func
 
     return decorator

@@ -1010,11 +1010,19 @@ class ValidationContext:
         while exposing a target-local effective identifier. Accepting either
         identity lets callers address the check without mutating its provenance.
         """
+        if check.extra_check and not self.settings.extra_checks:
+            return True
         skipped_identifiers = self.settings.skip_checks
         if not skipped_identifiers:
             return False
         check_identifiers = {check.identifier, self.effective_check_identifier(check)}
         return bool(check_identifiers.intersection(skipped_identifiers))
+
+    def check_skip_reason(self, check: RequirementCheck) -> str:
+        """Describe why validation settings exclude a check."""
+        if check.extra_check and not self.settings.extra_checks:
+            return "extra_check checks are disabled; use --extra-checks to enable them"
+        return "Check was skipped by validation settings"
 
     def effective_check_replacement(self, check: RequirementCheck) -> RequirementCheck | None:
         """
