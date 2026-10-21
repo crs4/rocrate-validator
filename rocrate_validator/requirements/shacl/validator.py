@@ -19,6 +19,7 @@ from typing import TYPE_CHECKING, Any, cast  # pylint: disable=unused-import
 
 import pyshacl
 from rdflib import BNode, Graph, Literal, Namespace
+from rdflib.namespace import OWL, RDF, RDFS
 from rdflib.term import Node, URIRef
 
 if TYPE_CHECKING:
@@ -27,7 +28,6 @@ if TYPE_CHECKING:
     from pyshacl.pytypes import GraphLike
 
 from rocrate_validator.constants import (
-    DEFAULT_ONTOLOGY_FILE,
     RDF_SERIALIZATION_FORMATS,
     RDF_SERIALIZATION_FORMATS_TYPES,
     SHACL_NS,
@@ -50,7 +50,7 @@ from rocrate_validator.requirements.shacl.transformers.preparation import (
 )
 from rocrate_validator.requirements.shacl.utils import make_uris_relative, map_severity
 from rocrate_validator.utils import log as logging
-from rocrate_validator.utils.rdf import extract_base_from_jsonld
+from rocrate_validator.utils.rdf import rebase_graph, rebase_node
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -112,9 +112,10 @@ class SHACLValidationContext(ValidationContext):
         """Initialize a SHACL context shared by all profiles in ``context``."""
         super().__init__(context.validator, context.settings)
         self._base_context: ValidationContext = context
-        # ontology paths resolved for each profile and optional filename
-        self._ontology_paths: dict[tuple[Path, str], Path] = {}
-
+        # The SHACL adapter is a per-run context, but profile definitions are
+        # immutable preparation state. Reuse the base context's instances so
+        # target lookup and override handling cannot trigger another load.
+        self._profiles = context.profiles
         # reference to the contextual ShapeRegistry instance
         self._shapes_registry: ShapesRegistry = ShapesRegistry()
 
@@ -125,6 +126,7 @@ class SHACLValidationContext(ValidationContext):
         # profile may expose several SHACL checks, but its graphs must be
         # loaded only once before the combined validation is executed.
         self._loaded_profiles: set[str] = set()
+        self._relative_shape_iris: set[Node] = set()
 
         # Checks awaiting the combined run have no result yet; they are not skips.
         self.deferred_checks: set[RequirementCheck] = set()
@@ -135,8 +137,17 @@ class SHACLValidationContext(ValidationContext):
         # store the validation result of the current profile (a pass/fail boolean)
         self._validation_result: bool | None = None
 
-        # reference to the contextual ontology graph
-        self._ontology_graph: Graph = Graph()
+        # pySHACL may mutate supplied graphs while applying inference/rules.
+        # Copy the prepared ontology into this run's working graph.
+        run_base_mappings = tuple(
+            (prepared, actual) for actual, prepared in context.prepared_base_mappings if actual != prepared
+        )
+        self._run_base_mappings = run_base_mappings
+        self._ontology_graph = rebase_graph(
+            context.prepared_validation_plan.ontology_graph,
+            self._run_base_mappings,
+            rebase_nodes=context.prepared_validation_plan.ontology_relative_iris,
+        )
 
     def __set_current_validation_profile__(self, profile: Profile) -> bool:
         """
@@ -156,14 +167,27 @@ class SHACLValidationContext(ValidationContext):
             raise SHACLValidationAlreadyProcessed(profile.identifier, self.get_validation_result(profile))
 
         if profile.identifier not in self._loaded_profiles:
-            # augment the ontology graph with the profile ontology
-            ontology_graph = self.__load_ontology_graph__(profile.path)
-            if ontology_graph:
-                self._ontology_graph += ontology_graph
             # augment the shapes registry with the profile shapes
             profile_registry = ShapesRegistry.get_instance(profile)
+            self._relative_shape_iris.update(profile_registry.relative_iris)
             profile_shapes = profile_registry.get_shapes()
             profile_shapes_graph = profile_registry.shapes_graph
+            structural_nodes = {
+                subject
+                for subject, predicate, object_ in profile_shapes_graph
+                if str(predicate).startswith(SHACL_NS) or (predicate == RDF.type and str(object_).startswith(SHACL_NS))
+            }
+            shacl_ns = Namespace(SHACL_NS)
+            profile_shapes_graph = rebase_graph(
+                profile_shapes_graph,
+                self._run_base_mappings,
+                preserve_nodes=structural_nodes,
+                rebase_nodes=profile_registry.relative_iris,
+                # A URI can identify both a shape and an RDF class. Keep its
+                # shape identifier stable in structural positions, while
+                # rebasing it when it supplies SHACL class semantics.
+                rebase_objects_for=(shacl_ns.targetClass, shacl_ns["class"]),
+            )
             logger.debug("Loaded shapes: %s", profile_shapes)
 
             # Filter shapes that must not participate in the combined SHACL run.
@@ -230,51 +254,29 @@ class SHACLValidationContext(ValidationContext):
 
     @property
     def shapes_graph(self) -> Graph:
-        return self.shapes_registry.shapes_graph
-
-    def __get_ontology_path__(self, profile_path: Path, ontology_filename: str = DEFAULT_ONTOLOGY_FILE) -> Path:
-        """Return the cached ontology path for a profile and filename pair."""
-        key = (profile_path, ontology_filename)
-        if key not in self._ontology_paths:
-            self._ontology_paths[key] = profile_path / ontology_filename
-        return self._ontology_paths[key]
-
-    def __get_data_graph_base__(self) -> str | None:
-        """
-        Get the @base from the RO-Crate metadata JSON-LD.
-
-        This extracts the @base from the @context of the data graph metadata,
-        which can be used to align the ontology graph's base URI with the data graph.
-
-        :return: The @base value if found, None otherwise
-        """
-        metadata_dict = self.ro_crate.metadata.as_dict()
-        return extract_base_from_jsonld(metadata_dict)
-
-    def __load_ontology_graph__(
-        self, profile_path: Path, ontology_filename: str = DEFAULT_ONTOLOGY_FILE
-    ) -> Graph | None:
-        # load the graph of ontologies
-        ontology_graph: Graph | None = None
-        ontology_path = self.__get_ontology_path__(profile_path, ontology_filename)
-        if ontology_path.exists():
-            logger.debug("Loading ontologies: %s", ontology_path)
-            ontology_graph = Graph()
-
-            # Determine the publicID to use:
-            # 1. First, try to get @base from the data graph metadata
-            # 2. Fall back to the default publicID (RO-Crate URI)
-            data_graph_base = self.__get_data_graph_base__()
-            public_id = data_graph_base or self.publicID
-
-            if data_graph_base:
-                logger.debug("Using @base from data graph metadata: %s", data_graph_base)
-            else:
-                logger.debug("Using default publicID: %s", self.publicID)
-
-            ontology_graph.parse(ontology_path, format="ttl", publicID=public_id)
-            logger.debug("Ontologies loaded: %s", ontology_graph)
-        return ontology_graph
+        graph = self.shapes_registry.shapes_graph
+        # Resolve implicit targets after profiles have been merged: the class
+        # declaration and its metaclass definition may belong to different profiles.
+        # Include owl:Class, which pySHACL treats as a subclass of rdfs:Class.
+        class_types: set[Node] = {RDFS.Class, OWL.Class}
+        class_types.update(graph.subjects(RDFS.subClassOf, RDFS.Class))
+        shacl = Namespace(SHACL_NS)
+        for shape in self.shapes_registry.get_shapes().values():
+            node = shape.node
+            if node not in self._relative_shape_iris:
+                continue
+            target_class = rebase_node(node, self._run_base_mappings)
+            if target_class == node:
+                continue
+            for class_type in set(graph.objects(node, RDF.type)) & class_types:
+                # Retain the canonical shape identity for check/report lookup,
+                # but express its implicit class target using the real crate URI.
+                # Moving the class declaration also prevents pySHACL from adding
+                # an unintended second target at the canonical preparation URI.
+                graph.remove((node, RDF.type, class_type))
+                graph.add((target_class, RDF.type, class_type))
+                graph.add((node, shacl.targetClass, target_class))
+        return graph
 
     @property
     def ontology_graph(self) -> Graph:

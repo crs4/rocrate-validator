@@ -38,7 +38,7 @@ class ROCrateMetadata:
     def __init__(self, ro_crate: ROCrate, metadata_dict: dict | None = None) -> None:
         self._ro_crate = ro_crate
         self._dict = metadata_dict
-        self._json: str | None = json.dumps(metadata_dict) if metadata_dict else None
+        self._json: str | None = json.dumps(metadata_dict) if metadata_dict is not None else None
         self._graph: Graph | None = None
 
     @property
@@ -77,12 +77,7 @@ class ROCrateMetadata:
     def get_root_data_entity_conforms_to(self) -> list[str] | None:
         try:
             root_data_entity = self.get_root_data_entity()
-            result = root_data_entity.get_property("conformsTo", [])
-            if result is None:
-                return None
-            if not isinstance(result, list):
-                result = [result]
-            return [_.id for _ in result]
+            return self._get_conforms_to(root_data_entity, "Root Data Entity")
         except Exception:
             if logger.isEnabledFor(logging.DEBUG):
                 logger.exception("Error getting entity image")
@@ -137,16 +132,31 @@ class ROCrateMetadata:
     def get_conforms_to(self) -> list[str] | None:
         try:
             file_descriptor = self.get_file_descriptor_entity()
-            result = file_descriptor.get_property("conformsTo", [])
-            if result is None:
-                return None
-            if not isinstance(result, list):
-                result = [result]
-            return [_.id for _ in result]
+            return self._get_conforms_to(file_descriptor, "RO-Crate Metadata Descriptor")
         except Exception:
             if logger.isEnabledFor(logging.DEBUG):
                 logger.exception("Error getting entity identifiers by type")
             return None
+
+    @staticmethod
+    def _get_conforms_to(entity: ROCrateEntity, entity_description: str) -> list[str] | None:
+        """Get profile identifiers and explain values that cannot be used as references."""
+        result = entity.get_property("conformsTo", [])
+        if result is None:
+            return None
+        values = result if isinstance(result, list) else [result]
+        identifiers: list[str] = []
+        for value in values:
+            if isinstance(value, ROCrateEntity) and isinstance(value.id, str) and value.id:
+                identifiers.append(value.id)
+                continue
+            logger.warning(
+                "Cannot use %s `conformsTo` value %r for profile detection: expected a JSON-LD reference "
+                'object containing `@id` (for example, {"@id": "https://example.org/profile"}).',
+                entity_description,
+                value,
+            )
+        return identifiers
 
     def __get_file_content__(self, binary_mode: bool) -> str | bytes:
         """Read the metadata descriptor and identify a missing descriptor explicitly."""
@@ -165,12 +175,12 @@ class ROCrateMetadata:
         return cast("bytes", self.__get_file_content__(binary_mode=True))
 
     def as_json(self) -> str:
-        if not self._json:
+        if self._json is None:
             self._json = cast("str", self.__get_file_content__(binary_mode=False))
         return self._json
 
     def as_dict(self) -> dict[Any, Any]:
-        if not self._dict:
+        if self._dict is None:
             # if the dictionary is not cached, load it
             self._dict = json.loads(self.as_json())
         assert self._dict is not None, "Metadata dictionary should not be None after loading"

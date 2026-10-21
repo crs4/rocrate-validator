@@ -27,8 +27,8 @@ against different profiles, including the base RO-Crate profile and various exte
 -   Supports [CLI-based validation](#cli-based-validation) as well as [programmatic validation](#programmatic-validation) (so it can easily be used by Python code).
 -   Extensible framework: new RO-Crate profiles can be added, implementing profile requirements as SHACL shapes and/or Python code.
 
-<div style="background: #F0F8FF; border-left: 4px solid #007ACC; text-indent: -43px; padding: 20px 60px; border-radius: 8px; margin-bottom: 40px; height: auto; font-weight: lighter;">
-<b>Note:</b> <span class="disabled font-light">this software is still work in progress. Feel free to try it out,
+<div class="project-status-note" style="background: #F0F8FF; border-left: 4px solid #007ACC; color: #003333; text-indent: -43px; padding: 20px 60px; border-radius: 8px; margin-bottom: 40px; height: auto; font-weight: lighter;">
+<b>Note:</b> this software is still work in progress. Feel free to try it out,
 report positive and negative feedback. We also welcome contributions, but we suggest you send us a note (e.g., by opening an Issue) before starting to develop any code. The implementation of validation code for additional RO-Crate profiles would be particularly welcome.
 </div>
 
@@ -120,6 +120,9 @@ where `<path_to_rocrate>` is the path to the RO-Crate you want to validate.
 
 Type `rocrate-validator --help` for more information.
 
+For package modes, validation scope, and supported input combinations, see the
+[package modes guide](https://rocrate-validator.readthedocs.io/en/latest/6_package_modes.html).
+
 ## Programmatic Validation
 
 You can also integrate the package programmatically in your Python code.
@@ -157,6 +160,27 @@ else:
         # Every issue object has a reference to the check that failed, the severity of the issue, and a message describing the issue.
         print(f"Detected issue of severity {issue.severity.name} with check \"{issue.check.identifier}\": {issue.message}")
 ```
+
+For repeated validation against the same profile, reuse a `Validator`. Profile
+artifacts are prepared on the first call (or explicitly with `prepare()`) while
+crate data and results remain isolated per call:
+
+```python
+validator = models.Validator(settings)
+validator.prepare()  # optional eager warm-up
+
+result_a = validator.validate("/path/to/ro-crate-a")
+result_b = validator.validate("/path/to/ro-crate-b")
+
+# Invalidate preparation after changing profile files on disk.
+validator.clear_prepared_profiles()
+```
+
+For ordinary crates, profile artifacts containing relative IRIs are prepared
+once against an internal base and materialized for each crate public ID. A
+metadata document whose explicit JSON-LD `@base` differs from its crate public
+ID keeps a separate prepared plan. Calls on the same `Validator` are serialized;
+use one instance per concurrent worker.
 
 The following is a possible output:
 

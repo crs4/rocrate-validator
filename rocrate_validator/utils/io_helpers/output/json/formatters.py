@@ -62,6 +62,8 @@ def format_validation_results(
     # Extract settings from the first result if available
     settings = results[0].validation_settings
     json_output["validation_settings"] = settings.to_dict()
+    json_output["validation_settings"]["package_type"] = results[0].context.ro_crate.package_type.value
+    json_output["validation_settings"]["packaging_mode_explicit"] = results[0].context.ro_crate.packaging_mode_explicit
 
     # Determine verbosity from settings
     verbose = settings.verbose if settings else False
@@ -73,6 +75,7 @@ def format_validation_results(
     json_output["passed"] = True
     json_output["skipped_checks"] = 0
     json_output["skipped_check_details"] = []
+    json_output["extra_checks"] = []
 
     # Initialize the profile results dictionary
     results_key = "validation_results_by_profile"
@@ -98,6 +101,7 @@ def format_validation_results(
         if "issues" not in json_output:
             json_output["issues"] = []
         json_output["issues"].extend(result_dict.get("issues", []))
+        json_output["extra_checks"].extend(result_dict.get("extra_checks", []))
 
     # Add overall statistics
     stats_dict = _compute_overall_statistics(results, verbose=verbose)

@@ -88,4 +88,12 @@ ro-crate:ROCrateMetadataFileDescriptorRecommendedProperties a sh:NodeShape ;
         sh:path schema_org:about ;
         # sh:class ro-crate:RootDataEntity ;
         sh:message "The RO-Crate metadata file descriptor MUST have an `about` property referencing the Root Data Entity" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Metadata File Descriptor `conformsTo` reference" ;
+        sh:description "If present, each `conformsTo` value MUST be expressed as a JSON-LD reference object with an `@id`." ;
+        sh:path dct:conformsTo ;
+        sh:nodeKind sh:IRI ;
+        sh:message "Each RO-Crate Metadata Descriptor `conformsTo` value MUST be a reference object containing `@id`; use {\"@id\": \"...\"} instead of a string." ;
     ] .

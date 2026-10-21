@@ -68,7 +68,7 @@ class ValidationStatistics(Subscriber):
             settings = ValidationSettings.parse(settings)
         self._settings = settings
         self._context = context
-        self._stats = self.__initialise__(settings) if not skip_initialization else {}
+        self._stats = self.__initialise__(settings, context=context) if not skip_initialization else {}
         self._result: ValidationResult | None = None
         self._listeners: list[ValidationStatisticsListener] = []
 
@@ -212,6 +212,25 @@ class ValidationStatistics(Subscriber):
         return len(self._stats.get("checks", []))
 
     @property
+    def extra_check_checks(self) -> list[RequirementCheck]:
+        """Get all extra_check checks available to this validation."""
+        return self._stats.get("extra_check_checks", [])
+
+    @property
+    def executed_extra_check_checks(self) -> list[RequirementCheck]:
+        """Get extra_check checks that ran, regardless of their findings."""
+        return self._stats.get("executed_extra_check_checks", [])
+
+    @property
+    def skipped_extra_check_checks(self) -> list[RequirementCheck]:
+        """Get extra_check checks that were disabled or skipped."""
+        return self._stats.get("skipped_extra_check_checks", [])
+
+    @property
+    def total_extra_check_checks(self) -> int:
+        return len(self.extra_check_checks)
+
+    @property
     def validated_profiles(self) -> list[Profile]:
         """
         Get the list of validated profiles
@@ -289,7 +308,8 @@ class ValidationStatistics(Subscriber):
             requirement_checks = [
                 _
                 for _ in requirement.get_checks_by_level(LevelCollection.get(severity.name))
-                if not _.overridden or _.requirement.profile.identifier == target_profile_identifier
+                if not _.extra_check
+                and (not _.overridden or _.requirement.profile.identifier == target_profile_identifier)
             ]
             num_checks = len(requirement_checks)
             requirement_checks_count += num_checks
@@ -300,18 +320,29 @@ class ValidationStatistics(Subscriber):
         return requirement_checks_count
 
     @classmethod
-    def __initialise__(cls, validation_settings: ValidationSettings):
+    def __initialise__(
+        cls,
+        validation_settings: ValidationSettings,
+        context: ValidationContext | None = None,
+    ):  # pylint: disable=too-many-locals
         """
         Compute the statistics of the profile
         """
         # extract the validation settings
         severity_validation = validation_settings.requirement_severity
-        profiles: list[Profile] = Profile.load_profiles(
-            validation_settings.profiles_path,
-            extra_profiles_path=validation_settings.extra_profiles_path,
-            severity=cast("Severity", severity_validation),
-            allow_requirement_check_override=validation_settings.allow_requirement_check_override,
-        )
+        profiles: list[Profile]
+        if context is not None:
+            # Reuse the exact profile instances selected by the validation
+            # context. They already carry the lazily prepared requirements and
+            # shape registries used by the run.
+            profiles = context.profiles
+        else:
+            profiles = Profile.load_profiles(
+                validation_settings.profiles_path,
+                extra_profiles_path=validation_settings.extra_profiles_path,
+                severity=cast("Severity", severity_validation),
+                allow_requirement_check_override=validation_settings.allow_requirement_check_override,
+            )
         profile: Profile = cast("Profile", Profile.find_in_list(profiles, validation_settings.profile_identifier))
         target_profile_identifier = profile.identifier
         # initialize the profiles list
@@ -332,6 +363,7 @@ class ValidationStatistics(Subscriber):
         # Initialize the counters
         checks_by_severity: dict[Severity, set[RequirementCheck]] = {}
         checks: set[RequirementCheck] = set()
+        extra_check_checks: set[RequirementCheck] = set()
         requirements: set[Requirement] = set()
 
         # Initialize the counters
@@ -354,6 +386,13 @@ class ValidationStatistics(Subscriber):
                 if requirement.hidden:
                     continue
 
+                extra_check_checks.update(
+                    check
+                    for check in requirement.get_checks()
+                    if check.extra_check
+                    and (not check.overridden or check.requirement.profile.identifier == target_profile_identifier)
+                )
+
                 requirement_checks_count = cls.__collect_requirement_checks__(
                     requirement,
                     severity_validation=severity_validation,
@@ -365,6 +404,8 @@ class ValidationStatistics(Subscriber):
                 # count the requirements and checks
                 if requirement_checks_count == 0:
                     logger.debug(f"No checks for requirement: {requirement}")
+                elif requirement.overridden:
+                    logger.debug(f"Requirement is fully overridden and is not counted: {requirement}")
                 else:
                     # Only if there are checks for the requirement count it
                     logger.debug(f"Requirement: {requirement} checks count: {requirement_checks_count}")
@@ -385,6 +426,7 @@ class ValidationStatistics(Subscriber):
             "profiles": profiles,
             "requirements": requirements,
             "checks": checks,
+            "extra_check_checks": extra_check_checks,
             "severity": severity_validation,
             "checks_by_severity": checks_by_severity,
             "failed_requirements": [],
@@ -397,6 +439,8 @@ class ValidationStatistics(Subscriber):
             "validated_profiles": [],
             "validated_requirements": [],
             "validated_checks": [],
+            "executed_extra_check_checks": [],
+            "skipped_extra_check_checks": [],
         }
         logger.debug(result)
         return result
@@ -444,6 +488,19 @@ class ValidationStatistics(Subscriber):
     def __handle_requirement_check_validation_end__(self, event: Event, ctx: ValidationContext | None) -> None:
         assert isinstance(event, RequirementCheckValidationEvent)
         assert ctx is not None
+        if event.requirement_check in self.extra_check_checks:
+            if event.validation_result is not None:
+                for key in ("executed_extra_check_checks", "skipped_extra_check_checks"):
+                    self._stats[key] = [
+                        check for check in self._stats[key] if check.identifier != event.requirement_check.identifier
+                    ]
+                result = normalize_check_result(event.validation_result)
+                status = (
+                    "skipped_extra_check_checks" if result is CheckResult.SKIPPED else "executed_extra_check_checks"
+                )
+                self._stats[status].append(event.requirement_check)
+                self.notify_listeners()
+            return
         if event.requirement_check in self.checks:
             if event.validation_result is not None:
                 result = normalize_check_result(event.validation_result)
@@ -521,6 +578,13 @@ class ValidationStatistics(Subscriber):
             "total_failed_checks": len(self.failed_checks),
             "total_skipped_checks": self.total_skipped_checks,
             "total_checks_by_severity": {k.name: len(v) for k, v in self.checks_by_severity.items()},
+            "extra_check_checks": {
+                "count": self.total_extra_check_checks,
+                "executed": len(self.executed_extra_check_checks),
+                "skipped": len(self.skipped_extra_check_checks),
+                "findings": len(self.validation_result.extra_checks) if self.validation_result else 0,
+                "identifiers": sorted(check.identifier for check in self.extra_check_checks),
+            },
             # Requirements involved
             "requirements": {
                 "count": self.total_requirements,
@@ -619,6 +683,16 @@ class AggregatedValidationStatistics:
             "total_failed_checks": len(self.failed_checks),
             "total_skipped_checks": self.total_skipped_checks,
             "total_checks_by_severity": {k.name: len(v) for k, v in self.checks_by_severity.items()},
+            "extra_check_checks": {
+                "count": sum(stats.total_extra_check_checks for stats in self._statistics_list),
+                "executed": sum(len(stats.executed_extra_check_checks) for stats in self._statistics_list),
+                "skipped": sum(len(stats.skipped_extra_check_checks) for stats in self._statistics_list),
+                "findings": sum(
+                    len(stats.validation_result.extra_checks)
+                    for stats in self._statistics_list
+                    if stats.validation_result is not None
+                ),
+            },
             # Requirements involved
             "requirements": {
                 "count": self.total_requirements,
@@ -783,6 +857,7 @@ class AggregatedValidationStatistics:
         raw_stats = self.__aggregate_raw_stats__(self._statistics_list)
         return self.__build_sorted_stats_dict__(raw_stats)
 
+    # pylint: disable=too-many-locals
     @classmethod
     def __aggregate_raw_stats__(
         cls,

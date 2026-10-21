@@ -19,6 +19,8 @@ from pathlib import Path
 import pytest
 
 from rocrate_validator.errors import ROCrateInvalidURIError
+from rocrate_validator.models import URI, ValidationSettings, Validator
+from rocrate_validator.models import profile_detection as profile_detection_module
 from rocrate_validator.rocrate import (
     BagitROCrate,
     ROCrate,
@@ -31,6 +33,7 @@ from rocrate_validator.rocrate import (
     ROCrateMetadata,
     ROCrateRemoteZip,
 )
+from rocrate_validator.rocrate import metadata as metadata_module
 from rocrate_validator.utils import log as logging
 from tests.ro_crates import InvalidDataEntity, ValidROC
 
@@ -607,6 +610,69 @@ def _metadata_dict_with_main_entity(main_entity: object) -> dict:
             },
         ],
     }
+
+
+@pytest.mark.parametrize(
+    ("entity_id", "getter_name", "location"),
+    [
+        ("ro-crate-metadata.json", "get_conforms_to", "RO-Crate Metadata Descriptor"),
+        ("./", "get_root_data_entity_conforms_to", "Root Data Entity"),
+    ],
+)
+def test_conforms_to_profile_detection_warns_and_skips_string_values(entity_id, getter_name, location, monkeypatch):
+    """String literals are diagnosed and excluded while valid @id references remain detectable."""
+    warnings = []
+    monkeypatch.setattr(metadata_module.logger, "warning", lambda message, *args: warnings.append(message % args))
+    metadata_dict = _metadata_dict_with_id("remote-file")
+    metadata_dict["@graph"][0]["conformsTo"] = {"@id": "https://w3id.org/ro/crate/1.1"}
+    for entity in metadata_dict["@graph"]:
+        if entity["@id"] == entity_id:
+            entity["conformsTo"] = [
+                {"@id": "https://example.org/profile"},
+                "https://example.org/literal-profile",
+            ]
+            break
+
+    crate = ROCrate.from_metadata_dict(metadata_dict)
+
+    assert getattr(crate.metadata, getter_name)() == ["https://example.org/profile"]
+    assert len(warnings) == 1
+    assert "Cannot use" in warnings[0]
+    assert location in warnings[0]
+    assert "https://example.org/literal-profile" in warnings[0]
+    assert "containing `@id`" in warnings[0]
+
+
+def test_automatic_profile_detection_reports_string_conforms_to(monkeypatch):
+    """Automatic detection warns about a literal URI without selecting it."""
+    warnings = []
+    monkeypatch.setattr(
+        profile_detection_module.logger,
+        "warning",
+        lambda message, *args: warnings.append(message % args),
+    )
+    metadata_dict = {
+        "@context": "https://w3id.org/ro/crate/1.2/context",
+        "@graph": [
+            {
+                "@id": "ro-crate-metadata.json",
+                "@type": "CreativeWork",
+                "about": {"@id": "./"},
+                "conformsTo": "https://w3id.org/ro/crate/1.2",
+            },
+            {"@id": "./", "@type": "Dataset", "name": "Test crate"},
+        ],
+    }
+    settings = ValidationSettings(
+        rocrate_uri=URI(ValidROC().wrroc_paper),
+        metadata_dict=metadata_dict,
+        metadata_only=True,
+    )
+
+    assert Validator(settings).detect_rocrate_profiles() == []
+    assert len(warnings) == 1
+    assert "RO-Crate Metadata Descriptor" in warnings[0]
+    assert "https://w3id.org/ro/crate/1.2" in warnings[0]
 
 
 @pytest.mark.parametrize("main_entity", [{"@id": "workflow.ga"}, [{"@id": "workflow.ga"}]])

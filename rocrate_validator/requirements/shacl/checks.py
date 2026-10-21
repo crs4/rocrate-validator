@@ -297,7 +297,7 @@ class SHACLCheck(RequirementCheck):
 
         # Begin the timer
         start_time = timer()
-        shapes_graph = shapes_registry.shapes_graph
+        shapes_graph = shacl_context.shapes_graph
         end_time = timer()
         logger.debug(f"Execution time for getting shapes: {end_time - start_time} seconds")
 

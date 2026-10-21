@@ -13,6 +13,7 @@
 # limitations under the License.
 
 
+import copy
 import shutil
 import tempfile
 import zipfile
@@ -22,6 +23,7 @@ from rocrate_validator.constants import HTTP_STATUS_BAD_REQUEST, HTTP_STATUS_GAT
 from rocrate_validator.errors import ProfileNotFound
 from rocrate_validator.events import Subscriber
 from rocrate_validator.models import Profile, Severity, ValidationResult, ValidationSettings, Validator
+from rocrate_validator.models.profile_detection import ProfileDetectionResult
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.http import HttpRequester
 from rocrate_validator.utils.paths import get_profiles_path
@@ -35,12 +37,21 @@ logger = logging.getLogger(__name__)
 
 
 def detect_profiles(settings: dict | ValidationSettings) -> list[Profile]:
-    # initialize the validator
+    """Detect profiles, preserving the historical list return type."""
+    return detect_profiles_detailed(settings).profiles
+
+
+def detect_profiles_detailed(settings: dict | ValidationSettings) -> ProfileDetectionResult:
+    """Detect profiles and return structured diagnostics and a confirmable suggestion."""
     validator = __initialise_validator__(settings)
-    # detect the profiles
-    profiles = validator.detect_rocrate_profiles()
-    logger.debug("Profiles detected: %s", profiles)
-    return profiles
+    result = validator.detect_rocrate_profiles_detailed()
+    logger.debug("Detailed profile detection result: %s", result)
+    return result
+
+
+def suggest_profile_for_string_conforms_to(settings: dict | ValidationSettings) -> Profile | None:
+    """Return a unique available profile matching a malformed literal conformsTo value."""
+    return detect_profiles_detailed(settings).suggested_profile
 
 
 def validate_metadata_as_dict(
@@ -51,15 +62,11 @@ def validate_metadata_as_dict(
     """
     assert metadata_dict is not None, "Metadata dictionary cannot be None"
     assert isinstance(metadata_dict, dict), "Metadata must be a dictionary"
-    # set the RO-Crate metadata dictionary in the settings
-    if isinstance(settings, dict):
-        settings["metadata_dict"] = metadata_dict
-        settings["metadata_only"] = True
-    else:
-        settings.metadata_dict = metadata_dict
-        settings.metadata_only = True
-    # validate the RO-Crate metadata
-    return validate(settings, subscribers)
+    parsed_settings = ValidationSettings.parse(settings)
+    validator = _build_validator(parsed_settings, subscribers)
+    # Use per-run input instead of mutating caller-owned settings. This shares
+    # the same prepared-validator path used for directory-based validation.
+    return validator.validate(metadata_dict=metadata_dict)
 
 
 def validate(settings: dict | ValidationSettings, subscribers: list[Subscriber] | None = None) -> ValidationResult:
@@ -98,18 +105,24 @@ def _extract_and_validate(
     settings: ValidationSettings, subscribers: list[Subscriber] | None, rocrate_path: Path
 ) -> Validator:
     """Extract a (local or downloaded) zipped RO-Crate to a temp dir and validate it."""
-    original_data_path = settings.rocrate_uri
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        try:
-            with zipfile.ZipFile(rocrate_path, "r") as zip_ref:
-                zip_ref.extractall(tmp_dir)
-                logger.debug("RO-Crate extracted to temporary directory: %s", tmp_dir)
-            settings.rocrate_uri = URI(str(tmp_dir))
-            return _build_validator(settings, subscribers)
-        finally:
-            if original_data_path is not None:
-                settings.rocrate_uri = original_data_path
-                logger.debug("Original data path restored: %s", original_data_path)
+    # The extracted package must outlive this function and remain available
+    # through Validator.validate(); its owner is retained by the validator.
+    temp_dir = tempfile.TemporaryDirectory()  # pylint: disable=consider-using-with
+    try:
+        with zipfile.ZipFile(rocrate_path, "r") as zip_ref:
+            zip_ref.extractall(temp_dir.name)
+            logger.debug("RO-Crate extracted to temporary directory: %s", temp_dir.name)
+        effective_settings = copy.copy(settings)
+        effective_settings.rocrate_uri = URI(temp_dir.name)
+        effective_settings._source_rocrate_uri = settings.rocrate_uri
+        validator = _build_validator(effective_settings, subscribers)
+        # ValidationContext is created by Validator.validate(), after this
+        # function returns. Keep the extracted package alive until then.
+        validator._extracted_crate_directory = temp_dir
+        return validator
+    except Exception:
+        temp_dir.cleanup()
+        raise
 
 
 def _download_remote_rocrate(
@@ -117,7 +130,8 @@ def _download_remote_rocrate(
 ) -> Validator:
     """Download a remote (http/https/ftp) RO-Crate to a temp file, then extract and validate it."""
     logger.debug("RO-Crate is a remote RO-Crate")
-    with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
+    with tempfile.TemporaryDirectory() as download_dir:
+        download_path = Path(download_dir) / "download.zip"
         requester = HttpRequester()
         offline = bool(getattr(settings, "offline", False))
         # In offline mode, the cache is the only source of truth. Otherwise,
@@ -138,13 +152,31 @@ def _download_remote_rocrate(
                 raise FileNotFoundError(
                     f"Failed to download remote RO-Crate '{rocrate_path.uri}' (status {r.status_code})."
                 )
-            with Path(tmp_file.name).open("wb") as f:
+            with download_path.open("wb") as f:
                 shutil.copyfileobj(r.raw, f)
-        logger.debug("RO-Crate downloaded to temporary file: %s", tmp_file.name)
-        return _extract_and_validate(settings, subscribers, Path(tmp_file.name))
+        logger.debug("RO-Crate downloaded to temporary file: %s", download_path)
+        return _extract_and_validate(settings, subscribers, download_path)
 
 
-def __initialise_validator__(
+def _initialise_dict_metadata_validator(
+    settings: ValidationSettings, subscribers: list[Subscriber] | None
+) -> Validator:
+    """Build a validator for dictionary metadata, optionally using a package directory."""
+    if settings.package_root is not None:
+        if settings.packaging_mode == "detached":
+            raise ValueError("package_root cannot be combined with detached packaging_mode")
+        if not settings.package_root.is_dir():
+            raise ValueError(f"package_root is not a local directory: {settings.package_root}")
+    else:
+        if settings.packaging_mode == "attached" and not settings.metadata_only:
+            raise ValueError("Attached in-memory metadata requires metadata_only=True or package_root")
+        # A standalone dictionary has no payload backend, even when called
+        # through validate() rather than validate_metadata_as_dict().
+        settings.metadata_only = True
+    return _build_validator(settings, subscribers)
+
+
+def __initialise_validator__(  # noqa: C901, PLR0911  # pylint: disable=too-many-return-statements
     settings: dict | ValidationSettings, subscribers: list[Subscriber] | None = None
 ) -> Validator:
     """
@@ -153,10 +185,28 @@ def __initialise_validator__(
     # if settings is a dict, convert to ValidationSettings
     settings = ValidationSettings.parse(settings)
 
+    if settings.package_root is not None and settings.metadata_dict is None:
+        raise ValueError("package_root requires metadata_dict")
+
+    if settings.metadata_dict is not None:
+        return _initialise_dict_metadata_validator(settings, subscribers)
+
     # parse the rocrate path
     assert settings.rocrate_uri is not None, "RO-Crate URI is required"
     rocrate_path: URI = URI(str(settings.rocrate_uri))
     logger.debug("Validating RO-Crate: %s", rocrate_path)
+
+    if (
+        settings.packaging_mode == "attached"
+        and not settings.metadata_only
+        and rocrate_path.is_remote_resource()
+        and (Path(rocrate_path.get_path()).suffix.lower() != ".zip")
+    ):
+        raise ValueError("Attached mode for a remote standalone document requires a package adapter")
+    if settings.packaging_mode == "detached" and (
+        rocrate_path.is_local_directory() or Path(rocrate_path.get_path()).suffix.lower() == ".zip"
+    ):
+        raise ValueError("Detached mode requires a standalone metadata document, not a directory or ZIP")
 
     # check if the RO-Crate exists
     if (
@@ -175,6 +225,8 @@ def __initialise_validator__(
     # Resolve the RO-Crate source: remote URL, local ZIP, or local directory.
     # We support http/https/ftp protocols to download a remote RO-Crate.
     if rocrate_path.scheme in ("http", "https", "ftp"):
+        if Path(rocrate_path.get_path()).suffix.lower() != ".zip":
+            return _build_validator(settings, subscribers)
         return _download_remote_rocrate(settings, subscribers, rocrate_path)
     if rocrate_path.as_path().suffix == ".zip":
         logger.debug("RO-Crate is a local ZIP file")
@@ -182,6 +234,8 @@ def __initialise_validator__(
     if rocrate_path.is_local_directory():
         logger.debug("RO-Crate is a local directory")
         settings.rocrate_uri = URI(str(rocrate_path.as_path()))
+        return _build_validator(settings, subscribers)
+    if rocrate_path.is_local_file() and rocrate_path.as_path().suffix.lower() in (".json", ".jsonld"):
         return _build_validator(settings, subscribers)
     raise ValueError(
         f"Invalid RO-Crate URI: {rocrate_path}. It MUST be a local directory or a ZIP file (local or remote)."

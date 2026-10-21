@@ -102,7 +102,7 @@ def test_profile_detection_error_is_not_silenced(monkeypatch):
     """Unexpected metadata errors must not become an empty profile selection."""
 
     class BrokenMetadata:
-        def get_conforms_to(self):
+        def get_file_descriptor_entity(self):
             raise RuntimeError("metadata profile detection failed")
 
     class BrokenROCrate:
@@ -665,7 +665,7 @@ def test_shacl_overlay_profiles_are_loaded_once_before_processing(
     check_overriding_profiles_path: str,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Load every overlay profile graph once while allowing deferred re-entry."""
+    """Add each overlay profile's shapes once while allowing deferred re-entry."""
     settings = ValidationSettings(
         profiles_path=Path(check_overriding_profiles_path),
         profile_identifier="b",
@@ -677,21 +677,21 @@ def test_shacl_overlay_profiles_are_loaded_once_before_processing(
     source = next(profile for profile in context.profiles if profile.identifier == "a")
     target = next(profile for profile in context.profiles if profile.identifier == "b")
     shacl_context = SHACLValidationContext.get_instance(context)
-    loaded_paths: list[Path] = []
+    shape_registry_loads = 0
+    extend_shapes = shacl_context.shapes_registry.extend
 
-    def load_ontology(profile_path: Path) -> Graph:
-        """Record ontology loads without parsing external graph content."""
-        loaded_paths.append(profile_path)
-        return Graph()
+    def record_shape_load(shapes: dict[str, Any], graph: Graph) -> None:
+        """Count each profile contribution to the combined SHACL graph."""
+        nonlocal shape_registry_loads
+        shape_registry_loads += 1
+        extend_shapes(shapes, graph)
 
-    monkeypatch.setattr(shacl_context, "__load_ontology_graph__", load_ontology)
+    monkeypatch.setattr(shacl_context.shapes_registry, "extend", record_shape_load)
 
     assert shacl_context.__set_current_validation_profile__(source)
     assert shacl_context.__set_current_validation_profile__(source)
     assert shacl_context.__set_current_validation_profile__(target)
-    assert loaded_paths == [source.path, target.path]
-    assert shacl_context.__get_ontology_path__(source.path) == source.path / "ontology.ttl"
-    assert shacl_context.__get_ontology_path__(target.path) == target.path / "ontology.ttl"
+    assert shape_registry_loads == 2
 
     shacl_context.current_validation_result = True
     with pytest.raises(SHACLValidationAlreadyProcessed):
@@ -973,6 +973,22 @@ def test_python_check_decorator_sets_dependencies():
         return True
 
     assert dependent.depends_on == ("base",)  # pyright: ignore[reportFunctionMemberAccess]
+
+
+def test_python_check_decorator_sets_extra_check_flag():
+    """The @check decorator must expose the extra_check classification."""
+    from rocrate_validator.requirements.python import check
+
+    @check(name="advisory", extra_check=True)
+    def advisory(self, ctx):
+        return True
+
+    @check(name="conformance")
+    def conformance(self, ctx):
+        return True
+
+    assert advisory.extra_check is True  # pyright: ignore[reportFunctionMemberAccess]
+    assert conformance.extra_check is False  # pyright: ignore[reportFunctionMemberAccess]
 
 
 def test_shacl_shape_with_deactivated_marks_check_skipped(fake_profiles_path: str):

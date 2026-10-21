@@ -136,6 +136,26 @@ For example, this shape requires every ``schema:Dataset`` to have a ``name``:
 Python checks
 ^^^^^^^^^^^^^
 
+Package mode selects Attached or Detached validation rules. Validation scope
+selects whether to check metadata and data files, or metadata only. See
+:ref:`package_modes` for definitions, defaults, and supported input combinations.
+
+For a check that applies only to one package mode, use
+``context.ro_crate.is_attached()`` or ``context.ro_crate.is_detached()``. Both
+return ``False`` when the mode is unspecified, as with dictionary input in
+automatic mode. Record a skip if your check requires a mode that was not selected.
+Do not choose the mode yourself from Root identifiers, the presence of data
+files, or the resources described in the metadata.
+
+With ``metadata_only=True``, keep metadata checks active and skip checks that
+need access to the data files (the payload). Attached rules can apply to metadata
+supplied as a file, URL, or dictionary even when those data files are unavailable.
+Detached identifier rules also remain active in metadata-only validation.
+
+The dedicated Detached Data Entity check enforces its identifier restriction.
+General identifier checks should check syntax without reporting the same
+restriction again.
+
 Python checks are declared with the ``@check`` decorator in a requirement
 module. The decorator's ``name`` and severity identify the check in the same
 way as ``sh:name`` and severity identify a SHACL check. The function receives
@@ -167,7 +187,7 @@ kind of identity as the SHACL example above:
                return None
 
            if not root_entity.get_property("name"):
-               # A failed check normally records the diagnostic and returns
+               # A failed check normally records the extra_check and returns
                # False.  The check framework associates the issue with self.
                context.result.add_issue("The root data entity has no name", self)
                return False
@@ -180,9 +200,43 @@ three equivalent forms: ``True``/``False`` are normalized to passed/failed,
 ``CheckResult.SKIPPED`` (or the other ``CheckResult`` members) expresses an
 explicit status, and ``None`` is normalized to skipped.  When a check fails,
 call ``context.result.add_issue(...)`` before returning ``False`` so that the
-result contains an actionable diagnostic.  When it is skipped, prefer
+result contains an actionable extra_check.  When it is skipped, prefer
 ``context.record_skip(...)`` when a reason and category should be exposed to
 API and CLI consumers.
+
+``ExtraCheck`` Python checks
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Use the ``extra_check=True`` argument to ``@check`` for advisory checks that
+report suspicious patterns without deciding whether a crate conforms to its
+profile. ``ExtraCheck`` checks are disabled by default and can be enabled by users
+with ``--extra-checks`` or the
+``ValidationSettings.extra_checks`` setting. A extra_check check
+must record each finding with ``context.result.add_extra_check(...)``; do not
+use ``add_issue(...)`` for an advisory finding, because issues contribute to
+the conformance result.
+
+For example:
+
+.. code-block:: python
+
+   @check(name="Possible missing entity link", extra_check=True)
+   def check_entity_link(self, context: ValidationContext) -> bool:
+       entity = ...  # inspect the entity using the validation context
+       if suspicious_link(entity):
+           context.result.add_extra_check(
+               self,
+               "This value may refer to an entity that is not declared in the crate.",
+               violating_entity=entity.get("@id"),
+               violating_property="relatedLink",
+           )
+       return True
+
+The return value still follows the regular Python check contract, but a
+extra_check check's failed status does not fail conformance. Findings are
+available from ``ValidationResult.extra_checks`` and are presented separately
+from conformance issues. For the user-facing options and result fields, see
+:ref:`cli-based-validation` and :ref:`programmatic-validation`.
 
 .. _profile-composition:
 

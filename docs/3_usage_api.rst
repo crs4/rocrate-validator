@@ -30,11 +30,101 @@ Programmatic Validation
     :start-after: ## Programmatic Validation
     :end-before: ## Running the tests
 
+
+``ExtraCheck``s
+-----------------
+
+``ExtraCheck`` checks are advisory and do not affect the conformance result. They
+are disabled by default; set ``extra_checks`` on
+``ValidationSettings`` to run them:
+
+.. code-block:: python
+
+    from rocrate_validator import models, services
+
+    settings = services.ValidationSettings(
+        rocrate_uri="path/to/rocrate",
+        profile_identifier="ro-crate-1.3",
+        requirement_severity=models.Severity.REQUIRED,
+        extra_checks=True,
+    )
+    result = services.validate(settings)
+
+The resulting ``ValidationResult`` exposes these reports separately through
+``result.extra_checks``. ``ExtraCheck`` checks are also listed separately in
+``result.statistics``.
+
 .. seealso::
 
-    To resolve resources from a local cache or run validation without network
-    access (the ``offline`` / ``no_cache`` settings of ``ValidationSettings``),
-    see :ref:`offline_mode`.
+    * To configure the HTTP cache or run validation without network access,
+      see :ref:`offline_mode`.
+    * For command-line validation, see the :doc:`CLI guide <2_usage_cli>`.
+    * For the complete package API, see the :doc:`API reference <10_api>`.
+    * To select or write validation profiles, see
+      :doc:`Validation profiles <12_validation_profiles>` and
+      :doc:`Writing a profile <11_writing_a_profile>`.
+    * For package modes, scope, and accepted input combinations, see
+      :ref:`package_modes`.
+
+Profile Detection
+-----------------
+
+``detect_profiles`` returns the available validation profiles identified by
+``conformsTo`` values written as JSON-LD entity references, such as
+``{"@id": "https://w3id.org/ro/crate/1.2"}``. A URI written as a plain string
+does not select a profile through this function.
+
+Use ``detect_profiles_detailed`` to also find out why profile detection could
+not use a metadata value, or which profile a string value may have intended.
+It returns a ``ProfileDetectionResult`` with three fields:
+
+* ``profiles``: the same profiles returned by ``detect_profiles``.
+* ``diagnostics``: explanations of missing, malformed, or unrecognized values.
+  For a string-valued ``conformsTo``, an ``INVALID_CONFORMS_TO`` diagnostic shows
+  the required ``{"@id": "..."}`` form.
+* ``suggested_profile``: the profile the crate appears to request when
+  ``conformsTo`` contains a URI as a string instead of an ``{"@id": "..."}``
+  object. The application can choose to validate against this profile despite
+  the incorrect metadata format. This field is ``None`` unless all of the
+  following conditions hold:
+
+  * No ``conformsTo`` value is already a valid entity reference.
+  * Every problem reported in ``diagnostics`` is a ``conformsTo`` value written
+    as a string; there are no other profile-detection problems.
+  * All those strings contain the same URI.
+  * Exactly one available validation profile has that URI.
+
+For example, ``"conformsTo": "https://w3id.org/ro/crate/1.2"`` can produce
+``suggested_profile`` identifying ``ro-crate-1.2``, but that profile is not added
+to ``profiles``. The calling application decides whether to use the suggestion
+for validation. Neither function changes the metadata or corrects its errors.
+
+Each diagnostic has a stable ``code`` as well as the affected property,
+metadata location, original value, and explanation. Codes distinguish an
+invalid reference (``INVALID_REFERENCE``), a malformed ``conformsTo`` value
+(``INVALID_CONFORMS_TO``), a URI that does not identify an available profile
+(``PROFILE_NOT_FOUND``), and missing profile hints (``NO_PROFILE_HINT``).
+
+.. code-block:: python
+
+    from rocrate_validator.services import detect_profiles_detailed, validate
+
+    settings = {"rocrate_uri": "/path/to/crate"}
+    detection = detect_profiles_detailed(settings)
+    for diagnostic in detection.diagnostics:
+        print(diagnostic.code, diagnostic.message)
+
+    if detection.suggested_profile is not None:
+        # The application decides whether to accept the suggestion.
+        settings["profile_identifier"] = detection.suggested_profile.identifier
+        result = validate(settings)
+
+Programmatic detection does not prompt. If the
+application does not set ``profile_identifier``, ``validate`` uses the profile
+configured in ``ValidationSettings`` (or its default). Selecting a suggested
+profile does not repair invalid metadata: ``conformsTo`` must still be
+corrected to a JSON-LD reference, such as
+``{"@id": "https://w3id.org/ro/crate/1.2"}``.
 
 
 Metadata-only Validation
@@ -44,6 +134,10 @@ In addition to full validation, which checks both metadata and data files,
 the library also supports metadata-only validation. This is useful when you
 want to ensure that the metadata conforms to the expected schema without
 checking the actual data files.
+
+You can check only metadata using either Attached or Detached rules. See
+:ref:`package_modes` for the meaning of these modes, their defaults, and examples
+using a metadata file or URL.
 
 To perform metadata-only validation, you can use the `validate_metadata_as_dict`
 from the `rocrate_validator.services` module. This function takes a dictionary
@@ -67,6 +161,83 @@ representing the metadata and validates it against a given validation profile.
 
         # process the validation result as needed
         ...
+
+To check an edited metadata dictionary against payload files in an Attached
+crate directory, pass ``package_root`` to ``services.validate()``:
+
+.. code-block:: python
+
+    from pathlib import Path
+    from rocrate_validator import services
+    from rocrate_validator.models.settings import ValidationSettings
+
+    settings = ValidationSettings(
+        rocrate_uri=None,
+        metadata_dict=rocrate_metadata,
+        package_root=Path("./my-crate"),
+        profile_identifier="ro-crate-1.3",
+        packaging_mode="attached",
+        metadata_only=False,
+    )
+    result = services.validate(settings)
+
+The dictionary supplies the metadata being validated, replacing the physical
+metadata descriptor. The directory supplies only the payload files:
+``ro-crate-metadata.json`` is not required on disk and is ignored if present.
+The report records
+``metadata_source="dictionary"`` and the selected ``package_root``.
+
+For a runnable notebook comparing package modes, validation scopes, and report
+output with dictionary input, see :ref:`validation_examples`.
+
+
+Warm validation with a reusable Validator
+-----------------------------------------
+
+Applications that validate repeatedly against the same profile can keep a
+single :class:`rocrate_validator.models.Validator` instance.  The first call
+prepares the selected profile chain, requirements, SHACL shapes, and ontology;
+later calls reuse that preparation when the profile settings and RDF-base mode
+match. Ordinary crates at different locations therefore share one preparation.
+
+.. code-block:: python
+
+    from rocrate_validator.models import ValidationSettings, Validator
+
+    settings = ValidationSettings(
+        rocrate_uri="/path/to/default-crate",
+        profile_identifier="my-custom-profile",
+        extra_profiles_path="/path/to/custom-profiles",
+    )
+    validator = Validator(settings)
+
+    # Optional: move profile preparation out of the first measured request.
+    validator.prepare()
+
+    default_result = validator.validate()  # existing API remains supported
+    crate_a_result = validator.validate("/path/to/crate-a")
+    crate_b_result = validator.validate("/path/to/crate-b")
+
+The per-call crate argument does not mutate ``settings.rocrate_uri``. Metadata
+dictionaries can be supplied with ``validator.validate(metadata_dict=data)``;
+``rocrate_uri`` and ``metadata_dict`` are mutually exclusive in one call.
+
+Every call creates a fresh data graph, result, statistics updates, and SHACL
+execution context. The same validator serializes overlapping calls because its
+subscriber and current-context state are instance-local; use separate validator
+instances when validations must run concurrently.
+
+For metadata without an explicit JSON-LD ``@base`` distinct from the crate
+public ID, relative IRIs in profile artifacts are compiled against a stable
+internal base. Per-run copies of the SHACL and ontology graphs rebase only those
+relative terms to the current crate, while structural shape identifiers and the
+crate data graph remain unchanged. Metadata whose explicit ``@base`` differs
+from its crate public ID causes the validator to keep a separate prepared plan
+for that base combination, limiting plan reuse across crate IDs. Validation
+behavior is unchanged. After editing profile files in a long-running process,
+call
+``validator.clear_prepared_profiles()`` or ``validator.prepare(refresh=True)``
+before the next validation.
 
 
 Formatting Validation Results

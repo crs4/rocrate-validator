@@ -143,7 +143,11 @@ class ROCrateEntity:
         # Otherwise the `@id` is a relative path: if the RO-Crate itself is
         # remote, resolve it against the crate URI so the entity is still
         # classified as remote/web-based.
-        if ro_crate.uri.is_remote_resource() and entity_id.startswith("./"):
+        if (
+            ro_crate.uri.is_remote_resource()
+            and not getattr(ro_crate, "is_in_memory", False)
+            and entity_id.startswith("./")
+        ):
             return URI(f"{ro_crate.uri}/{entity_id[2:]}")
         return URI(cls.get_id_as_path(entity_id, ro_crate))
 

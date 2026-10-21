@@ -19,6 +19,8 @@ from typing import TYPE_CHECKING
 from rich.align import Align
 from rich.markdown import Markdown
 from rich.padding import Padding
+from rich.table import Table
+from rich.text import Text
 
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.io_helpers.colors import get_severity_color
@@ -95,6 +97,49 @@ class ValidationResultTextOutputFormatter(OutputFormatter):
                         yield Padding("\n", (0, 0))
             yield Padding("\n", (0, 0))
 
+        yield from self._render_extra_checks(result)
+
+    @staticmethod
+    def _render_extra_checks(result: ValidationResult) -> RenderResult:
+        extra_checks = result.extra_checks
+        if not extra_checks:
+            return
+        finding_count = len(extra_checks)
+        finding_label = "finding" if finding_count == 1 else "findings"
+        check_count = len({extra_check.identifier for extra_check in extra_checks})
+        caption = Text(f"{finding_count} {finding_label}: ")
+        if finding_count == 1:
+            caption.append("this finding is advisory and does not affect conformance.", style="dim italic")
+        else:
+            caption.append("findings are advisory and do not affect conformance.", style="dim italic")
+        table = Table(
+            title=f"ExtraCheck Checks ({check_count})",
+            title_style="bold orange1",
+            border_style="orange1",
+            header_style="bold orange1",
+            show_lines=False,
+            caption=caption,
+            caption_justify="center",
+        )
+        table.add_column("Profile", style="cyan", no_wrap=True)
+        table.add_column("Check", no_wrap=True)
+        table.add_column("Entity", style="cyan", overflow="fold")
+        table.add_column("Property", style="yellow", overflow="fold")
+        table.add_column("Value", style="green", overflow="fold")
+        table.add_column("Finding", overflow="fold")
+
+        for extra_check in extra_checks:
+            table.add_row(
+                Text(result.context.effective_check_profile(extra_check.check).identifier, style="cyan"),
+                Text(extra_check.identifier, style=get_severity_color(extra_check.check.severity)),
+                extra_check.violating_entity or "—",
+                extra_check.violating_property or "—",
+                f'"{extra_check.value}"' if extra_check.value is not None else "—",
+                Text(extra_check.message),
+            )
+
+        yield Padding(table, (1, 2))
+
 
 class ValidationStatisticsTextOutputFormatter(OutputFormatter):
     def __init__(self, validation_statistics: ValidationStatistics):
@@ -110,3 +155,13 @@ class ValidationStatisticsTextOutputFormatter(OutputFormatter):
         if layout.layout is not None:
             yield layout.layout
         yield Padding("\n", (0, 0))
+
+
+class ValidationExtraChecksTextOutputFormatter(OutputFormatter):
+    """Render advisory extra_checks independently from conformance details."""
+
+    def __init__(self, validation_result: ValidationResult):
+        self._validation_result = validation_result
+
+    def __rich_console__(self, console: Console, options: ConsoleOptions) -> RenderResult:
+        yield from ValidationResultTextOutputFormatter._render_extra_checks(self._validation_result)

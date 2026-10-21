@@ -31,8 +31,8 @@ class RootDataEntityIdentifierChecker(PyFunctionCheck):
     @check(name="Root Data Entity: REQUIRED value")
     def check_identifier(self, context: ValidationContext) -> CheckResultValue:
         try:
-            if context.ro_crate.is_detached():
-                context.record_skip(self, "RO-Crate is detached", "returned")
+            if not context.ro_crate.is_attached():
+                context.record_skip(self, "attached package context is unavailable", "returned")
                 return CheckResult.SKIPPED
             root_entity = context.ro_crate.metadata.get_root_data_entity()
             if root_entity.id == "./":

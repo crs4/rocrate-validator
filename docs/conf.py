@@ -28,7 +28,14 @@ import os
 import sys
 from pathlib import Path
 
+from pypandoc import get_pandoc_path
+
 from rocrate_validator import __version__
+
+# nbconvert invokes Pandoc by name when rendering notebook Markdown.
+# Make the executable bundled with the docs dependencies available on PATH.
+pandoc_bin_dir = str(Path(get_pandoc_path()).resolve().parent)
+os.environ["PATH"] = os.pathsep.join((os.environ.get("PATH", ""), pandoc_bin_dir))
 
 # update PYTHONPATH
 sys.path.insert(0, str(Path.cwd()))
@@ -114,7 +121,8 @@ todo_include_todos = False
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "sphinx_rtd_theme"
+html_theme = "shibuya"
+html_title = "RO-Crate Validator"
 
 html_static_path = ["_static"]
 html_css_files = ["custom.css"]
@@ -134,10 +142,25 @@ autodoc_default_options: dict[str, bool | str] = {
 branch = os.popen("git rev-parse --abbrev-ref HEAD").read().strip()
 
 # -- Options for HTML output -------------------------------------------------
+html_theme_options = {
+    "accent_color": "teal",
+    "nav_links": [
+        {"title": "CLI", "url": "2_usage_cli", "icon": "lucide:terminal"},
+        {"title": "API", "url": "3_usage_api", "icon": "lucide:braces"},
+        {
+            "title": "Profiles",
+            "url": "12_validation_profiles",
+            "icon": "lucide:boxes",
+        },
+    ],
+    "nav_socials": [
+        {"name": "GitHub", "url": github_url, "icon": "simple-icons:github"},
+    ],
+}
 html_context = {
-    "display_github": True,  # Integrate GitHub
-    "github_user": "crs4",  # Username
-    "github_repo": "rocrate-validator",  # Repo name
-    "github_version": branch,  # Version
-    "conf_py_path": "/docs/",  # Path in the checkout to the docs root
+    "source_type": "github",
+    "source_user": "crs4",
+    "source_repo": "rocrate-validator",
+    "source_version": branch,
+    "source_docs_path": "/docs/",
 }

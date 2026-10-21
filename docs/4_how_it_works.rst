@@ -36,25 +36,79 @@ Validation profiles can be related by inheritance -- i.e., where one validation
 profile extends another one. For instance, Workflow Testing RO-Crate extends Workflow RO-Crate.
 
 
+Validation lifecycle and prepared profiles
+------------------------------------------
+
+An instance of :class:`rocrate_validator.models.Validator` keeps the profile
+preparation state used by its validation runs.  This state contains the resolved
+profile chain and the profile objects which lazily own requirements and SHACL
+shape registries.  Repeated calls on the same validator can therefore reuse
+parsed profile artifacts instead of loading them again.
+
+Crate-specific state is never part of the prepared profile state.  Every run
+still creates a new validation context, data graph, result, and SHACL execution
+context, so inference, SHACL rules, violations, and skipped checks cannot leak
+from one run into another.  Validation statistics use the same prepared profile
+instances as their owning validation context rather than loading a second copy.
+
+Profile artifacts can contain relative IRIs. For the ordinary case where the
+effective JSON-LD base is the crate public ID, profiles are prepared once using
+a stable internal base. Each SHACL run copies the much smaller prepared shapes
+and ontology graphs, rebases their relative data terms to the current crate,
+and preserves structural shape identifiers. The crate data graph itself is
+never rewritten. This permits different crate locations to share preparation
+without leaking their public IDs into one another.
+
+If the metadata declares an explicit JSON-LD ``@base`` that differs from the
+crate public ID, relative identifiers in the metadata resolve against that
+``@base`` rather than the crate root. Since profile artifacts may contain terms
+from both bases, the validator keeps a separate prepared plan for this base
+combination instead of rebasing it for reuse across crate IDs. Validation
+behavior is unchanged; only cross-crate plan reuse is more limited.
+
+
 Validation profile selection
 ----------------------------
 
 * **Automatic Profile Matching** (default):
   By default, `rocrate-validator` will attempt to select the correct validation
-  profiles for the input RO-Crate based on the `conformsTo` property of the Root Data Entity.
+  profiles for the input RO-Crate using valid `conformsTo` references in the
+  metadata descriptor and Root Data Entity.
 
     - If a precise match is found for the `conformsTo` property, that profile is selected
       for validation.
 
     - If no precise match is found:
 
-      - in **Interactive Mode:** (available only through the CLI) the system
-        will prompt the user to select a profile from the list of
-        profiles to which the RO-Crate conforms;
+      - in **Interactive Mode** (CLI only), the validator explains why it could
+        not select a profile automatically. If `conformsTo` contains a profile
+        URI as a string, it may ask whether to use the matching profile anyway.
+        The warning shows how to replace the string with an entity reference
+        such as `{"@id": "https://w3id.org/ro/crate/1.2"}`.
 
-      - in **Non-Interactive Mode:** the system will validate against all profiles
-        to which the RO-Crate conforms, and for which validation rules are available.
-        In all cases, input RO-Crates are validated against the base `ro-crate` profile.
+        This suggestion is offered only if all of the following are true:
+
+        * No `conformsTo` value is already a valid entity reference.
+        * The only problems found during profile detection are `conformsTo`
+          values written as strings.
+        * All those strings contain the same URI.
+        * Exactly one available validation profile has that URI.
+
+        Accepting the suggestion selects that profile for validation. Declining
+        it, or having no suggestion, opens the manual profile selection prompt.
+
+      - in **Non-Interactive Mode**, the validator cannot ask for confirmation,
+        so it does not use a profile suggested by a string-valued `conformsTo`.
+        Use `--profile-identifier` to select that profile explicitly in the CLI.
+        If no profile is selected explicitly or detected from valid references,
+        validation uses the base `ro-crate` profile.
+
+    Profiles detected from valid references are used in either mode. The base
+    `ro-crate` rules are also applied through profile inheritance.
+
+    Selecting a profile only chooses which rules to run. It does not repair
+    metadata: a string-valued `conformsTo` remains malformed and can still
+    produce a validation issue.
 
 * **Profile Versions**:
     - It may happen that the RO-Crate profile version to which the input

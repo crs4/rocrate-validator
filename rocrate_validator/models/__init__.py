@@ -27,6 +27,7 @@ from rocrate_validator.models.profile_check import (
     ProfileCheckResult,
     ProfileCheckSuite,
 )
+from rocrate_validator.models.profile_detection import ProfileDetectionDiagnostic, ProfileDetectionResult
 from rocrate_validator.models.profile_provenance import EffectiveRequirementCheck, RequirementCheckRelation
 from rocrate_validator.models.requirement import (
     Requirement,
@@ -34,7 +35,7 @@ from rocrate_validator.models.requirement import (
     RequirementLoader,
     SourceSnippet,
 )
-from rocrate_validator.models.result import CheckIssue, CustomEncoder, ValidationResult
+from rocrate_validator.models.result import CheckIssue, CustomEncoder, ValidationExtraCheck, ValidationResult
 from rocrate_validator.models.settings import (
     DEFAULT_PROFILES_PATH,
     BaseTypes,
@@ -73,6 +74,8 @@ __all__ = [
     "ProfileCheckFailure",
     "ProfileCheckResult",
     "ProfileCheckSuite",
+    "ProfileDetectionDiagnostic",
+    "ProfileDetectionResult",
     "ProfileValidationEvent",
     "Requirement",
     "RequirementCheck",
@@ -88,6 +91,7 @@ __all__ = [
     "SourceSnippet",
     "ValidationContext",
     "ValidationEvent",
+    "ValidationExtraCheck",
     "ValidationResult",
     "ValidationSettings",
     "ValidationStatistics",

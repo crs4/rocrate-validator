@@ -15,6 +15,7 @@
 import json
 import re
 from http import HTTPStatus
+from pathlib import Path
 from typing import Any
 from urllib.parse import urljoin
 
@@ -67,12 +68,21 @@ class FileDescriptorExistence(PyFunctionCheck):
         """
         Check if the file descriptor is present in the RO-Crate
         """
+        # Dictionary input supplies the descriptor independently of payload storage.
+        if context.settings.metadata_dict is not None:
+            return True
         if context.settings.metadata_only:
             logger.debug("Skipping file descriptor existence check in metadata-only mode")
             context.record_skip(self, "metadata-only mode", "configured")
             return CheckResult.SKIPPED
-        if not context.ro_crate.has_descriptor():
-            message = f'file descriptor "{context.rel_fd_path}" is not present'
+        if context.ro_crate.is_attached():
+            descriptor = context.ro_crate.attached_descriptor_id
+            exists = context.ro_crate.has_file(Path(descriptor))
+        else:
+            descriptor = str(context.rel_fd_path)
+            exists = context.ro_crate.has_descriptor()
+        if not exists:
+            message = f'file descriptor "{descriptor}" is not present'
             context.result.add_issue(message, self)
             return False
         return True
@@ -82,11 +92,13 @@ class FileDescriptorExistence(PyFunctionCheck):
         """
         Check if the file descriptor is not empty
         """
-        if context.settings.metadata_only:
+        if context.settings.metadata_only and context.settings.metadata_dict is None:
             logger.debug("Skipping file descriptor existence check in metadata-only mode")
             context.record_skip(self, "metadata-only mode", "configured")
             return CheckResult.SKIPPED
-        if context.ro_crate.has_descriptor() and context.ro_crate.metadata.size == 0:
+        if (
+            context.settings.metadata_dict is not None or context.ro_crate.has_descriptor()
+        ) and context.ro_crate.metadata.size == 0:
             context.result.add_issue(f'RO-Crate "{context.rel_fd_path}" file descriptor is empty', self)
             return False
         return True
@@ -103,7 +115,7 @@ class FileDescriptorEncodingCheck(PyFunctionCheck):
         """
         Check if the file descriptor is UTF-8 encoded
         """
-        if context.settings.metadata_only:
+        if context.settings.metadata_only and context.settings.metadata_dict is None:
             logger.debug("Skipping file descriptor encoding check in metadata-only mode")
             context.record_skip(self, "metadata-only mode", "configured")
             return CheckResult.SKIPPED
@@ -520,7 +532,10 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
         """
         if isinstance(value, str):
             if key not in _LITERAL_KEYS and value in identifiers:
-                return f"Entity '{entity_id}' references '{value}' as a string; use {{\"@id\": \"{value}\"}}"
+                return (
+                    "The string value matches a declared entity @id; verify whether this property "
+                    "should use an @id reference"
+                )
             return None
         if isinstance(value, list):
             children: Any = value
@@ -537,8 +552,9 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
         return None
 
     @check(
-        name="Validation of entity references",
+        name="Heuristic extra_checks for suspicious entity references",
         depends_on=("File Descriptor JSON format",),
+        extra_check=True,
     )
     def check_entity_references(self, context: ValidationContext) -> CheckResultValue:
         try:
@@ -553,8 +569,13 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
                         continue
                     message = self._find_reference_issue(value, entity_id, identifiers, key)
                     if message:
-                        context.result.add_issue(message, self)
-                        return False
+                        context.result.add_extra_check(
+                            self,
+                            message,
+                            violating_entity=entity_id,
+                            violating_property=key,
+                            value=value if isinstance(value, str) else None,
+                        )
             return True
         except ROCrateMetadataNotFoundError:
             logger.debug("Skipping entity reference check: metadata descriptor is not available")
@@ -563,10 +584,11 @@ class FileDescriptorJsonLdFormat(PyFunctionCheck):
         except UnicodeDecodeError:
             context.record_skip(self, "descriptor encoding check reported the failure", "exception")
             return CheckResult.SKIPPED
-        except _HANDLED_METADATA_ERRORS:
+        except _HANDLED_METADATA_ERRORS as error:
             if logger.isEnabledFor(logging.DEBUG):
-                logger.exception("Unexpected error during file descriptor validation")
-        return False
+                logger.exception("Unable to inspect metadata for heuristic extra_checks")
+            context.record_skip(self, f"unable to inspect metadata for heuristic extra_checks: {error}", "exception")
+            return CheckResult.SKIPPED
 
     @check(
         name="Validation of subject and keyword properties",
