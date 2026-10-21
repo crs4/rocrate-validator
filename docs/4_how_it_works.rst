@@ -72,20 +72,43 @@ Validation profile selection
 
 * **Automatic Profile Matching** (default):
   By default, `rocrate-validator` will attempt to select the correct validation
-  profiles for the input RO-Crate based on the `conformsTo` property of the Root Data Entity.
+  profiles for the input RO-Crate using valid `conformsTo` references in the
+  metadata descriptor and Root Data Entity.
 
     - If a precise match is found for the `conformsTo` property, that profile is selected
       for validation.
 
     - If no precise match is found:
 
-      - in **Interactive Mode:** (available only through the CLI) the system
-        will prompt the user to select a profile from the list of
-        profiles to which the RO-Crate conforms;
+      - in **Interactive Mode** (CLI only), the validator explains why it could
+        not select a profile automatically. If `conformsTo` contains a profile
+        URI as a string, it may ask whether to use the matching profile anyway.
+        The warning shows how to replace the string with an entity reference
+        such as `{"@id": "https://w3id.org/ro/crate/1.2"}`.
 
-      - in **Non-Interactive Mode:** the system will validate against all profiles
-        to which the RO-Crate conforms, and for which validation rules are available.
-        In all cases, input RO-Crates are validated against the base `ro-crate` profile.
+        This suggestion is offered only if all of the following are true:
+
+        * No `conformsTo` value is already a valid entity reference.
+        * The only problems found during profile detection are `conformsTo`
+          values written as strings.
+        * All those strings contain the same URI.
+        * Exactly one available validation profile has that URI.
+
+        Accepting the suggestion selects that profile for validation. Declining
+        it, or having no suggestion, opens the manual profile selection prompt.
+
+      - in **Non-Interactive Mode**, the validator cannot ask for confirmation,
+        so it does not use a profile suggested by a string-valued `conformsTo`.
+        Use `--profile-identifier` to select that profile explicitly in the CLI.
+        If no profile is selected explicitly or detected from valid references,
+        validation uses the base `ro-crate` profile.
+
+    Profiles detected from valid references are used in either mode. The base
+    `ro-crate` rules are also applied through profile inheritance.
+
+    Selecting a profile only chooses which rules to run. It does not repair
+    metadata: a string-valued `conformsTo` remains malformed and can still
+    produce a validation issue.
 
 * **Profile Versions**:
     - It may happen that the RO-Crate profile version to which the input

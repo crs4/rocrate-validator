@@ -19,6 +19,7 @@ from contextlib import nullcontext
 from pathlib import Path
 
 import rich_click as click
+from rich.markup import escape
 from rich.padding import Padding
 from rich.rule import Rule
 from rich.table import Table
@@ -538,7 +539,7 @@ def _parse_skip_checks(skip_checks: list[str] | None) -> list[str]:
     return skip_checks_list
 
 
-def _resolve_profile_identifiers(
+def _resolve_profile_identifiers(  # noqa: C901, PLR0912
     console: Console,
     *,
     interactive: bool,
@@ -555,37 +556,83 @@ def _resolve_profile_identifiers(
     Returns the identifiers and whether they were auto-detected.
     """
     autodetection = False
+    reason = None
     if not profile_identifiers:
         # Auto-detect the profile to use for validation (if not disabled)
         candidate_profiles = None
+        detection_result = None
         if not no_auto_profile:
-            candidate_profiles = services.detect_profiles(settings=validation_settings)
+            detection_result = services.detect_profiles_detailed(settings=validation_settings)
+            candidate_profiles = detection_result.profiles
             logger.debug("Candidate profiles: %s", candidate_profiles)
         else:
             logger.info("Auto-detection of the profiles to use for validation is disabled")
 
-        # Prompt the user when interactive and no single profile could be auto-detected
-        if interactive and (
-            not candidate_profiles or len(candidate_profiles) == 0 or len(candidate_profiles) == len(available_profiles)
-        ):
+        if detection_result and detection_result.diagnostics:
+            diagnostic = detection_result.diagnostics[0]
+            reason = (
+                f"`{escape(diagnostic.property or '')}` at {escape(diagnostic.location or '')} "
+                f"has value {escape(repr(diagnostic.value))}. {escape(diagnostic.message)}"
+            )
+            for diagnostic in detection_result.diagnostics:
+                if diagnostic.code not in ("INVALID_CONFORMS_TO", "INVALID_REFERENCE"):
+                    continue
+                console.print(
+                    "\n  [bold yellow]WARNING: Non-conforming metadata[/bold yellow]\n"
+                    f"    `{escape(diagnostic.property or '')}` at {escape(diagnostic.location or '')} "
+                    f"has value {escape(repr(diagnostic.value))}.\n"
+                    f"    {escape(diagnostic.message)}"
+                )
+            if candidate_profiles:
+                console.print(
+                    "    Profiles automatically selected for validation: "
+                    + escape(", ".join(profile.identifier for profile in candidate_profiles))
+                )
+
+        suggested_profile = detection_result.suggested_profile if detection_result else None
+        if interactive and not candidate_profiles and suggested_profile:
+            console.print(
+                "    The string URI matches the available profile "
+                f"[magenta]{escape(suggested_profile.identifier)}[/magenta]. "
+                "Using it will not correct the metadata."
+            )
+            confirmation = get_single_char(
+                console,
+                choices=["y", "n"],
+                message=("[bold]Use this profile for validation? ([magenta]y/n[/magenta]): [/bold]"),
+            )
+            if confirmation == "y":
+                return [suggested_profile.identifier], True
+        elif not interactive and suggested_profile:
+            console.print(
+                "    The string URI matches profile "
+                f"{escape(suggested_profile.identifier)}, but using it requires confirmation. "
+                "Use --profile-identifier to select it explicitly in non-interactive mode."
+            )
+
+        # Prompt the user only when no profile could be auto-detected or confirmed.
+        if interactive and not candidate_profiles:
             console.print(
                 Padding(
                     Rule(
                         "[bold yellow]WARNING: [/bold yellow]"
-                        "[bold]Unable to automatically detect the profile to use for validation[/bold]\n",
+                        "[bold]Unable to automatically detect the profile to use for validation[/bold]"
+                        + (f"\n{reason}" if reason else "")
+                        + "\n",
                         align="center",
                         style="bold yellow",
                     ),
                     (2, 2, 0, 2),
                 )
             )
-            selected_options = multiple_choice(console, available_profiles)
-            if selected_options is None or isinstance(selected_options, bool):
-                selected_options = []
-            profile_identifiers = [available_profiles[int(o)].identifier for o in selected_options]
-            logger.debug("Profile selected: %s", selected_options)
+            if not profile_identifiers:
+                selected_options = multiple_choice(console, available_profiles)
+                if selected_options is None or isinstance(selected_options, bool):
+                    selected_options = []
+                profile_identifiers = [available_profiles[int(o)].identifier for o in selected_options]
+                logger.debug("Profile selected: %s", selected_options)
             console.print(Padding(Rule(style="bold yellow"), (1, 2)))
-        elif candidate_profiles and len(candidate_profiles) < len(available_profiles):
+        elif candidate_profiles:
             logger.debug("Profile identifier autodetected: %s", candidate_profiles[0].identifier)
             autodetection = True
             profile_identifiers = [_.identifier for _ in candidate_profiles]
@@ -597,6 +644,8 @@ def _resolve_profile_identifiers(
             console.print("[bold]Auto-detection of the profiles to use for validation is disabled[/bold]")
         else:
             console.print("[bold]Unable to automatically detect the profile to use for validation[/bold]")
+            if reason:
+                console.print(f"{' ' * 11}{reason}")
         console.print(f"{' ' * 11}[bold]The base `ro-crate` profile will be used for validation[/bold]")
         profile_identifiers = ["ro-crate"]
 

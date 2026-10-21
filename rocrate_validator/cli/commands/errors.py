@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 import sys
 import traceback
 
@@ -45,6 +46,16 @@ def handle_error(e: Exception, console: Console, *, debug: bool = False) -> None
         To see the available profiles, run:
         [cyan bold]rocrate-validator profiles list[/cyan bold]
         """
+    elif isinstance(e, json.JSONDecodeError):
+        source_line = e.doc.split("\n")[e.lineno - 1]
+        error_message = (
+            "The RO-Crate metadata is not valid JSON.\n"
+            f"Reason: line {e.lineno}, column {e.colno}: [red]{escape(e.msg)}[/red]\n"
+            f"{escape(source_line)}\n"
+            f"{' ' * (e.colno - 1)}[red]^[/red]\n"
+            "Correct the JSON syntax before validating the RO-Crate. "
+            "Profile auto-detection cannot read invalid JSON."
+        )
     elif isinstance(e, BadSyntaxError):
         location = _format_syntax_error_location(e)
         error_message = (

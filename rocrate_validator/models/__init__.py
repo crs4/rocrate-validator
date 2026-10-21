@@ -27,6 +27,7 @@ from rocrate_validator.models.profile_check import (
     ProfileCheckResult,
     ProfileCheckSuite,
 )
+from rocrate_validator.models.profile_detection import ProfileDetectionDiagnostic, ProfileDetectionResult
 from rocrate_validator.models.profile_provenance import EffectiveRequirementCheck, RequirementCheckRelation
 from rocrate_validator.models.requirement import (
     Requirement,
@@ -73,6 +74,8 @@ __all__ = [
     "ProfileCheckFailure",
     "ProfileCheckResult",
     "ProfileCheckSuite",
+    "ProfileDetectionDiagnostic",
+    "ProfileDetectionResult",
     "ProfileValidationEvent",
     "Requirement",
     "RequirementCheck",

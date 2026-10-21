@@ -102,7 +102,7 @@ def test_profile_detection_error_is_not_silenced(monkeypatch):
     """Unexpected metadata errors must not become an empty profile selection."""
 
     class BrokenMetadata:
-        def get_conforms_to(self):
+        def get_file_descriptor_entity(self):
             raise RuntimeError("metadata profile detection failed")
 
     class BrokenROCrate:

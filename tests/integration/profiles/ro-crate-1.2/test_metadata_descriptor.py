@@ -83,3 +83,19 @@ def test_invalid_recommended_prefix_conformsTo():
             "The RO-Crate metadata file descriptor `conformsTo` URI SHOULD start with https://w3id.org/ro/crate/"
         ],
     )
+
+
+def test_invalid_string_conformsTo_is_reported_at_required_severity():
+    """A literal conformsTo value must be reported even with explicit profile selection."""
+    do_entity_test(
+        __metadata_descriptor_crates__.valid_single_value_conformsTo,
+        models.Severity.REQUIRED,
+        False,
+        profile_identifier="ro-crate-1.2",
+        rocrate_entity_patch={
+            "ro-crate-metadata.json": {"conformsTo": "https://w3id.org/ro/crate/1.2"},
+        },
+        expected_triggered_issues=[
+            "Each RO-Crate Metadata Descriptor `conformsTo` value MUST be a reference object containing `@id`",
+        ],
+    )

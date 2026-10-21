@@ -23,6 +23,7 @@ from rocrate_validator.constants import HTTP_STATUS_BAD_REQUEST, HTTP_STATUS_GAT
 from rocrate_validator.errors import ProfileNotFound
 from rocrate_validator.events import Subscriber
 from rocrate_validator.models import Profile, Severity, ValidationResult, ValidationSettings, Validator
+from rocrate_validator.models.profile_detection import ProfileDetectionResult
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.http import HttpRequester
 from rocrate_validator.utils.paths import get_profiles_path
@@ -36,12 +37,21 @@ logger = logging.getLogger(__name__)
 
 
 def detect_profiles(settings: dict | ValidationSettings) -> list[Profile]:
-    # initialize the validator
+    """Detect profiles, preserving the historical list return type."""
+    return detect_profiles_detailed(settings).profiles
+
+
+def detect_profiles_detailed(settings: dict | ValidationSettings) -> ProfileDetectionResult:
+    """Detect profiles and return structured diagnostics and a confirmable suggestion."""
     validator = __initialise_validator__(settings)
-    # detect the profiles
-    profiles = validator.detect_rocrate_profiles()
-    logger.debug("Profiles detected: %s", profiles)
-    return profiles
+    result = validator.detect_rocrate_profiles_detailed()
+    logger.debug("Detailed profile detection result: %s", result)
+    return result
+
+
+def suggest_profile_for_string_conforms_to(settings: dict | ValidationSettings) -> Profile | None:
+    """Return a unique available profile matching a malformed literal conformsTo value."""
+    return detect_profiles_detailed(settings).suggested_profile
 
 
 def validate_metadata_as_dict(
