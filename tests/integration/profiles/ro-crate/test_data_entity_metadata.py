@@ -18,8 +18,9 @@ import logging
 import pytest
 
 from rocrate_validator import models, services
+from rocrate_validator.utils.http import HttpRequester
 from tests.conftest import SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER
-from tests.ro_crates import InvalidDataEntity, ValidROC
+from tests.ro_crates import CRATES_DATA_PATH, InvalidDataEntity, ValidROC
 from tests.shared import do_entity_test
 
 # set up logging
@@ -28,6 +29,58 @@ logger = logging.getLogger(__name__)
 
 # Global set up the paths
 paths = InvalidDataEntity()
+
+
+def test_explicit_jsonld_base_does_not_require_web_entities_in_payload():
+    """Issue #240: the profile crate's relative IDs resolve against its HTTPS @base."""
+    crate_path = CRATES_DATA_PATH / "profile-crate"
+    result = services.validate(
+        models.ValidationSettings(
+            rocrate_uri=models.URI(crate_path),
+            profile_identifier="ro-crate-1.2",
+            requirement_severity=models.Severity.REQUIRED,
+            skip_availability_check=True,
+        )
+    )
+
+    assert any(check.name == "Data Entity: REQUIRED resource availability" for check in result.executed_checks)
+    assert not [
+        issue.message
+        for issue in result.issues
+        if "The RO-Crate does not include the Data Entity" in issue.message
+        and ("example1/" in issue.message or "index.html" in issue.message)
+    ]
+
+
+def test_web_availability_uses_identifier_resolved_against_jsonld_base(monkeypatch):
+    """Web checks must request the expanded URI, not the relative @id."""
+    requested_uris = []
+
+    class DownloadableResponse:
+        status_code = 200
+        headers = {"Content-Type": "application/octet-stream"}
+        links = {}
+
+        def raise_for_status(self):
+            pass
+
+    def fake_head(uri, **_kwargs):
+        requested_uris.append(uri)
+        return DownloadableResponse()
+
+    monkeypatch.setattr(HttpRequester(), "head", fake_head)
+    services.validate(
+        models.ValidationSettings(
+            rocrate_uri=models.URI(CRATES_DATA_PATH / "profile-crate"),
+            profile_identifier="ro-crate-1.2",
+            requirement_severity=models.Severity.REQUIRED,
+            enforce_availability=True,
+        )
+    )
+
+    expected_uri = "https://www.researchobject.org/workflow-run-crate/profiles/0.5/process_run_crate/index.html"
+    assert expected_uri in requested_uris
+    assert "index.html" not in requested_uris
 
 
 def test_missing_data_entity_reference():
