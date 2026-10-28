@@ -132,14 +132,19 @@ class ROCrateEntity:
     @classmethod
     def get_id_as_uri(cls, entity_id: str, ro_crate: ROCrate) -> URI:
         assert entity_id, "Entity ID cannot be None"
+        # JSON-LD resolves relative identifiers against an explicit document
+        # @base before they are interpreted as crate-relative payload paths.
+        # Keep the raw ID on the entity for reporting and graph lookups, while
+        # using its resolved form for local/remote classification.
+        resolved_id = ro_crate.metadata.resolve_identifier(entity_id)
         # Per RO-Crate 1.1 § 4.2.2, an `@id` is either a relative URI path or
         # an external URI/IRI (RFC 3986/3987). External references are used
         # as-is (without resolving them against the crate URI) so the entity
         # is classified as remote/web-based; this covers both authority-based
         # forms (``http://``, ``scp://``) and scheme-only ones (``urn:``,
         # ``doi:``, ``arcp:``).
-        if is_external_reference(entity_id):
-            return URI(entity_id)
+        if is_external_reference(resolved_id):
+            return URI(resolved_id)
         # Otherwise the `@id` is a relative path: if the RO-Crate itself is
         # remote, resolve it against the crate URI so the entity is still
         # classified as remote/web-based.
