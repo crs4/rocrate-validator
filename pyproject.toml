@@ -14,7 +14,7 @@
 
 [tool.poetry]
 name = "roc-validator"
-version = "0.13.0"
+version = "0.13.1"
 description = "A Python package to validate RO-Crates"
 authors = [
     "Marco Enrico Piras <kikkomep@crs4.it>",
@@ -76,7 +76,7 @@ python = ">=3.10,<4.0"
 rdflib = ">=7.1,<8.0"
 pyshacl = ">=0.26"
 click = ">=8.2,<9.0"
-rich = ">=13.9,<14.0"
+rich = ">=13.9,<15.0"
 toml = ">=0.10.2,<1.0"
 rich-click = ">=1.8,<2.0"
 colorlog = ">=6.9,<7.0"

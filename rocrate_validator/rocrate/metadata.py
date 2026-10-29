@@ -17,11 +17,13 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
+from urllib.parse import urljoin
 
 from rdflib import Graph
 
 from rocrate_validator.errors import ROCrateMetadataNotFoundError
 from rocrate_validator.utils import log as logging
+from rocrate_validator.utils.rdf import extract_base_from_jsonld
 
 from .entity import ROCrateEntity
 
@@ -185,6 +187,13 @@ class ROCrateMetadata:
             self._dict = json.loads(self.as_json())
         assert self._dict is not None, "Metadata dictionary should not be None after loading"
         return self._dict
+
+    def resolve_identifier(self, identifier: str) -> str:
+        """Resolve an identifier using the metadata document's explicit JSON-LD ``@base``."""
+        base = extract_base_from_jsonld(self.as_dict())
+        if isinstance(base, str):
+            return urljoin(base, identifier)
+        return identifier
 
     def as_graph(self, publicID: str | None = None) -> Graph:
         if not self._graph:

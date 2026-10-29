@@ -747,6 +747,39 @@ def test_absolute_uri_data_entity_is_classified_as_remote(entity_id):
     )
 
 
+@pytest.mark.parametrize("entity_id", ["example1/", "index.html"])
+def test_explicit_jsonld_base_resolves_relative_data_entity_id(entity_id):
+    """Relative IDs with an HTTPS @base identify web data entities (issue #240)."""
+    metadata_dict = _metadata_dict_with_id(entity_id)
+    metadata_dict["@context"] = [
+        "https://w3id.org/ro/crate/1.2/context",
+        {"@base": "https://www.researchobject.org/workflow-run-crate/profiles/0.5/process_run_crate/"},
+    ]
+    crate = ROCrate.from_metadata_dict(metadata_dict)
+    entity = crate.metadata.get_entity(entity_id)
+
+    assert entity is not None
+    assert entity.id_as_uri.uri == (
+        "https://www.researchobject.org/workflow-run-crate/profiles/0.5/process_run_crate/" + entity_id
+    )
+    assert entity.is_remote()
+    assert entity in crate.metadata.get_web_data_entities()
+    assert entity not in crate.metadata.get_data_entities(exclude_web_data_entities=True)
+
+
+def test_last_explicit_jsonld_base_takes_precedence():
+    metadata_dict = _metadata_dict_with_id("index.html")
+    metadata_dict["@context"] = [
+        {"@base": "https://example.org/old/"},
+        {"@base": "https://example.org/current/"},
+    ]
+    crate = ROCrate.from_metadata_dict(metadata_dict)
+    entity = crate.metadata.get_entity("index.html")
+
+    assert entity is not None
+    assert entity.id_as_uri.uri == "https://example.org/current/index.html"
+
+
 @pytest.mark.parametrize(
     "entity_id",
     [

@@ -341,7 +341,7 @@ class WebDataEntityRequiredChecker(PyFunctionCheck):
                 logger.debug("Skipping downloadability check for directory entity '%s'", entity.id)
                 continue
             try:
-                dl = check_downloadable(entity.id)
+                dl = check_downloadable(entity.id_as_uri.uri)
                 if not dl.is_downloadable:
                     context.result.add_issue(self._not_downloadable_message(entity.id, dl), self)
                     result = False

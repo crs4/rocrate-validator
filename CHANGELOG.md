@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.1] - 2026-10-29
+
+Full changelog: https://github.com/kikkomep/rocrate-validator/compare/0.13.0...0.13.1
+
+### 🔧 Changed
+
+- chore(deps): update dependencies in poetry.lock, including PySHACL 0.40.2 and Starlette 1.10.0 ([c27cf006](https://github.com/kikkomep/rocrate-validator/commit/c27cf006536fcdd0b2e5ea3c8916c88d5ba5766f))
+- build(deps): allow Rich versions below 15 for compatibility with Flower 1.32+ ([64ded524](https://github.com/kikkomep/rocrate-validator/commit/64ded52427045db229a8adf6c76c7c076949920f))
+- build(deps): bump crate-ci/typos ([e022f654](https://github.com/kikkomep/rocrate-validator/commit/e022f6549358fd5d30ab7a9e3a68354d5aab7c5b))
+
+### 🐛 Fixed
+
+- fix(profiles): use resolved IDs for web entity checks ([49638aa7](https://github.com/kikkomep/rocrate-validator/commit/49638aa7d8ab2ee87c280a74fea2bdc15ca0ae0e))
+- fix(crate): resolve entity IDs against JSON-LD `@base` ([e9ef43ed](https://github.com/kikkomep/rocrate-validator/commit/e9ef43ed0f4d1a3a1a8c3e65b37809deca865e6e))
+- fix(uri): handle local paths with URI-safe conversion ([4bdea490](https://github.com/kikkomep/rocrate-validator/commit/4bdea4903b85eacdb3bbe8ddcd3a22848033036e))
+
 ## [0.13.0] - 2026-10-21
 
 Full changelog: https://github.com/kikkomep/rocrate-validator/compare/0.12.2...0.13.0

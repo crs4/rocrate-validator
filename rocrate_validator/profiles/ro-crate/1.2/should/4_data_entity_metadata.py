@@ -109,7 +109,7 @@ class WebDataEntityRequiredChecker(PyFunctionCheck):
             if entity.id.endswith("/"):
                 continue
             try:
-                dl = check_downloadable(entity.id)
+                dl = check_downloadable(entity.id_as_uri.uri)
                 if not dl.is_downloadable:
                     context.result.add_issue(self._not_downloadable_message(entity.id, dl), self)
                     result = False
@@ -147,7 +147,7 @@ class WebDataEntityRequiredChecker(PyFunctionCheck):
                         content_int = int(str(content_value))
                     except (TypeError, ValueError, OverflowError):
                         content_int = None
-                    external_size = context.ro_crate.get_external_file_size(entity.id)
+                    external_size = context.ro_crate.get_external_file_size(entity.id_as_uri.uri)
                     if external_size is not None and content_int is not None and content_int != external_size:
                         context.result.add_issue(
                             f"The property contentSize={content_size} of the Web-based Data Entity "

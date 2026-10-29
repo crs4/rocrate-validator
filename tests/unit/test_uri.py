@@ -229,5 +229,50 @@ def test_rocrate_uri_remote_invalid():
     assert str(excinfo.value) == f'The RO-crate at the URI "{uri}" is not available'
 
 
+@pytest.mark.parametrize("name", ["my crate", "my-crate", "caffè", "a+b", "100%", "my%20crate", "a#b?c"])
+@pytest.mark.parametrize("representation", ["path", "string", "uri", "localhost"])
+def test_local_path_and_file_uri_round_trip(tmp_path, name, representation):
+    path = tmp_path / name
+    path.mkdir()
+    values = {
+        "path": path,
+        "string": str(path),
+        "uri": path.as_uri(),
+        "localhost": path.as_uri().replace("file://", "file://localhost", 1),
+    }
+    uri = URI(values[representation])
+    assert uri.as_path() == path
+    assert uri.is_local_directory()
+    assert uri.is_available()
+    assert uri.base_uri == path.as_uri()
+    assert str(uri) == str(values[representation])
+
+
+def test_literal_percent_path_does_not_select_space_directory(tmp_path):
+    (tmp_path / "my crate").mkdir()
+    literal = tmp_path / "my%20crate"
+    for value in (literal, str(literal), literal.as_uri()):
+        uri = URI(value)
+        assert uri.as_path() == literal
+        assert not uri.is_available()
+
+
+def test_relative_local_base_and_symlink_preserve_path(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    target = tmp_path / "actual crate"
+    target.mkdir()
+    link = tmp_path / "linked crate"
+    link.symlink_to(target, target_is_directory=True)
+    uri = URI("linked crate")
+    assert uri.as_path() == type(tmp_path)("linked crate")
+    assert uri.base_uri == link.as_uri()
+    assert uri.is_available()
+
+
+def test_remote_file_authority_cannot_be_converted_to_local_path():
+    with pytest.raises(ValueError, match="not a local resource"):
+        URI("file://other-host/tmp/my%20crate").as_path()
+
+
 if __name__ == "__main__":
     unittest.main()
