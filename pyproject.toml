@@ -26,7 +26,7 @@ license = "Apache-2.0"
 # Links to the GitHub repository and the project homepage/documentation
 repository = "https://github.com/crs4/rocrate-validator"
 homepage = "https://github.com/crs4/rocrate-validator"
-documentation = "https://github.com/crs4/rocrate-validator"
+documentation = "https://rocrate-validator.readthedocs.io/en/latest/"
 # Keywords and classifiers
 keywords = [
     "RO-Crate",
