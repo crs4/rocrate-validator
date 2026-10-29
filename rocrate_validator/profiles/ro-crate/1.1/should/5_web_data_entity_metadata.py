@@ -104,7 +104,7 @@ class WebDataEntityRecommendedChecker(PyFunctionCheck):
                 continue
             if entity.is_available():
                 content_size = entity.get_property("contentSize")
-                actual_size = context.ro_crate.get_external_file_size(entity.id)
+                actual_size = context.ro_crate.get_external_file_size(entity.id_as_uri.uri)
                 if content_size and actual_size is not None and int(content_size) != actual_size:
                     context.result.add_issue(
                         f"The property contentSize={content_size} of the Web-based Data Entity "

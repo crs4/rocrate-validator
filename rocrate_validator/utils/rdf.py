@@ -256,9 +256,13 @@ def extract_base_from_jsonld(json_data: dict) -> str | None:
     if isinstance(context, dict):
         return context.get("@base")
 
-    # If @context is a list, look for @base in each context item
+    # JSON-LD 1.1 §4.1 Context Processing Algorithm:
+    # https://www.w3.org/TR/json-ld11-api/#context-processing-algorithm
+    # Contexts are processed in order, so the final local @base takes precedence.
     if isinstance(context, list):
-        for ctx in context:
+        for ctx in reversed(context):
+            if ctx is None:
+                return None
             if isinstance(ctx, dict) and "@base" in ctx:
                 return ctx["@base"]
 
