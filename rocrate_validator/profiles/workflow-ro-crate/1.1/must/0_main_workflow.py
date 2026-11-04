@@ -1,0 +1,57 @@
+# Copyright (c) 2024-2026 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# pylint: disable=invalid-name  # profile filename uses digit prefix (load-order convention)
+
+from rocrate_validator.errors import ROCrateMetadataNotFoundError
+from rocrate_validator.models import CheckResult, CheckResultValue, ValidationContext
+from rocrate_validator.requirements.python import PyFunctionCheck, check, requirement
+from rocrate_validator.utils import log as logging
+
+# set up logging
+logger = logging.getLogger(__name__)
+
+
+@requirement(name="Main Workflow file existence")
+class MainWorkflowFileExistence(PyFunctionCheck):
+    """Checks for main workflow file existence."""
+
+    @check(name="Main Workflow file must exist")
+    def check_workflow(self, context: ValidationContext) -> CheckResultValue:
+        """Check if the crate contains the main workflow file."""
+        try:
+            main_workflow = context.ro_crate.metadata.get_main_workflow()
+            if not main_workflow:
+                context.result.add_issue("main workflow does not exist in metadata file", self)
+                return False
+            if not context.settings.metadata_only and not main_workflow.is_available():
+                context.result.add_issue(f"Main Workflow {main_workflow.id} not found in crate", self)
+                return False
+            return True
+        except ROCrateMetadataNotFoundError:
+            logger.debug("Skipping main workflow check: metadata descriptor is not available")
+            context.record_skip(self, "metadata descriptor is not available", "exception")
+            return CheckResult.SKIPPED
+        except (TypeError, ValueError) as error:
+            if str(error) == "no main workflow in metadata file descriptor":
+                message = (
+                    "Unable to check the existence of the main workflow file "
+                    "because the metadata file descriptor doesn't contain a `mainEntity`"
+                )
+            else:
+                message = f"Unable to check the existence of the main workflow file: {error}"
+            context.result.add_issue(message, self)
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.exception("Unable to check main workflow file existence")
+        return False
