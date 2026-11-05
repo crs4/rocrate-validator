@@ -78,10 +78,6 @@ class ValidROC:
         return VALID_CRATES_DATA_PATH / "workflow-roc"
 
     @property
-    def workflow_roc_v1_1(self) -> Path:
-        return VALID_CRATES_DATA_PATH / "workflow-roc-1.1"
-
-    @property
     def workflow_roc_string_license(self) -> Path:
         return VALID_CRATES_DATA_PATH / "workflow-roc-string-license"
 
@@ -124,6 +120,13 @@ class ValidROC:
     @property
     def multi_profile_crate(self) -> Path:
         return VALID_CRATES_DATA_PATH / "multi-profile-crate"
+
+
+class ValidWROC_v1_1:
+
+    @property
+    def workflow_roc_v1_1(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "workflow-roc-1.1"
 
 
 class InvalidFileDescriptor:
