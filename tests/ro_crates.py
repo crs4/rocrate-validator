@@ -128,6 +128,10 @@ class ValidWROC_v1_1:
     def workflow_roc_v1_1(self) -> Path:
         return VALID_CRATES_DATA_PATH / "workflow-roc-1.1"
 
+    @property
+    def workflow_roc_string_license_v1_1(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "workflow-roc-string-license-1.1"
+
 
 class InvalidFileDescriptor:
     base_path = INVALID_CRATES_DATA_PATH / "0_file_descriptor_format"

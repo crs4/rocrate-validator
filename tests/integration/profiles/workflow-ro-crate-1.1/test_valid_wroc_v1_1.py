@@ -30,3 +30,10 @@ def test_valid_workflow_roc_required():
         profile_identifier="workflow-ro-crate-1.1",
         metadata_only=True,
     )
+    do_entity_test(
+        ValidWROC_v1_1().workflow_roc_string_license_v1_1,
+        Severity.REQUIRED,
+        True,
+        profile_identifier="workflow-ro-crate-1.1",
+        metadata_only=True,
+    )
