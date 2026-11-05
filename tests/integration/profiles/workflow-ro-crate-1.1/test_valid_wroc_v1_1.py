@@ -15,7 +15,6 @@
 import logging
 
 from rocrate_validator.models import Severity
-from tests.conftest import SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER
 from tests.ro_crates import ValidROC
 from tests.shared import do_entity_test
 
@@ -23,11 +22,11 @@ logger = logging.getLogger(__name__)
 
 
 def test_valid_workflow_roc_required():
-    """Test a valid Workflow RO-Crate."""
+    """Test valid Workflow RO-Crate metadata without checking the payload."""
     do_entity_test(
         ValidROC().workflow_roc_v1_1,
         Severity.REQUIRED,
         True,
         profile_identifier="workflow-ro-crate-1.1",
-        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER],
+        metadata_only=True,
     )
