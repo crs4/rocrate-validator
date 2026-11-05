@@ -15,7 +15,7 @@
 import logging
 
 from rocrate_validator.models import Severity
-from tests.ro_crates import ValidROC
+from tests.ro_crates import ValidWROC_v1_1
 from tests.shared import do_entity_test
 
 logger = logging.getLogger(__name__)
@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 def test_valid_workflow_roc_required():
     """Test valid Workflow RO-Crate metadata without checking the payload."""
     do_entity_test(
-        ValidROC().workflow_roc_v1_1,
+        ValidWROC_v1_1().workflow_roc_v1_1,
         Severity.REQUIRED,
         True,
         profile_identifier="workflow-ro-crate-1.1",
