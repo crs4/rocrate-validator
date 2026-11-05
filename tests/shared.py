@@ -152,7 +152,7 @@ def _prepare_temp_rocrate(
     return temp_rocrate_path
 
 
-def do_entity_test(  # pylint: disable=too-many-locals
+def do_entity_test(  # noqa: PLR0912
     # Shared test driver: the long signature mirrors `ValidationSettings`
     # plus the assertion-shaping knobs, so locals scale with the surface area
     # it has to cover. Splitting it would only push the locals to the caller.
@@ -237,7 +237,10 @@ def do_entity_test(  # pylint: disable=too-many-locals
 
         if expected_validation_result and result.has_issues():
             for issue in result.get_issues():
-                logger.debug(f"Detected issue of severity {issue.severity.name} with check \"{issue.check.identifier}\": {issue.message}")
+                logger.debug(
+                    f"Detected issue of severity {issue.severity.name} "
+                    f"with check \"{issue.check.identifier}\": {issue.message}"
+                )
 
         assert result.passed() == expected_validation_result, (
             f"RO-Crate should be {'valid' if expected_validation_result else 'invalid'}"
