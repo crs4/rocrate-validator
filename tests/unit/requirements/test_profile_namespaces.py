@@ -114,17 +114,50 @@ def test_sparql_prefixes_use_the_profile_ontology_namespace(profile_path: Path) 
     )
 
 
-def test_ro_crate_1_3_maps_the_inherited_descriptor_marker() -> None:
+@pytest.mark.parametrize("marker", ["ROCrateMetadataFileDescriptor", "RootDataEntity"])
+def test_ro_crate_1_3_maps_the_inherited_marker(marker: str) -> None:
     """The native 1.3 target class must match the marker emitted by inherited 1.2 discovery."""
     ontology = _parse_graph(PROFILES_PATH / "ro-crate/1.3/ontology.ttl")
     ro_crate_1_2 = Namespace("https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.2/")
     ro_crate_1_3 = Namespace("https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.3/")
 
     assert (
-        ro_crate_1_3.ROCrateMetadataFileDescriptor,
+        ro_crate_1_3[marker],
         OWL.equivalentClass,
-        ro_crate_1_2.ROCrateMetadataFileDescriptor,
+        ro_crate_1_2[marker],
     ) in ontology
+
+
+@pytest.mark.parametrize("source_version,target_version", [("1.2", "1.3"), ("1.3", "1.2")])
+@pytest.mark.parametrize("has_name", [False, True], ids=["missing-name", "with-name"])
+def test_root_data_entity_equivalence_applies_shacl_constraints(
+    source_version: str, target_version: str, has_name: bool
+) -> None:
+    """Root constraints must apply across versions, rather than pass without focus nodes."""
+    ontology = _parse_graph(PROFILES_PATH / "ro-crate/1.3/ontology.ttl")
+    source = Namespace(f"{PROFILE_NAMESPACE_PREFIX}ro-crate-{source_version}/")
+    target = Namespace(f"{PROFILE_NAMESPACE_PREFIX}ro-crate-{target_version}/")
+
+    data = Graph()
+    data.add((EXAMPLE.root, RDF.type, source.RootDataEntity))
+    if has_name:
+        data.add((EXAMPLE.root, SCHEMA.name, Literal("Example crate")))
+
+    shapes = Graph()
+    shapes.add((EXAMPLE.RootShape, RDF.type, SH.NodeShape))
+    shapes.add((EXAMPLE.RootShape, SH.targetClass, target.RootDataEntity))
+    shapes.add((EXAMPLE.RootShape, SH.property, EXAMPLE.RequiredName))
+    shapes.add((EXAMPLE.RequiredName, SH.path, SCHEMA.name))
+    shapes.add((EXAMPLE.RequiredName, SH.minCount, Literal(1)))
+
+    conforms, report, _ = validate(data, shacl_graph=shapes, ont_graph=ontology, inference="owlrl")
+
+    assert conforms == has_name
+    if not has_name:
+        results = list(report.subjects(RDF.type, SH.ValidationResult))
+        assert len(results) == 1
+        assert (results[0], SH.focusNode, EXAMPLE.root) in report
+        assert (results[0], SH.resultPath, SCHEMA.name) in report
 
 
 @pytest.mark.parametrize(
