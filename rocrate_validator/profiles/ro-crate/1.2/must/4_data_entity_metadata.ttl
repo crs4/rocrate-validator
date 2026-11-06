@@ -20,7 +20,7 @@
 @prefix validator: <https://github.com/crs4/rocrate-validator/> .
 
 ro-crate:DataEntityRequiredProperties a sh:NodeShape ;
-    sh:name "Data Entity: REQUIRED properties" ;
+    sh:name "Data Entity: REQUIRED @id format" ;
     sh:description """A Data Entity MUST be a `URI Path` relative to the ROCrate root,
         or an absolute URI""" ;
     sh:targetClass ro-crate:DataEntity ;
@@ -44,9 +44,14 @@ ro-crate:FileDataEntity a sh:NodeShape ;
         sh:select """
             SELECT ?this
             WHERE {
+                { SELECT DISTINCT ?root WHERE {
+                    ?metadatafile schema:about ?root .
+                    FILTER(
+                        STRENDS(str(?metadatafile), "ro-crate-metadata.json") ||
+                        STRENDS(str(?metadatafile), "ro-crate-metadata.jsonld")
+                    )
+                } }
                 ?this a schema:MediaObject .
-                ?metadatafile schema:about ?root .
-                FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
                 FILTER(!STRSTARTS(STR(?this), CONCAT(STR(?root), "#")))
             }
         """
@@ -93,10 +98,15 @@ ro-crate:DirectoryDataEntity a sh:NodeShape ;
         sh:select """
             SELECT ?this
             WHERE {
+                { SELECT DISTINCT ?root WHERE {
+                    ?metadatafile schema:about ?root .
+                    FILTER(
+                        STRENDS(str(?metadatafile), "ro-crate-metadata.json") ||
+                        STRENDS(str(?metadatafile), "ro-crate-metadata.jsonld")
+                    )
+                } }
                 ?this a schema:Dataset .
-                ?metadatafile schema:about ?root .
                 # Exclude all dataset entities that ends with `./#<something>`
-                FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
                 FILTER(?this != ?root)
                 FILTER(!STRSTARTS(STR(?this), CONCAT(STR(?root), "#")))
             }
@@ -138,8 +148,8 @@ ro-crate:DirectoryDataEntity a sh:NodeShape ;
     ] .
 
 ro-crate:DataEntityRequiredPropertiesShape a sh:NodeShape ;
-    sh:name "Data Entity: REQUIRED properties" ;
-    sh:description """A `DataEntity`The file descriptor MUST be a valid JSON-LD file MUST be linked, either directly or indirectly, from the Root Data Entity""" ;
+    sh:name "Data Entity: REQUIRED Root linkage" ;
+    sh:description """A `DataEntity` MUST be linked, either directly or indirectly, from the Root Data Entity""" ;
     sh:targetClass ro-crate:DataEntity ;
     sh:property
         [
@@ -161,9 +171,14 @@ ro-crate:GenericDataEntityRequiredProperties a sh:NodeShape ;
         sh:select """
             SELECT ?this
             WHERE {
+                { SELECT DISTINCT ?root ?metadatafile WHERE {
+                    ?metadatafile schema:about ?root .
+                    FILTER(
+                        STRENDS(str(?metadatafile), "ro-crate-metadata.json") ||
+                        STRENDS(str(?metadatafile), "ro-crate-metadata.jsonld")
+                    )
+                } }
                 ?root schema:hasPart ?this .
-                ?metadatafile schema:about ?root .
-                FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
                 FILTER(?this != ?root)
                 FILTER(?this != ?metadatafile)
                 FILTER NOT EXISTS {

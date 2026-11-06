@@ -17,6 +17,9 @@ import typing
 
 from rdflib import Namespace
 
+# Define the package distribution name
+PACKAGE_NAME = "roc-validator"
+
 # Define SHACL namespace
 SHACL_NS = "http://www.w3.org/ns/shacl#"
 
@@ -39,7 +42,7 @@ PROFILE_SPECIFICATION_FILE = "profile.ttl"
 ROCRATE_METADATA_FILE = "ro-crate-metadata.json"
 
 # Define the default profiles name
-DEFAULT_PROFILE_IDENTIFIER = "ro-crate-1.1"
+DEFAULT_PROFILE_IDENTIFIER = "ro-crate-1.3"
 
 # Define the default profiles path
 DEFAULT_PROFILES_PATH = "profiles"

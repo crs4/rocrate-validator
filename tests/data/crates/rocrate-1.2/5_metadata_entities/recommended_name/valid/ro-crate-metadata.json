@@ -20,11 +20,9 @@
       "license": {
         "@id": "https://creativecommons.org/licenses/by/4.0/"
       },
-      "hasPart": [
-        {
-          "@id": "my-data-file.txt"
-        }
-      ],
+      "hasPart": {
+        "@id": "my-data-file.txt"
+      },
       "publisher": {
         "@id": "https://ror.org/05f9q8d28"
       },

@@ -70,6 +70,7 @@ def test_validation_settings_to_dict():
     assert settings_dict["profiles_path"] == "/path/to/profiles"
     assert settings_dict["requirement_severity"] == Severity.RECOMMENDED
     assert settings_dict["enable_profile_inheritance"] is False
+    assert settings_dict["extra_checks"] is False
 
 
 def test_validation_settings_enable_profile_inheritance():
@@ -83,6 +84,11 @@ def test_validation_settings_enable_profile_inheritance():
 def test_validation_settings_disable_inherited_profiles_issue_reporting():
     settings = ValidationSettings()  # type: ignore[call-arg]
     assert settings.disable_inherited_profiles_issue_reporting is False
+
+
+def test_validation_settings_profile_checks():
+    settings = ValidationSettings(validate_profile_checks=False)  # type: ignore[call-arg]
+    assert settings.validate_profile_checks is False
 
     settings = ValidationSettings(disable_inherited_profiles_issue_reporting=True)  # type: ignore[call-arg]
     assert settings.disable_inherited_profiles_issue_reporting is True

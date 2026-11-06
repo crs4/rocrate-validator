@@ -19,8 +19,11 @@ from contextlib import nullcontext
 from pathlib import Path
 
 import rich_click as click
+from rich.markup import escape
 from rich.padding import Padding
 from rich.rule import Rule
+from rich.table import Table
+from rich.text import Text
 
 from rocrate_validator import constants, services
 from rocrate_validator.cli.commands.errors import handle_error
@@ -29,10 +32,12 @@ from rocrate_validator.cli.ui.text.validate import ValidationCommandView
 from rocrate_validator.errors import ROCrateInvalidURIError
 from rocrate_validator.models import Severity, ValidationResult, ValidationSettings
 from rocrate_validator.utils import log as logging
+from rocrate_validator.utils.io_helpers.colors import get_severity_color
 from rocrate_validator.utils.io_helpers.input import get_single_char, multiple_choice
 from rocrate_validator.utils.io_helpers.output.console import Console
 from rocrate_validator.utils.io_helpers.output.json import JSONOutputFormatter
 from rocrate_validator.utils.io_helpers.output.text import TextOutputFormatter
+from rocrate_validator.utils.io_helpers.output.text.formatters import ValidationExtraChecksTextOutputFormatter
 from rocrate_validator.utils.io_helpers.output.text.layout.report import LiveTextProgressLayout, get_app_header_rule
 from rocrate_validator.utils.paths import get_profiles_path
 from rocrate_validator.utils.uri import validate_rocrate_uri
@@ -75,6 +80,13 @@ def validate_uri(ctx, param, value):
     default=False,
     show_default=True,
 )
+@click.option(
+    "--packaging-mode",
+    type=click.Choice(["auto", "attached", "detached"], case_sensitive=False),
+    default="auto",
+    show_default=True,
+    help="Packaging context assumed from the input, or explicitly attached/detached",
+)
 @click.option("-ff", "--fail-fast", is_flag=True, help="Fail fast validation mode", default=False, show_default=True)
 @click.option(
     "--creation-time",
@@ -94,6 +106,13 @@ def validate_uri(ctx, param, value):
     "--skip-availability-check",
     is_flag=True,
     help="Skip availability checks for web-based data entities",
+    default=False,
+    show_default=True,
+)
+@click.option(
+    "--extra-checks",
+    is_flag=True,
+    help="Run all checks marked as extra_check; findings do not affect conformance",
     default=False,
     show_default=True,
 )
@@ -138,6 +157,13 @@ def validate_uri(ctx, param, value):
     show_default=True,
 )
 @click.option(
+    "--no-profile-checks",
+    is_flag=True,
+    help="Skip consistency checks on validation profiles",
+    default=False,
+    show_default=True,
+)
+@click.option(
     "-l",
     "--requirement-severity",
     type=click.Choice([s.name for s in Severity], case_sensitive=False),
@@ -164,13 +190,20 @@ def validate_uri(ctx, param, value):
     help=(
         "[bold yellow]Fully-Qualified-Check-IDs[/bold yellow] is a comma-separated list of checks to skip "
         "(may be specified multiple times). Each check must be specified by its "
-        "Fully Qualified Identifier, e.g., [bold cyan]ro-crate-1.1_12.1[/bold cyan]. The fully qualified "
+        "Fully Qualified Identifier, e.g., [bold cyan]ro-crate-1.3_11.1[/bold cyan]. The fully qualified "
         "check identifier has the format <Profile-ID>_<Requirement_#>.<RequirementCheck_#>, "
         "where <Requirement_#> is the position number of the Requirement in the profile, "
         "and <RequirementCheck_#> is the position number of the RequirementCheck within that Requirement. "
         "You can find the Fully-Qualified-Check IDs using: "
         "[bold orange1]rocrate-validator profiles describe <Profile-ID> -v[/bold orange1]"
     ),
+)
+@click.option(
+    "--show-skipped-checks",
+    is_flag=True,
+    help="List skipped checks and their reasons at the end of the validation",
+    default=False,
+    show_default=True,
 )
 @click.option(
     "-v",
@@ -250,18 +283,23 @@ def validate_uri(ctx, param, value):
 @click.pass_context
 def validate(
     ctx,
+    *,
     profiles_path: Path = DEFAULT_PROFILES_PATH,
     extra_profiles_path: Path | None = None,
     profile_identifier: tuple[str, ...] = (),
     metadata_only: bool = False,
+    packaging_mode: str = "auto",
     creation_time: bool = False,
     enforce_availability: bool = False,
     skip_availability_check: bool = False,
+    extra_checks: bool = False,
     no_auto_profile: bool = False,
     disable_profile_inheritance: bool = False,
+    no_profile_checks: bool = False,
     requirement_severity: str = Severity.REQUIRED.name,
     requirement_severity_only: bool = False,
     skip_checks: list[str] | None = None,
+    show_skipped_checks: bool = False,
     rocrate_uri: str | Path = ".",
     relative_root_path: Path | None = None,
     fail_fast: bool = False,
@@ -330,6 +368,7 @@ def validate(
             "abort_on_first": fail_fast,
             "skip_checks": skip_checks_list,
             "metadata_only": metadata_only,
+            "packaging_mode": packaging_mode,
             "cache_max_age": cache_max_age if not no_cache else -1,
             "cache_path": cache_path,
             "offline": offline,
@@ -340,6 +379,8 @@ def validate(
             "creation_time": creation_time,
             "enforce_availability": enforce_availability,
             "skip_availability_check": skip_availability_check,
+            "extra_checks": extra_checks,
+            "validate_profile_checks": not no_profile_checks,
         }
 
         # Print the application header
@@ -353,11 +394,11 @@ def validate(
         # interactive selection, or fallback to the base `ro-crate` profile).
         profile_identifiers, autodetection = _resolve_profile_identifiers(
             console,
-            interactive,
-            no_auto_profile,
-            available_profiles,
-            list(profile_identifier),
-            validation_settings,
+            interactive=interactive,
+            no_auto_profile=no_auto_profile,
+            available_profiles=available_profiles,
+            profile_identifiers=list(profile_identifier),
+            validation_settings=validation_settings,
         )
 
         # Validate the RO-Crate against the selected profiles
@@ -365,7 +406,7 @@ def validate(
         results = {}
         for profile in profile_identifiers:
             # Duplicate settings for each profile and set the profile identifier
-            logger.info("\nValidating RO-Crate against profile: [bold cyan]%s[/bold cyan]", profile)
+            logger.info("\nValidating RO-Crate against profile: [bold magenta]%s[/bold magenta]", profile)
             profile_settings = validation_settings.copy()
             profile_settings["profile_identifier"] = profile
             logger.debug("Profile selected for validation: %s", profile)
@@ -412,13 +453,21 @@ def validate(
                 output_file=output_file,
                 output_line_width=output_line_width,
             )
+        _emit_skipped_checks_report(
+            results,
+            show_skipped_checks=show_skipped_checks,
+            output_format=output_format,
+            output_file=output_file,
+            output_line_width=output_line_width,
+            console=console,
+        )
 
         # Exit with appropriate status code.
         # using ctx.exit seems to raise an Exception that gets caught below,
         # so we use sys.exit instead.
         sys.exit(0 if is_valid else 1)
     except Exception as e:
-        handle_error(e, console)
+        handle_error(e, console, debug=ctx.obj["debug"])
 
 
 def _log_validation_inputs(
@@ -490,8 +539,9 @@ def _parse_skip_checks(skip_checks: list[str] | None) -> list[str]:
     return skip_checks_list
 
 
-def _resolve_profile_identifiers(
+def _resolve_profile_identifiers(  # noqa: C901, PLR0912
     console: Console,
+    *,
     interactive: bool,
     no_auto_profile: bool,
     available_profiles: list,
@@ -506,37 +556,83 @@ def _resolve_profile_identifiers(
     Returns the identifiers and whether they were auto-detected.
     """
     autodetection = False
+    reason = None
     if not profile_identifiers:
         # Auto-detect the profile to use for validation (if not disabled)
         candidate_profiles = None
+        detection_result = None
         if not no_auto_profile:
-            candidate_profiles = services.detect_profiles(settings=validation_settings)
+            detection_result = services.detect_profiles_detailed(settings=validation_settings)
+            candidate_profiles = detection_result.profiles
             logger.debug("Candidate profiles: %s", candidate_profiles)
         else:
             logger.info("Auto-detection of the profiles to use for validation is disabled")
 
-        # Prompt the user when interactive and no single profile could be auto-detected
-        if interactive and (
-            not candidate_profiles or len(candidate_profiles) == 0 or len(candidate_profiles) == len(available_profiles)
-        ):
+        if detection_result and detection_result.diagnostics:
+            diagnostic = detection_result.diagnostics[0]
+            reason = (
+                f"`{escape(diagnostic.property or '')}` at {escape(diagnostic.location or '')} "
+                f"has value {escape(repr(diagnostic.value))}. {escape(diagnostic.message)}"
+            )
+            for diagnostic in detection_result.diagnostics:
+                if diagnostic.code not in ("INVALID_CONFORMS_TO", "INVALID_REFERENCE"):
+                    continue
+                console.print(
+                    "\n  [bold yellow]WARNING: Non-conforming metadata[/bold yellow]\n"
+                    f"    `{escape(diagnostic.property or '')}` at {escape(diagnostic.location or '')} "
+                    f"has value {escape(repr(diagnostic.value))}.\n"
+                    f"    {escape(diagnostic.message)}"
+                )
+            if candidate_profiles:
+                console.print(
+                    "    Profiles automatically selected for validation: "
+                    + escape(", ".join(profile.identifier for profile in candidate_profiles))
+                )
+
+        suggested_profile = detection_result.suggested_profile if detection_result else None
+        if interactive and not candidate_profiles and suggested_profile:
+            console.print(
+                "    The string URI matches the available profile "
+                f"[magenta]{escape(suggested_profile.identifier)}[/magenta]. "
+                "Using it will not correct the metadata."
+            )
+            confirmation = get_single_char(
+                console,
+                choices=["y", "n"],
+                message=("[bold]Use this profile for validation? ([magenta]y/n[/magenta]): [/bold]"),
+            )
+            if confirmation == "y":
+                return [suggested_profile.identifier], True
+        elif not interactive and suggested_profile:
+            console.print(
+                "    The string URI matches profile "
+                f"{escape(suggested_profile.identifier)}, but using it requires confirmation. "
+                "Use --profile-identifier to select it explicitly in non-interactive mode."
+            )
+
+        # Prompt the user only when no profile could be auto-detected or confirmed.
+        if interactive and not candidate_profiles:
             console.print(
                 Padding(
                     Rule(
                         "[bold yellow]WARNING: [/bold yellow]"
-                        "[bold]Unable to automatically detect the profile to use for validation[/bold]\n",
+                        "[bold]Unable to automatically detect the profile to use for validation[/bold]"
+                        + (f"\n{reason}" if reason else "")
+                        + "\n",
                         align="center",
                         style="bold yellow",
                     ),
                     (2, 2, 0, 2),
                 )
             )
-            selected_options = multiple_choice(console, available_profiles)
-            if selected_options is None or isinstance(selected_options, bool):
-                selected_options = []
-            profile_identifiers = [available_profiles[int(o)].identifier for o in selected_options]
-            logger.debug("Profile selected: %s", selected_options)
+            if not profile_identifiers:
+                selected_options = multiple_choice(console, available_profiles)
+                if selected_options is None or isinstance(selected_options, bool):
+                    selected_options = []
+                profile_identifiers = [available_profiles[int(o)].identifier for o in selected_options]
+                logger.debug("Profile selected: %s", selected_options)
             console.print(Padding(Rule(style="bold yellow"), (1, 2)))
-        elif candidate_profiles and len(candidate_profiles) < len(available_profiles):
+        elif candidate_profiles:
             logger.debug("Profile identifier autodetected: %s", candidate_profiles[0].identifier)
             autodetection = True
             profile_identifiers = [_.identifier for _ in candidate_profiles]
@@ -548,6 +644,8 @@ def _resolve_profile_identifiers(
             console.print("[bold]Auto-detection of the profiles to use for validation is disabled[/bold]")
         else:
             console.print("[bold]Unable to automatically detect the profile to use for validation[/bold]")
+            if reason:
+                console.print(f"{' ' * 11}{reason}")
         console.print(f"{' ' * 11}[bold]The base `ro-crate` profile will be used for validation[/bold]")
         profile_identifiers = ["ro-crate"]
 
@@ -583,11 +681,17 @@ def _render_console_result(
                 )
             if verbose_choice == "y" or verbose:
                 command_view.display_validation_result(result)
+            elif result.extra_checks:
+                console.print(ValidationExtraChecksTextOutputFormatter(result))
+        elif result.extra_checks:
+            console.print(ValidationExtraChecksTextOutputFormatter(result))
         return result
 
     result = services.validate(validation_settings)
     console.register_formatter(TextOutputFormatter())
     console.print(result.statistics)
+    if result.extra_checks and (result.passed() or not verbose):
+        console.print(ValidationExtraChecksTextOutputFormatter(result))
     if not result.passed() and verbose:
         out = Console(no_color=console.no_color, width=console.width, height=console.height)
         out.register_formatter(TextOutputFormatter())
@@ -630,6 +734,8 @@ def _render_file_or_collected_result(
             out = Console(color_system=None, width=output_line_width, height=31, file=f)
             out.register_formatter(TextOutputFormatter())
             out.print(result.statistics)  # Output the statistics first
+            if result.extra_checks and (result.passed() or not verbose):
+                out.print(ValidationExtraChecksTextOutputFormatter(result))
             if not result.passed() and verbose:
                 out.print(result)
         if interactive:
@@ -653,7 +759,7 @@ def _emit_json_report(
             console.print(
                 f"\n{' ' * 2}✅ [bold]Validation [green]PASSED![/green]. "
                 f"\n{' ' * 5}RO-Crate is valid according to the profile(s): "
-                f"[cyan]{', '.join(profile_identifiers)}[/cyan][/bold]"
+                f"[magenta]{', '.join(profile_identifiers)}[/magenta][/bold]"
             )
         else:
             console.print(f"\n{' ' * 2}❌ [bold]Validation [red]FAILED![/red][/bold]")
@@ -670,7 +776,57 @@ def _emit_json_report(
     with output_file.open("w", encoding="utf-8") if output_file else nullcontext(sys.stdout) as f:
         out = Console(width=output_line_width, file=f)
         out.register_formatter(JSONOutputFormatter())
-        out.print(results)
+        # Disable word-wrap/cropping: Rich would otherwise insert literal line
+        # breaks into long string values (e.g. messages, URLs), producing
+        # invalid, unescaped control characters in the JSON output.
+        out.print(results, soft_wrap=True)
 
     if interactive and output_file:
         console.print("[bold]DONE![/bold]", end="\n\n")
+
+
+def _print_skipped_checks(results: dict[str, ValidationResult], console: Console) -> None:
+    """Render the collected skipped-check details using the validation palette."""
+    details = [detail for result in results.values() for detail in result.skipped_check_details]
+    if not details:
+        return
+
+    table = Table(
+        title=f"Skipped Checks ({len(details)})",
+        title_style="bold yellow",
+        border_style="yellow",
+        header_style="bold yellow",
+        show_lines=False,
+    )
+    table.add_column("Profile", style="cyan", no_wrap=True)
+    table.add_column("Check", no_wrap=True)
+    table.add_column("Category", style="yellow", no_wrap=True)
+    table.add_column("Reason")
+    for detail in details:
+        table.add_row(
+            Text(detail.to_dict()["profile"], style="cyan"),
+            Text(detail.to_dict()["identifier"], style=get_severity_color(detail.check.severity)),
+            Text(detail.category.value, style="yellow"),
+            Text(f"{detail.check.name}: {detail.message}"),
+        )
+    console.print(Padding(table, (1, 2)))
+
+
+def _emit_skipped_checks_report(
+    results: dict[str, ValidationResult],
+    *,
+    show_skipped_checks: bool,
+    output_format: str,
+    output_file: Path | None,
+    output_line_width: int | None,
+    console: Console,
+) -> None:
+    """Write the optional skipped-check report without affecting JSON output."""
+    if not show_skipped_checks or output_format == "json":
+        return
+    if output_file:
+        with output_file.open("a", encoding="utf-8") as output:
+            output_console = Console(color_system=None, width=output_line_width, file=output)
+            _print_skipped_checks(results, output_console)
+    else:
+        _print_skipped_checks(results, console)

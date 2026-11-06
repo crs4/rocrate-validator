@@ -26,11 +26,9 @@
       "funder": {
         "@id": "https://ror.org/05f9q8d28"
       },
-      "hasPart": [
-        {
-          "@id": "script.sh"
-        }
-      ],
+      "hasPart": {
+        "@id": "script.sh"
+      },
       "identifier": {
         "@id": "#uuid"
       }

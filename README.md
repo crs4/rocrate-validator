@@ -13,7 +13,9 @@ against different profiles, including the base RO-Crate profile and various exte
 
 -   Validates RO-Crates against the profiles they declare to conform to.
     Currently, validation for the following profiles is implemented:
-    - [RO-Crate](https://w3id.org/ro/crate/1.1) *(base profile)*
+    - [RO-Crate 1.3](https://w3id.org/ro/crate/1.3) *(base profile, used by default)*
+    - [RO-Crate 1.2](https://w3id.org/ro/crate/1.2) *(base profile)*
+    - [RO-Crate 1.1](https://w3id.org/ro/crate/1.1) *(base profile)*
     - [Workflow RO-Crate](https://w3id.org/workflowhub/workflow-ro-crate/1.0)
     - [Workflow Testing RO-Crate](https://w3id.org/ro/wftest)
     - [Workflow Run Crate](https://w3id.org/ro/wfrun/workflow)
@@ -25,8 +27,8 @@ against different profiles, including the base RO-Crate profile and various exte
 -   Supports [CLI-based validation](#cli-based-validation) as well as [programmatic validation](#programmatic-validation) (so it can easily be used by Python code).
 -   Extensible framework: new RO-Crate profiles can be added, implementing profile requirements as SHACL shapes and/or Python code.
 
-<div style="background: #F0F8FF; border-left: 4px solid #007ACC; text-indent: -43px; padding: 20px 60px; border-radius: 8px; margin-bottom: 40px; height: auto; font-weight: lighter;">
-<b>Note:</b> <span class="disabled font-light">this software is still work in progress. Feel free to try it out,
+<div class="project-status-note" style="background: #F0F8FF; border-left: 4px solid #007ACC; color: #003333; text-indent: -43px; padding: 20px 60px; border-radius: 8px; margin-bottom: 40px; height: auto; font-weight: lighter;">
+<b>Note:</b> this software is still work in progress. Feel free to try it out,
 report positive and negative feedback. We also welcome contributions, but we suggest you send us a note (e.g., by opening an Issue) before starting to develop any code. The implementation of validation code for additional RO-Crate profiles would be particularly welcome.
 </div>
 
@@ -118,6 +120,9 @@ where `<path_to_rocrate>` is the path to the RO-Crate you want to validate.
 
 Type `rocrate-validator --help` for more information.
 
+For package modes, validation scope, and supported input combinations, see the
+[package modes guide](https://rocrate-validator.readthedocs.io/en/latest/6_package_modes.html).
+
 ## Programmatic Validation
 
 You can also integrate the package programmatically in your Python code.
@@ -134,8 +139,10 @@ settings = services.ValidationSettings(
     # Set the path to the RO-Crate root directory
     rocrate_uri='/path/to/ro-crate',
     # Set the identifier of the RO-Crate profile to use for validation.
-    # If not set, the system will attempt to automatically determine the appropriate validation profile.
-    profile_identifier='ro-crate-1.1',
+    # If not set, the base RO-Crate profile is used, which defaults to `ro-crate-1.3`.
+    # Use `services.detect_profiles(settings)` to determine the profiles a crate declares
+    # conformance to, and pass one of them here to validate against it instead.
+    profile_identifier='ro-crate-1.3',
     # Set the requirement level for the validation
     requirement_severity=models.Severity.REQUIRED,
 )
@@ -154,11 +161,32 @@ else:
         print(f"Detected issue of severity {issue.severity.name} with check \"{issue.check.identifier}\": {issue.message}")
 ```
 
+For repeated validation against the same profile, reuse a `Validator`. Profile
+artifacts are prepared on the first call (or explicitly with `prepare()`) while
+crate data and results remain isolated per call:
+
+```python
+validator = models.Validator(settings)
+validator.prepare()  # optional eager warm-up
+
+result_a = validator.validate("/path/to/ro-crate-a")
+result_b = validator.validate("/path/to/ro-crate-b")
+
+# Invalidate preparation after changing profile files on disk.
+validator.clear_prepared_profiles()
+```
+
+For ordinary crates, profile artifacts containing relative IRIs are prepared
+once against an internal base and materialized for each crate public ID. A
+metadata document whose explicit JSON-LD `@base` differs from its crate public
+ID keeps a separate prepared plan. Calls on the same `Validator` are serialized;
+use one instance per concurrent worker.
+
 The following is a possible output:
 
 ```bash
 RO-Crate is invalid!
-Detected issue of severity REQUIRED with check "ro-crate-1.1:root_entity_exists: The RO-Crate must contain a root entity.
+Detected issue of severity REQUIRED with check "ro-crate-1.3:root_entity_exists: The RO-Crate must contain a root entity.
 ```
 
 ## Running the tests

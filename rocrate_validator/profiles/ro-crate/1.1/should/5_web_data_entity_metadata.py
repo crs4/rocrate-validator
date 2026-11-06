@@ -14,7 +14,8 @@
 
 # pylint: disable=invalid-name  # profile filename uses digit prefix (load-order convention)
 
-from rocrate_validator.models import ValidationContext
+from rocrate_validator.errors import ROCrateMetadataNotFoundError
+from rocrate_validator.models import CheckResult, CheckResultValue, ValidationContext
 from rocrate_validator.requirements.python import PyFunctionCheck, check, requirement
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.uri import AvailabilityStatus
@@ -31,7 +32,7 @@ class WebDataEntityRecommendedChecker(PyFunctionCheck):
     """
 
     @check(name="Web-based Data Entity: resource availability")
-    def check_availability(self, context: ValidationContext) -> bool:
+    def check_availability(self, context: ValidationContext) -> CheckResultValue:
         """
         Check if the Web-based Data Entity is directly downloadable
         by a simple retrieval (e.g. HTTP GET) permitting redirection and HTTP/HTTPS URIs.
@@ -42,7 +43,13 @@ class WebDataEntityRecommendedChecker(PyFunctionCheck):
         and logged as warnings, without invalidating the validation.
         """
         result = True
-        for entity in context.ro_crate.metadata.get_web_data_entities():
+        try:
+            entities = context.ro_crate.metadata.get_web_data_entities()
+        except ROCrateMetadataNotFoundError:
+            logger.debug("Skipping web-based Data Entity availability check: metadata descriptor is not available")
+            context.record_skip(self, "metadata descriptor is not available", "exception")
+            return CheckResult.SKIPPED
+        for entity in entities:
             assert entity.id is not None, "Entity has no @id"
             try:
                 status = entity.check_availability()
@@ -67,21 +74,27 @@ class WebDataEntityRecommendedChecker(PyFunctionCheck):
                 else:
                     context.result.add_issue(f"Web-based Data Entity {entity.id} is not available", self)
                     result = False
-            except Exception as e:
+            except (OSError, RuntimeError, TypeError, ValueError) as e:
                 context.result.add_issue(f"Web-based Data Entity {entity.id} is not available: {e}", self)
                 result = False
             if not result and context.fail_fast:
                 return result
         return result
 
-    @check(name="Web-based Data Entity: `contentSize` property")
-    def check_content_size(self, context: ValidationContext) -> bool:
+    @check(name="Web-based Data Entity: `contentSize` matches downloadable content")
+    def check_content_size(self, context: ValidationContext) -> CheckResultValue:
         """
         Check if the Web-based Data Entity has a `contentSize` property
         and if it is set to actual size of the downloadable content
         """
         result = True
-        for entity in context.ro_crate.metadata.get_web_data_entities():
+        try:
+            entities = context.ro_crate.metadata.get_web_data_entities()
+        except ROCrateMetadataNotFoundError:
+            logger.debug("Skipping web-based Data Entity content size check: metadata descriptor is not available")
+            context.record_skip(self, "metadata descriptor is not available", "exception")
+            return CheckResult.SKIPPED
+        for entity in entities:
             assert entity.id is not None, "Entity has no @id"
             # Skip entities whose scheme the validator cannot natively fetch
             # (e.g. scp://, s3://): without retrieving the content there is
@@ -91,7 +104,7 @@ class WebDataEntityRecommendedChecker(PyFunctionCheck):
                 continue
             if entity.is_available():
                 content_size = entity.get_property("contentSize")
-                actual_size = context.ro_crate.get_external_file_size(entity.id)
+                actual_size = context.ro_crate.get_external_file_size(entity.id_as_uri.uri)
                 if content_size and actual_size is not None and int(content_size) != actual_size:
                     context.result.add_issue(
                         f"The property contentSize={content_size} of the Web-based Data Entity "

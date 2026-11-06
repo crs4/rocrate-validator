@@ -35,8 +35,13 @@ ro-crate:ReferencedROCrateDataEntityTarget a sh:SPARQLTarget ;
             ?this a schema:Dataset ;
                 dct:conformsTo ?profile .
             FILTER(STRSTARTS(STR(?profile), "https://w3id.org/ro/crate"))
-            ?metadatafile schema:about ?root .
-            FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
+            { SELECT DISTINCT ?root WHERE {
+                ?metadatafile schema:about ?root .
+                FILTER(
+                    STRENDS(str(?metadatafile), "ro-crate-metadata.json") ||
+                    STRENDS(str(?metadatafile), "ro-crate-metadata.jsonld")
+                )
+            } }
             FILTER(?this != ?root)
         }
     """ .
@@ -56,8 +61,13 @@ ro-crate:ReferencedROCrateMetadataDescriptorTarget a sh:SPARQLTarget ;
                 dct:conformsTo ?profile ;
                 schema:subjectOf ?this .
             FILTER(STRSTARTS(STR(?profile), "https://w3id.org/ro/crate"))
-            ?metadatafile schema:about ?root .
-            FILTER(contains(str(?metadatafile), "ro-crate-metadata.json"))
+            { SELECT DISTINCT ?root WHERE {
+                ?metadatafile schema:about ?root .
+                FILTER(
+                    STRENDS(str(?metadatafile), "ro-crate-metadata.json") ||
+                    STRENDS(str(?metadatafile), "ro-crate-metadata.jsonld")
+                )
+            } }
             FILTER(?crate != ?root)
         }
     """ .

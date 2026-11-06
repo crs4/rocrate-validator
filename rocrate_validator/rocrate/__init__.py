@@ -30,10 +30,12 @@ from .bagit import BagitROCrate, ROCrateBagitLocalFolder, ROCrateBagitLocalZip, 
 from .base import ROCrate
 from .entity import ROCrateEntity
 from .metadata import ROCrateMetadata
+from .package_type import PackageType
 from .plain import ROCrateLocalFolder, ROCrateLocalZip, ROCrateRemoteZip
 
 __all__ = [
     "BagitROCrate",
+    "PackageType",
     "ROCrate",
     "ROCrateBagitLocalFolder",
     "ROCrateBagitLocalZip",

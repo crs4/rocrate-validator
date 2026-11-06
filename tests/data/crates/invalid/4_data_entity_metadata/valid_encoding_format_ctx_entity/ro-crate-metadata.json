@@ -21,11 +21,9 @@
             "mainEntity": {
                 "@id": "sort-and-change-case.ga"
             },
-            "license": [
-                {
-                    "@id": "https://spdx.org/licenses/MIT.html"
-                }
-            ],
+            "license": {
+                "@id": "https://spdx.org/licenses/MIT.html"
+            },
             "author": {
                 "@id": "https://orcid.org/0000-0002-1825-0097"
             },
@@ -82,7 +80,7 @@
             "subjectOf": {
                 "@id": "sort-and-change-case.cwl"
             },
-            "encodingFormat": ["application/galaxy"]
+            "encodingFormat": "application/galaxy"
         },
         {
             "@id": "https://w3id.org/workflowhub/workflow-ro-crate#galaxy",
@@ -94,16 +92,14 @@
             "url": {
                 "@id": "https://galaxyproject.org/"
             },
-            "encodingFormat": ["application/galaxy"]
+            "encodingFormat": "application/galaxy"
         },
         {
             "@id": "blank.png",
             "@type": ["File", "ImageObject"],
-            "encodingFormat": [
-                {
-                    "@id": "https://www.iana.org/assignments/media-types/image/png"
-                }
-            ]
+            "encodingFormat": {
+                "@id": "https://www.iana.org/assignments/media-types/image/png"
+            }
         },
         {
             "@id": "https://www.iana.org/assignments/media-types/image/png",
@@ -116,7 +112,7 @@
             "about": {
                 "@id": "./"
             },
-            "encodingFormat": ["text/markdown"]
+            "encodingFormat": "text/markdown"
         },
         { "@id": "https://spdx.org/licenses/MIT.html", "@type": "CreativeWork" }
     ]

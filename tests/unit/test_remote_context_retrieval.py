@@ -18,6 +18,8 @@ from unittest.mock import MagicMock
 
 import pytest
 
+from rocrate_validator.utils.http import OfflineCacheMissError
+
 
 @pytest.fixture(scope="module")
 def fd_format():
@@ -296,6 +298,16 @@ class TestCheckRemoteContext:
             assert result is False
         finally:
             fd_format.HttpRequester = original_requester
+
+    def test_check_remote_context_propagates_offline_cache_miss(self, fd_format):
+        """Offline cache misses must reach the validation runner unchanged."""
+        checker = object.__new__(fd_format.FileDescriptorJsonLdFormat)
+        checker.__get_remote_context__ = MagicMock(
+            side_effect=OfflineCacheMissError("https://example.com/context.json")
+        )
+
+        with pytest.raises(OfflineCacheMissError):
+            checker.__check_remote_context__("https://example.com/context.json")
 
 
 class TestGetContextKeys:

@@ -33,6 +33,10 @@ logger = logging.getLogger(__name__)
 
 
 class BagitROCrate(ROCrate, ABC):
+    @property
+    def attached_descriptor_id(self) -> str:
+        return str(Path("data") / (self.relative_root_path or Path()) / "ro-crate-metadata.json")
+
     def __init__(self, uri, relative_root_path=None):
         super().__init__(uri, relative_root_path)
 

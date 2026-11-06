@@ -14,14 +14,50 @@
 
 import contextlib
 import re
+from pathlib import Path
+from urllib.parse import unquote, urlsplit
 
-from rocrate_validator.models import ValidationContext
+from rocrate_validator.errors import ROCrateMetadataNotFoundError
+from rocrate_validator.models import CheckResult, CheckResultValue, ValidationContext
 from rocrate_validator.requirements.python import PyFunctionCheck, check, requirement
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.signposting import check_downloadable
+from rocrate_validator.utils.uri import is_external_reference
 
 # set up logging
 logger = logging.getLogger(__name__)
+
+
+def _data_entity_path_error(identifier: str) -> str | None:
+    """
+    Validate path forms without inferring transport or payload membership.
+
+    This is not a general URI validator. RFC 8089 requires an absolute path
+    after ``file:``, whereas RFC 3986 network-path references have an authority
+    but no scheme. Neither a network-path reference nor a bare filesystem path
+    expresses a path relative to the crate root.
+    """
+    if "\\" in identifier or " " in identifier:
+        return "has an invalid @id; use URI-compatible paths"
+    # Match the existing URI utility's drive-letter disambiguation on every OS.
+    if re.match(r"^[A-Za-z]:/", identifier):
+        return "has a Windows drive path; use a relative URI path or an absolute file URI"
+    try:
+        parsed = urlsplit(identifier)
+    except ValueError:
+        return "has an invalid @id; use a valid URI reference"
+    if parsed.scheme == "file" and not parsed.path.startswith("/"):
+        return "has an invalid @id; the file URI path MUST be absolute (RFC 8089 section 2)"
+    path_error = None
+    if not parsed.scheme:
+        if identifier.startswith("//"):
+            path_error = (
+                "has a network-path reference; use an absolute URI with a scheme "
+                "or a path relative to the RO-Crate root"
+            )
+        elif parsed.path.startswith("/"):
+            path_error = "MUST use a relative @id within the RO-Crate root"
+    return path_error
 
 
 @requirement(name="Data Entity: REQUIRED resource availability")
@@ -31,20 +67,28 @@ class DataEntityRequiredChecker(PyFunctionCheck):
     """
 
     @check(name="Data Entity: REQUIRED resource availability")
-    def check_availability(self, context: ValidationContext) -> bool:
+    def check_availability(self, context: ValidationContext) -> CheckResultValue:  # noqa: C901
         """
         Check the presence of the Data Entity in the RO-Crate
         """
-        if context.ro_crate.is_detached():
-            logger.debug("Skipping data entity payload checks for detached RO-Crate")
-            return True
+        if not context.ro_crate.is_attached():
+            logger.debug("Skipping data entity payload checks without an attached package context")
+            context.record_skip(self, "attached package context is unavailable", "returned")
+            return CheckResult.SKIPPED
         # Skip the check in metadata-only mode
         if context.settings.metadata_only:
             logger.debug("Skipping file descriptor existence check in metadata-only mode")
-            return True
+            context.record_skip(self, "metadata-only mode", "configured")
+            return CheckResult.SKIPPED
         # Perform the check
         result = True
-        for entity in context.ro_crate.metadata.get_data_entities(exclude_web_data_entities=True):
+        try:
+            entities = context.ro_crate.metadata.get_data_entities(exclude_web_data_entities=True)
+        except ROCrateMetadataNotFoundError:
+            logger.debug("Skipping Data Entity availability check: metadata descriptor is not available")
+            context.record_skip(self, "metadata descriptor is not available", "exception")
+            return CheckResult.SKIPPED
+        for entity in entities:
             assert entity.id is not None, "Entity has no @id"
             logger.debug("Ensure the presence of the Data Entity '%s' within the RO-Crate", entity.id)
             try:
@@ -59,7 +103,7 @@ class DataEntityRequiredChecker(PyFunctionCheck):
                         entity.id,
                     )
                     continue
-                if not entity.has_relative_path():
+                if is_external_reference(entity.id) or not entity.has_relative_path():
                     logger.debug(
                         "Ignoring the Data Entity '%s' as it is a local entity with an absolute path. "
                         "According to the RO-Crate specification, local entities with absolute paths "
@@ -73,7 +117,7 @@ class DataEntityRequiredChecker(PyFunctionCheck):
                         f"The RO-Crate does not include the Data Entity '{entity.id}' as part of its payload", self
                     )
                     result = False
-            except Exception as e:
+            except (AttributeError, OSError, TypeError, ValueError) as e:
                 context.result.add_issue(
                     f"Unable to check the the presence of the Data Entity '{entity.id}' within the RO-Crate", self
                 )
@@ -93,17 +137,27 @@ class DetachedDataEntityChecker(PyFunctionCheck):
     """
 
     @check(name="Detached RO-Crate: data entities MUST be web-based")
-    def check_detached_entities(self, context: ValidationContext) -> bool:
+    def check_detached_entities(self, context: ValidationContext) -> CheckResultValue:
         if not context.ro_crate.is_detached():
-            return True
+            context.record_skip(self, "detached package context is unavailable", "returned")
+            return CheckResult.SKIPPED
         result = True
         root_entity_id = None
-        with contextlib.suppress(Exception):
+        with contextlib.suppress(ValueError):
             root_entity_id = context.ro_crate.metadata.get_root_data_entity().id
-        for entity in context.ro_crate.metadata.get_data_entities():
+        try:
+            entities = context.ro_crate.metadata.get_data_entities()
+        except ROCrateMetadataNotFoundError:
+            logger.debug("Skipping detached Data Entity check: metadata descriptor is not available")
+            context.record_skip(self, "metadata descriptor is not available", "exception")
+            return CheckResult.SKIPPED
+        for entity in entities:
             if root_entity_id and entity.id == root_entity_id:
                 continue
-            if not entity.is_remote():
+            if entity.id.startswith("#"):
+                # Contextual entities do not identify Detached package payloads.
+                continue
+            if not is_external_reference(entity.id):
                 context.result.add_issue(
                     f"Data Entity '{entity.id}' is not web-based, "
                     f"but in a detached RO-Crate all Data Entities "
@@ -123,70 +177,81 @@ class DataEntityIdentifierChecker(PyFunctionCheck):
     """
 
     @check(name="Data Entity: @id value requirements")
-    def check_identifiers(self, context: ValidationContext) -> bool:
+    def check_identifiers(self, context: ValidationContext) -> CheckResultValue:
         result = True
         root_entity_id = None
-        root_entity_is_local = False
-        root_entity_absolute_path = None
-        with contextlib.suppress(Exception):
-            root_data_entity = context.ro_crate.metadata.get_root_data_entity()
-            root_entity_id = root_data_entity.id
-            root_entity_is_local = (
-                root_data_entity.id_as_uri.is_local_resource() if root_data_entity.id_as_uri else False
-            )
-            root_entity_absolute_path = root_data_entity.id_as_path if root_data_entity.has_absolute_path() else None
-        for entity in context.ro_crate.metadata.get_data_entities():
+        with contextlib.suppress(ValueError):
+            root_entity_id = context.ro_crate.metadata.get_root_data_entity().id
+        try:
+            entities = context.ro_crate.metadata.get_data_entities()
+        except ROCrateMetadataNotFoundError:
+            logger.debug("Skipping Data Entity identifier check: metadata descriptor is not available")
+            context.record_skip(self, "metadata descriptor is not available", "exception")
+            return CheckResult.SKIPPED
+        for entity in entities:
             if root_entity_id and entity.id == root_entity_id:
                 continue
-            if not root_entity_is_local and not entity.is_remote():
-                context.result.add_issue(
-                    f"Data Entity '{entity.id}' has a local identifier but the Root Data Entity "
-                    "does not have a local identifier",
-                    self,
-                )
-                result = False
-                if context.fail_fast:
-                    return False
             if entity.has_local_identifier():
                 continue
-            if "\\" in entity.id or " " in entity.id:
-                context.result.add_issue(
-                    f"Data Entity '{entity.id}' has an invalid @id; use URI-compatible paths", self
-                )
-                result = False
-                if context.fail_fast:
-                    return False
-            if (
-                root_entity_is_local
-                and not str(entity.id_as_path).startswith(str(root_entity_absolute_path))
-                and not str(entity.id).startswith("./")
-                and (str(entity.id).startswith(("/", "file://")))
-            ):
-                context.result.add_issue(
-                    f"Data Entity '{entity.id}' MUST use a relative @id within the RO-Crate root", self
-                )
+            path_error = _data_entity_path_error(entity.id)
+            if path_error:
+                context.result.add_issue(f"Data Entity '{entity.id}' {path_error}", self)
                 result = False
                 if context.fail_fast:
                     return False
         return result
 
     @check(name="Data Entity: relative @id for payload files")
-    def check_relative_paths(self, context: ValidationContext) -> bool:
-        if context.ro_crate.is_detached():
-            return True
+    def check_relative_paths(self, context: ValidationContext) -> CheckResultValue:
+        if not context.ro_crate.is_attached():
+            context.record_skip(self, "attached package context is unavailable", "returned")
+            return CheckResult.SKIPPED
         result = True
-        for entity in context.ro_crate.metadata.get_data_entities():
-            if entity.has_local_identifier() or entity.is_remote():
-                continue
-            if entity.has_absolute_path() and (
-                context.ro_crate.has_file(entity.id_as_path) or context.ro_crate.has_directory(entity.id_as_path)
+        try:
+            entities = context.ro_crate.metadata.get_data_entities()
+        except ROCrateMetadataNotFoundError:
+            logger.debug("Skipping relative Data Entity identifier check: metadata descriptor is not available")
+            context.record_skip(self, "metadata descriptor is not available", "exception")
+            return CheckResult.SKIPPED
+        for entity in entities:
+            # This check only applies to attached crates with local filesystem
+            # resources; local IDs and malformed paths are handled elsewhere.
+            if (
+                entity.has_local_identifier()
+                or _data_entity_path_error(entity.id)
+                or entity.is_remote()
+                or not context.ro_crate.uri.is_local_resource()
             ):
-                context.result.add_issue(
-                    f"Data Entity '{entity.id}' should use a relative @id within the RO-Crate root", self
-                )
-                result = False
-                if context.fail_fast:
-                    return False
+                continue
+            # An absolute file URI may identify an external local resource. Only
+            # files actually inside the package must use a relative identifier.
+            # Parse URI paths explicitly to handle file:/ and localhost, and
+            # compare path components rather than textual prefixes.
+            if not (is_external_reference(entity.id) or entity.has_absolute_path()):
+                continue
+
+            # URI paths are percent-encoded, so decode them before creating a
+            # filesystem path. Non-file absolute paths already have a path form.
+            parsed = urlsplit(entity.id)
+            path = Path(unquote(parsed.path)) if parsed.scheme == "file" else entity.id_as_path
+            # Resolve both paths before comparing them; this also follows symlinks,
+            # so containment is evaluated against their canonical filesystem targets.
+            root_path = context.ro_crate.uri.as_path().resolve()
+            path = path.resolve()
+            if not path.is_relative_to(root_path):
+                continue
+
+            # An absolute path inside the root is only subject to this rule if
+            # it resolves to an actual file or directory in the crate payload.
+            payload_path = path.relative_to(root_path)
+            if not (context.ro_crate.has_file(payload_path) or context.ro_crate.has_directory(payload_path)):
+                continue
+            context.result.add_issue(
+                f"Data Entity '{entity.id}' MUST use a relative @id within the RO-Crate root", self
+            )
+            result = False
+            if context.fail_fast:
+                return False
         return result
 
 
@@ -197,9 +262,15 @@ class DataEntityCitationChecker(PyFunctionCheck):
     """
 
     @check(name="Data Entity: citation must include @id")
-    def check_citation(self, context: ValidationContext) -> bool:
+    def check_citation(self, context: ValidationContext) -> CheckResultValue:
         result = True
-        for entity in context.ro_crate.metadata.get_data_entities():
+        try:
+            entities = context.ro_crate.metadata.get_data_entities()
+        except ROCrateMetadataNotFoundError:
+            logger.debug("Skipping Data Entity citation check: metadata descriptor is not available")
+            context.record_skip(self, "metadata descriptor is not available", "exception")
+            return CheckResult.SKIPPED
+        for entity in entities:
             citations = entity.get_property("citation")
             if citations is None:
                 continue
@@ -248,26 +319,33 @@ class WebDataEntityRequiredChecker(PyFunctionCheck):
         return msg
 
     @check(name="Web-based Data Entity: REQUIRED resource availability")
-    def check_availability(self, context: ValidationContext) -> bool:
+    def check_availability(self, context: ValidationContext) -> CheckResultValue:
         if (
             context.settings.skip_availability_check
             or not (context.settings.creation_time or context.settings.enforce_availability)
             or context.settings.metadata_only
         ):
-            return True
+            context.record_skip(self, "availability check is disabled or not requested", "configured")
+            return CheckResult.SKIPPED
         result = True
-        for entity in context.ro_crate.metadata.get_web_data_entities():
+        try:
+            entities = context.ro_crate.metadata.get_web_data_entities()
+        except ROCrateMetadataNotFoundError:
+            logger.debug("Skipping web-based Data Entity availability check: metadata descriptor is not available")
+            context.record_skip(self, "metadata descriptor is not available", "exception")
+            return CheckResult.SKIPPED
+        for entity in entities:
             assert entity.id is not None, "Entity has no @id"
             # Skip directory URIs: assumed available, not directly downloadable by spec
             if entity.id.endswith("/"):
                 logger.debug("Skipping downloadability check for directory entity '%s'", entity.id)
                 continue
             try:
-                dl = check_downloadable(entity.id)
+                dl = check_downloadable(entity.id_as_uri.uri)
                 if not dl.is_downloadable:
                     context.result.add_issue(self._not_downloadable_message(entity.id, dl), self)
                     result = False
-            except Exception as e:
+            except (OSError, RuntimeError, TypeError, ValueError) as e:
                 context.result.add_issue(f"Web-based Data Entity '{entity.id}' availability check failed: {e}", self)
                 result = False
             if not result and context.fail_fast:

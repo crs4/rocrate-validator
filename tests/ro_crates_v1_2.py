@@ -82,6 +82,14 @@ class MetadataDocument:
     def invalid_named_entity_id_format(self) -> Path:
         return self.METADATA_DOCUMENT_CRATES_PATH / "named_entity_id_format" / "invalid"
 
+    @property
+    def valid_schema_org_iri_protocol(self) -> Path:
+        return self.METADATA_DOCUMENT_CRATES_PATH / "schema_org_iri_protocol" / "valid"
+
+    @property
+    def invalid_schema_org_iri_protocol(self) -> Path:
+        return self.METADATA_DOCUMENT_CRATES_PATH / "schema_org_iri_protocol" / "invalid"
+
 
 class MetadataDocumentFormat:
     METADATA_DOCUMENT_FORMAT_CRATES_PATH = MetadataDocument.METADATA_DOCUMENT_CRATES_PATH / "format"
@@ -142,15 +150,33 @@ class DetachedROCrates:
 
     @property
     def valid_local_descriptor_filename(self) -> Path:
-        return self.DETACHED_ROCRATES_CRATES_PATH / "naming-convention" / "local-descriptor" / "valid"
+        return (
+            self.DETACHED_ROCRATES_CRATES_PATH
+            / "naming-convention"
+            / "local-descriptor"
+            / "valid"
+            / "basic-ro-crate-metadata.json"
+        )
 
     @property
     def invalid_local_descriptor_filename(self) -> Path:
-        return self.DETACHED_ROCRATES_CRATES_PATH / "naming-convention" / "local-descriptor" / "invalid"
+        return (
+            self.DETACHED_ROCRATES_CRATES_PATH
+            / "naming-convention"
+            / "local-descriptor"
+            / "invalid"
+            / "ro-crate-metadata.json"
+        )
 
     @property
     def valid_root_data_entity_identifier_when_online_available(self) -> Path:
-        return self.DETACHED_ROCRATES_CRATES_PATH / "root-data-entity-identifier" / "online-available" / "valid"
+        return (
+            self.DETACHED_ROCRATES_CRATES_PATH
+            / "root-data-entity-identifier"
+            / "online-available"
+            / "valid"
+            / "prefix-ro-crate-metadata.json"
+        )
 
     @property
     def invalid_root_data_entity_identifier_when_online_available(self) -> Path:
@@ -183,6 +209,14 @@ class MetadataEntities:
     @property
     def invalid_recommended_name(self) -> Path:
         return self.METADATA_ENTITIES_CRATES_PATH / "recommended_name" / "invalid"
+
+    @property
+    def valid_preprocessing_candidates(self) -> Path:
+        return self.METADATA_ENTITIES_CRATES_PATH / "preprocessing_candidates" / "valid"
+
+    @property
+    def invalid_preprocessing_candidates(self) -> Path:
+        return self.METADATA_ENTITIES_CRATES_PATH / "preprocessing_candidates" / "invalid"
 
 
 class MetadataDescriptor:
@@ -226,11 +260,21 @@ class RootDataEntity:
 
     @property
     def valid_recommended_citeAs_for_resolvable_id(self) -> Path:
-        return self.ROOT_DATA_ENTITY_CRATES_PATH / "recommended_citeas_for_resolvable_id" / "valid"
+        return (
+            self.ROOT_DATA_ENTITY_CRATES_PATH
+            / "recommended_citeas_for_resolvable_id"
+            / "valid"
+            / "citeas-ro-crate-metadata.json"
+        )
 
     @property
     def invalid_recommended_citeAs_for_resolvable_id(self) -> Path:
-        return self.ROOT_DATA_ENTITY_CRATES_PATH / "recommended_citeas_for_resolvable_id" / "invalid"
+        return (
+            self.ROOT_DATA_ENTITY_CRATES_PATH
+            / "recommended_citeas_for_resolvable_id"
+            / "invalid"
+            / "citeas-ro-crate-metadata.json"
+        )
 
     @property
     def valid_additional_conformsTo_reference(self) -> Path:
@@ -399,11 +443,18 @@ class DataEntities:
 
     @property
     def valid_detached_rocrate_dataEntities(self) -> Path:
-        return self.DATA_ENTITIES_CRATES_PATH / "detached_rocrate_dataEntities" / "valid"
+        return (
+            self.DATA_ENTITIES_CRATES_PATH / "detached_rocrate_dataEntities" / "valid" / "basic-ro-crate-metadata.json"
+        )
 
     @property
     def invalid_detached_rocrate_dataEntities(self) -> Path:
-        return self.DATA_ENTITIES_CRATES_PATH / "detached_rocrate_dataEntities" / "invalid"
+        return (
+            self.DATA_ENTITIES_CRATES_PATH
+            / "detached_rocrate_dataEntities"
+            / "invalid"
+            / "basic-ro-crate-metadata.json"
+        )
 
     @property
     def valid_recommended_properties(self) -> Path:
@@ -767,11 +818,11 @@ class ValidROCrate12:
 
     @property
     def detached(self) -> Path:
-        return self.base_path / "detached" / "dataset-ro-crate-metadata.json"
+        return self.base_path / "detached-1.2" / "dataset-ro-crate-metadata.json"
 
     @property
     def detached_prefixed(self) -> Path:
-        return self.base_path / "detached" / "test-ro-crate-metadata.json"
+        return self.base_path / "detached-1.2" / "test-ro-crate-metadata.json"
 
 
 class InvalidROCrate12:

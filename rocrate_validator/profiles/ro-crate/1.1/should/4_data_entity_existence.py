@@ -14,7 +14,8 @@
 
 # pylint: disable=invalid-name  # profile filename uses digit prefix (load-order convention)
 
-from rocrate_validator.models import ValidationContext
+from rocrate_validator.errors import ROCrateMetadataNotFoundError
+from rocrate_validator.models import CheckResult, CheckResultValue, ValidationContext
 from rocrate_validator.requirements.python import PyFunctionCheck, check, requirement
 from rocrate_validator.utils import log as logging
 
@@ -30,7 +31,7 @@ class DataEntityRecommendedChecker(PyFunctionCheck):
     """
 
     @check(name="Data Entity: RECOMMENDED resource availability")
-    def check_availability(self, context: ValidationContext) -> bool:
+    def check_availability(self, context: ValidationContext) -> CheckResultValue:
         """
         Check the availability of the Data Entity with absolute URI paths
         are available at the time of RO-Crate creation
@@ -38,20 +39,27 @@ class DataEntityRecommendedChecker(PyFunctionCheck):
         # Skip the check in metadata-only mode
         if context.settings.metadata_only:
             logger.debug("Skipping file descriptor existence check in metadata-only mode")
-            return True
+            context.record_skip(self, "metadata-only mode", "configured")
+            return CheckResult.SKIPPED
         # Perform the check
         result = True
-        for entity in [
-            _
-            for _ in context.ro_crate.metadata.get_data_entities(exclude_web_data_entities=True)
-            if _.has_absolute_path()
-        ]:
+        try:
+            entities = [
+                _
+                for _ in context.ro_crate.metadata.get_data_entities(exclude_web_data_entities=True)
+                if _.has_absolute_path()
+            ]
+        except ROCrateMetadataNotFoundError:
+            logger.debug("Skipping Data Entity availability check: metadata descriptor is not available")
+            context.record_skip(self, "metadata descriptor is not available", "exception")
+            return CheckResult.SKIPPED
+        for entity in entities:
             assert entity.id is not None, "Entity has no @id"
             try:
                 if not entity.is_available():
                     context.result.add_issue(f"Data Entity {entity.id} is not available", self)
                     result = False
-            except Exception as e:
+            except (AttributeError, OSError, TypeError, ValueError) as e:
                 context.result.add_issue(f"Web-based Data Entity {entity.id} is not available: {e}", self)
                 result = False
             if not result and context.fail_fast:

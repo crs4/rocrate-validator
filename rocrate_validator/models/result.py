@@ -23,6 +23,7 @@ from typing import TYPE_CHECKING, Any, cast
 from rocrate_validator import __version__
 from rocrate_validator.constants import JSON_OUTPUT_FORMAT_VERSION
 from rocrate_validator.models._logging import logger
+from rocrate_validator.models.check_result import CheckResult, CheckResultValue, normalize_check_result
 from rocrate_validator.models.requirement import (
     Requirement,
     RequirementCheck,
@@ -30,6 +31,12 @@ from rocrate_validator.models.requirement import (
 from rocrate_validator.models.severity import (
     RequirementLevel,
     Severity,
+)
+from rocrate_validator.models.skipped_check import (
+    SkipCategory,
+    SkipCategoryInput,
+    SkippedCheckDetail,
+    normalize_skip_category,
 )
 
 if TYPE_CHECKING:
@@ -54,12 +61,32 @@ class CheckIssue:
         violatingProperty: str | None = None,
         violatingEntity: str | None = None,
         value: str | None = None,
+        *,
+        context: ValidationContext | None = None,
     ):
         self._message = message
         self._check: RequirementCheck = check
         self._violatingProperty = violatingProperty
         self._violatingEntity = violatingEntity
         self._propertyValue = value
+        self._context = context
+
+    @property
+    def identifier(self) -> str:
+        """Check identifier as exposed by the active validation target."""
+        return self._context.effective_check_identifier(self.check) if self._context else self.check.identifier
+
+    @property
+    def profile_identifier(self) -> str:
+        """Effective profile identifier used for reporting."""
+        if self._context:
+            return self._context.effective_check_profile(self.check).identifier
+        return self.check.requirement.profile.identifier
+
+    @property
+    def source_profile_identifier(self) -> str:
+        """Profile that physically declares the check implementation."""
+        return self.check.requirement.profile.identifier
 
     @property
     def message(self) -> str | None:
@@ -133,7 +160,7 @@ class CheckIssue:
         return f"CheckIssue(severity={self.severity}, check={self.check}, message={self.message})"
 
     def __str__(self) -> str:
-        return f'Issue of severity {self.severity.name} with check "{self.check.identifier}": {self.message}'
+        return f'Issue of severity {self.severity.name} with check "{self.identifier}": {self.message}'
 
     def to_dict(
         self,
@@ -150,6 +177,10 @@ class CheckIssue:
         }
         if with_check:
             result["check"] = self.check.to_dict(with_requirement=with_requirement, with_profile=with_profile)
+            result["check"]["source_identifier"] = self.check.identifier
+            result["check"]["identifier"] = self.identifier
+            result["check"]["source_profile"] = self.source_profile_identifier
+            result["check"]["profile"] = self.profile_identifier
         return result
 
     def to_json(
@@ -167,6 +198,44 @@ class CheckIssue:
             indent=4,
             cls=CustomEncoder,
         )
+
+
+class ValidationExtraCheck:
+    """A non-blocking extra_check produced by an optional heuristic check."""
+
+    def __init__(
+        self,
+        check: RequirementCheck,
+        message: str,
+        context: ValidationContext,
+        *,
+        violating_entity: str | None = None,
+        violating_property: str | None = None,
+        value: str | None = None,
+    ):
+        self.check = check
+        self.message = message
+        self.identifier = context.effective_check_identifier(check)
+        self.violating_entity = violating_entity
+        self.violating_property = violating_property
+        self.value = value
+
+    def to_dict(self) -> dict[str, str | None]:
+        return {
+            "check": self.identifier,
+            "message": self.message,
+            "violatingEntity": self.violating_entity,
+            "violatingProperty": self.violating_property,
+            "violatingPropertyValue": self.value,
+        }
+
+    def __repr__(self) -> str:
+        return f"ValidationExtraCheck(check={self.identifier!r}, message={self.message!r})"
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, ValidationExtraCheck) and self.to_dict() == other.to_dict()
+
+    __hash__ = None  # type: ignore[assignment]
 
 
 class ValidationResult:
@@ -194,13 +263,16 @@ class ValidationResult:
         self._validation_settings: ValidationSettings = context.settings
         # keep track of the issues found during the validation
         self._issues: list[CheckIssue] = []
+        self._extra_checks: list[ValidationExtraCheck] = []
         # keep track of the checks that have been executed
         self._executed_checks: set[RequirementCheck] = set()
         self._executed_checks_results: dict[str, bool] = {}
+        self._check_results: dict[str, CheckResult] = {}
         # keep track of the checks that have been skipped
         self._skipped_checks: set[RequirementCheck] = set()
+        self._skipped_check_details: dict[str, SkippedCheckDetail] = {}
         # initialize the statistics
-        self._statistics = ValidationStatistics(context.settings)
+        self._statistics = ValidationStatistics(context.settings, context=context)
 
     @property
     def context(self) -> ValidationContext:
@@ -239,41 +311,104 @@ class ValidationResult:
         """
         return self._executed_checks
 
-    def _add_executed_check(self, check: RequirementCheck, result: bool):
+    def _record_check_result(
+        self,
+        check: RequirementCheck,
+        result: CheckResultValue,
+        skip_message: str | None = None,
+        skip_category: SkipCategoryInput = SkipCategory.RETURNED,
+    ) -> CheckResult:
+        """Record a normalized result and keep check collections consistent."""
+        normalized_result = normalize_check_result(result)
+        self._check_results[check.identifier] = normalized_result
+
+        if normalized_result is CheckResult.SKIPPED:
+            normalized_skip_category = normalize_skip_category(skip_category)
+            self._executed_checks.discard(check)
+            self._skipped_checks.add(check)
+            self._executed_checks_results.pop(check.identifier, None)
+            current_detail = self._skipped_check_details.get(check.identifier)
+            if current_detail is None or (skip_message and current_detail.category == "returned"):
+                self._skipped_check_details[check.identifier] = SkippedCheckDetail(
+                    check=check,
+                    message=skip_message or "Check returned SKIPPED",
+                    category=normalized_skip_category,
+                    context=getattr(self, "_context", None),
+                )
+            return normalized_result
+
+        self._executed_checks.add(check)
+        self._skipped_checks.discard(check)
+        self._skipped_check_details.pop(check.identifier, None)
+        self._executed_checks_results[check.identifier] = normalized_result is CheckResult.PASSED
+        return normalized_result
+
+    def _add_executed_check(self, check: RequirementCheck, result: CheckResultValue):
         """
         Internal method to add a check to the executed checks
         """
-        self._executed_checks.add(check)
-        self._executed_checks_results[check.identifier] = result
-        # remove the check from the skipped checks if it was skipped
-        if check in self._skipped_checks:
-            self._skipped_checks.remove(check)
-            logger.debug("Removing check '%s' from skipped checks", check.name)
+        normalized_result = self._record_check_result(check, result)
+        if normalized_result is not CheckResult.SKIPPED:
+            logger.debug("Recorded check '%s' as %s", check.name, normalized_result.value)
+
+    def get_check_result(self, check: RequirementCheck) -> CheckResult | None:
+        """Get the normalized result of a processed check."""
+        return self._check_results.get(check.identifier)
 
     def get_executed_check_result(self, check: RequirementCheck) -> bool | None:
         """
-        Get the result of an executed check
+        Get the legacy boolean result of an executed check.
+
+        Skipped checks and checks that have not been processed return ``None``.
         """
         return self._executed_checks_results.get(check.identifier)
 
     @property
     def skipped_checks(self) -> set[RequirementCheck]:
         """
-        The checks that have been skipped
-        """
-        return self._skipped_checks
+        The reportable checks that have been skipped.
 
-    def _add_skipped_check(self, check: RequirementCheck):
+        Internal outcomes remain available through ``get_check_result`` even
+        for hidden, overridden or otherwise out-of-scope checks.
+        """
+        return {check for check in self._skipped_checks if check in self.statistics.checks}
+
+    @property
+    def skipped_checks_count(self) -> int:
+        """Get the number of skipped checks."""
+        return len(self.skipped_checks)
+
+    @property
+    def skipped_check_details(self) -> list[SkippedCheckDetail]:
+        """Get the ordered explanations for skipped checks."""
+        return [detail for detail in self._skipped_check_details.values() if detail.check in self.statistics.checks]
+
+    def record_skip(
+        self,
+        check: RequirementCheck,
+        message: str,
+        category: SkipCategoryInput = SkipCategory.RETURNED,
+    ) -> None:
+        """Record a skip message while preserving the normalized skipped result."""
+        self._record_check_result(check, CheckResult.SKIPPED, message, category)
+
+    def _add_skipped_check(
+        self,
+        check: RequirementCheck,
+        message: str = "Check was skipped",
+        category: SkipCategoryInput = SkipCategory.RETURNED,
+    ):
         """
         Internal method to add a check to the skipped checks
         """
-        self._skipped_checks.add(check)
+        self._record_check_result(check, CheckResult.SKIPPED, message, category)
 
     def _remove_skipped_check(self, check: RequirementCheck):
         """
         Internal method to remove a check from the skipped checks
         """
         self._skipped_checks.remove(check)
+        self._skipped_check_details.pop(check.identifier, None)
 
     #  --- Issues ---
     @property
@@ -282,6 +417,30 @@ class ValidationResult:
         The issues found during the validation
         """
         return self._issues.copy()
+
+    @property
+    def extra_checks(self) -> list[ValidationExtraCheck]:
+        """Non-blocking heuristic findings, separate from conformance issues."""
+        return self._extra_checks.copy()
+
+    def add_extra_check(
+        self,
+        check: RequirementCheck,
+        message: str,
+        violating_entity: str | None = None,
+        violating_property: str | None = None,
+        value: str | None = None,
+    ) -> ValidationExtraCheck:
+        extra_check = ValidationExtraCheck(
+            check,
+            message,
+            self.context,
+            violating_entity=violating_entity,
+            violating_property=violating_property,
+            value=value,
+        )
+        self._extra_checks.append(extra_check)
+        return extra_check
 
     def get_issues(self, min_severity: Severity | None = None) -> list[CheckIssue]:
         """
@@ -326,16 +485,19 @@ class ValidationResult:
         Parameters:
             message(str): The message of the issue
             check(RequirementCheck): The check that generated the issue
-            violatingEntity(Optional[str]): The entity that caused the issue (if any)
-            violatingProperty(Optional[str]): The property that caused the issue (if any)
-            violatingPropertyValue(Optional[str]): The value of the violatingProperty (if any)
+        violatingEntity(Optional[str]): The entity that caused the issue (if any)
+        violatingProperty(Optional[str]): The property that caused the issue (if any)
+        violatingPropertyValue(Optional[str]): The value of the violatingProperty (if any)
         """
+        if check.extra_check:
+            raise ValueError(f"ExtraCheck check '{check.name}' cannot add a conformance issue")
         c = CheckIssue(
             check,
             message,
             violatingProperty=violatingProperty,
             violatingEntity=violatingEntity,
             value=violatingPropertyValue,
+            context=self.context,
         )
         bisect.insort(self._issues, c)
         return c
@@ -383,9 +545,9 @@ class ValidationResult:
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, ValidationResult):
             raise TypeError(f"Cannot compare ValidationResult with {type(other)}")
-        return self._issues == other._issues
+        return self._issues == other._issues and self._extra_checks == other._extra_checks
 
-    # Equality is based on the mutable list of issues, so instances are
+    # Equality is based on mutable issue and extra_check lists, so instances are
     # intentionally unhashable (a content-based hash would be unstable).
     __hash__ = None  # type: ignore[assignment]
 
@@ -398,15 +560,28 @@ class ValidationResult:
             "enable_profile_inheritance",
             "requirement_severity",
             "abort_on_first",
+            "metadata_only",
+            "packaging_mode",
+            "package_root",
         ]
         validation_settings = {
             key: value for key, value in self.validation_settings.to_dict().items() if key in allowed_properties
         }
+        validation_settings["package_type"] = self.context.ro_crate.package_type.value
+        validation_settings["packaging_mode_explicit"] = self.context.ro_crate.packaging_mode_explicit
+        validation_settings["metadata_source"] = (
+            "dictionary" if self.validation_settings.metadata_dict is not None else "package descriptor"
+        )
+        if self.validation_settings.package_root is not None:
+            validation_settings["package_root"] = str(self.validation_settings.package_root)
         result: dict[str, Any] = {
             "meta": {"version": JSON_OUTPUT_FORMAT_VERSION},
             "validation_settings": validation_settings,
             "passed": self.passed(cast("Severity", self.context.settings.requirement_severity)),
             "issues": [issue.to_dict() for issue in self.issues],
+            "extra_checks": [extra_check.to_dict() for extra_check in self.extra_checks],
+            "skipped_checks": self.skipped_checks_count,
+            "skipped_check_details": [detail.to_dict() for detail in self.skipped_check_details],
         }
         # add validator version to the settings
         result["validation_settings"]["rocrate_validator_version"] = __version__

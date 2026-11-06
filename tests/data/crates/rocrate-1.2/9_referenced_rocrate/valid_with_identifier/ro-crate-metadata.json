@@ -30,11 +30,9 @@
       "funder": {
         "@id": "https://ror.org/012345678"
       },
-      "hasPart": [
-        {
-          "@id": "https://example.org/persistent-crate/"
-        }
-      ],
+      "hasPart": {
+        "@id": "https://example.org/persistent-crate/"
+      },
       "identifier": {
         "@id": "#uuid"
       }

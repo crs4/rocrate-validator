@@ -13,16 +13,18 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
-=============================================
-Welcome to rocrate-validator's documentation!
-=============================================
+.. role:: product-name
+
+=============================================================
+Welcome to :product-name:`rocrate-validator`'s documentation!
+=============================================================
 
 .. _index:
 
 .. include:: ../README.md
       :parser: myst_parser.sphinx_
-      :start-line: 2
-      :end-line: 32
+      :start-after: # rocrate-validator
+      :end-before: ## Installation
 
 
 .. include:: 0_toc.rst

@@ -19,6 +19,8 @@ from typing import TYPE_CHECKING
 from rich.align import Align
 from rich.markdown import Markdown
 from rich.padding import Padding
+from rich.table import Table
+from rich.text import Text
 
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.io_helpers.colors import get_severity_color
@@ -45,26 +47,38 @@ class ValidationResultTextOutputFormatter(OutputFormatter):
         # Print validation details
         # Print the list of failed requirements
         yield Padding("\n[bold]The following requirements have not been met: [/bold]", (0, 2))
+        context = result.context
         for requirement in sorted(result.failed_requirements, key=lambda x: x.identifier):
-            yield Align(f"\n[profile: [magenta bold]{requirement.profile.name}[/magenta bold]]", align="right")
+            failed_checks = sorted(
+                result.get_failed_checks_by_requirement(requirement),
+                key=context.effective_check_identifier,
+            )
+            if not failed_checks:
+                continue
+
+            effective_profile = context.effective_check_profile(failed_checks[0])
+            effective_requirement_identifier = context.effective_check_identifier(failed_checks[0]).rsplit(".", 1)[0]
+
+            yield Align(f"\n[profile: [magenta bold]{effective_profile.name}[/magenta bold]]", align="right")
 
             yield Padding(
-                f"[bold][cyan][u][ {requirement.identifier} ]: {Markdown(requirement.name).markup}[/u][/cyan][/bold]",
+                f"[bold][cyan][u][ {effective_requirement_identifier} ]: "
+                f"{Markdown(requirement.name).markup}[/u][/cyan][/bold]",
                 (0, 5),
             )
             yield Padding(Markdown(requirement.description), (1, 6))
             yield Padding("[white bold u]  Failed checks  [/white bold u]\n", (0, 8))
 
-            for check in sorted(
-                result.get_failed_checks_by_requirement(requirement), key=lambda x: (-x.severity.value, x)
-            ):
+            failed_checks.sort(key=lambda check: (-check.severity.value, check))
+            for check in failed_checks:
                 issue_color = get_severity_color(check.level.severity)
+                effective_check_identifier = context.effective_check_identifier(check)
                 yield Padding(
-                    f"[bold][{issue_color}][ {check.identifier.center(16)} ][/{issue_color}] "
-                    f"[magenta]{check.name}[/magenta][/bold]:",
+                    f"[bold][{issue_color}][ {effective_check_identifier.center(16)} ][/{issue_color}] "
+                    f"[hot_pink]{check.name}[/hot_pink][/bold]:",
                     (1, 8, 0, 8),
                 )
-                yield Padding(Markdown(check.description), (0, 0, 0, len(check.identifier) + 13))
+                yield Padding(Markdown(check.description), (0, 0, 0, len(effective_check_identifier) + 13))
                 yield Padding("[u] Detected issues [/u]", (0, 8))
                 for issue in sorted(result.get_issues_by_check(check), key=lambda x: (-x.severity.value, x)):
                     path = ""
@@ -83,6 +97,49 @@ class ValidationResultTextOutputFormatter(OutputFormatter):
                         yield Padding("\n", (0, 0))
             yield Padding("\n", (0, 0))
 
+        yield from self._render_extra_checks(result)
+
+    @staticmethod
+    def _render_extra_checks(result: ValidationResult) -> RenderResult:
+        extra_checks = result.extra_checks
+        if not extra_checks:
+            return
+        finding_count = len(extra_checks)
+        finding_label = "finding" if finding_count == 1 else "findings"
+        check_count = len({extra_check.identifier for extra_check in extra_checks})
+        caption = Text(f"{finding_count} {finding_label}: ")
+        if finding_count == 1:
+            caption.append("this finding is advisory and does not affect conformance.", style="dim italic")
+        else:
+            caption.append("findings are advisory and do not affect conformance.", style="dim italic")
+        table = Table(
+            title=f"ExtraCheck Checks ({check_count})",
+            title_style="bold orange1",
+            border_style="orange1",
+            header_style="bold orange1",
+            show_lines=False,
+            caption=caption,
+            caption_justify="center",
+        )
+        table.add_column("Profile", style="cyan", no_wrap=True)
+        table.add_column("Check", no_wrap=True)
+        table.add_column("Entity", style="cyan", overflow="fold")
+        table.add_column("Property", style="yellow", overflow="fold")
+        table.add_column("Value", style="green", overflow="fold")
+        table.add_column("Finding", overflow="fold")
+
+        for extra_check in extra_checks:
+            table.add_row(
+                Text(result.context.effective_check_profile(extra_check.check).identifier, style="cyan"),
+                Text(extra_check.identifier, style=get_severity_color(extra_check.check.severity)),
+                extra_check.violating_entity or "—",
+                extra_check.violating_property or "—",
+                f'"{extra_check.value}"' if extra_check.value is not None else "—",
+                Text(extra_check.message),
+            )
+
+        yield Padding(table, (1, 2))
+
 
 class ValidationStatisticsTextOutputFormatter(OutputFormatter):
     def __init__(self, validation_statistics: ValidationStatistics):
@@ -98,3 +155,13 @@ class ValidationStatisticsTextOutputFormatter(OutputFormatter):
         if layout.layout is not None:
             yield layout.layout
         yield Padding("\n", (0, 0))
+
+
+class ValidationExtraChecksTextOutputFormatter(OutputFormatter):
+    """Render advisory extra_checks independently from conformance details."""
+
+    def __init__(self, validation_result: ValidationResult):
+        self._validation_result = validation_result
+
+    def __rich_console__(self, console: Console, options: ConsoleOptions) -> RenderResult:
+        yield from ValidationResultTextOutputFormatter._render_extra_checks(self._validation_result)

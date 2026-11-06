@@ -22,12 +22,12 @@
       },
       "hasPart": [
         {
-          "@id": "file://./my-test-file.txt"
+          "@id": "/my-test-file.txt"
         }
       ]
     },
     {
-      "@id": "file://./my-test-file.txt",
+      "@id": "/my-test-file.txt",
       "@type": "File",
       "name": "My Test File",
       "description": "A test file for RO-Crate.",

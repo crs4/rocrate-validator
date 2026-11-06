@@ -138,6 +138,7 @@ def cache_info(ctx, cache_path: Path | None = None):
 @click.pass_context
 def cache_list(
     ctx,
+    *,
     cache_path: Path | None = None,
     url_filter: str | None = None,
     sort_by: str = "created",
@@ -304,6 +305,7 @@ def cache_reset(ctx, cache_path: Path | None = None, yes: bool = False):
 @click.pass_context
 def cache_warm(
     ctx,
+    *,
     cache_path: Path | None = None,
     profiles_path: Path | None = None,
     extra_profiles_path: Path | None = None,

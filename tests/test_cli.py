@@ -14,20 +14,28 @@
 
 import json
 import re
+from io import StringIO
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 
 from click.testing import CliRunner
-from pytest import fixture
+from pytest import fixture, mark
+from rdflib import Graph
 
 from rocrate_validator import services
+from rocrate_validator.cli.commands.validate import _resolve_profile_identifiers
 from rocrate_validator.cli.main import cli
+from rocrate_validator.errors import BadSyntaxError
+from rocrate_validator.models import ProfileDetectionDiagnostic, ProfileDetectionResult, ValidationContext
 from rocrate_validator.requirements.python import PyFunctionCheck
 from rocrate_validator.requirements.shacl.checks import SHACLCheck
 from rocrate_validator.utils import log as logging
+from rocrate_validator.utils.io_helpers.output.console import Console
 from rocrate_validator.utils.versioning import get_version
 from tests.conftest import SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER
-from tests.ro_crates import InvalidFileDescriptor, ValidROC
+from tests.ro_crates import InvalidFileDescriptor, InvalidFileDescriptorEntity, ValidROC
+from tests.ro_crates_v1_3 import ValidROCrate13
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -48,6 +56,106 @@ def test_version(cli_runner: CliRunner):
     assert get_version() in result.output
 
 
+def test_validate_packaging_mode_option(cli_runner: CliRunner, tmp_path: Path):
+    help_result = cli_runner.invoke(cli, ["validate", "--help"])
+    assert help_result.exit_code == 0
+    assert "--packaging-mode" in help_result.output
+
+    invalid_choice = cli_runner.invoke(cli, ["validate", "--packaging-mode", "unknown"])
+    assert invalid_choice.exit_code != 0
+    assert "auto" in invalid_choice.output
+
+    (tmp_path / "ro-crate-metadata.json").write_text("{}")
+    incompatible = cli_runner.invoke(
+        cli,
+        ["validate", str(tmp_path), "--packaging-mode", "detached", "--no-auto-profile", "--no-paging"],
+    )
+    assert incompatible.exit_code != 0
+    assert "standalone metadata document" in incompatible.output
+
+
+def test_profile_detection_cli_escapes_metadata_values_in_warning(monkeypatch):
+    """Malformed metadata values containing Rich markup are rendered as plain text."""
+    detection = ProfileDetectionResult(
+        profiles=[],
+        diagnostics=[
+            ProfileDetectionDiagnostic(
+                code="INVALID_CONFORMS_TO",
+                property="conformsTo",
+                location="RO-Crate Metadata Descriptor",
+                value="[/]",
+                message="Expected a JSON-LD reference object containing `@id`.",
+            )
+        ],
+    )
+    output = StringIO()
+    monkeypatch.setattr(services, "detect_profiles_detailed", lambda **kwargs: detection)
+
+    profile_identifiers, _ = _resolve_profile_identifiers(
+        Console(file=output, width=200),
+        interactive=False,
+        no_auto_profile=False,
+        available_profiles=[],
+        profile_identifiers=[],
+        validation_settings={},
+    )
+
+    assert profile_identifiers == ["ro-crate"]
+    assert "[/]" in output.getvalue()
+
+
+@mark.parametrize("interactive, confirmation", [(False, None), (True, "y"), (True, "n")])
+def test_profile_detection_cli_confirms_string_profile(monkeypatch, interactive, confirmation):
+    """A string profile URI is used only after interactive confirmation."""
+    output = StringIO()
+    profile = SimpleNamespace(identifier="ro-crate-1.3", uri="https://w3id.org/ro/crate/1.3")
+    settings = {
+        "rocrate_uri": "/tmp/string-profile-cli",
+        "metadata_only": True,
+        "metadata_dict": {
+            "@context": {},
+            "@graph": [
+                {"@id": "ro-crate-metadata.json", "about": {"@id": "./"}, "conformsTo": profile.uri},
+                {"@id": "./", "@type": "Dataset"},
+            ],
+        },
+    }
+    profile.inherited_profiles = []
+    monkeypatch.setattr("rocrate_validator.models.profile.Profile.load_profiles", lambda *args, **kwargs: [profile])
+    prompts = []
+
+    def confirm(*args, **kwargs):
+        prompts.append(kwargs["message"])
+        return confirmation
+
+    monkeypatch.setattr("rocrate_validator.cli.commands.validate.get_single_char", confirm)
+    monkeypatch.setattr("rocrate_validator.cli.commands.validate.multiple_choice", lambda *args: [])
+    identifiers, autodetection = _resolve_profile_identifiers(
+        Console(file=output, width=200),
+        interactive=interactive,
+        no_auto_profile=False,
+        available_profiles=[profile],
+        profile_identifiers=[],
+        validation_settings=settings,
+    )
+
+    accepted = interactive and confirmation == "y"
+    assert identifiers == (["ro-crate-1.3"] if accepted else ["ro-crate"])
+    assert autodetection is accepted
+    assert len(prompts) == int(interactive)
+    text = output.getvalue()
+    assert "WARNING: Non-conforming metadata" in text
+    assert "RO-Crate Metadata Descriptor" in text
+    assert 'Use {"@id": "https://w3id.org/ro/crate/1.3"} instead.' in text
+    if interactive:
+        assert "The string URI matches the available profile ro-crate-1.3" in text
+        assert "Use this profile for validation?" in prompts[0]
+    else:
+        assert "--profile-identifier" in text
+    if accepted:
+        assert "Unable to automatically detect" not in text
+
+
 def test_validate_subcmd_invalid_rocrate1(cli_runner: CliRunner):
     result = cli_runner.invoke(
         cli,
@@ -57,10 +165,99 @@ def test_validate_subcmd_invalid_rocrate1(cli_runner: CliRunner):
     assert result.exit_code == 1
 
 
+@mark.parametrize("use_directory", [False, True])
+def test_validate_invalid_json_reports_syntax_location(cli_runner: CliRunner, tmp_path: Path, use_directory):
+    """Malformed JSON is explained before attempting to select a profile."""
+    metadata = tmp_path / "ro-crate-metadata.json"
+    metadata.write_text(
+        '{\n  "@graph": [{\n    "@id": "ro-crate-metadata.json",\n'
+        '    "conformsTo": "@id": "https://w3id.org/ro/crate/1.3"\n  }]\n}'
+    )
+
+    result = cli_runner.invoke(cli, ["validate", str(tmp_path if use_directory else metadata), "--no-paging"])
+
+    assert result.exit_code == 2
+    assert "The RO-Crate metadata is not valid JSON." in result.output
+    assert "line 4, column 24" in result.output
+    assert "Expecting ',' delimiter" in result.output
+    assert '"conformsTo": "@id":' in result.output
+    assert "^" in result.output
+    assert "Correct the JSON syntax" in result.output
+    assert "Unexpected error" not in result.output
+    assert "Unable to automatically detect" not in result.output
+
+
 def test_validate_subcmd_valid_local_folder_rocrate(cli_runner: CliRunner):
     result = cli_runner.invoke(cli, ["validate", str(ValidROC().wrroc_paper_long_date), "--verbose", "--no-paging"])
     assert result.exit_code == 0
     assert re.search(r"RO-Crate.*is a valid", result.output)
+
+
+def test_validate_subcmd_pyshacl_engine_failure_exits_with_error(cli_runner: CliRunner, monkeypatch):
+    """An internal pySHACL failure must never be reported as valid by the CLI."""
+
+    def fail_validation(*args, **kwargs):
+        raise ImportError("cannot import name 'ConjunctiveLike' from 'pyshacl.consts'")
+
+    monkeypatch.setattr(ValidationContext, "data_graph", property(lambda self: Graph()))
+    monkeypatch.setattr("rocrate_validator.requirements.shacl.validator.pyshacl.validate", fail_validation)
+    result = cli_runner.invoke(
+        cli,
+        ["validate", str(ValidROC().wrroc_paper_long_date), "--no-paging", "-p", "ro-crate"],
+    )
+
+    assert result.exit_code == 2
+    assert "SHACL validation could not be executed" in result.output
+    assert "ConjunctiveLike" in result.output
+    assert "is a valid" not in result.output
+
+
+def test_validate_subcmd_profile_syntax_error_is_concise_without_debug(cli_runner: CliRunner, monkeypatch):
+    """Parser failures must show a concise extra_check without a traceback by default."""
+
+    def fail_validation(*args, **kwargs):
+        raise BadSyntaxError(
+            "at line 26 of <>:\nBad syntax (expected '.') at ^ in:\nsource dump",
+            "shapes.ttl",
+            line=26,
+            character=5,
+        )
+
+    monkeypatch.setattr("rocrate_validator.cli.commands.validate.services.validate", fail_validation)
+    result = cli_runner.invoke(
+        cli,
+        ["validate", str(ValidROC().wrroc_paper_long_date), "--no-paging", "-p", "ro-crate"],
+    )
+
+    assert result.exit_code == 2
+    assert "The validation profile could not be parsed" in result.output
+    assert "line 26, character 5" in result.output
+    assert "line 26, character 5 -->" in result.output
+    assert "Bad syntax (expected '.')" in result.output
+    assert "Traceback" not in result.output
+
+
+def test_validate_subcmd_profile_syntax_error_renders_traceback_in_debug(cli_runner: CliRunner, monkeypatch):
+    """Debug mode must render parser exception chains without a Rich renderer crash."""
+
+    def fail_validation(*args, **kwargs):
+        try:
+            Graph().parse(data="not valid turtle", format="turtle")
+        except Exception as cause:
+            raise BadSyntaxError(str(cause), "shapes.ttl") from cause
+        raise AssertionError("The RDF parser unexpectedly accepted invalid Turtle")
+
+    monkeypatch.setattr("rocrate_validator.cli.commands.validate.services.validate", fail_validation)
+    result = cli_runner.invoke(
+        cli,
+        ["--debug", "validate", str(ValidROC().wrroc_paper_long_date), "--no-paging", "-p", "ro-crate"],
+    )
+
+    assert result.exit_code == 2
+    assert "The validation profile could not be parsed" in result.output
+    assert "Debug traceback" in result.output
+    assert "Traceback (most recent call last)" in result.output
+    assert "TypeError: str or Text instance required" not in result.output
 
 
 def test_validate_subcmd_valid_remote_rocrate(cli_runner: CliRunner):
@@ -147,6 +344,31 @@ def test_validate_skip_checks_option(cli_runner: CliRunner):
         )
 
 
+def test_validate_extra_checks_option(cli_runner: CliRunner):
+    called_args: list = []
+
+    def mock_validate(*args, **kwargs):
+        called_args.extend(args)
+
+    with patch("rocrate_validator.cli.commands.validate.services.validate") as mock_validate_rocrate:
+        mock_validate_rocrate.return_value = None
+        mock_validate_rocrate.side_effect = mock_validate
+        result = cli_runner.invoke(
+            cli,
+            [
+                "--no-interactive",
+                "validate",
+                str(ValidROC().sort_and_change_archive),
+                "--extra-checks",
+                "--no-paging",
+            ],
+        )
+
+    assert result.exit_code == 2
+    settings = called_args[0]
+    assert settings["extra_checks"] is True
+
+
 def test_validate_output_file_text_report(cli_runner: CliRunner, tmp_path: Path):
     output_file = tmp_path / "report.txt"
     result = cli_runner.invoke(
@@ -188,6 +410,77 @@ def test_validate_output_file_json_report(cli_runner: CliRunner, tmp_path: Path)
     json.loads(output_file.read_text(encoding="utf-8"))  # must be valid JSON
 
 
+def test_validate_show_skipped_checks(cli_runner: CliRunner):
+    result = cli_runner.invoke(
+        cli,
+        [
+            "validate",
+            str(InvalidFileDescriptorEntity().invalid_conforms_to),
+            "--profile-identifier",
+            "ro-crate-1.1",
+            "--skip-checks",
+            "ro-crate-1.1_5.3,ro-crate-1.1_12.1",
+            "--show-skipped-checks",
+            "--no-paging",
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert "Skipped Checks" in result.output
+    assert "ro-crate-1.1_5.3" in result.output
+    assert "configured" in result.output
+
+
+def test_validate_text_report_file_includes_skipped_checks(cli_runner: CliRunner, tmp_path: Path):
+    output_file = tmp_path / "report.txt"
+    result = cli_runner.invoke(
+        cli,
+        [
+            "validate",
+            str(InvalidFileDescriptorEntity().invalid_conforms_to),
+            "--profile-identifier",
+            "ro-crate-1.1",
+            "--skip-checks",
+            "ro-crate-1.1_5.3,ro-crate-1.1_12.1",
+            "--show-skipped-checks",
+            "--output-file",
+            str(output_file),
+            "--no-paging",
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    report = output_file.read_text(encoding="utf-8")
+    assert "Skipped Checks" in report
+    assert "ro-crate-1.1_12.1" in report
+
+
+def test_validate_json_report_aggregates_skipped_checks(cli_runner: CliRunner, tmp_path: Path):
+    output_file = tmp_path / "report.json"
+    result = cli_runner.invoke(
+        cli,
+        [
+            "validate",
+            str(InvalidFileDescriptorEntity().invalid_conforms_to),
+            "--profile-identifier",
+            "ro-crate-1.1",
+            "--skip-checks",
+            "ro-crate-1.1_5.3,ro-crate-1.1_12.1",
+            "--output-format",
+            "json",
+            "--output-file",
+            str(output_file),
+            "--no-paging",
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    payload = json.loads(output_file.read_text(encoding="utf-8"))
+    assert payload["skipped_checks"] >= 2
+    skipped_ids = {detail["identifier"] for detail in payload["skipped_check_details"]}
+    assert {"ro-crate-1.1_5.3", "ro-crate-1.1_12.1"} <= skipped_ids
+
+
 def test_validate_with_invalid_profiles_path_dir(cli_runner: CliRunner):
     dummy_profiles_path = "/tmp/dummy_profiles"
     result = cli_runner.invoke(
@@ -217,6 +510,65 @@ def test_profiles_list(cli_runner: CliRunner):
     result = cli_runner.invoke(cli, ["profiles", "list", "--no-paging"], env={"COLUMNS": "200"})
     assert result.exit_code == 0
     assert "ro-crate-1.1" in result.output  # Check for a known profile
+
+
+def test_profiles_check(cli_runner: CliRunner) -> None:
+    """Resolve the bare RO-Crate token to the latest profile in check reports."""
+    result = cli_runner.invoke(cli, ["profiles", "check", "ro-crate", "--no-paging"])
+
+    assert result.exit_code == 0
+    assert "Profile checks: ro-crate-1.3" in result.output
+    assert "unique-requirement-check-identity" in result.output
+    assert "rule-overlay-consistency" in result.output
+    assert "PASS" in result.output
+
+
+def test_profiles_check_reports_invalid_profile(cli_runner: CliRunner, fake_profiles_path: Path):
+    result = cli_runner.invoke(
+        cli,
+        [
+            "profiles",
+            "--extra-profiles-path",
+            str(fake_profiles_path),
+            "check",
+            "invalid-duplicated-shapes",
+            "--no-paging",
+        ],
+    )
+
+    assert result.exit_code == 1
+    assert "unique-requirement-check-identity" in result.output
+    assert "FAIL" in result.output
+
+
+def test_validate_no_auto_profile_falls_back_to_1_3(cli_runner: CliRunner):
+    """
+    With auto-detection disabled the base `ro-crate` profile is used, and that
+    now resolves to 1.3.
+    """
+    result = cli_runner.invoke(
+        cli,
+        ["validate", str(ValidROCrate13().attached), "--no-auto-profile", "--no-paging"],
+    )
+    assert result.exit_code == 0
+    assert "ro-crate-1.3" in result.output
+
+
+def test_validate_auto_profile_still_uses_the_declared_profile(cli_runner: CliRunner):
+    """
+    Auto-detection keeps a 1.1 crate on the 1.1 profile: the new default only
+    applies when no profile can be detected.
+    """
+    result = cli_runner.invoke(cli, ["validate", str(ValidROC().wrroc_paper), "--no-paging"])
+    assert result.exit_code == 0
+    assert "ro-crate-1.1" in result.output
+
+
+def test_profiles_describe_defaults_to_1_3(cli_runner: CliRunner):
+    """`profiles describe` with no argument describes the default profile."""
+    result = cli_runner.invoke(cli, ["profiles", "describe", "--no-paging"])
+    assert result.exit_code == 0
+    assert "Profile: ro-crate-1.3" in result.output
 
 
 def test_extra_profiles_list(cli_runner: CliRunner, fake_profiles_path: Path):
@@ -274,6 +626,8 @@ def test_profiles_describe_verbose(cli_runner: CliRunner):
     result = cli_runner.invoke(cli, ["profiles", "describe", _DESCRIBE_TEST_PROFILE, "-v", "--no-paging"])
     assert result.exit_code == 0
     assert check.identifier in result.output
+    assert "Effective ID" in result.output
+    assert "Source ID" in result.output
 
 
 def test_describe_check_relative_id(cli_runner: CliRunner):
@@ -298,7 +652,7 @@ def test_describe_check_unknown(cli_runner: CliRunner):
     """An out-of-range check id produces a usage error with a hint."""
     result = cli_runner.invoke(cli, ["profiles", "describe", _DESCRIBE_TEST_PROFILE, "99.99", "--no-paging"])
     assert result.exit_code == 2
-    assert "No requirement #99" in result.output
+    assert "No effective check '99.99'" in result.output
 
 
 def test_describe_check_bad_format(cli_runner: CliRunner):
@@ -314,7 +668,51 @@ def test_describe_check_profile_mismatch(cli_runner: CliRunner):
         cli, ["profiles", "describe", _DESCRIBE_TEST_PROFILE, "some-other-profile_1.1", "--no-paging"]
     )
     assert result.exit_code == 2
-    assert "does not belong to profile" in result.output
+    assert "is not part of effective profile" in result.output
+
+
+def test_describe_overlay_profile_distinguishes_inherited_and_replaced_checks(cli_runner: CliRunner):
+    result = cli_runner.invoke(
+        cli,
+        [
+            "profiles",
+            "--profiles-path",
+            "tests/data/profiles/effective_checks",
+            "describe",
+            "effective-b",
+            "-v",
+            "--no-paging",
+        ],
+        env={"COLUMNS": "160"},
+    )
+
+    assert result.exit_code == 0, result.output
+    assert "Replaces effective-a_1.2" in result.output
+    assert "Inherited from effective-a" in result.output
+    assert "effective-b_1.1" in result.output
+    assert "effective-a_1.1" in result.output
+
+
+def test_describe_inherited_overlay_check_shows_provenance(cli_runner: CliRunner):
+    result = cli_runner.invoke(
+        cli,
+        [
+            "profiles",
+            "--profiles-path",
+            "tests/data/profiles/effective_checks",
+            "describe",
+            "effective-b",
+            "1.1",
+            "--no-paging",
+        ],
+        env={"COLUMNS": "160"},
+    )
+
+    assert result.exit_code == 0, result.output
+    assert "Relation: Inherited from effective-a" in result.output
+    assert "Effective ID: effective-b_1.1" in result.output
+    assert "Source ID: effective-a_1.1" in result.output
+    assert "Source profile: effective-a" in result.output
 
 
 def test_describe_check_verbose_python(cli_runner: CliRunner):

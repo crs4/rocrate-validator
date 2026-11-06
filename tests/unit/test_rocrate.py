@@ -19,6 +19,8 @@ from pathlib import Path
 import pytest
 
 from rocrate_validator.errors import ROCrateInvalidURIError
+from rocrate_validator.models import URI, ValidationSettings, Validator
+from rocrate_validator.models import profile_detection as profile_detection_module
 from rocrate_validator.rocrate import (
     BagitROCrate,
     ROCrate,
@@ -31,6 +33,7 @@ from rocrate_validator.rocrate import (
     ROCrateMetadata,
     ROCrateRemoteZip,
 )
+from rocrate_validator.rocrate import metadata as metadata_module
 from rocrate_validator.utils import log as logging
 from tests.ro_crates import InvalidDataEntity, ValidROC
 
@@ -224,12 +227,12 @@ def test_valid_local_rocrate():
 
     # test file size
     size = roc.get_file_size(metadata_file_descriptor)
-    assert size == 26788, "Size should be 26788"
+    assert size == 26708, "Size should be 26708"
 
     # test crate size — updated after `f8d16ba6` trimmed trailing whitespace
     # from `index.html` / `ro-crate-preview.html` (~6.7 KB delta from the
     # historical 311817).
-    assert roc.size == 305049, "Size should be 305049"
+    assert roc.size == 304969, "Size should be 304969"
 
     # test get_file_content binary mode
     content = roc.get_file_content(metadata_file_descriptor)
@@ -586,6 +589,127 @@ def _metadata_dict_with_id(entity_id: str) -> dict:
     }
 
 
+def _metadata_dict_with_main_entity(main_entity: object) -> dict:
+    """Build a minimal RO-Crate metadata dict with a configurable mainEntity."""
+    return {
+        "@context": "https://w3id.org/ro/crate/1.1/context",
+        "@graph": [
+            {
+                "@id": "ro-crate-metadata.json",
+                "@type": "CreativeWork",
+                "about": {"@id": "./"},
+            },
+            {
+                "@id": "./",
+                "@type": "Dataset",
+                "mainEntity": main_entity,
+            },
+            {
+                "@id": "workflow.ga",
+                "@type": "File",
+            },
+        ],
+    }
+
+
+@pytest.mark.parametrize(
+    ("entity_id", "getter_name", "location"),
+    [
+        ("ro-crate-metadata.json", "get_conforms_to", "RO-Crate Metadata Descriptor"),
+        ("./", "get_root_data_entity_conforms_to", "Root Data Entity"),
+    ],
+)
+def test_conforms_to_profile_detection_warns_and_skips_string_values(entity_id, getter_name, location, monkeypatch):
+    """String literals are diagnosed and excluded while valid @id references remain detectable."""
+    warnings = []
+    monkeypatch.setattr(metadata_module.logger, "warning", lambda message, *args: warnings.append(message % args))
+    metadata_dict = _metadata_dict_with_id("remote-file")
+    metadata_dict["@graph"][0]["conformsTo"] = {"@id": "https://w3id.org/ro/crate/1.1"}
+    for entity in metadata_dict["@graph"]:
+        if entity["@id"] == entity_id:
+            entity["conformsTo"] = [
+                {"@id": "https://example.org/profile"},
+                "https://example.org/literal-profile",
+            ]
+            break
+
+    crate = ROCrate.from_metadata_dict(metadata_dict)
+
+    assert getattr(crate.metadata, getter_name)() == ["https://example.org/profile"]
+    assert len(warnings) == 1
+    assert "Cannot use" in warnings[0]
+    assert location in warnings[0]
+    assert "https://example.org/literal-profile" in warnings[0]
+    assert "containing `@id`" in warnings[0]
+
+
+def test_automatic_profile_detection_reports_string_conforms_to(monkeypatch):
+    """Automatic detection warns about a literal URI without selecting it."""
+    warnings = []
+    monkeypatch.setattr(
+        profile_detection_module.logger,
+        "warning",
+        lambda message, *args: warnings.append(message % args),
+    )
+    metadata_dict = {
+        "@context": "https://w3id.org/ro/crate/1.2/context",
+        "@graph": [
+            {
+                "@id": "ro-crate-metadata.json",
+                "@type": "CreativeWork",
+                "about": {"@id": "./"},
+                "conformsTo": "https://w3id.org/ro/crate/1.2",
+            },
+            {"@id": "./", "@type": "Dataset", "name": "Test crate"},
+        ],
+    }
+    settings = ValidationSettings(
+        rocrate_uri=URI(ValidROC().wrroc_paper),
+        metadata_dict=metadata_dict,
+        metadata_only=True,
+    )
+
+    assert Validator(settings).detect_rocrate_profiles() == []
+    assert len(warnings) == 1
+    assert "RO-Crate Metadata Descriptor" in warnings[0]
+    assert "https://w3id.org/ro/crate/1.2" in warnings[0]
+
+
+@pytest.mark.parametrize("main_entity", [{"@id": "workflow.ga"}, [{"@id": "workflow.ga"}]])
+def test_get_main_workflow_returns_entity_for_object_and_singleton_array(main_entity):
+    """A singular main workflow accessor accepts both JSON-LD representations."""
+    crate = ROCrate.from_metadata_dict(_metadata_dict_with_main_entity(main_entity))
+    root_data_entity = crate.metadata.get_root_data_entity()
+
+    raw_main_entity = root_data_entity.get_property("mainEntity")
+    main_workflow = crate.metadata.get_main_workflow()
+
+    if isinstance(main_entity, list):
+        assert isinstance(raw_main_entity, list), "Generic property access must preserve list values"
+    else:
+        assert isinstance(raw_main_entity, ROCrateEntity), "Object values must resolve to an entity"
+    assert isinstance(main_workflow, ROCrateEntity), "The singular accessor must return one entity"
+    assert main_workflow.id == "workflow.ga"
+
+
+@pytest.mark.parametrize(
+    "main_entity",
+    [
+        [],
+        [{"@id": "workflow.ga"}, {"@id": "other-workflow.ga"}],
+        "workflow.ga",
+        {"name": "workflow.ga"},
+        {"@id": 42},
+    ],
+)
+def test_get_main_workflow_rejects_invalid_values(main_entity):
+    """Invalid mainEntity cardinality and value shapes raise controlled errors."""
+    crate = ROCrate.from_metadata_dict(_metadata_dict_with_main_entity(main_entity))
+
+    with pytest.raises((TypeError, ValueError), match="mainEntity"):
+        crate.metadata.get_main_workflow()
+
+
 @pytest.mark.parametrize(
     "entity_id",
     [
@@ -621,6 +745,39 @@ def test_absolute_uri_data_entity_is_classified_as_remote(entity_id):
     assert entity not in crate.metadata.get_data_entities(exclude_web_data_entities=True), (
         f"Entity '{entity_id}' should be excluded from local-only data entities"
     )
+
+
+@pytest.mark.parametrize("entity_id", ["example1/", "index.html"])
+def test_explicit_jsonld_base_resolves_relative_data_entity_id(entity_id):
+    """Relative IDs with an HTTPS @base identify web data entities (issue #240)."""
+    metadata_dict = _metadata_dict_with_id(entity_id)
+    metadata_dict["@context"] = [
+        "https://w3id.org/ro/crate/1.2/context",
+        {"@base": "https://www.researchobject.org/workflow-run-crate/profiles/0.5/process_run_crate/"},
+    ]
+    crate = ROCrate.from_metadata_dict(metadata_dict)
+    entity = crate.metadata.get_entity(entity_id)
+
+    assert entity is not None
+    assert entity.id_as_uri.uri == (
+        "https://www.researchobject.org/workflow-run-crate/profiles/0.5/process_run_crate/" + entity_id
+    )
+    assert entity.is_remote()
+    assert entity in crate.metadata.get_web_data_entities()
+    assert entity not in crate.metadata.get_data_entities(exclude_web_data_entities=True)
+
+
+def test_last_explicit_jsonld_base_takes_precedence():
+    metadata_dict = _metadata_dict_with_id("index.html")
+    metadata_dict["@context"] = [
+        {"@base": "https://example.org/old/"},
+        {"@base": "https://example.org/current/"},
+    ]
+    crate = ROCrate.from_metadata_dict(metadata_dict)
+    entity = crate.metadata.get_entity("index.html")
+
+    assert entity is not None
+    assert entity.id_as_uri.uri == "https://example.org/current/index.html"
 
 
 @pytest.mark.parametrize(

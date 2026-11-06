@@ -26,12 +26,46 @@ from rocrate_validator.utils.http import HttpRequester
 
 from .base import ROCrate
 from .metadata import ROCrateMetadata
+from .package_type import PackageType
 
 if TYPE_CHECKING:
     from rocrate_validator.utils.uri import URI
 
 # set up logging
 logger = logging.getLogger(__name__)
+
+
+class ROCrateInMemory(ROCrate):
+    """Metadata without an implicit payload directory or working-directory root."""
+
+    def __init__(self, uri: str = "urn:rocrate-validator:in-memory/"):
+        super().__init__(uri)
+
+    @property
+    def is_in_memory(self) -> bool:
+        return True
+
+    @property
+    def size(self) -> int:
+        return self.metadata.size
+
+    def list_files(self) -> list[Path]:
+        return []
+
+    def has_descriptor(self) -> bool:
+        return True
+
+    def has_file(self, path: Path) -> bool:
+        return False
+
+    def has_directory(self, path: Path) -> bool:
+        return False
+
+    def get_file_size(self, path: Path) -> int:
+        raise NotImplementedError("In-memory metadata has no payload storage")
+
+    def get_file_content(self, path: Path, binary_mode: bool = True) -> str | bytes:
+        raise NotImplementedError("In-memory metadata has no payload storage")
 
 
 class ROCrateLocalFolder(ROCrate):
@@ -59,12 +93,16 @@ class ROCrateLocalFolder(ROCrate):
         if self._metadata_descriptor_id:
             return self._metadata_descriptor_id
         base_path = self.uri.as_path()
+        canonical = self.attached_descriptor_id
+        if (base_path / canonical).is_file():
+            self._metadata_descriptor_id = canonical
+            return canonical
         candidates = sorted(
             (p for p in base_path.rglob(f"*{ROCrateMetadata.METADATA_FILE_DESCRIPTOR}") if p.is_file()),
             key=lambda p: (len(p.relative_to(base_path).parts), str(p)),
         )
-        if not candidates:
-            self._metadata_descriptor_id = ROCrateMetadata.METADATA_FILE_DESCRIPTOR
+        if len(candidates) != 1:
+            self._metadata_descriptor_id = canonical
             return self._metadata_descriptor_id
         self._metadata_descriptor_id = str(candidates[0].relative_to(base_path))
         return self._metadata_descriptor_id
@@ -158,12 +196,16 @@ class ROCrateLocalZip(ROCrate):
     def metadata_descriptor_id(self) -> str:
         if self._metadata_descriptor_id:
             return self._metadata_descriptor_id
+        canonical = self.attached_descriptor_id
+        if Path(canonical) in self.list_files():
+            self._metadata_descriptor_id = canonical
+            return canonical
         candidates = sorted(
             (p for p in self.list_files() if str(p).endswith(ROCrateMetadata.METADATA_FILE_DESCRIPTOR)),
             key=lambda p: (len(p.parts), str(p)),
         )
-        if not candidates:
-            self._metadata_descriptor_id = ROCrateMetadata.METADATA_FILE_DESCRIPTOR
+        if len(candidates) != 1:
+            self._metadata_descriptor_id = canonical
             return self._metadata_descriptor_id
         self._metadata_descriptor_id = str(candidates[0])
         return self._metadata_descriptor_id
@@ -228,8 +270,9 @@ class ROCrateLocalMetadataFile(ROCrate):
         if suffix not in (".json", ".jsonld"):
             raise ROCrateInvalidURIError(uri=path, message="Unsupported metadata file format")
 
-    def is_detached(self) -> bool:
-        return True
+    @property
+    def package_type(self) -> PackageType:
+        return getattr(self, "_package_type", PackageType.DETACHED)
 
     @property
     def metadata_descriptor_id(self) -> str:
@@ -266,8 +309,9 @@ class ROCrateRemoteMetadataFile(ROCrate):
         if not self.uri.is_remote_resource():
             raise ROCrateInvalidURIError(uri=uri)
 
-    def is_detached(self) -> bool:
-        return True
+    @property
+    def package_type(self) -> PackageType:
+        return getattr(self, "_package_type", PackageType.DETACHED)
 
     @property
     def metadata_descriptor_id(self) -> str:

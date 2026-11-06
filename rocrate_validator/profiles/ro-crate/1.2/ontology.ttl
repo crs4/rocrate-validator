@@ -19,7 +19,7 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix schema: <http://schema.org/> .
-@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/1.2/> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.2/> .
 @prefix bioschemas: <https://bioschemas.org/> .
 # @base <./.> .
 
@@ -54,13 +54,13 @@ schema:SoftwareSourceCode rdf:type owl:Class ;
 bioschemas:ComputationalWorkflow rdf:type owl:Class .
 
 
-###  https://github.com/crs4/rocrate-validator/profiles/ro-crate/1.2/Script
+###  https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.2/Script
 ro-crate:Script rdf:type owl:Class ;
   rdfs:subClassOf schema:SoftwareSourceCode, schema:MediaObject ;
   rdfs:label "Script"@en .
 
 
-###  https://github.com/crs4/rocrate-validator/profiles/ro-crate/1.2/Workflow
+###  https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.2/Workflow
 ro-crate:Workflow rdf:type owl:Class ;
   rdfs:subClassOf schema:SoftwareSourceCode, schema:MediaObject, bioschemas:ComputationalWorkflow ;
   rdfs:label "Workflow"@en .

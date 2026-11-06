@@ -23,11 +23,9 @@
       "publisher": {
         "@id": "https://ror.org/05f9q8d28"
       },
-      "hasPart": [
-        {
-          "@id": "https://example.com/landing/dataset"
-        }
-      ],
+      "hasPart": {
+        "@id": "https://example.com/landing/dataset"
+      },
       "funder": {
         "@id": "https://ror.org/00k4n6c32"
       },

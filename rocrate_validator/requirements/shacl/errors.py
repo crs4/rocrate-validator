@@ -13,11 +13,17 @@
 # limitations under the License.
 
 
-from rocrate_validator.errors import ValidationError
-from rocrate_validator.requirements.shacl.validator import SHACLValidationResult
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+from rocrate_validator.errors import ValidationExecutionError
+
+if TYPE_CHECKING:
+    from rocrate_validator.requirements.shacl.validator import SHACLValidationResult
 
 
-class SHACLValidationError(ValidationError):
+class SHACLValidationError(ValidationExecutionError):
     def __init__(
         self,
         result: SHACLValidationResult | None = None,

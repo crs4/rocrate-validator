@@ -37,7 +37,10 @@ ro-crate:ROCrateMetadataFileDescriptorExistence a sh:NodeShape ;
                     ?crate a schema:Dataset .
                     ?md schema:about ?crate .
                     ?md a schema:CreativeWork .
-                    FILTER( STRENDS(STR(?md), "ro-crate-metadata.json") )
+                    FILTER(
+                        STRENDS(STR(?md), "ro-crate-metadata.json") ||
+                        STRENDS(STR(?md), "ro-crate-metadata.jsonld")
+                    )
                 }
             }
         """ ;
@@ -56,7 +59,10 @@ ro-crate:FindROCrateMetadataFileDescriptorEntity a sh:NodeShape, validator:Hidde
             WHERE {
                 ?crate a schema:Dataset .
                 ?this schema:about ?crate .
-                FILTER(contains(str(?this), "ro-crate-metadata.json"))
+                FILTER(
+                    STRENDS(str(?this), "ro-crate-metadata.json") ||
+                    STRENDS(str(?this), "ro-crate-metadata.jsonld")
+                )
             }
         """
     ] ;

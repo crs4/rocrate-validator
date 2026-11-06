@@ -14,7 +14,8 @@
 
 import re
 
-from rocrate_validator.models import Severity, ValidationContext
+from rocrate_validator.errors import ROCrateMetadataNotFoundError
+from rocrate_validator.models import CheckResult, CheckResultValue, Severity, ValidationContext
 from rocrate_validator.requirements.python import PyFunctionCheck, check, requirement
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.signposting import check_downloadable
@@ -30,9 +31,15 @@ class DataEntityCitationChecker(PyFunctionCheck):
     """
 
     @check(name="Data Entity: citation must include @id")
-    def check_citation(self, context: ValidationContext) -> bool:
+    def check_citation(self, context: ValidationContext) -> CheckResultValue:
         result = True
-        for entity in context.ro_crate.metadata.get_data_entities():
+        try:
+            entities = context.ro_crate.metadata.get_data_entities()
+        except ROCrateMetadataNotFoundError:
+            logger.debug("Skipping Data Entity citation check: metadata descriptor is not available")
+            context.record_skip(self, "metadata descriptor is not available", "exception")
+            return CheckResult.SKIPPED
+        for entity in entities:
             citations = entity.get_property("citation")
             if citations is None:
                 continue
@@ -81,25 +88,32 @@ class WebDataEntityRequiredChecker(PyFunctionCheck):
         return msg
 
     @check(name="Web-based Data Entity: RECOMMENDED resource availability", severity=Severity.RECOMMENDED)
-    def check_availability_warning(self, context: ValidationContext) -> bool:
+    def check_availability_warning(self, context: ValidationContext) -> CheckResultValue:
         if (
             context.settings.skip_availability_check
             or context.settings.creation_time
             or context.settings.enforce_availability
             or context.settings.metadata_only
         ):
-            return True
+            context.record_skip(self, "availability check is disabled or not applicable", "configured")
+            return CheckResult.SKIPPED
         result = True
-        for entity in context.ro_crate.metadata.get_web_data_entities():
+        try:
+            entities = context.ro_crate.metadata.get_web_data_entities()
+        except ROCrateMetadataNotFoundError:
+            logger.debug("Skipping web-based Data Entity availability check: metadata descriptor is not available")
+            context.record_skip(self, "metadata descriptor is not available", "exception")
+            return CheckResult.SKIPPED
+        for entity in entities:
             assert entity.id is not None, "Entity has no @id"
             if entity.id.endswith("/"):
                 continue
             try:
-                dl = check_downloadable(entity.id)
+                dl = check_downloadable(entity.id_as_uri.uri)
                 if not dl.is_downloadable:
                     context.result.add_issue(self._not_downloadable_message(entity.id, dl), self)
                     result = False
-            except Exception as e:
+            except (OSError, RuntimeError, TypeError, ValueError) as e:
                 context.result.add_issue(f"Web-based Data Entity '{entity.id}' availability check failed: {e}", self)
                 result = False
             if not result and context.fail_fast:
@@ -107,11 +121,18 @@ class WebDataEntityRequiredChecker(PyFunctionCheck):
         return result
 
     @check(name="Web-based Data Entity: `contentSize` property", severity=Severity.RECOMMENDED)
-    def check_content_size(self, context: ValidationContext) -> bool:
+    def check_content_size(self, context: ValidationContext) -> CheckResultValue:  # noqa: C901
         if context.settings.skip_availability_check:
-            return True
+            context.record_skip(self, "availability checks are disabled", "configured")
+            return CheckResult.SKIPPED
         result = True
-        for entity in context.ro_crate.metadata.get_web_data_entities():
+        try:
+            entities = context.ro_crate.metadata.get_web_data_entities()
+        except ROCrateMetadataNotFoundError:
+            logger.debug("Skipping web-based Data Entity content size check: metadata descriptor is not available")
+            context.record_skip(self, "metadata descriptor is not available", "exception")
+            return CheckResult.SKIPPED
+        for entity in entities:
             assert entity.id is not None, "Entity has no @id"
             if entity.is_available():
                 content_size = entity.get_property("contentSize")
@@ -124,9 +145,9 @@ class WebDataEntityRequiredChecker(PyFunctionCheck):
                         content_value = str(content_size)
                     try:
                         content_int = int(str(content_value))
-                    except Exception:
+                    except (TypeError, ValueError, OverflowError):
                         content_int = None
-                    external_size = context.ro_crate.get_external_file_size(entity.id)
+                    external_size = context.ro_crate.get_external_file_size(entity.id_as_uri.uri)
                     if external_size is not None and content_int is not None and content_int != external_size:
                         context.result.add_issue(
                             f"The property contentSize={content_size} of the Web-based Data Entity "
@@ -143,11 +164,18 @@ class WebDataEntityRequiredChecker(PyFunctionCheck):
         return result
 
     @check(name="Web-based Data Entity: `contentUrl` availability", severity=Severity.RECOMMENDED)
-    def check_content_url(self, context: ValidationContext) -> bool:
+    def check_content_url(self, context: ValidationContext) -> CheckResultValue:  # noqa: C901
         if context.settings.skip_availability_check:
-            return True
+            context.record_skip(self, "availability checks are disabled", "configured")
+            return CheckResult.SKIPPED
         result = True
-        for entity in context.ro_crate.metadata.get_web_data_entities():
+        try:
+            entities = context.ro_crate.metadata.get_web_data_entities()
+        except ROCrateMetadataNotFoundError:
+            logger.debug("Skipping web-based Data Entity content URL check: metadata descriptor is not available")
+            context.record_skip(self, "metadata descriptor is not available", "exception")
+            return CheckResult.SKIPPED
+        for entity in entities:
             content_url = entity.get_property("contentUrl")
             if not content_url:
                 continue
@@ -165,7 +193,7 @@ class WebDataEntityRequiredChecker(PyFunctionCheck):
                             msg += f": {dl.reason}"
                         context.result.add_issue(msg, self)
                         result = False
-                except Exception as e:
+                except (OSError, RuntimeError, TypeError, ValueError) as e:
                     context.result.add_issue(
                         f"contentUrl '{url_value}' for Web-based Data Entity '{entity.id}' "
                         f"availability check failed: {e}",

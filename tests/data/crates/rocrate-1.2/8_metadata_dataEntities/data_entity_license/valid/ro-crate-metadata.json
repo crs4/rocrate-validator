@@ -23,11 +23,9 @@
       "publisher": {
         "@id": "https://ror.org/012345678"
       },
-      "hasPart": [
-        {
-          "@id": "data/open-data.csv"
-        }
-      ],
+      "hasPart": {
+        "@id": "data/open-data.csv"
+      },
       "funder": {
         "@id": "https://ror.org/012345678"
       },

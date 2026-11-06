@@ -15,7 +15,7 @@
 repos:
   # Run typos to check for common spelling mistakes in the codebase.
   - repo: https://github.com/crate-ci/typos
-    rev: v1.47.2
+    rev: v1.50.3
     hooks:
       - id: typos
         # Pre-commit passes explicit file paths to the hook, bypassing the

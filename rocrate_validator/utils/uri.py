@@ -16,6 +16,7 @@ import enum
 import re
 from pathlib import Path
 from urllib.parse import ParseResult, parse_qsl, urlparse, urlsplit
+from urllib.request import url2pathname
 
 from rocrate_validator import errors
 from rocrate_validator.utils import log as logging
@@ -121,6 +122,7 @@ class URI:
         if uri is None or (isinstance(uri, str) and not uri.strip()):
             raise ValueError("Invalid URI: empty value")
         self._uri = uri = str(uri)
+        self._is_filesystem_path = not is_external_reference(uri)
         try:
             # Inputs that are not external references are assumed to be local
             # paths, so the ``file:`` scheme is added explicitly. The
@@ -135,7 +137,7 @@ class URI:
             # the authority remains a reliable signal to tell a local file
             # (``file:///path``) from a remote one (``file://host/path``,
             # RFC 8089).
-            if not is_external_reference(uri):
+            if self._is_filesystem_path:
                 uri = f"file:{uri}"
             # parse the value to extract the scheme
             self._parse_result = urlparse(uri)
@@ -152,6 +154,9 @@ class URI:
 
     @property
     def base_uri(self) -> str:
+        if self.is_local_resource():
+            # Encode filesystem characters exactly once, without resolving symlinks.
+            return self.as_path().absolute().as_uri()
         return f"{self.scheme}://{self._parse_result.netloc}{self._parse_result.path}"
 
     @property
@@ -186,7 +191,11 @@ class URI:
     def as_path(self) -> Path:
         if not self.is_local_resource():
             raise ValueError("URI is not a local resource")
-        return Path(self._uri)
+        # Raw paths may contain literal percent escapes. Only explicit file URIs
+        # are decoded; url2pathname also handles platform-specific path syntax.
+        if self._is_filesystem_path:
+            return Path(self._uri)
+        return Path(url2pathname(self.get_path()))
 
     def is_remote_resource(self) -> bool:
         """
@@ -254,7 +263,7 @@ class URI:
                 if logger.isEnabledFor(logging.DEBUG):
                     logger.debug(e)
                 return AvailabilityStatus.UNAVAILABLE
-        return AvailabilityStatus.AVAILABLE if Path(self._uri).exists() else AvailabilityStatus.UNAVAILABLE
+        return AvailabilityStatus.AVAILABLE if self.as_path().exists() else AvailabilityStatus.UNAVAILABLE
 
     def is_available(self) -> bool:
         """

@@ -19,6 +19,7 @@ from rocrate_validator.models import (
     RequirementCheckValidationEvent,
     RequirementValidationEvent,
     ValidationContext,
+    ValidationEvent,
     ValidationSettings,
     ValidationStatistics,
 )
@@ -59,9 +60,16 @@ class ProgressMonitor(EventDispatcher):
             self.REQUIREMENT_CHECK_VALIDATION, total=stats.total_checks
         )
         # Initialize progress according to current statistics
-        self.__progress.update(task_id=self.profile_validation, advance=len(stats.validated_profiles))
-        self.__progress.update(task_id=self.requirement_validation, advance=len(stats.validated_requirements))
-        self.__progress.update(task_id=self.requirement_check_validation, advance=len(stats.validated_checks))
+        self._update_progress(stats)
+
+    def _update_progress(self, stats: ValidationStatistics) -> None:
+        """Use the same unique, in-scope outcomes for live and final progress."""
+        self.__progress.update(task_id=self.profile_validation, completed=len(stats.validated_profiles))
+        self.__progress.update(task_id=self.requirement_validation, completed=len(stats.validated_requirements))
+        self.__progress.update(
+            task_id=self.requirement_check_validation,
+            completed=len(stats.validated_checks) + stats.total_skipped_checks,
+        )
 
     def start(self):
         self.__progress.start()
@@ -77,13 +85,16 @@ class ProgressMonitor(EventDispatcher):
         self, event: RequirementCheckValidationEvent, ctx: ValidationContext | None
     ) -> None:
         assert ctx is not None, "Validation context must be provided"
-        # Only advance the progress for checks at or above the requested severity threshold,
-        # so the bar matches the set of checks actually reported.
-        if event.requirement_check.severity >= ctx.settings.requirement_severity:
-            self.__progress.update(task_id=self.requirement_check_validation, advance=1)
+        self._update_progress(ctx.result.statistics)
 
     def _on_requirement_validation_end(self, event: RequirementValidationEvent, ctx: ValidationContext | None) -> None:
-        self.__progress.update(task_id=self.requirement_validation, advance=1)
+        assert ctx is not None, "Validation context must be provided"
+        self._update_progress(ctx.result.statistics)
 
     def _on_profile_validation_end(self, event: ProfileValidationEvent, ctx: ValidationContext | None) -> None:
-        self.__progress.update(task_id=self.profile_validation, advance=1)
+        assert ctx is not None, "Validation context must be provided"
+        self._update_progress(ctx.result.statistics)
+
+    def _on_validation_end(self, event: ValidationEvent, ctx: ValidationContext | None) -> None:
+        assert ctx is not None, "Validation context must be provided"
+        self._update_progress(ctx.result.statistics)

@@ -15,36 +15,49 @@
 # pylint: disable=cyclic-import  # lazy imports break the cycle at runtime (see PLC0415 noqa markers in requirements)
 from __future__ import annotations
 
-from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast  # pylint: disable=unused-import
 
 import pyshacl
 from rdflib import BNode, Graph, Literal, Namespace
+from rdflib.namespace import OWL, RDF, RDFS
 from rdflib.term import Node, URIRef
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from pyshacl.pytypes import GraphLike
 
 from rocrate_validator.constants import (
-    DEFAULT_ONTOLOGY_FILE,
     RDF_SERIALIZATION_FORMATS,
     RDF_SERIALIZATION_FORMATS_TYPES,
     SHACL_NS,
     VALID_INFERENCE_OPTIONS,
     VALID_INFERENCE_OPTIONS_TYPES,
 )
-from rocrate_validator.models import Profile, RequirementCheck, Severity, ValidationContext, ValidationResult
+from rocrate_validator.models import (
+    Profile,
+    RequirementCheck,
+    Severity,
+    ValidationContext,
+    ValidationResult,
+)
+from rocrate_validator.models.check_result import DeferredRequirementCheck
+from rocrate_validator.requirements.shacl.errors import SHACLValidationError
 from rocrate_validator.requirements.shacl.models import ShapesRegistry
+from rocrate_validator.requirements.shacl.transformers.preparation import (
+    GraphTransformerCompatibilityError,
+    prepare_validation_graphs,
+)
 from rocrate_validator.requirements.shacl.utils import make_uris_relative, map_severity
 from rocrate_validator.utils import log as logging
-from rocrate_validator.utils.rdf import extract_base_from_jsonld
+from rocrate_validator.utils.rdf import rebase_graph, rebase_node
 
 # set up logging
 logger = logging.getLogger(__name__)
 
 
-class SHACLValidationSkip(Exception):
-    pass
+class SHACLValidationSkip(DeferredRequirementCheck):
+    """Defer a source-profile check until the merged SHACL validation runs."""
 
 
 class SHACLValidationAlreadyProcessed(Exception):
@@ -68,9 +81,12 @@ class SHACLValidationContextManager:
             )
         logger.debug("Processing profile: %s (id: %s)", self._profile.name, self._profile.identifier)
         if self._profile.identifier != self._context.settings.profile_identifier:
-            logger.debug("Skipping validation of profile %s", self._profile.identifier)
-            self.context.result._add_skipped_check(self._check)
-            raise SHACLValidationSkip(f"Skipping validation of profile {self._profile.identifier}")
+            logger.debug("Deferring validation of profile %s", self._profile.identifier)
+            # This is a temporary control-flow skip. The target profile runs
+            # SHACL once over the merged shapes graph and records the check
+            # outcome afterwards.
+            self._shacl_context.deferred_checks.add(self._check)
+            raise SHACLValidationSkip(f"Deferring validation of profile {self._profile.identifier}")
         logger.debug("ValidationContext of profile %s initialized", self._profile.identifier)
         return self._shacl_context
 
@@ -93,16 +109,27 @@ class SHACLValidationContextManager:
 
 class SHACLValidationContext(ValidationContext):
     def __init__(self, context: ValidationContext):
+        """Initialize a SHACL context shared by all profiles in ``context``."""
         super().__init__(context.validator, context.settings)
         self._base_context: ValidationContext = context
-        # reference to the ontology path
-        self._ontology_path: Path | None = None
-
+        # The SHACL adapter is a per-run context, but profile definitions are
+        # immutable preparation state. Reuse the base context's instances so
+        # target lookup and override handling cannot trigger another load.
+        self._profiles = context.profiles
         # reference to the contextual ShapeRegistry instance
         self._shapes_registry: ShapesRegistry = ShapesRegistry()
 
         # processed profiles
         self._processed_profiles: dict[str, bool] = {}
+
+        # profiles whose ontology and shapes have already been merged. A
+        # profile may expose several SHACL checks, but its graphs must be
+        # loaded only once before the combined validation is executed.
+        self._loaded_profiles: set[str] = set()
+        self._relative_shape_iris: set[Node] = set()
+
+        # Checks awaiting the combined run have no result yet; they are not skips.
+        self.deferred_checks: set[RequirementCheck] = set()
 
         # reference to the current validation profile
         self._current_validation_profile: Profile | None = None
@@ -110,39 +137,85 @@ class SHACLValidationContext(ValidationContext):
         # store the validation result of the current profile (a pass/fail boolean)
         self._validation_result: bool | None = None
 
-        # reference to the contextual ontology graph
-        self._ontology_graph: Graph = Graph()
+        # pySHACL may mutate supplied graphs while applying inference/rules.
+        # Copy the prepared ontology into this run's working graph.
+        run_base_mappings = tuple(
+            (prepared, actual) for actual, prepared in context.prepared_base_mappings if actual != prepared
+        )
+        self._run_base_mappings = run_base_mappings
+        self._ontology_graph = rebase_graph(
+            context.prepared_validation_plan.ontology_graph,
+            self._run_base_mappings,
+            rebase_nodes=context.prepared_validation_plan.ontology_relative_iris,
+        )
 
     def __set_current_validation_profile__(self, profile: Profile) -> bool:
-        if profile.identifier not in self._processed_profiles:
-            # augment the ontology graph with the profile ontology
-            ontology_graph = self.__load_ontology_graph__(profile.path)
-            if ontology_graph:
-                self._ontology_graph += ontology_graph
+        """
+        Select ``profile`` and load its graphs once into the shared context.
+
+        Loading and processing are separate states: source-profile checks may
+        enter this context repeatedly while their execution is deferred to the
+        target profile. Ontology and shape graphs are therefore merged only on
+        the first visit, whereas selecting an already processed profile raises
+        :class:`SHACLValidationAlreadyProcessed`.
+
+        :return: ``True`` when the profile is ready to be processed
+        :raises SHACLValidationAlreadyProcessed: If validation already ran for
+            ``profile``
+        """
+        if profile.identifier in self._processed_profiles:
+            raise SHACLValidationAlreadyProcessed(profile.identifier, self.get_validation_result(profile))
+
+        if profile.identifier not in self._loaded_profiles:
             # augment the shapes registry with the profile shapes
             profile_registry = ShapesRegistry.get_instance(profile)
+            self._relative_shape_iris.update(profile_registry.relative_iris)
             profile_shapes = profile_registry.get_shapes()
             profile_shapes_graph = profile_registry.shapes_graph
+            structural_nodes = {
+                subject
+                for subject, predicate, object_ in profile_shapes_graph
+                if str(predicate).startswith(SHACL_NS) or (predicate == RDF.type and str(object_).startswith(SHACL_NS))
+            }
+            shacl_ns = Namespace(SHACL_NS)
+            profile_shapes_graph = rebase_graph(
+                profile_shapes_graph,
+                self._run_base_mappings,
+                preserve_nodes=structural_nodes,
+                rebase_nodes=profile_registry.relative_iris,
+                # A URI can identify both a shape and an RDF class. Keep its
+                # shape identifier stable in structural positions, while
+                # rebasing it when it supplies SHACL class semantics.
+                rebase_objects_for=(shacl_ns.targetClass, shacl_ns["class"]),
+            )
             logger.debug("Loaded shapes: %s", profile_shapes)
 
-            # enable overriding of checks
-            if self.settings.allow_requirement_check_override:
+            # Filter shapes that must not participate in the combined SHACL run.
+            if self.settings.skip_checks or self.settings.allow_requirement_check_override:
                 from rocrate_validator.requirements.shacl.requirements import SHACLRequirement  # noqa: PLC0415
 
                 for requirement in [_ for _ in profile.requirements if isinstance(_, SHACLRequirement)]:
                     for check in requirement.get_checks():
-                        if check.overridden and check.requirement.profile != self.target_profile:
+                        if self.base_context.is_check_skipped(check):
                             profile_shapes_graph -= cast("Any", check).shape.graph
-                            profile_shapes.pop(cast("Any", check).shape.key)
+                            profile_shapes.pop(cast("Any", check).shape.key, None)
+                            continue
+                        if (
+                            self.settings.allow_requirement_check_override
+                            and check.overridden
+                            and check.requirement.profile != self.target_profile
+                        ):
+                            profile_shapes_graph -= cast("Any", check).shape.graph
+                            profile_shapes.pop(cast("Any", check).shape.key, None)
 
             # add the shapes to the registry
             self._shapes_registry.extend(profile_shapes, profile_shapes_graph)
-            # set the current validation profile
-            self._current_validation_profile = profile
-            # return True if the profile should be processed
-            return True
-        # return False if the profile has already been processed
-        return False
+            self._loaded_profiles.add(profile.identifier)
+
+        # Select the profile on every entry: repeated source-profile checks are
+        # deferred individually even though their graphs are already loaded.
+        self._current_validation_profile = profile
+        return True
 
     def __unset_current_validation_profile__(self) -> None:
         self._current_validation_profile = None
@@ -181,53 +254,29 @@ class SHACLValidationContext(ValidationContext):
 
     @property
     def shapes_graph(self) -> Graph:
-        return self.shapes_registry.shapes_graph
-
-    def __get_ontology_path__(self, profile_path: Path, ontology_filename: str = DEFAULT_ONTOLOGY_FILE) -> Path:
-        if not self._ontology_path:
-            self._ontology_path = Path(f"{profile_path}/{ontology_filename}")
-        return self._ontology_path
-
-    def __get_data_graph_base__(self) -> str | None:
-        """
-        Get the @base from the RO-Crate metadata JSON-LD.
-
-        This extracts the @base from the @context of the data graph metadata,
-        which can be used to align the ontology graph's base URI with the data graph.
-
-        :return: The @base value if found, None otherwise
-        """
-        try:
-            metadata_dict = self.ro_crate.metadata.as_dict()
-            return extract_base_from_jsonld(metadata_dict)
-        except Exception as e:
-            logger.debug("Unable to extract @base from data graph metadata: %s", e)
-            return None
-
-    def __load_ontology_graph__(
-        self, profile_path: Path, ontology_filename: str = DEFAULT_ONTOLOGY_FILE
-    ) -> Graph | None:
-        # load the graph of ontologies
-        ontology_graph: Graph | None = None
-        ontology_path = self.__get_ontology_path__(profile_path, ontology_filename)
-        if ontology_path.exists():
-            logger.debug("Loading ontologies: %s", ontology_path)
-            ontology_graph = Graph()
-
-            # Determine the publicID to use:
-            # 1. First, try to get @base from the data graph metadata
-            # 2. Fall back to the default publicID (RO-Crate URI)
-            data_graph_base = self.__get_data_graph_base__()
-            public_id = data_graph_base or self.publicID
-
-            if data_graph_base:
-                logger.debug("Using @base from data graph metadata: %s", data_graph_base)
-            else:
-                logger.debug("Using default publicID: %s", self.publicID)
-
-            ontology_graph.parse(ontology_path, format="ttl", publicID=public_id)
-            logger.debug("Ontologies loaded: %s", ontology_graph)
-        return ontology_graph
+        graph = self.shapes_registry.shapes_graph
+        # Resolve implicit targets after profiles have been merged: the class
+        # declaration and its metaclass definition may belong to different profiles.
+        # Include owl:Class, which pySHACL treats as a subclass of rdfs:Class.
+        class_types: set[Node] = {RDFS.Class, OWL.Class}
+        class_types.update(graph.subjects(RDFS.subClassOf, RDFS.Class))
+        shacl = Namespace(SHACL_NS)
+        for shape in self.shapes_registry.get_shapes().values():
+            node = shape.node
+            if node not in self._relative_shape_iris:
+                continue
+            target_class = rebase_node(node, self._run_base_mappings)
+            if target_class == node:
+                continue
+            for class_type in set(graph.objects(node, RDF.type)) & class_types:
+                # Retain the canonical shape identity for check/report lookup,
+                # but express its implicit class target using the real crate URI.
+                # Moving the class declaration also prevents pySHACL from adding
+                # an unintended second target at the canonical preparation URI.
+                graph.remove((node, RDF.type, class_type))
+                graph.add((target_class, RDF.type, class_type))
+                graph.add((node, shacl.targetClass, target_class))
+        return graph
 
     @property
     def ontology_graph(self) -> Graph:
@@ -405,6 +454,7 @@ class SHACLValidator:
         self,
         # data to validate
         data_graph: GraphLike | str | bytes,
+        *,
         # validation settings
         abort_on_first: bool | None = True,
         advanced: bool | None = True,
@@ -462,26 +512,40 @@ class SHACLValidator:
 
         assert inference in (None, "rdfs", "owlrl", "both"), "Invalid inference option"
 
-        if isinstance(self._shapes_graph, Graph):
-            _inject_default_prefixes(self._shapes_graph)
-
         # validate the data graph using pyshacl.validate
-        conforms, results_graph, results_text = pyshacl.validate(
-            data_graph,
-            shacl_graph=self.shapes_graph,
-            ont_graph=self.ont_graph,
-            inference=inference or ("owlrl" if self.ont_graph else None),
-            inplace=inplace,
-            abort_on_first=abort_on_first,
-            allow_infos=allow_infos,
-            allow_warnings=allow_warnings,
-            meta_shacl=meta_shacl,
-            iterate_rules=iterate_rules,
-            advanced=advanced,
-            js=False,
-            debug=False,
-            **kwargs,
-        )
+        try:
+            prepared_graphs = prepare_validation_graphs(
+                data_graph,
+                self._shapes_graph,
+                data_graph_format=kwargs.get("data_graph_format"),
+                shacl_graph_format=kwargs.get("shacl_graph_format"),
+                do_owl_imports=kwargs.get("do_owl_imports", False),
+                inplace=bool(inplace),
+                sparql_mode=bool(kwargs.get("sparql_mode", False)),
+            )
+            if isinstance(prepared_graphs.shapes_graph, Graph):
+                _inject_default_prefixes(prepared_graphs.shapes_graph)
+
+            conforms, results_graph, results_text = pyshacl.validate(
+                prepared_graphs.data_graph,
+                shacl_graph=prepared_graphs.shapes_graph,
+                ont_graph=self.ont_graph,
+                inference=inference or ("owlrl" if self.ont_graph else None),
+                inplace=inplace,
+                abort_on_first=abort_on_first,
+                allow_infos=allow_infos,
+                allow_warnings=allow_warnings,
+                meta_shacl=meta_shacl,
+                iterate_rules=iterate_rules,
+                advanced=advanced,
+                js=False,
+                debug=False,
+                **kwargs,
+            )
+        except GraphTransformerCompatibilityError:
+            raise
+        except Exception as e:
+            raise _to_shacl_validation_error(e) from e
         # log the validation results
         logger.debug("pyshacl.validate result: Conforms: %r", conforms)
         logger.debug("pyshacl.validate result: Results Graph: %r", results_graph)
@@ -540,6 +604,14 @@ def _inject_default_prefixes(shapes_graph: Graph) -> None:
                 prefix_block = "\n".join(prefix_lines)
         updated_query = f"{prefix_block}\n{query.lstrip()}"
         shapes_graph.set((subject, shacl_ns.select, Literal(updated_query)))
+
+
+def _to_shacl_validation_error(error: Exception) -> SHACLValidationError:
+    """Wrap graph preparation and engine failures in the public error type."""
+    version = getattr(pyshacl, "__version__", "unknown")
+    return SHACLValidationError(
+        message=(f"SHACL validation could not be executed by pySHACL {version}: {type(error).__name__}: {error}")
+    )
 
 
 __all__ = ["SHACLValidationResult", "SHACLValidator", "SHACLViolation"]

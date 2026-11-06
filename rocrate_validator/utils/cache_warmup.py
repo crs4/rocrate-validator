@@ -32,6 +32,7 @@ from typing import TYPE_CHECKING, Any, cast  # pylint: disable=unused-import
 from rocrate_validator import constants
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.http import OFFLINE_CACHE_MISS_STATUS, HttpRequester
+from rocrate_validator.utils.paths import get_profiles_path
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Sequence
@@ -194,7 +195,6 @@ def _find_profile(identifier, settings) -> Profile | None:
     """
     # Import here to avoid a circular import with models.py.
     from rocrate_validator.models import Profile  # noqa: PLC0415
-    from rocrate_validator.utils.paths import get_profiles_path  # noqa: PLC0415
 
     # Load profiles to ensure the requested one is available and its graph is parsed.
     global __profiles_loaded  # noqa: PLW0603

@@ -26,11 +26,9 @@
       "publisher": {
         "@id": "https://ror.org/05f9q8d28"
       },
-      "hasPart": [
-        {
-          "@id": "data.csv"
-        }
-      ],
+      "hasPart": {
+        "@id": "data.csv"
+      },
       "funder": {
         "@id": "https://ror.org/05f9q8d28"
       },
