@@ -122,6 +122,17 @@ class ValidROC:
         return VALID_CRATES_DATA_PATH / "multi-profile-crate"
 
 
+class ValidWROC_v1_1:
+
+    @property
+    def workflow_roc_v1_1(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "workflow-roc-1.1"
+
+    @property
+    def workflow_roc_string_license_v1_1(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "workflow-roc-string-license-1.1"
+
+
 class InvalidFileDescriptor:
     base_path = INVALID_CRATES_DATA_PATH / "0_file_descriptor_format"
 
@@ -350,6 +361,42 @@ class InvalidMainWorkflow:
         return self.base_path / "main_workflow_bad_conformsto"
 
 
+class InvalidMainWorkflow_v1_1:
+    base_path = INVALID_CRATES_DATA_PATH / "workflow-ro-crate-1.1" / "main_workflow"
+
+    @property
+    def main_workflow_bad_type(self) -> Path:
+        return self.base_path / "main_workflow_bad_type"
+
+    @property
+    def main_workflow_no_lang(self) -> Path:
+        return self.base_path / "main_workflow_no_lang"
+
+    @property
+    def main_workflow_no_image(self) -> Path:
+        return self.base_path / "main_workflow_no_image"
+
+    @property
+    def main_workflow_no_cwl_desc(self) -> Path:
+        return self.base_path / "main_workflow_no_cwl_desc"
+
+    @property
+    def main_workflow_cwl_desc_bad_type(self) -> Path:
+        return self.base_path / "main_workflow_cwl_desc_bad_type"
+
+    @property
+    def main_workflow_cwl_desc_no_lang(self) -> Path:
+        return self.base_path / "main_workflow_cwl_desc_no_lang"
+
+    @property
+    def main_workflow_no_file(self) -> Path:
+        return self.base_path / "main_workflow_no_file"
+
+    @property
+    def main_workflow_bad_conformsto(self) -> Path:
+        return self.base_path / "main_workflow_bad_conformsto"
+
+
 class WROCInvalidConformsTo:
     base_path = INVALID_CRATES_DATA_PATH / "2_wroc_descriptor"
 
@@ -372,6 +419,14 @@ class WROCInvalidReadme:
 
 class WROCNoLicense:
     base_path = INVALID_CRATES_DATA_PATH / "1_wroc_crate/"
+
+    @property
+    def wroc_no_license(self) -> Path:
+        return self.base_path / "no_license"
+
+
+class WROCNoLicense_v1_1:
+    base_path = INVALID_CRATES_DATA_PATH / "workflow-ro-crate-1.1" / "wroc_crate/"
 
     @property
     def wroc_no_license(self) -> Path:
