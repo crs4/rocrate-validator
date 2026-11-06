@@ -361,6 +361,42 @@ class InvalidMainWorkflow:
         return self.base_path / "main_workflow_bad_conformsto"
 
 
+class InvalidMainWorkflow_v1_1:
+    base_path = INVALID_CRATES_DATA_PATH / "workflow-ro-crate-1.1" / "main_workflow"
+
+    @property
+    def main_workflow_bad_type(self) -> Path:
+        return self.base_path / "main_workflow_bad_type"
+
+    @property
+    def main_workflow_no_lang(self) -> Path:
+        return self.base_path / "main_workflow_no_lang"
+
+    @property
+    def main_workflow_no_image(self) -> Path:
+        return self.base_path / "main_workflow_no_image"
+
+    @property
+    def main_workflow_no_cwl_desc(self) -> Path:
+        return self.base_path / "main_workflow_no_cwl_desc"
+
+    @property
+    def main_workflow_cwl_desc_bad_type(self) -> Path:
+        return self.base_path / "main_workflow_cwl_desc_bad_type"
+
+    @property
+    def main_workflow_cwl_desc_no_lang(self) -> Path:
+        return self.base_path / "main_workflow_cwl_desc_no_lang"
+
+    @property
+    def main_workflow_no_file(self) -> Path:
+        return self.base_path / "main_workflow_no_file"
+
+    @property
+    def main_workflow_bad_conformsto(self) -> Path:
+        return self.base_path / "main_workflow_bad_conformsto"
+
+
 class WROCInvalidConformsTo:
     base_path = INVALID_CRATES_DATA_PATH / "2_wroc_descriptor"
 
