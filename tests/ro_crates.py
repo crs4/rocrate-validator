@@ -425,6 +425,14 @@ class WROCNoLicense:
         return self.base_path / "no_license"
 
 
+class WROCNoLicense_v1_1:
+    base_path = INVALID_CRATES_DATA_PATH / "workflow-ro-crate-1.1" / "wroc_crate/"
+
+    @property
+    def wroc_no_license(self) -> Path:
+        return self.base_path / "no_license"
+
+
 class WROCMainEntity:
     base_path = INVALID_CRATES_DATA_PATH / "1_wroc_crate/"
 
