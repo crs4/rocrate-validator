@@ -1,0 +1,11 @@
+@prefix prof: <http://www.w3.org/ns/dx/prof/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+<https://w3id.org/rocrate-validator/tests/effective-checks/c>
+    a prof:Profile ;
+    rdfs:label "Effective checks wrapper profile" ;
+    prof:isProfileOf <https://w3id.org/rocrate-validator/tests/effective-checks/b> ;
+    prof:isTransitiveProfileOf
+        <https://w3id.org/rocrate-validator/tests/effective-checks/b>,
+        <https://w3id.org/rocrate-validator/tests/effective-checks/a> ;
+    prof:hasToken "effective-c" .
