@@ -425,6 +425,18 @@ class WROCInvalidReadme:
         return self.base_path / "readme_wrong_encoding_format"
 
 
+class WROCInvalidReadme_v1_1:
+    base_path = INVALID_CRATES_DATA_PATH / "workflow-ro-crate-1.1" / "wroc_crate/"
+
+    @property
+    def wroc_readme_not_about_crate(self) -> Path:
+        return self.base_path / "readme_not_about_crate"
+
+    @property
+    def wroc_readme_wrong_encoding_format(self) -> Path:
+        return self.base_path / "readme_wrong_encoding_format"
+
+
 class WROCNoLicense:
     base_path = INVALID_CRATES_DATA_PATH / "1_wroc_crate/"
 
@@ -443,6 +455,14 @@ class WROCNoLicense_v1_1:
 
 class WROCMainEntity:
     base_path = INVALID_CRATES_DATA_PATH / "1_wroc_crate/"
+
+    @property
+    def wroc_no_mainentity(self) -> Path:
+        return self.base_path / "no_mainentity"
+
+
+class WROCMainEntity_v1_1:
+    base_path = INVALID_CRATES_DATA_PATH / "workflow-ro-crate-1.1" / "wroc_crate/"
 
     @property
     def wroc_no_mainentity(self) -> Path:
