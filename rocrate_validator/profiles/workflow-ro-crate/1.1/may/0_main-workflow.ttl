@@ -44,6 +44,16 @@ workflow-ro-crate:MainWorkflowOptionalProperties a sh:NodeShape ;
         sh:minCount 1 ;
         sh:message "The Crate MAY contain a Main Workflow CWL Description; if present it MUST be referred to via 'subjectOf'" ;
          # sh:severity sh:Info ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Main Workflow step" ;
+        sh:description "The Main Workflow MAY refer to HowToStep descriptions; if present they MUST be referred to via 'step'" ;
+        sh:path schema:step ;
+        sh:class schema:HowToStep ;
+        sh:minCount 1 ;
+        sh:message "The Main Workflow MAY refer to HowToStep descriptions; if present they MUST be referred to via 'step'" ;
+         # sh:severity sh:Info ;
     ] .
 
 workflow-ro-crate:CWLDescriptionProperties a sh:NodeShape ;

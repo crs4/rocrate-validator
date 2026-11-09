@@ -66,11 +66,20 @@
             "@type": [
                 "File",
                 "SoftwareSourceCode",
-                "ComputationalWorkflow"
+                "ComputationalWorkflow",
+                "HowTo"
             ],
             "conformsTo": {
                 "@id": "https://bioschemas.org/profiles/ComputationalWorkflow/1.0-RELEASE"
             },
+            "step": [
+                {
+                    "@id": "#sort"
+                },
+                {
+                    "@id": "#change-case"
+                }
+            ],
             "description": "sort lines and change text to upper case",
             "image": {
                 "@id": "blank.png"
@@ -83,6 +92,16 @@
             "subjectOf": {
                 "@id": "sort-and-change-case.cwl"
             }
+        },
+        {
+            "@id": "#sort",
+            "@type": "HowToStep",
+            "position": "0"
+        },
+        {
+            "@id": "#change-case",
+            "@type": "HowToStep",
+            "position": "1"
         },
         {
             "@id": "https://w3id.org/workflowhub/workflow-ro-crate#galaxy",

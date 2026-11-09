@@ -233,3 +233,18 @@ def test_main_workflow_bad_conformsto():
         ["The Main Workflow SHOULD comply with Bioschemas ComputationalWorkflow profile version 1.0 or later"],
         profile_identifier="workflow-ro-crate-1.1",
     )
+
+
+def test_main_workflow_with_steps_bad_type():
+    """
+    Test a Workflow RO-Crate that refers to steps but does not have the
+    HowTo type.
+    """
+    do_entity_test(
+        InvalidMainWorkflow_v1_1().main_workflow_with_steps_bad_type,
+        Severity.REQUIRED,
+        False,
+        ["Main Workflow with steps MUST"],
+        ["A Main Workflow that links to steps MUST have the HowTo type"],
+        profile_identifier="workflow-ro-crate-1.1",
+    )
