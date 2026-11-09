@@ -405,6 +405,14 @@ class WROCInvalidConformsTo:
         return self.base_path / "wroc_descriptor_bad_conforms_to"
 
 
+class WROCInvalidConformsTo_v1_1:
+    base_path = INVALID_CRATES_DATA_PATH / "workflow-ro-crate-1.1" / "wroc_crate"
+
+    @property
+    def wroc_bad_conforms_to(self) -> Path:
+        return self.base_path / "bad_profile"
+
+
 class WROCInvalidReadme:
     base_path = INVALID_CRATES_DATA_PATH / "1_wroc_crate/"
 

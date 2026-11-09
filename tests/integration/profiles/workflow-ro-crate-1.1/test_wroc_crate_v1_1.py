@@ -15,10 +15,25 @@
 import logging
 
 from rocrate_validator.models import Severity
-from tests.ro_crates import WROCNoLicense_v1_1
+from tests.ro_crates import WROCInvalidConformsTo_v1_1, WROCNoLicense_v1_1
 from tests.shared import do_entity_test
 
 logger = logging.getLogger(__name__)
+
+
+def test_wroc_rde_bad_conformsto():
+    """
+    Test a Workflow RO-Crate where the root data entity does not have a
+    conformsTo that points to the WROC 1.1 profile.
+    """
+    do_entity_test(
+        WROCInvalidConformsTo_v1_1().wroc_bad_conforms_to,
+        Severity.RECOMMENDED,
+        False,
+        ["Root Data Entity Metadata"],
+        ["The Root Data Entity conformsTo SHOULD be an array that contains at least https://w3id.org/workflowhub/workflow-ro-crate/1.1"],
+        profile_identifier="workflow-ro-crate-1.1",
+    )
 
 
 def test_wroc_no_tests():
