@@ -235,6 +235,36 @@ def test_main_workflow_bad_conformsto():
     )
 
 
+def test_main_workflow_no_step():
+    """
+    Test a Workflow RO-Crate where the main workflow does not have a
+    step property.
+    """
+    do_entity_test(
+        InvalidMainWorkflow_v1_1().main_workflow_no_step,
+        Severity.OPTIONAL,
+        False,
+        ["Main Workflow optional properties"],
+        ["The Main Workflow MAY have a step property"],
+        profile_identifier="workflow-ro-crate-1.1",
+    )
+
+
+def test_main_workflow_bad_step():
+    """
+    Test a Workflow RO-Crate where the main workflow has a step property
+    that does not point to HowToStep entities.
+    """
+    do_entity_test(
+        InvalidMainWorkflow_v1_1().main_workflow_bad_step,
+        Severity.REQUIRED,
+        False,
+        ["Main Workflow definition"],
+        ["Main Workflow step MUST point to HowToStep entities"],
+        profile_identifier="workflow-ro-crate-1.1",
+    )
+
+
 def test_main_workflow_with_steps_bad_type():
     """
     Test a Workflow RO-Crate that refers to steps but does not have the

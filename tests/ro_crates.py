@@ -397,6 +397,14 @@ class InvalidMainWorkflow_v1_1:
         return self.base_path / "main_workflow_bad_conformsto"
 
     @property
+    def main_workflow_no_step(self) -> Path:
+        return self.base_path / "main_workflow_no_step"
+
+    @property
+    def main_workflow_bad_step(self) -> Path:
+        return self.base_path / "main_workflow_bad_step"
+
+    @property
     def main_workflow_with_steps_bad_type(self) -> Path:
         return self.base_path / "main_workflow_with_steps_bad_type"
 

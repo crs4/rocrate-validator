@@ -82,6 +82,14 @@ workflow-ro-crate:MainWorkflowRequiredProperties a sh:NodeShape ;
         sh:class schema:ComputerLanguage ;
         sh:minCount 1 ;
         sh:message "The Main Workflow must refer to its language via programmingLanguage" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "Main Workflow step" ;
+        sh:description "Main Workflow step MUST point to HowToStep entities" ;
+        sh:path schema:step ;
+        sh:class schema:HowToStep ;
+        sh:message "Main Workflow step MUST point to HowToStep entities" ;
     ] .
 
 

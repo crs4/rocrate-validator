@@ -48,11 +48,10 @@ workflow-ro-crate:MainWorkflowOptionalProperties a sh:NodeShape ;
     sh:property [
         a sh:PropertyShape ;
         sh:name "Main Workflow step" ;
-        sh:description "The Main Workflow MAY refer to HowToStep descriptions; if present they MUST be referred to via 'step'" ;
+        sh:description "The Main Workflow MAY have a step property" ;
         sh:path schema:step ;
-        sh:class schema:HowToStep ;
         sh:minCount 1 ;
-        sh:message "The Main Workflow MAY refer to HowToStep descriptions; if present they MUST be referred to via 'step'" ;
+        sh:message "The Main Workflow MAY have a step property" ;
          # sh:severity sh:Info ;
     ] .
 
