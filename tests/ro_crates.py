@@ -401,6 +401,25 @@ class InvalidMainWorkflow_v1_1:
         return self.base_path / "main_workflow_with_steps_bad_type"
 
 
+class WROCInvalidComputationalWorkflow_v1_1:
+    base_path = INVALID_CRATES_DATA_PATH / "workflow-ro-crate-1.1" / "computational_workflow"
+    @property
+    def no_input(self) -> Path:
+        return self.base_path / "no_input"
+
+    @property
+    def no_output(self) -> Path:
+        return self.base_path / "no_output"
+
+    @property
+    def bad_input(self) -> Path:
+        return self.base_path / "bad_input"
+
+    @property
+    def bad_output(self) -> Path:
+        return self.base_path / "bad_output"
+
+
 class WROCInvalidConformsTo:
     base_path = INVALID_CRATES_DATA_PATH / "2_wroc_descriptor"
 

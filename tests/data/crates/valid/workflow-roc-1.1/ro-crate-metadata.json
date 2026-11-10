@@ -72,6 +72,16 @@
             "conformsTo": {
                 "@id": "https://bioschemas.org/profiles/ComputationalWorkflow/1.0-RELEASE"
             },
+            "input": [
+                {
+                    "@id": "#input-param"
+                }
+            ],
+            "output": [
+                {
+                    "@id": "#output-param"
+                }
+            ],
             "step": [
                 {
                     "@id": "#sort"
@@ -92,6 +102,20 @@
             "subjectOf": {
                 "@id": "sort-and-change-case.cwl"
             }
+        },
+        {
+            "@id": "#input-param",
+            "@type": "FormalParameter",
+            "additionalType": "File",
+            "name": "input",
+            "description": "input text file"
+        },
+        {
+            "@id": "#output-param",
+            "@type": "FormalParameter",
+            "additionalType": "File",
+            "name": "output",
+            "description": "output text file"
         },
         {
             "@id": "#sort",
