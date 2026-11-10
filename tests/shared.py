@@ -52,6 +52,7 @@ _PROFILE_CONTEXT_URIS = {
     "ro-crate-1.1": "https://w3id.org/ro/crate/1.1/context",
     "ro-crate-1.2": "https://w3id.org/ro/crate/1.2/context",
     "ro-crate-1.3": "https://w3id.org/ro/crate/1.3/context",
+    "process-run-crate-0.6": "https://w3id.org/ro/crate/1.3/context",
 }
 _DEFAULT_CONTEXT_URI = _PROFILE_CONTEXT_URIS[RO_CRATE_1_1_PROFILE_IDENTIFIER]
 

@@ -33,7 +33,7 @@ def test_procrc_collection_not_mentioned():
         False,
         ["Process Run Crate Collection SHOULD"],
         ["The Collection SHOULD be referenced from the Root Data Entity via mentions"],
-        profile_identifier="process-run-crate",
+        profile_identifier="process-run-crate-0.5",
     )
 
 
@@ -47,7 +47,7 @@ def test_procrc_collection_no_haspart():
         False,
         ["Process Run Crate Collection SHOULD"],
         ["The Collection SHOULD have a hasPart"],
-        profile_identifier="process-run-crate",
+        profile_identifier="process-run-crate-0.5",
     )
 
 
@@ -61,5 +61,5 @@ def test_procrc_collection_no_mainentity():
         False,
         ["Process Run Crate Collection SHOULD"],
         ["The Collection SHOULD have a mainEntity"],
-        profile_identifier="process-run-crate",
+        profile_identifier="process-run-crate-0.5",
     )

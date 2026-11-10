@@ -16,7 +16,7 @@ import logging
 
 from rocrate_validator.models import Severity
 from tests.conftest import SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER
-from tests.ro_crates import ValidROC
+from tests.ro_crates import ValidProcRC_v0_6, ValidROC
 from tests.shared import do_entity_test
 
 logger = logging.getLogger(__name__)
@@ -28,20 +28,45 @@ def test_valid_process_run_crate_required():
         ValidROC().process_run_crate,
         Severity.REQUIRED,
         True,
-        profile_identifier="process-run-crate",
+        profile_identifier="process-run-crate-0.5",
         skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER],
     )
     do_entity_test(
         ValidROC().process_run_crate_collections,
         Severity.REQUIRED,
         True,
-        profile_identifier="process-run-crate",
+        profile_identifier="process-run-crate-0.5",
         skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER],
     )
     do_entity_test(
         ValidROC().process_run_crate_containerimage,
         Severity.REQUIRED,
         True,
-        profile_identifier="process-run-crate",
+        profile_identifier="process-run-crate-0.5",
+        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER],
+    )
+
+
+def test_valid_process_run_crate_v0_6_required():
+    """Test valid Process Run Crate 0.6 crates."""
+    do_entity_test(
+        ValidProcRC_v0_6().process_run_crate_v0_6,
+        Severity.REQUIRED,
+        True,
+        profile_identifier="process-run-crate-0.6",
+        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER],
+    )
+    do_entity_test(
+        ValidProcRC_v0_6().process_run_crate_collections_v0_6,
+        Severity.REQUIRED,
+        True,
+        profile_identifier="process-run-crate-0.6",
+        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER],
+    )
+    do_entity_test(
+        ValidProcRC_v0_6().process_run_crate_containerimage_v0_6,
+        Severity.REQUIRED,
+        True,
+        profile_identifier="process-run-crate-0.6",
         skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER],
     )

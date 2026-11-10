@@ -36,7 +36,7 @@ def test_procrc_containerimage_no_additionaltype():
             "to <https://w3id.org/ro/terms/workflow-run#DockerImage> or "
             "<https://w3id.org/ro/terms/workflow-run#SIFImage>"
         ],
-        profile_identifier="process-run-crate",
+        profile_identifier="process-run-crate-0.5",
     )
 
 
@@ -55,7 +55,7 @@ def test_procrc_containerimage_bad_additionaltype():
             "to <https://w3id.org/ro/terms/workflow-run#DockerImage> or "
             "<https://w3id.org/ro/terms/workflow-run#SIFImage>"
         ],
-        profile_identifier="process-run-crate",
+        profile_identifier="process-run-crate-0.5",
     )
 
 
@@ -69,7 +69,7 @@ def test_procrc_containerimage_no_registry():
         False,
         ["Process Run Crate ContainerImage SHOULD"],
         ["The ContainerImage SHOULD have a registry"],
-        profile_identifier="process-run-crate",
+        profile_identifier="process-run-crate-0.5",
     )
 
 
@@ -83,7 +83,7 @@ def test_procrc_containerimage_no_name():
         False,
         ["Process Run Crate ContainerImage SHOULD"],
         ["The ContainerImage SHOULD have a name"],
-        profile_identifier="process-run-crate",
+        profile_identifier="process-run-crate-0.5",
     )
 
 
@@ -97,7 +97,7 @@ def test_procrc_containerimage_no_tag():
         False,
         ["Process Run Crate ContainerImage MAY"],
         ["The ContainerImage MAY have a tag"],
-        profile_identifier="process-run-crate",
+        profile_identifier="process-run-crate-0.5",
     )
 
 
@@ -111,5 +111,5 @@ def test_procrc_containerimage_no_sha256():
         False,
         ["Process Run Crate ContainerImage MAY"],
         ["The ContainerImage MAY have a sha256"],
-        profile_identifier="process-run-crate",
+        profile_identifier="process-run-crate-0.5",
     )

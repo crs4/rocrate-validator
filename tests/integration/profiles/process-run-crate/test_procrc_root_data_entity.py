@@ -15,7 +15,8 @@
 import logging
 
 from rocrate_validator.models import Severity
-from tests.ro_crates import InvalidProcRC, ValidROC
+from tests.conftest import SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER
+from tests.ro_crates import InvalidProcRC, ValidProcRC_v0_6, ValidROC
 from tests.shared import do_entity_test
 
 # set up logging
@@ -36,7 +37,7 @@ def test_procrc_no_conformsto():
             "The Root Data Entity MUST reference a CreativeWork entity with an @id URI "
             "that is consistent with the versioned permalink of the profile"
         ],
-        profile_identifier="process-run-crate",
+        profile_identifier="process-run-crate-0.5",
     )
 
 
@@ -54,7 +55,29 @@ def test_procrc_conformsto_bad_type():
             "The Root Data Entity MUST reference a CreativeWork entity with an @id URI "
             "that is consistent with the versioned permalink of the profile"
         ],
-        profile_identifier="process-run-crate",
+        profile_identifier="process-run-crate-0.5",
+    )
+
+
+def test_procrc_v0_6_conformsto_bad_profile():
+    """
+    Test a Process Run Crate 0.6 where the root data entity does not conformsTo
+    a Process Run Crate profile.
+    """
+    do_entity_test(
+        ValidProcRC_v0_6().process_run_crate_v0_6,
+        Severity.REQUIRED,
+        False,
+        ["Root Data Entity Metadata"],
+        [
+            "The Root Data Entity MUST reference a CreativeWork entity with an @id URI "
+            "that is consistent with the versioned permalink of the profile"
+        ],
+        profile_identifier="process-run-crate-0.6",
+        rocrate_entity_patch={
+            "./": {"conformsTo": [{"@id": "https://example.com/not-a-process-run-crate/1.0"}]}
+        },
+        skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER],
     )
 
 
@@ -72,5 +95,5 @@ def test_procrc_conformsto_bad_profile():
             "The Root Data Entity MUST reference a CreativeWork entity with an @id URI "
             "that is consistent with the versioned permalink of the profile"
         ],
-        profile_identifier="process-run-crate",
+        profile_identifier="process-run-crate-0.5",
     )
