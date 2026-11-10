@@ -22,13 +22,12 @@ logger = logging.getLogger(__name__)
 
 
 def test_valid_workflow_roc_required():
-    """Test valid Workflow RO-Crate metadata without checking the payload."""
+    """Test Workflow RO-Crates that are valid at the REQUIRED level."""
     do_entity_test(
         ValidWROC_v1_1().workflow_roc_v1_1,
         Severity.REQUIRED,
         True,
-        profile_identifier="workflow-ro-crate-1.1",
-        metadata_only=True,
+        profile_identifier="workflow-ro-crate-1.1"
     )
     do_entity_test(
         ValidWROC_v1_1().workflow_roc_string_license_v1_1,
