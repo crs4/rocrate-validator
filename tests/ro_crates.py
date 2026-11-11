@@ -699,6 +699,10 @@ class InvalidProcRC:
         return self.base_path / "softwareapplication_bad_softwarerequirements"
 
 
+class InvalidProcRC_v0_6(InvalidProcRC):
+    base_path = INVALID_CRATES_DATA_PATH / "process-run-crate-0.6/"
+
+
 class InvalidWTROC:
     base_path = INVALID_CRATES_DATA_PATH / "5_workflow_testing_ro_crate/"
 
