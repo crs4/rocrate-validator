@@ -32,7 +32,7 @@ def test_procrc_application_no_name():
         False,
         ["ProcRC Application"],
         ["The Application SHOULD have a name"],
-        profile_identifier="process-run-crate",
+        profile_identifier="process-run-crate-0.5",
     )
 
 
@@ -46,7 +46,7 @@ def test_procrc_application_no_url():
         False,
         ["ProcRC Application"],
         ["The Application SHOULD have a url"],
-        profile_identifier="process-run-crate",
+        profile_identifier="process-run-crate-0.5",
     )
 
 
@@ -61,7 +61,7 @@ def test_procrc_application_no_version():
         False,
         ["ProcRC SoftwareApplication"],
         ["The SoftwareApplication SHOULD have a version or softwareVersion"],
-        profile_identifier="process-run-crate",
+        profile_identifier="process-run-crate-0.5",
     )
 
 
@@ -76,7 +76,7 @@ def test_procrc_application_version_softwareversion():
         False,
         ["ProcRC SoftwareApplication SingleVersion"],
         ["Process Run Crate SoftwareApplication should not have both version and softwareVersion"],
-        profile_identifier="process-run-crate",
+        profile_identifier="process-run-crate-0.5",
     )
 
 
@@ -91,7 +91,7 @@ def test_procrc_softwaresourcecode_no_version():
         False,
         ["ProcRC SoftwareSourceCode or ComputationalWorkflow"],
         ["The SoftwareSourceCode or ComputationalWorkflow SHOULD have a version"],
-        profile_identifier="process-run-crate",
+        profile_identifier="process-run-crate-0.5",
     )
 
 
@@ -106,7 +106,7 @@ def test_procrc_application_id_no_absoluteuri():
         False,
         ["ProcRC SoftwareApplication ID"],
         ["The SoftwareApplication id SHOULD be an absolute URI"],
-        profile_identifier="process-run-crate",
+        profile_identifier="process-run-crate-0.5",
     )
 
 
@@ -121,7 +121,7 @@ def test_procrc_softwareapplication_no_softwarerequirements():
         False,
         ["ProcRC SoftwareApplication MAY"],
         ["The SoftwareApplication MAY have a softwareRequirements that points to a SoftwareApplication"],
-        profile_identifier="process-run-crate",
+        profile_identifier="process-run-crate-0.5",
     )
 
 
@@ -136,5 +136,5 @@ def test_procrc_softwareapplication_bad_softwarerequirements():
         False,
         ["ProcRC SoftwareApplication MAY"],
         ["The SoftwareApplication MAY have a softwareRequirements that points to a SoftwareApplication"],
-        profile_identifier="process-run-crate",
+        profile_identifier="process-run-crate-0.5",
     )

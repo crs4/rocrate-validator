@@ -96,13 +96,13 @@ def test_warm_token_resolves_to_single_versioned_profile(
     tmp_cache,
     monkeypatch,
 ):
-    """`-p process-run-crate` should resolve to the only versioned variant."""
+    """`-p workflow-testing-ro-crate` should resolve to the only versioned variant."""
     result = cli_runner.invoke(
         cli,
-        ["cache", "warm", "--cache-path", str(tmp_cache), "-p", "process-run-crate"],
+        ["cache", "warm", "--cache-path", str(tmp_cache), "-p", "workflow-testing-ro-crate"],
     )
     assert result.exit_code == 0, result.output
-    assert "process-run-crate-0.5" in result.output
+    assert "workflow-testing-ro-crate-0.1" in result.output
     # Single-version token must resolve silently — no "Note:" line.
     assert "Note:" not in result.output
     assert "not found and skipped" not in result.output

@@ -133,6 +133,21 @@ class ValidWROC_v1_1:
         return VALID_CRATES_DATA_PATH / "workflow-roc-string-license-1.1"
 
 
+class ValidProcRC_v0_6:
+
+    @property
+    def process_run_crate_v0_6(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "process-run-crate-0.6"
+
+    @property
+    def process_run_crate_collections_v0_6(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "process-run-crate-collections-0.6"
+
+    @property
+    def process_run_crate_containerimage_v0_6(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "process-run-crate-containerimage-0.6"
+
+
 class InvalidFileDescriptor:
     base_path = INVALID_CRATES_DATA_PATH / "0_file_descriptor_format"
 
@@ -682,6 +697,10 @@ class InvalidProcRC:
     @property
     def softwareapplication_bad_softwarerequirements(self) -> Path:
         return self.base_path / "softwareapplication_bad_softwarerequirements"
+
+
+class InvalidProcRC_v0_6(InvalidProcRC):
+    base_path = INVALID_CRATES_DATA_PATH / "process-run-crate-0.6/"
 
 
 class InvalidWTROC:
