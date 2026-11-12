@@ -36,4 +36,12 @@ workflow-ro-crate:WROCComputationalWorkflowOptional a sh:NodeShape ;
         sh:path bioschemas:output ;
         sh:minCount 1 ;
         sh:message "A ComputationalWorkflow MAY have an output" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "ComputationalWorkflow step" ;
+        sh:description "A ComputationalWorkflow MAY have a step property" ;
+        sh:path schema:step ;
+        sh:minCount 1 ;
+        sh:message "A ComputationalWorkflow MAY have a step property" ;
     ] .

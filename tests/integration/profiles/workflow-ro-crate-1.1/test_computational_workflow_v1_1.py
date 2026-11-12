@@ -80,3 +80,48 @@ def test_computational_workflow_bad_output():
         ["ComputationalWorkflow input and output MUST point to FormalParameter entities"],
         profile_identifier="workflow-ro-crate-1.1",
     )
+
+
+def test_computational_workflow_no_step():
+    """
+    Test a Workflow RO-Crate where a computational workflow does not have
+    a step property.
+    """
+    do_entity_test(
+        WROCInvalidComputationalWorkflow_v1_1().no_step,
+        Severity.OPTIONAL,
+        False,
+        ["Workflow RO-Crate ComputationalWorkflow MAY"],
+        ["A ComputationalWorkflow MAY have a step property"],
+        profile_identifier="workflow-ro-crate-1.1",
+    )
+
+
+def test_computational_workflow_bad_step():
+    """
+    Test a Workflow RO-Crate where a ComputationalWorkflow has a step property
+    that does not point to HowToStep entities.
+    """
+    do_entity_test(
+        WROCInvalidComputationalWorkflow_v1_1().bad_step,
+        Severity.REQUIRED,
+        False,
+        ["Workflow RO-Crate ComputationalWorkflow MUST"],
+        ["ComputationalWorkflow step MUST point to HowToStep entities"],
+        profile_identifier="workflow-ro-crate-1.1",
+    )
+
+
+def test_computational_workflow_with_steps_bad_type():
+    """
+    Test a Workflow RO-Crate where a ComputationalWorkflow refers to steps
+    but does not have the HowTo type.
+    """
+    do_entity_test(
+        WROCInvalidComputationalWorkflow_v1_1().with_steps_bad_type,
+        Severity.REQUIRED,
+        False,
+        ["ComputationalWorkflow with steps MUST"],
+        ["A ComputationalWorkflow that links to steps MUST have the HowTo type"],
+        profile_identifier="workflow-ro-crate-1.1",
+    )

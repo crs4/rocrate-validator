@@ -82,44 +82,4 @@ workflow-ro-crate:MainWorkflowRequiredProperties a sh:NodeShape ;
         sh:class schema:ComputerLanguage ;
         sh:minCount 1 ;
         sh:message "The Main Workflow must refer to its language via programmingLanguage" ;
-    ] ;
-    sh:property [
-        a sh:PropertyShape ;
-        sh:name "Main Workflow step" ;
-        sh:description "Main Workflow step MUST point to HowToStep entities" ;
-        sh:path schema:step ;
-        sh:class schema:HowToStep ;
-        sh:message "Main Workflow step MUST point to HowToStep entities" ;
-    ] .
-
-
-workflow-ro-crate:MainWorkflowWithSteps a sh:NodeShape ;
-    sh:name "Main Workflow with steps MUST" ;
-    sh:description "Required properties of a Main Workflow that links to steps" ;
-    sh:target [
-        a sh:SPARQLTarget ;
-        sh:prefixes ro-crate:sparqlPrefixes ;
-        sh:select """
-            SELECT ?this
-            WHERE {
-                ?root schema:mainEntity ?this .
-                ?root a schema:Dataset .
-                ?metadatafile schema:about ?root .
-                FILTER(
-                    STRENDS(str(?metadatafile), "ro-crate-metadata.json") ||
-                    STRENDS(str(?metadatafile), "ro-crate-metadata.jsonld")
-                ) .
-                ?this schema:step ?step .
-                ?step a schema:HowToStep
-            }
-        """
-    ] ;
-    sh:property [
-        a sh:PropertyShape ;
-        sh:name "Main Workflow with steps type" ;
-        sh:description "A Main Workflow that links to steps MUST have the HowTo type" ;
-        sh:path rdf:type ;
-        sh:hasValue schema:HowTo;
-        sh:minCount 1 ;
-        sh:message "A Main Workflow that links to steps MUST have the HowTo type" ;
     ] .

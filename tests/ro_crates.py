@@ -411,18 +411,6 @@ class InvalidMainWorkflow_v1_1:
     def main_workflow_bad_conformsto(self) -> Path:
         return self.base_path / "main_workflow_bad_conformsto"
 
-    @property
-    def main_workflow_no_step(self) -> Path:
-        return self.base_path / "main_workflow_no_step"
-
-    @property
-    def main_workflow_bad_step(self) -> Path:
-        return self.base_path / "main_workflow_bad_step"
-
-    @property
-    def main_workflow_with_steps_bad_type(self) -> Path:
-        return self.base_path / "main_workflow_with_steps_bad_type"
-
 
 class WROCInvalidComputationalWorkflow_v1_1:
     base_path = INVALID_CRATES_DATA_PATH / "workflow-ro-crate-1.1" / "computational_workflow"
@@ -441,6 +429,18 @@ class WROCInvalidComputationalWorkflow_v1_1:
     @property
     def bad_output(self) -> Path:
         return self.base_path / "bad_output"
+
+    @property
+    def no_step(self) -> Path:
+        return self.base_path / "no_step"
+
+    @property
+    def bad_step(self) -> Path:
+        return self.base_path / "bad_step"
+
+    @property
+    def with_steps_bad_type(self) -> Path:
+        return self.base_path / "with_steps_bad_type"
 
 
 class WROCInvalidConformsTo:
