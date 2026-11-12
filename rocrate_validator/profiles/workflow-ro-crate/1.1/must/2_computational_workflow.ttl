@@ -13,6 +13,9 @@
 # limitations under the License.
 
 @prefix bioschemas: <https://bioschemas.org/terms/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate-1.3/> .
+@prefix schema: <http://schema.org/> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix workflow-ro-crate: <https://github.com/crs4/rocrate-validator/profiles/workflow-ro-crate/1.1/> .
 
@@ -29,4 +32,38 @@ workflow-ro-crate:WROCComputationalWorkflowRequired a sh:NodeShape ;
         ] ;
         sh:class bioschemas:FormalParameter ;
         sh:message "ComputationalWorkflow input and output MUST point to FormalParameter entities" ;
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "ComputationalWorkflow step" ;
+        sh:description "ComputationalWorkflow step MUST point to HowToStep entities" ;
+        sh:path schema:step ;
+        sh:class schema:HowToStep ;
+        sh:message "ComputationalWorkflow step MUST point to HowToStep entities" ;
+    ] .
+
+
+workflow-ro-crate:ComputationalWorkflowWithSteps a sh:NodeShape ;
+    sh:name "ComputationalWorkflow with steps MUST" ;
+    sh:description "Required properties of a ComputationalWorkflow that links to steps" ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes ro-crate:sparqlPrefixes ;
+        sh:select """
+            SELECT ?this
+            WHERE {
+                ?this a bioschemas:ComputationalWorkflow .
+                ?this schema:step ?step .
+                ?step a schema:HowToStep
+            }
+        """
+    ] ;
+    sh:property [
+        a sh:PropertyShape ;
+        sh:name "ComputationalWorkflow with steps type" ;
+        sh:description "A ComputationalWorkflow that links to steps MUST have the HowTo type" ;
+        sh:path rdf:type ;
+        sh:hasValue schema:HowTo;
+        sh:minCount 1 ;
+        sh:message "A ComputationalWorkflow that links to steps MUST have the HowTo type" ;
     ] .
