@@ -22,6 +22,7 @@ from tests.shared import do_entity_test
 logger = logging.getLogger(__name__)
 
 
+# inherited from WROC 1.1
 def test_wfrc_workflow_no_input():
     """
     Test a Workflow Run Crate where a ComputationalWorkflow has no input.
@@ -30,12 +31,13 @@ def test_wfrc_workflow_no_input():
         InvalidWfRC_v0_6().workflow_no_input,
         Severity.OPTIONAL,
         False,
-        ["Workflow Run Crate ComputationalWorkflow MAY"],
+        ["Workflow RO-Crate ComputationalWorkflow MAY"],
         ["A ComputationalWorkflow MAY have an input"],
         profile_identifier="workflow-run-crate-0.6",
     )
 
 
+# inherited from WROC 1.1
 def test_wfrc_workflow_no_output():
     """
     Test a Workflow Run Crate where a ComputationalWorkflow has no output.
@@ -44,12 +46,13 @@ def test_wfrc_workflow_no_output():
         InvalidWfRC_v0_6().workflow_no_output,
         Severity.OPTIONAL,
         False,
-        ["Workflow Run Crate ComputationalWorkflow MAY"],
+        ["Workflow RO-Crate ComputationalWorkflow MAY"],
         ["A ComputationalWorkflow MAY have an output"],
         profile_identifier="workflow-run-crate-0.6",
     )
 
 
+# inherited from WROC 1.1
 def test_wfrc_workflow_input_no_formalparam():
     """
     Test a Workflow Run Crate where a ComputationalWorkflow input does not
@@ -59,12 +62,13 @@ def test_wfrc_workflow_input_no_formalparam():
         InvalidWfRC_v0_6().workflow_input_no_formalparam,
         Severity.REQUIRED,
         False,
-        ["Workflow Run Crate ComputationalWorkflow MUST"],
+        ["Workflow RO-Crate ComputationalWorkflow MUST"],
         ["ComputationalWorkflow input and output MUST point to FormalParameter entities"],
         profile_identifier="workflow-run-crate-0.6",
     )
 
 
+# inherited from WROC 1.1
 def test_wfrc_workflow_output_no_formalparam():
     """
     Test a Workflow Run Crate where a ComputationalWorkflow output does not
@@ -74,7 +78,7 @@ def test_wfrc_workflow_output_no_formalparam():
         InvalidWfRC_v0_6().workflow_output_no_formalparam,
         Severity.REQUIRED,
         False,
-        ["Workflow Run Crate ComputationalWorkflow MUST"],
+        ["Workflow RO-Crate ComputationalWorkflow MUST"],
         ["ComputationalWorkflow input and output MUST point to FormalParameter entities"],
         profile_identifier="workflow-run-crate-0.6",
     )

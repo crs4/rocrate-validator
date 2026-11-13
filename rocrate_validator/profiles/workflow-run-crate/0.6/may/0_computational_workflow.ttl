@@ -27,22 +27,6 @@ workflow-run-crate:WfRCComputationalWorkflowOptional a sh:NodeShape ;
     sh:targetClass bioschemas:ComputationalWorkflow ;
     sh:property [
         a sh:PropertyShape ;
-        sh:name "ComputationalWorkflow input" ;
-        sh:description "A ComputationalWorkflow MAY have an input" ;
-        sh:path bioschemas:input ;
-        sh:minCount 1 ;
-        sh:message "A ComputationalWorkflow MAY have an input" ;
-    ] ;
-    sh:property [
-        a sh:PropertyShape ;
-        sh:name "ComputationalWorkflow output" ;
-        sh:description "A ComputationalWorkflow MAY have an output" ;
-        sh:path bioschemas:output ;
-        sh:minCount 1 ;
-        sh:message "A ComputationalWorkflow MAY have an output" ;
-    ] ;
-    sh:property [
-        a sh:PropertyShape ;
         sh:name "Workflow environment" ;
         sh:description "The Workflow MAY have an environment" ;
         sh:path wfrun:environment ;
