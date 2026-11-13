@@ -35,7 +35,7 @@ def test_provrc_organizeaction_no_instrument():
             "An OrganizeAction must reference an entity representing the "
             "workflow engine (e.g. a SoftwareApplication) via instrument"
         ],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -53,7 +53,7 @@ def test_provrc_organizeaction_bad_instrument():
             "An OrganizeAction must reference an entity representing the "
             "workflow engine (e.g. a SoftwareApplication) via instrument"
         ],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -67,7 +67,7 @@ def test_provrc_organizeaction_no_result():
         False,
         ["ProvRC OrganizeAction MUST"],
         ["An OrganizeAction must reference the action representing the workflow run via result"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -82,7 +82,7 @@ def test_provrc_organizeaction_bad_result():
         False,
         ["ProvRC OrganizeAction MUST"],
         ["An OrganizeAction must reference the action representing the workflow run via result"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -96,7 +96,7 @@ def test_provrc_organizeaction_no_object():
         False,
         ["ProvRC OrganizeAction MUST"],
         ["An OrganizeAction must reference the ControlAction instances representing the step executions via object"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -111,7 +111,7 @@ def test_provrc_organizeaction_bad_object():
         False,
         ["ProvRC OrganizeAction MUST"],
         ["An OrganizeAction must reference the ControlAction instances representing the step executions via object"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -125,7 +125,7 @@ def test_provrc_organizeaction_no_actionstatus():
         False,
         ["ProvRC ControlAction and OrganizeAction MAY"],
         ["The Action MAY have an actionStatus"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -144,7 +144,7 @@ def test_provrc_organizeaction_bad_actionstatus():
             "http://schema.org/CompletedActionStatus or "
             "http://schema.org/FailedActionStatus"
         ],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -159,7 +159,7 @@ def test_provrc_organizeaction_no_error():
         False,
         ["ProvRC ControlAction and OrganizeAction error"],
         ["error MAY be specified if actionStatus is set to FailedActionStatus"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -174,5 +174,5 @@ def test_provrc_organizeaction_error_not_failed_status():
         False,
         ["Provenance Run Crate ControlAction and OrganizeAction error"],
         ["error SHOULD NOT be specified unless actionStatus is set to FailedActionStatus"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )

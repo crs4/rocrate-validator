@@ -1,0 +1,13 @@
+{
+    "input": {
+        "class": "File",
+        "location": "327fc7aedf4f6b69a42a7c8b808dc5a7aff61376",
+        "format": "https://www.iana.org/assignments/media-types/text/plain",
+        "size": 1111,
+        "basename": "whale.txt",
+        "nameroot": "whale",
+        "nameext": ".txt",
+        "checksum": "sha1$327fc7aedf4f6b69a42a7c8b808dc5a7aff61376"
+    },
+    "reverse_sort": true
+}

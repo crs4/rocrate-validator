@@ -37,7 +37,7 @@ def test_provrc_conformsto_no_provrc():
             "@id URI that is consistent with the versioned permalink of the "
             "Provenance Run Crate profile"
         ],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -56,7 +56,7 @@ def test_provrc_conformsto_no_wfrc():
             "corresponding to the Process Run Crate, Workflow Run Crate and "
             "Workflow RO-Crate profiles"
         ],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -75,7 +75,7 @@ def test_provrc_conformsto_no_wroc():
             "corresponding to the Process Run Crate, Workflow Run Crate and "
             "Workflow RO-Crate profiles"
         ],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -94,5 +94,5 @@ def test_provrc_conformsto_no_procrc():
             "corresponding to the Process Run Crate, Workflow Run Crate and "
             "Workflow RO-Crate profiles"
         ],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )

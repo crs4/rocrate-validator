@@ -155,6 +155,13 @@ class ValidWfRC_v0_6:
         return VALID_CRATES_DATA_PATH / "workflow-run-crate-0.6"
 
 
+class ValidProvRC_v0_6:
+
+    @property
+    def provenance_run_crate_v0_6(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "provenance-run-crate-0.6"
+
+
 class InvalidFileDescriptor:
     base_path = INVALID_CRATES_DATA_PATH / "0_file_descriptor_format"
 
@@ -1141,6 +1148,10 @@ class InvalidProvRC:
     @property
     def propertyvalue_no_unitcode(self) -> Path:
         return self.base_path / "propertyvalue_no_unitcode"
+
+
+class InvalidProvRC_v0_6(InvalidProvRC):
+    base_path = INVALID_CRATES_DATA_PATH / "provenance-run-crate-0.6/"
 
 
 class InvalidMultiProfileROC:

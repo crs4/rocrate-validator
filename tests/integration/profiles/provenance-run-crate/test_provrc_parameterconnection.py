@@ -33,7 +33,7 @@ def test_parameterconnection_no_sourceparameter():
         False,
         ["ProvRC ParameterConnection MUST"],
         ["ParameterConnection must have a sourceParameter that references a FormalParameter"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -48,7 +48,7 @@ def test_parameterconnection_bad_sourceparameter():
         False,
         ["ProvRC ParameterConnection MUST"],
         ["ParameterConnection must have a sourceParameter that references a FormalParameter"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -63,7 +63,7 @@ def test_parameterconnection_no_targetparameter():
         False,
         ["ProvRC ParameterConnection MUST"],
         ["ParameterConnection must have a targetParameter that references a FormalParameter"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -78,7 +78,7 @@ def test_parameterconnection_bad_targetparameter():
         False,
         ["ProvRC ParameterConnection MUST"],
         ["ParameterConnection must have a targetParameter that references a FormalParameter"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -93,7 +93,7 @@ def test_parameterconnection_not_referenced():
         False,
         ["ParameterConnection references"],
         ["Missing `connection` to this `ParameterConnection` entity"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -108,7 +108,7 @@ def test_parameterconnection_not_workflow_referenced():
         False,
         ["ParameterConnection references on computational workflows"],
         ["Missing `ComputationalWorkflow` connection to this `ParameterConnection` entity"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -123,5 +123,5 @@ def test_parameterconnection_not_step_referenced():
         False,
         ["ParameterConnection references on HowToStep instances"],
         ["Missing `HowToStep` connection to this `ParameterConnection` entity"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )

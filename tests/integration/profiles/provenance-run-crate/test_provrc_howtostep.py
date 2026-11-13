@@ -32,7 +32,7 @@ def test_provrc_howtostep_no_inv_step():
         False,
         ["ProvRC HowToStep MUST"],
         ["A HowToStep must be referred to from a ComputationalWorkflow via step"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -47,7 +47,7 @@ def test_provrc_howtostep_bad_inv_step():
         False,
         ["ProvRC HowToStep MUST"],
         ["A HowToStep must be referred to from a ComputationalWorkflow via step"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -61,7 +61,7 @@ def test_provrc_howtostep_no_workexample():
         False,
         ["ProvRC HowToStep MUST"],
         ["A HowToStep must refer to its corresponding tool via workExample"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -76,7 +76,7 @@ def test_provrc_howtostep_bad_workexample():
         False,
         ["ProvRC HowToStep MUST"],
         ["A HowToStep must refer to its corresponding tool via workExample"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -90,7 +90,7 @@ def test_provrc_howtostep_no_position():
         False,
         ["ProvRC HowToStep MAY"],
         ["A HowToStep may indicate its position in the execution order via position"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -105,7 +105,7 @@ def test_provrc_howtostep_bad_position():
         False,
         ["ProvRC HowToStep MUST"],
         ["If specified, position must be an integer or a string representing an integer"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -119,7 +119,7 @@ def test_provrc_howtostep_no_connection():
         False,
         ["ProvRC HowToStep MAY"],
         ["HowToStep may have a connection property"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -134,7 +134,7 @@ def test_provrc_howtostep_bad_connection():
         False,
         ["ProvRC HowToStep MUST"],
         ["If the HowToStep has a connection, it must point to a ParameterConnection"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -148,7 +148,7 @@ def test_provrc_howtostep_no_buildinstructions():
         False,
         ["ProvRC HowToStep MAY"],
         ["A HowToStep MAY have a buildInstructions pointing to a File"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -163,5 +163,5 @@ def test_provrc_howtostep_bad_buildinstructions():
         False,
         ["ProvRC HowToStep MAY"],
         ["A HowToStep MAY have a buildInstructions pointing to a File"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
