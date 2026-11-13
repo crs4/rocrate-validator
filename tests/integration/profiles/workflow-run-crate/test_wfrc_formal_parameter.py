@@ -33,7 +33,7 @@ def test_formalparam_no_inv_exampleofwork():
         False,
         ["Workflow Run Crate FormalParameter SHOULD"],
         ["FormalParameter SHOULD be referenced from a data entity or PropertyValue via exampleOfWork"],
-        profile_identifier="workflow-run-crate",
+        profile_identifier="workflow-run-crate-0.5",
     )
 
 
@@ -48,7 +48,7 @@ def test_formalparam_bad_inv_exampleofwork():
         False,
         ["Workflow Run Crate FormalParameter SHOULD"],
         ["FormalParameter SHOULD be referenced from a data entity or PropertyValue via exampleOfWork"],
-        profile_identifier="workflow-run-crate",
+        profile_identifier="workflow-run-crate-0.5",
     )
 
 
@@ -63,7 +63,7 @@ def test_formalparam_no_workexample():
         False,
         ["Workflow Run Crate FormalParameter MAY"],
         ["FormalParameter MAY have a workExample"],
-        profile_identifier="workflow-run-crate",
+        profile_identifier="workflow-run-crate-0.5",
     )
 
 
@@ -78,7 +78,7 @@ def test_formalparam_bad_workexample():
         False,
         ["Workflow Run Crate FormalParameter MUST"],
         ["FormalParameter MUST refer to a data entity or PropertyValue via workExample"],
-        profile_identifier="workflow-run-crate",
+        profile_identifier="workflow-run-crate-0.5",
     )
 
 
@@ -93,7 +93,7 @@ def test_formalparam_no_additionaltype():
         False,
         ["Workflow Run Crate FormalParameter MUST"],
         ["FormalParameter MUST have an additionalType"],
-        profile_identifier="workflow-run-crate",
+        profile_identifier="workflow-run-crate-0.5",
     )
 
 
@@ -112,7 +112,7 @@ def test_formalparam_maps_pv_bad_additionaltype():
             "A FormalParameter that maps to a PropertyValue SHOULD have "
             "PropertyValue or a subclass of DataType as its additionalType"
         ],
-        profile_identifier="workflow-run-crate",
+        profile_identifier="workflow-run-crate-0.5",
     )
 
 
@@ -127,7 +127,7 @@ def test_formalparam_maps_file_bad_additionaltype():
         False,
         ["Workflow Run Crate FormalParameter that maps to a File"],
         ["A FormalParameter that maps to a File SHOULD have File as its additionalType"],
-        profile_identifier="workflow-run-crate",
+        profile_identifier="workflow-run-crate-0.5",
     )
 
 
@@ -142,7 +142,7 @@ def test_formalparam_maps_dataset_bad_additionaltype():
         False,
         ["Workflow Run Crate FormalParameter that maps to a Dataset"],
         ["A FormalParameter that maps to a Dataset SHOULD have Dataset as its additionalType"],
-        profile_identifier="workflow-run-crate",
+        profile_identifier="workflow-run-crate-0.5",
     )
 
 
@@ -157,7 +157,7 @@ def test_formalparam_maps_collection_bad_additionaltype():
         False,
         ["Workflow Run Crate FormalParameter that maps to a Collection"],
         ["A FormalParameter that maps to a Collection SHOULD have Collection as its additionalType"],
-        profile_identifier="workflow-run-crate",
+        profile_identifier="workflow-run-crate-0.5",
     )
 
 
@@ -172,7 +172,7 @@ def test_formalparam_no_name():
         False,
         ["Workflow Run Crate FormalParameter SHOULD"],
         ["FormalParameter SHOULD have a name"],
-        profile_identifier="workflow-run-crate",
+        profile_identifier="workflow-run-crate-0.5",
     )
 
 
@@ -187,7 +187,7 @@ def test_formalparam_no_description():
         False,
         ["Workflow Run Crate FormalParameter MAY"],
         ["FormalParameter MAY have a description"],
-        profile_identifier="workflow-run-crate",
+        profile_identifier="workflow-run-crate-0.5",
     )
 
 
@@ -206,5 +206,5 @@ def test_formalparam_env_bad_exampleofwork():
             "A FormalParameter referenced from a ComputationalWorkflow via "
             "environment SHOULD be referenced from a PropertyValue via exampleOfWork"
         ],
-        profile_identifier="workflow-run-crate",
+        profile_identifier="workflow-run-crate-0.5",
     )

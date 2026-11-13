@@ -148,6 +148,13 @@ class ValidProcRC_v0_6:
         return VALID_CRATES_DATA_PATH / "process-run-crate-containerimage-0.6"
 
 
+class ValidWfRC_v0_6:
+
+    @property
+    def workflow_run_crate_v0_6(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "workflow-run-crate-0.6"
+
+
 class InvalidFileDescriptor:
     base_path = INVALID_CRATES_DATA_PATH / "0_file_descriptor_format"
 
@@ -861,6 +868,10 @@ class InvalidWfRC:
     @property
     def formalparam_env_bad_exampleofwork(self) -> Path:
         return self.base_path / "formalparam_env_bad_exampleofwork"
+
+
+class InvalidWfRC_v0_6(InvalidWfRC):
+    base_path = INVALID_CRATES_DATA_PATH / "workflow-run-crate-0.6/"
 
 
 class InvalidProvRC:
