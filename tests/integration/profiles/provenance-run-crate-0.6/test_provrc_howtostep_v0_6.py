@@ -80,6 +80,7 @@ def test_provrc_v0_6_howtostep_bad_workexample():
     )
 
 
+# inherited from WROC 1.1
 def test_provrc_v0_6_howtostep_no_position():
     """
     Test a Provenance Run Crate where a HowToStep has no position.
@@ -88,7 +89,7 @@ def test_provrc_v0_6_howtostep_no_position():
         InvalidProvRC_v0_6().howtostep_no_position,
         Severity.OPTIONAL,
         False,
-        ["ProvRC HowToStep MAY"],
+        ["WROC HowToStep MAY"],
         ["A HowToStep may indicate its position in the execution order via position"],
         profile_identifier="provenance-run-crate-0.6",
     )

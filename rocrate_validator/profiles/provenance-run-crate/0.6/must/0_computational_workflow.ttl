@@ -47,29 +47,3 @@ provenance-run-crate:ProvRCComputationalWorkflowRequired a sh:NodeShape ;
         sh:class wfrun:ParameterConnection ;
         sh:message "If the ComputationalWorkflow has a connection, it must point to a ParameterConnection" ;
     ] .
-
-
-provenance-run-crate:ProvRCComputationalWorkflowWithSteps a sh:NodeShape ;
-    sh:name "Provenance Run Crate ComputationalWorkflow with steps MUST" ;
-    sh:description "Required properties of a Provenance Run Crate ComputationalWorkflow that links to steps" ;
-    sh:target [
-        a sh:SPARQLTarget ;
-        sh:prefixes ro-crate:sparqlPrefixes ;
-        sh:select """
-            SELECT ?this
-            WHERE {
-                ?this a bioschemas:ComputationalWorkflow .
-                ?this schema:step ?step .
-                ?step a schema:HowToStep .
-            }
-        """
-    ] ;
-    sh:property [
-        a sh:PropertyShape ;
-        sh:name "ComputationalWorkflow with steps type" ;
-        sh:description "A ComputationalWorkflow that links to steps MUST have the HowTo type" ;
-        sh:path rdf:type ;
-        sh:hasValue schema:HowTo;
-        sh:minCount 1 ;
-        sh:message "A ComputationalWorkflow that links to steps MUST have the HowTo type" ;
-    ] .

@@ -52,6 +52,7 @@ def test_provrc_v0_6_workflow_bad_haspart():
     )
 
 
+# inherited from WROC 1.1
 def test_provrc_v0_6_workflow_type_no_howto():
     """
     Test a Provenance Run Crate where a ComputationalWorkflow that points to
@@ -61,12 +62,13 @@ def test_provrc_v0_6_workflow_type_no_howto():
         InvalidProvRC_v0_6().workflow_type_no_howto,
         Severity.REQUIRED,
         False,
-        ["Provenance Run Crate ComputationalWorkflow with steps MUST"],
+        ["ComputationalWorkflow with steps MUST"],
         ["A ComputationalWorkflow that links to steps MUST have the HowTo type"],
         profile_identifier="provenance-run-crate-0.6",
     )
 
 
+# stricter than WROC 1.1, where a workflow MAY have a step property
 def test_provrc_v0_6_workflow_no_step():
     """
     Test a Provenance Run Crate where a ComputationalWorkflow does not have
@@ -82,17 +84,18 @@ def test_provrc_v0_6_workflow_no_step():
     )
 
 
+# inherited from WROC 1.1
 def test_provrc_v0_6_workflow_bad_step():
     """
-    Test a Provenance Run Crate where a ComputationalWorkflow does not have
-    the step property.
+    Test a Provenance Run Crate where a ComputationalWorkflow has a step
+    property that does not refer to HowToStep entities.
     """
     do_entity_test(
         InvalidProvRC_v0_6().workflow_bad_step,
-        Severity.RECOMMENDED,
+        Severity.REQUIRED,
         False,
-        ["Provenance Run Crate ComputationalWorkflow SHOULD"],
-        ["ComputationalWorkflow SHOULD refer to HowToStep instances via step"],
+        ["Workflow RO-Crate ComputationalWorkflow MUST"],
+        ["ComputationalWorkflow step MUST point to HowToStep entities"],
         profile_identifier="provenance-run-crate-0.6",
     )
 
