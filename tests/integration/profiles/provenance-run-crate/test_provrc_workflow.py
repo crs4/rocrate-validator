@@ -33,7 +33,7 @@ def test_provrc_workflow_no_haspart():
         False,
         ["Provenance Run Crate ComputationalWorkflow MUST"],
         ["ComputationalWorkflow MUST refer to orchestrated tools via hasPart"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -48,7 +48,7 @@ def test_provrc_workflow_bad_haspart():
         False,
         ["Provenance Run Crate ComputationalWorkflow MUST"],
         ["ComputationalWorkflow MUST refer to orchestrated tools via hasPart"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -63,7 +63,7 @@ def test_provrc_workflow_type_no_howto():
         False,
         ["Provenance Run Crate ComputationalWorkflow with steps MUST"],
         ["A ComputationalWorkflow that links to steps MUST have the HowTo type"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -78,7 +78,7 @@ def test_provrc_workflow_no_step():
         False,
         ["Provenance Run Crate ComputationalWorkflow SHOULD"],
         ["ComputationalWorkflow SHOULD refer to HowToStep instances via step"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -93,7 +93,7 @@ def test_provrc_workflow_bad_step():
         False,
         ["Provenance Run Crate ComputationalWorkflow SHOULD"],
         ["ComputationalWorkflow SHOULD refer to HowToStep instances via step"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -108,7 +108,7 @@ def test_provrc_workflow_no_connection():
         False,
         ["Provenance Run Crate ComputationalWorkflow MAY"],
         ["ComputationalWorkflow may have a connection property"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -123,7 +123,7 @@ def test_provrc_workflow_bad_connection():
         False,
         ["Provenance Run Crate ComputationalWorkflow MUST"],
         ["If the ComputationalWorkflow has a connection, it must point to a ParameterConnection"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -138,7 +138,7 @@ def test_provrc_workflow_no_buildinstructions():
         False,
         ["Provenance Run Crate ComputationalWorkflow / HowTo MAY"],
         ["A ComputationalWorkflow / HowTo MAY have a buildInstructions pointing to a File"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -153,5 +153,5 @@ def test_provrc_workflow_bad_buildinstructions():
         False,
         ["Provenance Run Crate ComputationalWorkflow / HowTo MAY"],
         ["A ComputationalWorkflow / HowTo MAY have a buildInstructions pointing to a File"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )

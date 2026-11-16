@@ -33,7 +33,7 @@ def test_provrc_environment_file_no_encodingformat():
         False,
         ["Provenance Run Crate build instructions file SHOULD"],
         ["the environment file SHOULD have an encodingFormat"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -47,5 +47,5 @@ def test_provrc_environment_file_no_conformsto():
         False,
         ["Provenance Run Crate build instructions file SHOULD"],
         ["the environment file SHOULD have a conformsTo"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )

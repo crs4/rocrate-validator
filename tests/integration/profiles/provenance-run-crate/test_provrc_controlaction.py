@@ -36,7 +36,7 @@ def test_provrc_controlaction_no_instrument():
             "A ControlAction must reference a HowToStep instance representing "
             "the corresponding workflow step via instrument"
         ],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -54,7 +54,7 @@ def test_provrc_controlaction_bad_instrument():
             "A ControlAction must reference a HowToStep instance representing "
             "the corresponding workflow step via instrument"
         ],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -68,7 +68,7 @@ def test_provrc_controlaction_no_object():
         False,
         ["ProvRC ControlAction MUST"],
         ["A ControlAction must reference the action representing the corresponding tool run via object"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -83,7 +83,7 @@ def test_provrc_controlaction_bad_object():
         False,
         ["ProvRC ControlAction MUST"],
         ["A ControlAction must reference the action representing the corresponding tool run via object"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -97,7 +97,7 @@ def test_provrc_controlaction_no_actionstatus():
         False,
         ["ProvRC ControlAction and OrganizeAction MAY"],
         ["The Action MAY have an actionStatus"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -116,7 +116,7 @@ def test_provrc_controlaction_bad_actionstatus():
             "http://schema.org/CompletedActionStatus or "
             "http://schema.org/FailedActionStatus"
         ],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -131,7 +131,7 @@ def test_provrc_controlaction_no_error():
         False,
         ["ProvRC ControlAction and OrganizeAction error"],
         ["error MAY be specified if actionStatus is set to FailedActionStatus"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -146,7 +146,7 @@ def test_provrc_controlaction_error_not_failed_status():
         False,
         ["Provenance Run Crate ControlAction and OrganizeAction error"],
         ["error SHOULD NOT be specified unless actionStatus is set to FailedActionStatus"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -155,7 +155,7 @@ def test_provrc_error_violation_maps_to_process_run_crate_check():
     result = services.validate(
         models.ValidationSettings(
             rocrate_uri=InvalidProcRC().action_no_error,
-            profile_identifier="provenance-run-crate",
+            profile_identifier="provenance-run-crate-0.5",
             requirement_severity=Severity.OPTIONAL,
             abort_on_first=False,
         )
