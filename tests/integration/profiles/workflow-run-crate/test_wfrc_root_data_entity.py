@@ -36,7 +36,7 @@ def test_wfrc_conformsto_no_wfrc():
             "The Root Data Entity MUST reference a CreativeWork entity "
             "with an @id URI that is consistent with the versioned permalink of the Workflow Run Crate profile"
         ],
-        profile_identifier="workflow-run-crate",
+        profile_identifier="workflow-run-crate-0.5",
     )
 
 
@@ -54,7 +54,7 @@ def test_wfrc_conformsto_no_wroc():
             "The Root Data Entity SHOULD reference CreativeWork entities "
             "corresponding to the Process Run Crate and Workflow RO-Crate profiles"
         ],
-        profile_identifier="workflow-run-crate",
+        profile_identifier="workflow-run-crate-0.5",
     )
 
 
@@ -72,5 +72,5 @@ def test_wfrc_conformsto_no_procrc():
             "The Root Data Entity SHOULD reference CreativeWork entities "
             "corresponding to the Process Run Crate and Workflow RO-Crate profiles"
         ],
-        profile_identifier="workflow-run-crate",
+        profile_identifier="workflow-run-crate-0.5",
     )

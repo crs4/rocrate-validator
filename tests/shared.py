@@ -52,6 +52,10 @@ _PROFILE_CONTEXT_URIS = {
     "ro-crate-1.1": "https://w3id.org/ro/crate/1.1/context",
     "ro-crate-1.2": "https://w3id.org/ro/crate/1.2/context",
     "ro-crate-1.3": "https://w3id.org/ro/crate/1.3/context",
+    "workflow-ro-crate-1.1": "https://w3id.org/ro/crate/1.3/context",
+    "process-run-crate-0.6": "https://w3id.org/ro/crate/1.3/context",
+    "workflow-run-crate-0.6": "https://w3id.org/ro/crate/1.3/context",
+    "provenance-run-crate-0.6": "https://w3id.org/ro/crate/1.3/context",
 }
 _DEFAULT_CONTEXT_URI = _PROFILE_CONTEXT_URIS[RO_CRATE_1_1_PROFILE_IDENTIFIER]
 
@@ -152,7 +156,7 @@ def _prepare_temp_rocrate(
     return temp_rocrate_path
 
 
-def do_entity_test(  # pylint: disable=too-many-locals
+def do_entity_test(  # noqa: PLR0912
     # Shared test driver: the long signature mirrors `ValidationSettings`
     # plus the assertion-shaping knobs, so locals scale with the surface area
     # it has to cover. Splitting it would only push the locals to the caller.
@@ -234,6 +238,14 @@ def do_entity_test(  # pylint: disable=too-many-locals
             requirement_severity,
             result.context.requirement_severity,
         )
+
+        if expected_validation_result and result.has_issues():
+            for issue in result.get_issues():
+                logger.debug(
+                    f"Detected issue of severity {issue.severity.name} "
+                    f"with check \"{issue.check.identifier}\": {issue.message}"
+                )
+
         assert result.passed() == expected_validation_result, (
             f"RO-Crate should be {'valid' if expected_validation_result else 'invalid'}"
         )

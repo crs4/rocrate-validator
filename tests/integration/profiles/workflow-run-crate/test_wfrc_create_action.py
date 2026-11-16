@@ -32,7 +32,7 @@ def test_wfrc_no_supported_action_with_main_entity_as_instrument():
         Severity.REQUIRED,
         False,
         expected_triggered_issues=[EXPECTED_ISSUE],
-        profile_identifier="workflow-run-crate",
+        profile_identifier="workflow-run-crate-0.5",
         skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER],
         rocrate_entity_mod_sparql="""
             PREFIX schema: <http://schema.org/>
@@ -65,7 +65,7 @@ def test_wfrc_no_action_with_main_entity_as_instrument(action_type):
         Severity.REQUIRED,
         False,
         expected_triggered_issues=[EXPECTED_ISSUE],
-        profile_identifier="workflow-run-crate",
+        profile_identifier="workflow-run-crate-0.5",
         skip_checks=[SKIP_LOCAL_DATA_ENTITY_EXISTENCE_CHECK_IDENTIFIER],
         rocrate_entity_mod_sparql=f"""
             PREFIX schema: <http://schema.org/>

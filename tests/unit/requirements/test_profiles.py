@@ -15,6 +15,7 @@
 import logging
 from dataclasses import replace
 from pathlib import Path
+from shutil import copytree
 from typing import Any, cast
 
 import pytest
@@ -527,6 +528,81 @@ def test_effective_checks_expose_overlay_provenance():
         "relation": "inherited",
         "replaces": [],
     }
+
+
+def test_nested_overlay_preserves_effective_identity_and_orders_ancestors():
+    """A wrapper profile keeps its inherited overlay's identity and execution order."""
+    profiles = Profile.load_profiles("tests/data/profiles/effective_checks", severity=Severity.OPTIONAL)
+    profile = next(item for item in profiles if item.identifier == "effective-c")
+
+    assert [item.identifier for item in profile.inherited_profiles] == ["effective-a", "effective-b"]
+
+    inherited = next(
+        item for item in profile.get_effective_requirement_checks() if item.check.name == "Inherited check"
+    )
+    assert inherited.identifier == "effective-b_1.1"
+    assert inherited.source_identifier == "effective-a_1.1"
+    assert inherited.profile.identifier == "effective-b"
+    assert inherited.source_profile.identifier == "effective-a"
+
+    effective_checks = profile.get_effective_requirement_checks()
+    identifiers = [item.identifier for item in effective_checks]
+    assert len(identifiers) == len(set(identifiers))
+    replacement = next(item for item in effective_checks if item.check.name == "Shared check")
+    assert replacement.identifier == "effective-b_1.2"
+    assert replacement.source_identifier == "effective-b_1.1"
+    assert replacement.relation == RequirementCheckRelation.INHERITED
+
+
+@pytest.mark.parametrize("local_replacement", [False, True])
+def test_chained_overlays_rebase_effective_identifiers(tmp_path, local_replacement):
+    """A second overlay must rebase both inherited and replacement identities."""
+    profiles_path = tmp_path / "profiles"
+    copytree("tests/data/profiles/effective_checks", profiles_path)
+    specification = profiles_path / "c/profile.ttl"
+    graph = Graph().parse(specification, format="turtle")
+    profiles_ns = Namespace("https://w3id.org/rocrate-validator/tests/effective-checks/")
+    validator_ns = Namespace("https://github.com/crs4/rocrate-validator/")
+    graph.add((profiles_ns.c, validator_ns.isRuleOverlayOf, profiles_ns.b))
+    graph.serialize(specification, format="turtle")
+    if local_replacement:
+        (profiles_path / "c/checks.py").write_text(
+            (profiles_path / "b/checks.py").read_text(encoding="utf-8"), encoding="utf-8"
+        )
+
+    profiles = Profile.load_profiles(profiles_path, severity=Severity.OPTIONAL)
+    profile = next(item for item in profiles if item.identifier == "effective-c")
+    by_name = {item.check.name: item for item in profile.get_effective_requirement_checks()}
+    assert by_name["Inherited check"].identifier == "effective-c_1.1"
+    assert by_name["Inherited check"].source_identifier == "effective-a_1.1"
+    assert by_name["Shared check"].identifier == "effective-c_1.2"
+    assert by_name["Shared check"].source_identifier == ("effective-c_1.1" if local_replacement else "effective-b_1.1")
+    assert all(item.profile == profile for item in by_name.values())
+
+
+@pytest.mark.parametrize("explicit_ancestry", [False, True])
+def test_inherited_profiles_order_shared_ancestors(tmp_path, explicit_ancestry):
+    """Shared ancestors must precede descendants, even with redundant parent edges."""
+    relations = {
+        "b": "",
+        "a": "prof:isProfileOf <urn:b> ;",
+        "c": "prof:isProfileOf <urn:a>, <urn:b> ;",
+        "d": "prof:isProfileOf <urn:c> ;",
+    }
+    if explicit_ancestry:
+        relations["d"] += " prof:isTransitiveProfileOf <urn:c>, <urn:a>, <urn:b> ;"
+    for name, predicates in relations.items():
+        directory = tmp_path / name
+        directory.mkdir()
+        (directory / "profile.ttl").write_text(
+            "@prefix prof: <http://www.w3.org/ns/dx/prof/> .\n"
+            f'<urn:{name}> a prof:Profile ; {predicates} prof:hasToken "{name}" .',
+            encoding="utf-8",
+        )
+
+    profiles = Profile.load_profiles(tmp_path)
+    profile = next(item for item in profiles if item.identifier == "d")
+    assert [item.identifier for item in profile.inherited_profiles] == ["b", "a", "c"]
 
 
 def test_effective_checks_retain_ordinary_inherited_identity():

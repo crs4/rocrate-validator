@@ -7,6 +7,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.14.0] - 2026-11-16
+
+Full changelog: https://github.com/kikkomep/rocrate-validator/compare/0.13.1...0.14.0
+
+### ✨ Added
+
+- Add support for Provenance Run Crate 0.6 ([4e5bf5d1](https://github.com/kikkomep/rocrate-validator/commit/4e5bf5d19d8100d3a77c9a66d2757aa8249cb138))
+- Add support for Workflow Run Crate 0.6 ([a4c40c4f](https://github.com/kikkomep/rocrate-validator/commit/a4c40c4fda0b0f5d15c20a4b619534f4d206c4ec))
+- Add the Process Run Crate 0.6 profile ([5a96f56c](https://github.com/kikkomep/rocrate-validator/commit/5a96f56c6f02b9d21f2f6034709f0998bf7dae3a))
+- Add the Workflow RO-Crate 1.1 profile ([7997715e](https://github.com/kikkomep/rocrate-validator/commit/7997715ebc65e4c84f3ce0737ab582cb8063c044))
+- Add Workflow RO-Crate 1.1 workflow input/output constraints ([d357eaaa](https://github.com/kikkomep/rocrate-validator/commit/d357eaaa138b32f0963744bce296b8b61fd959a7))
+- Add Workflow RO-Crate 1.1 workflow step constraints ([64e56e35](https://github.com/kikkomep/rocrate-validator/commit/64e56e35ff46589d33943f3de2308f88a523af56))
+
+### 🔧 Changed
+
+- style(ruff): 🎨 enforce four-space Python indentation ([60c8c153](https://github.com/kikkomep/rocrate-validator/commit/60c8c153f4bdb6e2bf44018ae64afbd9b2e75848))
+- Move Provenance Run Crate 0.6 tests to a version-specific directory ([d9666a46](https://github.com/kikkomep/rocrate-validator/commit/d9666a46c7afc91c3f2dab278cf4072f8ef95939))
+- Update profile context URIs in test helpers ([fc97bf64](https://github.com/kikkomep/rocrate-validator/commit/fc97bf647e8fea81c86b838a08d0e90c54b4c90a))
+- Move valid Process Run Crate 0.6 tests to a dedicated file ([370353c4](https://github.com/kikkomep/rocrate-validator/commit/370353c46a9809634d76d31824ba900b1b966291))
+- Add invalid Process Run Crate 0.6 test cases ([f38ae5a9](https://github.com/kikkomep/rocrate-validator/commit/f38ae5a9cedbc912a5dcbc17060d721649858de0))
+- Add tests and examples to the valid Workflow RO-Crate 1.1 fixture ([462a1c10](https://github.com/kikkomep/rocrate-validator/commit/462a1c10d7767fc416688eab4f993c5b9ca76bc8))
+- Add Workflow RO-Crate 1.1 README and root metadata tests ([572efab9](https://github.com/kikkomep/rocrate-validator/commit/572efab9bf4125efb3910e207b71e5bd64fc2732))
+- Test invalid Workflow RO-Crate 1.1 root entity conformsTo values ([769404c1](https://github.com/kikkomep/rocrate-validator/commit/769404c1f2c82d16aa0e1a6fe04716180b6da59f))
+- Test missing Workflow RO-Crate 1.1 tests and examples ([f2b5ff83](https://github.com/kikkomep/rocrate-validator/commit/f2b5ff833f266d9b75148114bdfe6e53d970fa36))
+- Add Workflow RO-Crate 1.1 main workflow tests ([d859cc9e](https://github.com/kikkomep/rocrate-validator/commit/d859cc9e598e0ea1c73f1571161ffb5cfbd71863))
+- Test a valid Workflow RO-Crate with a string license ([1c47a903](https://github.com/kikkomep/rocrate-validator/commit/1c47a903380c716fd050dd2d3438e669fb2406e8))
+- Log issues when tests expect validation to succeed ([4a1bb938](https://github.com/kikkomep/rocrate-validator/commit/4a1bb93827fd6f786389b0216c9bae9bf9d166c1))
+- Reorganize the Workflow RO-Crate 1.1 fixture accessor ([41e4942b](https://github.com/kikkomep/rocrate-validator/commit/41e4942bd72834c461643c04acf3f30efe925caf))
+- Add a valid Workflow RO-Crate 1.1 test ([33532329](https://github.com/kikkomep/rocrate-validator/commit/335323299deaa18730ccdce1fe68df6dd4eb9516))
+- Pin existing Workflow RO-Crate tests to profile version 1.0 ([6a5dacdf](https://github.com/kikkomep/rocrate-validator/commit/6a5dacdf05c17cd971de15d45a83d7bb0a44ffcb))
+- Move the Workflow RO-Crate 1.0 profile to a version-specific directory ([319a2bdf](https://github.com/kikkomep/rocrate-validator/commit/319a2bdfc8419810fd2169c8e3e35662eb713263))
+- test(profiles): 🧪 cover RootDataEntity equivalence across RO-Crate versions ([590d064d](https://github.com/kikkomep/rocrate-validator/commit/590d064da287e450b41d58e4476e176099b34cff))
+- test(rocrate): 🧪 cover remote ZIP ranges and full-download warnings ([ac87badc](https://github.com/kikkomep/rocrate-validator/commit/ac87badc71bd3baa4fd9dd66b8164c3a8f5aa7df))
+- test(profiles): 🧪 cover inherited profile identity and ordering ([59d2b9bf](https://github.com/kikkomep/rocrate-validator/commit/59d2b9bf837783c72584a728b51e7fc2e189f4d1))
+
+### 🐛 Fixed
+
+- Remove redundant Provenance Run Crate 0.6 constraints inherited from Workflow RO-Crate 1.1 ([bb98fbc8](https://github.com/kikkomep/rocrate-validator/commit/bb98fbc83d558097f9fdcd0715b7e333f3d7973f))
+- Remove redundant Workflow Run Crate 0.6 constraints inherited from Workflow RO-Crate 1.1 ([d8fda750](https://github.com/kikkomep/rocrate-validator/commit/d8fda75091c7e8fda6e5807a0c7c29cb81284452))
+- Correct conformsTo declarations in Workflow Run Crate 0.6 fixtures ([ce053073](https://github.com/kikkomep/rocrate-validator/commit/ce0530733d757aa18929f7628213e02d0a6a6584))
+- Apply Workflow RO-Crate 1.1 step checks to ComputationalWorkflow entities ([4f41ebab](https://github.com/kikkomep/rocrate-validator/commit/4f41ebab29f8f2f2e336186828d094395f29e89c))
+- Correct Workflow RO-Crate 1.1 step constraints ([176c369a](https://github.com/kikkomep/rocrate-validator/commit/176c369aba1ede0ab3c5d3e7e1cf11e7ccfca511))
+- Match Workflow RO-Crate 1.1 root entity conformsTo values using a pattern ([90f2accd](https://github.com/kikkomep/rocrate-validator/commit/90f2accd675eb0c1a76147ef2cd1bd4341f2292e))
+- Fix Ruff violations in test helpers ([fba3365e](https://github.com/kikkomep/rocrate-validator/commit/fba3365e0e6b3845009c23ec090100d89e99b9ee))
+- fix(tests): replace skip_checks with metadata_only ([71763473](https://github.com/kikkomep/rocrate-validator/commit/717634738f0c43bee4ee8a5ffee5b0771d4e5cc4))
+- Correct Workflow RO-Crate 1.1 transitive profile inheritance ([1485d835](https://github.com/kikkomep/rocrate-validator/commit/1485d83539d88b81f051def49837739367966247))
+- fix(profiles): 🧩 declare RootDataEntity equivalence between RO-Crate 1.3 and 1.2 ([c285191c](https://github.com/kikkomep/rocrate-validator/commit/c285191cd8c53574f208d115c06274825d3b51eb))
+- fix(rocrate): 🌐 read remote ZIPs using absolute HTTP ranges ([f2c50b60](https://github.com/kikkomep/rocrate-validator/commit/f2c50b6086d6287a90e5c89f8a2a407a06c026f6))
+- fix(models): 🧩 propagate effective IDs through profile inheritance ([70777f36](https://github.com/kikkomep/rocrate-validator/commit/70777f3659a5af04611da9869d33299cb596d5dd))
+- fix(metadata): 🔗 point PyPI to the documentation site ([9edf2e3c](https://github.com/kikkomep/rocrate-validator/commit/9edf2e3c2951a776aeabc51767afe94fd673ac02))
+
 ## [0.13.1] - 2026-10-29
 
 Full changelog: https://github.com/kikkomep/rocrate-validator/compare/0.13.0...0.13.1

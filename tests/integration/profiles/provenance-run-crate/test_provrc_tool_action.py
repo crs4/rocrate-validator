@@ -32,7 +32,7 @@ def test_provrc_action_no_resourceusage():
         False,
         ["Provenance Run Crate tool action MAY"],
         ["A tool action MAY have a resourceUsage"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -47,5 +47,5 @@ def test_provrc_action_bad_resourceusage():
         False,
         ["Provenance Run Crate tool action MUST"],
         ["If present, resourceUsage MUST point to PropertyValue"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )

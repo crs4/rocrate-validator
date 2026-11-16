@@ -47,6 +47,7 @@ from rocrate_validator.models.profile_provenance import (
     EffectiveRequirementCheck,
     RequirementCheckRelation,
 )
+from rocrate_validator.models.requirement import RequirementLoader
 from rocrate_validator.models.severity import Severity
 from rocrate_validator.utils.collections import MapIndex, MultiIndexMap
 
@@ -465,20 +466,22 @@ class Profile:
         A check defined by this profile replaces direct-parent checks with the
         same name and severity. Checks composed through ``isRuleOverlayOf`` are
         reported in this profile's namespace; ordinary inherited checks retain
-        their source identity.
+        the effective identity exposed by their ancestor.
         """
         source_profile = check.requirement.profile
         if source_profile == self:
             replaced_checks = tuple(check.overrides)
-            identity_check = check
+            # relative_identifier is "<severity> <requirement>.<check>"; omit the severity in the effective ID.
+            relative_identifier = check.relative_identifier.split(" ", maxsplit=1)[-1]
             overlay_replacements = tuple(
                 parent_check
                 for parent_check in replaced_checks
                 if parent_check.requirement.profile.uri in self.is_rule_overlay_of
             )
             if len(overlay_replacements) == 1:
-                identity_check = overlay_replacements[0]
-            relative_identifier = identity_check.relative_identifier.split(" ", maxsplit=1)[-1]
+                parent_check = overlay_replacements[0]
+                parent_identity = parent_check.requirement.profile.effective_requirement_check(parent_check)
+                relative_identifier = parent_identity.identifier.rsplit("_", maxsplit=1)[-1]
             return EffectiveRequirementCheck(
                 check=check,
                 identifier=f"{self.identifier}_{relative_identifier}",
@@ -489,14 +492,22 @@ class Profile:
                 replaces=replaced_checks,
             )
 
-        if source_profile.uri in self.is_rule_overlay_of:
-            relative_identifier = check.relative_identifier.split(" ", maxsplit=1)[-1]
-            return EffectiveRequirementCheck(
-                check=check,
-                identifier=f"{self.identifier}_{relative_identifier}",
-                profile=self,
-                relation=RequirementCheckRelation.INHERITED,
-            )
+        # Resolve through the nearest ancestor exposing this check, including
+        # its replacement identity. Each overlay then rebases that effective
+        # identity, while ordinary inheritance preserves it.
+        for inherited_profile in reversed(self.inherited_profiles):
+            if source_profile == inherited_profile or source_profile in inherited_profile.inherited_profiles:
+                inherited_identity = inherited_profile.effective_requirement_check(check)
+                is_overlay = inherited_profile.uri in self.is_rule_overlay_of
+                relative_identifier = inherited_identity.identifier.rsplit("_", maxsplit=1)[-1]
+                return EffectiveRequirementCheck(
+                    check=check,
+                    identifier=(
+                        f"{self.identifier}_{relative_identifier}" if is_overlay else inherited_identity.identifier
+                    ),
+                    profile=self if is_overlay else inherited_identity.profile,
+                    relation=RequirementCheckRelation.INHERITED,
+                )
 
         return EffectiveRequirementCheck(
             check=check,
@@ -589,16 +600,25 @@ class Profile:
     @property
     def inherited_profiles(self) -> list[Profile]:
         inherited_profiles = self.is_transitive_profile_of
-        if not inherited_profiles or len(inherited_profiles) == 0:
+        if not inherited_profiles:
             inherited_profiles = Profile.__get_nested_profiles__(self.uri)
         profile_keys = self.__profiles_map.keys
-        return [
+        profiles = [
             profile
             for key in inherited_profiles
             if key in profile_keys
             for profile in [self.__profiles_map.get_by_key(key)]
             if isinstance(profile, Profile)
         ]
+        # Neither RDF values nor the ancestry walk guarantee dependency order.
+        # Reuse the stable topological sorter used for requirements and checks.
+        positions = {profile.uri: index for index, profile in enumerate(profiles)}
+        edges: dict[int, set[int]] = {}
+        for child_index, profile in enumerate(profiles):
+            for parent_uri in profile.is_profile_of:
+                if parent_uri in positions:
+                    edges.setdefault(positions[parent_uri], set()).add(child_index)
+        return RequirementLoader._topological_order(profiles, edges, self.identifier, "profiles")
 
     def add_requirement(self, requirement: Requirement):
         self._requirements.append(requirement)
@@ -752,13 +772,11 @@ class Profile:
             if not profile_root_directory.is_dir():
                 raise InvalidProfilePath(str(profile_root_directory))
             # if the path is a directory, get the profile directories
-            result.extend(
-                [
-                    (profile_root_directory, p.parent)
-                    for p in profile_root_directory.rglob("*.*")
-                    if p.name == PROFILE_SPECIFICATION_FILE
-                ]
-            )
+            result.extend([
+                (profile_root_directory, p.parent)
+                for p in profile_root_directory.rglob("*.*")
+                if p.name == PROFILE_SPECIFICATION_FILE
+            ])
         # return the list of profile directories
         return result
 

@@ -32,7 +32,7 @@ def test_provrc_tool_no_input():
         False,
         ["ProvRC tool MAY"],
         ["A tool MAY have an input"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -46,7 +46,7 @@ def test_provrc_tool_no_output():
         False,
         ["ProvRC tool MAY"],
         ["A tool MAY have an output"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -60,7 +60,7 @@ def test_provrc_tool_no_environment():
         False,
         ["ProvRC tool MAY"],
         ["A tool MAY have an environment"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -75,7 +75,7 @@ def test_provrc_tool_bad_input():
         False,
         ["ProvRC tool MUST"],
         ["Tool input and output MUST point to FormalParameter entities"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -90,7 +90,7 @@ def test_provrc_tool_bad_output():
         False,
         ["ProvRC tool MUST"],
         ["Tool input and output MUST point to FormalParameter entities"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -105,7 +105,7 @@ def test_provrc_tool_bad_environment():
         False,
         ["ProvRC tool SHOULD"],
         ["If the tool has an environment, it SHOULD point to entities of type FormalParameter"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -120,7 +120,7 @@ def test_provrc_tool_no_inv_instrument():
         False,
         ["ProvRC tool MUST"],
         ["A tool must be referred to from an action via instrument"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -135,7 +135,7 @@ def test_provrc_tool_bad_inv_instrument():
         False,
         ["ProvRC tool MUST"],
         ["A tool must be referred to from an action via instrument"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -150,7 +150,7 @@ def test_provrc_tool_no_softwarerequirements():
         False,
         ["ProvRC tool MAY"],
         ["The tool MAY have a softwareRequirements that points to a SoftwareApplication"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -165,7 +165,7 @@ def test_provrc_tool_bad_softwarerequirements():
         False,
         ["ProvRC tool MAY"],
         ["The tool MAY have a softwareRequirements that points to a SoftwareApplication"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -180,7 +180,7 @@ def test_provrc_tool_no_mainentity():
         False,
         ["ProvRC tool MAY"],
         ["The tool MAY have a mainEntity that points to a SoftwareApplication"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -195,5 +195,5 @@ def test_provrc_tool_bad_mainentity():
         False,
         ["ProvRC tool MAY"],
         ["The tool MAY have a mainEntity that points to a SoftwareApplication"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )

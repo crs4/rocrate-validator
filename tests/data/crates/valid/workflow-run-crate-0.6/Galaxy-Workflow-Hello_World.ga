@@ -1,0 +1,157 @@
+{
+    "a_galaxy_workflow": "true",
+    "annotation": "From https://training.galaxyproject.org/training-material/topics/galaxy-interface/tutorials/workflow-editor/tutorial.html#creating-a-new-workflow",
+    "creator": [
+        {
+            "class": "Person",
+            "identifier": "https://orcid.org/0000-0001-9842-9718",
+            "name": "Stian Soiland-Reyes"
+        }
+    ],
+    "format-version": "0.1",
+    "license": "CC0-1.0",
+    "name": "Hello World",
+    "steps": {
+        "0": {
+            "annotation": "A simple set of lines in a text file",
+            "content_id": null,
+            "errors": null,
+            "id": 0,
+            "input_connections": {},
+            "inputs": [
+                {
+                    "description": "A simple set of lines in a text file",
+                    "name": "simple_input"
+                }
+            ],
+            "label": "simple_input",
+            "name": "Input dataset",
+            "outputs": [],
+            "position": {
+                "bottom": 519.227779812283,
+                "height": 55.616668701171875,
+                "left": 626.0000271267361,
+                "right": 806.0000271267361,
+                "top": 463.6111111111111,
+                "width": 180,
+                "x": 626.0000271267361,
+                "y": 463.6111111111111
+            },
+            "tool_id": null,
+            "tool_state": "{\"optional\": false}",
+            "tool_version": null,
+            "type": "data_input",
+            "uuid": "75e4b93c-1b01-4332-8e2d-974bc03870b2",
+            "workflow_outputs": []
+        },
+        "1": {
+            "annotation": "Return all the lines of a text file reversed, last to first",
+            "content_id": "toolshed.g2.bx.psu.edu/repos/bgruening/text_processing/tp_tac/1.1.0",
+            "errors": null,
+            "id": 1,
+            "input_connections": {
+                "infile": {
+                    "id": 0,
+                    "output_name": "output"
+                }
+            },
+            "inputs": [
+                {
+                    "description": "runtime parameter for tool tac",
+                    "name": "infile"
+                }
+            ],
+            "label": "Reverse dataset",
+            "name": "tac",
+            "outputs": [
+                {
+                    "name": "outfile",
+                    "type": "input"
+                }
+            ],
+            "position": {
+                "bottom": 669.8444400363499,
+                "height": 102.23332214355469,
+                "left": 883.9999728732639,
+                "right": 1063.999972873264,
+                "top": 567.6111178927952,
+                "width": 180,
+                "x": 883.9999728732639,
+                "y": 567.6111178927952
+            },
+            "post_job_actions": {},
+            "tool_id": "toolshed.g2.bx.psu.edu/repos/bgruening/text_processing/tp_tac/1.1.0",
+            "tool_shed_repository": {
+                "changeset_revision": "ddf54b12c295",
+                "name": "text_processing",
+                "owner": "bgruening",
+                "tool_shed": "toolshed.g2.bx.psu.edu"
+            },
+            "tool_state": "{\"infile\": {\"__class__\": \"RuntimeValue\"}, \"separator\": {\"separator_select\": \"no\", \"__current_case__\": 0}, \"__page__\": null, \"__rerun_remap_job_id__\": null}",
+            "tool_version": "1.1.0",
+            "type": "tool",
+            "uuid": "1e2bcc37-edad-4d9d-9ae8-a27e183ee55a",
+            "workflow_outputs": [
+                {
+                    "label": "reversed",
+                    "output_name": "outfile",
+                    "uuid": "bb56259b-0460-4187-a4a1-2b7b3a868d6d"
+                }
+            ]
+        },
+        "2": {
+            "annotation": "The last lines of workflow input are the first lines of the reversed input.",
+            "content_id": "Show beginning1",
+            "errors": null,
+            "id": 2,
+            "input_connections": {
+                "input": {
+                    "id": 1,
+                    "output_name": "outfile"
+                }
+            },
+            "inputs": [
+                {
+                    "description": "runtime parameter for tool Select first",
+                    "name": "input"
+                }
+            ],
+            "label": "Select last lines",
+            "name": "Select first",
+            "outputs": [
+                {
+                    "name": "out_file1",
+                    "type": "input"
+                }
+            ],
+            "position": {
+                "bottom": 819.8444061279297,
+                "height": 102.23332214355469,
+                "left": 1168.999972873264,
+                "right": 1348.999972873264,
+                "top": 717.611083984375,
+                "width": 180,
+                "x": 1168.999972873264,
+                "y": 717.611083984375
+            },
+            "post_job_actions": {},
+            "tool_id": "Show beginning1",
+            "tool_state": "{\"header\": \"false\", \"input\": {\"__class__\": \"RuntimeValue\"}, \"lineNum\": \"2\", \"__page__\": null, \"__rerun_remap_job_id__\": null}",
+            "tool_version": "1.0.1",
+            "type": "tool",
+            "uuid": "b378a19a-2126-4302-aace-c3311b7ef64e",
+            "workflow_outputs": [
+                {
+                    "label": "last_lines",
+                    "output_name": "out_file1",
+                    "uuid": "8fe82179-555b-4ace-ad8b-ab3a6587aea8"
+                }
+            ]
+        }
+    },
+    "tags": [
+        "example"
+    ],
+    "uuid": "576ba0e9-b112-47f0-845e-32d8af3a1f35",
+    "version": 3
+}

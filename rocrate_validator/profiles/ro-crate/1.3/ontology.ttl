@@ -40,6 +40,7 @@ ro-crate:ROCrateMetadataFileDescriptor
 
 # Declare the RootDataEntity class
 ro-crate:RootDataEntity rdf:type owl:Class ;
+  owl:equivalentClass ro-crate-1.2:RootDataEntity ;
   rdfs:subClassOf schema:Dataset ;
   rdfs:label "RootDataEntity"@en .
 

@@ -14,15 +14,13 @@
 
 from __future__ import annotations
 
-import io
-import struct
 import zipfile
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 from rocrate_validator.errors import ROCrateInvalidURIError
 from rocrate_validator.utils import log as logging
-from rocrate_validator.utils.http import HttpRequester
+from rocrate_validator.utils.http import HTTPRangeReader, HttpRequester
 
 from .base import ROCrate
 from .metadata import ROCrateMetadata
@@ -362,51 +360,24 @@ class ROCrateRemoteZip(ROCrateLocalZip):
         if not self.uri.is_available():
             raise ROCrateInvalidURIError(uri=url, message="URI is not available")
 
-        # Step 1: Fetch the last 22 bytes to find the EOCD record
-        eocd_data = self.__fetch_range__(url, -22, "")
-
-        # Step 2: Find the EOCD record
-        eocd_offset = self.__find_eocd__(eocd_data)
-
-        # Step 3: Fetch the EOCD and parse it
-        eocd_full_data = self.__fetch_range__(url, -22 - eocd_offset, -1)
-        central_directory_offset, central_directory_size = self.__parse_eocd__(eocd_full_data)
-
-        # Step 4: Fetch the central directory
-        central_directory_data = self.__fetch_range__(
-            url, central_directory_offset, central_directory_offset + central_directory_size - 1
-        )
-        # Step 5: Parse the central directory and return the zip file
-        self._zipref = zipfile.ZipFile(io.BytesIO(central_directory_data))  # pylint: disable=consider-using-with
+        # Let zipfile handle directory offsets, comments and entry reads while
+        # translating its seeks into absolute HTTP ranges (never suffix ranges).
+        try:
+            self._zipref = zipfile.ZipFile(  # pylint: disable=consider-using-with
+                HTTPRangeReader(url, self.size)
+            )
+        except zipfile.BadZipFile as exc:
+            # zipfile masks OSError (including requests' HTTPError) while reading
+            # the directory. Preserve transport errors instead of reporting a bad ZIP.
+            if isinstance(exc.__context__, OSError):
+                raise exc.__context__ from None
+            raise
 
     @property
     def size(self) -> int:
-        response = HttpRequester().head(str(self.uri))
+        response = HttpRequester().head(str(self.uri), allow_redirects=True, headers={"Accept-Encoding": "identity"})
         response.raise_for_status()  # Check if the request was successful
         file_size = response.headers.get("Content-Length")
         if file_size is not None:
             return int(file_size)
         raise ValueError("Could not determine the file size from the headers")
-
-    @staticmethod
-    def __fetch_range__(uri: str, start, end):
-        headers = {"Range": f"bytes={start}-{end}"}
-        response = HttpRequester().get(uri, headers=headers)
-        response.raise_for_status()
-        return response.content
-
-    @staticmethod
-    def __find_eocd__(data):
-        eocd_signature = b"PK\x05\x06"
-        eocd_offset = data.rfind(eocd_signature)
-        if eocd_offset == -1:
-            raise ValueError("EOCD not found")
-        return eocd_offset
-
-    @staticmethod
-    def __parse_eocd__(data):
-        eocd_size = struct.calcsize("<4s4H2LH")
-        eocd = struct.unpack("<4s4H2LH", data[-eocd_size:])
-        central_directory_size = eocd[5]
-        central_directory_offset = eocd[6]
-        return central_directory_offset, central_directory_size

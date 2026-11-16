@@ -33,7 +33,7 @@ def test_provrc_propertyvalue_no_unitcode():
         False,
         ["Provenance Run Crate resource usage PropertyValue SHOULD"],
         ["A PropertyValue used to represent resourceUsage SHOULD have a unitCode"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )
 
 
@@ -48,5 +48,5 @@ def test_provrc_propertyvalue_no_propertyid():
         False,
         ["Provenance Run Crate resource usage PropertyValue MUST"],
         ["A PropertyValue used to represent resourceUsage MUST have a propertyID"],
-        profile_identifier="provenance-run-crate",
+        profile_identifier="provenance-run-crate-0.5",
     )

@@ -1,0 +1,83 @@
+# Copyright (c) 2024-2026 CRS4
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# pylint: disable=invalid-name  # profile filename uses digit prefix (load-order convention)
+
+from rocrate_validator.errors import ROCrateMetadataNotFoundError
+from rocrate_validator.models import CheckResult, CheckResultValue, ValidationContext
+from rocrate_validator.requirements.python import PyFunctionCheck, check, requirement
+from rocrate_validator.utils import log as logging
+
+# set up logging
+logger = logging.getLogger(__name__)
+
+
+@requirement(name="Workflow-related files existence")
+class WorkflowFilesExistence(PyFunctionCheck):
+    """Checks for workflow-related crate files existence."""
+
+    @check(name="Workflow diagram existence")
+    def check_workflow_diagram(self, context: ValidationContext) -> CheckResultValue:
+        """Check if the crate contains the workflow diagram."""
+        if context.settings.metadata_only:
+            logger.debug("Skipping file descriptor existence check in metadata-only mode")
+            context.record_skip(self, "metadata-only mode", "configured")
+            return CheckResult.SKIPPED
+
+        try:
+            main_workflow = context.ro_crate.metadata.get_main_workflow()
+            image = main_workflow.get_property("image")
+            diagram_relpath = image.id if image else None
+            if not diagram_relpath:
+                context.result.add_issue("main workflow does not have an 'image' property", self)
+                return False
+            if not image.is_available():
+                context.result.add_issue(f"Workflow diagram '{image.id}' not found in crate", self)
+                return False
+            return True
+        except ROCrateMetadataNotFoundError:
+            logger.debug("Skipping workflow diagram check: metadata descriptor is not available")
+            context.record_skip(self, "metadata descriptor is not available", "exception")
+            return CheckResult.SKIPPED
+        except (AttributeError, OSError, TypeError, ValueError) as e:
+            context.result.add_issue(f"Unable to check the workflow diagram: {e}", self)
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.exception("Unexpected error checking main workflow image existence")
+            return False
+
+    @check(name="Workflow description existence")
+    def check_workflow_description(self, context: ValidationContext) -> CheckResultValue:
+        """Check if the crate contains the workflow CWL description."""
+        try:
+            main_workflow = context.ro_crate.metadata.get_main_workflow()
+            main_workflow_subject = main_workflow.get_property("subjectOf")
+            description_relpath = main_workflow_subject.id if main_workflow_subject else None
+            if not description_relpath:
+                context.result.add_issue("main workflow does not have a 'subjectOf' property", self)
+                return False
+            if not context.settings.metadata_only and not main_workflow_subject.is_available():
+                context.result.add_issue(
+                    f"Workflow CWL description {main_workflow_subject.id} not found in crate", self
+                )
+                return False
+            return True
+        except ROCrateMetadataNotFoundError:
+            logger.debug("Skipping workflow description check: metadata descriptor is not available")
+            context.record_skip(self, "metadata descriptor is not available", "exception")
+            return CheckResult.SKIPPED
+        except (AttributeError, OSError, TypeError, ValueError) as e:
+            context.result.add_issue(f"Unable to check the workflow description: {e}", self)
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.exception("Unexpected error checking workflow description existence")
+            return False

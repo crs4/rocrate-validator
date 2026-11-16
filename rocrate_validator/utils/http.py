@@ -16,9 +16,11 @@ from __future__ import annotations
 
 import atexit
 import contextlib
+import io
 import random
 import string
 import threading
+from http import HTTPStatus
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -431,6 +433,78 @@ class HttpRequester:
             if instance is not None:
                 instance._close_session()
             cls._instance = None
+
+
+class HTTPRangeReader(io.RawIOBase):
+    """
+    Seekable HTTP input using bounded ranges and a caller-supplied resource size.
+
+    Uses HttpRequester for transport and retains the full response when a server
+    ignores Range, so subsequent reads can be served without further downloads.
+    """
+
+    def __init__(self, url: str, size: int):
+        super().__init__()
+        self._url = url
+        self._size = size
+        self._position = 0
+        self._full_content: bytes | None = None
+
+    def readable(self) -> bool:
+        return True
+
+    def seekable(self) -> bool:
+        return True
+
+    def tell(self) -> int:
+        return self._position
+
+    def seek(self, offset: int, whence: int = io.SEEK_SET) -> int:
+        if whence == io.SEEK_CUR:
+            offset += self._position
+        elif whence == io.SEEK_END:
+            offset += self._size
+        elif whence != io.SEEK_SET:
+            raise ValueError(f"Invalid whence: {whence}")
+        if offset < 0:
+            raise ValueError("Negative seek position")
+        self._position = offset
+        return offset
+
+    def read(self, size: int = -1) -> bytes:
+        start = self._position
+        stop = self._size if size < 0 else min(start + size, self._size)
+        if start >= stop:
+            return b""
+
+        if self._full_content is None:
+            response = HttpRequester().get(
+                self._url,
+                headers={"Range": f"bytes={start}-{stop - 1}", "Accept-Encoding": "identity"},
+            )
+            response.raise_for_status()
+            if response.status_code == HTTPStatus.OK and len(response.content) == self._size:
+                # Some servers ignore Range. Retain the complete response so later
+                # seeks do not download the archive again, and slice at absolute offsets.
+                logger.warning(
+                    "Server ignored HTTP Range for %s; received the entire resource (%d bytes), "
+                    "which will be retained in memory.",
+                    self._url,
+                    self._size,
+                )
+                self._full_content = response.content
+            elif (
+                response.status_code == HTTPStatus.PARTIAL_CONTENT
+                and response.headers.get("Content-Range") == f"bytes {start}-{stop - 1}/{self._size}"
+                and len(response.content) == stop - start
+            ):
+                self._position = stop
+                return response.content
+            else:
+                raise OSError(f"Invalid HTTP range response for {self._url}")
+
+        self._position = stop
+        return self._full_content[start:stop]
 
 
 class _OfflineFallbackSession:

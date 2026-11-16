@@ -122,6 +122,46 @@ class ValidROC:
         return VALID_CRATES_DATA_PATH / "multi-profile-crate"
 
 
+class ValidWROC_v1_1:
+
+    @property
+    def workflow_roc_v1_1(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "workflow-roc-1.1"
+
+    @property
+    def workflow_roc_string_license_v1_1(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "workflow-roc-string-license-1.1"
+
+
+class ValidProcRC_v0_6:
+
+    @property
+    def process_run_crate_v0_6(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "process-run-crate-0.6"
+
+    @property
+    def process_run_crate_collections_v0_6(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "process-run-crate-collections-0.6"
+
+    @property
+    def process_run_crate_containerimage_v0_6(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "process-run-crate-containerimage-0.6"
+
+
+class ValidWfRC_v0_6:
+
+    @property
+    def workflow_run_crate_v0_6(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "workflow-run-crate-0.6"
+
+
+class ValidProvRC_v0_6:
+
+    @property
+    def provenance_run_crate_v0_6(self) -> Path:
+        return VALID_CRATES_DATA_PATH / "provenance-run-crate-0.6"
+
+
 class InvalidFileDescriptor:
     base_path = INVALID_CRATES_DATA_PATH / "0_file_descriptor_format"
 
@@ -350,6 +390,73 @@ class InvalidMainWorkflow:
         return self.base_path / "main_workflow_bad_conformsto"
 
 
+class InvalidMainWorkflow_v1_1:
+    base_path = INVALID_CRATES_DATA_PATH / "workflow-ro-crate-1.1" / "main_workflow"
+
+    @property
+    def main_workflow_bad_type(self) -> Path:
+        return self.base_path / "main_workflow_bad_type"
+
+    @property
+    def main_workflow_no_lang(self) -> Path:
+        return self.base_path / "main_workflow_no_lang"
+
+    @property
+    def main_workflow_no_image(self) -> Path:
+        return self.base_path / "main_workflow_no_image"
+
+    @property
+    def main_workflow_no_cwl_desc(self) -> Path:
+        return self.base_path / "main_workflow_no_cwl_desc"
+
+    @property
+    def main_workflow_cwl_desc_bad_type(self) -> Path:
+        return self.base_path / "main_workflow_cwl_desc_bad_type"
+
+    @property
+    def main_workflow_cwl_desc_no_lang(self) -> Path:
+        return self.base_path / "main_workflow_cwl_desc_no_lang"
+
+    @property
+    def main_workflow_no_file(self) -> Path:
+        return self.base_path / "main_workflow_no_file"
+
+    @property
+    def main_workflow_bad_conformsto(self) -> Path:
+        return self.base_path / "main_workflow_bad_conformsto"
+
+
+class WROCInvalidComputationalWorkflow_v1_1:
+    base_path = INVALID_CRATES_DATA_PATH / "workflow-ro-crate-1.1" / "computational_workflow"
+    @property
+    def no_input(self) -> Path:
+        return self.base_path / "no_input"
+
+    @property
+    def no_output(self) -> Path:
+        return self.base_path / "no_output"
+
+    @property
+    def bad_input(self) -> Path:
+        return self.base_path / "bad_input"
+
+    @property
+    def bad_output(self) -> Path:
+        return self.base_path / "bad_output"
+
+    @property
+    def no_step(self) -> Path:
+        return self.base_path / "no_step"
+
+    @property
+    def bad_step(self) -> Path:
+        return self.base_path / "bad_step"
+
+    @property
+    def with_steps_bad_type(self) -> Path:
+        return self.base_path / "with_steps_bad_type"
+
+
 class WROCInvalidConformsTo:
     base_path = INVALID_CRATES_DATA_PATH / "2_wroc_descriptor"
 
@@ -358,8 +465,28 @@ class WROCInvalidConformsTo:
         return self.base_path / "wroc_descriptor_bad_conforms_to"
 
 
+class WROCInvalidConformsTo_v1_1:
+    base_path = INVALID_CRATES_DATA_PATH / "workflow-ro-crate-1.1" / "wroc_crate"
+
+    @property
+    def wroc_bad_conforms_to(self) -> Path:
+        return self.base_path / "bad_profile"
+
+
 class WROCInvalidReadme:
     base_path = INVALID_CRATES_DATA_PATH / "1_wroc_crate/"
+
+    @property
+    def wroc_readme_not_about_crate(self) -> Path:
+        return self.base_path / "readme_not_about_crate"
+
+    @property
+    def wroc_readme_wrong_encoding_format(self) -> Path:
+        return self.base_path / "readme_wrong_encoding_format"
+
+
+class WROCInvalidReadme_v1_1:
+    base_path = INVALID_CRATES_DATA_PATH / "workflow-ro-crate-1.1" / "wroc_crate/"
 
     @property
     def wroc_readme_not_about_crate(self) -> Path:
@@ -378,12 +505,36 @@ class WROCNoLicense:
         return self.base_path / "no_license"
 
 
+class WROCNoLicense_v1_1:
+    base_path = INVALID_CRATES_DATA_PATH / "workflow-ro-crate-1.1" / "wroc_crate/"
+
+    @property
+    def wroc_no_license(self) -> Path:
+        return self.base_path / "no_license"
+
+
 class WROCMainEntity:
     base_path = INVALID_CRATES_DATA_PATH / "1_wroc_crate/"
 
     @property
     def wroc_no_mainentity(self) -> Path:
         return self.base_path / "no_mainentity"
+
+
+class WROCMainEntity_v1_1:
+    base_path = INVALID_CRATES_DATA_PATH / "workflow-ro-crate-1.1" / "wroc_crate/"
+
+    @property
+    def wroc_no_mainentity(self) -> Path:
+        return self.base_path / "no_mainentity"
+
+
+class WROCInvalidHowToStep_v1_1:
+    base_path = INVALID_CRATES_DATA_PATH / "workflow-ro-crate-1.1" / "howtostep"
+
+    @property
+    def wroc_howtostep_no_position(self) -> Path:
+        return self.base_path / "howtostep_no_position"
 
 
 class InvalidProcRC:
@@ -562,6 +713,10 @@ class InvalidProcRC:
         return self.base_path / "softwareapplication_bad_softwarerequirements"
 
 
+class InvalidProcRC_v0_6(InvalidProcRC):
+    base_path = INVALID_CRATES_DATA_PATH / "process-run-crate-0.6/"
+
+
 class InvalidWTROC:
     base_path = INVALID_CRATES_DATA_PATH / "5_workflow_testing_ro_crate/"
 
@@ -720,6 +875,10 @@ class InvalidWfRC:
     @property
     def formalparam_env_bad_exampleofwork(self) -> Path:
         return self.base_path / "formalparam_env_bad_exampleofwork"
+
+
+class InvalidWfRC_v0_6(InvalidWfRC):
+    base_path = INVALID_CRATES_DATA_PATH / "workflow-run-crate-0.6/"
 
 
 class InvalidProvRC:
@@ -989,6 +1148,10 @@ class InvalidProvRC:
     @property
     def propertyvalue_no_unitcode(self) -> Path:
         return self.base_path / "propertyvalue_no_unitcode"
+
+
+class InvalidProvRC_v0_6(InvalidProvRC):
+    base_path = INVALID_CRATES_DATA_PATH / "provenance-run-crate-0.6/"
 
 
 class InvalidMultiProfileROC:
