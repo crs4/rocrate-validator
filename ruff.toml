@@ -23,11 +23,17 @@
 # which is a common convention in Python projects.
 line-length = 120
 
+# Use the standard Python indentation: four spaces per block level.
+indent-width = 4
+
 # Lowest supported Python version. Ruff only infers this from
 # `[project].requires-python`, which this (Poetry-based) project does not use,
 # so the linter would otherwise fall back to its py39 default and skip 3.10+
 # modernizations. Keep in sync with `tool.poetry.dependencies.python` (>=3.10).
 target-version = "py310"
+
+[format]
+indent-style = "space"
 
 # Extend the default set of rules with additional rules from various plugins.
 [lint]
