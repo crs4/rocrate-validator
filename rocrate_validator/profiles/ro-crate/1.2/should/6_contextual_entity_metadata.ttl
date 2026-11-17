@@ -253,16 +253,15 @@ ro-crate:EncodingFormatRecommendedTypes a sh:NodeShape ;
             }
         """
     ] ;
-    sh:property [
-        sh:path rdf:type ;
-        sh:or (
-            [
-                sh:hasValue schema:WebPage
-            ]
-            [
-                sh:hasValue dct:Standard
-            ]
-        ) ;
-        sh:severity sh:Warning ;
-        sh:message "Encoding format entities SHOULD include WebPage and/or Standard types" ;
-    ] .
+    sh:or (
+        [
+            sh:path rdf:type ;
+            sh:hasValue schema:WebPage ;
+        ]
+        [
+            sh:path rdf:type ;
+            sh:hasValue dct:Standard ;
+        ]
+    ) ;
+    sh:severity sh:Warning ;
+    sh:message "Encoding format entities SHOULD include WebPage and/or Standard types" .
