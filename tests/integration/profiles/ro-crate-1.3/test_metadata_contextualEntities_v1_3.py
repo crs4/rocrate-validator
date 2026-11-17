@@ -14,9 +14,12 @@
 
 # pylint: disable=invalid-name
 
+import json
 import logging
+import shutil
 
-from rocrate_validator import models
+import pytest
+from rocrate_validator import models, services
 from tests.ro_crates_v1_3 import ContextualEntities
 from tests.shared import do_entity_test
 
@@ -454,6 +457,70 @@ def test_encoding_format_no_fragment_not_triggered():
     assert _ENCODING_FORMAT_MAY_REQUIREMENT not in failed_requirement_names, (
         f"The MAY requirement {_ENCODING_FORMAT_MAY_REQUIREMENT!r} should NOT fire "
         f"when the encoding format entity @id does not contain a fragment identifier"
+    )
+
+
+# ---------------------------------------------------------------------------
+# Encoding format entity: SHOULD include WebPage and/or Standard types (SHOULD)
+# ---------------------------------------------------------------------------
+
+_ENCODING_FORMAT_RECOMMENDED_TYPES_REQ = "Encoding format: RECOMMENDED types"
+
+
+@pytest.mark.parametrize(
+    "encoding_format_type",
+    [
+        "WebPage",
+        "Standard",
+        ["WebPage", "Standard"],
+        ["WebPage", "WebPageElement"],
+    ],
+)
+def test_encoding_format_recommended_types_valid(encoding_format_type, tmp_path):
+    """
+    An encoding format entity whose `@type` includes `WebPage` and/or `Standard`
+    (alone or alongside other types) SHOULD NOT trigger the RECOMMENDED warning.
+    """
+    crate_dir = tmp_path / "crate"
+    shutil.copytree(__contextual_entities_crates__.encoding_format_no_fragment, crate_dir)
+    metadata_path = crate_dir / "ro-crate-metadata.json"
+    doc = json.loads(metadata_path.read_text(encoding="utf-8"))
+    for entity in doc["@graph"]:
+        if entity.get("@id") == "https://example.org/csv-format.html":
+            entity["@type"] = encoding_format_type
+    metadata_path.write_text(json.dumps(doc), encoding="utf-8")
+
+    result = services.validate(
+        {
+            "rocrate_uri": str(crate_dir),
+            "profile_identifier": "ro-crate-1.3",
+            "requirement_severity": models.Severity.RECOMMENDED,
+            "metadata_only": True,
+        }
+    )
+    failed_requirement_names = {issue.check.requirement.name for issue in result.get_issues()}
+    assert _ENCODING_FORMAT_RECOMMENDED_TYPES_REQ not in failed_requirement_names, (
+        f"The RECOMMENDED requirement {_ENCODING_FORMAT_RECOMMENDED_TYPES_REQ!r} should NOT fire "
+        f"for encoding format @type={encoding_format_type!r}"
+    )
+
+
+def test_encoding_format_recommended_types_invalid():
+    """
+    An encoding format entity whose `@type` includes neither `WebPage` nor
+    `Standard` (e.g., `CreativeWork` only) SHOULD trigger a RECOMMENDED warning.
+    """
+    do_entity_test(
+        __contextual_entities_crates__.encoding_format_no_fragment,
+        models.Severity.RECOMMENDED,
+        False,
+        profile_identifier="ro-crate-1.3",
+        rocrate_entity_patch={
+            "https://example.org/csv-format.html": {"@type": "CreativeWork"},
+        },
+        metadata_only=True,
+        expected_triggered_requirements=[_ENCODING_FORMAT_RECOMMENDED_TYPES_REQ],
+        expected_triggered_issues=["Encoding format entities SHOULD include WebPage and/or Standard types"],
     )
 
 
