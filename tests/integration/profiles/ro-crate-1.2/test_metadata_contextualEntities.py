@@ -17,6 +17,7 @@ import logging
 import shutil
 
 import pytest
+
 from rocrate_validator import models, services
 from tests.ro_crates_v1_2 import ContextualEntities
 from tests.shared import do_entity_test
