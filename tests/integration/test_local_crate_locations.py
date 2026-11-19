@@ -130,3 +130,50 @@ def test_warm_validation_preserves_encoded_crate_bases(tmp_path, version, source
     assert initial.context.publicID == first.as_uri() + "/"
     assert repeated.context.publicID == second.as_uri() + "/"
     assert initial.context.prepared_validation_plan is repeated.context.prepared_validation_plan
+
+
+def test_cli_validate_dot_path_does_not_mangle_messages(tmp_path, monkeypatch):
+    crate = tmp_path / "invalid-crate"
+    crate.mkdir()
+    metadata = {
+        "@context": "https://w3id.org/ro/crate/1.1/context",
+        "@graph": [
+            {
+                "@id": "ro-crate-metadata.json",
+                "@type": "CreativeWork",
+                "about": {"@id": "./"},
+                "conformsTo": {"@id": "https://w3id.org/ro/crate/1.1"},
+            },
+            {
+                "@id": "./",
+                "@type": "Dataset",
+                "name": "Invalid crate",
+                "hasPart": [{"@id": "missing.txt"}],
+            },
+            {
+                "@id": "missing.txt",
+                "@type": "File",
+            },
+        ],
+    }
+    (crate / "ro-crate-metadata.json").write_text(json.dumps(metadata), encoding="utf-8")
+
+    monkeypatch.chdir(crate)
+    result = CliRunner().invoke(
+        cli,
+        [
+            "validate",
+            "-v",
+            "--profile-identifier",
+            "ro-crate-1.1",
+            "--requirement-severity",
+            "RECOMMENDED",
+            "--no-paging",
+            ".",
+        ],
+    )
+    assert result.exit_code != 0
+    assert "missing.txt" in result.output
+    assert "./org/" not in result.output
+    assert "http://schema./" not in result.output
+    assert "./md" not in result.output
