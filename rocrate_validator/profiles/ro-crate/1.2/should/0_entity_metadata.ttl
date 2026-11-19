@@ -19,7 +19,8 @@
 @prefix validator-transformers: <https://github.com/crs4/rocrate-validator/graph-transformers/> .
 
 ro-crate:ROCrateMetadataEntityRecommendedType a sh:NodeShape ;
-    validator:requiresGraphTransformer validator-transformers:validationCandidateMarker ;
+    validator:requiresGraphTransformer validator-transformers:validationCandidateMarker,
+        validator-transformers:mainMetadataDescriptorMarker ;
     sh:name "RO-Crate Metadata Entity: RECOMMENDED properties" ;
     sh:description """Check if the RO-Crate Metadata Entity includes at least one Schema.org type and a human-readable name""" ;
     sh:target [
@@ -34,10 +35,7 @@ ro-crate:ROCrateMetadataEntityRecommendedType a sh:NodeShape ;
                 { SELECT DISTINCT ?root ?metadatafile WHERE {
                     ?root a schema:Dataset .
                     ?metadatafile schema:about ?root .
-                    FILTER(
-                        STRENDS(str(?metadatafile), "ro-crate-metadata.json") ||
-                        STRENDS(str(?metadatafile), "ro-crate-metadata.jsonld")
-                    )
+                    ?metadatafile validator-transformers:mainMetadataDescriptor true .
                 } }
                 FILTER(?this != ?metadatafile)
                 FILTER (?this != ?root)

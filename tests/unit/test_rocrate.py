@@ -14,6 +14,7 @@
 
 # pylint: disable=abstract-class-instantiated
 
+import json
 from pathlib import Path
 
 import pytest
@@ -803,3 +804,73 @@ def test_local_file_uri_data_entity_is_not_remote(entity_id):
     assert entity not in crate.metadata.get_web_data_entities(), (
         f"Entity '{entity_id}' should not be listed as a web data entity"
     )
+
+
+@pytest.mark.parametrize(
+    "referenced_id",
+    [
+        "https://nfdi4plants.github.io/arc-ro-crate-profile/examples/administrative-core/ro-crate-metadata.json",
+        "subcrate/ro-crate-metadata.json",
+    ],
+)
+def test_get_file_descriptor_entity_prefers_primary_over_referenced_descriptor(tmp_path, referenced_id):
+    """Primary `ro-crate-metadata.json` must win over referenced descriptors even in detached prefixed files."""
+    descriptor_file = tmp_path / "custom-ro-crate-metadata.json"
+    metadata_dict = {
+        "@context": "https://w3id.org/ro/crate/1.2/context",
+        "@graph": [
+            {
+                "@id": referenced_id,
+                "@type": ["File", "CreativeWork"],
+                "about": {"@id": "./"},
+            },
+            {
+                "@id": "ro-crate-metadata.json",
+                "@type": "CreativeWork",
+                "conformsTo": {"@id": "https://w3id.org/ro/crate/1.2"},
+                "about": {"@id": "./"},
+            },
+            {
+                "@id": "./",
+                "@type": "Dataset",
+                "name": "Detached crate",
+            },
+        ],
+    }
+    descriptor_file.write_text(json.dumps(metadata_dict), encoding="utf-8")
+
+    crate = ROCrate.new_instance(descriptor_file)
+    assert crate.metadata_descriptor_id == "custom-ro-crate-metadata.json"
+    assert crate.metadata.get_file_descriptor_entity().id == "ro-crate-metadata.json"
+    assert crate.metadata.get_conforms_to() == ["https://w3id.org/ro/crate/1.2"]
+    assert crate.metadata.get_root_data_entity().id == "./"
+
+
+@pytest.mark.parametrize(
+    "referenced_id",
+    [
+        "https://nfdi4plants.github.io/arc-ro-crate-profile/examples/administrative-core/ro-crate-metadata.json",
+        "subcrate/ro-crate-metadata.json",
+    ],
+)
+def test_get_file_descriptor_entity_rejects_external_or_nested_fallback(referenced_id):
+    """External URLs and nested paths ending in `ro-crate-metadata.json` must not be used as fallback."""
+    crate = ROCrate.from_metadata_dict(
+        {
+            "@context": "https://w3id.org/ro/crate/1.2/context",
+            "@graph": [
+                {
+                    "@id": referenced_id,
+                    "@type": ["File", "CreativeWork"],
+                    "about": {"@id": "./"},
+                },
+                {
+                    "@id": "./",
+                    "@type": "Dataset",
+                    "name": "Missing primary descriptor",
+                },
+            ],
+        }
+    )
+    with pytest.raises(ValueError, match="no metadata file descriptor in crate"):
+        crate.metadata.get_file_descriptor_entity()

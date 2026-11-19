@@ -12,17 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-@prefix ro: <./> .
 @prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix schema_org: <http://schema.org/> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix validator: <https://github.com/crs4/rocrate-validator/> .
+@prefix validator-transformers: <https://github.com/crs4/rocrate-validator/graph-transformers/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 
 ro-crate:RootDataEntityType
     a sh:NodeShape ;
+    validator:requiresGraphTransformer validator-transformers:mainMetadataDescriptorMarker ;
     sh:name "RO-Crate Root Data Entity type" ;
     sh:description "The Root Data Entity MUST be a `Dataset` (as per `schema.org`)" ;
     sh:target [
@@ -32,10 +33,7 @@ ro-crate:RootDataEntityType
             SELECT ?this
             WHERE {
                 ?metadatafile schema:about ?this .
-                FILTER(
-                    STRENDS(str(?metadatafile), "ro-crate-metadata.json") ||
-                    STRENDS(str(?metadatafile), "ro-crate-metadata.jsonld")
-                )
+                ?metadatafile validator-transformers:mainMetadataDescriptor true .
             }
         """
     ] ;
@@ -76,10 +74,7 @@ ro-crate:FindRootDataEntity a sh:NodeShape, validator:HiddenShape;
             WHERE {
                 ?this a schema:Dataset .
                 ?metadatafile schema:about ?this .
-                FILTER(
-                    STRENDS(str(?metadatafile), "ro-crate-metadata.json") ||
-                    STRENDS(str(?metadatafile), "ro-crate-metadata.jsonld")
-                )
+                ?metadatafile validator-transformers:mainMetadataDescriptor true .
             }
         """
     ] ;
