@@ -39,12 +39,23 @@
             "isBasedOn": {
                 "@id": "https://doi.org/10.5281/zenodo.1009240"
             },
+            "author": {
+                "@id": "https://orcid.org/0000-0001-9842-9718"
+            },
+            "publisher": {
+                "@id": "https://ror.org/03jdxdk20"
+            },
             "license": {
                 "@id": "http://spdx.org/licenses/CC0-1.0"
             },
-            "mentions": {
-                "@id": "#SepiaConversion_1"
-            }
+            "mentions": [
+                {
+                    "@id": "#SepiaConversion_1"
+                },
+                {
+                    "@id": "#dummy_1"
+                }
+            ]
         },
         {
             "@id": "https://w3id.org/ro/wfrun/process/0.5",
@@ -59,6 +70,17 @@
             "version": "0.1"
         },
         {
+            "@id": "http://spdx.org/licenses/CC0-1.0",
+            "@type": "CreativeWork"
+        },
+        {
+            "@id": "https://ror.org/03jdxdk20",
+            "@type": "Organization",
+            "name": "CRS4",
+            "description": "Center for Advanced Studies Research and Development in Sardinia",
+            "url": "http://www.crs4.it"
+        },
+        {
             "@id": "https://www.imagemagick.org/",
             "@type": "SoftwareApplication",
             "url": "https://www.imagemagick.org/",
@@ -71,6 +93,7 @@
         {
             "@id": "https://example.com/foobar/1.0.0/",
             "@type": "SoftwareApplication",
+            "url": "http://example.org/sw/foobar",
             "name": "foobar",
             "softwareVersion": "1.0.0"
         },
@@ -106,6 +129,29 @@
             "containerImage": "https://example.com/imagemagick.sif"
         },
         {
+            "@id": "#dummy_1",
+            "@type": "CreateAction",
+            "name": "Dummy action",
+            "description": "Dummy action to test actionStatus as IRI",
+            "startTime": "2024-05-17T01:04:50+01:00",
+            "endTime": "2024-05-17T01:04:52+01:00",
+            "instrument": {
+                "@id": "https://www.imagemagick.org/"
+            },
+            "object": {
+                "@id": "pics/2017-06-11%2012.56.14.jpg"
+            },
+            "result": {
+                "@id": "pics/sepia_fence.jpg"
+            },
+            "agent": {
+                "@id": "https://orcid.org/0000-0001-9842-9718"
+            },
+            "actionStatus": {
+                "@id": "http://schema.org/CompletedActionStatus"
+            }
+        },
+        {
             "@id": "#width-limit-pv",
             "@type": "PropertyValue",
             "name": "MAGICK_WIDTH_LIMIT",
@@ -137,12 +183,18 @@
         {
             "@id": "https://orcid.org/0000-0001-9842-9718",
             "@type": "Person",
-            "name": "Stian Soiland-Reyes"
+            "name": "Stian Soiland-Reyes",
+            "affiliation": {
+                "@id": "https://ror.org/03jdxdk20"
+            }
         },
         {
             "@id": "https://orcid.org/0000-0002-3545-944X",
             "@type": "Person",
-            "name": "Peter Sefton"
+            "name": "Peter Sefton",
+            "affiliation": {
+                "@id": "https://ror.org/03jdxdk20"
+            }
         }
     ]
 }

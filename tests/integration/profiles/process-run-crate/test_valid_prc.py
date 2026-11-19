@@ -44,3 +44,14 @@ def test_valid_process_run_crate_required():
         profile_identifier="process-run-crate-0.5",
         metadata_only=True,
     )
+
+
+def test_valid_process_run_crate_recommended():
+    """Test a valid Process Run Crate at the RECOMMENDED level."""
+    do_entity_test(
+        ValidROC().process_run_crate,
+        Severity.RECOMMENDED,
+        True,
+        profile_identifier="process-run-crate-0.5",
+        metadata_only=True,
+    )

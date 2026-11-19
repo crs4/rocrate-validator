@@ -88,6 +88,8 @@ process-run-crate:ProcRCActionRecommended a sh:NodeShape ;
         sh:in (
             "http://schema.org/CompletedActionStatus"
             "http://schema.org/FailedActionStatus"
+            <http://schema.org/CompletedActionStatus>
+            <http://schema.org/FailedActionStatus">
         ) ;
         sh:message "If the Action has an actionStatus, it should be http://schema.org/CompletedActionStatus or http://schema.org/FailedActionStatus" ;
     ] ;
