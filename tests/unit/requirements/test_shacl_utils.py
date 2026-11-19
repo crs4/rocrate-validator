@@ -22,13 +22,15 @@ The method must return a subgraph that:
 * does NOT contain triples that belong only to sibling property shapes
 """
 
+from pathlib import Path
+
 import pytest
 from rdflib import RDF, BNode, Graph, Literal, Namespace, URIRef
 from rdflib.collection import Collection
 
 from rocrate_validator.constants import SHACL_NS
 from rocrate_validator.errors import BadSyntaxError
-from rocrate_validator.requirements.shacl.utils import load_shapes_from_file, load_shapes_from_graph
+from rocrate_validator.requirements.shacl.utils import load_shapes_from_file, load_shapes_from_graph, make_uris_relative
 from rocrate_validator.utils.rdf import rebase_graph
 
 SH = Namespace(SHACL_NS)
@@ -258,3 +260,54 @@ def test_load_shapes_from_file_reports_parser_location(tmp_path):
     assert error.path == str(shapes_path)
     assert error.line == 2
     assert error.character == 5
+
+
+@pytest.mark.parametrize("crate_ref", [".", Path()])
+def test_make_uris_relative_with_dot_path_does_not_mangle_messages(tmp_path, monkeypatch, crate_ref):
+    monkeypatch.chdir(tmp_path)
+    message = (
+        "If the action has an actionStatus, it should be "
+        "http://schema.org/CompletedActionStatus or http://schema.org/FailedActionStatus. "
+        "See README.md and URL."
+    )
+    assert make_uris_relative(message, crate_ref) == message
+
+    crate_file_uri = f"{tmp_path.as_uri()}/data/file.txt"
+    assert make_uris_relative(f"Missing {crate_file_uri} in crate", crate_ref) == "Missing ./data/file.txt in crate"
+
+
+@pytest.mark.parametrize(
+    ("crate_base", "text", "expected"),
+    [
+        ("file:///tmp/my-crate/", "file:///tmp/my-crate/", "./"),
+        ("file:///tmp/my-crate", "file:///tmp/my-crate/README.md", "./README.md"),
+        (
+            "file:///tmp/my-crate/",
+            "Resource <file:///tmp/my-crate/data/file.txt> does not exist",
+            "Resource <./data/file.txt> does not exist",
+        ),
+        (
+            "file:///tmp/my-crate/",
+            "Sibling file:///tmp/my-crate-other/README.md must stay intact",
+            "Sibling file:///tmp/my-crate-other/README.md must stay intact",
+        ),
+        (
+            "file:///tmp/my-crate/",
+            "Redirect https://example.org/?next=file:///tmp/my-crate/a stays intact",
+            "Redirect https://example.org/?next=file:///tmp/my-crate/a stays intact",
+        ),
+        (
+            "https://example.invalid/rocrate-validator/in-memory/",
+            "https://example.invalid/rocrate-validator/in-memory/README.md",
+            "./README.md",
+        ),
+    ],
+)
+def test_make_uris_relative_normalizes_and_respects_boundaries(crate_base, text, expected):
+    assert make_uris_relative(text, crate_base) == expected
+
+
+@pytest.mark.parametrize("invalid_path", ["", "   ", "/", "file:///"])
+def test_make_uris_relative_rejects_invalid_crate_path(invalid_path):
+    with pytest.raises(ValueError):
+        make_uris_relative("http://schema.org/Person", invalid_path)
