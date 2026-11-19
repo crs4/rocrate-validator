@@ -15,7 +15,9 @@
 from __future__ import annotations
 
 import hashlib
+import re
 from typing import TYPE_CHECKING, Any, cast  # pylint: disable=unused-import
+from urllib.parse import urlsplit
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -28,6 +30,7 @@ from rocrate_validator.errors import BadSyntaxError
 from rocrate_validator.models import Severity
 from rocrate_validator.utils import log as logging
 from rocrate_validator.utils.rdf import parse_turtle_with_relative_iris
+from rocrate_validator.utils.uri import URI
 
 if TYPE_CHECKING:
     from rocrate_validator.requirements.shacl.models import Shape
@@ -69,9 +72,33 @@ def map_severity(shacl_severity: str) -> Severity:
     raise RuntimeError(f"Unrecognized SHACL severity term {shacl_severity}")
 
 
+def _normalize_crate_base_uri(ro_crate_path: Path | str) -> str:
+    """Validate and normalize a crate path or URI into a trailing-slash base URI."""
+    if ro_crate_path is None or (isinstance(ro_crate_path, str) and not ro_crate_path.strip()):
+        raise ValueError("ro_crate_path must be a non-empty path or URI")
+    base_uri = URI(ro_crate_path).base_uri
+    if not base_uri.endswith("/"):
+        base_uri = f"{base_uri}/"
+    parsed = urlsplit(base_uri)
+    if parsed.scheme == "file" and not parsed.netloc and parsed.path == "/":
+        raise ValueError("ro_crate_path must not be the filesystem root")
+    return base_uri
+
+
 def make_uris_relative(text: str, ro_crate_path: Path | str) -> str:
-    # globally replace the string "file://" with "./
-    return text.replace(str(ro_crate_path), "./")
+    """Replace occurrences of the RO-Crate base URI in ``text`` with ``./``."""
+    base_uri = _normalize_crate_base_uri(ro_crate_path)
+    if not text:
+        return text
+    # Replace `base_uri` only at the start of `text`, or immediately after
+    # whitespace or an opening delimiter (`<`, `"`, `'`, `(`, `[`), leaving
+    # embedded occurrences (e.g., `?next=file:///...`) untouched.
+    # Use a lookbehind to check the preceding character without consuming it,
+    # so it is preserved during replacement.
+    # Keep `^` outside the lookbehind because Python `re` requires fixed-width
+    # lookbehinds, whereas `^` (0 chars) and a delimiter (1 char) differ in width.
+    pattern = rf"(?:^|(?<=[\s<\"'(\[])){re.escape(base_uri)}"
+    return re.sub(pattern, "./", text)
 
 
 def inject_attributes(obj: object, node_graph: Graph, node: Node, exclude: list | None = None) -> object:
