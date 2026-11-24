@@ -55,9 +55,15 @@ provenance-run-crate:ProvRCOrganizeActionRequired a sh:NodeShape ;
     sh:property [
         a sh:PropertyShape ;
         sh:name "OrganizeAction object" ;
-        sh:description "An OrganizeAction must reference the ControlAction instances representing the step executions via object" ;
+        sh:description "An OrganizeAction must reference at least one ControlAction (step execution) and optionally MediaObject instances (engine configuration files) via object" ;
         sh:path schema:object ;
-        sh:class schema:ControlAction ;
-        sh:minCount 1 ;
-        sh:message "An OrganizeAction must reference the ControlAction instances representing the step executions via object" ;
+        sh:or (
+            [ sh:class schema:ControlAction ]
+            [ sh:class schema:MediaObject ]
+        ) ;
+        sh:qualifiedValueShape [
+            sh:class schema:ControlAction ;
+        ] ;
+        sh:qualifiedMinCount 1 ;
+        sh:message "An OrganizeAction must reference at least one ControlAction (step execution) and optionally MediaObject instances (engine configuration files) via object" ;
     ] .

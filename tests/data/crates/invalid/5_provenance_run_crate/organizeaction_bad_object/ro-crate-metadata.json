@@ -356,7 +356,7 @@
             "name": "Run of cwltool 1.0.20181012180214",
             "object": [
                 {
-                    "@id": "packed.cwl"
+                    "@id": "packed.cwl#main/sorted"
                 },
                 {
                     "@id": "#29365b8d-cf76-4c62-a97d-fa8c2061e5cf"
