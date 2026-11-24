@@ -51,6 +51,9 @@
                 },
                 {
                     "@id": "sort_env.yml"
+                },
+                {
+                    "@id": "streamflow.yml"
                 }
             ],
             "license": "Apache-2.0",
@@ -440,6 +443,9 @@
                 },
                 {
                     "@id": "#29365b8d-cf76-4c62-a97d-fa8c2061e5cf"
+                },
+                {
+                    "@id": "streamflow.yml"
                 }
             ],
             "result": {
@@ -447,6 +453,12 @@
             },
             "actionStatus": "http://schema.org/CompletedActionStatus",
             "startTime": "2018-10-25T15:46:35.210973"
+        },
+        {
+            "@id": "streamflow.yml",
+            "@type": "File",
+            "name": "StreamFlow configuration file",
+            "encodingFormat": "application/yaml"
         },
         {
             "@id": "https://orcid.org/0000-0001-9842-9718",

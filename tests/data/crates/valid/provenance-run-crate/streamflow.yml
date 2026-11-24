@@ -1,0 +1,17 @@
+version: v1.0
+workflows:
+  extract-and-compile:
+    type: cwl
+    config:
+      file: main.cwl
+      settings: config.yml
+    bindings:
+      - step: /compile
+        target:
+          deployment: docker-openjdk
+
+deployments:
+  docker-openjdk:
+    type: docker
+    config:
+      image: openjdk:9.0.1-11-slim
