@@ -95,7 +95,9 @@ def test_provrc_v0_6_organizeaction_no_object():
         Severity.REQUIRED,
         False,
         ["ProvRC OrganizeAction MUST"],
-        ["An OrganizeAction must reference at least one ControlAction (step execution) and optionally MediaObject instances (engine configuration files) via object"],
+        ["An OrganizeAction must reference at least one ControlAction (step "
+         "execution) and optionally MediaObject instances (engine "
+         "configuration files) via object"],
         profile_identifier="provenance-run-crate-0.6",
     )
 
