@@ -19,6 +19,8 @@
 @prefix prof: <http://www.w3.org/ns/dx/prof/> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix validator: <https://github.com/crs4/rocrate-validator/> .
+@prefix validator-transformers: <https://github.com/crs4/rocrate-validator/graph-transformers/> .
 
 # ---------------------------------------------------------------
 # Shared SPARQL target: Referenced RO-Crate Data Entity
@@ -28,6 +30,7 @@
 # and are not the Root Data Entity.
 # ---------------------------------------------------------------
 ro-crate:ReferencedROCrateDataEntityTarget a sh:SPARQLTarget ;
+    validator:requiresGraphTransformer validator-transformers:mainMetadataDescriptorMarker ;
     sh:prefixes ro-crate:sparqlPrefixes ;
     sh:select """
         SELECT ?this
@@ -37,10 +40,7 @@ ro-crate:ReferencedROCrateDataEntityTarget a sh:SPARQLTarget ;
             FILTER(STRSTARTS(STR(?profile), "https://w3id.org/ro/crate"))
             { SELECT DISTINCT ?root WHERE {
                 ?metadatafile schema:about ?root .
-                FILTER(
-                    STRENDS(str(?metadatafile), "ro-crate-metadata.json") ||
-                    STRENDS(str(?metadatafile), "ro-crate-metadata.jsonld")
-                )
+                ?metadatafile validator-transformers:mainMetadataDescriptor true .
             } }
             FILTER(?this != ?root)
         }
@@ -63,10 +63,7 @@ ro-crate:ReferencedROCrateMetadataDescriptorTarget a sh:SPARQLTarget ;
             FILTER(STRSTARTS(STR(?profile), "https://w3id.org/ro/crate"))
             { SELECT DISTINCT ?root WHERE {
                 ?metadatafile schema:about ?root .
-                FILTER(
-                    STRENDS(str(?metadatafile), "ro-crate-metadata.json") ||
-                    STRENDS(str(?metadatafile), "ro-crate-metadata.jsonld")
-                )
+                ?metadatafile validator-transformers:mainMetadataDescriptor true .
             } }
             FILTER(?crate != ?root)
         }

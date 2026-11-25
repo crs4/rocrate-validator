@@ -72,7 +72,9 @@ def load_graph_and_preserve_relative_ids(json_data, base="http://example.org/"):
         if isinstance(obj, dict):
             if "@id" in obj:
                 idv = obj["@id"]
-                if isinstance(idv, str) and idv.startswith(("./", "../", "#")):
+                if isinstance(idv, str) and (
+                    idv.startswith(("./", "../", "#")) or idv in ("ro-crate-metadata.json", "ro-crate-metadata.jsonld")
+                ):
                     rel_ids.add(idv)
             for v in obj.values():
                 collect_ids(v)
@@ -243,7 +245,7 @@ def do_entity_test(  # noqa: PLR0912
             for issue in result.get_issues():
                 logger.debug(
                     f"Detected issue of severity {issue.severity.name} "
-                    f"with check \"{issue.check.identifier}\": {issue.message}"
+                    f'with check "{issue.check.identifier}": {issue.message}'
                 )
 
         assert result.passed() == expected_validation_result, (

@@ -52,4 +52,8 @@ ro-crate:sparqlPrefixes sh:declare [
     sh:declare [
         sh:prefix "ro" ;
         sh:namespace "./"^^xsd:anyURI ;
+    ] ;
+    sh:declare [
+        sh:prefix "validator-transformers" ;
+        sh:namespace "https://github.com/crs4/rocrate-validator/graph-transformers/"^^xsd:anyURI ;
     ] .

@@ -18,10 +18,12 @@
 @prefix schema_org: <http://schema.org/> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix validator: <https://github.com/crs4/rocrate-validator/> .
+@prefix validator-transformers: <https://github.com/crs4/rocrate-validator/graph-transformers/> .
 
 ro-crate:FindROCrateMetadataFileDescriptorEntity a sh:NodeShape ;
+    validator:requiresGraphTransformer validator-transformers:mainMetadataDescriptorMarker ;
     sh:name "Identify the RO-Crate Metadata File Descriptor" ;
-    sh:description """The RO-Crate Metadata File Descriptor entity describes the RO-Crate itself, and it is named as `*-ro-crate-metadata.json`.
+    sh:description """The RO-Crate Metadata File Descriptor entity describes the RO-Crate itself, and it is named as `ro-crate-metadata.json`.
         It can be identified by name according to the RO-Crate specification
         available at [Finding RO-Crate Root in RDF triple stores](https://www.researchobject.org/ro-crate/1.2/appendix/relative-uris.html#finding-ro-crate-root-in-rdf-triple-stores).""" ;
     sh:target [
@@ -32,10 +34,7 @@ ro-crate:FindROCrateMetadataFileDescriptorEntity a sh:NodeShape ;
             WHERE {
                 ?crate a schema:Dataset .
                 ?this schema:about ?crate .
-                FILTER(
-                    STRENDS(str(?this), "ro-crate-metadata.json") ||
-                    STRENDS(str(?this), "ro-crate-metadata.jsonld")
-                )
+                ?this validator-transformers:mainMetadataDescriptor true .
             }
         """
     ] ;
@@ -56,7 +55,7 @@ ro-crate:ROCrateMetadataFileDescriptorExistence a sh:NodeShape ;
         a sh:PropertyShape ;
         sh:name "RO-Crate Metadata File Descriptor entity existence" ;
         sh:description """Check if the RO-Crate Metadata File Descriptor entity exists,
-            i.e., if there exists an entity with @id matching *-ro-crate-metadata.json and type `schema:CreativeWork`""" ;
+            i.e., if there exists an entity with @id matching ro-crate-metadata.json and type `schema:CreativeWork`""" ;
         sh:path rdf:type ;
         sh:hasValue ro-crate:ROCrateMetadataFileDescriptor ;
         sh:minCount 1 ;

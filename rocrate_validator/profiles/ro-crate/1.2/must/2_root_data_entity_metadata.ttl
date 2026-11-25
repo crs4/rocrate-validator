@@ -18,20 +18,19 @@
 @prefix prof: <http://www.w3.org/ns/dx/prof/> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix validator: <https://github.com/crs4/rocrate-validator/> .
+@prefix validator-transformers: <https://github.com/crs4/rocrate-validator/graph-transformers/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix dct: <http://purl.org/dc/terms/> .
 
 # Selects the Root Data Entity (the Dataset that the metadata file is `about`).
 ro-crate:MetadataAboutTarget a sh:SPARQLTarget ;
+    validator:requiresGraphTransformer validator-transformers:mainMetadataDescriptorMarker ;
     sh:prefixes ro-crate:sparqlPrefixes ;
     sh:select """
         SELECT ?this
         WHERE {
             ?metadatafile schema:about ?this .
-            FILTER(
-                STRENDS(str(?metadatafile), "ro-crate-metadata.json") ||
-                STRENDS(str(?metadatafile), "ro-crate-metadata.jsonld")
-            )
+            ?metadatafile validator-transformers:mainMetadataDescriptor true .
         }
     """ .
 
@@ -49,10 +48,7 @@ ro-crate:FindRootDataEntity a sh:NodeShape, validator:HiddenShape ;
             WHERE {
                 ?this a schema:Dataset .
                 ?metadatafile schema:about ?this .
-                FILTER(
-                    STRENDS(str(?metadatafile), "ro-crate-metadata.json") ||
-                    STRENDS(str(?metadatafile), "ro-crate-metadata.jsonld")
-                )
+                ?metadatafile validator-transformers:mainMetadataDescriptor true .
             }
         """
     ] ;

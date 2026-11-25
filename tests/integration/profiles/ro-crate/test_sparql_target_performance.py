@@ -19,6 +19,8 @@ from typing import TYPE_CHECKING, cast
 from rdflib import Graph, Namespace, URIRef
 from rdflib.namespace import RDF, SH
 
+from rocrate_validator.transformers.main_metadata_descriptor_marker import MARKER_NS, mark_main_metadata_descriptor
+
 if TYPE_CHECKING:
     from rdflib.query import ResultRow
 
@@ -59,6 +61,7 @@ def _build_root_subquery_data_graph(entity_type, entity_count, about_count=249):
     for index in range(about_count):
         about_entity = URIRef(f"about/entity-{index}")
         data_graph.add((about_entity, SCHEMA.about, root))
+    data_graph = mark_main_metadata_descriptor(data_graph)
     return data_graph, expected, root
 
 
@@ -76,7 +79,7 @@ def test_file_data_entity_target_scales_without_cross_product():
     data_graph, expected, _ = _build_root_subquery_data_graph(SCHEMA.MediaObject, 500)
 
     started_at = perf_counter()
-    rows = data_graph.query(query, initNs={"schema": SCHEMA})
+    rows = data_graph.query(query, initNs={"schema": SCHEMA, "validator-transformers": MARKER_NS})
     actual = {cast("ResultRow", row).this for row in rows}
     duration = perf_counter() - started_at
 
@@ -96,7 +99,7 @@ def test_directory_data_entity_target_scales_without_cross_product():
     expected.discard(root)
 
     started_at = perf_counter()
-    rows = data_graph.query(query, initNs={"schema": SCHEMA})
+    rows = data_graph.query(query, initNs={"schema": SCHEMA, "validator-transformers": MARKER_NS})
     actual = {cast("ResultRow", row).this for row in rows}
     duration = perf_counter() - started_at
 
@@ -118,7 +121,7 @@ def test_referenced_rocrate_data_entity_target_scales_without_cross_product():
         data_graph.add((entity, DCT.conformsTo, profile_uri))
 
     started_at = perf_counter()
-    rows = data_graph.query(query, initNs={"schema": SCHEMA, "dct": DCT})
+    rows = data_graph.query(query, initNs={"schema": SCHEMA, "dct": DCT, "validator-transformers": MARKER_NS})
     actual = {cast("ResultRow", row).this for row in rows}
     duration = perf_counter() - started_at
 
@@ -146,9 +149,10 @@ def test_referenced_rocrate_metadata_descriptor_target_scales_without_cross_prod
         expected.add(descriptor)
         data_graph.add((crate, SCHEMA.subjectOf, descriptor))
     data_graph.add((URIRef("ro-crate-metadata.json"), SCHEMA.about, root))
+    data_graph = mark_main_metadata_descriptor(data_graph)
 
     started_at = perf_counter()
-    rows = data_graph.query(query, initNs={"schema": SCHEMA, "dct": DCT})
+    rows = data_graph.query(query, initNs={"schema": SCHEMA, "dct": DCT, "validator-transformers": MARKER_NS})
     actual = {cast("ResultRow", row).this for row in rows}
     duration = perf_counter() - started_at
 

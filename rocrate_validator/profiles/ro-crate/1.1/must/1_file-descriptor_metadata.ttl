@@ -11,15 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-@prefix ro: <./> .
 @prefix ro-crate: <https://github.com/crs4/rocrate-validator/profiles/ro-crate/> .
 @prefix dct: <http://purl.org/dc/terms/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix schema_org: <http://schema.org/> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix validator: <https://github.com/crs4/rocrate-validator/> .
+@prefix validator-transformers: <https://github.com/crs4/rocrate-validator/graph-transformers/> .
 
 ro-crate:ROCrateMetadataFileDescriptorExistence a sh:NodeShape ;
+    validator:requiresGraphTransformer validator-transformers:mainMetadataDescriptorMarker ;
     sh:targetNode sh:Graph ;
     sh:name "RO-Crate Metadata File Descriptor entity existence" ;
     sh:description """The RO-Crate JSON-LD MUST contain a Metadata File Descriptor entity named `ro-crate-metadata.json` and typed as `schema:CreativeWork`""" ;
@@ -37,10 +38,7 @@ ro-crate:ROCrateMetadataFileDescriptorExistence a sh:NodeShape ;
                     ?crate a schema:Dataset .
                     ?md schema:about ?crate .
                     ?md a schema:CreativeWork .
-                    FILTER(
-                        STRENDS(STR(?md), "ro-crate-metadata.json") ||
-                        STRENDS(STR(?md), "ro-crate-metadata.jsonld")
-                    )
+                    ?md validator-transformers:mainMetadataDescriptor true .
                 }
             }
         """ ;
@@ -59,10 +57,7 @@ ro-crate:FindROCrateMetadataFileDescriptorEntity a sh:NodeShape, validator:Hidde
             WHERE {
                 ?crate a schema:Dataset .
                 ?this schema:about ?crate .
-                FILTER(
-                    STRENDS(str(?this), "ro-crate-metadata.json") ||
-                    STRENDS(str(?this), "ro-crate-metadata.jsonld")
-                )
+                ?this validator-transformers:mainMetadataDescriptor true .
             }
         """
     ] ;

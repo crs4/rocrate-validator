@@ -41,7 +41,6 @@ def test_root_data_entity_type_target_ignores_preview_about_literal():
         ("1.1", "ro-crate-metadata.json"),
         ("1.1", "ro-crate-metadata.jsonld"),
         ("1.2", "ro-crate-metadata.json"),
-        ("1.2", "test-ro-crate-metadata.json"),
         ("1.2", "ro-crate-metadata.jsonld"),
     )
 

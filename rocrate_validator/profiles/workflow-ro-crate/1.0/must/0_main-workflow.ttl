@@ -20,6 +20,7 @@
 @prefix schema: <http://schema.org/> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix validator: <https://github.com/crs4/rocrate-validator/> .
+@prefix validator-transformers: <https://github.com/crs4/rocrate-validator/graph-transformers/> .
 
 workflow-ro-crate:MainEntityPropertyMustExist a sh:NodeShape ;
     sh:name "Main Workflow entity existence" ;
@@ -34,6 +35,7 @@ workflow-ro-crate:MainEntityPropertyMustExist a sh:NodeShape ;
     ] .
 
 workflow-ro-crate:FindMainWorkflow a sh:NodeShape, validator:HiddenShape ;
+    validator:requiresGraphTransformer validator-transformers:mainMetadataDescriptorMarker ;
     sh:name "Identify Main Workflow" ;
     sh:description "Identify the Main Workflow" ;
     sh:target [
@@ -45,10 +47,7 @@ workflow-ro-crate:FindMainWorkflow a sh:NodeShape, validator:HiddenShape ;
                 ?root schema:mainEntity ?this .
                 ?root a schema:Dataset .
                 ?metadatafile schema:about ?root .
-                FILTER(
-                    STRENDS(str(?metadatafile), "ro-crate-metadata.json") ||
-                    STRENDS(str(?metadatafile), "ro-crate-metadata.jsonld")
-                )
+                ?metadatafile validator-transformers:mainMetadataDescriptor true .
             }
         """
     ] ;

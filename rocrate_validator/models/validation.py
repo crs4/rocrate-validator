@@ -778,6 +778,7 @@ class ValidationContext:
             format="json-ld",
             publicID=self.publicID,
         )
+        data_graph.base = self.effective_ontology_base
         logger.debug("RO-Crate metadata loaded: %s", data_graph)
         return data_graph
 

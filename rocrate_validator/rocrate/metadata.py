@@ -57,15 +57,10 @@ class ROCrateMetadata:
             return 0
 
     def get_file_descriptor_entity(self) -> ROCrateEntity:
-        metadata_file_descriptor = self.get_entity(self.ro_crate.metadata_descriptor_id)
-        if metadata_file_descriptor:
-            return metadata_file_descriptor
-
-        for entity in self.get_entities():
-            if not entity.id or not entity.id.endswith(self.METADATA_FILE_DESCRIPTOR):
-                continue
-            if entity.has_type("CreativeWork"):
-                return entity
+        for entity_id in (self.METADATA_FILE_DESCRIPTOR, "ro-crate-metadata.jsonld"):
+            metadata_file_descriptor = self.get_entity(entity_id)
+            if metadata_file_descriptor:
+                return metadata_file_descriptor
 
         raise ValueError("no metadata file descriptor in crate")
 
