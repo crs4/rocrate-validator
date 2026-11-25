@@ -438,7 +438,7 @@ class SHACLCheck(RequirementCheck):
         for violation in violations:
             violating_entity = make_uris_relative(cast("Any", violation.focusNode).toPython(), shacl_context.publicID)
             violating_property = violation.resultPath.toPython() if violation.resultPath else None
-            violation_message = violation.get_result_message(str(shacl_context.rocrate_uri))
+            violation_message = violation.get_result_message(shacl_context.publicID)
             registered_check_issues = shacl_context.result.get_issues_by_check(requirementCheck)
             skip_requirement_check = False
             # check if the violation is already registered
@@ -460,7 +460,7 @@ class SHACLCheck(RequirementCheck):
             # if the check is not to be skipped, add the issue to the context
             if not skip_requirement_check:
                 c = shacl_context.result.add_issue(
-                    message=violation.get_result_message(str(shacl_context.rocrate_uri)),
+                    message=violation_message,
                     check=requirementCheck,
                     violatingProperty=violating_property,
                     violatingEntity=violating_entity,
